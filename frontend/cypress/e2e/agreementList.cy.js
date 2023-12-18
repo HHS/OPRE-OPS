@@ -70,7 +70,7 @@ it("navigates to the ReviewAgreements page when the review button is clicked", (
     cy.get("button[id^='submit-for-approval-']").first().click();
     cy.url().should("include", "/agreements/review");
     cy.get("h1").should("exist");
-    cy.get("h1").should("have.text", "Review and Send Agreement to Approval");
+    cy.get("h1").should("have.text", "Request BL Status Change");
 });
 
 it("Agreements Table is correctly filtered on all-agreements or my-agreements", () => {

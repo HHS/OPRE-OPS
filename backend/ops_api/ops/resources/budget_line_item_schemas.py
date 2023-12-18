@@ -251,3 +251,4 @@ class BudgetLineItemResponse:
     portfolio_id: Optional[int] = None
     fiscal_year: Optional[int] = None
     team_members: Optional[list[BLITeamMembers]] = field(default_factory=lambda: [])
+    has_active_workflow: bool = False

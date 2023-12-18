@@ -30,6 +30,7 @@ import Login from "./pages/Login";
 import ErrorPage from "./pages/ErrorPage";
 import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
+import ApproveAgreement from "./pages/agreements/approve";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -164,10 +165,6 @@ const router = createBrowserRouter(
                     path="/agreements/:id/*"
                     element={<Agreement />}
                     handle={{
-                        // you can put whatever you want on a route handle
-                        // here we use "crumb" and return some elements,
-                        // this is what we'll render in the breadcrumbs
-                        // for this route
                         crumb: () => (
                             <Link
                                 to="/agreements"
@@ -189,10 +186,6 @@ const router = createBrowserRouter(
                     element={<CreateBudgetLines />}
                 />
                 <Route
-                    path="/agreements/create"
-                    element={<CreateAgreements />}
-                />
-                <Route
                     path="/projects/create"
                     element={<CreateProject />}
                 />
@@ -201,12 +194,40 @@ const router = createBrowserRouter(
                     element={<AgreementsList />}
                 />
                 <Route
+                    path="/agreements/create"
+                    element={<CreateAgreements />}
+                />
+                <Route
                     path="/agreements/edit/:id/*"
                     element={<EditAgreement />}
                 />
                 <Route
                     path="/agreements/review/:id/*"
                     element={<ReviewAgreement />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/agreements/approve/:id/*"
+                    element={<ApproveAgreement />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
                 />
                 <Route
                     path="/cans"

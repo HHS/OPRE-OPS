@@ -1,10 +1,10 @@
 """Workflow models."""
-from enum import Enum
+from enum import Enum, auto
 
 import sqlalchemy as sa
 from models.base import BaseModel
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import object_session, relationship
 from typing_extensions import Any, override
 
 
@@ -34,7 +34,8 @@ class WorkflowTriggerType(Enum):
 
 
 class WorkflowTemplate(BaseModel):
-    """ Workflow structure without being tied to any specific real-world entity """
+    """Workflow structure without being tied to any specific real-world entity"""
+
     __tablename__ = "workflow_template"
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     name = sa.Column(sa.String, nullable=False)
@@ -47,21 +48,36 @@ class WorkflowTemplate(BaseModel):
 
 class WorkflowInstance(BaseModel):
     """Main Workflow model.
-       It should be considered the top-level container for a workflows.
-       TODO: determine if this should be locked to a CAN, or Procurement Shop, both or
-             any other object that may require a workflow. For now, going to attempt a generic
-             approach with `associated_id` and `associated_type` fields.
+    It should be considered the top-level container for a workflows.
+    TODO: determine if this should be locked to a CAN, or Procurement Shop, both or
+          any other object that may require a workflow. For now, going to attempt a generic
+          approach with `associated_id` and `associated_type` fields.
     """
+
     __tablename__ = "workflow_instance"
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     associated_id = sa.Column(sa.Integer, nullable=False)
-    associated_type = sa.Column(sa.Enum(WorkflowTriggerType), nullable=False)  # could use Enum based on the entities
+    associated_type = sa.Column(
+        sa.Enum(WorkflowTriggerType), nullable=False
+    )  # could use Enum based on the entities
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
     steps = relationship("WorkflowStepInstance", backref="workflow_instance")
     workflow_action = sa.Column(sa.Enum(WorkflowAction), nullable=False)
     current_workflow_step_instance_id = sa.Column(sa.Integer, nullable=True)
-    # future props
+
+    # THis bee brokennnnn
+    # @property
+    # def package_entities(self):
+    #     if object_session(self) is None:
+    #         return []
+    #     bli_list = object_session(self).execute(
+    #         sa.select(PackageSnapshot.bli_id)
+    #             .join(Package, Package.id == PackageSnapshot.package_id)
+    #             .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+    #             .where(WorkflowInstance.id == self.id)
+    #     )
+    #     return bli_list
 
     # REJECTED = "Rejected" (any --> Rejected)
     # CHANGES = "Changes Required" (any --> Changes Required)
@@ -70,21 +86,41 @@ class WorkflowInstance(BaseModel):
 
     @property
     def workflow_status(self):
-        status_order = [WorkflowStatus.REJECTED, WorkflowStatus.CHANGES, WorkflowStatus.REVIEW]
-        return next((status for status in status_order if any(item.status == status for item in self.steps)),
-            WorkflowStatus.APPROVED if all(item.status == WorkflowStatus.APPROVED for item in self.steps) else None)
+        status_order = [
+            WorkflowStatus.REJECTED,
+            WorkflowStatus.CHANGES,
+            WorkflowStatus.REVIEW,
+        ]
+        return next(
+            (
+                status
+                for status in status_order
+                if any(item.status == status for item in self.steps)
+            ),
+            WorkflowStatus.APPROVED
+            if all(item.status == WorkflowStatus.APPROVED for item in self.steps)
+            else None,
+        )
 
     @override
-    def to_dict(self):
-        """Override to_dict to include the workflow status"""
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+
         if isinstance(self.associated_type, str):
             self.associated_type = WorkflowTriggerType[self.associated_type]
-        if isinstance(self.workflow_action, str):
-            self.workflow_action = WorkflowAction[self.workflow_action]
-        return super().to_dict()
+
+        d.update(
+            associated_type=self.associated_type.name if self.associated_type else None,
+            workflow_status=self.workflow_status.name if self.workflow_status else None,
+            workflow_action=self.workflow_action.name if self.workflow_action else None,
+            # package_entities = self.package_entities
+        )
+        return d
+
 
 class WorkflowStepTemplate(BaseModel):
-    """ Step structure belonging to a WorkflowTemplate """
+    """Step structure belonging to a WorkflowTemplate"""
+
     __tablename__ = "workflow_step_template"
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
@@ -95,22 +131,28 @@ class WorkflowStepTemplate(BaseModel):
     step_approvers = relationship("StepApprovers", backref="step_template")
 
     @override
-    def to_dict(self):
-        """Override to_dict to include the workflow status"""
-        if isinstance(self.workflow_type, str):
-            self.workflow_type = WorkflowStepType[self.workflow_type]
-        return super().to_dict()
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+
+        d.update(
+            workflow_type=self.workflow_type.name if self.workflow_type else None,
+        )
+        return d
+
 
 class WorkflowStepInstance(BaseModel):
-    """ Specific instance of a WorkflowStepTemplate
-        This is intended to be a one-to-many relationship between WorkflowsInstance and workflow steps.
-        This effectively outlines the steps in a workflow, and the order in which they are completed.
+    """Specific instance of a WorkflowStepTemplate
+    This is intended to be a one-to-many relationship between WorkflowsInstance and workflow steps.
+    This effectively outlines the steps in a workflow, and the order in which they are completed.
     """
+
     __tablename__ = "workflow_step_instance"
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     workflow_instance_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_instance.id"))
-    workflow_step_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_template.id"))
+    workflow_step_template_id = sa.Column(
+        sa.Integer, sa.ForeignKey("workflow_step_template.id")
+    )
     status = sa.Column(sa.Enum(WorkflowStatus), nullable=False)
     notes = sa.Column(sa.String, nullable=True)
     time_started = sa.Column(sa.DateTime, nullable=True)
@@ -119,62 +161,93 @@ class WorkflowStepInstance(BaseModel):
         "WorkflowStepDependency",
         foreign_keys="WorkflowStepDependency.predecessor_step_id",
         back_populates="predecessor_step",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
     predecessor_dependencies = relationship(
         "WorkflowStepDependency",
         foreign_keys="WorkflowStepDependency.successor_step_id",
         back_populates="successor_step",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
+
     @property
     def approvers(self):
-        return [approver.user for approver in self.step_template.step_approvers if approver.user is not None] + \
-               [approver.group for approver in self.step_template.step_approvers if approver.group is not None] + \
-               [approver.role for approver in self.step_template.step_approvers if approver.role is not None]
+        return (
+            [
+                approver.user
+                for approver in self.step_template.step_approvers
+                if approver.user is not None
+            ]
+            + [
+                approver.group
+                for approver in self.step_template.step_approvers
+                if approver.group is not None
+            ]
+            + [
+                approver.role
+                for approver in self.step_template.step_approvers
+                if approver.role is not None
+            ]
+        )
 
     @override
-    def to_dict(self):
-        """Override to_dict to include the workflow status"""
-        if isinstance(self.status, str):
-            self.status = WorkflowStatus[self.status]
-        return super().to_dict()
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+
+        d.update(
+            status=self.status.name if self.status else None,
+            # TODO: format for these times?
+            time_started=str(self.time_started) if self.time_started else None,
+            time_completed=str(self.time_completed) if self.time_completed else None,
+        )
+        return d
+
 
 class WorkflowStepDependency(BaseModel):
-    """ Association model to handle multiple dependencies between WorkflowStepInstances """
+    """Association model to handle multiple dependencies between WorkflowStepInstances"""
+
     __tablename__ = "workflow_step_dependency"
-    predecessor_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"), primary_key=True)
-    successor_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"), primary_key=True)
+    predecessor_step_id = sa.Column(
+        sa.Integer, sa.ForeignKey("workflow_step_instance.id"), primary_key=True
+    )
+    successor_step_id = sa.Column(
+        sa.Integer, sa.ForeignKey("workflow_step_instance.id"), primary_key=True
+    )
     predecessor_step = relationship(
         "WorkflowStepInstance",
         foreign_keys=[predecessor_step_id],
-        overlaps="predecessor_step_instance,successor_dependencies"
+        overlaps="predecessor_step_instance,successor_dependencies",
     )
     successor_step = relationship(
         "WorkflowStepInstance",
         foreign_keys=[successor_step_id],
-        back_populates="predecessor_dependencies"
+        back_populates="predecessor_dependencies",
     )
 
 
 class StepApprovers(BaseModel):
-    """ Step Approvers model for WorkflowStepTemplates """
+    """Step Approvers model for WorkflowStepTemplates"""
+
     __tablename__ = "step_approvers"
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
-    workflow_step_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_template.id"))
+    workflow_step_template_id = sa.Column(
+        sa.Integer, sa.ForeignKey("workflow_step_template.id")
+    )
     user_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
     role_id = sa.Column(sa.Integer, sa.ForeignKey("role.id"), nullable=True)
     group_id = sa.Column(sa.Integer, sa.ForeignKey("group.id"), nullable=True)
 
 
 class Package(BaseModel):
-    """Base package, used for sending groups of things around in a workflow
-    """
+    """Base package, used for sending groups of things around in a workflow"""
+
     __tablename__ = "package"
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     submitter_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"))
-    workflow_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True)
+    workflow_id = sa.Column(
+        sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True
+    )
     notes = sa.Column(sa.String, nullable=True)
     package_snapshots = relationship("PackageSnapshot", backref="package")
 

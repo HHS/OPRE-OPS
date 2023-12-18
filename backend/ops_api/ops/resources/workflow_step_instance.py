@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-import desert
 from flask import Response
 from marshmallow_enum import EnumField
 from models.base import BaseModel
@@ -26,13 +25,13 @@ class WorkflowStepInstanceResponse:
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     created_by: Optional[int] = None
-    # approvers: Optional[list[Union[User, Group, Role]]] = fields.List(fields.Nested(User, Group, Role))
+    # approvers: Optional[list[union[User, Group, Role]]] = fields.List(fields.Nested(User, Group, Role))
 
 
 class WorkflowStepInstanceItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = WorkflowStepInstance):
         super().__init__(model)
-        self._response_schema = desert.schema(WorkflowStepInstanceResponse)
+        # self._response_schema = desert.schema(WorkflowStepInstanceResponse)
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
@@ -43,7 +42,7 @@ class WorkflowStepInstanceItemAPI(BaseItemAPI):
 class WorkflowStepInstanceListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = WorkflowStepInstance):
         super().__init__(model)
-        self._response_schema = desert.schema(WorkflowStepInstanceResponse)
+        # self._response_schema = desert.schema(WorkflowStepInstanceResponse)
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
