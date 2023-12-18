@@ -1,6 +1,8 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
+const randomString = Math.floor(Math.random() * Date.now()).toString(36);
+
 // eslint-disable-next-line no-unused-vars
 const testAgreements = [
     {
@@ -78,24 +80,7 @@ const testAgreements = [
 ];
 const testAgreement = {
     agreement_type: "CONTRACT",
-    agreement_reason: "NEW_REQ",
-    name: "Test Contract",
-    display_name: "Test Contract",
-    description: "Test Description",
-    research_project_id: 1,
-    product_service_code_id: 1,
-    procurement_shop_id: 1,
-    incumbent: "Test Vendor",
-    project_officer_id: 1,
-    team_members: [
-        {
-            id: 3
-        },
-        {
-            id: 5
-        }
-    ],
-    notes: "Test Notes"
+    name: "Test Contract" + randomString
 };
 
 beforeEach(() => {
@@ -181,16 +166,21 @@ const addAgreement = (agreement) => {
 it("should allow to delete an agreement if user created it", () => {
     addAgreement(testAgreement);
     cy.visit("/agreements/");
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(2000);
     deleteAgreementByName(testAgreement.name);
 });
 
 it("should allow to delete an agreement if user is project officer", () => {
+    cy.visit("/agreements/");
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(2000);
     deleteAgreementByRow(0);
 });
 // TODO: Add this this once we can switch users or create a test agreement with a team member
 // it("should allow to delete an agreement if user is a team member", () => {
 // });
-
+//
 it("should not allow to delete an agreement if user is not project officer or team member or didn't create the agreement", () => {
     deleteAgreementByRowAndFail(3);
 });

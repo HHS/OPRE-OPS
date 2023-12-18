@@ -17,13 +17,3 @@ class Notification(BaseModel):
     recipient = relationship(
         "User", back_populates="notifications", foreign_keys=[recipient_id]
     )
-
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        d.update(
-            expires=self.expires.isoformat() if self.expires else None,
-        )
-
-        return d

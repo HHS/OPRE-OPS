@@ -25,6 +25,7 @@ class OpsEventType(Enum):
     CREATE_BLI_PACKAGE = 14
     UPDATE_BLI_PACKAGE = 15
 
+
 class OpsEventStatus(Enum):
     SUCCESS = 1
     FAILED = 2
@@ -38,16 +39,3 @@ class OpsEvent(BaseModel):
     event_type = sa.Column(sa.Enum(OpsEventType))
     event_status = sa.Column(sa.Enum(OpsEventStatus))
     event_details = sa.Column(JSONB)
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        d.update(
-            {
-                "event_type": self.event_type.name if self.event_type else None,
-                "event_status": self.event_status.name if self.event_status else None,
-            }
-        )
-
-        return d

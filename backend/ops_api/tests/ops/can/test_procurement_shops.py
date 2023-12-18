@@ -13,13 +13,14 @@ def test_procurement_shop_lookup(loaded_db):
     assert ps.display_name == ps.name
 
 
+@pytest.mark.usefixtures("loaded_db")
 def test_procurement_shop_creation():
     ps = ProcurementShop(
         name="Whatever",
         abbr="WHO",
         fee=0.1,
     )
-    assert ps.to_dict()["fee"] == 0.1
+    assert ps.to_dict()["fee"] == "0.1"
 
 
 @pytest.mark.usefixtures("app_ctx")

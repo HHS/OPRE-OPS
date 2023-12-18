@@ -61,6 +61,8 @@ it("Agreements list table has correct headers and first row", () => {
 });
 
 it("navigates to the ReviewAgreements page when the review button is clicked", () => {
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(2000);
     cy.get(".usa-table").should("exist");
     cy.get("tbody tr").first().trigger("mouseover");
     cy.get("button[id^='submit-for-approval-']").first().should("exist");

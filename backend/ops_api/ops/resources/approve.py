@@ -13,6 +13,7 @@ from models.workflows import (
     WorkflowInstance,
     WorkflowStatus,
     WorkflowStepInstance,
+    WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
@@ -55,7 +56,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
             submission_notes = request.json.get("notes")
             # Capture the use-case for this package (DRAFT_TO_PLANNED or PLANNED_TO_EXECUTED)
             workflow_action = request.json.get("workflow_action")
-            # Create new BliPackage
+            # Create new Package
             new_package = Package()
 
             if submitter_id := request.json.get("submitter_id"):
@@ -67,8 +68,8 @@ class ApproveSubmisionListApi(BaseItemAPI):
             new_package.submitter_id = user.id
             new_package.notes = submission_notes
 
-            # Create BliPackageSnapshot
-            # Handle budget_line_item IDs and create BliPackageSnapshot records
+            # Create PackageSnapshot
+            # Handle budget_line_item IDs and create PackageSnapshot records
             for bli_id in budget_line_item_ids:
                 bli = current_app.db_session.get(BudgetLineItem, bli_id)
 
@@ -99,7 +100,7 @@ class ApproveSubmisionListApi(BaseItemAPI):
             #  TODO: this should step over the `bli_cans` list and create a workflow step instance for each CAN,
             #  but for now, going to assume the first BLI CAN is all we need, to ensure the process works.
             workflow_instance.associated_id = 1  # bli_cans[0]
-            workflow_instance.associated_type = "CAN"
+            workflow_instance.associated_type = WorkflowTriggerType.CAN
 
             workflow_step_instance = WorkflowStepInstance(
                 workflow_step_template_id=2,

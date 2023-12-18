@@ -1,15 +1,25 @@
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import EXCLUDE, Schema, ValidationError
-from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User, Vendor
+from models import (
+    CAN,
+    ContractType,
+    DirectAgreement,
+    GrantAgreement,
+    IaaAaAgreement,
+    IaaAgreement,
+    OpsEventType,
+    User,
+    Vendor,
+)
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_sql_error
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
@@ -54,8 +64,11 @@ class AgreementItemAPI(BaseItemAPI):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self, id: int) -> Response:
-        response = self._get_item_with_try(id)
-        return response
+        with handle_sql_error():
+            item = self._get_item(id)
+            additional_fields = add_additional_fields_to_agreement_response(item)
+
+        return self._get_item_with_try(id, additional_fields=additional_fields)
 
     @override
     @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
@@ -69,14 +82,8 @@ class AgreementItemAPI(BaseItemAPI):
                     raise RuntimeError("Invalid Agreement id.")
                 elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
                     raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
-                # reject change of agreement_type
-                # for PUT, it must exist in request
-                try:
-                    req_type = request.json["agreement_type"]
-                    if req_type != old_agreement.agreement_type.name:
-                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-                except (KeyError, ValueError) as e:
-                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+
+                req_type = reject_change_of_agreement_type(old_agreement)
 
                 schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
 
@@ -85,7 +92,11 @@ class AgreementItemAPI(BaseItemAPI):
                     message=f"{message_prefix}: Params failed validation:",
                 )
 
-                data = schema.dump(schema.load(request.json))
+                data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+
+                if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
+                    data["contract_type"] = ContractType[data["contract_type"]]
+
                 agreement = update_agreement(data, old_agreement)
                 agreement_dict = agreement.to_dict()
                 meta.metadata.update({"updated_agreement": agreement_dict})
@@ -199,7 +210,15 @@ class AgreementListAPI(BaseListAPI):
         for agreement_cls in agreement_classes:
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
-        return make_response_with_headers([i.to_dict() for item in result for i in item])
+        agreement_response: List[dict] = []
+        for item in result:
+            for agreement in item:
+                additional_fields = add_additional_fields_to_agreement_response(agreement)
+                agreement_dict = agreement.to_dict()
+                agreement_dict.update(additional_fields)
+                agreement_response.append(agreement_dict)
+
+        return make_response_with_headers(agreement_response)
 
     @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
@@ -247,10 +266,15 @@ class AgreementListAPI(BaseListAPI):
             return make_response_with_headers({}, 500)
 
     def _create_agreement(self, data, agreement_cls):
+        data["agreement_type"] = AgreementType[data["agreement_type"]] if data.get("agreement_type") else None
+        data["agreement_reason"] = AgreementReason[data["agreement_reason"]] if data.get("agreement_reason") else None
+
         tmp_team_members = data.get("team_members") or []
         data["team_members"] = []
 
         if agreement_cls == ContractAgreement:
+            data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
+
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []
 
@@ -309,15 +333,19 @@ def _get_user_list(data: Any):
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     changed = False
     for item in data:
-        if item in ["vendor", "incumbent"]:
+        if item in [
+            "vendor",
+            "incumbent",
+            "agreement_type",
+            "versions",
+            "created_by_user",  # handled by created_by
+            "project_officer",  # handled by project_officer_id
+        ]:
             continue
         # subclass attributes won't have the old (deleted) value in get_history
         # unless they were loaded before setting
         _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
         match (item):
-            case "agreement_type":
-                continue
-
             case "team_members":
                 tmp_team_members = _get_user_list(data[item])
                 agreement.team_members = tmp_team_members if tmp_team_members else []
@@ -338,6 +366,16 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     for bli in agreement.budget_line_items:
                         if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
                             bli.proc_shop_fee_percentage = agreement.procurement_shop.fee
+                    changed = True
+
+            case "agreement_reason":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, AgreementReason[data[item]])
+                    changed = True
+
+            case "agreement_type":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, AgreementType[data[item]])
                     changed = True
 
             case _:
@@ -396,3 +434,54 @@ def add_vendor(data: dict, field_name: str = "vendor") -> None:
         else:
             data[f"{field_name}_id"] = vendor_obj.id
         del data[field_name]
+
+
+def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[str, Any]:
+    """
+    Add additional fields to the agreement response.
+
+    N.B. This is a temporary solution to add additional fields to the response.
+    This should be refactored to use marshmallow.
+    Also, the frontend/OpenAPI needs to be refactored to not use these fields.
+    """
+    if not agreement:
+        return {}
+
+    transformed_blis = [bli.to_dict() for bli in agreement.budget_line_items]
+    for bli in transformed_blis:
+        # change BLI amounts from string to float - this is a temporary solution in lieu of marshmallow
+        if bli.get("amount"):
+            bli["amount"] = float(bli.get("amount"))
+        # nest the CAN object (temp needed for the frontend)
+        if bli.get("can"):
+            bli["can"] = current_app.db_session.get(CAN, bli.get("can")).to_dict()
+
+    # change PS amount from string to float - this is a temporary solution in lieu of marshmallow
+    transformed_ps = agreement.procurement_shop.to_dict() if agreement.procurement_shop else {}
+    if transformed_ps:
+        transformed_ps["fee"] = float(transformed_ps.get("fee"))
+
+    return {
+        "agreement_type": agreement.agreement_type.name if agreement.agreement_type else None,
+        "agreement_reason": agreement.agreement_reason.name if agreement.agreement_reason else None,
+        "budget_line_items": transformed_blis,
+        "team_members": [tm.to_dict() for tm in agreement.team_members],
+        "research_project": agreement.research_project.to_dict() if agreement.research_project else None,
+        "procurement_shop": transformed_ps,
+        "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
+        "display_name": agreement.display_name,
+        "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
+        "incumbent": agreement.incumbent.name if hasattr(agreement, "incumbent") and agreement.incumbent else None,
+    }
+
+
+def reject_change_of_agreement_type(old_agreement):
+    # reject change of agreement_type
+    # for PUT, it must exist in request
+    try:
+        req_type = request.json["agreement_type"]
+        if req_type != old_agreement.agreement_type.name:
+            raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+    except (KeyError, ValueError) as e:
+        raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+    return req_type

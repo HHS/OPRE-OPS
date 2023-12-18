@@ -7,6 +7,7 @@ from flask_jwt_extended import jwt_required
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -23,6 +24,11 @@ class ListAPIRequest:
 class CANItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
+
+    @override
+    @is_authorized(PermissionType.GET, Permission.CAN)
+    def get(self, id: int) -> Response:
+        return self._get_item_with_try(id)
 
 
 class CANListAPI(BaseListAPI):

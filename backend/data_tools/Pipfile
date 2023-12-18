@@ -9,10 +9,11 @@ pandas = "==2.1.4"
 json5 = "==0.9.14"
 psycopg2-binary = "==2.9.9"
 cfenv = "==0.5.3"
-sqlalchemy-mixins = "==1.5.3"
 typing-extensions = "==4.9.0"
 desert = "2022.9.22"
 sqlalchemy-continuum = "==1.4.0"
+marshmallow-sqlalchemy = "==0.29.0"
+marshmallow-enum = "==1.5.1"
 
 [dev-packages]
 nox = "==2023.4.22"
