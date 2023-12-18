@@ -457,6 +457,8 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
             transformed_bli["can"] = current_app.db_session.get(CAN, transformed_bli.get("can")).to_dict()
         # include has_active_workflow
         transformed_bli["has_active_workflow"] = bli.has_active_workflow
+        # include active_workflow_current_step_id
+        transformed_bli["active_workflow_current_step_id"] = bli.active_workflow_current_step_id
         transformed_blis.append(transformed_bli)
 
     # change PS amount from string to float - this is a temporary solution in lieu of marshmallow

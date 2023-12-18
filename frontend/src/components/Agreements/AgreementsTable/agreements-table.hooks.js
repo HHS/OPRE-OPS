@@ -12,8 +12,12 @@ export const useNavigateAgreementReview = () => {
 
 export const useNavigateAgreementApprove = () => {
     const navigate = useNavigate();
-    return (id) => {
-        navigate(`/agreements/approve/${id}`);
+    return (agreement) => {
+        const id = agreement.id;
+        const stepId = agreement.budget_line_items.find(
+            (bli) => bli.active_workflow_current_step_id
+        )?.active_workflow_current_step_id;
+        navigate(`/agreements/approve/${id}?stepId=${stepId}`);
     };
 };
 
