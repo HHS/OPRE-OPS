@@ -29,7 +29,7 @@ jobs:
       - name: Build and publish the Docker image for ${{ github.repository }}
         uses: macbre/push-to-ghcr@v13
         with:
-          image_name: ${{ github.repository }}/ops-${{ env.WORKING_DIR }} # it will be lowercased internally
+          image_name: ${{ github.repository }}/ops-data-tools # it will be lowercased internally
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
