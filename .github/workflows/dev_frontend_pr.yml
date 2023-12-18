@@ -47,6 +47,7 @@ jobs:
             {
               "environment": "${{ env.ENVIRONMENT }}",
               "commit_hash": "${{ github.event.pull_request.number }}"
+              "frontend_dir": "../../../../../frontend"
             }
 
       - name: Archive Artifacts
