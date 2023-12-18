@@ -2,6 +2,9 @@ name: Dev BE Data-tools Deploy
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - development
   # pull_request:
   #   branches:
   #     - development
