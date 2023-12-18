@@ -25,7 +25,7 @@ inputs:
     required: true
   pr_id:
     description: 'Pull request ID'
-    required: true
+    required: false
   tf_vars: 
     description: 'A map of variable inputs for Terraform'
     required: false
@@ -116,6 +116,7 @@ runs:
 
     - name: Comment Apply
       id: comment-apply
+      ${{ inputs.pr_id != '' }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         token: ${{ inputs.github_token }}
