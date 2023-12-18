@@ -21,6 +21,7 @@ def test_can_fiscal_year_carry_forward_lookup(loaded_db) -> None:
     assert cfyco.expected_amount == 100000.00
 
 
+@pytest.mark.usefixtures("loaded_db")
 def test_can_fiscal_year_carry_forward_create() -> None:
     """Test that FY carry forward creation works."""
     cfyco = CANFiscalYearCarryForward(

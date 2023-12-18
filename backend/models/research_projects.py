@@ -89,24 +89,3 @@ class ResearchProject(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.title
-
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        d.update(
-            origination_date=self.origination_date.isoformat()
-            if self.origination_date
-            else None,
-            methodologies=[methodologies.name for methodologies in self.methodologies]
-            if self.methodologies
-            else [],
-            populations=[populations.name for populations in self.populations]
-            if self.populations
-            else [],
-            team_leaders=[tl.to_dict() for tl in self.team_leaders if tl]
-            if self.team_leaders
-            else [],
-        )
-
-        return d

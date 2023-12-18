@@ -24,7 +24,7 @@ from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy import select
+from sqlalchemy import inspect, select
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from typing_extensions import Any, override
 
@@ -269,7 +269,8 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
 def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:
     for item in data:
-        setattr(budget_line_item, item, data[item])
+        if item in [c_attr.key for c_attr in inspect(budget_line_item).mapper.column_attrs]:
+            setattr(budget_line_item, item, data[item])
 
 
 def update_budget_line_item(data: dict[str, Any], id: int):

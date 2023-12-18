@@ -20,6 +20,14 @@ def test_budget_line_item_lookup(loaded_db):
     assert bli.status == BudgetLineItemStatus.DRAFT
 
 
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_has_active_workflow(loaded_db):
+    bli = loaded_db.get(BudgetLineItem, 2)
+    print(bli.to_dict())
+    assert bli is not None
+    assert bli.has_active_workflow is True
+
+
 def test_budget_line_item_creation():
     bli = BudgetLineItem(
         line_description="Grant Expendeture GA999",
@@ -757,3 +765,22 @@ def test_budget_line_item_team_members_response(auth_client, loaded_db, test_bli
     response = auth_client.get(f"/api/v1/budget-line-items/{test_bli.id}")
     assert response.status_code == 200
     assert len(response.json["team_members"]) > 0
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli):
+    data = {
+        "amount": 111111,
+        "can_id": 1,
+        "status": "DRAFT",
+        "comments": "note one",
+        "versions": [{"id": 29, "transaction_id": 397}],
+        "agreement": 1,
+        "date_needed": "2025-12-01",
+        "agreement_id": 1,
+        "created_by_user": 21,
+        "line_description": "SC1",
+        "proc_shop_fee_percentage": None,
+    }
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
+    assert response.status_code == 200

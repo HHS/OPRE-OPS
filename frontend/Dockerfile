@@ -1,4 +1,4 @@
-FROM oven/bun@sha256:8ede441e7561e2672a3e580cf408cff16830d44cc8bc1ce26ff97d215bd85771
+FROM oven/bun@sha256:2705b32a23594adae93d88cd81d3356ae95f8daf8e64387c3e13811c7d0255d0
 RUN useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app

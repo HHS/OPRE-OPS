@@ -5,6 +5,7 @@ import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 import icons from "../../../uswds/img/sprite.svg";
+import { Tooltip } from "../../UI/USWDS/Tooltip";
 
 /**
  * This component displays the disabled change icons for a table row.
@@ -19,44 +20,79 @@ const DisabledChangeIcons = ({ duplicateIcon = true, handleDuplicateItem = () =>
     const rowId = React.useId();
     return (
         <div className="display-flex flex-align-center">
-            <div
-                className="usa-tooltip"
-                title="Only team members listed on this agreement can edit or delete"
-                data-position="left"
+            <Tooltip
+                position="top"
+                label="Only team members listed on this agreement can edit"
+                className="line-height-body-1"
             >
-                <FontAwesomeIcon
+                <button
                     id={`edit-${rowId}`}
+                    title="Edit"
+                    aria-label="Edit"
                     data-cy="edit-row"
-                    icon={faPen}
-                    className={classes}
-                />
-                <FontAwesomeIcon
+                >
+                    <FontAwesomeIcon
+                        icon={faPen}
+                        className={classes}
+                    />
+                </button>
+            </Tooltip>
+            <Tooltip
+                position="top"
+                label="Only team members listed on this agreement can delete"
+                className="line-height-body-1"
+            >
+                <button
                     id={`delete-${rowId}`}
+                    title="Delete"
+                    aria-label="Delete"
                     data-cy="delete-row"
-                    data-testid="delete-row"
-                    icon={faTrash}
-                    className={classes}
-                />
-            </div>
+                >
+                    <FontAwesomeIcon
+                        icon={faTrash}
+                        className={classes}
+                    />
+                </button>
+            </Tooltip>
             {duplicateIcon && (
-                <FontAwesomeIcon
-                    id={`duplicate-${rowId}`}
-                    data-cy="duplicate-row"
-                    icon={faClone}
-                    title="duplicate"
-                    data-position="top"
-                    className="text-primary height-2 width-2 cursor-pointer usa-tooltip margin-left-0"
-                    onClick={handleDuplicateItem}
-                />
+                <Tooltip
+                    position="top"
+                    label="Duplicate"
+                    className="line-height-body-1"
+                >
+                    <button
+                        id={`duplicate-${rowId}`}
+                        title="Duplicate"
+                        aria-label="Duplicate"
+                        data-cy="duplicate-row"
+                    >
+                        <FontAwesomeIcon
+                            icon={faClone}
+                            className="text-primary height-2 width-2 cursor-pointer margin-left-0"
+                            onClick={handleDuplicateItem}
+                        />
+                    </button>
+                </Tooltip>
             )}
             {sendToReviewIcon && (
-                <svg
-                    id={`submit-for-approval-${rowId}`}
-                    data-cy="submit-row"
-                    className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
+                <Tooltip
+                    position="top"
+                    label="Only team members listed on this agreement can submit it for approval"
+                    className="line-height-body-1"
                 >
-                    <use xlinkHref={`${icons}#send`}></use>
-                </svg>
+                    <button
+                        id={`submit-for-approval-${rowId}`}
+                        title="Submit for Approval"
+                        aria-label="Submit for Approval"
+                        data-cy="submit-row"
+                    >
+                        <svg
+                            className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
+                        >
+                            <use xlinkHref={`${icons}#send`}></use>
+                        </svg>
+                    </button>
+                </Tooltip>
             )}
         </div>
     );

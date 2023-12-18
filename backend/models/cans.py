@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio
 from models.users import User
+from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStatus, WorkflowStepInstance
 from sqlalchemy import (
     Boolean,
     Column,
@@ -19,19 +20,10 @@ from sqlalchemy import (
     Table,
     Text,
     case,
-    column,
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import (
-    InstrumentedAttribute,
-    Mapped,
-    column_property,
-    mapped_column,
-    object_session,
-    relationship,
-    with_polymorphic,
-)
+from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
 from typing_extensions import override
 
 
@@ -204,6 +196,10 @@ class Agreement(BaseModel):
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
 
+    # @property
+    # def has_bli_in_workflow(self):
+    #     return any(bli.workflow_instance_id for bli in self.budget_line_items)
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
@@ -212,36 +208,6 @@ class Agreement(BaseModel):
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
     }
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.agreement_type, str):
-            self.agreement_type = AgreementType[self.agreement_type]
-
-        if isinstance(self.agreement_reason, str):
-            self.agreement_reason = AgreementReason[self.agreement_reason]
-
-        d.update(
-            agreement_type=self.agreement_type.name if self.agreement_type else None,
-            agreement_reason=self.agreement_reason.name
-            if self.agreement_reason
-            else None,
-            budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
-            team_members=[tm.to_dict() for tm in self.team_members],
-            research_project=self.research_project.to_dict()
-            if self.research_project
-            else None,
-            procurement_shop=self.procurement_shop.to_dict()
-            if self.procurement_shop
-            else None,
-            product_service_code=self.product_service_code.to_dict()
-            if self.product_service_code
-            else None,
-        )
-
-        return d
 
 
 contract_support_contacts = Table(
@@ -301,28 +267,6 @@ class ContractAgreement(Agreement):
         "polymorphic_identity": AgreementType.CONTRACT,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.contract_type, str):
-            self.contract_type = ContractType[self.contract_type]
-
-        d.update(
-            {
-                "contract_type": self.contract_type.name
-                if self.contract_type
-                else None,
-                "support_contacts": [
-                    contacts.to_dict() for contacts in self.support_contacts
-                ],
-                "vendor": self.vendor.name if self.vendor else None,
-                "incumbent": self.incumbent.name if self.incumbent else None,
-            }
-        )
-
-        return d
-
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
 class GrantAgreement(Agreement):
@@ -336,11 +280,6 @@ class GrantAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,
     }
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
 
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
@@ -357,11 +296,6 @@ class IaaAgreement(Agreement):
         "polymorphic_identity": AgreementType.IAA,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
-
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
 ### Inter-Agency-Agreement-Assisted-Aquisition
@@ -377,11 +311,6 @@ class IaaAaAgreement(Agreement):
         "polymorphic_identity": AgreementType.MISCELLANEOUS,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
-
 
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
@@ -394,11 +323,6 @@ class DirectAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
     }
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
 
 
 class CANFiscalYear(BaseModel):
@@ -422,28 +346,6 @@ class CANFiscalYear(BaseModel):
             return f"{self.can.display_name}:{self.fiscal_year}"
         return f"CAN#{self.can_id}:{self.fiscal_year}"
 
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        d.update(
-            total_fiscal_year_funding=float(self.total_fiscal_year_funding)
-            if self.total_fiscal_year_funding
-            else None,
-            received_funding=float(self.received_funding)
-            if self.received_funding
-            else None,
-            expected_funding=float(self.expected_funding)
-            if self.expected_funding
-            else None,
-            potential_additional_funding=float(self.potential_additional_funding)
-            if self.potential_additional_funding
-            else None,
-            total_funding=float(self.total_funding) if self.total_funding else None,
-        )
-
-        return d
-
 
 class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
@@ -458,22 +360,6 @@ class CANFiscalYearCarryForward(BaseModel):
     expected_amount = Column(Numeric(12, 2), default=0, nullable=False)
     notes = Column(String, default="")
     total_amount = column_property(received_amount + expected_amount)
-
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        d.update(
-            received_amount=float(self.received_amount)
-            if self.received_amount
-            else None,
-            expected_amount=float(self.expected_amount)
-            if self.expected_amount
-            else None,
-            total_amount=float(self.total_amount) if self.total_amount else None,
-        )
-
-        return d
 
 
 class BudgetLineItem(BaseModel):
@@ -530,24 +416,22 @@ class BudgetLineItem(BaseModel):
     def team_members(self):
         return self.agreement.team_members if self.agreement else []
 
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        if isinstance(self.status, str):
-            self.status = BudgetLineItemStatus[self.status]
-
-        d.update(
-            status=self.status.name if self.status else None,
-            amount=float(self.amount) if self.amount else None,
-            proc_shop_fee_percentage=float(self.proc_shop_fee_percentage)
-            if self.proc_shop_fee_percentage
-            else None,
-            date_needed=self.date_needed.isoformat() if self.date_needed else None,
-            can=self.can.to_dict() if self.can else None,
+    @property
+    def has_active_workflow(self):
+        if object_session(self) is None:
+            return False
+        package = object_session(self).scalar(
+            select(Package)
+            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
+            .join(self.__class__, self.id == PackageSnapshot.bli_id)
+            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+            .join(
+                WorkflowStepInstance,
+                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+            )
+            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
         )
-
-        return d
+        return package is not None
 
 
 class CAN(BaseModel):
@@ -593,24 +477,3 @@ class CAN(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.arrangement_type, str):
-            self.arrangement_type = CANArrangementType[self.arrangement_type]
-
-        d.update(
-            appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
-            if self.appropriation_date
-            else None,
-            expiration_date=self.expiration_date.strftime("%d/%m/%Y")
-            if self.expiration_date
-            else None,
-            arrangement_type=self.arrangement_type.name
-            if self.arrangement_type
-            else None,
-        )
-
-        return d

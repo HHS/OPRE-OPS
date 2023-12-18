@@ -165,14 +165,13 @@ export const AgreementsList = () => {
         });
         sortedAgreements = sortAgreements(myAgreements);
     } else if (forApprovalUrl) {
-        // TODO: Use new workflow to filter For Approval - this is just my agreements that are UNDER_REVIEW for now
         const myAgreements = filteredAgreements.filter((agreement) => {
             return agreement.team_members?.some((teamMember) => {
                 return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
             });
         });
         const forApprovalAgreements = myAgreements.filter((agreement) => {
-            return agreement.budget_line_items?.some((bli) => bli.status === "UNDER_REVIEW");
+            return agreement.budget_line_items?.some((bli) => bli.has_active_workflow);
         });
         sortedAgreements = sortAgreements(forApprovalAgreements);
     } else {
