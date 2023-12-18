@@ -20,7 +20,7 @@ variable "container_image" {
 variable "container_tag" {
   description = "Container image tag"
   type        = string
-  default     = "53d9d2e1f056cb9eb5e6116a3928d62562077b41"
+  default     = "6c735f7ef57670e69b236dd248952dab8fdab0fa"
 }
 
 variable "cpu" {

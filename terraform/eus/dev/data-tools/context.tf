@@ -19,6 +19,6 @@ data "azurerm_key_vault" "vault" {
 }
 
 data "azurerm_key_vault_secret" "ops-pw" {
-  name      = "ops-role-password"
+  name         = "ops-role-password"
   key_vault_id = data.azurerm_key_vault.vault.id
 }

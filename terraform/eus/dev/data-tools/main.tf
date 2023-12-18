@@ -1,39 +1,40 @@
 resource "azurerm_container_app" "data-tools" {
   name                         = module.ctx.labels.dt.resourceNames["azurerm_container_app"]
   container_app_environment_id = data.azurerm_container_app_environment.aca_env.id
-  resource_group_name = module.ctx.resource_group_name
+  resource_group_name          = module.ctx.resource_group_name
   revision_mode                = "Single"
 
   template {
     revision_suffix = substr(var.container_tag, 0, 8)
-
+    min_replicas    = 1
+    max_replicas    = 1
     container {
       name   = var.container_name
       image  = "${var.container_image}:${var.container_tag}"
       cpu    = var.cpu
       memory = var.memory
       env {
-        name = "ENV"
+        name  = "ENV"
         value = "azure"
       }
       env {
-        name = "PGUSER"
+        name  = "PGUSER"
         value = "ops" // data.azurerm_postgresql_flexible_server.ops_dbs.administrator_login
       }
       env {
-        name = "PGPASSWORD"
+        name        = "PGPASSWORD"
         secret_name = "pgpassword"
       }
       env {
-        name = "PGHOST"
+        name  = "PGHOST"
         value = data.azurerm_postgresql_flexible_server.ops_dbs.fqdn
       }
       env {
-        name = "PGPORT"
+        name  = "PGPORT"
         value = 5432
       }
       env {
-        name = "PGDATABASE"
+        name  = "PGDATABASE"
         value = "postgres" //"test-ops-db" 
       }
       command = [
@@ -47,4 +48,5 @@ resource "azurerm_container_app" "data-tools" {
   secret {
     name  = "pgpassword"
     value = data.azurerm_key_vault_secret.ops-pw.value
+  }
 }
