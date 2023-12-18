@@ -6,7 +6,7 @@ resource "azurerm_container_app" "data-tools" {
 
   template {
     revision_suffix = substr(var.container_tag, 0, 8)
-    min_replicas    = 1
+    min_replicas    = 0
     max_replicas    = 1
     container {
       name   = var.container_name
