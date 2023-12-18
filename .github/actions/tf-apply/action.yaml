@@ -116,7 +116,7 @@ runs:
 
     - name: Comment Apply
       id: comment-apply
-      ${{ inputs.pr_id != '' }}
+      if: ${{ inputs.pr_id != '' }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         token: ${{ inputs.github_token }}
