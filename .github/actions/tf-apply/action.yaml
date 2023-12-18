@@ -31,7 +31,7 @@ inputs:
     required: false
   plan_workflow_file:
     description: 'Filename of workflow containing the tf plan artifact.'
-    required: true
+    required: false
 
 runs:
   using: "composite"
@@ -51,7 +51,7 @@ runs:
       shell: bash
       env:
         INPUT_TF_VARS: ${{ inputs.tf_vars }}
-        
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
       with:
