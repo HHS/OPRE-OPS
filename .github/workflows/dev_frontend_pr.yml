@@ -32,7 +32,7 @@ jobs:
       #   working-directory: ${{ env.WORKING_DIR }}
       #   run: bun run build
 
-      - name: Terraform Apply
+      - name: Build Bun
         uses: ./.github/actions/tf-apply
         with:
           terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa/build_bun"

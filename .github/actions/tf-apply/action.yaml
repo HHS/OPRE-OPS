@@ -106,8 +106,13 @@ runs:
         ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
       run: |
         echo 'apply<<EOF' >> $GITHUB_OUTPUT
-        terraform apply -auto-approve -input=false -no-color tfplan >> $GITHUB_OUTPUT
+        if [ -f "tfplan" ]; then
+          terraform apply -input=false -no-color tfplan >> $GITHUB_OUTPUT
+        else
+          terraform apply -auto-approve -input=false -no-color >> $GITHUB_OUTPUT
+        fi
         echo 'EOF' >> $GITHUB_OUTPUT
+
 
     - name: Comment Apply
       id: comment-apply
