@@ -2,6 +2,7 @@ import os
 from typing import Optional
 
 import sqlalchemy.engine
+from data_tools.environment.azure import AzureConfig
 from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
@@ -32,6 +33,8 @@ def init_db(
 def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
     config: DataToolsConfig
     match environment_name:
+        case "azure":
+            config = AzureConfig()
         case "cloudgov":
             config = CloudGovConfig()
         case "local":
