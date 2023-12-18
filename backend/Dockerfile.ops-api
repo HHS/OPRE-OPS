@@ -21,5 +21,5 @@ ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=ops_api.ops
 ENV FLASK_DEBUG=true
 
-CMD ["python", "-m", "gunicorn", "-b", ":8080", "ops_api.ops:create_app()"]
-## 
+CMD ["python", "-m", "gunicorn", "--timeout", "1000", "--workers", "1", "--threads", "4", "-b", ":8080", "ops_api.ops:create_app()"]
+## --timeout 1000 --workers 1 --threads 4
