@@ -46,7 +46,7 @@ jobs:
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",
-              "commit_hash": "${{ github.event.pull_request.number }}"
+              "commit_hash": "${{ github.event.pull_request.number }}",
               "frontend_dir": "../../../../../frontend"
             }
 
