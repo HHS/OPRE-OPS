@@ -214,6 +214,15 @@ export const opsApi = createApi({
                 body
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
+        }),
+        addWorkflowApprove: builder.mutation({
+            query: (body) => ({
+                url: `/workflow-approve/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
         })
     })
 });
@@ -248,5 +257,6 @@ export const {
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
     useAddBliPackageMutation,
-    useAddApprovalRequestMutation
+    useAddApprovalRequestMutation,
+    useAddWorkflowApproveMutation
 } = opsApi;
