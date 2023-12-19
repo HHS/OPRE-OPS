@@ -158,6 +158,7 @@ class WorkflowStepInstance(BaseModel):
     notes = sa.Column(sa.String, nullable=True)
     time_started = sa.Column(sa.DateTime, nullable=True)
     time_completed = sa.Column(sa.DateTime, nullable=True)
+    updated_by = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
     successor_dependencies = relationship(
         "WorkflowStepDependency",
         foreign_keys="WorkflowStepDependency.predecessor_step_id",
@@ -173,18 +174,20 @@ class WorkflowStepInstance(BaseModel):
 
     @property
     def approvers(self):
+        if self.workflow_step_template is None:
+            return None
         return (
             {"users": [
                 approver.user_id
                 for approver in self.workflow_step_template.step_approvers
                 if approver.user_id is not None
             ],
-                "groups": [
+            "groups": [
                 approver.group_id
                 for approver in self.workflow_step_template.step_approvers
                 if approver.group_id is not None
             ],
-                "roles": [
+            "roles": [
                 approver.role_id
                 for approver in self.workflow_step_template.step_approvers
                 if approver.role_id is not None

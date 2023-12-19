@@ -208,7 +208,7 @@ export const opsApi = createApi({
         }),
         addApprovalRequest: builder.mutation({
             query: (body) => ({
-                url: `/approve/`,
+                url: `/workflow-submit/`,
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body

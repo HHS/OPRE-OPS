@@ -79,6 +79,9 @@
         "GET_HISTORY",
 
         "GET_WORKFLOW",
+        "PUT_WORKFLOW",
+        "PATCH_WORKFLOW",
+        "POST_WORKFLOW",
       ],
     },
     { // 2
@@ -120,6 +123,7 @@
         "GET_WORKFLOW",
         "PUT_WORKFLOW",
         "PATCH_WORKFLOW",
+        "POST_WORKFLOW",
       ]
     },
     { // 3

@@ -22,11 +22,11 @@ from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from typing_extensions import override
 
-ENDPOINT_STRING = "/approve"
+ENDPOINT_STRING = "/workflow-submit"
 
 
 @dataclass
-class ApprovalSubmissionData(Schema):
+class WorkflowSubmissionData(Schema):
     budget_line_item_ids: fields.List(fields.Int(), required=True)
     submitter_id: fields.Int(required=False)
 
@@ -36,7 +36,7 @@ class ApprovalSubmissionData(Schema):
         super().__init__(*args, **kwargs)
 
 
-class ApproveSubmisionListApi(BaseItemAPI):
+class WorkflowSubmisionListApi(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
