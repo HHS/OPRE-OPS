@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import Schema, ValidationError, fields
 from models.base import BaseModel
 from models.cans import BudgetLineItem
+from models.notifications import Notification
 from models.workflows import (
     Package,
     PackageSnapshot,
@@ -67,7 +68,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
             new_package.created_by = user.id
             new_package.submitter_id = user.id
             new_package.notes = submission_notes
-
+            agreement_id = None
             # Create PackageSnapshot
             # Handle budget_line_item IDs and create PackageSnapshot records
             for bli_id in budget_line_item_ids:
@@ -76,6 +77,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
                 if bli:
                     # latest_version = bli.versions.order_by(desc("id")).first()
                     # current_app.logger.info(f"Latest version: {latest_version}")
+                    agreement_id = bli.agreement_id
                     new_package.package_snapshots.append(
                         PackageSnapshot(
                             bli_id=bli.id,
@@ -129,6 +131,18 @@ class WorkflowSubmisionListApi(BaseItemAPI):
             new_package_dict = new_package.to_dict()
             # meta.metadata.update({"New Bli Package": new_package_dict})
             current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_package_dict}")
+
+            # Create a notification for the approvers
+            notification = Notification(
+                title="Approval Request",
+                message=f"""An Agreement Approval Request has been submitted.
+Please review and approve. LINK to Agreement: {agreement_id}""",
+                is_read=False,
+                recipient_id=23,
+                expires=date(2031, 12, 31),
+            )
+            current_app.db_session.add(notification)
+            current_app.db_session.commit()
 
             return make_response_with_headers({"message": "Bli Package created", "id": new_package.id}, 201)
         except (KeyError, RuntimeError, PendingRollbackError, ValueError) as re:

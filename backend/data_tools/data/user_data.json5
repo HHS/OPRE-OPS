@@ -190,19 +190,19 @@
     },
   ],
   group: [
-    {
+    { // 1
       name: "Budget Team",
     },
-    {
+    { // 2
       name: "Admins",
     },
-    {
+    { // 3
       name: "Division Directors",
     },
-    {
+    { // 4
       name: "COR Users",
     },
-    {
+    { // 5
       name: "Users",
     }
   ],
@@ -394,7 +394,7 @@
       division: 1,
       email: "dave.director@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000020",
-      roles: [{"tablename":  "role", "id": 3}],
+      roles: [{"tablename":  "role", "id": 2}],
       groups: [{"tablename":  "group", "id": 3}]
     },
     { // 24

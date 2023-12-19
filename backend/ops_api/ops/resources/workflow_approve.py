@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import Schema, ValidationError, fields
 from models.base import BaseModel
 from models.cans import BudgetLineItem, BudgetLineItemStatus
+from models.notifications import Notification
 from models.workflows import WorkflowAction, WorkflowStatus, WorkflowStepInstance
 from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
@@ -69,6 +70,18 @@ class WorkflowApprovalListApi(BaseItemAPI):
                 )
                 current_app.db_session.add(workflow_step_instance)
                 current_app.db_session.commit()
+
+                # Create a notification for the approvers
+                notification = Notification(
+                    title="Request Approved",
+                    message=f"{user.first_name} {user.last_name} has approved your request.",
+                    is_read=False,
+                    recipient_id=workflow_step_instance.submitter_id,
+                    expires=date(2031, 12, 31),
+                )
+                current_app.db_session.add(notification)
+                current_app.db_session.commit()
+
             elif workflow_step_action == "REJECT":
                 # TODO: Update WorkflowStepInstance
                 pass
