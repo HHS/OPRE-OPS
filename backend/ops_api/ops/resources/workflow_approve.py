@@ -76,7 +76,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
                     title="Request Approved",
                     message=f"{user.first_name} {user.last_name} has approved your request.",
                     is_read=False,
-                    recipient_id=workflow_step_instance.submitter_id,
+                    recipient_id=workflow_step_instance.created_by,
                     expires=date(2031, 12, 31),
                 )
                 current_app.db_session.add(notification)
