@@ -66,18 +66,18 @@ class WorkflowInstance(BaseModel):
     workflow_action = sa.Column(sa.Enum(WorkflowAction), nullable=False)
     current_workflow_step_instance_id = sa.Column(sa.Integer, nullable=True)
 
-    # THis bee brokennnnn
     # @property
     # def package_entities(self):
     #     if object_session(self) is None:
-    #         return []
-    #     bli_list = object_session(self).execute(
+    #         return None
+    #     results = object_session(self).execute(
     #         sa.select(PackageSnapshot.bli_id)
-    #             .join(Package, Package.id == PackageSnapshot.package_id)
-    #             .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
-    #             .where(WorkflowInstance.id == self.id)
-    #     )
-    #     return bli_list
+    #         .join(Package, Package.id == PackageSnapshot.package_id)
+    #         .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+    #         .where(WorkflowInstance.id == self.id)
+    #     ).all()
+    #     bli_ids = [row[0] for row in results]
+    #     return {"budget_line_item_ids": bli_ids}
 
     # REJECTED = "Rejected" (any --> Rejected)
     # CHANGES = "Changes Required" (any --> Changes Required)
@@ -128,7 +128,7 @@ class WorkflowStepTemplate(BaseModel):
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
     workflow_type = sa.Column(sa.Enum(WorkflowStepType), nullable=False)
     index = sa.Column(sa.Integer, nullable=False)
-    step_approvers = relationship("StepApprovers", backref="step_template")
+    step_approvers = relationship("StepApprovers", backref="workflow_step_template")
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
@@ -153,6 +153,7 @@ class WorkflowStepInstance(BaseModel):
     workflow_step_template_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_step_template.id")
     )
+    workflow_step_template = relationship("WorkflowStepTemplate", backref="workflow_step_instance")
     status = sa.Column(sa.Enum(WorkflowStatus), nullable=False)
     notes = sa.Column(sa.String, nullable=True)
     time_started = sa.Column(sa.DateTime, nullable=True)
@@ -173,22 +174,36 @@ class WorkflowStepInstance(BaseModel):
     @property
     def approvers(self):
         return (
-            [
-                approver.user
-                for approver in self.step_template.step_approvers
-                if approver.user is not None
-            ]
-            + [
-                approver.group
-                for approver in self.step_template.step_approvers
-                if approver.group is not None
-            ]
-            + [
-                approver.role
-                for approver in self.step_template.step_approvers
-                if approver.role is not None
-            ]
+            {"users": [
+                approver.user_id
+                for approver in self.workflow_step_template.step_approvers
+                if approver.user_id is not None
+            ],
+                "groups": [
+                approver.group_id
+                for approver in self.workflow_step_template.step_approvers
+                if approver.group_id is not None
+            ],
+                "roles": [
+                approver.role_id
+                for approver in self.workflow_step_template.step_approvers
+                if approver.role_id is not None
+            ]}
         )
+
+    @property
+    def package_entities(self):
+        if object_session(self) is None:
+            return None
+        results = object_session(self).execute(
+            sa.select(PackageSnapshot.bli_id)
+            .join(Package, Package.id == PackageSnapshot.package_id)
+            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+            .join(WorkflowStepInstance, WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id)
+            .where(WorkflowInstance.id == self.id)
+        ).all()
+        bli_ids = [row[0] for row in results]
+        return {"budget_line_item_ids": bli_ids}
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
@@ -199,6 +214,8 @@ class WorkflowStepInstance(BaseModel):
             # TODO: format for these times?
             time_started=str(self.time_started) if self.time_started else None,
             time_completed=str(self.time_completed) if self.time_completed else None,
+            package_entities=self.package_entities,
+            approvers=self.approvers
         )
         return d
 

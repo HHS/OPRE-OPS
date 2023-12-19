@@ -14,6 +14,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import { useSearchParams } from "react-router-dom";
 
 const ApproveAgreement = () => {
     const urlPathParams = useParams();
@@ -28,6 +29,11 @@ const ApproveAgreement = () => {
     });
     // @ts-ignore
     const agreementId = +urlPathParams.id;
+    const [searchParams] = useSearchParams();
+    const stepId = searchParams.get("stepId");
+    console.log(`stepId:${stepId}`);
+    // TODO: Get Workflow data and use BLI IDs to determine what's being approved (changes BLIRow.js)
+
     const navigate = useNavigate();
     const {
         // isSuccess,
@@ -105,6 +111,7 @@ const ApproveAgreement = () => {
                 title="Approval for Planned Status"
                 subTitle={agreement.name}
             />
+            <div>Workflow Step Id: {stepId}</div>
             <AgreementMetaAccordion
                 agreement={agreement}
                 projectOfficerName={projectOfficerName}
