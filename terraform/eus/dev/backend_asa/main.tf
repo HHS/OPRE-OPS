@@ -72,5 +72,5 @@ output "fe_domain" {
 }
 
 output "be_domain" {
-  value = trimsuffix(azurerm_container_app.backend.latest_revision_fqdn, "/")
+  value = "https://${module.ctx.labels.be.resourceNames["azurerm_container_app"]}.${data.azurerm_container_app_environment.aca_env.default_domain}"
 }
