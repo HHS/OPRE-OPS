@@ -38,4 +38,4 @@ jobs:
           azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_id: ${{ github.event.pull_request.number }}
-          plan_workflow_file: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_pr.yml
+          plan_workflow_file: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_asa_pr.yml

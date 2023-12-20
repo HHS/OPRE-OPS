@@ -122,7 +122,7 @@ runs:
         token: ${{ inputs.github_token }}
         issue-number: ${{ inputs.pr_id }}
         body: |
-          Terraform Apply:
+          Terraform Apply for for ${{ inputs.terraform_directory }}:
 
           ```
           ${{ steps.apply.outputs.apply }}

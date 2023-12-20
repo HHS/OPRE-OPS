@@ -95,7 +95,7 @@ runs:
         token: ${{ inputs.github_token }}
         issue-number: ${{ inputs.pr_id }}
         body: |
-          Terraform Plan:
+          Terraform Plan for ${{ inputs.terraform_directory }}:
 
           ```
           ${{ steps.plan.outputs.plan }}
