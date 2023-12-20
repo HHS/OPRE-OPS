@@ -69,7 +69,7 @@ const BLIRow = ({
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInAnyActiveWorkflow = budgetLine?.has_active_workflow || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const inReview = (isApprovePage && isBLIInCurrentWorkflow) || (!isApprovePage && isBLIInAnyActiveWorkflow);
+    const inReview = isBLIInAnyActiveWorkflow;
 
     const TableRowData = (
         <>
