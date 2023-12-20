@@ -39,7 +39,8 @@ const BLIRow = ({
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
-    readOnly = false
+    readOnly = false,
+    isBLIInCurrentWorkflow = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -66,8 +67,9 @@ const BLIRow = ({
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     // are you on the approve page?
     const isApprovePage = location.pathname.includes("approve");
-    const isBLIInWorkflow = budgetLine?.has_active_workflow || false;
-    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInWorkflow;
+    const isBLIInAnyActiveWorkflow = budgetLine?.has_active_workflow || false;
+    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    const inReview = (isApprovePage && isBLIInCurrentWorkflow) || (!isApprovePage && isBLIInAnyActiveWorkflow);
 
     const TableRowData = (
         <>
@@ -166,7 +168,7 @@ const BLIRow = ({
                     <div>{changeIcons}</div>
                 ) : (
                     <TableTag
-                        inReview={isBLIInWorkflow}
+                        inReview={inReview}
                         status={budgetLine?.status}
                     />
                 )}
@@ -233,7 +235,8 @@ BLIRow.propTypes = {
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
+    isBLIInCurrentWorkflow: PropTypes.bool
 };
 
 export default BLIRow;

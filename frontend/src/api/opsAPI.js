@@ -13,7 +13,11 @@ export const opsApi = createApi({
         "AgreementReasons",
         "ProcurementShops",
         "BudgetLineItems",
-        "AgreementHistory"
+        "AgreementHistory",
+        "Portfolios",
+        "CanFunding",
+        "Notifications",
+        "WorkflowStepInstance"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -223,6 +227,10 @@ export const opsApi = createApi({
                 body
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
+        }),
+        getWorkflowStep: builder.query({
+            query: (id) => `/workflow-step-instance/${id}`,
+            providesTags: ["WorkflowStepInstance"]
         })
     })
 });
@@ -258,5 +266,6 @@ export const {
     useGetPortfoliosQuery,
     useAddBliPackageMutation,
     useAddApprovalRequestMutation,
-    useAddWorkflowApproveMutation
+    useAddWorkflowApproveMutation,
+    useGetWorkflowStepQuery
 } = opsApi;

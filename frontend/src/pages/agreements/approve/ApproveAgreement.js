@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation, useGetWorkflowStepQuery } from "../../../api/opsAPI";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -16,6 +16,37 @@ import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { useSearchParams } from "react-router-dom";
 import useAlert from "../../../hooks/use-alert.hooks.js";
+
+const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
+    const {
+        // isSuccess,
+        data,
+        error,
+        isLoading
+    } = useGetWorkflowStepQuery(workflowStepId, {
+        refetchOnMountOrArgChange: true
+    });
+    if (isLoading) {
+        return <h1>Loading...</h1>;
+    }
+    if (error) {
+        console.log(error);
+        return <h1>Oops, an error occurred</h1>;
+    }
+    console.log(data);
+    const workflowBudgetLineItemIds = data?.package_entities?.budget_line_item_ids;
+    return (
+        <BudgetLinesTable
+            readOnly={true}
+            budgetLinesAdded={agreement?.budget_line_items}
+            isReviewMode={false}
+            showTotalSummaryCard={false}
+            workflowBudgetLineItemIds={workflowBudgetLineItemIds}
+        />
+    );
+};
+
+// BudgetLinesTableWithWorkflowStep.propTypes = { agreement: PropTypes.any };
 
 const ApproveAgreement = () => {
     const { setAlert } = useAlert();
@@ -142,7 +173,6 @@ const ApproveAgreement = () => {
                 title="Approval for Planned Status"
                 subTitle={agreement.name}
             />
-            <div>Workflow Step Id: {stepId} !</div>
             <AgreementMetaAccordion
                 agreement={agreement}
                 projectOfficerName={projectOfficerName}
@@ -155,11 +185,9 @@ const ApproveAgreement = () => {
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
             >
-                <BudgetLinesTable
-                    readOnly={true}
-                    budgetLinesAdded={agreement?.budget_line_items}
-                    isReviewMode={false}
-                    showTotalSummaryCard={false}
+                <BudgetLinesTableWithWorkflowStep
+                    agreement={agreement}
+                    workflowStepId={stepId}
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
