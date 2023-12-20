@@ -1,4 +1,4 @@
-FROM oven/bun:1.0.15 as build
+FROM oven/bun:1.0.15-alpine as build
 
 WORKDIR /home/bun/app
 
@@ -15,7 +15,7 @@ COPY . .
 RUN bun run build
 
 # ---- Release Stage ----
-FROM oven/bun:1 as release
+FROM oven/bun:1-alpine as release
 
 WORKDIR /home/bun/app
 
