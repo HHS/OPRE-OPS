@@ -25,9 +25,6 @@ export default defineConfig(({ mode }) => {
                         callback(null, true); // enable CORS for other origins
                     }
                 }
-            },
-            hmr : {
-                overlay: false
             }
         },
         plugins: [
