@@ -29,7 +29,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_pr.yml
+          workflow: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_asa_pr.yml
           pr: ${{ github.event.pull_request.number }}
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
           path: ${{ env.WORKING_DIR }}/build
