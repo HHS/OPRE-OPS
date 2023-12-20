@@ -231,9 +231,9 @@
           "id": 26
         }
       ],
-      research_projects: [
+      projects: [
         {
-          "tablename": "research_project",
+          "tablename": "project",
           "id": 1
         }
       ]

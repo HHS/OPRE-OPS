@@ -1,5 +1,5 @@
 import pytest
-from models.research_projects import ResearchProject, ResearchType
+from models.projects import ResearchProject, ResearchType
 from ops_api.ops.resources.research_projects import RequestBody, ResearchProjectListAPI
 
 

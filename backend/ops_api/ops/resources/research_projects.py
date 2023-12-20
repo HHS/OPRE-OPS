@@ -9,7 +9,7 @@ from marshmallow import fields
 from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType, PopulationType, User
 from models.base import BaseModel
 from models.cans import CANFiscalYear
-from models.research_projects import ResearchProject
+from models.projects import ResearchProject
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_sql_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
@@ -144,7 +144,7 @@ class ResearchProjectListAPI(BaseListAPI):
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
     def post(self) -> Response:
         try:
-            with OpsEventHandler(OpsEventType.CREATE_RESEARCH_PROJECT) as meta:
+            with OpsEventHandler(OpsEventType.CREATE_PROJECT) as meta:
                 errors = self._post_schema.validate(request.json)
 
                 if errors:

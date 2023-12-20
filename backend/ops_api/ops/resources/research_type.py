@@ -1,5 +1,5 @@
 from flask import Response
-from models.research_projects import ResearchType
+from models.projects import ResearchType
 from ops_api.ops.base_views import EnumListAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from typing_extensions import override

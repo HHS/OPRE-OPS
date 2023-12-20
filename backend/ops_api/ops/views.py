@@ -4,7 +4,7 @@ from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractA
 from models.history import OpsDBHistory
 from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
-from models.research_projects import ResearchProject, ResearchType
+from models.projects import ResearchProject, ResearchType
 from models.users import User
 from models.workflows import (
     Package,

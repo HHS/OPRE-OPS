@@ -5,6 +5,7 @@ import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from models.base import BaseModel
 from sqlalchemy import Column, Date, ForeignKey, Identity, Integer, String, Table, Text
+from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing_extensions import override
 
@@ -33,57 +34,76 @@ class ResearchType(Enum):
     PROGRAM_SUPPORT = 3
 
 
-class ResearchProjectCANs(BaseModel):
-    __tablename__ = "research_project_cans"
+class ProjectCANs(BaseModel):
+    __tablename__ = "project_cans"
 
-    research_project_id: Mapped[int] = mapped_column(
-        ForeignKey("research_project.id"), primary_key=True
-    )
+    project_id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
     can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return f"research_project_id={self.research_project_id};can_id={self.can_id}"
+        return f"project_id={self.project_id};can_id={self.can_id}"
 
 
-class ResearchProjectTeamLeaders(BaseModel):
-    __tablename__ = "research_project_team_leaders"
+class ProjectTeamLeaders(BaseModel):
+    __tablename__ = "project_team_leaders"
 
-    research_project_id: Mapped[int] = mapped_column(
-        ForeignKey("research_project.id"), primary_key=True
-    )
+    project_id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
     team_lead_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return f"research_project_id={self.research_project_id};team_lead_id={self.team_lead_id}"
+        return f"project_id={self.project_id};team_lead_id={self.team_lead_id}"
 
 
-class ResearchProject(BaseModel):
-    __tablename__ = "research_project"
+class ProjectType(Enum):
+    RESEARCH = 1
+    ADMINISTRATIVE_AND_SUPPORT = 2
+
+
+class Project(BaseModel):
+    __tablename__ = "project"
+    __mapper_args__: dict[str, str | ProjectType] = {
+        "polymorphic_identity": "project",
+        "polymorphic_on": "project_type",
+    }
+
     id = Column(Integer, Identity(), primary_key=True)
+    project_type = mapped_column(ENUM(ProjectType), nullable=False)
     title = Column(String, nullable=False)
     short_title = Column(String)
     description = Column(Text)
     url = Column(String)
+    agreements = relationship("Agreement", back_populates="project")
+    team_leaders = relationship(
+        "User",
+        back_populates="projects",
+        secondary="project_team_leaders",
+        primaryjoin="Project.id == ProjectTeamLeaders.project_id",
+        secondaryjoin="User.id == ProjectTeamLeaders.team_lead_id",
+    )
+
+    cans: Mapped[List["CAN"]] = relationship(
+        "CAN", secondary="project_cans", back_populates="projects"
+    )
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.title
+
+
+class ResearchProject(Project):
+    __tablename__ = "research_project"
+    __mapper_args__ = {
+        "polymorphic_identity": ProjectType.RESEARCH,
+    }
+    id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
     origination_date = Column(Date)
     methodologies = Column(
         pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}", default=[]
     )
     populations = Column(
         pg.ARRAY(sa.Enum(PopulationType)), server_default="{}", default=[]
-    )
-    agreements = relationship("Agreement", back_populates="research_project")
-    team_leaders = relationship(
-        "User",
-        back_populates="research_projects",
-        secondary="research_project_team_leaders",
-        primaryjoin="ResearchProject.id == ResearchProjectTeamLeaders.research_project_id",
-        secondaryjoin="User.id == ResearchProjectTeamLeaders.team_lead_id",
-    )
-
-    cans: Mapped[List["CAN"]] = relationship(
-        "CAN", secondary="research_project_cans", back_populates="research_projects"
     )
 
     @BaseModel.display_name.getter

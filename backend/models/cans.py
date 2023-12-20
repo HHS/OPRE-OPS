@@ -178,11 +178,9 @@ class Agreement(BaseModel):
         secondaryjoin="User.id == AgreementTeamMembers.user_id",
     )
 
-    research_project_id: Mapped[int] = mapped_column(
-        ForeignKey("research_project.id"), nullable=True
-    )
-    research_project: Mapped[Optional["ResearchProject"]] = relationship(
-        "ResearchProject", back_populates="agreements"
+    project_id: Mapped[int] = mapped_column(ForeignKey("project.id"), nullable=True)
+    project: Mapped[Optional["Project"]] = relationship(
+        "Project", back_populates="agreements"
     )
     budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
         "BudgetLineItem",
@@ -470,8 +468,8 @@ class CAN(BaseModel):
 
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
-    research_projects: Mapped[List["ResearchProject"]] = relationship(
-        "ResearchProject", secondary="research_project_cans", back_populates="cans"
+    projects: Mapped[List["Project"]] = relationship(
+        "Project", secondary="project_cans", back_populates="cans"
     )
 
     @BaseModel.display_name.getter

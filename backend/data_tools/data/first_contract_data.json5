@@ -49,7 +49,7 @@
       agreement_reason: "RECOMPETE",
       project_officer_id: 1,
       agreement_type: "CONTRACT",
-      research_project_id: 1,
+      project_id: 1,
       procurement_shop_id: 1,
       created_by: 4,
       contract_number: "XXXX000000001",

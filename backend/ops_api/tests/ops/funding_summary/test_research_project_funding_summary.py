@@ -1,7 +1,7 @@
 import pytest
 from models import ContractAgreement, GrantAgreement
 from models.cans import CAN, AgreementType, BudgetLineItem, CANFiscalYear
-from models.research_projects import ResearchProject
+from models.projects import ResearchProject
 
 
 @pytest.mark.usefixtures("app_ctx")
