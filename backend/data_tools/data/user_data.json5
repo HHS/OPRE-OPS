@@ -37,7 +37,7 @@
     }
   ],
   role: [
-    { // 1
+    { // 1 Admin
       name: "admin",
       permissions: [
         "GET_AGREEMENT",
@@ -84,7 +84,30 @@
         "POST_WORKFLOW",
       ],
     },
-    { // 2
+    { // 2 User
+      name: "user",
+      permissions: [
+        "GET_AGREEMENT",
+        "GET_BUDGET_LINE_ITEM",
+        "GET_CAN",
+        "GET_DIVISION",
+        "GET_NOTIFICATION",
+        "GET_PORTFOLIO",
+        "GET_RESEARCH_PROJECT",
+        "GET_USER",
+        "GET_HISTORY",
+      ],
+    },
+    { // 3 Unassigned (new user)
+      name: "unassigned",
+      permissions: [
+        "GET_USER",
+        "POST_USER",
+        "PUT_USER",
+        "PATCH_USER",
+      ],
+    },
+    { // 4 Division Director
       name: "division-director",
       permissions: [
         "GET_AGREEMENT",
@@ -126,7 +149,7 @@
         "POST_WORKFLOW",
       ]
     },
-    { // 3
+    { // 5 COR User
       name: "cor-user",
       permissions: [
         "GET_AGREEMENT",
@@ -164,29 +187,6 @@
 
         "GET_WORKFLOW",
       ]
-    },
-    { // 4
-      name: "user",
-      permissions: [
-        "GET_AGREEMENT",
-        "GET_BUDGET_LINE_ITEM",
-        "GET_CAN",
-        "GET_DIVISION",
-        "GET_NOTIFICATION",
-        "GET_PORTFOLIO",
-        "GET_RESEARCH_PROJECT",
-        "GET_USER",
-        "GET_HISTORY",
-      ],
-    },
-    { // 5
-      name: "unassigned",
-      permissions: [
-        "GET_USER",
-        "POST_USER",
-        "PUT_USER",
-        "PATCH_USER",
-      ],
     },
   ],
   group: [
@@ -386,7 +386,7 @@
       division: 3,
       email: "user.demo@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000019",
-      roles: [{"tablename":  "role", "id": 4}]
+      roles: [{"tablename":  "role", "id": 2}]
     },
     { // 23
       first_name: "Dave",
@@ -394,7 +394,7 @@
       division: 1,
       email: "dave.director@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000020",
-      roles: [{"tablename":  "role", "id": 2}],
+      roles: [{"tablename":  "role", "id": 4}],
       groups: [{"tablename":  "group", "id": 3}]
     },
     { // 24
@@ -403,7 +403,7 @@
       division: 1,
       email: "cor.user@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000021",
-      roles: [{"tablename":  "role", "id": 3}],
+      roles: [{"tablename":  "role", "id": 5}],
       groups: [{"tablename":  "group", "id": 4}]
     },
   ],
