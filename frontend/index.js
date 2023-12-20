@@ -1,3 +1,4 @@
+// Temporary server for Azure Dev 
 const BASE_PATH = "./";
 
 Bun.serve({
