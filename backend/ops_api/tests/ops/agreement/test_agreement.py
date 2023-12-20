@@ -31,7 +31,7 @@ def test_agreements_get_all(auth_client, loaded_db):
     assert response.json[0]["name"] == "Contract #1: African American Child and Family Research Center"
     assert response.json[0]["agreement_type"] == "CONTRACT"
     assert response.json[0]["contract_number"] == "XXXX000000001"
-    assert response.json[0]["research_project"]["id"] == 1
+    assert response.json[0]["project"]["id"] == 1
     assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
     assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
     assert response.json[0]["incumbent"] == "Vendor 1"
@@ -71,7 +71,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert response.json["procurement_shop_id"] == agreement.procurement_shop_id
     assert response.json["product_service_code_id"] == agreement.product_service_code_id
     assert response.json["project_officer_id"] == agreement.project_officer_id
-    assert response.json["research_project_id"] == agreement.research_project_id
+    assert response.json["project_id"] == agreement.project_id
     assert response.json["support_contacts"] == agreement.support_contacts
     assert len(response.json["team_members"]) == len(agreement.team_members)
     assert response.json["vendor_id"] == agreement.vendor_id
@@ -81,15 +81,15 @@ def test_agreements_serialization(auth_client, loaded_db):
 
 @pytest.mark.skip("Need to consult whether this should return ALL or NONE if the value is empty")
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_research_project_empty(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"research_project_id": ""})
+def test_agreements_with_project_empty(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": ""})
     assert response.status_code == 200
     assert len(response.json) == 6
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_research_project_found(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"research_project_id": "1"})
+def test_agreements_with_project_found(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": "1"})
     assert response.status_code == 200
     assert len(response.json) == 2
 
@@ -102,7 +102,7 @@ def test_agreements_with_research_project_found(auth_client, loaded_db):
 def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error, expected):
     response = auth_client.get(
         url_for("api.agreements-group"),
-        query_string={"simulatedError": simulated_error, "research_project_id": "1"},
+        query_string={"simulatedError": simulated_error, "project_id": "1"},
     )
     assert response.status_code == expected
 
@@ -117,7 +117,7 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
         ("delivered_status", False),
         ("procurement_shop_id", 1),
         ("project_officer_id", 1),
-        ("research_project_id", 1),
+        ("project_id", 1),
         ("foa", "This is an FOA value"),
         ("name", "Contract #1: African American Child and Family Research Center"),
     ),
@@ -131,10 +131,10 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_research_project_not_found(auth_client, loaded_db):
+def test_agreements_with_project_not_found(auth_client, loaded_db):
     response = auth_client.get(
         url_for("api.agreements-group"),
-        query_string={"research_project_id": "1000"},
+        query_string={"project_id": "1000"},
     )
     assert response.status_code == 200
     assert len(response.json) == 0
@@ -229,7 +229,7 @@ def test_contract(loaded_db):
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         created_by=4,
     )
 
@@ -535,7 +535,7 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
             "product_service_code_id": 1,
             "project_officer": 1,
             "project_officer_id": 1,
-            "research_project_id": 1,
+            "project_id": 1,
             "support_contacts": [],
             "task_order_number": None,
             "team_members": [

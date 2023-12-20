@@ -466,7 +466,7 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
         "agreement_reason": agreement.agreement_reason.name if agreement.agreement_reason else None,
         "budget_line_items": transformed_blis,
         "team_members": [tm.to_dict() for tm in agreement.team_members],
-        "research_project": agreement.research_project.to_dict() if agreement.research_project else None,
+        "project": agreement.project.to_dict() if agreement.project else None,
         "procurement_shop": transformed_ps,
         "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
         "display_name": agreement.display_name,
