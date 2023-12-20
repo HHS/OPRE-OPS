@@ -282,4 +282,6 @@ class PackageSnapshot(BaseModel):
     # make package_id a read-only field
     package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=True)
     version = sa.Column(sa.Integer, nullable=True)
-    bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id"), nullable=False)
+    # TODO: What should we do when we delete an Agreement (or a BLI)?
+    # This CASCADE fixes the existing Agreement delete, but leaves behind empty workflows
+    bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"), nullable=False)
