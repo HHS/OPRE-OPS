@@ -1,19 +1,22 @@
-name: Dev FE Pull Request Merged
+name: Dev BE ASA Pull Request Merged
 
 on:
+  workflow_dispatch:
   pull_request:
     types:
       - closed
     branches:
       - development
     paths:
-      - 'frontend/**'
+      - backend/models/**
+      - backend/ops_api/**
+      - backend/Dockerfile.ops-api
 
 env:
   TERRAFORM_VERSION: "1.5.7"
   TF_IN_AUTOMATION: "True"
   ENVIRONMENT: "dev"
-  WORKING_DIR: "frontend"
+  WORKING_DIR: "backend"
 
 jobs:
   apply-deploy:
@@ -27,7 +30,7 @@ jobs:
       - name: Terraform Apply
         uses: ./.github/actions/tf-apply
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}"
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa"
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
           azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}

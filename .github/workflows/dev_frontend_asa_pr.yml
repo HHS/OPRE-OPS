@@ -1,0 +1,91 @@
+name: Dev FE ASA Pull Request
+
+on:
+  pull_request:
+    branches:
+      - development
+    paths:
+      - 'frontend/**'
+
+env:
+  TERRAFORM_VERSION: "1.5.7"
+  TF_IN_AUTOMATION: "True"
+  ENVIRONMENT: "dev"
+  WORKING_DIR: "frontend"
+
+jobs:
+  build:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+       
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: bun install
+        
+      # - name: Build Frontend
+      #   working-directory: ${{ env.WORKING_DIR }}
+      #   run: bun run build
+
+      - name: Build Bun
+        uses: ./.github/actions/tf-apply
+        with:
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa/build_bun"
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_id: ${{ github.event.pull_request.number }}
+          tf_vars: |
+            {
+              "environment": "${{ env.ENVIRONMENT }}",
+              "commit_hash": "${{ github.event.pull_request.number }}",
+              "frontend_dir": "../../../../../frontend"
+            }
+
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
+          path: ${{ env.WORKING_DIR }}/build
+  
+  plan-deploy:
+    needs: build
+    permissions:
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Frontend Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
+          path: ${{ env.WORKING_DIR }}/build
+      
+      - name: Terraform Plan
+        uses: ./.github/actions/tf-plan
+        with:
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend_asa"
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_id: ${{ github.event.pull_request.number }}
+          tf_vars: |
+            {
+              "environment": "${{ env.ENVIRONMENT }}",
+              "commit_hash": "${{ github.event.pull_request.number }}"
+            }

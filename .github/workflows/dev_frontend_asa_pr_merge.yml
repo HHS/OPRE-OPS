@@ -1,4 +1,4 @@
-name: Dev FE Pull Request Merged
+name: Dev FE ASA Pull Request Merged
 
 on:
   pull_request:
@@ -24,10 +24,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Load Archived build
+        id: download-plan
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_pr.yml
+          pr: ${{ github.event.pull_request.number }}
+          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
+          path: ${{ env.WORKING_DIR }}/build
+
       - name: Terraform Apply
         uses: ./.github/actions/tf-apply
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}"
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa"
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
           azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
