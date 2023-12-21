@@ -39,7 +39,7 @@ variable "container_image" {
 variable "container_tag" {
   description = "Container image tag"
   type        = string
-  default     = "a6c6948ff0cc6ac68d9aba32059b14e61e924640"
+  default     = "1a727b26bca88e34607355fd74e65d45165738de"
 }
 
 variable "cpu" {
@@ -57,5 +57,5 @@ variable "memory" {
 variable "port" {
   description = "Port for application"
   type        = number
-  default     = 80
+  default     = 3000
 }
