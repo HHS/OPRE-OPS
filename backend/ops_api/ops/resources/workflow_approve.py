@@ -73,8 +73,9 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
                 # Create a notification for the approvers
                 notification = Notification(
-                    title="Request Approved",
-                    message=f"{user.first_name} {user.last_name} has approved your request.",
+                    title="Budget Lines Approved from Draft to Planned Status",
+                    message="The budget lines you sent to your Division Director were approved from draft to planned "
+                    "status The amounts have been subtracted from the FY budget.",
                     is_read=False,
                     recipient_id=workflow_step_instance.created_by,
                     expires=date(2031, 12, 31),
