@@ -14,7 +14,7 @@ export const getAgreementName = (agreement) => {
 
 export const getResearchProjectName = (agreement) => {
     handleAgreementProp(agreement);
-    return agreement.research_project?.title;
+    return agreement.project?.title;
 };
 
 export const getAgreementDescription = (agreement) => {

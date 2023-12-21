@@ -98,7 +98,7 @@ export const AgreementsList = () => {
         return (
             filters.projects.length === 0 ||
             filters.projects.some((project) => {
-                return project.id === agreement.research_project_id;
+                return project.id === agreement.project_id;
             })
         );
     });

@@ -94,7 +94,7 @@ export const opsApi = createApi({
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getAgreementsByResearchProjectFilter: builder.query({
-            query: (id) => `/agreements/?research_project_id=${id}`,
+            query: (id) => `/agreements/?project_id=${id}`,
             providesTags: ["Agreements", "FilterAgreements"]
         }),
         getUserById: builder.query({
