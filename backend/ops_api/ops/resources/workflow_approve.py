@@ -71,7 +71,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
                 current_app.db_session.add(workflow_step_instance)
                 current_app.db_session.commit()
 
-                # Create a notification for the approvers
+                # Create a notification for the submitter
                 notification = Notification(
                     title="Budget Lines Approved from Draft to Planned Status",
                     message="The budget lines you sent to your Division Director were approved from draft to planned "
