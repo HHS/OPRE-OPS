@@ -80,12 +80,12 @@ def db_loaded_with_research_projects(app, loaded_db):
         agreement_1 = ContractAgreement(
             name="Agreement 1",
             agreement_type=AgreementType.CONTRACT,
-            research_project_id=research_project_rp1.id,
+            project_id=research_project_rp1.id,
         )
         agreement_2 = GrantAgreement(
             name="Agreement 2",
             agreement_type=AgreementType.GRANT,
-            research_project_id=research_project_rp2.id,
+            project_id=research_project_rp2.id,
             foa="foa",
         )
 
