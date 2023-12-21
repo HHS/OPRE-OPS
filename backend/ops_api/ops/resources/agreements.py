@@ -333,6 +333,7 @@ def _get_user_list(data: Any):
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     changed = False
     for item in data:
+        print(f"{item=}, {type(item)}")
         if item in [
             "vendor",
             "incumbent",
@@ -376,6 +377,11 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             case "agreement_type":
                 if isinstance(data[item], str):
                     setattr(agreement, item, AgreementType[data[item]])
+                    changed = True
+
+            case "contract_type":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, ContractType[data[item]])
                     changed = True
 
             case _:
