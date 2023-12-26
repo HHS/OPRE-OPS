@@ -22,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.merged }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
       - name: Load Archived build
         id: download-plan
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d #v3.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_asa_pr.yml
