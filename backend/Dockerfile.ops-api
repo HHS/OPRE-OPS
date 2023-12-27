@@ -24,4 +24,3 @@ ENV FLASK_DEBUG=true
 ## This is to attempt fixing the worker issues
 CMD ["python", "-m", "gunicorn", "--timeout", "1000", "--workers", "1", "--threads", "4", "-b", ":8080", "ops_api.ops:create_app()"]
 ## --timeout 1000 --workers 1 --threads 4
-
