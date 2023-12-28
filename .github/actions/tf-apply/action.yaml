@@ -39,8 +39,7 @@ runs:
     - name: Get last directory name
       id: get-tf-dir
       run: |
-        tf_dir=$(echo ${{ inputs.terraform_directory }} | rev | cut -d'/' -f1 | rev)
-        echo "Last directory name is: $tf_dir"
+        tf_dir=$(echo ${{ inputs.terraform_directory }} | rev | cut -d'/' -f1 | rev) >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Set Terraform Variables
