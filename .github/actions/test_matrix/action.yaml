@@ -82,7 +82,12 @@ runs:
         echo "DEBUG: Image Names: ${image_names[@]}"
 
         # Set matrix outputs as JSON
-        echo "::set-output name=matrix::$(echo "{\"matrix\": {\"components\":${components[@]/#/\"},\"paths\":${paths[@]/#/\"},\"docker_files\":${docker_files[@]/#/\"},\"working_dirs\":${working_dirs[@]/#/\"},\"image_names\":${image_names[@]/#/\"}}}" | jq -c)"
+        echo "::set-output name=matrix::$(jq -n --argjson components "${components[@]}" \
+            --argjson paths "${paths[@]}" \
+            --argjson docker_files "${docker_files[@]}" \
+            --argjson working_dirs "${working_dirs[@]}" \
+            --argjson image_names "${image_names[@]}" \
+            '{matrix: {components: $components, paths: $paths, docker_files: $docker_files, working_dirs: $working_dirs, image_names: $image_names}}')"
 
 
       shell: bash
