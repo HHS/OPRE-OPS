@@ -27,11 +27,11 @@ runs:
         working_dirs=()
         image_names=()
 
-        # Check if it's a pull request and get changed files
         if [ "${{ inputs.event }}" == "pull_request" ]; then
-          files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          base_ref=$(git rev-parse ${{ github.event.before }})
+          files=$(git diff --name-only $base_ref ${{ github.sha }})
         else
-          files=$(git diff --name-only HEAD^ HEAD)
+          files=$(git diff --name-only ${{ github.sha }}^ ${{ github.sha }})
         fi
 
         # Function to add a component
