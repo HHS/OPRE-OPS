@@ -87,8 +87,9 @@ runs:
         echo "DEBUG: Image Names: ${image_names[@]}"
 
         # Set matrix outputs as JSON
-        matrix_json="{\"components\":\"${components[@]}\",\"paths\":\"${paths[@]}\",\"docker_files\":\"${docker_files[@]}\",\"working_dirs\":\"${working_dirs[@]}\",\"image_names\":\"${image_names[@]}\"}"
-        echo "matrix=$(echo "$matrix_json" | jq -c)" >> $GITHUB_OUTPUT
+        matrix_json="{\"components\":${components[@]},\"paths\":${paths[@]},\"docker_files\":${docker_files[@]},\"working_dirs\":${working_dirs[@]},\"image_names\":${image_names[@]}}"
+        echo "DEBUG: Raw matrix output: $matrix_json"
+        echo "::set-output name=matrix::$(echo "$matrix_json" | jq -c)"
 
 
       shell: bash
