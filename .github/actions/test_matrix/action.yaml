@@ -21,12 +21,6 @@ runs:
     - name: Set Matrix Outputs
       id: set-matrix
       run: |
-        components=()
-        paths=()
-        docker_files=()
-        working_dirs=()
-        image_names=()
-
         if [ "$GITHUB_BASE_REF" ]; then
           # Pull Request
           git fetch origin $GITHUB_BASE_REF --depth=1
@@ -39,6 +33,12 @@ runs:
           echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
         fi
 
+        components=()
+        paths=()
+        docker_files=()
+        working_dirs=()
+        image_names=()
+
         # Function to add a component
         add_component() {
           components+=("$1")
@@ -49,15 +49,15 @@ runs:
         }
 
         # Check if paths of each component are in the changed files
-        if echo "$files" | grep -qE '^backend/'; then
+        if echo "$DIFF" | grep -qE '^backend/'; then
           add_component "Backend" "backend/models/** backend/ops_api/** backend/Dockerfile.ops-api" "Dockerfile.ops-api" "backend" "ops-backend"
         fi
 
-        if echo "$files" | grep -qE '^backend/data-tools/'; then
+        if echo "$DIFF" | grep -qE '^backend/data-tools/'; then
           add_component "Data-Tools" "backend/data-tools/** backend/Dockerfile.data-tools" "Dockerfile.data-tools" "backend" "ops-data-tools"
         fi
 
-        if echo "$files" | grep -qE '^frontend/'; then
+        if echo "$DIFF" | grep -qE '^frontend/'; then
           add_component "Frontend" "frontend/** frontend/Dockerfile.azure" "Dockerfile.azure" "frontend" "ops-frontend"
         fi
 
@@ -67,4 +67,5 @@ runs:
         echo "::set-output name=docker_file::[${docker_files[@]}]"
         echo "::set-output name=working_dir::[${working_dirs[@]}]"
         echo "::set-output name=image_name::[${image_names[@]}]"
+
       shell: bash
