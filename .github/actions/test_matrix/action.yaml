@@ -81,8 +81,8 @@ runs:
         echo "DEBUG: Working Directories: ${working_dirs[@]}"
         echo "DEBUG: Image Names: ${image_names[@]}"
 
-        # Set matrix outputs
-        echo "matrix=${components[@]}::paths=${paths[@]}::docker_file=${docker_files[@]}::working_dir=${working_dirs[@]}::image_name=${image_names[@]}" >> $GITHUB_ENV
+        # Set matrix outputs as JSON
+        echo "::set-output name=matrix::$(echo "{\"components\":${components[@]},\"paths\":${paths[@]},\"docker_files\":${docker_files[@]},\"working_dirs\":${working_dirs[@]},\"image_names\":${image_names[@]}}" | jq -c)"
 
 
       shell: bash

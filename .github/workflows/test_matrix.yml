@@ -34,8 +34,8 @@ jobs:
     steps:
       - name: Use matrix
         run: |
-          echo "Component: ${{ matrix }}"
+          echo "Component: ${{ matrix.components }}"
           echo "Paths: ${{ matrix.paths }}"
-          echo "Dockerfile: ${{ matrix.docker_file }}"
-          echo "Working Directory: ${{ matrix.working_dir }}"
-          echo "Image Name: ${{ matrix.image_name }}"
+          echo "Dockerfile: ${{ matrix.docker_files }}"
+          echo "Working Directory: ${{ matrix.working_dirs }}"
+          echo "Image Name: ${{ matrix.image_names }}"
