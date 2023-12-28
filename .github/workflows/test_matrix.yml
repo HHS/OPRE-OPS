@@ -9,7 +9,7 @@ on:
       - development
 
 jobs:
-  build:
+  set-matrix:
     runs-on: ubuntu-latest
 
     strategy:
