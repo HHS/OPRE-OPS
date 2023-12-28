@@ -16,6 +16,7 @@ runs:
           echo "Invalid event type. Only 'push' and 'pull_request' are supported."
           exit 1
         fi
+      shell: bash
 
     - name: Set Matrix Outputs
       id: set-matrix
@@ -61,3 +62,4 @@ runs:
         echo "::set-output name=docker_file::[${docker_files[@]}]"
         echo "::set-output name=working_dir::[${working_dirs[@]}]"
         echo "::set-output name=image_name::[${image_names[@]}]"
+      shell: bash
