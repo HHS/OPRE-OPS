@@ -49,15 +49,15 @@ runs:
         }
 
         # Check if paths of each component are in the changed files
-        if echo "$DIFF" | grep -qE '^backend/'; then
+        if echo "$DIFF" | grep -qE 'backend/models/|backend/ops_api/|backend/Dockerfile.ops-api'; then
           add_component "Backend" "backend/models/** backend/ops_api/** backend/Dockerfile.ops-api" "Dockerfile.ops-api" "backend" "ops-backend"
         fi
 
-        if echo "$DIFF" | grep -qE '^backend/data-tools/'; then
+        if echo "$DIFF" | grep -qE 'backend/data-tools/|backend/Dockerfile.data-tools'; then
           add_component "Data-Tools" "backend/data-tools/** backend/Dockerfile.data-tools" "Dockerfile.data-tools" "backend" "ops-data-tools"
         fi
 
-        if echo "$DIFF" | grep -qE '^frontend/'; then
+        if echo "$DIFF" | grep -qE 'frontend/|frontend/Dockerfile.azure'; then
           add_component "Frontend" "frontend/** frontend/Dockerfile.azure" "Dockerfile.azure" "frontend" "ops-frontend"
         fi
 
