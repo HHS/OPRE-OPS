@@ -61,6 +61,10 @@ runs:
           add_component "Frontend" "frontend/** frontend/Dockerfile.azure" "Dockerfile.azure" "frontend" "ops-frontend"
         fi
 
+        # Debug statements
+        echo "DEBUG: DIFF variable content:"
+        echo "$DIFF"
+
         # Set matrix outputs
         echo "::set-output name=matrix::[${components[@]}]"
         echo "::set-output name=paths::[${paths[@]}]"
