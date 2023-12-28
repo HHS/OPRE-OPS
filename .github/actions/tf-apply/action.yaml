@@ -60,7 +60,7 @@ runs:
         INPUT_TF_VARS: ${{ inputs.tf_vars }}
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
+      uses: hashicorp/setup-terraform@a1502cd9e758c50496cc9ac5308c4843bcd56d36 #v3.0.0
       with:
         terraform_version: ${{ inputs.terraform_version }}
         terraform_wrapper: false
@@ -80,27 +80,13 @@ runs:
     - name: Download Plan
       id: download-plan
       if: ${{ inputs.plan_workflow_file != '' }}
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d #v3.0.0
       with:
         github_token: ${{ inputs.github_token }}
         workflow: ${{ inputs.plan_workflow_file }}
         pr: ${{ inputs.pr_id }}
         name: ${{ inputs.pr_id }}-${{ steps.get-tf-dir.outputs.tf_dir }}-tf-plan
         path: ${{ inputs.terraform_directory }}
-
-    # - name: Terraform Apply
-    #   id: apply
-    #   working-directory: ${{ inputs.terraform_directory }}
-    #   shell: bash
-    #   env:
-    #     ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
-    #     ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
-    #     ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
-    #     ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
-    #   run: |
-    #     echo 'apply<<EOF' >> $GITHUB_OUTPUT
-    #     terraform apply -input=false -no-color tfplan >> $GITHUB_OUTPUT
-    #     echo 'EOF' >> $GITHUB_OUTPUT
 
     - name: Terraform Apply
       id: apply
@@ -120,11 +106,10 @@ runs:
         fi
         echo 'EOF' >> $GITHUB_OUTPUT
 
-
     - name: Comment Apply
       id: comment-apply
       if: ${{ inputs.pr_id != '' }}
-      uses: peter-evans/create-or-update-comment@v2
+      uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 #v3.1.0
       with:
         token: ${{ inputs.github_token }}
         issue-number: ${{ inputs.pr_id }}
