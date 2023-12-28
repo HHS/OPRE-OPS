@@ -27,11 +27,16 @@ runs:
         working_dirs=()
         image_names=()
 
-        if [ "${{ inputs.event }}" == "pull_request" ]; then
-          base_ref=$(git rev-parse ${{ github.event.before }})
-          files=$(git diff --name-only $base_ref ${{ github.sha }})
+        if [ "$GITHUB_BASE_REF" ]; then
+          # Pull Request
+          git fetch origin $GITHUB_BASE_REF --depth=1
+          export DIFF=$(git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA)
+          echo "Diff between origin/$GITHUB_BASE_REF and $GITHUB_SHA"
         else
-          files=$(git diff --name-only ${{ github.sha }}^ ${{ github.sha }})
+          # Push
+          git fetch origin ${{ github.event.before }} --depth=1
+          export DIFF=$(git diff --name-only ${{ github.event.before }} $GITHUB_SHA)
+          echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
         fi
 
         # Function to add a component
