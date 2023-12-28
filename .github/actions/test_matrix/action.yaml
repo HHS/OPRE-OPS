@@ -82,10 +82,7 @@ runs:
         echo "DEBUG: Image Names: ${image_names[@]}"
 
         # Set matrix outputs
-        echo "::set-output name=matrix::[${components[@]}]"
-        echo "::set-output name=paths::[${paths[@]}]"
-        echo "::set-output name=docker_file::[${docker_files[@]}]"
-        echo "::set-output name=working_dir::[${working_dirs[@]}]"
-        echo "::set-output name=image_name::[${image_names[@]}]"
+        echo "matrix=${components[@]}::paths=${paths[@]}::docker_file=${docker_files[@]}::working_dir=${working_dirs[@]}::image_name=${image_names[@]}" >> $GITHUB_ENV
+
 
       shell: bash
