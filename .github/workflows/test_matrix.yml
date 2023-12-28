@@ -33,7 +33,7 @@ jobs:
       matrix: ${{fromJson(needs.set-matrix.outputs.matrix)}}
     steps:
       - name: Use matrix
-      run: |
+        run: |
           echo "Component: ${{ matrix }}"
           echo "Paths: ${{ matrix.paths }}"
           echo "Dockerfile: ${{ matrix.docker_file }}"
