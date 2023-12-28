@@ -26,9 +26,15 @@ jobs:
         with:
           event: ${{ matrix.event }}
 
-      - name: Use Matrix in Another Step
-        run: |
-          echo "Component: ${{ matrix.component }}"
+  use-matrix:
+    needs: set-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.set-matrix.outputs.matrix)}}
+    steps:
+      - name: Use matrix
+      run: |
+          echo "Component: ${{ matrix }}"
           echo "Paths: ${{ matrix.paths }}"
           echo "Dockerfile: ${{ matrix.docker_file }}"
           echo "Working Directory: ${{ matrix.working_dir }}"
