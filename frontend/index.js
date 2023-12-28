@@ -16,6 +16,7 @@ Bun.serve({
     return new Response(file);
   },
   error() {
+    // If error, route to index.html
     let filePath = BASE_PATH + "/index.html";
     const file = Bun.file(filePath);
     return new Response(file);
