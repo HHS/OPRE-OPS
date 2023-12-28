@@ -82,7 +82,6 @@ runs:
         echo "DEBUG: Image Names: ${image_names[@]}"
 
         # Set matrix outputs as JSON
-        # Set matrix outputs as JSON
         echo "::set-output name=matrix::$(echo "{\"components\":${components[@]},\"paths\":${paths[@]},\"docker_files\":${docker_files[@]},\"working_dirs\":${working_dirs[@]},\"image_names\":${image_names[@]}}" | jq -c)"
 
 
