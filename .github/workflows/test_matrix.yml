@@ -1,68 +1,68 @@
-name: Build Components
+# name: Build Components
 
-on:
-  push:
-    branches:
-      - development
-  pull_request:
-    branches:
-      - development
+# on:
+#   push:
+#     branches:
+#       - development
+#   pull_request:
+#     branches:
+#       - development
 
-jobs:
-  set-matrix:
-    runs-on: ubuntu-latest
+# jobs:
+#   set-matrix:
+#     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        event: ["push", "pull_request"]
+#     strategy:
+#       matrix:
+#         event: ["push", "pull_request"]
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v2
 
-      - name: Set Matrix and Build
-        id: set-matrix
-        uses: ./.github/actions/test_matrix
-        with:
-          event: ${{ matrix.event }}
+#       - name: Set Matrix and Build
+#         id: set-matrix
+#         uses: ./.github/actions/test_matrix
+#         with:
+#           event: ${{ matrix.event }}
 
-  # use-matrix:
-  #   needs: set-matrix
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix: ${{fromJson(needs.set-matrix.outputs.matrix)}}
-  #   steps:
-  #     - name: Use matrix
-  #       run: |
-  #         matrix="${{ matrix }}"
-  #         paths="${{ matrix.paths }}"
-  #         docker_files="${{ matrix.docker_files }}"
-  #         working_dirs="${{ matrix.working_dirs }}"
-  #         image_names="${{ matrix.image_names }}"
+#   # use-matrix:
+#   #   needs: set-matrix
+#   #   runs-on: ubuntu-latest
+#   #   strategy:
+#   #     matrix: ${{fromJson(needs.set-matrix.outputs.matrix)}}
+#   #   steps:
+#   #     - name: Use matrix
+#   #       run: |
+#   #         matrix="${{ matrix }}"
+#   #         paths="${{ matrix.paths }}"
+#   #         docker_files="${{ matrix.docker_files }}"
+#   #         working_dirs="${{ matrix.working_dirs }}"
+#   #         image_names="${{ matrix.image_names }}"
   
-  #         echo "Component: $matrix"
-  #         echo "Paths: $paths"
-  #         echo "Dockerfile: $docker_files"
-  #         echo "Working Directory: $working_dirs"
-  #         echo "Image Name: $image_names"
+#   #         echo "Component: $matrix"
+#   #         echo "Paths: $paths"
+#   #         echo "Dockerfile: $docker_files"
+#   #         echo "Working Directory: $working_dirs"
+#   #         echo "Image Name: $image_names"
   
-  use-matrix:
-    needs: set-matrix
-    runs-on: ubuntu-latest
-    steps:
-      - name: Use matrix
-        run: |
-          matrix="${{ needs.set-matrix.outputs.matrix }}"
-          IFS='::' read -ra matrix_values <<< "$matrix"
+#   use-matrix:
+#     needs: set-matrix
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Use matrix
+#         run: |
+#           matrix="${{ needs.set-matrix.outputs.matrix }}"
+#           IFS='::' read -ra matrix_values <<< "$matrix"
   
-          components="${matrix_values[0]}"
-          paths="${matrix_values[1]}"
-          docker_files="${matrix_values[2]}"
-          working_dirs="${matrix_values[3]}"
-          image_names="${matrix_values[4]}"
+#           components="${matrix_values[0]}"
+#           paths="${matrix_values[1]}"
+#           docker_files="${matrix_values[2]}"
+#           working_dirs="${matrix_values[3]}"
+#           image_names="${matrix_values[4]}"
   
-          echo "Component: $components"
-          echo "Paths: $paths"
-          echo "Dockerfile: $docker_files"
-          echo "Working Directory: $working_dirs"
-          echo "Image Name: $image_names"
+#           echo "Component: $components"
+#           echo "Paths: $paths"
+#           echo "Dockerfile: $docker_files"
+#           echo "Working Directory: $working_dirs"
+#           echo "Image Name: $image_names"
