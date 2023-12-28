@@ -50,20 +50,36 @@ runs:
 
         # Check if paths of each component are in the changed files
         if echo "$DIFF" | grep -qE 'backend/models/|backend/ops_api/|backend/Dockerfile.ops-api'; then
+          echo "DEBUG: Detected changes for Backend"
           add_component "Backend" "backend/models/** backend/ops_api/** backend/Dockerfile.ops-api" "Dockerfile.ops-api" "backend" "ops-backend"
+        else
+          echo "DEBUG: No changes detected for Backend"
         fi
 
         if echo "$DIFF" | grep -qE 'backend/data-tools/|backend/Dockerfile.data-tools'; then
+          echo "DEBUG: Detected changes for Data-Tools"
           add_component "Data-Tools" "backend/data-tools/** backend/Dockerfile.data-tools" "Dockerfile.data-tools" "backend" "ops-data-tools"
+        else
+          echo "DEBUG: No changes detected for Data-Tools"
         fi
 
         if echo "$DIFF" | grep -qE 'frontend/|frontend/Dockerfile.azure'; then
+          echo "DEBUG: Detected changes for Frontend"
           add_component "Frontend" "frontend/** frontend/Dockerfile.azure" "Dockerfile.azure" "frontend" "ops-frontend"
+        else
+          echo "DEBUG: No changes detected for Frontend"
         fi
 
         # Debug statements
         echo "DEBUG: DIFF variable content:"
         echo "$DIFF"
+
+        # Debug statements for matrix components
+        echo "DEBUG: Components: ${components[@]}"
+        echo "DEBUG: Paths: ${paths[@]}"
+        echo "DEBUG: Docker Files: ${docker_files[@]}"
+        echo "DEBUG: Working Directories: ${working_dirs[@]}"
+        echo "DEBUG: Image Names: ${image_names[@]}"
 
         # Set matrix outputs
         echo "::set-output name=matrix::[${components[@]}]"
