@@ -1,0 +1,63 @@
+name: 'Build Matrix'
+
+description: 'Builds components based on matrix configuration'
+
+inputs:
+  event: # Event type (e.g., push, pull_request)
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check Event Type
+      id: check-event
+      run: |
+        if [ "${{ inputs.event }}" != "push" ] && [ "${{ inputs.event }}" != "pull_request" ]; then
+          echo "Invalid event type. Only 'push' and 'pull_request' are supported."
+          exit 1
+        fi
+
+    - name: Set Matrix Outputs
+      id: set-matrix
+      run: |
+        components=()
+        paths=()
+        docker_files=()
+        working_dirs=()
+        image_names=()
+
+        # Check if it's a pull request and get changed files
+        if [ "${{ inputs.event }}" == "pull_request" ]; then
+          files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+        else
+          files=$(git diff --name-only HEAD^ HEAD)
+        fi
+
+        # Function to add a component
+        add_component() {
+          components+=("$1")
+          paths+=("$2")
+          docker_files+=("$3")
+          working_dirs+=("$4")
+          image_names+=("$5")
+        }
+
+        # Check if paths of each component are in the changed files
+        if echo "$files" | grep -qE '^backend/'; then
+          add_component "Backend" "backend/models/** backend/ops_api/** backend/Dockerfile.ops-api" "Dockerfile.ops-api" "backend" "ops-backend"
+        fi
+
+        if echo "$files" | grep -qE '^backend/data-tools/'; then
+          add_component "Data-Tools" "backend/data-tools/** backend/Dockerfile.data-tools" "Dockerfile.data-tools" "backend" "ops-data-tools"
+        fi
+
+        if echo "$files" | grep -qE '^frontend/'; then
+          add_component "Frontend" "frontend/** frontend/Dockerfile.azure" "Dockerfile.azure" "frontend" "ops-frontend"
+        fi
+
+        # Set matrix outputs
+        echo "::set-output name=matrix::[${components[@]}]"
+        echo "::set-output name=paths::[${paths[@]}]"
+        echo "::set-output name=docker_file::[${docker_files[@]}]"
+        echo "::set-output name=working_dir::[${working_dirs[@]}]"
+        echo "::set-output name=image_name::[${image_names[@]}]"

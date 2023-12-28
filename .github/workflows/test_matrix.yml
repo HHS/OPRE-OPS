@@ -1,0 +1,35 @@
+name: Build Components
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        event: ["push", "pull_request"]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set Matrix and Build
+        id: set-matrix
+        uses: ./.github/actions/test_matrix
+        with:
+          event: ${{ matrix.event }}
+
+      - name: Use Matrix in Another Step
+        run: |
+          echo "Component: ${{ matrix.component }}"
+          echo "Paths: ${{ matrix.paths }}"
+          echo "Dockerfile: ${{ matrix.docker_file }}"
+          echo "Working Directory: ${{ matrix.working_dir }}"
+          echo "Image Name: ${{ matrix.image_name }}"
