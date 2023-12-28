@@ -36,8 +36,8 @@ runs:
     - name: Get last directory name
       id: get-tf-dir
       run: |
-        tf-dir=$(echo ${{ inputs.terraform_directory }} | rev | cut -d'/' -f1 | rev)
-        echo "Last directory name is: $last_dir"
+        tf_dir=$(echo ${{ inputs.terraform_directory }} | rev | cut -d'/' -f1 | rev)
+        echo "Last directory name is: $tf_dir"
       shell: bash
 
     - name: Set Terraform Variables
@@ -92,7 +92,7 @@ runs:
       id: save-artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.pr_id }}-${{ steps.get-tf-dir.outputs.tf-dir }}-tf-plan
+        name: ${{ inputs.pr_id }}-${{ steps.get-tf-dir.outputs.tf_dir }}-tf-plan
         path: ${{ inputs.terraform_directory }}/tfplan
 
     - name: Comment Plan
