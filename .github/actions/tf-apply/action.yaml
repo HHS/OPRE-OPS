@@ -36,6 +36,13 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Get last directory name
+        id: get-tf-dir
+        run: |
+          tf-dir=$(echo ${{ inputs.terraform_directory }} | rev | cut -d'/' -f1 | rev)
+          echo "Last directory name is: $last_dir"
+      shell: bash
+      
     - name: Set Terraform Variables
       run: |
         if [[ -n "${INPUT_TF_VARS}" ]]; then
@@ -78,7 +85,7 @@ runs:
         github_token: ${{ inputs.github_token }}
         workflow: ${{ inputs.plan_workflow_file }}
         pr: ${{ inputs.pr_id }}
-        name: ${{ inputs.terraform_directory }}/${{ inputs.pr_id }}-tf-plan
+        name: ${{ inputs.pr_id }}-${{ steps.get-tf-dir.outputs.tf-dir }}-tf-plan
         path: ${{ inputs.terraform_directory }}
 
     # - name: Terraform Apply
