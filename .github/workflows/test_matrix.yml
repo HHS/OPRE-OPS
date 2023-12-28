@@ -39,9 +39,10 @@ jobs:
           docker_files="${{ matrix.docker_files }}"
           working_dirs="${{ matrix.working_dirs }}"
           image_names="${{ matrix.image_names }}"
-
+  
           echo "Component: $matrix"
           echo "Paths: $paths"
           echo "Dockerfile: $docker_files"
           echo "Working Directory: $working_dirs"
           echo "Image Name: $image_names"
+  
