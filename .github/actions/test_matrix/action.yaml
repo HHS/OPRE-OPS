@@ -6,6 +6,11 @@ inputs:
   event: # Event type (e.g., push, pull_request)
     required: true
 
+outputs:
+  matrix:
+    description: "Matrix"
+    value: ${{ steps.set-matrix.outputs.matrix }}
+
 runs:
   using: 'composite'
   steps:

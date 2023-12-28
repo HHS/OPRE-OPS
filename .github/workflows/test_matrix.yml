@@ -34,8 +34,15 @@ jobs:
     steps:
       - name: Use matrix
         run: |
-          echo "Component: ${{ matrix.components }}"
-          echo "Paths: ${{ matrix.paths }}"
-          echo "Dockerfile: ${{ matrix.docker_files }}"
-          echo "Working Directory: ${{ matrix.working_dirs }}"
-          echo "Image Name: ${{ matrix.image_names }}"
+          matrix="${{ needs.set-matrix.outputs.matrix }}"
+          components=$(echo "$matrix" | jq -r '.components | join(",")')
+          paths=$(echo "$matrix" | jq -r '.paths | join(",")')
+          docker_files=$(echo "$matrix" | jq -r '.docker_files | join(",")')
+          working_dirs=$(echo "$matrix" | jq -r '.working_dirs | join(",")')
+          image_names=$(echo "$matrix" | jq -r '.image_names | join(",")')
+
+          echo "Component: $components"
+          echo "Paths: $paths"
+          echo "Dockerfile: $docker_files"
+          echo "Working Directory: $working_dirs"
+          echo "Image Name: $image_names"
