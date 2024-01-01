@@ -333,6 +333,7 @@ def _get_user_list(data: Any):
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     changed = False
     for item in data:
+        print(f"{item=}, {type(item)}")
         if item in [
             "vendor",
             "incumbent",
@@ -376,6 +377,11 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             case "agreement_type":
                 if isinstance(data[item], str):
                     setattr(agreement, item, AgreementType[data[item]])
+                    changed = True
+
+            case "contract_type":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, ContractType[data[item]])
                     changed = True
 
             case _:
@@ -447,14 +453,19 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
     if not agreement:
         return {}
 
-    transformed_blis = [bli.to_dict() for bli in agreement.budget_line_items]
-    for bli in transformed_blis:
-        # change BLI amounts from string to float - this is a temporary solution in lieu of marshmallow
-        if bli.get("amount"):
-            bli["amount"] = float(bli.get("amount"))
+    transformed_blis = []
+    for bli in agreement.budget_line_items:
+        transformed_bli = bli.to_dict()
+        if transformed_bli.get("amount"):
+            transformed_bli["amount"] = float(transformed_bli.get("amount"))
         # nest the CAN object (temp needed for the frontend)
-        if bli.get("can"):
-            bli["can"] = current_app.db_session.get(CAN, bli.get("can")).to_dict()
+        if transformed_bli.get("can"):
+            transformed_bli["can"] = current_app.db_session.get(CAN, transformed_bli.get("can")).to_dict()
+        # include has_active_workflow
+        transformed_bli["has_active_workflow"] = bli.has_active_workflow
+        # include active_workflow_current_step_id
+        transformed_bli["active_workflow_current_step_id"] = bli.active_workflow_current_step_id
+        transformed_blis.append(transformed_bli)
 
     # change PS amount from string to float - this is a temporary solution in lieu of marshmallow
     transformed_ps = agreement.procurement_shop.to_dict() if agreement.procurement_shop else {}

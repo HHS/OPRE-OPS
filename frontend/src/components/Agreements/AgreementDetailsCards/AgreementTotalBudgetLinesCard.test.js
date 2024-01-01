@@ -41,7 +41,6 @@ describe("AgreementTotalBudgetLinesCard", () => {
         );
 
         expect(screen.getByText("0 Draft")).toBeInTheDocument();
-        expect(screen.getByText("0 In Review")).toBeInTheDocument();
         expect(screen.getByText("7 Planned")).toBeInTheDocument();
         expect(screen.getByText("8 Executing")).toBeInTheDocument();
         expect(screen.getByText("1 Obligated")).toBeInTheDocument();
@@ -62,7 +61,6 @@ describe("AgreementTotalBudgetLinesCard", () => {
         );
 
         expect(screen.queryByText("0 Draft")).toBeNull();
-        expect(screen.queryByText("0 In Review")).toBeNull();
         expect(screen.getByText("7 Planned")).toBeInTheDocument();
         expect(screen.getByText("8 Executing")).toBeInTheDocument();
         expect(screen.getByText("1 Obligated")).toBeInTheDocument();

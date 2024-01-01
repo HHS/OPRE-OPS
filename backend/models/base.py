@@ -93,7 +93,9 @@ class BaseModel(Base):  # type: ignore [misc, valid-type]
                 f"Model {self.__class__.__name__} does not have a marshmallow schema"
             )
         schema = self.__marshmallow__()
-        return schema.dump(self)
+        data = schema.dump(self)
+        data["display_name"] = self.display_name
+        return data
 
     @declared_attr
     def created_by(cls):
