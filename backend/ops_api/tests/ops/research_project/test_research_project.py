@@ -50,6 +50,8 @@ def test_research_projects_serialization(auth_client, loaded_db):
     assert response.json["methodologies"][0] == "SURVEY"
     assert len(response.json["populations"]) == 1
     assert response.json["populations"][0] == "POPULATION_1"
+    assert response.json["team_leaders"][0]["id"] == 1
+    assert response.json["team_leaders"][0]["full_name"] == "Chris Fortunato"
 
 
 @pytest.mark.usefixtures("app_ctx")

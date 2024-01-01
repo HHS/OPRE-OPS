@@ -85,8 +85,15 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
 
     available_funding = float(total_funding) - float(total_accounted_for)
 
+    can_dict = can.to_dict()
+    can_dict.update(
+        {
+            "display_name": can.display_name,
+        }
+    )
+
     return {
-        "can": can.to_dict(),
+        "can": can_dict,
         "received_funding": received_funding,
         "expected_funding": expected_funding,
         "total_funding": total_funding,

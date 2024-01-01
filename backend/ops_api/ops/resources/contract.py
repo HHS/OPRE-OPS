@@ -3,7 +3,6 @@ from __future__ import annotations
 from flask import Response, current_app, request
 from marshmallow import fields
 from models import ContractType
-from models.base import BaseData
 from models.cans import ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.agreements import AgreementData
@@ -25,7 +24,7 @@ class ContractAgreementResponse(AgreementData):
 
 
 class ContractItemAPI(BaseItemAPI):
-    def __init__(self, model: BaseData = ContractAgreement):
+    def __init__(self, model: ContractAgreement = ContractAgreement):
         super().__init__(model)
 
     @override
@@ -36,7 +35,7 @@ class ContractItemAPI(BaseItemAPI):
 
 
 class ContractListAPI(BaseListAPI):
-    def __init__(self, model: BaseData = ContractAgreement):
+    def __init__(self, model: ContractAgreement = ContractAgreement):
         super().__init__(model)
         self._response_schema = ContractAgreementResponse()
         self._response_schema_collection = ContractAgreementResponse(many=True)

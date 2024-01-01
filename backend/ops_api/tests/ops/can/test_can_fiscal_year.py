@@ -14,6 +14,7 @@ def test_can_fiscal_year_lookup(loaded_db):
     assert cfy.display_name == "G99PHS9:2022"
 
 
+@pytest.mark.usefixtures("loaded_db")
 def test_can_fiscal_year_create():
     cfy = CANFiscalYear(
         can_id=1,
