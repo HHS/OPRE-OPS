@@ -24,3 +24,24 @@ class AuthClient(FlaskClient):
         access_token = create_access_token(identity=user, additional_claims=additional_claims)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
         return super().open(*args, **kwargs)
+
+
+class UnauthzClient(FlaskClient):
+    def open(self, *args, **kwargs):
+        user = User(
+            id="99",
+            oidc_id="00000000-0000-1111-a111-000000000099",
+            email="unit-test@ops-api.gov",
+            first_name="Unit",
+            last_name="Test",
+            date_joined=datetime.now(),
+            updated=datetime.now(),
+            division=1,
+        )
+        additional_claims = {}
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
+        kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
+        return super().open(*args, **kwargs)

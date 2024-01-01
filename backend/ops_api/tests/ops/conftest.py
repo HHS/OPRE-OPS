@@ -13,7 +13,7 @@ from pytest_docker.plugin import Services
 from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
-from tests.ops.auth_client import AuthClient
+from tests.ops.auth_client import AuthClient, UnauthzClient
 
 
 @pytest.mark.usefixtures("db_service")
@@ -41,6 +41,20 @@ def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = AuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def unauthz_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
+    """Get the authenticated test client for flask."""
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
+    app.testing = True
+    app.test_client_class = UnauthzClient
     return app.test_client()
 
 

@@ -60,6 +60,7 @@
       notes: "Under initial review",
       time_started: "2023-11-07T10:00:00Z",
       time_completed: null,
+      created_by: 21,
     },
   ],
 
@@ -73,8 +74,9 @@
   step_approvers: [
     { workflow_step_template_id: 1, user_id: 21, role_id: 1, group_id: 1 },
     { workflow_step_template_id: 1, user_id: 23, role_id: 1, group_id: 1 },
-    { workflow_step_template_id: 2, user_id: 21, role_id: 2, group_id: 3 },
-    { workflow_step_template_id: 2, user_id: 23, role_id: 2, group_id: 3 },
+    { workflow_step_template_id: 2, user_id: 21, role_id: 4, group_id: 3 },
+    { workflow_step_template_id: 2, user_id: 23, role_id: 4, group_id: 3 },
+    { workflow_step_template_id: 2, user_id: 4 },
   ],
 
   package: [
