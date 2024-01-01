@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
-import DisabledChangeIcons from "./DisabledChangeIcons";
+// import DisabledChangeIcons from "./DisabledChangeIcons";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 import icons from "../../../uswds/img/sprite.svg";
 import { Tooltip } from "../../UI/USWDS/Tooltip";
@@ -39,16 +39,17 @@ const ChangeIcons = ({
     goToApproveIcon = false,
     handleGoToApprove = () => {}
 }) => {
-    if (!isItemEditable) {
-        return (
-            <DisabledChangeIcons
-                lockedMessage={lockedMessage}
-                duplicateIcon={duplicateIcon}
-                sendToReviewIcon={sendToReviewIcon}
-                handleDuplicateItem={() => handleDuplicateItem(item)}
-            />
-        );
-    }
+    // if (!isItemEditable) {
+    //     return (
+    //         <DisabledChangeIcons
+    //             lockedMessage={lockedMessage}
+    //             duplicateIcon={duplicateIcon}
+    //             sendToReviewIcon={sendToReviewIcon}
+    //             handleDuplicateItem={() => handleDuplicateItem(item)}
+    //             goToApproveIcon={goToApproveIcon}
+    //         />
+    //     );
+    // }
 
     // let activeWorkflowCurrentStepId;
     // if (goToApproveIcon) {
@@ -56,52 +57,97 @@ const ChangeIcons = ({
     //         (bli) => bli.active_workflow_current_step_id
     //     ).active_workflow_current_step_id;
     // }
+    const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
     return (
         <>
             <div className="display-flex flex-align-center">
                 {isItemEditable && (
-                    <Tooltip
-                        label="Edit"
-                        className="line-height-body-1"
-                    >
-                        <button
-                            id={`edit-${item?.id}`}
-                            title="Edit"
-                            aria-label="Edit"
-                            data-cy="edit-row"
-                            onClick={() => handleSetItemForEditing(item)}
+                    <>
+                        <Tooltip
+                            label="Edit"
+                            className="line-height-body-1"
                         >
-                            <FontAwesomeIcon
+                            <button
+                                id={`edit-${item?.id}`}
                                 title="Edit"
-                                icon={faPen}
-                                className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
-                            />
-                        </button>
-                    </Tooltip>
+                                aria-label="Edit"
+                                data-cy="edit-row"
+                                onClick={() => handleSetItemForEditing(item)}
+                            >
+                                <FontAwesomeIcon
+                                    title="Edit"
+                                    icon={faPen}
+                                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                />
+                            </button>
+                        </Tooltip>
+                        <Tooltip
+                            label={`${isItemDeletable ? "Delete" : "Cannot delete"}`}
+                            className="line-height-body-1"
+                        >
+                            <button
+                                id={`delete-${item?.id}`}
+                                title="Delete"
+                                aria-label="Delete"
+                                data-cy="delete-row"
+                                onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
+                            >
+                                <FontAwesomeIcon
+                                    title="Delete"
+                                    icon={faTrash}
+                                    className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
+                                        !isItemDeletable ? DISABLED_ICON_CLASSES : ""
+                                    }`}
+                                />
+                            </button>
+                        </Tooltip>
+                    </>
                 )}
-                <Tooltip
-                    label={`${isItemDeletable ? "Delete" : "Cannot delete"}`}
-                    className="line-height-body-1"
-                >
-                    <button
-                        id={`delete-${item?.id}`}
-                        title="Delete"
-                        aria-label="Delete"
-                        data-cy="delete-row"
-                        onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
-                    >
-                        <FontAwesomeIcon
-                            title="Delete"
-                            icon={faTrash}
-                            className={`text-primary height-2 width-2 margin-right-1 cursor-pointer ${
-                                !isItemDeletable ? DISABLED_ICON_CLASSES : ""
+                {!isItemEditable && (
+                    <>
+                        <Tooltip
+                            position="top"
+                            label={`${
+                                lockedMessage ? lockedMessage : "Only team members listed on this agreement can edit"
+                            } `}
+                            className="line-height-body-1"
+                        >
+                            <button
+                                id={`edit-${item?.id}`}
+                                title="Edit"
+                                aria-label="Edit"
+                                data-cy="edit-row"
+                            >
+                                <FontAwesomeIcon
+                                    icon={faPen}
+                                    className={disabledClasses}
+                                />
+                            </button>
+                        </Tooltip>
+                        <Tooltip
+                            position="top"
+                            label={`${
+                                lockedMessage ? lockedMessage : "Only team members listed on this agreement can delete"
                             }`}
-                        />
-                    </button>
-                </Tooltip>
+                            className="line-height-body-1"
+                        >
+                            <button
+                                id={`delete-${item?.id}`}
+                                title="Delete"
+                                aria-label="Delete"
+                                data-cy="delete-row"
+                            >
+                                <FontAwesomeIcon
+                                    icon={faTrash}
+                                    className={disabledClasses}
+                                />
+                            </button>
+                        </Tooltip>
+                    </>
+                )}
 
-                {duplicateIcon && (
+                {isItemEditable && duplicateIcon && (
                     <Tooltip
                         label="Duplicate"
                         className="line-height-body-1"
@@ -120,7 +166,27 @@ const ChangeIcons = ({
                         </button>
                     </Tooltip>
                 )}
-                {sendToReviewIcon && (
+                {!isItemEditable && duplicateIcon && (
+                    <Tooltip
+                        position="top"
+                        label="Duplicate"
+                        className="line-height-body-1"
+                    >
+                        <button
+                            id={`duplicate-${item?.id}`}
+                            title="Duplicate"
+                            aria-label="Duplicate"
+                            data-cy="duplicate-row"
+                        >
+                            <FontAwesomeIcon
+                                icon={faClone}
+                                className="text-primary height-2 width-2 cursor-pointer margin-left-0"
+                                onClick={handleDuplicateItem}
+                            />
+                        </button>
+                    </Tooltip>
+                )}
+                {isItemEditable && sendToReviewIcon && (
                     <Tooltip
                         label="Submit for approval"
                         className="line-height-body-1"
@@ -133,6 +199,30 @@ const ChangeIcons = ({
                             onClick={() => handleSubmitItemForApproval(item.id)}
                         >
                             <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
+                                <use xlinkHref={`${icons}#send`}></use>
+                            </svg>
+                        </button>
+                    </Tooltip>
+                )}
+                {!isItemEditable && sendToReviewIcon && (
+                    <Tooltip
+                        position="top"
+                        label={`${
+                            lockedMessage
+                                ? lockedMessage
+                                : "Only team members listed on this agreement can submit it for approval"
+                        }`}
+                        className="line-height-body-1"
+                    >
+                        <button
+                            id={`submit-for-approval-${item?.id}`}
+                            title="Submit for Approval"
+                            aria-label="Submit for Approval"
+                            data-cy="submit-row"
+                        >
+                            <svg
+                                className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
+                            >
                                 <use xlinkHref={`${icons}#send`}></use>
                             </svg>
                         </button>
