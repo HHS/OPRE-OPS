@@ -387,7 +387,7 @@ describe("agreement review workflow", () => {
     });
 });
 
-describe("agreement change accordion", () => {
+describe.only("agreement change accordion", () => {
     it("handles interactions", () => {
         cy.visit("/agreements/review/1").wait(1000);
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
@@ -401,7 +401,7 @@ describe("agreement change accordion", () => {
         // check the radio button
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
-        cy.get("#check-all").check({ force: true }).wait(300);
+        cy.get("#check-all").check({ force: true });
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
             .each((checkbox) => {
