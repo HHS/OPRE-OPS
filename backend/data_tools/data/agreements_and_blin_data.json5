@@ -411,7 +411,7 @@
       can_id: 5,
       agreement_id: 10,
       amount: 1000000.0,
-      status: "DRAFT",
+      status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0,
     },

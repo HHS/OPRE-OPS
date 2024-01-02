@@ -3,10 +3,10 @@ import { terminalLog, testLogin } from "./utils";
 
 const ALL_BLI_TOTAL = "37,166,048.00";
 const ADMIN_BLI_TOTAL = "37,165,000.00";
-const DRAFT_BLI_TOTAL = "4,000,000.00";
+const DRAFT_BLI_TOTAL = "3,000,000.00";
 const IN_REVIEW_BLI_TOTAL = "0";
 const EXECUTING_BLI_TOTAL = "16,080,000.00";
-const PLANNED_BLI_TOTAL = "14,070,000.00";
+const PLANNED_BLI_TOTAL = "15,070,000.00";
 const OBLIGATED_BLI_TOTAL = "3,016,048.00";
 
 beforeEach(() => {
