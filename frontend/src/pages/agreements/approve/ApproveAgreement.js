@@ -33,7 +33,6 @@ const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
         console.log(error);
         return <h1>Oops, an error occurred</h1>;
     }
-    console.log(data);
     const workflowBudgetLineItemIds = data?.package_entities?.budget_line_item_ids;
     return (
         <BudgetLinesTable

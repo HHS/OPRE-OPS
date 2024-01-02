@@ -47,13 +47,6 @@ const ChangeIcons = ({
         );
     }
 
-    // let activeWorkflowCurrentStepId;
-    // if (goToApproveIcon) {
-    //     activeWorkflowCurrentStepId = item.budget_line_items.find(
-    //         (bli) => bli.active_workflow_current_step_id
-    //     ).active_workflow_current_step_id;
-    // }
-
     return (
         <>
             <div className="display-flex flex-align-center">
