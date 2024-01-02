@@ -387,7 +387,7 @@ describe("agreement review workflow", () => {
     });
 });
 
-describe.skip("agreement change accordion", () => {
+describe("agreement change accordion", () => {
     it("handles interactions", () => {
         cy.visit("/agreements/review/1").wait(1000);
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
@@ -401,7 +401,7 @@ describe.skip("agreement change accordion", () => {
         // check the radio button
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
-        cy.get("#check-all").check({ force: true });
+        cy.get("#check-all").check({ force: true }).wait(1);
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
             .each((checkbox) => {
@@ -440,7 +440,7 @@ describe("agreement BLI accordion", () => {
         // check the radio button
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
-        cy.get("#check-all").check({ force: true });
+        cy.get("#check-all").check({ force: true }).wait(1);
         // all checkboxes should be checked
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
@@ -461,7 +461,7 @@ describe("agreement BLI accordion", () => {
         cy.visit("/agreements/review/1").wait(1000);
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
-        cy.get("#check-all").check({ force: true });
+        cy.get("#check-all").check({ force: true }).wait(1);
         cy.get('[data-cy="button-toggle-After Approval"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').contains("2,000,000");
@@ -475,7 +475,7 @@ describe("agreement BLI accordion", () => {
         cy.visit("/agreements/review/2").wait(1000);
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
-        cy.get("#check-all").check({ force: true });
+        cy.get("#check-all").check({ force: true }).wait(1);
         cy.get('[data-cy="button-toggle-After Approval"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').should("exist");
         cy.get('[data-cy="currency-summary-card"]').contains("$32,000,000.00");
@@ -516,7 +516,7 @@ describe("agreement review CANS accordion", () => {
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
         cy.wait(1);
-        cy.get("#check-all").check({ force: true });
+        cy.get("#check-all").check({ force: true }).wait(1);
         cy.wait(1);
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
@@ -539,7 +539,7 @@ describe("agreement review CANS accordion", () => {
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
         cy.wait(1);
-        cy.get("#check-all").check({ force: true });
+        cy.get("#check-all").check({ force: true }).wait(1);
         cy.wait(1);
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
@@ -562,7 +562,7 @@ describe("agreement review CANS accordion", () => {
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
         cy.wait(1);
-        cy.get("#check-all").check({ force: true });
+        cy.get("#check-all").check({ force: true }).wait(1);
         cy.wait(1);
         cy.get('[type="checkbox"]').should("have.length", 17);
         cy.get('[data-cy="can-funding-summary-card-8"]').should("exist");
