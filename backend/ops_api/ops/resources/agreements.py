@@ -455,6 +455,10 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
         # nest the CAN object (temp needed for the frontend)
         if bli.get("can"):
             bli["can"] = current_app.db_session.get(CAN, bli.get("can")).to_dict()
+        # add the property has_active_workflow
+        bli["has_active_workflow"] = list(filter(lambda x: x.id == bli["id"], list(agreement.budget_line_items)))[
+            0
+        ].has_active_workflow
 
     # change PS amount from string to float - this is a temporary solution in lieu of marshmallow
     transformed_ps = agreement.procurement_shop.to_dict() if agreement.procurement_shop else {}
