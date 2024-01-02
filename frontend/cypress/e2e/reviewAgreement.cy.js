@@ -467,8 +467,6 @@ describe("agreement BLI accordion", () => {
         cy.get('[data-cy="currency-summary-card"]').contains("2,000,000");
         cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
         cy.get('[data-cy="currency-summary-card"]').contains("0");
-        // Agreement 9
-        cy.visit("/agreements/review/1").wait(1000);
     });
 
     it("should handle after approval toggle on Agreement 2", () => {
