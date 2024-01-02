@@ -3,7 +3,7 @@ name: Dev FE Pull Request
 on:
   pull_request:
     branches:
-      - development
+      - main
     paths:
       - 'frontend/**'
 

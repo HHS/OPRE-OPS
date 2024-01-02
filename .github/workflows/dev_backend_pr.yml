@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - development
+      - main
     paths:
       - backend/models/**
       - backend/ops_api/**
