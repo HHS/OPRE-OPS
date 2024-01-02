@@ -51,12 +51,6 @@ const ChangeIcons = ({
     //     );
     // }
 
-    // let activeWorkflowCurrentStepId;
-    // if (goToApproveIcon) {
-    //     activeWorkflowCurrentStepId = item.budget_line_items.find(
-    //         (bli) => bli.active_workflow_current_step_id
-    //     ).active_workflow_current_step_id;
-    // }
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
     return (
