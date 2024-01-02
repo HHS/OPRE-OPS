@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation, useGetWorkflowStepQuery } from "../../../api/opsAPI";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -14,8 +14,34 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 import TextArea from "../../../components/UI/Form/TextArea";
 import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
+import { useSearchParams } from "react-router-dom";
+import useAlert from "../../../hooks/use-alert.hooks.js";
+
+const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
+    const { data, error, isLoading } = useGetWorkflowStepQuery(workflowStepId, {
+        refetchOnMountOrArgChange: true
+    });
+    if (isLoading) {
+        return <h1>Loading...</h1>;
+    }
+    if (error) {
+        console.log(error);
+        return <h1>Oops, an error occurred</h1>;
+    }
+    const workflowBudgetLineItemIds = data?.package_entities?.budget_line_item_ids;
+    return (
+        <BudgetLinesTable
+            readOnly={true}
+            budgetLinesAdded={agreement?.budget_line_items}
+            isReviewMode={false}
+            showTotalSummaryCard={false}
+            workflowBudgetLineItemIds={workflowBudgetLineItemIds}
+        />
+    );
+};
 
 const ApproveAgreement = () => {
+    const { setAlert } = useAlert();
     const urlPathParams = useParams();
     const [notes, setNotes] = React.useState("");
     const [confirmation, setConfirmation] = React.useState(false);
@@ -28,9 +54,13 @@ const ApproveAgreement = () => {
     });
     // @ts-ignore
     const agreementId = +urlPathParams.id;
+    const [searchParams] = useSearchParams();
+    const [workflowApprove] = useAddWorkflowApproveMutation();
+    const stepId = searchParams.get("stepId");
+    // TODO: Get Workflow data and use BLI IDs to determine what's being approved (changes BLIRow.js)
+
     const navigate = useNavigate();
     const {
-        // isSuccess,
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement
@@ -76,16 +106,44 @@ const ApproveAgreement = () => {
         });
     };
 
-    const handleApprove = () => {
+    const approveStep = async () => {
+        const data = {
+            workflow_step_action: "APPROVE",
+            workflow_step_id: stepId,
+            notes: notes
+        };
+
+        await workflowApprove(data)
+            .unwrap()
+            .then((fulfilled) => {
+                console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
+                setAlert({
+                    type: "success",
+                    heading: "Approval Saved",
+                    message: `The approval to change Budget Lines has been saved.`
+                });
+            })
+            .catch((rejected) => {
+                console.error(`ERROR with workflow-approve: ${JSON.stringify(rejected, null, 2)}`);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while saving the approval.",
+                    redirectUrl: "/error"
+                });
+            });
+    };
+
+    const handleApprove = async () => {
         setShowModal(true);
         setModalProps({
             heading:
                 "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget.",
             actionButtonText: "Approve",
             secondaryButtonText: "Cancel",
-            handleConfirm: () => {
-                alert("Not implemented yet");
-                navigate("/agreements");
+            handleConfirm: async () => {
+                await approveStep();
+                await navigate("/agreements");
             }
         });
     };
@@ -117,11 +175,9 @@ const ApproveAgreement = () => {
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
             >
-                <BudgetLinesTable
-                    readOnly={true}
-                    budgetLinesAdded={agreement?.budget_line_items}
-                    isReviewMode={false}
-                    showTotalSummaryCard={false}
+                <BudgetLinesTableWithWorkflowStep
+                    agreement={agreement}
+                    workflowStepId={stepId}
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
@@ -184,10 +240,6 @@ const ApproveAgreement = () => {
                     Approve
                 </button>
             </div>
-            {/* TODO: Remove debug code  */}
-            <pre className="font-code-2xs border-dashed border-error margin-top-10">
-                {JSON.stringify(budgetLinesWithActiveWorkflow, null, 2)}
-            </pre>
         </App>
     );
 };

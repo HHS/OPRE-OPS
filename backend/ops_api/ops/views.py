@@ -21,7 +21,6 @@ from ops_api.ops.resources.agreements import (
     AgreementReasonListAPI,
     AgreementTypeListAPI,
 )
-from ops_api.ops.resources.approve import ApproveSubmisionListApi
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthLogoutAPI, AuthRefreshAPI
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
@@ -44,8 +43,10 @@ from ops_api.ops.resources.research_project_funding_summary import ResearchProje
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
+from ops_api.ops.resources.workflow_approve import WorkflowApprovalListApi
 from ops_api.ops.resources.workflow_instance import WorkflowInstanceItemAPI, WorkflowInstanceListAPI
 from ops_api.ops.resources.workflow_step_template import WorkflowStepTemplateItemAPI, WorkflowStepTemplateListAPI
+from ops_api.ops.resources.workflow_submit import WorkflowSubmisionListApi
 from ops_api.ops.resources.workflow_template import WorkflowTemplateItemAPI, WorkflowTemplateListAPI
 
 # AGREEMENT ENDPOINTS
@@ -57,9 +58,6 @@ AGREEMENT_HISTORY_LIST_API_VIEW_FUNC = AgreementHistoryListAPI.as_view("agreemen
 
 # AGREEMENT-TYPE ENDPOINTS
 AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type-list")
-
-# ApproveSubmission ENDPOINTS
-APPROVE_SUBMISSION_LIST_API_VIEW_FUNC = ApproveSubmisionListApi.as_view("approve-submission-list", BaseModel)
 
 # CONTRACT ENDPOINTS
 CONTRACT_ITEM_API_VIEW_FUNC = ContractItemAPI.as_view("contract-item", ContractAgreement)
@@ -175,3 +173,9 @@ WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC = WorkflowStepTemplateItemAPI.as_view(
 WORKFLOW_STEP_TEMPLATE_LIST_API_VIEW_FUNC = WorkflowStepTemplateListAPI.as_view(
     "workflow-step-template-group", WorkflowStepTemplate
 )
+
+# Workflow Submission ENDPOINTS
+WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC = WorkflowSubmisionListApi.as_view("workflow-submission-list", BaseModel)
+
+# Workflow Approval ENDPOINTS
+WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC = WorkflowApprovalListApi.as_view("workflow-approval-list", BaseModel)
