@@ -387,7 +387,7 @@ describe("agreement review workflow", () => {
     });
 });
 
-describe.only("agreement change accordion", () => {
+describe("agreement change accordion", () => {
     it("handles interactions", () => {
         cy.visit("/agreements/review/1").wait(1000);
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
