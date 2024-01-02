@@ -18,12 +18,7 @@ import { useSearchParams } from "react-router-dom";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 
 const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
-    const {
-        // isSuccess,
-        data,
-        error,
-        isLoading
-    } = useGetWorkflowStepQuery(workflowStepId, {
+    const { data, error, isLoading } = useGetWorkflowStepQuery(workflowStepId, {
         refetchOnMountOrArgChange: true
     });
     if (isLoading) {
@@ -45,8 +40,6 @@ const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
     );
 };
 
-// BudgetLinesTableWithWorkflowStep.propTypes = { agreement: PropTypes.any };
-
 const ApproveAgreement = () => {
     const { setAlert } = useAlert();
     const urlPathParams = useParams();
@@ -64,12 +57,10 @@ const ApproveAgreement = () => {
     const [searchParams] = useSearchParams();
     const [workflowApprove] = useAddWorkflowApproveMutation();
     const stepId = searchParams.get("stepId");
-    console.log(`stepId:${stepId}`);
     // TODO: Get Workflow data and use BLI IDs to determine what's being approved (changes BLIRow.js)
 
     const navigate = useNavigate();
     const {
-        // isSuccess,
         data: agreement,
         error: errorAgreement,
         isLoading: isLoadingAgreement
@@ -249,10 +240,6 @@ const ApproveAgreement = () => {
                     Approve
                 </button>
             </div>
-            {/* TODO: Remove debug code  */}
-            <pre className="font-code-2xs border-dashed border-error margin-top-10">
-                {JSON.stringify(budgetLinesWithActiveWorkflow, null, 2)}
-            </pre>
         </App>
     );
 };
