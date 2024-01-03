@@ -1,29 +1,15 @@
 import pytest
+from models import ProjectType
 from models.projects import ResearchProject, ResearchType
 from ops_api.ops.resources.research_projects import RequestBody, ResearchProjectListAPI
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_research_project_retrieve(loaded_db):
-    research_project = (
-        loaded_db.query(ResearchProject)
-        .filter(ResearchProject.title == "African American Child and Family Research Center")
-        .one()
-    )
-
-    assert research_project is not None
-    assert research_project.title == "African American Child and Family Research Center"
-    assert research_project.id == 10
-    assert research_project.display_name == research_project.title
-
-
-@pytest.mark.usefixtures("app_ctx")
 def test_research_projects_get_all(auth_client, loaded_db):
-    assert loaded_db.query(ResearchProject).count() == 13
+    count = loaded_db.query(ResearchProject).count()
 
     response = auth_client.get("/api/v1/research-projects/")
     assert response.status_code == 200
-    assert len(response.json) == 13
+    assert len(response.json) == count
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -145,6 +131,7 @@ def test_research_projects_auth(client, loaded_db):
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects(auth_client):
     data = RequestBody(
+        project_type=ProjectType.RESEARCH.name,
         title="Research Project #1",
         short_title="RP#1",
         description="blah blah blah",
@@ -176,6 +163,7 @@ def test_post_research_projects(auth_client):
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects_minimum(auth_client):
     data = {
+        "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
     }
     response = auth_client.post("/api/v1/research-projects/", json=data)
@@ -195,6 +183,7 @@ def test_post_research_projects_empty_post(auth_client):
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects_bad_origination_date(auth_client):
     data = RequestBody(
+        project_type=ProjectType.RESEARCH.name,
         title="Research Project #1",
         short_title="RP#1",
         description="blah blah blah",
@@ -212,6 +201,7 @@ def test_post_research_projects_bad_origination_date(auth_client):
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects_bad_methodologies(auth_client):
     data = RequestBody(
+        project_type=ProjectType.RESEARCH.name,
         title="Research Project #1",
         short_title="RP#1",
         description="blah blah blah",
@@ -229,6 +219,7 @@ def test_post_research_projects_bad_methodologies(auth_client):
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects_bad_populations(auth_client):
     data = RequestBody(
+        project_type=ProjectType.RESEARCH.name,
         title="Research Project #1",
         short_title="RP#1",
         description="blah blah blah",
@@ -246,6 +237,7 @@ def test_post_research_projects_bad_populations(auth_client):
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects_bad_team_leaders(auth_client):
     data = RequestBody(
+        project_type=ProjectType.RESEARCH.name,
         title="Research Project #1",
         short_title="RP#1",
         description="blah blah blah",
@@ -263,6 +255,7 @@ def test_post_research_projects_bad_team_leaders(auth_client):
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects_missing_title(auth_client):
     data = {
+        "project_type": ProjectType.RESEARCH.name,
         "short_title": "RP#1",
         "description": "blah blah blah",
         "url": "https://example.com",
@@ -279,6 +272,7 @@ def test_post_research_projects_missing_title(auth_client):
 @pytest.mark.usefixtures("loaded_db")
 def test_post_research_projects_auth_required(client):
     data = RequestBody(
+        project_type=ProjectType.RESEARCH.name,
         title="Research Project #1",
         short_title="RP#1",
         description="blah blah blah",

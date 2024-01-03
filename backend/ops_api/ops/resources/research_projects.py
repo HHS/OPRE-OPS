@@ -6,7 +6,7 @@ import desert
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import fields
-from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType, PopulationType, User
+from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType, PopulationType, ProjectType, User
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.projects import ResearchProject
@@ -32,6 +32,7 @@ class TeamLeaders:
 
 @dataclass
 class RequestBody:
+    project_type: ProjectType
     title: str
     short_title: Optional[str] = None
     description: Optional[str] = None
@@ -90,6 +91,7 @@ class ResearchProjectListAPI(BaseListAPI):
         self._post_schema = desert.schema(RequestBody)
         self._response_schema = desert.schema(ResearchProjectResponse)
 
+    @override
     @staticmethod
     def _get_query(fiscal_year=None, portfolio_id=None, search=None):
         stmt = (
@@ -126,7 +128,7 @@ class ResearchProjectListAPI(BaseListAPI):
         portfolio_id = request.args.get("portfolio_id")
         search = request.args.get("search")
 
-        stmt = self._get_query(fiscal_year, portfolio_id, search)
+        stmt = ResearchProjectListAPI._get_query(fiscal_year, portfolio_id, search)
 
         result = current_app.db_session.execute(stmt).all()
 

@@ -1,4 +1,4 @@
-from models import Notification
+from models import Notification, Project
 from models.base import BaseModel
 from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement, ProductServiceCode
 from models.history import OpsDBHistory
@@ -40,6 +40,7 @@ from ops_api.ops.resources.portfolio_status import PortfolioStatusItemAPI, Portf
 from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
 from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
 from ops_api.ops.resources.product_service_code import ProductServiceCodeItemAPI, ProductServiceCodeListAPI
+from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
 from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
@@ -136,6 +137,10 @@ PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as
 RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSummaryListAPI.as_view(
     "research-project-funding-summary-group", ResearchProject
 )
+
+# PROJECT ENDPOINTS
+PROJECT_ITEM_API_VIEW_FUNC = ProjectItemAPI.as_view("projects-item", Project)
+PROJECT_LIST_API_VIEW_FUNC = ProjectListAPI.as_view("projects-group", Project)
 
 # RESEARCH PROJECT ENDPOINTS
 RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view("research-projects-item", ResearchProject)
