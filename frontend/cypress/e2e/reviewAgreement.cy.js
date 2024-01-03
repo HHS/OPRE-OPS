@@ -446,6 +446,7 @@ describe("agreement BLI accordion", () => {
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
             .each((checkbox) => {
+                cy.wrap(checkbox).should("be.enabled");
                 cy.wrap(checkbox).should("be.checked");
             });
         // uncheck all
