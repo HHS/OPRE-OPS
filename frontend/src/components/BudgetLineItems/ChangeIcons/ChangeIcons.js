@@ -138,7 +138,7 @@ const ChangeIcons = ({
                             title="Go to approve"
                             aria-label="Go to approve"
                             data-cy="go-to-approve-row"
-                            onClick={() => handleGoToApprove(item.id)}
+                            onClick={() => handleGoToApprove(item)}
                         >
                             <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
                                 <use xlinkHref={`${icons}#check_circle`}></use>

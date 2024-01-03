@@ -39,8 +39,8 @@ function AgreementBLIAccordion({
             level={2}
         >
             <p>
-                Select the budget lines you’d like this action to apply to. The agreement will be sent to your Division
-                Director to review and approve before changes are made. Use the toggle to see how your request would
+                This is a list of all budget lines within this agreement. The budget lines showing In Review Status need
+                your approval to change from Draft to Planned Status. Use the toggle to see how your approval would
                 change the agreement total.
             </p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">

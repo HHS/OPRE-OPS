@@ -77,6 +77,18 @@ class FakeAuthProvider(AuthenticationProvider):
                 "email": "admin.demo@email.com",
                 "sub": "00000000-0000-1111-a111-000000000018",
             },
+            "division_director": {
+                "first_name": "Dave",
+                "last_name": "Director",
+                "email": "dave.director@email.com",
+                "sub": "00000000-0000-1111-a111-000000000020",
+            },
+            "cor_user": {
+                "first_name": "COR",
+                "last_name": "User",
+                "email": "cor.user@email.com",
+                "sub": "00000000-0000-1111-a111-000000000021",
+            },
             "basic_user": {
                 "first_name": "User",
                 "last_name": "Demo",

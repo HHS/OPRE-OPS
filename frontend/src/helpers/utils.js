@@ -89,7 +89,6 @@ export const codesToDisplayText = {
     },
     budgetLineStatus: {
         DRAFT: "Draft",
-        UNDER_REVIEW: "In Review",
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
         OBLIGATED: "Obligated"
