@@ -29,10 +29,10 @@ beforeEach(() => {
     testLogin("admin");
 });
 
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
 
 describe("agreement review workflow", () => {
     it("review an agreement", () => {
@@ -447,7 +447,7 @@ describe("agreement BLI accordion", () => {
             .should("have.length", 3)
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.enabled");
-                // cy.wrap(checkbox).should("be.checked");
+                cy.wrap(checkbox).should("be.checked");
             });
         // uncheck all
         cy.get("#check-all").uncheck({ force: true });
