@@ -67,13 +67,13 @@ export const useReviewAgreement = (agreement, isSuccess) => {
                     return {
                         ...bli,
                         selected: false,
-                        actionable: bli.status === "DRAFT" // && !bli.has_active_workflow
+                        actionable: bli.status === "DRAFT" && !(bli.has_active_workflow === true)
                     };
                 case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
                     return {
                         ...bli,
                         selected: false,
-                        actionable: bli.status === "PLANNED" // && !bli.has_active_workflow
+                        actionable: bli.status === "PLANNED" && !(bli.has_active_workflow === true)
                     };
                 default:
                     return bli;
