@@ -13,7 +13,11 @@ export const opsApi = createApi({
         "AgreementReasons",
         "ProcurementShops",
         "BudgetLineItems",
-        "AgreementHistory"
+        "AgreementHistory",
+        "Portfolios",
+        "CanFunding",
+        "Notifications",
+        "WorkflowStepInstance"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -208,12 +212,25 @@ export const opsApi = createApi({
         }),
         addApprovalRequest: builder.mutation({
             query: (body) => ({
-                url: `/approve/`,
+                url: `/workflow-submit/`,
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
+        }),
+        addWorkflowApprove: builder.mutation({
+            query: (body) => ({
+                url: `/workflow-approve/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body
+            }),
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
+        }),
+        getWorkflowStep: builder.query({
+            query: (id) => `/workflow-step-instance/${id}`,
+            providesTags: ["WorkflowStepInstance"]
         })
     })
 });
@@ -248,5 +265,7 @@ export const {
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
     useAddBliPackageMutation,
-    useAddApprovalRequestMutation
+    useAddApprovalRequestMutation,
+    useAddWorkflowApproveMutation,
+    useGetWorkflowStepQuery
 } = opsApi;

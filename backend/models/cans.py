@@ -431,6 +431,23 @@ class BudgetLineItem(BaseModel):
         )
         return package is not None
 
+    @property
+    def active_workflow_current_step_id(self):
+        if object_session(self) is None:
+            return None
+        current_workflow_step_instance_id = object_session(self).scalar(
+            select(WorkflowInstance.id)
+            .join(
+                WorkflowStepInstance,
+                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+            )
+            .join(Package, WorkflowInstance.id == Package.workflow_id)
+            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
+            .join(self.__class__, self.id == PackageSnapshot.bli_id)
+            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+        )
+        return current_workflow_step_instance_id
+
 
 class CAN(BaseModel):
     """
