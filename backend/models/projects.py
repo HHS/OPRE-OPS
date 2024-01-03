@@ -108,6 +108,10 @@ class ResearchProject(Project):
         pg.ARRAY(sa.Enum(PopulationType)), server_default="{}", default=[]
     )
 
-    @BaseModel.display_name.getter
-    def display_name(self):
-        return self.title
+
+class AdministrativeAndSupportProject(Project):
+    __tablename__ = "administrative_and_support_project"
+    __mapper_args__ = {
+        "polymorphic_identity": ProjectType.ADMINISTRATIVE_AND_SUPPORT,
+    }
+    id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)

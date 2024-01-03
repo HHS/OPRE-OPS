@@ -325,4 +325,30 @@
       ],
     },
   ],
+  administrative_and_support_project: [
+    {
+      title: "Support Project #1",
+      short_title: "",
+      description: "",
+      url: "",
+      team_leaders: [
+        {
+          tablename: "user",
+          id: "1"
+        }
+      ],
+    },
+    {
+      title: "Support Project #2",
+      short_title: "",
+      description: "",
+      url: "",
+      team_leaders: [
+        {
+          tablename: "user",
+          id: "1"
+        }
+      ],
+    }
+  ]
 }
