@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
-// import DisabledChangeIcons from "./DisabledChangeIcons";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 import icons from "../../../uswds/img/sprite.svg";
 import { Tooltip } from "../../UI/USWDS/Tooltip";
