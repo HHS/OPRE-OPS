@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
@@ -7,7 +7,7 @@ from models.base import BaseModel
 from sqlalchemy import Column, Date, ForeignKey, Identity, Integer, String, Table, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing_extensions import override
+from typing_extensions import List, override
 
 
 # These are example methodologies derived from:
@@ -68,21 +68,23 @@ class Project(BaseModel):
         "polymorphic_on": "project_type",
     }
 
-    id = Column(Integer, Identity(), primary_key=True)
-    project_type = mapped_column(ENUM(ProjectType), nullable=False)
-    title = Column(String, nullable=False)
-    short_title = Column(String)
-    description = Column(Text)
-    url = Column(String)
-    agreements = relationship("Agreement", back_populates="project")
-    team_leaders = relationship(
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
+    project_type: Mapped[ProjectType] = mapped_column(ENUM(ProjectType), nullable=False)
+    title: Mapped[str] = mapped_column(String(), nullable=False)
+    short_title: Mapped[Optional[str]] = mapped_column(String(), nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text(), nullable=True)
+    url: Mapped[Optional[str]] = mapped_column(Text(), nullable=True)
+
+    agreements: Mapped[List["Agreement"]] = relationship(
+        "Agreement", back_populates="project"
+    )
+    team_leaders: Mapped[List["User"]] = relationship(
         "User",
         back_populates="projects",
         secondary="project_team_leaders",
         primaryjoin="Project.id == ProjectTeamLeaders.project_id",
         secondaryjoin="User.id == ProjectTeamLeaders.team_lead_id",
     )
-
     cans: Mapped[List["CAN"]] = relationship(
         "CAN", secondary="project_cans", back_populates="projects"
     )
@@ -98,11 +100,11 @@ class ResearchProject(Project):
         "polymorphic_identity": ProjectType.RESEARCH,
     }
     id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
-    origination_date = Column(Date)
-    methodologies = Column(
+    origination_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
+    methodologies: Mapped[List[MethodologyType]] = mapped_column(
         pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}", default=[]
     )
-    populations = Column(
+    populations: Mapped[List[PopulationType]] = Column(
         pg.ARRAY(sa.Enum(PopulationType)), server_default="{}", default=[]
     )
 
