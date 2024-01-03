@@ -3,9 +3,8 @@ import ApplicationContext from "../applicationContext/ApplicationContext";
 export const postProject = async (item) => {
     const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
 
-    const newProject = { ...item };
-
     // TODO: Something something project type.
+    const newProject = { ...item, project_type: "RESEARCH" };
 
     delete newProject.id;
     delete newProject.selected_project_type;
