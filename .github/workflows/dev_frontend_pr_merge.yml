@@ -1,0 +1,69 @@
+name: Dev FE Pull Request Merged
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+env:
+  TERRAFORM_VERSION: "1.5.7"
+  TF_IN_AUTOMATION: "True"
+  ENVIRONMENT: "dev"
+  WORKING_DIR: "frontend"
+
+jobs:
+  apply-deploy:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: Terraform Apply
+        uses: ./.github/actions/tf-apply
+        with:
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}"
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_id: ${{ github.event.pull_request.number }}
+          plan_workflow_file: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_pr.yml
+  
+  apply-asa-deploy:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: Load Archived build
+        id: download-plan
+        uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d #v3.0.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_pr.yml
+          pr: ${{ github.event.pull_request.number }}
+          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
+          path: ${{ env.WORKING_DIR }}/build
+
+      - name: Terraform Apply
+        uses: ./.github/actions/tf-apply
+        with:
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa"
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_id: ${{ github.event.pull_request.number }}
+          plan_workflow_file: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_pr.yml
