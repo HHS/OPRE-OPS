@@ -3,6 +3,7 @@ import AgreementDetailHeader from "../../../components/Agreements/AgreementDetai
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -18,7 +19,8 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const isEditable = isAgreementEditable && canUserEditAgreement;
+    const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
+    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveActiveWorkflow;
 
     return (
         <div>

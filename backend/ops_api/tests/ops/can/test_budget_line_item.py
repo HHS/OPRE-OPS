@@ -22,7 +22,11 @@ def test_budget_line_item_lookup(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_has_active_workflow(loaded_db):
-    bli = loaded_db.get(BudgetLineItem, 2)
+    bli = loaded_db.get(BudgetLineItem, 1)
+    print(bli.to_dict())
+    assert bli is not None
+    assert bli.has_active_workflow is False
+    bli = loaded_db.get(BudgetLineItem, 24)
     print(bli.to_dict())
     assert bli is not None
     assert bli.has_active_workflow is True
@@ -44,7 +48,7 @@ def test_budget_line_item_creation():
 def test_get_budget_line_items_list(auth_client):
     response = auth_client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
-    assert len(response.json) == 22
+    assert len(response.json) == 24
     assert response.json[0]["id"] == 1
     assert response.json[1]["id"] == 2
 

@@ -1,5 +1,6 @@
 import { codesToDisplayText, draftBudgetLineStatuses, formatDate } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
+export { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
 
 const handleAgreementProp = (agreement) => {
     if (typeof agreement !== "object") {

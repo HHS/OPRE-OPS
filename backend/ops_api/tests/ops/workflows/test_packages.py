@@ -19,7 +19,7 @@ def test_package_snapshot_retrieve(auth_client, loaded_db):
 
     assert package_snapshot is not None
     assert package_snapshot.version == 1
-    assert package_snapshot.bli_id == 1
+    assert package_snapshot.bli_id == 23
     assert package_snapshot.package_id == 1
 
 
