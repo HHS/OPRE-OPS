@@ -26,6 +26,6 @@ it("clicking on /portfolio nav while unauthenticated, should keep you at home pa
     cy.url().should("include", "/");
 });
 
-it("Simulate a fail, to test the Cypress Action upload", () => {
+it.skip("Simulate a fail, to test the Cypress Action upload", () => {
     expect(true).to.equal(false);
 });
