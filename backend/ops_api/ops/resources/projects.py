@@ -1,14 +1,8 @@
-import desert
 from flask import Response
 from models.base import BaseModel
 from models.projects import ResearchProject
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_sql_error
-from ops_api.ops.resources.research_projects import (
-    RequestBody,
-    ResearchProjectItemAPI,
-    ResearchProjectListAPI,
-    ResearchProjectResponse,
-)
+from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from typing_extensions import override
 
@@ -40,6 +34,4 @@ class ProjectListAPI(BaseListAPI):
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
     def post(self) -> Response:
         with handle_sql_error():
-            self._post_schema = desert.schema(RequestBody)
-            self._response_schema = desert.schema(ResearchProjectResponse)
             return ResearchProjectListAPI.post(self)

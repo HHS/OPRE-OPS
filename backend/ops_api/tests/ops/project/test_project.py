@@ -1,7 +1,8 @@
+import uuid
+
 import pytest
 from models import Project, ProjectType
 from models.projects import ResearchType
-from ops_api.ops.resources.research_projects import RequestBody
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -103,18 +104,18 @@ def test_projects_auth(client):
 
 @pytest.mark.usefixtures("loaded_db")
 def test_post_projects(auth_client):
-    data = RequestBody(
-        project_type=ProjectType.RESEARCH.name,
-        title="Research Project #1",
-        short_title="RP#1",
-        description="blah blah blah",
-        url="https://example.com",
-        origination_date="2023-01-01",
-        methodologies=["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        populations=["POPULATION_1", "POPULATION_2"],
-        team_leaders=[{"id": 1}, {"id": 2}, {"id": 3}],
-    )
-    response = auth_client.post("/api/v1/projects/", json=data.__dict__)
+    data = {
+        "project_type": ProjectType.RESEARCH.name,
+        "title": "Research Project #1",
+        "short_title": "RP1" + uuid.uuid4().hex,
+        "description": "blah blah blah",
+        "url": "https://example.com",
+        "origination_date": "2023-01-01",
+        "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
+        "populations": ["POPULATION_1", "POPULATION_2"],
+        "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
+    }
+    response = auth_client.post("/api/v1/projects/", json=data)
     assert response.status_code == 201
     assert response.json["title"] == "Research Project #1"
     assert response.json["team_leaders"] == [
@@ -137,6 +138,7 @@ def test_post_projects_minimum(auth_client):
     data = {
         "project_type": ProjectType.RESEARCH.name,
         "title": "Research Project #1",
+        "short_title": "RP1" + uuid.uuid4().hex,
     }
     response = auth_client.post("/api/v1/projects/", json=data)
     assert response.status_code == 201
@@ -152,18 +154,18 @@ def test_post_projects_empty_post(auth_client):
 
 @pytest.mark.usefixtures("loaded_db")
 def test_post_projects_bad_team_leaders(auth_client):
-    data = RequestBody(
-        project_type=ProjectType.RESEARCH.name,
-        title="Research Project #1",
-        short_title="RP#1",
-        description="blah blah blah",
-        url="https://example.com",
-        origination_date="2023-01-01",
-        methodologies=["FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        populations=["POPULATION_1", "POPULATION_2"],
-        team_leaders=[{"id": 100000}, {"id": 2}, {"id": 3}],
-    )
-    response = auth_client.post("/api/v1/projects/", json=data.__dict__)
+    data = {
+        "project_type": ProjectType.RESEARCH.name,
+        "title": "Research Project #1",
+        "short_title": "RP1" + uuid.uuid4().hex,
+        "description": "blah blah blah",
+        "url": "https://example.com",
+        "origination_date": "2023-01-01",
+        "methodologies": ["FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
+        "populations": ["POPULATION_1", "POPULATION_2"],
+        "team_leaders": [{"id": 100000}, {"id": 2}, {"id": 3}],
+    }
+    response = auth_client.post("/api/v1/projects/", json=data)
     assert response.status_code == 400
 
 
@@ -171,7 +173,7 @@ def test_post_projects_bad_team_leaders(auth_client):
 def test_post_projects_missing_title(auth_client):
     data = {
         "project_type": ProjectType.RESEARCH.name,
-        "short_title": "RP#1",
+        "short_title": "RP1" + uuid.uuid4().hex,
         "description": "blah blah blah",
         "url": "https://example.com",
         "origination_date": "2023-01-01",
@@ -185,18 +187,18 @@ def test_post_projects_missing_title(auth_client):
 
 @pytest.mark.usefixtures("loaded_db")
 def test_post_projects_auth_required(client):
-    data = RequestBody(
-        project_type=ProjectType.RESEARCH.name,
-        title="Research Project #1",
-        short_title="RP#1",
-        description="blah blah blah",
-        url="https://example.com",
-        origination_date="2023-01-01",
-        methodologies=["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        populations=["POPULATION_1", "POPULATION_2"],
-        team_leaders=[{"id": 1}, {"id": 2}, {"id": 3}],
-    )
-    response = client.post("/api/v1/projects/", json=data.__dict__)
+    data = {
+        "project_type": ProjectType.RESEARCH.name,
+        "title": "Research Project #1",
+        "short_title": "RP1" + uuid.uuid4().hex,
+        "description": "blah blah blah",
+        "url": "https://example.com",
+        "origination_date": "2023-01-01",
+        "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
+        "populations": ["POPULATION_1", "POPULATION_2"],
+        "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
+    }
+    response = client.post("/api/v1/projects/", json=data)
     assert response.status_code == 401
 
 

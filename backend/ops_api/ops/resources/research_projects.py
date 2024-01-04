@@ -1,11 +1,10 @@
-from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Optional
 
-import desert
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
-from marshmallow import fields
+from marshmallow import Schema, fields
+from marshmallow_enum import EnumField
 from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType, PopulationType, ProjectType, User
 from models.base import BaseModel
 from models.cans import CANFiscalYear
@@ -23,24 +22,20 @@ from typing_extensions import Any, List, override
 ENDPOINT_STRING = "/research-projects"
 
 
-@dataclass
-class TeamLeaders:
-    id: int
-    full_name: Optional[str] = None
-    email: Optional[str] = None
+class TeamLeaders(Schema):
+    id: int = fields.Int()
+    full_name: Optional[str] = fields.String()
+    email: Optional[str] = fields.String()
 
 
-@dataclass
-class RequestBody:
-    project_type: ProjectType
-    title: str
-    short_title: Optional[str] = None
-    description: Optional[str] = None
-    url: Optional[str] = None
-    origination_date: Optional[date] = fields.Date(
-        format="%Y-%m-%d",
-        default=None,
-    )
+class RequestBody(Schema):
+    project_type: ProjectType = EnumField(ProjectType)
+    title: str = fields.String()
+    short_title: str = fields.String()
+    description: Optional[str] = fields.String(allow_none=True)
+    url: Optional[str] = fields.String(allow_none=True)
+    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
+
     methodologies: Optional[list[MethodologyType]] = fields.List(
         fields.Enum(MethodologyType),
         default=[],
@@ -55,14 +50,13 @@ class RequestBody:
     )
 
 
-@dataclass
-class ResearchProjectResponse:
-    id: int
-    title: str
-    created_by: int
-    short_title: Optional[str] = None
-    description: Optional[str] = None
-    url: Optional[str] = None
+class ResearchProjectResponse(Schema):
+    id: int = fields.Int()
+    title: str = fields.String()
+    created_by: int = fields.Int()
+    short_title: str = fields.String()
+    description: Optional[str] = fields.String(allow_none=True)
+    url: Optional[str] = fields.String(allow_none=True)
     origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
     methodologies: Optional[list[MethodologyType]] = fields.List(fields.Enum(MethodologyType), default=[])
     populations: Optional[list[PopulationType]] = fields.List(fields.Enum(PopulationType), default=[])
@@ -86,10 +80,11 @@ class ResearchProjectItemAPI(BaseItemAPI):
 
 
 class ResearchProjectListAPI(BaseListAPI):
+    _post_schema = RequestBody()
+    _response_schema = ResearchProjectResponse()
+
     def __init__(self, model: BaseModel = ResearchProject):
         super().__init__(model)
-        self._post_schema = desert.schema(RequestBody)
-        self._response_schema = desert.schema(ResearchProjectResponse)
 
     @override
     @staticmethod
@@ -147,22 +142,18 @@ class ResearchProjectListAPI(BaseListAPI):
     def post(self) -> Response:
         try:
             with OpsEventHandler(OpsEventType.CREATE_PROJECT) as meta:
-                errors = self._post_schema.validate(request.json)
+                errors = ResearchProjectListAPI._post_schema.validate(request.json)
 
                 if errors:
                     current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
                     raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
-                data = self._post_schema.load(request.json)
+                data = ResearchProjectListAPI._post_schema.load(request.json)
+                new_rp = ResearchProject(**data)
 
-                # save to tmp var as a workaround for the issue of the SQLAlchemy constructor
-                # not taking the list[TeamLeaders] correctly for team_leaders
-                tmp_team_leaders = data.team_leaders if data.team_leaders else []
-
-                data.team_leaders = []
-                new_rp = ResearchProject(**data.__dict__)
-
-                new_rp.team_leaders.extend([current_app.db_session.get(User, tl_id.id) for tl_id in tmp_team_leaders])
+                new_rp.team_leaders = [
+                    current_app.db_session.get(User, tl_id["id"]) for tl_id in data.get("team_leaders", [])
+                ]
 
                 token = verify_jwt_in_request()
                 user = get_user_from_token(token[1])
@@ -171,7 +162,7 @@ class ResearchProjectListAPI(BaseListAPI):
                 current_app.db_session.add(new_rp)
                 current_app.db_session.commit()
 
-                new_rp_dict = self._response_schema.dump(new_rp)
+                new_rp_dict = ResearchProjectListAPI._response_schema.dump(new_rp)
                 meta.metadata.update({"New RP": new_rp_dict})
                 current_app.logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
 

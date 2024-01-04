@@ -60,8 +60,8 @@ def test_get_research_project_funding_summary_no_data(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 def db_loaded_with_research_projects(app, loaded_db):
     with app.app_context():
-        research_project_rp1 = ResearchProject(title="RP1")
-        research_project_rp2 = ResearchProject(title="RP2")
+        research_project_rp1 = ResearchProject(title="RP1", short_title="RP1")
+        research_project_rp2 = ResearchProject(title="RP2", short_title="RP2")
 
         research_project_rp1.portfolio_id = 1
         research_project_rp2.portfolio_id = 1
