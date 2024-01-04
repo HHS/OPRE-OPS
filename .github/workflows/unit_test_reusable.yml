@@ -71,6 +71,7 @@ jobs:
         uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
         with:
           path: frontend/cypress/screenshots # Update this path based on your project structure
+          name: cypress-screenshots
 
       # Capture logs from all services
       - name: Capture logs
