@@ -10,7 +10,10 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-it("can submit budgetlines for status change.", () => {
+// TODO: Sort out problems with reviewAgreement.cy.js
+// This is putting the Agreement into review before it other tests causing them to fail
+// This needs to either create/delete it's own agreement or get the BLIs out of an active workflow before the other tests
+it.skip("can submit budgetlines for status change.", () => {
     cy.visit(`agreements/review/1`);
     cy.get("dd").first().should("have.text", "Contract #1: African American Child and Family Research Center");
     cy.get('[data-cy="div-change-draft-to-planned"]').should("exist").click();
