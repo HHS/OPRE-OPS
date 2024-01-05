@@ -10,5 +10,4 @@ runs:
     - name: Install bun dependencies
       shell: bash
       working-directory: ./frontend
-      run: bun install 
-      
+      run: bun install
