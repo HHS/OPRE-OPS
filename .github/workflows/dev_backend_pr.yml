@@ -9,6 +9,7 @@ on:
       - backend/models/**
       - backend/ops_api/**
       - backend/Dockerfile.ops-api
+      - '!backend/tests/**'
 
 env:
   TERRAFORM_VERSION: "1.5.7"
