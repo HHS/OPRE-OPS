@@ -38,7 +38,7 @@ locals {
 data "local_file" "fileset_hash" {
   for_each = fileset("${var.frontend_dir}/build", "**/*.*")
 
-  filename   = "${var.frontend_dir}/build/${each.value}"
+  filename = "${var.frontend_dir}/build/${each.value}"
   //depends_on = [null_resource.build]
 }
 
