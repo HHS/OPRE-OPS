@@ -36,7 +36,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pr_id: ${{ github.event.pull_request.number }}
           plan_workflow_file: ${{ env.ENVIRONMENT }}_${{ env.WORKING_DIR }}_pr.yml
-  
+
   apply-asa-deploy:
     permissions:
       pull-requests: write
