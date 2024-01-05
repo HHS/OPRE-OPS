@@ -26,7 +26,7 @@ repos:
       - id: isort
         args: ["--profile", "black", "--filter-files"]
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.76.0
+    rev: v1.86.0
     hooks:
       - id: terraform_fmt
       - id: terraform_tflint
