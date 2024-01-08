@@ -20,7 +20,7 @@ resource "azurerm_container_app" "backend" {
       }
       env {
         name  = "PGUSER"
-        value = "ops" 
+        value = "ops"
       }
       env {
         name        = "PGPASSWORD"

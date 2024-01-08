@@ -9,9 +9,3 @@ data "azurerm_container_app_environment" "aca_env" {
   name                = module.ctx.labels.core.resourceNames["azurerm_container_app_environment"]
   resource_group_name = module.ctx.resource_group_name
 }
-
-data "azurerm_storage_account" "static_fe" {
-  name                = module.ctx.labels.sfe.resourceNames["azurerm_storage_account"]
-  resource_group_name = module.ctx.resource_group_name
-
-}

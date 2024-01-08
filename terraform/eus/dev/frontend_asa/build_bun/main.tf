@@ -13,7 +13,7 @@ resource "null_resource" "build" {
 
     environment = {
       REACT_APP_BACKEND_DOMAIN = self.triggers.backend_domain
-      VITE_BACKEND_DOMAIN = self.triggers.backend_domain
+      VITE_BACKEND_DOMAIN      = self.triggers.backend_domain
     }
   }
 }
