@@ -74,4 +74,3 @@ output "fe_domain" {
 output "be_domain" {
   value = "https://${module.ctx.labels.be.resourceNames["azurerm_container_app"]}.${data.azurerm_container_app_environment.aca_env.default_domain}"
 }
-
