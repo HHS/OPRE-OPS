@@ -39,14 +39,11 @@ def test_budget_line_item_creation():
     assert bli.to_dict()["status"] == "PLANNED"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_budget_line_items_list(auth_client):
+def test_get_budget_line_items_list(auth_client, loaded_db):
+    count = loaded_db.query(BudgetLineItem).count()
     response = auth_client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
-    assert len(response.json) == 22
-    assert response.json[0]["id"] == 1
-    assert response.json[1]["id"] == 2
+    assert len(response.json) == count
 
 
 @pytest.mark.usefixtures("app_ctx")

@@ -40,13 +40,12 @@ def test_can_creation(loaded_db):
     assert serialized["number"] == "G990991-X"
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_can_get_all(auth_client, loaded_db):
-    assert loaded_db.query(CAN).count() == 16
+    count = loaded_db.query(CAN).count()
 
     response = auth_client.get("/api/v1/cans/")
     assert response.status_code == 200
-    assert len(response.json) == 16
+    assert len(response.json) == count
 
 
 @pytest.mark.usefixtures("app_ctx")

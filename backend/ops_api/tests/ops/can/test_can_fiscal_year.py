@@ -27,12 +27,11 @@ def test_can_fiscal_year_create():
     assert cfy.to_dict()["fiscal_year"] == 2023
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_can_get_can_fiscal_year_list(auth_client):
+def test_can_get_can_fiscal_year_list(auth_client, loaded_db):
+    count = loaded_db.query(CANFiscalYear).count()
     response = auth_client.get("/api/v1/can-fiscal-year/")
     assert response.status_code == 200
-    assert len(response.json) == 30
+    assert len(response.json) == count
     assert response.json[0]["can_id"] == 1
     assert response.json[1]["can_id"] == 2
     assert response.json[2]["can_id"] == 3

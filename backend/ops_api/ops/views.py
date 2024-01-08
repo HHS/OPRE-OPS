@@ -1,4 +1,4 @@
-from models import Notification, Project
+from models import AdministrativeAndSupportProject, Notification, Project
 from models.base import BaseModel
 from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement, ProductServiceCode
 from models.history import OpsDBHistory
@@ -13,6 +13,10 @@ from models.workflows import (
     WorkflowStepInstance,
     WorkflowStepTemplate,
     WorkflowTemplate,
+)
+from ops_api.ops.resources.administrative_and_support_projects import (
+    AdministrativeAndSupportProjectItemAPI,
+    AdministrativeAndSupportProjectListAPI,
 )
 from ops_api.ops.resources.agreement_history import AgreementHistoryListAPI
 from ops_api.ops.resources.agreements import (
@@ -143,6 +147,14 @@ PROJECT_LIST_API_VIEW_FUNC = ProjectListAPI.as_view("projects-group", Project)
 # RESEARCH PROJECT ENDPOINTS
 RESEARCH_PROJECT_ITEM_API_VIEW_FUNC = ResearchProjectItemAPI.as_view("research-projects-item", ResearchProject)
 RESEARCH_PROJECT_LIST_API_VIEW_FUNC = ResearchProjectListAPI.as_view("research-projects-group", ResearchProject)
+
+# ADMINISTRATIVE AND SUPPORT PROJECT ENDPOINTS
+ADMINISTRATIVE_AND_SUPPORT_PROJECT_ITEM_API_VIEW_FUNC = AdministrativeAndSupportProjectItemAPI.as_view(
+    "administrative-and-support-projects-item", AdministrativeAndSupportProject
+)
+ADMINISTRATIVE_AND_SUPPORT_PROJECT_LIST_API_VIEW_FUNC = AdministrativeAndSupportProjectListAPI.as_view(
+    "administrative-and-support-projects-group", AdministrativeAndSupportProject
+)
 
 # RESEARCH TYPE ENDPOINTS
 RESEARCH_TYPE_LIST_API_VIEW_FUNC = ResearchTypeListAPI.as_view("research-type-group", ResearchType)

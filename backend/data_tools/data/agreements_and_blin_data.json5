@@ -148,6 +148,33 @@
         }
       ]
     },
+    {
+      name: "Support Contract #1",
+      description: "Test description",
+      product_service_code_id: 1,
+      agreement_reason: "NEW_REQ",
+      project_officer_id: 4,
+      agreement_type: "CONTRACT",
+      project_id: 14,
+      procurement_shop_id: 3,
+      created_by: 4,
+      contract_number: "XXXX000000010",
+      incumbent_id: null,
+      vendor_id: 3,
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: [],
+      team_members: [
+        {
+          "tablename": "user",
+          "id": 12,
+        },
+        {
+          "tablename": "user",
+          "id": 21,
+        }
+      ]
+    }
   ],
   budget_line_item: [
     {
@@ -370,5 +397,15 @@
       date_needed: "2044-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
     },
+    {
+      line_description: "Support #1",
+      comments: "",
+      can_id: 17,
+      agreement_id: 10,
+      amount: 300000.0,
+      status: "PLANNED",
+      date_needed: "2044-06-13T14:03:25.765487",
+      proc_shop_fee_percentage: 0.005,
+    }
   ]
 }

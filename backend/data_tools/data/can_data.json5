@@ -289,6 +289,23 @@
         }
       ]
     },
+    {
+      number: "G99SHARED",
+      description: "Shared CAN",
+      nickname: "SHARED",
+      expiration_date: "9/1/2027",
+      appropriation_date: "10/1/2022",
+      appropriation_term: 5,
+      arrangement_type: "OPRE_APPROPRIATION",
+      authorizer_id: 26,
+      managing_portfolio_id: 3,
+      funding_sources: [
+        {
+          "tablename": "funding_source",
+          "id": 25
+        }
+      ]
+    }
   ],
   can_fiscal_year: [
     {
@@ -561,6 +578,15 @@
       potential_additional_funding: 0.0,
       notes: "",
     },
+    {
+      can_id: 17,
+      fiscal_year: 2023,
+      total_fiscal_year_funding: 500000.0,
+      received_funding: 0.0,
+      expected_funding: 500000.0,
+      potential_additional_funding: 0.0,
+      notes: "",
+    }
   ],
   can_fiscal_year_carry_forward: [
     {
