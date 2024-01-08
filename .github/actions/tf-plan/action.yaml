@@ -4,10 +4,10 @@ inputs:
   terraform_directory:
     description: 'Directory that holds Terraform code'
     required: true
-  azure_client_id: 
+  azure_client_id:
     description: 'Azure client id'
     required: true
-  azure_client_secret: 
+  azure_client_secret:
     description: 'Azure client secret'
     required: true
   azure_subscription_id:
@@ -16,17 +16,17 @@ inputs:
   azure_tenant_id:
     description: 'Azure tenant id'
     required: true
-  terraform_version: 
+  terraform_version:
     description: 'Terraform Version'
     required: true
     default: 1.5.7
-  github_token: 
+  github_token:
     description: 'GitHub token for auth'
     required: true
   pr_id:
     description: 'Pull request ID'
     required: true
-  tf_vars: 
+  tf_vars:
     description: 'A map of variable inputs for Terraform'
     required: false
 
@@ -61,7 +61,7 @@ runs:
       with:
         terraform_version: ${{ inputs.terraform_version }}
         terraform_wrapper: false
-    
+
     - name: Terraform Init
       id: init
       working-directory: ${{ inputs.terraform_directory }}

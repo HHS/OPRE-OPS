@@ -6,11 +6,11 @@ This is a module intended to be shared across a project that provides some stand
 ## Usage
 While this module can be customized and used in other projects, it is intended to support the OPRE OPS Project and has opinionated default values designed to lessen the need to bring your own context into each component of the Terraform project. There are more examples in the [examples](./examples) directory.
 
-## Basic Example Usage 
+## Basic Example Usage
 
 ```
 module "ctx" {
-  source      = "git::https://github.com/HHS/OPRE-OPS.git//terraform/global/context?ref=<tag>" # Location where this module lives. 
+  source      = "git::https://github.com/HHS/OPRE-OPS.git//terraform/global/context?ref=<tag>" # Location where this module lives.
   environment = "dev"
 }
 
