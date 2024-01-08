@@ -8,7 +8,7 @@ on:
       - 'frontend/**'
 
 env:
-  TERRAFORM_VERSION: "1.5.7"
+  TERRAFORM_VERSION: "1.6.6"
   TF_IN_AUTOMATION: "True"
   ENVIRONMENT: "dev"
   WORKING_DIR: "frontend"
@@ -31,14 +31,14 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tag: ${{ github.sha }}
-  
+
   build-asa:
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-        
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@9b21598af8d4dfc302e5a30250007de0fda92acc #v1.1.1
         with:
@@ -47,7 +47,7 @@ jobs:
       - name: Install dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: bun install
-        
+
       - name: Build Bun
         uses: ./.github/actions/tf-apply
         with:
@@ -71,7 +71,7 @@ jobs:
         with:
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
           path: ${{ env.WORKING_DIR }}/build
-  
+
   plan-deploy:
     needs: build
     permissions:
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-      
+
       - name: Terraform Plan
         uses: ./.github/actions/tf-plan
         with:
@@ -97,7 +97,7 @@ jobs:
               "environment": "${{ env.ENVIRONMENT }}",
               "container_tag": "${{ github.sha }}"
             }
-  
+
   plan-asa-deploy:
     needs: build-asa
     permissions:
@@ -112,7 +112,7 @@ jobs:
         with:
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.event.pull_request.number }}
           path: ${{ env.WORKING_DIR }}/build
-      
+
       - name: Terraform Plan
         uses: ./.github/actions/tf-plan
         with:
