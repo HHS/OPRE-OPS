@@ -92,6 +92,21 @@ export const ReviewAgreement = () => {
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
     const changeInCans = getTotalBySelectedCans(budgetLines);
+    let workflow_action = "";
+    switch (action) {
+        case actionOptions.CHANGE_DRAFT_TO_PLANNED:
+            workflow_action = "DRAFT_TO_PLANNED";
+            break;
+        case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
+            workflow_action = "PLANNED_TO_EXECUTING";
+            break;
+    }
+    const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
+    const isDRAFTSubmissionReady =
+        anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
+    const isPLANNEDSubmissionReady =
+        anyBudgetLinePlanned && action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && isAnythingSelected;
+    const isSubmissionReady = isDRAFTSubmissionReady || isPLANNEDSubmissionReady;
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft) {
@@ -99,15 +114,6 @@ export const ReviewAgreement = () => {
             const bli_ids = getSelectedBudgetLines(budgetLines).map((bli) => bli.id);
             const user_id = activeUser?.id;
             const notes = "";
-            let workflow_action = "";
-            switch (action) {
-                case actionOptions.CHANGE_DRAFT_TO_PLANNED:
-                    workflow_action = "DRAFT_TO_PLANNED";
-                    break;
-                case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
-                    workflow_action = "PLANNED_TO_EXECUTING";
-                    break;
-            }
             console.log("BLI Package Data:", bli_ids, user_id, notes);
             console.log("THE ACTION IS:", action);
             addApprovalRequest({
@@ -136,37 +142,6 @@ export const ReviewAgreement = () => {
                         redirectUrl: "/error"
                     });
                 });
-
-            // This is the old process of just updating the BLI status to UNDER_REVIEW
-            // Instead it should be creating a BLI Package, and sending it to approval (create a Workflow)
-            /*
-            agreement?.budget_line_items.forEach((bli) => {
-                if (bli.status === "DRAFT") {
-                    console.log(bli.id);
-                    updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" })
-                        .unwrap()
-                        .then((fulfilled) => {
-                            console.log("BLI Status Updated:", fulfilled);
-                            setAlert({
-                                type: "success",
-                                heading: "Agreement sent to approval",
-                                message: "The agreement has been successfully sent to approval for Planned Status.",
-                                redirectUrl: "/agreements"
-                            });
-                        })
-                        .catch((rejected) => {
-                            console.log("Error Updating Budget Line Status");
-                            console.dir(rejected);
-                            setAlert({
-                                type: "error",
-                                heading: "Error",
-                                message: "An error occurred. Please try again.",
-                                redirectUrl: "/error"
-                            });
-                        });
-                }
-            });
-            */
         }
     };
 
@@ -290,11 +265,12 @@ export const ReviewAgreement = () => {
                     Edit
                 </button>
                 <button
-                    className={`usa-button ${!anyBudgetLinesDraft ? "usa-tooltip" : ""}`}
+                    className={`usa-button ${!isSubmissionReady ? "usa-tooltip" : ""}`}
                     data-cy="send-to-approval-btn"
-                    title={!anyBudgetLinesDraft ? "Agreement is not able to be reviewed" : ""}
+                    data-position={`${!isSubmissionReady ? "top" : ""}`}
+                    title={!isSubmissionReady ? "Agreement is not able to be reviewed" : ""}
+                    disabled={!isSubmissionReady || !res.isValid()}
                     onClick={handleSendToApproval}
-                    disabled={!anyBudgetLinesDraft || !res.isValid()}
                 >
                     Send to Approval
                 </button>
