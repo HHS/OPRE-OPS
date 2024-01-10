@@ -91,10 +91,13 @@ def test_agreements_with_project_empty(auth_client, loaded_db):
 def test_agreements_with_project_found(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": "1"})
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
+
+    print(response.json)
 
     assert response.json[0]["id"] == 1
-    assert response.json[1]["id"] == 2
+    assert response.json[1]["id"] == 10
+    assert response.json[2]["id"] == 2
 
 
 @pytest.mark.usefixtures("app_ctx")

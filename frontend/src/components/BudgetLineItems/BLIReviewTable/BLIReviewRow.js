@@ -50,6 +50,7 @@ const BLIReviewRow = ({
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}

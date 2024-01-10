@@ -1,0 +1,52 @@
+name: Dev BE Data-tools Deploy
+
+on:
+  workflow_dispatch:
+
+env:
+  TERRAFORM_VERSION: "1.6.6"
+  TF_IN_AUTOMATION: "True"
+  ENVIRONMENT: "dev"
+  WORKING_DIR: "backend"
+  DOCKER_FILE: "Dockerfile.data-tools"
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: Build and publish the Docker image for ${{ github.repository }}
+        uses: macbre/push-to-ghcr@0f6c180522d02d9e608096c4dcf3b691193b4d44 #v13
+        with:
+          image_name: ${{ github.repository }}/ops-data-tools # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
+          image_tag: ${{ github.sha }}
+
+  plan-deploy:
+    needs: build
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: Deploy
+        uses: ./.github/actions/tf-apply
+        with:
+          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/data-tools"
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tf_vars: |
+            {
+              "environment": "${{ env.ENVIRONMENT }}",
+              "container_tag": "${{ github.sha }}"
+            }

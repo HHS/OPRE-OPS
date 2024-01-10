@@ -79,10 +79,10 @@ To run them...
 
 ```shell
 cd ./frontend/
-bun run test --watchAll=false
+bun run test --watch=false
 ```
 
-This runs them once and then exits.  You can remove the `--watchAll=false` if you want to continually rerun the tests
+This runs them once and then exits.  You can remove the `--watch=false` if you want to continually rerun the tests
 on each file save.
 
 You can also get code coverage information by running...

@@ -201,7 +201,6 @@ export const AgreementsList = () => {
                     <AgreementsFilterTags
                         filters={filters}
                         setFilters={setFilters}
-                        for
                     />
                 }
                 FilterButton={
