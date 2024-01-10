@@ -118,7 +118,7 @@ def UpdateBlis(workflow_step_instance: WorkflowStepInstance):
         current_app.db_session.commit()
 
 
-def create_approval_notification_for_submitter(self, workflow_step_instance):
+def create_approval_notification_for_submitter(workflow_step_instance):
     if workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.DRAFT_TO_PLANNED:
         notification = Notification(
             title="Budget Lines Approved from Draft to Planned Status",
