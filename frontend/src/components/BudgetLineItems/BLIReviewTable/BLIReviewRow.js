@@ -19,6 +19,7 @@ import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/
 import { futureDateErrorClass, addErrorClassIfNotFound } from "../BudgetLinesTable/BLIRow.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { isBudgetLineInCurrentFiscalYear } from "../../../pages/agreements/review/ReviewAgreement.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -64,6 +65,13 @@ const BLIReviewRow = ({
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    let toolTipMsg = "";
+    if (!budgetLine?.actionable) {
+        toolTipMsg = "This budget line is not selectable";
+    }
+    if (!isBudgetLineInCurrentFiscalYear(budgetLine?.date_needed)) {
+        toolTipMsg = "Only current FY Budget Lines can be executed";
+    }
 
     const TableRowData = (
         <>
@@ -91,7 +99,7 @@ const BLIReviewRow = ({
                     className="usa-checkbox__label usa-tool-tip"
                     htmlFor={budgetLine?.id}
                     data-position="top"
-                    title={`${!budgetLine.actionable ? "disabled" : ""}`}
+                    title={toolTipMsg}
                 >
                     {budgetLine?.line_description}
                 </label>

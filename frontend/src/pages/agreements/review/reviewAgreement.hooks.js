@@ -1,7 +1,7 @@
 import * as React from "react";
 import suite from "./suite";
 import { actionOptions } from "./ReviewAgreement.constants";
-import { fiscalYearFromDate } from "../../../helpers/utils";
+import { isBudgetLineInCurrentFiscalYear } from "./ReviewAgreement.helpers";
 
 export const useReviewAgreement = (agreement, isSuccess) => {
     const [action, setAction] = React.useState(""); // for the action accordion
@@ -62,9 +62,8 @@ export const useReviewAgreement = (agreement, isSuccess) => {
     const handleActionChange = (action) => {
         setAction(action);
         setMainToggleSelected(false);
-        const currentFiscalYear = fiscalYearFromDate(new Date());
+
         const newBudgetLines = budgetLines.map((bli) => {
-            const isBudgetLineInCurrentFiscalYear = fiscalYearFromDate(bli?.date_needed) === currentFiscalYear;
             switch (action) {
                 case actionOptions.CHANGE_DRAFT_TO_PLANNED:
                     return {
@@ -77,7 +76,7 @@ export const useReviewAgreement = (agreement, isSuccess) => {
                         ...bli,
                         selected: false,
                         actionable:
-                            bli.status === "PLANNED" && !bli.has_active_workflow && isBudgetLineInCurrentFiscalYear
+                            bli.status === "PLANNED" && !bli.has_active_workflow && isBudgetLineInCurrentFiscalYear(bli)
                     };
                 default:
                     return bli;
