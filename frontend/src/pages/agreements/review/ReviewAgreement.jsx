@@ -114,7 +114,7 @@ export const ReviewAgreement = () => {
             //Create BLI Package, and send it to approval (create a Workflow)
             const bli_ids = getSelectedBudgetLines(budgetLines).map((bli) => bli.id);
             const user_id = activeUser?.id;
-            const notes = "";
+
             let message = "";
             if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
                 message = "The agreement has been successfully sent to approval for Planned Status.";
