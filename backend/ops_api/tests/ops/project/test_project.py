@@ -53,7 +53,7 @@ def test_projects_serialization(auth_client, loaded_db):
 def test_projects_with_fiscal_year_found(auth_client, loaded_db):
     response = auth_client.get("/api/v1/projects/?fiscal_year=2023")
     assert response.status_code == 200
-    assert len(response.json) == 3
+    assert len(response.json) == 4
     assert response.json[0]["title"] == "Human Services Interoperability Support"
     assert response.json[0]["id"] == 1
 
