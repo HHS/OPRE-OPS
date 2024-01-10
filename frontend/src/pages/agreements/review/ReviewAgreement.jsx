@@ -114,12 +114,17 @@ export const ReviewAgreement = () => {
             //Create BLI Package, and send it to approval (create a Workflow)
             const bli_ids = getSelectedBudgetLines(budgetLines).map((bli) => bli.id);
             const user_id = activeUser?.id;
+            let alertTitle = "";
+            let alertMessage = "";
 
-            let message = "";
             if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
-                message = "The agreement has been successfully sent to approval for Planned Status.";
+                alertTitle = "Budget Lines Sent to Approval for Planned Status";
+                alertMessage =
+                    "The budget lines have been successfully sent to your Division Director to review. After draft budget lines are approved, they will change to Planned Status, and the amounts will be subtracted from the FY budget.";
             } else if (action === actionOptions.CHANGE_PLANNED_TO_EXECUTING) {
-                message = "The agreement has been successfully sent to approval for Executing Status.";
+                alertTitle = "Budget Lines Sent to Approval for Executing Status";
+                alertMessage =
+                    "The budget lines have been successfully sent to your Division Director to review. After draft budget lines are approved, they will change to Executing Status.";
             }
             console.log("BLI Package Data:", bli_ids, user_id, notes);
             console.log("THE ACTION IS:", action);
@@ -134,8 +139,8 @@ export const ReviewAgreement = () => {
                     console.log("BLI Status Updated:", fulfilled);
                     setAlert({
                         type: "success",
-                        heading: "Agreement sent to approval",
-                        message: message,
+                        heading: alertTitle,
+                        message: alertMessage,
                         redirectUrl: "/agreements"
                     });
                 })
