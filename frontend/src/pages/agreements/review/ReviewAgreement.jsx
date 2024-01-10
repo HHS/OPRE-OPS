@@ -114,7 +114,6 @@ export const ReviewAgreement = () => {
             //Create BLI Package, and send it to approval (create a Workflow)
             const bli_ids = getSelectedBudgetLines(budgetLines).map((bli) => bli.id);
             const user_id = activeUser?.id;
-            const notes = "";
             console.log("BLI Package Data:", bli_ids, user_id, notes);
             console.log("THE ACTION IS:", action);
             addApprovalRequest({
