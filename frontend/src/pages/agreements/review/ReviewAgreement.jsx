@@ -2,32 +2,33 @@ import { Fragment } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
+import suite from "./suite";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { useAddApprovalRequestMutation } from "../../../api/opsAPI";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import suite from "./suite";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
+import App from "../../../App";
+import useToggle from "../../../hooks/useToggle";
+import TextArea from "../../../components/UI/Form/TextArea";
+import PageHeader from "../../../components/UI/PageHeader";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import { actionOptions } from "./ReviewAgreement.constants";
+import useReviewAgreement from "./reviewAgreement.hooks";
 import {
     anyBudgetLinesByStatus,
     getSelectedBudgetLines,
     selectedBudgetLinesTotal,
     getTotalBySelectedCans
 } from "./ReviewAgreement.helpers";
-import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
-import useReviewAgreement from "./reviewAgreement.hooks";
-import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
-import App from "../../../App";
-import useToggle from "../../../hooks/useToggle";
-import TextArea from "../../../components/UI/Form/TextArea";
-import PageHeader from "../../../components/UI/PageHeader";
-import { actionOptions } from "./ReviewAgreement.constants";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -264,16 +265,29 @@ export const ReviewAgreement = () => {
                 >
                     Edit
                 </button>
-                <button
-                    className={`usa-button ${!isSubmissionReady ? "usa-tooltip" : ""}`}
-                    data-cy="send-to-approval-btn"
-                    data-position={`${!isSubmissionReady ? "top" : ""}`}
-                    title={!isSubmissionReady ? "Agreement is not able to be reviewed" : ""}
-                    disabled={!isSubmissionReady || !res.isValid()}
-                    onClick={handleSendToApproval}
-                >
-                    Send to Approval
-                </button>
+                {!isSubmissionReady || !res.isValid() ? (
+                    <Tooltip
+                        label="Agreement is not able to be reviewed"
+                        position="top"
+                    >
+                        <button
+                            className="usa-button"
+                            data-cy="send-to-approval-btn"
+                            disabled={!isSubmissionReady || !res.isValid()}
+                            onClick={handleSendToApproval}
+                        >
+                            Send to Approval
+                        </button>
+                    </Tooltip>
+                ) : (
+                    <button
+                        className="usa-button"
+                        data-cy="send-to-approval-btn"
+                        onClick={handleSendToApproval}
+                    >
+                        Send to Approval
+                    </button>
+                )}
             </div>
         </App>
     );
