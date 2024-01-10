@@ -110,10 +110,17 @@ export const ReviewAgreement = () => {
     const isSubmissionReady = isDRAFTSubmissionReady || isPLANNEDSubmissionReady;
 
     const handleSendToApproval = () => {
-        if (anyBudgetLinesDraft) {
+        if (anyBudgetLinesDraft || anyBudgetLinePlanned) {
             //Create BLI Package, and send it to approval (create a Workflow)
             const bli_ids = getSelectedBudgetLines(budgetLines).map((bli) => bli.id);
             const user_id = activeUser?.id;
+
+            let message = "";
+            if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
+                message = "The agreement has been successfully sent to approval for Planned Status.";
+            } else if (action === actionOptions.CHANGE_PLANNED_TO_EXECUTING) {
+                message = "The agreement has been successfully sent to approval for Executing Status.";
+            }
             console.log("BLI Package Data:", bli_ids, user_id, notes);
             console.log("THE ACTION IS:", action);
             addApprovalRequest({
@@ -128,7 +135,7 @@ export const ReviewAgreement = () => {
                     setAlert({
                         type: "success",
                         heading: "Agreement sent to approval",
-                        message: "The agreement has been successfully sent to approval for Planned Status.",
+                        message: message,
                         redirectUrl: "/agreements"
                     });
                 })
@@ -272,8 +279,7 @@ export const ReviewAgreement = () => {
                         <button
                             className="usa-button"
                             data-cy="send-to-approval-btn"
-                            disabled={!isSubmissionReady || !res.isValid()}
-                            onClick={handleSendToApproval}
+                            disabled={true}
                         >
                             Send to Approval
                         </button>
