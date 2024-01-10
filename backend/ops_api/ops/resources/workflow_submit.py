@@ -17,7 +17,7 @@ from models.workflows import (
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
@@ -75,6 +75,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
                 bli = current_app.db_session.get(BudgetLineItem, bli_id)
 
                 if bli:
+                    validate_bli(bli)
                     # latest_version = bli.versions.order_by(desc("id")).first()
                     # current_app.logger.info(f"Latest version: {latest_version}")
                     agreement_id = bli.agreement_id
@@ -154,3 +155,9 @@ Please review and approve. LINK to Agreement: {agreement_id}""",
         except SQLAlchemyError as se:
             current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
             return make_response_with_headers({}, 500)
+
+
+def validate_bli(bli: BudgetLineItem):
+    if bli.agreement_id is None:
+        raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
+    return

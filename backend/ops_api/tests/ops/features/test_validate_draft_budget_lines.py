@@ -1054,7 +1054,6 @@ def error_message_agreement(context, setup_and_teardown):
     assert context["response_post"].status_code == 400
     assert context["response_post"].json == {
         "_schema": ["BLI must have an Agreement when status is not DRAFT"],
-        "agreement_id": ["Missing data for required field."],
     }
 
 
