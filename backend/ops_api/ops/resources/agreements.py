@@ -19,7 +19,7 @@ from models import (
 )
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error, handle_sql_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
@@ -64,9 +64,8 @@ class AgreementItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     @handle_api_error
     def get(self, id: int) -> Response:
-        with handle_sql_error():
-            item = self._get_item(id)
-            additional_fields = add_additional_fields_to_agreement_response(item)
+        item = self._get_item(id)
+        additional_fields = add_additional_fields_to_agreement_response(item)
 
         return self._get_item_with_try(id, additional_fields=additional_fields)
 

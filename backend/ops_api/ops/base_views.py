@@ -1,4 +1,4 @@
-from contextlib import contextmanager, suppress
+from contextlib import suppress
 from enum import Enum
 from functools import wraps
 from typing import Optional
@@ -13,7 +13,7 @@ from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
+from sqlalchemy.exc import PendingRollbackError
 from typing_extensions import override
 
 
@@ -22,15 +22,6 @@ def generate_validator(model: BaseModel) -> BaseModel.Validator:
         return model.Validator()
     except AttributeError:
         return None
-
-
-@contextmanager
-def handle_sql_error():
-    try:
-        yield
-    except SQLAlchemyError as se:
-        current_app.logger.error(se)
-        return make_response_with_headers({}, 500)
 
 
 def handle_api_error(f):
@@ -73,37 +64,34 @@ class OPSMethodView(MethodView):
         return [row[0] for row in current_app.db_session.execute(stmt).all()]
 
     def _get_item_by_oidc_with_try(self, oidc: str):
-        with handle_sql_error():
-            item = self._get_item_by_oidc(oidc)
+        item = self._get_item_by_oidc(oidc)
 
-            if item:
-                response = make_response_with_headers(item.to_dict())
-            else:
-                response = make_response_with_headers({}, 404)
+        if item:
+            response = make_response_with_headers(item.to_dict())
+        else:
+            response = make_response_with_headers({}, 404)
 
-            return response
+        return response
 
     def _get_item_with_try(self, id: int, additional_fields: dict = None) -> Response:
-        with handle_sql_error():
-            item = self._get_item(id)
+        item = self._get_item(id)
 
-            if item:
-                item_dict = item.to_dict()
-                item_dict.update(additional_fields or {})
-                response = make_response_with_headers(item_dict)
-            else:
-                response = make_response_with_headers({}, 404)
+        if item:
+            item_dict = item.to_dict()
+            item_dict.update(additional_fields or {})
+            response = make_response_with_headers(item_dict)
+        else:
+            response = make_response_with_headers({}, 404)
 
         return response
 
     def _get_all_items_with_try(self) -> Response:
-        with handle_sql_error():
-            item_list = self._get_all_items()
+        item_list = self._get_all_items()
 
-            if item_list:
-                response = make_response_with_headers([item.to_dict() for item in item_list])
-            else:
-                response = make_response_with_headers({}, 404)
+        if item_list:
+            response = make_response_with_headers([item.to_dict() for item in item_list])
+        else:
+            response = make_response_with_headers({}, 404)
 
         return response
 

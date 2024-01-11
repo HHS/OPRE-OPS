@@ -1,7 +1,7 @@
 from flask import Response, current_app
 from models import Portfolio
 from models.base import BaseModel
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error, handle_sql_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
@@ -16,9 +16,8 @@ class PortfolioItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     @handle_api_error
     def get(self, id: int) -> Response:
-        with handle_sql_error():
-            item = self._get_item(id)
-            additional_fields = add_additional_fields_to_portfolio_response(item)
+        item = self._get_item(id)
+        additional_fields = add_additional_fields_to_portfolio_response(item)
 
         return self._get_item_with_try(id, additional_fields=additional_fields)
 

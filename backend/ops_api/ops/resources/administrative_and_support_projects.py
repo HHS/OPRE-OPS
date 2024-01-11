@@ -19,7 +19,7 @@ from models import (
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.projects import ResearchProject
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error, handle_sql_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -84,12 +84,11 @@ class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
     @handle_api_error
     def get(self, id: int) -> Response:
-        with handle_sql_error():
-            item = self._get_item(id)
-            if item:
-                return make_response_with_headers(AdministrativeAndSupportProjectItemAPI._response_schema.dump(item))
-            else:
-                return make_response_with_headers({}, 404)
+        item = self._get_item(id)
+        if item:
+            return make_response_with_headers(AdministrativeAndSupportProjectItemAPI._response_schema.dump(item))
+        else:
+            return make_response_with_headers({}, 404)
 
 
 class AdministrativeAndSupportProjectListAPI(BaseListAPI):
