@@ -73,13 +73,13 @@ class ResearchProjectItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
+    @handle_api_error
     def get(self, id: int) -> Response:
-        with handle_api_error():
-            item = self._get_item(id)
-            if item:
-                return make_response_with_headers(ResearchProjectItemAPI._response_schema.dump(item))
-            else:
-                return make_response_with_headers({}, 404)
+        item = self._get_item(id)
+        if item:
+            return make_response_with_headers(ResearchProjectItemAPI._response_schema.dump(item))
+        else:
+            return make_response_with_headers({}, 404)
 
 
 class ResearchProjectListAPI(BaseListAPI):

@@ -1,5 +1,6 @@
 from contextlib import contextmanager, suppress
 from enum import Enum
+from functools import wraps
 from typing import Optional
 
 from flask import Response, current_app, jsonify, request
@@ -32,19 +33,22 @@ def handle_sql_error():
         return make_response_with_headers({}, 500)
 
 
-@contextmanager
-def handle_api_error():
-    try:
-        yield
-    except (KeyError, RuntimeError, PendingRollbackError) as er:
-        current_app.logger.error(er)
-        return make_response_with_headers({}, 400)
-    except ValidationError as ve:
-        current_app.logger.error(ve)
-        return make_response_with_headers(ve.normalized_messages(), 400)
-    except SQLAlchemyError as se:
-        current_app.logger.error(se)
-        return make_response_with_headers({}, 500)
+def handle_api_error(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except (KeyError, RuntimeError, PendingRollbackError) as er:
+            current_app.logger.error(er)
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            current_app.logger.error(ve)
+            return make_response_with_headers(ve.normalized_messages(), 400)
+        except Exception as e:
+            current_app.logger.error(e)
+            return make_response_with_headers({}, 500)
+
+    return decorated
 
 
 class OPSMethodView(MethodView):
@@ -135,6 +139,7 @@ class BaseItemAPI(OPSMethodView):
     @override
     @jwt_required()
     @error_simulator
+    @handle_api_error
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -146,12 +151,14 @@ class BaseListAPI(OPSMethodView):
     @override
     @jwt_required()
     @error_simulator
+    @handle_api_error
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
     @override
     @jwt_required()
     @error_simulator
+    @handle_api_error
     def post(self) -> Response:
         raise NotImplementedError
 
@@ -169,6 +176,7 @@ class EnumListAPI(MethodView):
     @override
     @jwt_required()
     @error_simulator
+    @handle_api_error
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)

@@ -1,7 +1,7 @@
 from flask import Response, current_app, request
 from models import Agreement, OpsDBHistory, OpsDBHistoryType, User
 from models.base import BaseModel
-from ops_api.ops.base_views import BaseListAPI, handle_sql_error
+from ops_api.ops.base_views import BaseListAPI, handle_api_error, handle_sql_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import Integer, and_, or_, select
@@ -20,6 +20,7 @@ class AgreementHistoryListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.HISTORY)
+    @handle_api_error
     def get(self, id: int) -> Response:
         print(f"agreement_history.get:{id}")
         limit = request.args.get("limit", 10, type=int)

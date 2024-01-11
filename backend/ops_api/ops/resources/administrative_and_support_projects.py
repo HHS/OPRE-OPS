@@ -19,13 +19,12 @@ from models import (
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.projects import ResearchProject
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_sql_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error, handle_sql_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
 from typing_extensions import List, override
 
@@ -83,6 +82,7 @@ class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
+    @handle_api_error
     def get(self, id: int) -> Response:
         with handle_sql_error():
             item = self._get_item(id)
@@ -131,6 +131,7 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
+    @handle_api_error
     def get(self) -> Response:
         fiscal_year = request.args.get("fiscal_year")
         portfolio_id = request.args.get("portfolio_id")
@@ -149,38 +150,31 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
+    @handle_api_error
     def post(self) -> Response:
-        try:
-            with OpsEventHandler(OpsEventType.CREATE_PROJECT) as meta:
-                errors = AdministrativeAndSupportProjectListAPI._post_schema.validate(request.json)
+        with OpsEventHandler(OpsEventType.CREATE_PROJECT) as meta:
+            errors = AdministrativeAndSupportProjectListAPI._post_schema.validate(request.json)
 
-                if errors:
-                    current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
-                    raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+            if errors:
+                current_app.logger.error(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
+                raise RuntimeError(f"POST to {ENDPOINT_STRING}: Params failed validation: {errors}")
 
-                data = AdministrativeAndSupportProjectListAPI._post_schema.load(request.json)
-                new_rp = ResearchProject(**data)
+            data = AdministrativeAndSupportProjectListAPI._post_schema.load(request.json)
+            new_rp = ResearchProject(**data)
 
-                new_rp.team_leaders = [
-                    current_app.db_session.get(User, tl_id["id"]) for tl_id in data.get("team_leaders", [])
-                ]
+            new_rp.team_leaders = [
+                current_app.db_session.get(User, tl_id["id"]) for tl_id in data.get("team_leaders", [])
+            ]
 
-                token = verify_jwt_in_request()
-                user = get_user_from_token(token[1])
-                new_rp.created_by = user.id
+            token = verify_jwt_in_request()
+            user = get_user_from_token(token[1])
+            new_rp.created_by = user.id
 
-                current_app.db_session.add(new_rp)
-                current_app.db_session.commit()
+            current_app.db_session.add(new_rp)
+            current_app.db_session.commit()
 
-                new_rp_dict = AdministrativeAndSupportProjectListAPI._response_schema.dump(new_rp)
-                meta.metadata.update({"New RP": new_rp_dict})
-                current_app.logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
+            new_rp_dict = AdministrativeAndSupportProjectListAPI._response_schema.dump(new_rp)
+            meta.metadata.update({"New RP": new_rp_dict})
+            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New ResearchProject created: {new_rp_dict}")
 
-                return make_response_with_headers(new_rp_dict, 201)
-        except (RuntimeError, PendingRollbackError) as re:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {re}")
-            return make_response_with_headers({}, 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
-            return make_response_with_headers({}, 500)
+            return make_response_with_headers(new_rp_dict, 201)

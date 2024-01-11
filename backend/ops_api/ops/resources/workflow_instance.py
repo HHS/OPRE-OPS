@@ -15,7 +15,7 @@ from models.workflows import (
     WorkflowStepDependency,
     WorkflowTriggerType,
 )
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.workflow_step_instance import WorkflowStepInstanceResponse
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from typing_extensions import override
@@ -45,6 +45,7 @@ class WorkflowInstanceResponse:
 class WorkflowTriggerTypeListAPI(MethodView):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowTriggerType]
         return reasons
@@ -53,6 +54,7 @@ class WorkflowTriggerTypeListAPI(MethodView):
 class WorkflowActionListAPI(MethodView):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowAction]
         return reasons
@@ -61,6 +63,7 @@ class WorkflowActionListAPI(MethodView):
 class WorkflowStatusListAPI(MethodView):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowStatus]
         return reasons
@@ -69,6 +72,7 @@ class WorkflowStatusListAPI(MethodView):
 class WorkflowStepDependencyListAPI(MethodView):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowStepDependency]
         return reasons
@@ -83,6 +87,7 @@ class WorkflowInstanceItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
+    @handle_api_error
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -96,5 +101,6 @@ class WorkflowInstanceListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
+    @handle_api_error
     def get(self) -> Response:
         return super().get()

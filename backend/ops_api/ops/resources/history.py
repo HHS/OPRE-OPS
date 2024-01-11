@@ -1,6 +1,6 @@
 from flask import Response, current_app, request
 from models.base import BaseModel
-from ops_api.ops.base_views import BaseListAPI, handle_sql_error
+from ops_api.ops.base_views import BaseListAPI, handle_api_error, handle_sql_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
@@ -13,6 +13,7 @@ class OpsDBHistoryListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.HISTORY)
+    @handle_api_error
     def get(self) -> Response:
         class_name = request.args.get("class_name", None)
         row_key = request.args.get("row_key", None)
