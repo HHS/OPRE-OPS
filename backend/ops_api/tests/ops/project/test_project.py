@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from flask import url_for
 from models import Project, ProjectType
 from models.projects import ResearchType
 
@@ -20,24 +21,24 @@ def test_project_retrieve(loaded_db):
 def test_projects_get_all(auth_client, loaded_db):
     count = loaded_db.query(Project).count()
 
-    response = auth_client.get("/api/v1/projects/")
+    response = auth_client.get(url_for("api.projects-group"))
     assert response.status_code == 200
     assert len(response.json) == count
 
 
 def test_projects_get_by_id(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/projects/1")
+    response = auth_client.get(url_for("api.projects-item", id="1"))
     assert response.status_code == 200
     assert response.json["title"] == "Human Services Interoperability Support"
 
 
 def test_projects_get_by_id_404(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/projects/1000")
+    response = auth_client.get(url_for("api.projects-item", id="1000"))
     assert response.status_code == 404
 
 
 def test_projects_serialization(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/projects/1")
+    response = auth_client.get(url_for("api.projects-item", id="1"))
     assert response.status_code == 200
     assert response.json["id"] == 1
     assert response.json["title"] == "Human Services Interoperability Support"
@@ -51,7 +52,7 @@ def test_projects_serialization(auth_client, loaded_db):
 
 
 def test_projects_with_fiscal_year_found(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/projects/?fiscal_year=2023")
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=2023))
     assert response.status_code == 200
     assert len(response.json) == 4
     assert response.json[0]["title"] == "Human Services Interoperability Support"
@@ -59,46 +60,46 @@ def test_projects_with_fiscal_year_found(auth_client, loaded_db):
 
 
 def test_projects_with_fiscal_year_not_found(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/projects/?fiscal_year=2000")
+    response = auth_client.get(url_for("api.projects-group", fiscal_year=2000))
     assert response.status_code == 200
     assert len(response.json) == 0
 
 
 @pytest.mark.usefixtures("loaded_db")
 def test_project_search(auth_client):
-    response = auth_client.get("/api/v1/projects/?search=")
+    response = auth_client.get(url_for("api.projects-group", search=""))
 
     assert response.status_code == 200
     assert len(response.json) == 0
 
-    response = auth_client.get("/api/v1/projects/?search=fa")
+    response = auth_client.get(url_for("api.projects-group", search="fa"))
 
     assert response.status_code == 200
     assert len(response.json) == 4
 
-    response = auth_client.get("/api/v1/projects/?search=father")
+    response = auth_client.get(url_for("api.projects-group", search="father"))
 
     assert response.status_code == 200
     assert len(response.json) == 2
 
-    response = auth_client.get("/api/v1/projects/?search=ExCELS")
+    response = auth_client.get(url_for("api.projects-group", search="ExCELS"))
 
     assert response.status_code == 200
     assert len(response.json) == 1
 
-    response = auth_client.get("/api/v1/projects/?search=blah")
+    response = auth_client.get(url_for("api.projects-group", search="blah"))
 
     assert response.status_code == 200
     assert len(response.json) == 0
 
 
 def test_projects_get_by_id_auth(client):
-    response = client.get("/api/v1/projects/1")
+    response = client.get(url_for("api.projects-item", id="1"))
     assert response.status_code == 401
 
 
 def test_projects_auth(client):
-    response = client.get("/api/v1/projects/")
+    response = client.get(url_for("api.projects-group"))
     assert response.status_code == 401
 
 
@@ -115,7 +116,7 @@ def test_post_projects(auth_client):
         "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
     }
-    response = auth_client.post("/api/v1/projects/", json=data)
+    response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 201
     assert response.json["title"] == "Research Project #1"
     assert response.json["team_leaders"] == [
@@ -140,7 +141,7 @@ def test_post_projects_minimum(auth_client):
         "title": "Research Project #1",
         "short_title": "RP1" + uuid.uuid4().hex,
     }
-    response = auth_client.post("/api/v1/projects/", json=data)
+    response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 201
     assert response.json["title"] == "Research Project #1"
     assert response.json["team_leaders"] == []
@@ -148,7 +149,7 @@ def test_post_projects_minimum(auth_client):
 
 @pytest.mark.usefixtures("loaded_db")
 def test_post_projects_empty_post(auth_client):
-    response = auth_client.post("/api/v1/projects/", json={})
+    response = auth_client.post(url_for("api.projects-group"), json={})
     assert response.status_code == 400
 
 
@@ -165,7 +166,7 @@ def test_post_projects_bad_team_leaders(auth_client):
         "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 100000}, {"id": 2}, {"id": 3}],
     }
-    response = auth_client.post("/api/v1/projects/", json=data)
+    response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 400
 
 
@@ -181,7 +182,7 @@ def test_post_projects_missing_title(auth_client):
         "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 100000}, {"id": 2}, {"id": 3}],
     }
-    response = auth_client.post("/api/v1/projects/", json=data)
+    response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 400
 
 
@@ -198,7 +199,7 @@ def test_post_projects_auth_required(client):
         "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
     }
-    response = client.post("/api/v1/projects/", json=data)
+    response = client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 401
 
 
