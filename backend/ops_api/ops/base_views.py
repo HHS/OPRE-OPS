@@ -5,14 +5,14 @@ from typing import Optional
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
-from marshmallow import EXCLUDE, Schema
+from marshmallow import EXCLUDE, Schema, ValidationError
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from typing_extensions import override
 
 
@@ -29,8 +29,22 @@ def handle_sql_error():
         yield
     except SQLAlchemyError as se:
         current_app.logger.error(se)
-        response = make_response_with_headers({}, 500)
-        return response
+        return make_response_with_headers({}, 500)
+
+
+@contextmanager
+def handle_api_error():
+    try:
+        yield
+    except (KeyError, RuntimeError, PendingRollbackError) as er:
+        current_app.logger.error(er)
+        return make_response_with_headers({}, 400)
+    except ValidationError as ve:
+        current_app.logger.error(ve)
+        return make_response_with_headers(ve.normalized_messages(), 400)
+    except SQLAlchemyError as se:
+        current_app.logger.error(se)
+        return make_response_with_headers({}, 500)
 
 
 class OPSMethodView(MethodView):
