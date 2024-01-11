@@ -1,35 +1,46 @@
 from flask import Response, current_app, request
+from models import Project, ProjectType
 from models.base import BaseModel
 from models.projects import ResearchProject
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_sql_error
-from ops_api.ops.resources.administrative_and_support_projects import AdministrativeAndSupportProjectListAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.resources.administrative_and_support_projects import (
+    AdministrativeAndSupportProjectItemAPI,
+    AdministrativeAndSupportProjectListAPI,
+)
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
-from typing_extensions import Any, List, override
-
-ENDPOINT_STRING = "/projects"
+from typing_extensions import List, override
 
 
 class ProjectItemAPI(BaseItemAPI):
-    def __init__(self, model: BaseModel = ResearchProject):
+    def __init__(self, model: BaseModel = Project):
         super().__init__(model)
 
     @override
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
     def get(self, id: int) -> Response:
-        with handle_sql_error():
-            return ResearchProjectItemAPI.get(self, id)
+        with handle_api_error():
+            item = self._get_item(id)
+            if not item:
+                return make_response_with_headers({}, 404)
+            match item.project_type:
+                case ProjectType.RESEARCH:
+                    return ResearchProjectItemAPI.get(self, id)
+                case ProjectType.ADMINISTRATIVE_AND_SUPPORT:
+                    return AdministrativeAndSupportProjectItemAPI.get(self, id)
+                case _:
+                    return make_response_with_headers({}, 404)
 
 
 class ProjectListAPI(BaseListAPI):
-    def __init__(self, model: BaseModel = ResearchProject):
+    def __init__(self, model: BaseModel = Project):
         super().__init__(model)
 
     @override
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
     def get(self) -> Response:
-        with handle_sql_error():
+        with handle_api_error():
             fiscal_year = request.args.get("fiscal_year")
             portfolio_id = request.args.get("portfolio_id")
             search = request.args.get("search")
@@ -44,33 +55,24 @@ class ProjectListAPI(BaseListAPI):
             project_response: List[dict] = []
             for item in result:
                 for project in item:
-                    additional_fields = add_additional_fields_to_project_response(project)
-                    project_dict = project.to_dict()
-                    project_dict.update(additional_fields)
-                    project_response.append(project_dict)
+                    if isinstance(project, ResearchProject):
+                        project_response.append(ResearchProjectListAPI._response_schema.dump(project))
+                    else:
+                        project_response.append(AdministrativeAndSupportProjectListAPI._response_schema.dump(project))
 
             return make_response_with_headers(project_response)
 
     @override
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
     def post(self) -> Response:
-        with handle_sql_error():
-            return ResearchProjectListAPI.post(self)
-
-
-def add_additional_fields_to_project_response(
-    research_project: ResearchProject,
-) -> dict[str, Any]:
-    """
-    Add additional fields to the project response.
-
-    N.B. This is a temporary solution to add additional fields to the response.
-    This should be refactored to use marshmallow.
-    Also, the frontend/OpenAPI needs to be refactored to not use these fields.
-    """
-    if not research_project:
-        return {}
-
-    return {
-        "team_leaders": [tm.to_dict() for tm in research_project.team_leaders],
-    }
+        with handle_api_error():
+            project_type = request.json.get("project_type")
+            if not project_type:
+                return make_response_with_headers({}, 400)
+            match ProjectType[project_type]:
+                case ProjectType.RESEARCH:
+                    return ResearchProjectListAPI.post(self)
+                case ProjectType.ADMINISTRATIVE_AND_SUPPORT:
+                    return AdministrativeAndSupportProjectListAPI.post(self)
+                case _:
+                    return make_response_with_headers({}, 404)

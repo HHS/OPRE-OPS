@@ -27,7 +27,7 @@ from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
-from typing_extensions import Any, List, override
+from typing_extensions import List, override
 
 ENDPOINT_STRING = "/administrative-and-support-projects"
 
@@ -76,6 +76,8 @@ class ResearchProjectResponse(Schema):
 
 
 class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
+    _response_schema = ResearchProjectResponse()
+
     def __init__(self, model: BaseModel = ResearchProject):
         super().__init__(model)
 
@@ -84,9 +86,10 @@ class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         with handle_sql_error():
             item = self._get_item(id)
-            additional_fields = add_additional_fields_to_project_response(item)
-
-        return self._get_item_with_try(id, additional_fields=additional_fields)
+            if item:
+                return make_response_with_headers(AdministrativeAndSupportProjectItemAPI._response_schema.dump(item))
+            else:
+                return make_response_with_headers({}, 404)
 
 
 class AdministrativeAndSupportProjectListAPI(BaseListAPI):
@@ -140,10 +143,7 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
         project_response: List[dict] = []
         for item in result:
             for project in item:
-                additional_fields = add_additional_fields_to_project_response(project)
-                project_dict = project.to_dict()
-                project_dict.update(additional_fields)
-                project_response.append(project_dict)
+                project_response.append(AdministrativeAndSupportProjectListAPI._response_schema.dump(project))
 
         return make_response_with_headers(project_response)
 
@@ -184,21 +184,3 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
             return make_response_with_headers({}, 500)
-
-
-def add_additional_fields_to_project_response(
-    research_project: ResearchProject,
-) -> dict[str, Any]:
-    """
-    Add additional fields to the project response.
-
-    N.B. This is a temporary solution to add additional fields to the response.
-    This should be refactored to use marshmallow.
-    Also, the frontend/OpenAPI needs to be refactored to not use these fields.
-    """
-    if not research_project:
-        return {}
-
-    return {
-        "team_leaders": [tm.to_dict() for tm in research_project.team_leaders],
-    }
