@@ -158,6 +158,10 @@ Please review and approve. LINK to Agreement: {agreement_id}""",
 
 
 def validate_bli(bli: BudgetLineItem):
+    if bli is None:
+        raise ValueError("bli is required")
     if bli.agreement_id is None:
         raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
+    if bli.agreement_id and not bli.agreement.research_project_id:
+        raise ValidationError("BLI's Agreement must have a ResearchProject when status is not DRAFT")
     return

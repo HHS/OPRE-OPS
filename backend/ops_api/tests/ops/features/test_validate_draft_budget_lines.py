@@ -39,9 +39,9 @@ def cleanup(loaded_db, context):
     loaded_db.commit()
 
 
-# @scenario("validate_draft_budget_lines.feature", "Valid Project")
-# def test_valid_project(loaded_db, context):
-#     ...
+@scenario("validate_draft_budget_lines.feature", "Valid Project")
+def test_valid_project(loaded_db, context):
+    ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement")
@@ -442,23 +442,10 @@ def bli(loaded_db, context):
         proc_shop_fee_percentage=1.23,
         created_by=1,
     )
-    initial_bli_for_patch = BudgetLineItem(
-        agreement_id=context["agreement"].id,
-        comments="blah blah",
-        line_description="LI 1",
-        amount=100.12,
-        can_id=1,
-        date_needed=datetime.date(2043, 1, 1),
-        status=BudgetLineItemStatus.DRAFT,
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
     loaded_db.add(initial_bli)
-    loaded_db.add(initial_bli_for_patch)
     loaded_db.commit()
 
     context["initial_bli"] = initial_bli
-    context["initial_bli_for_patch"] = initial_bli_for_patch
 
 
 @when("I have a BLI in DRAFT status without a Description")
@@ -653,24 +640,12 @@ def bli_without_agreement(loaded_db, context):
 @when("I submit a BLI to move to IN_REVIEW status")
 def submit(client, context):
     data = {
-        "agreement_id": context["agreement"].id,
-        "line_description": "Updated LI 1",
-        "comments": "hah hah",
-        "can_id": 2,
-        "amount": 200.24,
-        "status": "UNDER_REVIEW",
-        "date_needed": "2044-01-01",
-        "proc_shop_fee_percentage": 2.34,
+        "budget_line_item_ids": [context["initial_bli"].id],
+        "notes": "test notes",
+        "workflow_action": "DRAFT_TO_PLANNED",
     }
 
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli'].id}", json=data)
-
-    context["response_patch"] = client.patch(
-        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
-        json={
-            "status": "UNDER_REVIEW",
-        },
-    )
+    context["response_post"] = client.post("/api/v1/workflow-submit/", json=data)
 
 
 @when("I submit a BLI to move to IN_REVIEW status (without Description)")
@@ -843,12 +818,8 @@ def submit_amount_less_than_zero(client, context):
 
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
 def error_message_valid_project(context, setup_and_teardown):
-    assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have a ResearchProject when status is not " "DRAFT"]
-    }
-    assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
+    assert context["response_post"].status_code == 400
+    assert context["response_post"].json == {
         "_schema": ["BLI's Agreement must have a ResearchProject when status is not " "DRAFT"]
     }
 
