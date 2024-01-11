@@ -87,7 +87,6 @@ const AgreementBLIReviewTable = ({
                 ))}
             </Table>
             {showTotalSummaryCard && <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>}
-            {/* <pre className="border border-1">{JSON.stringify(budgetLines, null, 2)}</pre> */}
         </>
     );
 };
