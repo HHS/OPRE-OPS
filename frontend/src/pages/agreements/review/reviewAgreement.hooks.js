@@ -1,7 +1,6 @@
 import * as React from "react";
 import suite from "./suite";
 import { actionOptions } from "./ReviewAgreement.constants";
-import { isBudgetLineInCurrentFiscalYear } from "./ReviewAgreement.helpers";
 
 export const useReviewAgreement = (agreement, isSuccess) => {
     const [action, setAction] = React.useState(""); // for the action accordion
@@ -75,8 +74,7 @@ export const useReviewAgreement = (agreement, isSuccess) => {
                     return {
                         ...bli,
                         selected: false,
-                        actionable:
-                            bli.status === "PLANNED" && !bli.has_active_workflow && isBudgetLineInCurrentFiscalYear(bli)
+                        actionable: bli.status === "PLANNED" && !bli.has_active_workflow
                     };
                 default:
                     return bli;

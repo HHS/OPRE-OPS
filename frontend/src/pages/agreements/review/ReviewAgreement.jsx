@@ -278,7 +278,7 @@ export const ReviewAgreement = () => {
                 </button>
                 {!isSubmissionReady || !res.isValid() ? (
                     <Tooltip
-                        label="Agreement is not able to be reviewed"
+                        label="Agreement is not ready to be sent for approval."
                         position="top"
                     >
                         <button

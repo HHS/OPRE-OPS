@@ -19,7 +19,6 @@ import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/
 import { futureDateErrorClass, addErrorClassIfNotFound } from "../BudgetLinesTable/BLIRow.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { isBudgetLineInCurrentFiscalYear } from "../../../pages/agreements/review/ReviewAgreement.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -68,9 +67,6 @@ const BLIReviewRow = ({
     let toolTipMsg = "";
     if (!budgetLine?.actionable) {
         toolTipMsg = "This budget line is not selectable";
-    }
-    if (!isBudgetLineInCurrentFiscalYear(budgetLine?.date_needed)) {
-        toolTipMsg = "Only current FY Budget Lines can be executed";
     }
 
     const TableRowData = (
