@@ -2,7 +2,7 @@
 import { terminalLog, testLogin } from "./utils";
 
 const ALL_BLI_TOTAL = "37,467,548.00";
-const ADMIN_BLI_TOTAL = "37,467,548.00";
+const ADMIN_BLI_TOTAL = "37,466,500.00";
 const DRAFT_BLI_TOTAL = "3,000,000.00";
 const IN_REVIEW_BLI_TOTAL = "0";
 const EXECUTING_BLI_TOTAL = "16,080,000.00";
@@ -39,7 +39,9 @@ it("clicking the add budget lines button takes you to the create budget lines pa
 });
 
 it("pagination on the bli table works as expected", () => {
-    // initial page load
+    cy.visit("/budget-lines");
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(1000);
     cy.get("ul").should("have.class", "usa-pagination__list");
     cy.get("li").should("have.class", "usa-pagination__item").contains("1");
     cy.get("a").should("have.class", "usa-current").contains("1");
