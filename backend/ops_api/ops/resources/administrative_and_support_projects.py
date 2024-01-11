@@ -1,21 +1,11 @@
-from datetime import date, datetime
+from datetime import datetime
 from typing import Optional
 
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import Schema, fields
 from marshmallow_enum import EnumField
-from models import (
-    CAN,
-    AdministrativeAndSupportProject,
-    Agreement,
-    BudgetLineItem,
-    MethodologyType,
-    OpsEventType,
-    PopulationType,
-    ProjectType,
-    User,
-)
+from models import CAN, AdministrativeAndSupportProject, Agreement, BudgetLineItem, OpsEventType, ProjectType, User
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.projects import ResearchProject
@@ -43,39 +33,26 @@ class RequestBody(Schema):
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
-
-    methodologies: Optional[list[MethodologyType]] = fields.List(
-        fields.Enum(MethodologyType),
-        default=[],
-    )
-    populations: Optional[list[PopulationType]] = fields.List(
-        fields.Enum(PopulationType),
-        default=[],
-    )
     team_leaders: Optional[list[TeamLeaders]] = fields.List(
         fields.Nested(TeamLeaders),
         default=[],
     )
 
 
-class ResearchProjectResponse(Schema):
+class ProjectResponse(Schema):
     id: int = fields.Int()
     title: str = fields.String()
     created_by: int = fields.Int()
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
-    origination_date: Optional[date] = fields.Date(format="%Y-%m-%d", default=None)
-    methodologies: Optional[list[MethodologyType]] = fields.List(fields.Enum(MethodologyType), default=[])
-    populations: Optional[list[PopulationType]] = fields.List(fields.Enum(PopulationType), default=[])
     team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
-    _response_schema = ResearchProjectResponse()
+    _response_schema = ProjectResponse()
 
     def __init__(self, model: BaseModel = ResearchProject):
         super().__init__(model)
@@ -93,7 +70,7 @@ class AdministrativeAndSupportProjectItemAPI(BaseItemAPI):
 
 class AdministrativeAndSupportProjectListAPI(BaseListAPI):
     _post_schema = RequestBody()
-    _response_schema = ResearchProjectResponse()
+    _response_schema = ProjectResponse()
 
     def __init__(self, model: BaseModel = ResearchProject):
         super().__init__(model)

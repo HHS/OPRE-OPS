@@ -120,9 +120,6 @@ def test_post_administrative_and_support_projects(auth_client):
         "short_title": "RP1" + uuid.uuid4().hex,
         "description": "blah blah blah",
         "url": "https://example.com",
-        "origination_date": "2023-01-01",
-        "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
-        "populations": ["POPULATION_1", "POPULATION_2"],
         "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
     }
     response = auth_client.post(url_for("api.administrative-and-support-projects-group"), json=data)
