@@ -35,7 +35,7 @@ afterEach(() => {
 });
 
 describe("agreement review workflow", () => {
-    it("review an agreement", () => {
+    it.only("review an agreement", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -154,7 +154,11 @@ describe("agreement review workflow", () => {
             cy.url().should("include", `/agreements/review/${agreementId}`);
             cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
+            // click option and check all budget lines
+            cy.get('[type="radio"]').first().check({ force: true });
+            cy.get("#check-all").check({ force: true }).wait(1);
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+
             // go back to edit mode and look for budget line errors
             cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
             cy.get("#continue").click();
@@ -173,6 +177,7 @@ describe("agreement review workflow", () => {
             cy.get('[data-cy="error-item"]').should("have.length", 1);
             //send-to-approval button should be disabled
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
+
             // fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
@@ -202,7 +207,11 @@ describe("agreement review workflow", () => {
             cy.visit(`/agreements/review/${agreementId}?mode=review`);
             cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("not.exist");
+            // click option and check all budget lines
+            cy.get('[type="radio"]').first().check({ force: true });
+            cy.get("#check-all").check({ force: true }).wait(1);
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+
             // can't delete budget line in review mode so won't click review button
 
             // delete test agreement
@@ -320,7 +329,11 @@ describe("agreement review workflow", () => {
                 cy.url().should("include", `/agreements/review/${agreementId}`);
                 cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
                 cy.get('[data-cy="error-list"]').should("not.exist");
+                // click option and check all budget lines
+                cy.get('[type="radio"]').first().check({ force: true });
+                cy.get("#check-all").check({ force: true }).wait(1);
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+
                 // go back to edit mode and look for budget line errors
                 cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
                 cy.get("#continue").click();
@@ -339,6 +352,7 @@ describe("agreement review workflow", () => {
                 cy.get('[data-cy="error-item"]').should("have.length", 1);
                 //send-to-approval button should be disabled
                 cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
+
                 // fix errors
                 cy.get('[data-cy="edit-agreement-btn"]').click();
                 cy.get("#continue").click();
@@ -368,6 +382,9 @@ describe("agreement review workflow", () => {
                 cy.visit(`/agreements/review/${agreementId}?mode=review`);
                 cy.get("h1").should("not.have.text", "Please resolve the errors outlined below");
                 cy.get('[data-cy="error-list"]').should("not.exist");
+                // click option and check all budget lines
+                cy.get('[type="radio"]').first().check({ force: true });
+                cy.get("#check-all").check({ force: true }).wait(1);
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
                 // can't delete budget line in review mode so won't click review button
 
