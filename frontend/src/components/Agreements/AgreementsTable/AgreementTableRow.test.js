@@ -51,7 +51,7 @@ const agreement = {
     id: 1,
     name: "Test Agreement",
     display_name: "Test Agreement",
-    research_project: { title: "Test Project" },
+    project: { title: "Test Project" },
     agreement_type: "GRANT",
     project_officer_id: 1,
     team_members: [{ id: 1 }],

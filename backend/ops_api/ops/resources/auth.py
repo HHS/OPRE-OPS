@@ -1,6 +1,6 @@
 from flask import Response, jsonify, request
 from models.base import BaseModel
-from ops_api.ops.base_views import BaseListAPI
+from ops_api.ops.base_views import BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth_views import login, logout, refresh
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -9,6 +9,7 @@ class AuthLoginAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
+    @handle_api_error
     def post(self) -> Response:
         errors = self.validator.validate(self, request.json)
 
@@ -25,6 +26,7 @@ class AuthLogoutAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
+    @handle_api_error
     def post(self) -> Response:
         errors = self.validator.validate(self, request.json)
 
@@ -41,6 +43,7 @@ class AuthRefreshAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
+    @handle_api_error
     def post(self) -> Response:
         errors = self.validator.validate(self, request.json)
 

@@ -2,9 +2,9 @@ from typing import Any
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from marshmallow import Schema, ValidationError
+from marshmallow import Schema
 from models import BaseModel, User
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.users_schemas import PATCHRequestBody, POSTRequestBody, QueryParameters, UserResponse
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
@@ -20,6 +20,7 @@ class UsersItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.USER)
+    @handle_api_error
     def get(self, id: int) -> Response:
         # token = verify_jwt_in_request()
         # Get the user from the token to see who's making the request
@@ -45,34 +46,26 @@ class UsersItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.PUT, Permission.USER)
+    @handle_api_error
     def put(self, id: int) -> Response:
-        try:
-            old_user: User = User.query.get(id)
-            if not old_user:
-                raise RuntimeError("Invalid User ID")
+        old_user: User = User.query.get(id)
+        if not old_user:
+            raise RuntimeError("Invalid User ID")
 
-            user = update_user(old_user, request.json)
-            user_dict = user.to_dict()
+        user = update_user(old_user, request.json)
+        user_dict = user.to_dict()
 
-            # Return the updated user as a response
-            return make_response_with_headers(user_dict)
-        except ValidationError as err:
-            return make_response_with_headers(err.messages, 400)
-        except Exception as err:
-            return make_response_with_headers({"error": str(err)}, 400)
+        # Return the updated user as a response
+        return make_response_with_headers(user_dict)
 
     @override
     @is_authorized(PermissionType.PATCH, Permission.USER)
+    @handle_api_error
     def patch(self, id: int) -> Response:
         # Update the user with the request data, and save the changes to the database
-        try:
-            user = update_user(request.json, id)
-            # Return the updated user as a response
-            return make_response_with_headers(user.to_dict())
-        except ValidationError as err:
-            return make_response_with_headers(err.messages, 400)
-        except Exception as err:
-            return make_response_with_headers({"error": str(err)}, 400)
+        user = update_user(request.json, id)
+        # Return the updated user as a response
+        return make_response_with_headers(user.to_dict())
 
 
 class UsersListAPI(BaseListAPI):
@@ -83,6 +76,7 @@ class UsersListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.USER)
+    @handle_api_error
     def get(self) -> Response:
         oidc_id = request.args.get("oidc_id", type=str)
 
@@ -95,6 +89,7 @@ class UsersListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.PUT, Permission.USER)
+    @handle_api_error
     def put(self, id: int) -> Response:
         # Update the user with the request data, and save the changes to the database
         user = update_user(request.json, id)

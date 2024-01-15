@@ -25,7 +25,7 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSt
     const { selected_project: selectedResearchProject } = useEditAgreement();
     // setters
     const setSelectedProject = useSetState("selected_project");
-    const setAgreementProjectId = useUpdateAgreement("research_project_id");
+    const setAgreementProjectId = useUpdateAgreement("project_id");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
