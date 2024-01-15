@@ -39,5 +39,5 @@ variable "memory" {
 variable "port" {
   description = "Port for application"
   type        = number
-  default     = 80
+  default     = 3000
 }
