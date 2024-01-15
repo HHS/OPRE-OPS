@@ -1,7 +1,7 @@
 from flask import Response, jsonify
 from models.base import BaseModel
 from models.portfolios import PortfolioStatus
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from typing_extensions import override
 
@@ -12,6 +12,7 @@ class PortfolioStatusItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
+    @handle_api_error
     def get(self, id: int) -> Response:
         item = PortfolioStatus(id)
         return jsonify(item.name)
@@ -23,6 +24,7 @@ class PortfolioStatusListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
+    @handle_api_error
     def get(self) -> Response:
         items = [e.name for e in PortfolioStatus]
         return jsonify(items)
