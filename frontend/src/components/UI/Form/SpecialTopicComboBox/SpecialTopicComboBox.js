@@ -1,38 +1,38 @@
 import React from "react";
 import ComboBox from "../ComboBox";
 
-function ResearchTypeComboBox({ legendClassName = "usa-label margin-top-0" }) {
+function SpecialTopicComboBox({ legendClassName = "usa-label margin-top-0" }) {
     const [selected, setSelected] = React.useState([]);
     const data = [
         {
             id: 1,
-            title: "Knowledge Development",
-            status: "KNOWLEDGE_DEVELOPMENT"
+            title: "COVID-19",
+            status: " COVID_19"
         },
         {
             id: 2,
-            title: "Research and Evaluation Design",
-            status: "RESEARCH_AND_EVALUATION_DESIGN"
+            title: "Race Equity",
+            status: "RACE_EQUITY"
         },
         {
             id: 3,
-            title: "Descriptive Study",
-            status: "DESCRIPTIVE_STUDY"
+            title: "Indigenous/tribal/Native American populations",
+            status: "INDIGENOUS_TRIBAL_NATIVE_AMERICAN_POPULATIONS"
         },
         {
             id: 4,
-            title: "Impact Study",
-            status: "IMPACT_STUDY"
+            title: "Hispanic/Latino populations",
+            status: "HISPANIC_LATINO_POPULATIONS"
         },
         {
             id: 5,
-            title: "Capacity Building",
-            status: "CAPACITY_BUILDING"
+            title: "African American populations",
+            status: "AFRICAN_AMERICAN_POPULATIONS"
         },
         {
             id: 6,
-            title: " Translation and Communication",
-            status: "TRANSLATION_AND_COMMUNICATION"
+            title: "LGBTQI+ populations",
+            status: "LGBTQ+_POPULATIONS"
         }
     ];
     return (
@@ -41,7 +41,7 @@ function ResearchTypeComboBox({ legendClassName = "usa-label margin-top-0" }) {
                 className={legendClassName}
                 htmlFor="research-type-combobox"
             >
-                Research Type
+                Special Topic/Population Studied
             </label>
             <p className="text-gray-30 margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox
@@ -56,4 +56,4 @@ function ResearchTypeComboBox({ legendClassName = "usa-label margin-top-0" }) {
     );
 }
 
-export default ResearchTypeComboBox;
+export default SpecialTopicComboBox;

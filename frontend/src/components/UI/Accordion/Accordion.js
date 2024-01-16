@@ -33,7 +33,7 @@ const Accordion = ({ heading, level = 4, children }) => {
             </AccordionHeading>
             <div
                 id={accordionId}
-                className="usa-accordion__content padding-x-0"
+                className="usa-accordion__content padding-x-0 overflow-visible"
             >
                 {children}
             </div>
