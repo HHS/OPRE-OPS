@@ -66,17 +66,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
             current_app.db_session.add(workflow_step_instance)
             current_app.db_session.commit()
 
-            # Create a notification for the submitter
-            notification = Notification(
-                title="Budget Lines Approved from Draft to Planned Status",
-                message="The budget lines you sent to your Division Director were approved from draft to planned "
-                "status The amounts have been subtracted from the FY budget.",
-                is_read=False,
-                recipient_id=workflow_step_instance.created_by,
-                expires=date(2031, 12, 31),
-            )
-            current_app.db_session.add(notification)
-            current_app.db_session.commit()
+            create_approval_notification_for_submitter(workflow_step_instance)
 
         elif workflow_step_action == "REJECT":
             # TODO: Update WorkflowStepInstance
@@ -115,4 +105,29 @@ def UpdateBlis(workflow_step_instance: WorkflowStepInstance):
         else:
             raise ValueError(f"Invalid WorkflowAction: {workflow_step_instance.workflow_instance.workflow_action}")
         current_app.db_session.add_all(blis)
+        current_app.db_session.commit()
+
+
+def create_approval_notification_for_submitter(workflow_step_instance):
+    if workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.DRAFT_TO_PLANNED:
+        notification = Notification(
+            title="Budget Lines Approved from Draft to Planned Status",
+            message="The budget lines you sent to your Division Director were approved from draft to planned status. "
+            "The amounts have been subtracted from the FY budget.",
+            is_read=False,
+            recipient_id=workflow_step_instance.created_by,
+            expires=date(2031, 12, 31),
+        )
+        current_app.db_session.add(notification)
+        current_app.db_session.commit()
+    elif workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.PLANNED_TO_EXECUTING:
+        notification = Notification(
+            title="Budget Lines Approved from Planned to Executing Status",
+            message="The budget lines you sent to your Division Director were approved from planned to executing "
+            "status.",
+            is_read=False,
+            recipient_id=workflow_step_instance.created_by,
+            expires=date(2031, 12, 31),
+        )
+        current_app.db_session.add(notification)
         current_app.db_session.commit()

@@ -64,6 +64,10 @@ const BLIReviewRow = ({
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    let toolTipMsg = "";
+    if (!budgetLine?.actionable) {
+        toolTipMsg = "This budget line is not selectable";
+    }
 
     const TableRowData = (
         <>
@@ -91,7 +95,7 @@ const BLIReviewRow = ({
                     className="usa-checkbox__label usa-tool-tip"
                     htmlFor={budgetLine?.id}
                     data-position="top"
-                    title={`${!budgetLine.actionable ? "disabled" : ""}`}
+                    title={toolTipMsg}
                 >
                     {budgetLine?.line_description}
                 </label>
