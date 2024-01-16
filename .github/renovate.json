@@ -46,7 +46,8 @@
         },
         {
             "matchPackageNames": [
-                "python"
+                "python",
+                "oven/bun"
             ],
             "enabled": false,
             "platformAutomerge": true
