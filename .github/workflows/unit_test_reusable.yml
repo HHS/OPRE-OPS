@@ -38,9 +38,26 @@ jobs:
         working-directory: ./frontend
         run: bun run test
 
+  prepare-matrix:
+      runs-on: ubuntu-latest
+      outputs:
+        matrix: ${{ steps.set-matrix.outputs.matrix }}
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - id: set-matrix
+          run: |
+            echo "::set-output name=matrix::$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')"
+
   e2e:
     name: End-to-End Testing
+    needs: prepare-matrix
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{fromJson(needs.prepare-matrix.outputs.matrix)}}
 
     steps:
       - name: Checkout
@@ -63,7 +80,7 @@ jobs:
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
-        run: bun run cypress install && bun run test:e2e
+        run: bun run cypress install && bun run cypress run --config-file ./cypress.config.js --headless --spec ${{ matrix.file }}
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
