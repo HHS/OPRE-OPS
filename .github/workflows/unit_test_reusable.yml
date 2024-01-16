@@ -48,7 +48,7 @@ jobs:
 
         - id: set-matrix
           run: |
-            echo "::set-output name=matrix::$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')"
+            echo "::set-output name=matrix::$(ls cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')"
 
   e2e:
     name: End-to-End Testing
