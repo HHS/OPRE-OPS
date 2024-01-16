@@ -41,7 +41,7 @@
     },
     "packageRules": [
         {
-            "matchPackageNames": ["python"],
+            "matchPackageNames": ["python", "oven/bun"],
             "enabled": false
         },
         {
