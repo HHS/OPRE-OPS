@@ -7,7 +7,7 @@ sections:
   hide:
     - requirements
 
-sort: 
+sort:
   enabled: true
 
 show-footer: false

@@ -9,9 +9,10 @@ on:
       - backend/models/**
       - backend/ops_api/**
       - backend/Dockerfile.ops-api
+      - '!backend/tests/**'
 
 env:
-  TERRAFORM_VERSION: "1.5.7"
+  TERRAFORM_VERSION: "1.6.6"
   TF_IN_AUTOMATION: "True"
   ENVIRONMENT: "dev"
   WORKING_DIR: "backend"
@@ -34,7 +35,7 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tag: ${{ github.sha }}
-  
+
   plan-backend-deploy:
     needs: build
     permissions:
@@ -60,7 +61,7 @@ jobs:
               "environment": "${{ env.ENVIRONMENT }}",
               "container_tag": "${{ github.sha }}"
             }
-  
+
   plan-backend-asa-deploy:
     needs: build
     permissions:

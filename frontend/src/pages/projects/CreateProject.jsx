@@ -19,7 +19,7 @@ const CreateProject = () => {
         handleConfirm: () => {}
     });
     const [project, setProject] = useState({
-        type: "",
+        project_type: "",
         short_title: "",
         title: "",
         description: ""
@@ -33,7 +33,7 @@ const CreateProject = () => {
 
     const handleClearingForm = () => {
         setProject({
-            type: "",
+            project_type: "",
             short_title: "",
             title: "",
             description: ""
@@ -52,11 +52,11 @@ const CreateProject = () => {
         warning: "warning"
     });
 
-    // prepare data for submission by removing the type field
+    // prepare data for submission
     const editedProject = {
-        ...project
+        ...project,
+        project_type: project.project_type.toUpperCase()
     };
-    delete editedProject.type;
 
     if (isError) {
         console.log("Error Submitting Project");
@@ -111,11 +111,11 @@ const CreateProject = () => {
             <h2 className="font-sans-lg margin-top-7">Select the Project Type</h2>
             <p>Select the type of project you’d like to create.</p>
             <ProjectTypeSelect
-                name="type"
+                name="project_type"
                 label="Project Type"
                 onChange={handleChange}
-                value={project.type || ""}
-                messages={res.getErrors("type")}
+                value={project.project_type || ""}
+                messages={res.getErrors("project_type")}
                 className={cn("type")}
             />
 

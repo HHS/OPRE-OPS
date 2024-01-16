@@ -8,16 +8,15 @@ import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
-from marshmallow import ValidationError
 from models import Notification, OpsEventType, User
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy import select
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
 from typing_extensions import override
 
@@ -85,6 +84,7 @@ class NotificationItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
+    @handle_api_error
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
 
@@ -92,21 +92,11 @@ class NotificationItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.PUT, Permission.NOTIFICATION)
+    @handle_api_error
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
-        try:
-            notification_dict = self.put_notification(id, message_prefix)
-            return make_response_with_headers(notification_dict, 200)
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+        notification_dict = self.put_notification(id, message_prefix)
+        return make_response_with_headers(notification_dict, 200)
 
     def put_notification(self, id: int, message_prefix: str):
         existing_notification = current_app.db_session.get(Notification, id)
@@ -138,21 +128,11 @@ class NotificationItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.PATCH, Permission.NOTIFICATION)
+    @handle_api_error
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
-        try:
-            notification_dict = self.patch_notification(id, message_prefix)
-            return make_response_with_headers(notification_dict, 200)
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+        notification_dict = self.patch_notification(id, message_prefix)
+        return make_response_with_headers(notification_dict, 200)
 
     def patch_notification(self, id: int, message_prefix: str):
         existing_notification = current_app.db_session.get(Notification, id)
@@ -224,6 +204,7 @@ class NotificationListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
+    @handle_api_error
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
 

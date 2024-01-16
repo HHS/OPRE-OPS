@@ -24,7 +24,7 @@ def test_contract(loaded_db):
         contract_number="CT0999",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()

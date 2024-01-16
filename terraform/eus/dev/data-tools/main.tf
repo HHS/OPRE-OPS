@@ -35,7 +35,7 @@ resource "azurerm_container_app" "data-tools" {
       }
       env {
         name  = "PGDATABASE"
-        value = "postgres" //"test-ops-db" 
+        value = "postgres" //"test-ops-db"
       }
       command = [
         "bash",

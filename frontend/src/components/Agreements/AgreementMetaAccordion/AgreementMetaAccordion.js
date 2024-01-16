@@ -35,7 +35,7 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                         <Term
                             name="agreement"
                             label="Agreement"
-                            value={agreement?.research_project?.display_name}
+                            value={agreement?.project?.display_name}
                         />
                         <Term
                             name="description"
@@ -155,7 +155,7 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                         <Term
                             name="agreement"
                             label="Agreement"
-                            value={agreement?.research_project?.display_name}
+                            value={agreement?.project?.display_name}
                         />
                         <Term
                             name="description"

@@ -6,6 +6,6 @@ module "ctx" {
   environment = "example" // Might typically be "dev", "stg", "prod"
 }
 
-output module_outputs {
-    value = module.ctx
+output "module_outputs" {
+  value = module.ctx
 }

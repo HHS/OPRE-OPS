@@ -34,9 +34,3 @@ variable "memory" {
   type        = string
   default     = "0.5Gi"
 }
-
-variable "port" {
-  description = "Port for application"
-  type        = number
-  default     = 8080
-}

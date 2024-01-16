@@ -288,7 +288,7 @@ AgreementTableRow.propTypes = {
     agreement: PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
-        research_project: PropTypes.shape({
+        project: PropTypes.shape({
             title: PropTypes.string.isRequired
         }),
         agreement_type: PropTypes.string.isRequired,

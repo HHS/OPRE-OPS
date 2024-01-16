@@ -95,7 +95,7 @@ const agreementHistoryData = [
             },
             product_service_code_id: 1,
             project_officer_id: 1,
-            research_project: {
+            project: {
                 created_by: null,
                 created_on: "2023-08-24T16:18:48.654514",
                 description:
@@ -118,7 +118,7 @@ const agreementHistoryData = [
                 updated_on: "2023-08-24T16:18:48.654514",
                 url: "https://www.acf.hhs.gov/opre/project/acf-annual-performance-plans-and-reports-2000-2012"
             },
-            research_project_id: 3,
+            project_id: 3,
             support_contacts: [],
             team_members: [
                 {
@@ -242,11 +242,11 @@ const agreementHistoryData = [
             product_service_code: null,
             product_service_code_id: null,
             project_officer_id: null,
-            research_project: {
+            project: {
                 id: 3,
                 title: "Annual Performance Plans and Reports"
             },
-            research_project_id: 3,
+            project_id: 3,
             support_contacts: [],
             team_members: [],
             updated_on: "2023-08-29T21:36:25.183870",
@@ -322,7 +322,7 @@ const agreementHistoryData = [
             procurement_shop_id: {
                 new: 2
             },
-            research_project_id: {
+            project_id: {
                 new: 3
             }
         },
@@ -349,8 +349,8 @@ const agreementHistoryData = [
             product_service_code: null,
             product_service_code_id: null,
             project_officer_id: null,
-            research_project: null,
-            research_project_id: 3,
+            project: null,
+            project_id: 3,
             support_contacts: [],
             team_members: [],
             updated_on: "2023-08-29T21:36:25.183870",
@@ -373,7 +373,7 @@ describe("AgreementDetails", () => {
         id: 1,
         name: "Test Agreement",
         description: "Test Description",
-        research_project: { title: "Test Project" },
+        project: { title: "Test Project" },
         agreement_type: "CONTRACT",
         product_service_code: {
             name: "Test PSC",
