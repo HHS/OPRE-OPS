@@ -16,6 +16,7 @@ import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAc
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
+import AgreementAddInfoAccordion from "../../../components/Agreements/AgreementAddInfoAccordion";
 import App from "../../../App";
 import useToggle from "../../../hooks/useToggle";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -254,6 +255,7 @@ export const ReviewAgreement = () => {
                 changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
                 changeInCans={changeInCans}
             />
+            {workflow_action === "PLANNED_TO_EXECUTING" && <AgreementAddInfoAccordion />}
             <h2 className="font-sans-lg text-semibold">Notes</h2>
             <TextArea
                 name="submitter-notes"
