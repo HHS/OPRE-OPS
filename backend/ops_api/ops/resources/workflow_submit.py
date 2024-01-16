@@ -107,6 +107,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
             workflow_step_instance = WorkflowStepInstance(
                 workflow_step_template_id=2,
                 status=WorkflowStatus.REVIEW,
+                notes=submission_notes,
                 created_by=user.id,
                 time_started=datetime.now(),
                 successor_dependencies=[],
