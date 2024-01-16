@@ -2,16 +2,15 @@ from datetime import date, datetime
 
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
-from marshmallow import Schema, ValidationError, fields
+from marshmallow import Schema, fields
 from models.base import BaseModel
 from models.cans import BudgetLineItem, BudgetLineItemStatus
 from models.notifications import Notification
 from models.workflows import WorkflowAction, WorkflowStatus, WorkflowStepInstance
-from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from typing_extensions import override
 
 ENDPOINT_STRING = "/workflow-approve"
@@ -98,6 +97,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
         except SQLAlchemyError as se:
             current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
             return make_response_with_headers({}, 500)
+
 
 
 def UpdateBlis(workflow_step_instance: WorkflowStepInstance):

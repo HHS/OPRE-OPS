@@ -22,14 +22,14 @@ const blData = [
 const minAgreement = {
     agreement_type: "CONTRACT",
     name: `Test Contract ${randomNumber}`,
-    research_project_id: 1,
+    project_id: 1,
     procurement_shop_id: 1
 };
 
 const minAgreement2 = {
     agreement_type: "CONTRACT",
     name: `Test Contract ${randomNumber2}`,
-    research_project_id: 1,
+    project_id: 1,
     procurement_shop_id: 1
 };
 

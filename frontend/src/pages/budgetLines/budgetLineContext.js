@@ -4,8 +4,8 @@ export const BudgetLinesContext = createContext(null);
 export const BudgetLinesDispatchContext = createContext(null);
 
 const initialState = {
-    research_projects_list: [],
-    research_projects_filter: "",
+    projects_list: [],
+    projects_filter: "",
     agreements: [],
     procurement_shops: [],
     cans: [],

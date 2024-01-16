@@ -76,7 +76,7 @@ describe("AgreementDetailsEdit", () => {
         id: 1,
         name: "Test Agreement",
         description: "Test Description",
-        research_project: { title: "Test Project" },
+        project: { title: "Test Project" },
         agreement_type: "CONTRACT",
         product_service_code: {
             name: "Test PSC",

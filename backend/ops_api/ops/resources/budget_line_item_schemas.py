@@ -55,11 +55,11 @@ class RequestBody:
                 raise ValidationError("BLI must have an Agreement when status is not DRAFT")
 
     @validates_schema(skip_on_field_errors=False)
-    def validate_research_project_id(self, data, **kwargs):
+    def validate_project_id(self, data, **kwargs):
         if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
-            if bli and bli.agreement_id and not bli.agreement.research_project_id:
-                raise ValidationError("BLI's Agreement must have a ResearchProject when status is not DRAFT")
+            if bli and bli.agreement_id and not bli.agreement.project_id:
+                raise ValidationError("BLI's Agreement must have a Project when status is not DRAFT")
 
     @validates_schema(skip_on_field_errors=False)
     def validate_agreement_type(self, data, **kwargs):

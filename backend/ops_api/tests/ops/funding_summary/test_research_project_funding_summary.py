@@ -1,7 +1,7 @@
 import pytest
 from models import ContractAgreement, GrantAgreement
 from models.cans import CAN, AgreementType, BudgetLineItem, CANFiscalYear
-from models.research_projects import ResearchProject
+from models.projects import ResearchProject
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -60,8 +60,8 @@ def test_get_research_project_funding_summary_no_data(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 def db_loaded_with_research_projects(app, loaded_db):
     with app.app_context():
-        research_project_rp1 = ResearchProject(title="RP1")
-        research_project_rp2 = ResearchProject(title="RP2")
+        research_project_rp1 = ResearchProject(title="RP1", short_title="RP1")
+        research_project_rp2 = ResearchProject(title="RP2", short_title="RP2")
 
         research_project_rp1.portfolio_id = 1
         research_project_rp2.portfolio_id = 1
@@ -80,12 +80,12 @@ def db_loaded_with_research_projects(app, loaded_db):
         agreement_1 = ContractAgreement(
             name="Agreement 1",
             agreement_type=AgreementType.CONTRACT,
-            research_project_id=research_project_rp1.id,
+            project_id=research_project_rp1.id,
         )
         agreement_2 = GrantAgreement(
             name="Agreement 2",
             agreement_type=AgreementType.GRANT,
-            research_project_id=research_project_rp2.id,
+            project_id=research_project_rp2.id,
             foa="foa",
         )
 
