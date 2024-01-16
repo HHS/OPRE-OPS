@@ -34,70 +34,61 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.PATCH, Permission.WORKFLOW)
+    @handle_api_error
     def post(self) -> Response:
-        message_prefix = f"POST to {ENDPOINT_STRING}"
-        try:
-            # with OpsEventHandler(OpsEventHandler.CREATE_BLI_PACKAGE) as meta:
+        # TODO: Using a dataclass schema for ApprovalSubmissionData, load data from request.json
 
-            # TODO: Using a dataclass schema for ApprovalSubmissionData, load data from request.json
+        workflow_step_id = request.json.get("workflow_step_id")
+        workflow_step_action = request.json.get("workflow_step_action")
+        workflow_notes = request.json.get("workflow_notes")
 
-            workflow_step_id = request.json.get("workflow_step_id")
-            workflow_step_action = request.json.get("workflow_step_action")
-            workflow_notes = request.json.get("workflow_notes")
+        token = verify_jwt_in_request()
+        user = get_user_from_token(token[1])
 
-            token = verify_jwt_in_request()
-            user = get_user_from_token(token[1])
+        workflow_step_instance = current_app.db_session.get(WorkflowStepInstance, workflow_step_id)
+        if user.id not in workflow_step_instance.approvers["users"]:
+            return make_response_with_headers({"message": "User is not an approver for this step"}, 401)
+        # TODO: Create a better principal check for users/groups/roles
 
-            workflow_step_instance = current_app.db_session.get(WorkflowStepInstance, workflow_step_id)
-            if user.id not in workflow_step_instance.approvers["users"]:
-                return make_response_with_headers({"message": "User is not an approver for this step"}, 401)
-            # TODO: Create a better principal check for users/groups/roles
+        if workflow_step_action == "APPROVE":
+            # Update WorkflowStepInstance
+            workflow_step_instance.status = WorkflowStatus.APPROVED
+            workflow_step_instance.time_completed = datetime.now()
+            workflow_step_instance.notes = workflow_notes
+            workflow_step_instance.updated_by = user.id
 
-            if workflow_step_action == "APPROVE":
-                # Update WorkflowStepInstance
-                workflow_step_instance.status = WorkflowStatus.APPROVED
-                workflow_step_instance.time_completed = datetime.now()
-                workflow_step_instance.notes = workflow_notes
-                workflow_step_instance.updated_by = user.id
-
-                # If there are successor dependencies, update the workflow instance to the next step
-                workflow_step_instance.workflow_instance.current_workflow_step_instance_id = (
-                    workflow_step_instance.successor_dependencies[0]
-                    if workflow_step_instance.successor_dependencies
-                    else None
-                )
-                current_app.db_session.add(workflow_step_instance)
-                current_app.db_session.commit()
-
-                create_approval_notification_for_submitter(workflow_step_instance)
-
-            elif workflow_step_action == "REJECT":
-                # TODO: Update WorkflowStepInstance
-                pass
-            elif workflow_step_action == "CHANGES":
-                # TODO: Update WorkflowStepInstance
-                pass
-            else:
-                raise ValueError(f"Invalid WorkflowAction: {workflow_step_action}")
-
-            ####################################################
-            # Do we do this here...? Or in a listener?
-            ####################################################
-            UpdateBlis(workflow_step_instance)
-
-            return make_response_with_headers(
-                {"message": "Workflow Status Accepted", "id": workflow_step_instance.id}, 201
+            # If there are successor dependencies, update the workflow instance to the next step
+            workflow_step_instance.workflow_instance.current_workflow_step_instance_id = (
+                workflow_step_instance.successor_dependencies[0]
+                if workflow_step_instance.successor_dependencies
+                else None
             )
-        except (KeyError, RuntimeError, PendingRollbackError, ValueError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
-            return make_response_with_headers({}, 500)
+            current_app.db_session.add(workflow_step_instance)
+            current_app.db_session.commit()
 
+            create_approval_notification_for_submitter(workflow_step_instance)
+
+        elif workflow_step_action == "REJECT":
+            # TODO: Update WorkflowStepInstance
+            pass
+        elif workflow_step_action == "CHANGES":
+            # TODO: Update WorkflowStepInstance
+            pass
+        else:
+            raise ValueError(f"Invalid WorkflowAction: {workflow_step_action}")
+
+        ####################################################
+        # Do we do this here...? Or in a listener?
+        ####################################################
+        UpdateBlis(workflow_step_instance)
+
+        return make_response_with_headers(
+            {
+                "message": "Workflow Status Accepted",
+                "id": workflow_step_instance.id,
+            },
+            201,
+        )
 
 
 def UpdateBlis(workflow_step_instance: WorkflowStepInstance):
