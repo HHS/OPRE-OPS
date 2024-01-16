@@ -41,7 +41,6 @@ class WorkflowApprovalListApi(BaseItemAPI):
             # with OpsEventHandler(OpsEventHandler.CREATE_BLI_PACKAGE) as meta:
 
             # TODO: Using a dataclass schema for ApprovalSubmissionData, load data from request.json
-            # data = ApprovalSubmissionData().load(data=request.json)
 
             workflow_step_id = request.json.get("workflow_step_id")
             workflow_step_action = request.json.get("workflow_step_action")
