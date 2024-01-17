@@ -79,7 +79,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
-      - name: Terraform Plan
+      - name: Terraform Apply
         uses: ./.github/actions/tf-apply
         with:
           terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend"
@@ -109,7 +109,7 @@ jobs:
           name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
           path: ${{ env.WORKING_DIR }}/build
 
-      - name: Terraform Plan
+      - name: Terraform Apply
         uses: ./.github/actions/tf-apply
         with:
           terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend_asa"
