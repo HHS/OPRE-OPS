@@ -39,11 +39,11 @@ function ResearchTypeComboBox({ legendClassName = "usa-label margin-top-0" }) {
         <div className="display-flex flex-column width-full">
             <label
                 className={legendClassName}
-                htmlFor="research-type-combobox"
+                htmlFor="research-type-combobox-input"
             >
                 Research Type
             </label>
-            <p className="text-gray-30 margin-top-neg-2px margin-bottom-1">Select all that apply</p>
+            <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox
                 selectedData={selected}
                 setSelectedData={setSelected}
