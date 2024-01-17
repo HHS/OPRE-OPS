@@ -21,7 +21,7 @@ sqlalchemy-continuum = "==1.4.0"
 marshmallow-sqlalchemy = "==0.29.0"
 
 [dev-packages]
-flake8 = "==6.1.0"
+flake8 = "==7.0.0"
 isort = "==5.13.2"
 pytest = "==7.4.4"
 nox = "==2023.4.22"
