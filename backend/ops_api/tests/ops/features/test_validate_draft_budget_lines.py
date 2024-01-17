@@ -176,7 +176,7 @@ def agreement_null_agreement_type(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
-        research_project_id=1,
+        project_id=1,
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -198,7 +198,7 @@ def agreement_empty_description(loaded_db, context):
         contract_type=ContractType.RESEARCH,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         description="",
         procurement_shop_id=1,
         agreement_reason=AgreementReason.NEW_REQ,
@@ -218,7 +218,7 @@ def agreement_null_product_service_code(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -238,7 +238,7 @@ def agreement_null_procurement_shop(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -258,7 +258,7 @@ def agreement_null_agreement_reason(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
         project_officer_id=1,
@@ -278,7 +278,7 @@ def agreement_reason_with_incumbent(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -302,7 +302,7 @@ def agreement_reason_with_incumbent_required(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.RECOMPETE,
@@ -323,7 +323,7 @@ def agreement_null_project_officer(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -343,7 +343,7 @@ def agreement_null_team_members(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -363,7 +363,7 @@ def valid_agreement(loaded_db, context):
         contract_number="CT0002",
         contract_type=ContractType.RESEARCH,
         agreement_type=AgreementType.CONTRACT,
-        research_project_id=1,
+        project_id=1,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -550,7 +550,7 @@ def submit_without_agreement(client, context):
 def error_message_valid_project(context, setup_and_teardown):
     assert context["response_post"].status_code == 400
     assert context["response_post"].json == {
-        "_schema": ["BLI's Agreement must have a ResearchProject when status is not " "DRAFT"]
+        "_schema": ["BLI's Agreement must have a Project when status is not " "DRAFT"]
     }
 
 

@@ -4,7 +4,8 @@ import {
     getSelectedBudgetLinesCanAmounts,
     selectedBudgetLinesTotal,
     totalByCan,
-    getTotalBySelectedCans
+    getTotalBySelectedCans,
+    isBudgetLineInCurrentFiscalYear
 } from "./ReviewAgreement.helpers";
 
 describe("anyBudgetLinesByStatus", () => {
@@ -174,5 +175,25 @@ describe("getTotalBySelectedCans", () => {
     it("throws an error when budgetLines contains an item without a 'can' property", () => {
         const budgetLines = [{ id: 1 }, { id: 2, selected: true }];
         expect(() => getTotalBySelectedCans(budgetLines)).toThrow();
+    });
+});
+
+describe("isBudgetLineInCurrentFiscalYear", () => {
+    it("returns true when the budget line's date_needed is in the current fiscal year", () => {
+        const budgetLine = { date_needed: new Date() };
+        const result = isBudgetLineInCurrentFiscalYear(budgetLine);
+        expect(result).toBeTruthy();
+    });
+
+    it("returns false when the budget line's date_needed is not in the current fiscal year", () => {
+        const budgetLine = { date_needed: new Date("2022-01-01") };
+        const result = isBudgetLineInCurrentFiscalYear(budgetLine);
+        expect(result).toBeFalsy();
+    });
+
+    it("returns false when the budget line's date_needed is undefined", () => {
+        const budgetLine = {};
+        const result = isBudgetLineInCurrentFiscalYear(budgetLine);
+        expect(result).toBeFalsy();
     });
 });

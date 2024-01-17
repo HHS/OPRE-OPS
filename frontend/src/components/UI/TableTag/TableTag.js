@@ -15,17 +15,20 @@ const TableTag = ({ status, inReview = false }) => {
     switch (statusText) {
         case "Draft":
             inReview
-                ? (classNames += "bg-transparent text-brand-primary border border-brand-primary")
+                ? (classNames += "bg-transparent text-brand-primary border")
                 : (classNames += "bg-brand-neutral-lighter text-ink");
+            break;
+        case "Planned":
+            inReview
+                ? (classNames += "bg-transparent text-brand-data-viz-primary-8 border")
+                : (classNames += "bg-brand-data-viz-primary-11 text-white");
+
             break;
         case "Executing":
             classNames += "bg-brand-data-viz-primary-8 text-ink";
             break;
         case "Obligated":
             classNames += "bg-brand-data-viz-primary-6 text-white";
-            break;
-        case "Planned":
-            classNames += "bg-brand-data-viz-primary-11 text-white";
             break;
         default:
     }

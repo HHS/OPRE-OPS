@@ -24,7 +24,7 @@ def original_agreement():
         "contract_number": "CT0002",
         "contract_type": ContractType.RESEARCH,
         "agreement_type": AgreementType.CONTRACT,
-        "research_project_id": 1,
+        "project_id": 1,
         "product_service_code_id": 2,
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,

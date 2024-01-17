@@ -14,7 +14,7 @@ const defaultState = {
         project_officer_id: null, // this is the ID
         team_members: [],
         notes: "",
-        research_project_id: null,
+        project_id: null,
         procurement_shop_id: null
     },
     selected_project: {},
@@ -36,13 +36,13 @@ let initialState = { ...defaultState };
 export function EditAgreementProvider({ agreement, projectOfficer, children }) {
     if (agreement) {
         initialState.agreement = { ...agreement };
-        initialState.selected_project = agreement.research_project;
+        initialState.selected_project = agreement.project;
         initialState.selected_product_service_code = agreement.product_service_code;
         initialState.selected_procurement_shop = agreement.procurement_shop;
         if (projectOfficer) {
             initialState.selected_project_officer = projectOfficer;
         }
-        delete initialState.agreement.research_project;
+        delete initialState.agreement.project;
         delete initialState.agreement.product_service_code;
         delete initialState.agreement.procurement_shop;
         delete initialState.agreement.status;
