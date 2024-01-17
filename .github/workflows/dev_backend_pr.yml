@@ -36,7 +36,7 @@ jobs:
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tag: ${{ github.sha }}
 
-  backend-deploy:
+  plan-backend-deploy:
     needs: build
     permissions:
       pull-requests: write
@@ -62,7 +62,7 @@ jobs:
               "container_tag": "${{ github.sha }}"
             }
 
-  backend-asa-deploy:
+  plan-backend-asa-deploy:
     needs: build
     permissions:
       pull-requests: write
