@@ -30,8 +30,9 @@ describe("BLIStatusComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         expect(screen.getByText("Draft")).toBeInTheDocument();
-        expect(screen.getByText("In Review")).toBeInTheDocument();
         expect(screen.getByText("Planned")).toBeInTheDocument();
+        expect(screen.getByText("Executing")).toBeInTheDocument();
+        expect(screen.getByText("Obligated")).toBeInTheDocument();
     });
 
     it("updates the input value when the user types in the input field", () => {
@@ -73,7 +74,7 @@ describe("BLIStatusComboBox", () => {
                 status: "DRAFT"
             },
             {
-                id: 3,
+                id: 2,
                 title: "Planned",
                 status: "PLANNED"
             }
