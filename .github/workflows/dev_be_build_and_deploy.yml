@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - development
     paths:
       - backend/models/**
       - backend/ops_api/**
