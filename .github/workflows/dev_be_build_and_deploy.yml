@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
       - name: Terraform Apply
-        uses: ./.github/actions/tf-plan
+        uses: ./.github/actions/tf-apply
         with:
           terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}"
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
@@ -69,7 +69,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
       - name: Terraform Apply
-        uses: ./.github/actions/tf-plan
+        uses: ./.github/actions/tf-apply
         with:
           terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa"
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
