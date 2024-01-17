@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 
+import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
-from marshmallow import Schema, ValidationError, fields
+from marshmallow import EXCLUDE, Schema, fields
 from models.base import BaseModel
-from models.cans import AgreementReason, BudgetLineItem
+from models.cans import BudgetLineItem
 from models.notifications import Notification
 from models.workflows import (
     Package,
@@ -17,6 +18,7 @@ from models.workflows import (
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
+from ops_api.ops.resources.budget_line_item_schemas import PATCHRequestBody
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
@@ -140,44 +142,12 @@ Please review and approve. LINK to Agreement: {agreement_id}""",
 def validate_bli(bli: BudgetLineItem):  # noqa: C901
     if bli is None:
         raise ValueError("bli is a required argument")
-
-    # Validate Agreement
-    if bli.agreement_id is None:
-        raise ValidationError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
-    if not bli.agreement.project_id:
-        raise ValidationError("BLI's Agreement must have a Project when status is not DRAFT")
-    if not bli.agreement.description:
-        raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
-    if not bli.agreement.product_service_code_id:
-        raise ValidationError("BLI's Agreement must have a ProductServiceCode when status is not DRAFT")
-    if not bli.agreement.procurement_shop_id:
-        raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
-    if not bli.agreement.agreement_reason:
-        raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
-    if bli.agreement.agreement_reason == AgreementReason.NEW_REQ and bli.agreement.incumbent_id:
-        raise ValidationError("BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ")
-    if (
-        bli.agreement.agreement_reason == AgreementReason.RECOMPETE
-        or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
-    ) and not bli.agreement.incumbent_id:
-        raise ValidationError(
-            "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
-        )
-    if bli and bli.agreement_id and not bli.agreement.project_officer:
-        raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
-
-    # Validate BLI
-    if bli.line_description is None:
-        raise ValidationError({"_schema": ["BLI must valid a valid Description when status is not DRAFT"]})
-    if not bli.date_needed:
-        raise ValidationError({"_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"]})
-    today = date.today()
-    if bli.date_needed <= today:
-        raise ValidationError("BLI must valid a Need By Date in the future when status is not DRAFT")
-    if not bli.can_id:
-        raise ValidationError("BLI must have a valid CAN when status is not DRAFT")
-    if bli.amount is None:
-        raise ValidationError("BLI must have a valid Amount when status is not DRAFT")
-    if bli.amount <= 0:
-        raise ValidationError("BLI must be a valid Amount (greater than zero) when status is not DRAFT")
+    schema = mmdc.class_schema(PATCHRequestBody)()
+    schema.context["id"] = bli.id
+    schema.context["method"] = "PATCH"
+    # data = schema.dump(bli)
+    # pending_changes = {"status": BudgetLineItemStatus.PLANNED.value}
+    pending_changes = {"status": "PLANNED"}
+    # validated_change_data = schema.dump(schema.load(pending_changes, unknown=EXCLUDE))
+    schema.dump(schema.load(pending_changes, unknown=EXCLUDE))
     return

@@ -14,8 +14,8 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have an Agreement with a NULL Project
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
+    When I have a BLI in DRAFT status on that Agreement
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI's Agreement must have a valid Project
 
@@ -23,8 +23,8 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have an Agreement with an empty string Description
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
+    When I have a BLI in DRAFT status on that Agreement
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI's Agreement must have a valid Description
 
@@ -32,8 +32,8 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have an Agreement with a NULL Product Service Code
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
+    When I have a BLI in DRAFT status on that Agreement
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI's Agreement must have a valid Product Service Code
 
@@ -41,8 +41,8 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have an Agreement with a NULL Procurement Shop
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
+    When I have a BLI in DRAFT status on that Agreement
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI's Agreement must have a valid Procurement Shop
 
@@ -50,8 +50,8 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have an Agreement with a NULL Agreement Reason
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
+    When I have a BLI in DRAFT status on that Agreement
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI's Agreement must have a valid Agreement Reason
 
@@ -59,8 +59,8 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have an Agreement with an AgreementReason = NEW_REQ and an Incumbent
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
+    When I have a BLI in DRAFT status on that Agreement
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ
 
@@ -68,8 +68,8 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have an Agreement with an AgreementReason = RECOMPETE or LOGICAL_FOLLOW_ON and has a NULL or empty string Incumbent
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
+    When I have a BLI in DRAFT status on that Agreement
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON
 
@@ -77,117 +77,66 @@ Feature: Validate "Draft" Budget Lines
     Given I am logged in as an OPS user
     And I have an Agreement without a Project Officer
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status
+    When I have a BLI in DRAFT status on that Agreement
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI's Agreement must have a Project Officer
 
 
-  Scenario: Valid BLI Description: Both NULL
+  Scenario: Valid BLI Description
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a Description
-    And I submit a BLI to move to IN_REVIEW status (without Description)
-
-    Then I should get an error message that the BLI must have a Description
-
-  Scenario: Valid BLI Description: Request Empty
-    Given I am logged in as an OPS user
-    And I have a valid Agreement
-
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status with an empty string Description
-
-    Then I should get an error message that the BLI must have a Description (for PUT only)
-
-  Scenario: Valid BLI Description: Both Empty
-    Given I am logged in as an OPS user
-    And I have a valid Agreement
-
-    When I have a BLI in DRAFT status without a Description
-    And I submit a BLI to move to IN_REVIEW status with an empty string Description
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI must have a Description
 
 
-  Scenario: Valid Need By Date: Both NULL
+  Scenario: Valid Need By Date: Not Null
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a Need By Date
-    And I submit a BLI to move to IN_REVIEW status (without Need By Date)
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI must have a Need By Date
 
-  Scenario: Valid Need By Date: Request Empty
-    Given I am logged in as an OPS user
-    And I have a valid Agreement
-
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status with an empty Need By Date
-
-    Then I should get an error message that the BLI must have a Need By Date (for PUT only)
-
-  Scenario: Valid Need By Date: Both Empty
-    Given I am logged in as an OPS user
-    And I have a valid Agreement
-
-    When I have a BLI in DRAFT status without a Need By Date
-    And I submit a BLI to move to IN_REVIEW status with an empty Need By Date
-
-    Then I should get an error message that the BLI must have a Need By Date (with empty Request)
 
   Scenario: Valid Need By Date: Future Date
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status with a Need By Date in the past or today
-    And I submit a BLI to move to IN_REVIEW status with an empty Need By Date
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI must have a Need By Date in the future
 
-  Scenario: Valid CAN: Both NULL
+  Scenario: Valid CAN: Not NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without a CAN
-    And I submit a BLI to move to IN_REVIEW status (without a CAN)
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI must have a CAN
 
-  Scenario: Valid CAN: Request Empty
-    Given I am logged in as an OPS user
-    And I have a valid Agreement
 
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status (without a CAN)
-
-    Then I should get an error message that the BLI must have a CAN (for PUT only)
-
-  Scenario: Valid Amount: Both NULL
+  Scenario: Valid Amount: Not NULL
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status without an Amount
-    And I submit a BLI to move to IN_REVIEW status (without an Amount)
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI must have an Amount
 
-  Scenario: Valid Amount: Request Empty
-    Given I am logged in as an OPS user
-    And I have a valid Agreement
-
-    When I have a BLI in DRAFT status
-    And I submit a BLI to move to IN_REVIEW status (without an Amount)
-
-    Then I should get an error message that the BLI must have an Amount (for PUT only)
 
   Scenario: Valid Amount: Greater than 0
     Given I am logged in as an OPS user
     And I have a valid Agreement
 
     When I have a BLI in DRAFT status with an Amount less than or equal to 0
-    And I submit a BLI to move to IN_REVIEW status (with an Amount less than or equal to 0)
+    And I submit the BLI for approval
 
     Then I should get an error message that the BLI must have an Amount greater than 0
