@@ -78,8 +78,9 @@ const ApproveAgreement = () => {
     }
 
     const budgetLinesWithActiveWorkflow = agreement?.budget_line_items.filter((bli) => bli.has_active_workflow);
-
     const changeInCans = getTotalByCans(budgetLinesWithActiveWorkflow);
+    const submittersNotes =
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eget egestas justo. Praesent consequat sem at sapien lacinia cursus. Mauris accumsan vehicula pharetra. Donec non elit mi. Ut faucibus tincidunt vulputate. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nam at magna et purus sodales tristique id ac quam. Vivamus in felis ipsum. Nam venenatis malesuada odio, at dignissim justo hendrerit nec. Nunc eget nibh justo. In malesuada maximus elit, at luctus justo euismod vitae. Proin sit amet sem pharetra, scelerisque enim at, tristique purus. Etiam purus diam, tristique sit amet odio rhoncus, venenatis bibendum ante.";
 
     const handleCancel = () => {
         setShowModal(true);
@@ -189,7 +190,26 @@ const ApproveAgreement = () => {
                 changeInBudgetLines={budgetLinesWithActiveWorkflow.reduce((acc, { amount }) => acc + amount, 0)}
                 changeInCans={changeInCans}
             />
-            <div className="usa-checkbox padding-bottom-105">
+            <section>
+                <h2 className="font-sans-lg text-semibold">Submitter’s Notes</h2>
+                <p
+                    className="margin-top-3 text-semibold font-12px line-height-body-1"
+                    style={{ maxWidth: "25rem" }}
+                >
+                    {submittersNotes}
+                </p>
+            </section>
+            <section>
+                <h2 className="font-sans-lg text-semibold margin-top-5">Reviewer’s Notes</h2>
+                <TextArea
+                    name="submitter-notes"
+                    label="Notes (optional)"
+                    maxLength={150}
+                    value={notes}
+                    onChange={(name, value) => setNotes(value)}
+                />
+            </section>
+            <div className="usa-checkbox padding-bottom-105 margin-top-4">
                 <input
                     className="usa-checkbox__input"
                     id="approve-confirmation"
@@ -206,14 +226,6 @@ const ApproveAgreement = () => {
                     I understand that approving these budget lines will subtract the amounts from the FY budget
                 </label>
             </div>
-            <h2 className="font-sans-lg text-semibold">Notes</h2>
-            <TextArea
-                name="submitter-notes"
-                label="Notes (optional)"
-                maxLength={150}
-                value={notes}
-                onChange={(name, value) => setNotes(value)}
-            />
             <div className="grid-row flex-justify-end flex-align-center margin-top-8">
                 <button
                     name="cancel"

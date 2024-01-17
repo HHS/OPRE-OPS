@@ -256,14 +256,16 @@ export const ReviewAgreement = () => {
                 changeInCans={changeInCans}
             />
             {workflow_action === "PLANNED_TO_EXECUTING" && <AgreementAddInfoAccordion />}
-            <h2 className="font-sans-lg text-semibold">Notes</h2>
-            <TextArea
-                name="submitter-notes"
-                label="Notes (optional)"
-                maxLength={150}
-                value={notes}
-                onChange={(name, value) => setNotes(value)}
-            />
+            <section>
+                <h2 className="font-sans-lg text-semibold">Notes</h2>
+                <TextArea
+                    name="submitter-notes"
+                    label="Notes (optional)"
+                    maxLength={150}
+                    value={notes}
+                    onChange={(name, value) => setNotes(value)}
+                />
+            </section>
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
