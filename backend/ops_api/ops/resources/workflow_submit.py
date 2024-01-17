@@ -144,8 +144,8 @@ def validate_bli(bli: BudgetLineItem):  # noqa: C901
     # Validate Agreement
     if bli.agreement_id is None:
         raise ValidationError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
-    if not bli.agreement.research_project_id:
-        raise ValidationError("BLI's Agreement must have a ResearchProject when status is not DRAFT")
+    if not bli.agreement.project_id:
+        raise ValidationError("BLI's Agreement must have a Project when status is not DRAFT")
     if not bli.agreement.description:
         raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
     if not bli.agreement.product_service_code_id:
