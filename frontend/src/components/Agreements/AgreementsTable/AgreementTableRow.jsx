@@ -77,7 +77,9 @@ export const AgreementTableRow = ({ agreement }) => {
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
-    const lockedMessage = doesAgreementHaveActiveWorkflow ? "This agreement is locked" : "";
+    const lockedMessage = doesAgreementHaveActiveWorkflow
+        ? "This agreement cannot be edited because it is currently In Review for a status change"
+        : "";
     const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveActiveWorkflow;
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);

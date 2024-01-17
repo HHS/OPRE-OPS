@@ -36,7 +36,9 @@ const AllBLIRow = ({
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const doesBudgetLineHaveActiveWorkflow = budgetLine?.has_active_workflow;
-    const lockedMessage = doesBudgetLineHaveActiveWorkflow ? "This agreement is locked" : "";
+    const lockedMessage = doesBudgetLineHaveActiveWorkflow
+        ? "This budget line cannot be edited because it is currently In Review for a status change"
+        : "";
     const isBudgetLineEditable =
         (canUserEditAgreement || isUserBudgetLineCreator) &&
         isBudgetLineEditableFromStatus &&
