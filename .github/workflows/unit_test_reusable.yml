@@ -49,7 +49,7 @@ jobs:
       - id: set-matrix
         run: |
           echo 'FILES<<EOF' >> $GITHUB_ENV
-          ls cypress/e2e/*.cy.js >> $GITHUB_ENV
+          ls frontend/cypress/e2e/*.cy.js >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
   e2e:
