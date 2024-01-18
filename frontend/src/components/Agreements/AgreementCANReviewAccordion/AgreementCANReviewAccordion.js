@@ -5,6 +5,7 @@ import CANFundingCard from "../../CANs/CANFundingCard";
 import ToggleButton from "../../UI/ToggleButton";
 import Tag from "../../UI/Tag";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
+import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.constants";
 
 /**
  * Renders an accordion component for reviewing CANs.
@@ -12,9 +13,10 @@ import { useGetPortfoliosQuery } from "../../../api/opsAPI";
  * @param {Array<any>} props.selectedBudgetLines - The selected budget lines.
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
+ * @param {string} props.action - The action to perform.
  * @returns {React.JSX.Element} The AgreementCANReviewAccordion component.
  */
-const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAfterApproval }) => {
+const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAfterApproval, action }) => {
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
     if (isLoading) {
         return <div>Loading...</div>;
@@ -50,16 +52,15 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
             heading="Review CANs"
             level={2}
         >
-            <p>
-                The selected budget lines have allocated funds from the CANs displayed below. Use the toggle to see how
-                your approval would change the remaining budget of those CANs.
-            </p>
+            <p>The budget lines you&apos;ve selected are using funds from the CANs displayed below.</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                <ToggleButton
-                    btnText="After Approval"
-                    handleToggle={() => setAfterApproval(!afterApproval)}
-                    isToggleOn={afterApproval}
-                />
+                {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
+                    <ToggleButton
+                        btnText="After Approval"
+                        handleToggle={() => setAfterApproval(!afterApproval)}
+                        isToggleOn={afterApproval}
+                    />
+                )}
             </div>
             <div
                 className="display-flex flex-wrap margin-bottom-0"
@@ -95,6 +96,7 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
 AgreementCANReviewAccordion.propTypes = {
     selectedBudgetLines: PropTypes.arrayOf(PropTypes.object),
     afterApproval: PropTypes.bool,
-    setAfterApproval: PropTypes.func
+    setAfterApproval: PropTypes.func,
+    action: PropTypes.string
 };
 export default AgreementCANReviewAccordion;
