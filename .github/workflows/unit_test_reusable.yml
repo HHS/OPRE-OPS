@@ -52,6 +52,10 @@ jobs:
           ls frontend/cypress/e2e/*.cy.js >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
+      - name: Test Matrix Output
+        run: |
+          echo "${{ steps.set-matrix.outputs.matrix }}"
+
   e2e:
     name: End-to-End Testing
     needs: prepare-matrix
