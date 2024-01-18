@@ -39,16 +39,16 @@ jobs:
         run: bun run test
 
   prepare-matrix:
-      runs-on: ubuntu-latest
-      outputs:
-        matrix: ${{ steps.set-matrix.outputs.matrix }}
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v2
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-        - id: set-matrix
-          run: |
-            echo "::set-output name=matrix::$(ls cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')"
+      - id: set-matrix
+        run: |
+          echo "::set-output name=matrix::$(ls cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')"
 
   e2e:
     name: End-to-End Testing
