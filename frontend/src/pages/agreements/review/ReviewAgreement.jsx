@@ -16,6 +16,7 @@ import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAc
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
+import AgreementAddInfoAccordion from "../../../components/Agreements/AgreementAddInfoAccordion";
 import App from "../../../App";
 import useToggle from "../../../hooks/useToggle";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -254,14 +255,17 @@ export const ReviewAgreement = () => {
                 changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
                 changeInCans={changeInCans}
             />
-            <h2 className="font-sans-lg text-semibold">Notes</h2>
-            <TextArea
-                name="submitter-notes"
-                label="Notes (optional)"
-                maxLength={150}
-                value={notes}
-                onChange={(name, value) => setNotes(value)}
-            />
+            {workflow_action === "PLANNED_TO_EXECUTING" && <AgreementAddInfoAccordion />}
+            <section>
+                <h2 className="font-sans-lg text-semibold">Notes</h2>
+                <TextArea
+                    name="submitter-notes"
+                    label="Notes (optional)"
+                    maxLength={150}
+                    value={notes}
+                    onChange={(name, value) => setNotes(value)}
+                />
+            </section>
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${

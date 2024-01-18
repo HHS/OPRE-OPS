@@ -597,6 +597,7 @@ describe("agreement action accordion", () => {
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("not.be.disabled");
     });
 });
+
 describe("agreement review CANS accordion", () => {
     it("should not have any CANS cards unless BLIs are selected", () => {
         cy.visit("/agreements/review/1").wait(1000);
@@ -663,5 +664,15 @@ describe("agreement review CANS accordion", () => {
         cy.get('[data-cy="can-funding-summary-card-9"]').should("exist");
         cy.get('[data-cy="can-funding-summary-card-8"]').contains("Over Budget");
         cy.get('[data-cy="can-funding-summary-card-9"]').contains("Over Budget");
+    });
+});
+
+describe("Additional Information accordion", () => {
+    it("should not have any additional information unless BLIs are selected", () => {
+        cy.visit("/agreements/review/9").wait(1000);
+        cy.get('[type="radio"]').should("have.length", 2);
+        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
+        // info-accordion should exist
+        cy.get("h2").contains("Additional Information").as("info-accordion").should("exist");
     });
 });
