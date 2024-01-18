@@ -34,10 +34,23 @@ export default defineConfig(({ mode }) => {
                 }
             }),
             viteJsconfigPaths(),
-            eslint(),
             svgr({
                 include: "**/*.svg?react"
-            })
+            }),
+            {
+                // default settings on build (i.e. fail on error)
+                ...eslint(),
+                apply: "build"
+            },
+            {
+                // do not fail on serve (i.e. local development)
+                ...eslint({
+                    failOnWarning: false,
+                    failOnError: false
+                }),
+                apply: "serve",
+                enforce: "post"
+            }
         ],
         test: {
             globals: true,
