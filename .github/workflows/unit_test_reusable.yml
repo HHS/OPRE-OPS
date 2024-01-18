@@ -51,6 +51,7 @@ jobs:
           echo 'FILES<<EOF' >> $GITHUB_ENV
           ls frontend/cypress/e2e/*.cy.js >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
+          echo $GITHUB_ENV
 
   e2e:
     name: End-to-End Testing
