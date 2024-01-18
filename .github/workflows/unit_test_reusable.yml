@@ -52,10 +52,6 @@ jobs:
           ls frontend/cypress/e2e/*.cy.js >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
-      - name: Test Matrix Output
-        run: |
-          echo "${{ steps.set-matrix.outputs.matrix }}"
-
   e2e:
     name: End-to-End Testing
     needs: prepare-matrix
@@ -82,6 +78,10 @@ jobs:
       # Install Cypress globally
       - name: Install Cypress globally
         run: bun install -g cypress
+
+      - name: Test-Matrix
+        run: |
+          echo "${{ matrix.file }}"
 
       # Run the Cypress E2E Tests
       - name: E2E Test
