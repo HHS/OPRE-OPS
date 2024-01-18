@@ -48,9 +48,8 @@ jobs:
 
       - id: set-matrix
         run: |
-          echo 'FILES<<EOF' >> $GITHUB_ENV
-          ls frontend/cypress/e2e/*.cy.js >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
+          FILE_LIST=$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')
+          echo "matrix=${FILE_LIST}" >> $GITHUB_ENV
 
       - name: Test Matrix Output
         run: |
