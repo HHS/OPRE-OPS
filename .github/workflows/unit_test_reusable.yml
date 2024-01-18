@@ -44,11 +44,13 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
       - id: set-matrix
         run: |
-          echo "::set-output name=matrix::$(ls cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')"
+          echo 'FILES<<EOF' >> $GITHUB_ENV
+          ls cypress/e2e/*.cy.js >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
 
   e2e:
     name: End-to-End Testing
@@ -57,7 +59,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        file: ${{fromJson(needs.prepare-matrix.outputs.matrix)}}
+        include: ${{fromJson(needs.prepare-matrix.outputs.matrix)}}
 
     steps:
       - name: Checkout
