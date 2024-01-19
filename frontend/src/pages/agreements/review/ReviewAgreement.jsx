@@ -191,6 +191,7 @@ export const ReviewAgreement = () => {
             )}
             <AgreementMetaAccordion
                 agreement={agreement}
+                instructions="Please review the agreement details below and edit any information if necessary."
                 projectOfficerName={projectOfficerName}
                 res={res}
                 cn={cn}
@@ -203,6 +204,8 @@ export const ReviewAgreement = () => {
             />
             <AgreementBLIAccordion
                 title="Select Budget Lines"
+                instructions="  Select the budget lines you'd like this action to apply to. The agreement will be sent to your
+                Division Director to review and approve before changes are made."
                 budgetLineItems={getSelectedBudgetLines(budgetLines)}
                 agreement={agreement}
                 afterApproval={afterApproval}
@@ -243,6 +246,7 @@ export const ReviewAgreement = () => {
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
+                instructions="The budget lines you've selected are using funds from the CANs displayed below."
                 selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}

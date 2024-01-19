@@ -22,6 +22,7 @@ import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.
  */
 function AgreementBLIAccordion({
     title,
+    instructions,
     budgetLineItems: selectedBudgetLineItems = [],
     children,
     agreement,
@@ -41,10 +42,7 @@ function AgreementBLIAccordion({
             heading={title}
             level={2}
         >
-            <p>
-                Select the budget lines you&apos;d like this action to apply to. The agreement will be sent to your
-                Division Director to review and approve before changes are made.
-            </p>
+            <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                 {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
                     <ToggleButton
@@ -69,6 +67,7 @@ function AgreementBLIAccordion({
 }
 AgreementBLIAccordion.propTypes = {
     title: PropTypes.string.isRequired,
+    instructions: PropTypes.string.isRequired,
     budgetLineItems: PropTypes.arrayOf(PropTypes.object),
     children: PropTypes.node,
     agreement: PropTypes.object,

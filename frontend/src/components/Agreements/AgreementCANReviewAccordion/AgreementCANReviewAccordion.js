@@ -10,13 +10,20 @@ import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.
 /**
  * Renders an accordion component for reviewing CANs.
  * @param {Object} props - The component props.
+ * @param {string} props.instructions - The instructions for the accordion.
  * @param {Array<any>} props.selectedBudgetLines - The selected budget lines.
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
  * @returns {React.JSX.Element} The AgreementCANReviewAccordion component.
  */
-const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAfterApproval, action }) => {
+const AgreementCANReviewAccordion = ({
+    instructions,
+    selectedBudgetLines,
+    afterApproval,
+    setAfterApproval,
+    action
+}) => {
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
     if (isLoading) {
         return <div>Loading...</div>;
@@ -52,7 +59,7 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
             heading="Review CANs"
             level={2}
         >
-            <p>The budget lines you&apos;ve selected are using funds from the CANs displayed below.</p>
+            <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
                 {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
                     <ToggleButton
@@ -94,6 +101,7 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
 };
 
 AgreementCANReviewAccordion.propTypes = {
+    instructions: PropTypes.string.isRequired,
     selectedBudgetLines: PropTypes.arrayOf(PropTypes.object),
     afterApproval: PropTypes.bool,
     setAfterApproval: PropTypes.func,

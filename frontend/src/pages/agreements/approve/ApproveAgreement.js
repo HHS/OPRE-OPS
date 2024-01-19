@@ -16,6 +16,8 @@ import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { useSearchParams } from "react-router-dom";
 import useAlert from "../../../hooks/use-alert.hooks.js";
+import RadioButtonTile from "../../../components/UI/RadioButtonTile";
+import { actionOptions } from "../review/ReviewAgreement.constants";
 
 const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
     const { data, error, isLoading } = useGetWorkflowStepQuery(workflowStepId, {
@@ -53,6 +55,7 @@ const ApproveAgreement = () => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
+
     // @ts-ignore
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
@@ -70,6 +73,17 @@ const ApproveAgreement = () => {
     });
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const [afterApproval, setAfterApproval] = useToggle(true);
+    const [action, setAction] = React.useState(actionOptions.CHANGE_DRAFT_TO_PLANNED);
+    const goToText = action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? "Planned" : "Executing";
+    const fromToText = action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? "Draft to Planned" : "Planned to Executing";
+    const checkBoxText =
+        action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+            ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
+            : "I understand that approving these budget lines will start the Procurement Process";
+    const approveModalHeading =
+        action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+            ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
+            : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
@@ -80,6 +94,8 @@ const ApproveAgreement = () => {
 
     const budgetLinesWithActiveWorkflow = agreement?.budget_line_items.filter((bli) => bli.has_active_workflow);
     const changeInCans = getTotalByCans(budgetLinesWithActiveWorkflow);
+
+    // TODO: Replace with real submitters notes from workflow
     const submittersNotes =
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eget egestas justo. Praesent consequat sem at sapien lacinia cursus. Mauris accumsan vehicula pharetra. Donec non elit mi. Ut faucibus tincidunt vulputate. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nam at magna et purus sodales tristique id ac quam. Vivamus in felis ipsum. Nam venenatis malesuada odio, at dignissim justo hendrerit nec. Nunc eget nibh justo. In malesuada maximus elit, at luctus justo euismod vitae. Proin sit amet sem pharetra, scelerisque enim at, tristique purus. Etiam purus diam, tristique sit amet odio rhoncus, venenatis bibendum ante.";
 
@@ -98,7 +114,7 @@ const ApproveAgreement = () => {
     const handleDecline = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to decline these budget lines for Planned Status?",
+            heading: `Are you sure you want to decline these budget lines for ${goToText} Status?`,
             actionButtonText: "Decline",
             secondaryButtonText: "Cancel",
             handleConfirm: () => {
@@ -139,8 +155,7 @@ const ApproveAgreement = () => {
     const handleApprove = async () => {
         setShowModal(true);
         setModalProps({
-            heading:
-                "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget.",
+            heading: approveModalHeading,
             actionButtonText: "Approve",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
@@ -161,21 +176,48 @@ const ApproveAgreement = () => {
                     secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
+            <section className="border-error border-dashed padding-1 margin-bottom-2">
+                <p className="text-error">TODO: Replace with workflow action</p>
+                <div className="grid-row grid-gap">
+                    <div className="grid-col">
+                        <RadioButtonTile
+                            label={actionOptions.CHANGE_DRAFT_TO_PLANNED}
+                            description=""
+                            setValue={setAction}
+                            disabled={false}
+                            checked={true}
+                            data-cy="change-draft-to-planned"
+                        />
+                    </div>
+                    <div className="grid-col">
+                        <RadioButtonTile
+                            label={actionOptions.CHANGE_PLANNED_TO_EXECUTING}
+                            description=""
+                            setValue={setAction}
+                            disabled={false}
+                            data-cy="change-planned-to-executing"
+                        />
+                    </div>
+                </div>
+            </section>
             <PageHeader
-                title="Approval for Planned Status"
+                title={`Approval for ${goToText} Status`}
                 subTitle={agreement.name}
             />
             <AgreementMetaAccordion
+                instructions="Please review the agreement details below to ensure all information is correct."
                 agreement={agreement}
                 projectOfficerName={projectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
             <AgreementBLIAccordion
                 title="Review Budget Lines"
+                instructions={`This is a list of all budget lines within this agreement. The budget lines showing In Review Status need your approval to change from ${fromToText} Status.`}
                 budgetLineItems={budgetLinesWithActiveWorkflow}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
+                action={action}
             >
                 <BudgetLinesTableWithWorkflowStep
                     agreement={agreement}
@@ -183,16 +225,20 @@ const ApproveAgreement = () => {
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
+                instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
                 selectedBudgetLines={budgetLinesWithActiveWorkflow}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
+                action={action}
             />
-            <AgreementChangesAccordion
-                changeInBudgetLines={budgetLinesWithActiveWorkflow.reduce((acc, { amount }) => acc + amount, 0)}
-                changeInCans={changeInCans}
-            />
+            {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
+                <AgreementChangesAccordion
+                    changeInBudgetLines={budgetLinesWithActiveWorkflow.reduce((acc, { amount }) => acc + amount, 0)}
+                    changeInCans={changeInCans}
+                />
+            )}
             <section>
-                <h2 className="font-sans-lg text-semibold">Submitter’s Notes</h2>
+                <h2 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h2>
                 <p
                     className="margin-top-3 text-semibold font-12px line-height-body-1"
                     style={{ maxWidth: "25rem" }}
@@ -201,7 +247,7 @@ const ApproveAgreement = () => {
                 </p>
             </section>
             <section>
-                <h2 className="font-sans-lg text-semibold margin-top-5">Reviewer’s Notes</h2>
+                <h2 className="font-sans-lg text-semibold margin-top-5">Reviewer&apos;s Notes</h2>
                 <TextArea
                     name="submitter-notes"
                     label="Notes (optional)"
@@ -224,7 +270,7 @@ const ApproveAgreement = () => {
                     className="usa-checkbox__label"
                     htmlFor="approve-confirmation"
                 >
-                    I understand that approving these budget lines will subtract the amounts from the FY budget
+                    {checkBoxText}
                 </label>
             </div>
             <div className="grid-row flex-justify-end flex-align-center margin-top-8">
