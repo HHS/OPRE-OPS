@@ -26,21 +26,16 @@ export const BLIStatusComboBox = ({
         },
         {
             id: 2,
-            title: "In Review",
-            status: "UNDER_REVIEW"
-        },
-        {
-            id: 3,
             title: "Planned",
             status: "PLANNED"
         },
         {
-            id: 4,
+            id: 3,
             title: "Executing",
             status: "IN_EXECUTION"
         },
         {
-            id: 5,
+            id: 4,
             title: "Obligated",
             status: "OBLIGATED"
         }

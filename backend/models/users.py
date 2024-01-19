@@ -72,12 +72,12 @@ class User(BaseModel):
         viewonly=True,
     )
 
-    research_projects = relationship(
-        "ResearchProject",
+    projects = relationship(
+        "Project",
         back_populates="team_leaders",
-        secondary="research_project_team_leaders",
-        primaryjoin="User.id == ResearchProjectTeamLeaders.team_lead_id",
-        secondaryjoin="ResearchProject.id == ResearchProjectTeamLeaders.research_project_id",
+        secondary="project_team_leaders",
+        primaryjoin="User.id == ProjectTeamLeaders.team_lead_id",
+        secondaryjoin="Project.id == ProjectTeamLeaders.project_id",
         viewonly=True,
     )
 

@@ -3,7 +3,7 @@ from typing import List, Optional
 from flask import Response, request
 from models.base import BaseModel
 from models.cans import CAN
-from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from typing_extensions import override
@@ -23,6 +23,7 @@ class PortfolioCansAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
+    @handle_api_error
     def get(self, id: int) -> Response:
         year = request.args.get("year")
         cans = self._get_item(id, year)

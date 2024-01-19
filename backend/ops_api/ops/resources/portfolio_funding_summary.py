@@ -1,6 +1,6 @@
 from flask import Response, request
 from models.base import BaseModel
-from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.fiscal_year import get_current_fiscal_year
 from ops_api.ops.utils.portfolios import get_total_funding
@@ -14,6 +14,7 @@ class PortfolioFundingSummaryItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
+    @handle_api_error
     def get(self, id: int) -> Response:
         fiscal_year = request.args.get("fiscal_year")
 

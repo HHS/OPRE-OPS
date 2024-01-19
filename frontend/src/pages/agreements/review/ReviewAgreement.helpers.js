@@ -1,3 +1,5 @@
+import { fiscalYearFromDate } from "../../../helpers/utils";
+
 /**
  * Validates that the agreement is an object.
  * @param {Object} prop - The agreement to validate.
@@ -72,4 +74,9 @@ export const getTotalByCans = (budgetLines) => {
         return { canNumber, amount, term: can.appropriation_term };
     });
     return canNumbersWithAmountsAndTerms;
+};
+
+export const isBudgetLineInCurrentFiscalYear = (budgetLine) => {
+    const currentFiscalYear = fiscalYearFromDate(new Date());
+    return fiscalYearFromDate(budgetLine?.date_needed) === currentFiscalYear;
 };

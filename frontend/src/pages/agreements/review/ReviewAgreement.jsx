@@ -2,32 +2,34 @@ import { Fragment } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import classnames from "vest/classnames";
+import suite from "./suite";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { useAddApprovalRequestMutation } from "../../../api/opsAPI";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import suite from "./suite";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
+import AgreementAddInfoAccordion from "../../../components/Agreements/AgreementAddInfoAccordion";
+import App from "../../../App";
+import useToggle from "../../../hooks/useToggle";
+import TextArea from "../../../components/UI/Form/TextArea";
+import PageHeader from "../../../components/UI/PageHeader";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import { actionOptions } from "./ReviewAgreement.constants";
+import useReviewAgreement from "./reviewAgreement.hooks";
 import {
     anyBudgetLinesByStatus,
     getSelectedBudgetLines,
     selectedBudgetLinesTotal,
     getTotalBySelectedCans
 } from "./ReviewAgreement.helpers";
-import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
-import useReviewAgreement from "./reviewAgreement.hooks";
-import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
-import App from "../../../App";
-import useToggle from "../../../hooks/useToggle";
-import TextArea from "../../../components/UI/Form/TextArea";
-import PageHeader from "../../../components/UI/PageHeader";
-import { actionOptions } from "./ReviewAgreement.constants";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -92,21 +94,38 @@ export const ReviewAgreement = () => {
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
     const changeInCans = getTotalBySelectedCans(budgetLines);
+    let workflow_action = "";
+    switch (action) {
+        case actionOptions.CHANGE_DRAFT_TO_PLANNED:
+            workflow_action = "DRAFT_TO_PLANNED";
+            break;
+        case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
+            workflow_action = "PLANNED_TO_EXECUTING";
+            break;
+    }
+    const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
+    const isDRAFTSubmissionReady =
+        anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
+    const isPLANNEDSubmissionReady =
+        anyBudgetLinePlanned && action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && isAnythingSelected;
+    const isSubmissionReady = isDRAFTSubmissionReady || isPLANNEDSubmissionReady;
 
     const handleSendToApproval = () => {
-        if (anyBudgetLinesDraft) {
+        if (anyBudgetLinesDraft || anyBudgetLinePlanned) {
             //Create BLI Package, and send it to approval (create a Workflow)
             const bli_ids = getSelectedBudgetLines(budgetLines).map((bli) => bli.id);
             const user_id = activeUser?.id;
-            const notes = "";
-            let workflow_action = "";
-            switch (action) {
-                case actionOptions.CHANGE_DRAFT_TO_PLANNED:
-                    workflow_action = "DRAFT_TO_PLANNED";
-                    break;
-                case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
-                    workflow_action = "PLANNED_TO_EXECUTING";
-                    break;
+            let alertTitle = "";
+            let alertMessage = "";
+
+            if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
+                alertTitle = "Budget Lines Sent to Approval for Planned Status";
+                alertMessage =
+                    "The budget lines have been successfully sent to your Division Director to review. After draft budget lines are approved, they will change to Planned Status, and the amounts will be subtracted from the FY budget.";
+            } else if (action === actionOptions.CHANGE_PLANNED_TO_EXECUTING) {
+                alertTitle = "Budget Lines Sent to Approval for Executing Status";
+                alertMessage =
+                    "The budget lines have been successfully sent to your Division Director to review. After draft budget lines are approved, they will change to Executing Status.";
             }
             console.log("BLI Package Data:", bli_ids, user_id, notes);
             console.log("THE ACTION IS:", action);
@@ -121,8 +140,8 @@ export const ReviewAgreement = () => {
                     console.log("BLI Status Updated:", fulfilled);
                     setAlert({
                         type: "success",
-                        heading: "Agreement sent to approval",
-                        message: "The agreement has been successfully sent to approval for Planned Status.",
+                        heading: alertTitle,
+                        message: alertMessage,
                         redirectUrl: "/agreements"
                     });
                 })
@@ -136,37 +155,6 @@ export const ReviewAgreement = () => {
                         redirectUrl: "/error"
                     });
                 });
-
-            // This is the old process of just updating the BLI status to UNDER_REVIEW
-            // Instead it should be creating a BLI Package, and sending it to approval (create a Workflow)
-            /*
-            agreement?.budget_line_items.forEach((bli) => {
-                if (bli.status === "DRAFT") {
-                    console.log(bli.id);
-                    updateBudgetLineItemStatus({ id: bli.id, status: "UNDER_REVIEW" })
-                        .unwrap()
-                        .then((fulfilled) => {
-                            console.log("BLI Status Updated:", fulfilled);
-                            setAlert({
-                                type: "success",
-                                heading: "Agreement sent to approval",
-                                message: "The agreement has been successfully sent to approval for Planned Status.",
-                                redirectUrl: "/agreements"
-                            });
-                        })
-                        .catch((rejected) => {
-                            console.log("Error Updating Budget Line Status");
-                            console.dir(rejected);
-                            setAlert({
-                                type: "error",
-                                heading: "Error",
-                                message: "An error occurred. Please try again.",
-                                redirectUrl: "/error"
-                            });
-                        });
-                }
-            });
-            */
         }
     };
 
@@ -267,14 +255,17 @@ export const ReviewAgreement = () => {
                 changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
                 changeInCans={changeInCans}
             />
-            <h2 className="font-sans-lg text-semibold">Notes</h2>
-            <TextArea
-                name="submitter-notes"
-                label="Notes (optional)"
-                maxLength={150}
-                value={notes}
-                onChange={(name, value) => setNotes(value)}
-            />
+            {workflow_action === "PLANNED_TO_EXECUTING" && <AgreementAddInfoAccordion />}
+            <section>
+                <h2 className="font-sans-lg text-semibold">Notes</h2>
+                <TextArea
+                    name="submitter-notes"
+                    label="Notes (optional)"
+                    maxLength={150}
+                    value={notes}
+                    onChange={(name, value) => setNotes(value)}
+                />
+            </section>
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
@@ -289,15 +280,28 @@ export const ReviewAgreement = () => {
                 >
                     Edit
                 </button>
-                <button
-                    className={`usa-button ${!anyBudgetLinesDraft ? "usa-tooltip" : ""}`}
-                    data-cy="send-to-approval-btn"
-                    title={!anyBudgetLinesDraft ? "Agreement is not able to be reviewed" : ""}
-                    onClick={handleSendToApproval}
-                    disabled={!anyBudgetLinesDraft || !res.isValid()}
-                >
-                    Send to Approval
-                </button>
+                {!isSubmissionReady || !res.isValid() ? (
+                    <Tooltip
+                        label="Agreement is not ready to be sent for approval."
+                        position="top"
+                    >
+                        <button
+                            className="usa-button"
+                            data-cy="send-to-approval-btn"
+                            disabled={true}
+                        >
+                            Send to Approval
+                        </button>
+                    </Tooltip>
+                ) : (
+                    <button
+                        className="usa-button"
+                        data-cy="send-to-approval-btn"
+                        onClick={handleSendToApproval}
+                    >
+                        Send to Approval
+                    </button>
+                )}
             </div>
         </App>
     );

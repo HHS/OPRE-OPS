@@ -8,11 +8,11 @@ from typing import Optional
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from marshmallow import EXCLUDE, Schema, ValidationError
+from marshmallow import EXCLUDE, Schema
 from models import Agreement, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import AgreementType, BudgetLineItem
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.budget_line_item_schemas import (
     BudgetLineItemResponse,
     PATCHRequestBody,
@@ -25,7 +25,7 @@ from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy import inspect, select
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/budget-line-items"
@@ -100,6 +100,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
+    @handle_api_error
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
 
@@ -107,40 +108,28 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{method} to {ENDPOINT_STRING}"
-        try:
-            with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
-                schema.context["id"] = id
-                schema.context["method"] = method
 
-                if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
-                    with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
-                        data = validate_and_normalize_request_data(schema)
-                        budget_line_item = self.update_and_commit_budget_line_item(data, id)
+        with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+            schema.context["id"] = id
+            schema.context["method"] = method
 
-                        approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
-                        approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
-                        current_app.logger.info(
-                            f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}"
-                        )
-                else:
+            if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
+                with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
                     data = validate_and_normalize_request_data(schema)
                     budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
-                bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"bli": bli_dict})
-                current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
+                    approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
+                    approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
+                    current_app.logger.info(f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}")
+            else:
+                data = validate_and_normalize_request_data(schema)
+                budget_line_item = self.update_and_commit_budget_line_item(data, id)
 
-                return make_response_with_headers(bli_dict, 200)
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+            bli_dict = self._response_schema.dump(budget_line_item)
+            meta.metadata.update({"bli": bli_dict})
+            current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
+
+            return make_response_with_headers(bli_dict, 200)
 
     @override
     @is_authorized(
@@ -149,6 +138,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PUT),
         groups=["Budget Team", "Admins"],
     )
+    @handle_api_error
     def put(self, id: int) -> Response:
         return self._update(id, "PUT", self._put_schema)
 
@@ -159,6 +149,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PATCH),
         groups=["Budget Team", "Admins"],
     )
+    @handle_api_error
     def patch(self, id: int) -> Response:
         return self._update(id, "PATCH", self._patch_schema)
 
@@ -203,68 +194,47 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
+    @handle_api_error
     def get(self) -> Response:
-        message_prefix = f"GET to {ENDPOINT_STRING}"
-        try:
-            data = self._get_schema.dump(self._get_schema.load(request.args))
+        data = self._get_schema.dump(self._get_schema.load(request.args))
 
-            data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-            data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+        data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+        data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-            stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
+        stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
 
-            result = current_app.db_session.execute(stmt).all()
+        result = current_app.db_session.execute(stmt).all()
 
-            response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+        response = make_response_with_headers(self._response_schema_collection.dump([bli[0] for bli in result]))
 
         return response
 
     @override
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
+    @handle_api_error
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
-        try:
-            with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
-                self._post_schema.context["method"] = "POST"
+        with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
+            self._post_schema.context["method"] = "POST"
 
-                data = self._post_schema.dump(self._post_schema.load(request.json))
-                data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-                data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+            data = self._post_schema.dump(self._post_schema.load(request.json))
+            data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
+            data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
 
-                new_bli = BudgetLineItem(**data)
+            new_bli = BudgetLineItem(**data)
 
-                token = verify_jwt_in_request()
-                user = get_user_from_token(token[1])
-                new_bli.created_by = user.id
+            token = verify_jwt_in_request()
+            user = get_user_from_token(token[1])
+            new_bli.created_by = user.id
 
-                current_app.db_session.add(new_bli)
-                current_app.db_session.commit()
+            current_app.db_session.add(new_bli)
+            current_app.db_session.commit()
 
-                new_bli_dict = self._response_schema.dump(new_bli)
-                meta.metadata.update({"new_bli": new_bli_dict})
-                current_app.logger.info(f"{message_prefix}: New BLI created: {new_bli_dict}")
+            new_bli_dict = self._response_schema.dump(new_bli)
+            meta.metadata.update({"new_bli": new_bli_dict})
+            current_app.logger.info(f"{message_prefix}: New BLI created: {new_bli_dict}")
 
-                return make_response_with_headers(new_bli_dict, 201)
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+            return make_response_with_headers(new_bli_dict, 201)
 
 
 def update_data(budget_line_item: BudgetLineItem, data: dict[str, Any]) -> None:

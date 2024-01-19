@@ -23,6 +23,9 @@ import styles from "./PaginationNav.module.scss";
 export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPerPage = 10 }) => {
     const [pageNumberArray, setPageNumberArray] = useState([]); // 7 element array with either a page number or overflow indicator (null)
     const totalPages = Math.ceil(items.length / itemsPerPage);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [items, setCurrentPage]);
 
     useEffect(() => {
         const tmpPageNumberArray = [];

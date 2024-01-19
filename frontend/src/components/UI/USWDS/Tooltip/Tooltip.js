@@ -1,6 +1,5 @@
 import React, { Fragment, useLayoutEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import Accordion from "../../Accordion";
 import USWDS from "@uswds/uswds/js";
 
 const { tooltip } = USWDS;

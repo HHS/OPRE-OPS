@@ -127,10 +127,10 @@ const deleteAgreementByName = (name) => {
     cy.contains("tbody tr", name).as("agreement-row");
     cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
     // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
+    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click().wait(1);
     // get the modal and cancel
     cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete this agreement?");
-    cy.get('[data-cy="cancel-action"]').click();
+    cy.get('[data-cy="confirm-action"]').click();
     // close the row
     cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
 };
@@ -172,10 +172,11 @@ it("should allow to delete an agreement if user created it", () => {
 });
 
 it("should allow to delete an agreement if user is project officer", () => {
+    addAgreement(testAgreement);
     cy.visit("/agreements/");
     // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.wait(2000);
-    deleteAgreementByRow(0);
+    deleteAgreementByName(testAgreement.name);
 });
 // TODO: Add this this once we can switch users or create a test agreement with a team member
 // it("should allow to delete an agreement if user is a team member", () => {
