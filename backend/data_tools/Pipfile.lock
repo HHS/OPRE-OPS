@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3ad0de64efcfdb7568222816573fac135cfcf9ec4fac6498bff3dea8ffc57760"
+            "sha256": "06148547c2a9fafda6fecd51a407fb522c388b7bf53d297e6469a0af89564169"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -138,12 +138,12 @@
         },
         "marshmallow-sqlalchemy": {
             "hashes": [
-                "sha256:3523a774390ef0c1c0f7c708a7519809c5396cf608720f14f55c36f74ff5bbec",
-                "sha256:3cee0bf61ed10687c0a41448e1916649b28222334a02f7b937c39d1c69c18bee"
+                "sha256:29ad0a4fd1b4a1e52dcb07f9673d284a6b0795141916cc2169d4ee9a5d007347",
+                "sha256:808c1e95bf72f4491ad2f3498e73116b33074d7dcef79f0e6997d0d37d648ac7"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.7'",
-            "version": "==0.29.0"
+            "markers": "python_version >= '3.8'",
+            "version": "==0.30.0"
         },
         "mypy-extensions": {
             "hashes": [
@@ -964,12 +964,12 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:ca6f079bb33457c66e233e4580ebfc4128855b4cf6370dddd73842a9563e8a27",
-                "sha256:e8267419d72d81955ec1177f8a29aaa90ac80ad647499201119e2f05e99aa397"
+                "sha256:2f21bd3fc1d51550c89ee3944ae04bbc7bc79e129ea0937da6e6c68bfdbf117a",
+                "sha256:bc9716aad6f29f36c449e30821c9dd0c1c1a7b59ddcc26931685b87b4c569619"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.9'",
-            "version": "==8.18.1"
+            "markers": "python_version >= '3.10'",
+            "version": "==8.20.0"
         },
         "jedi": {
             "hashes": [
@@ -1328,6 +1328,7 @@
                 "sha256:8d4e9c88387b0f5c7d5f281e55304de64cf7f9c0021a3525bd3b1c542da3b0e4",
                 "sha256:9046c58c4395dff28dd494285c82ba00b546adfc7ef001486fbf0324bc174fba",
                 "sha256:9eb6caa9a297fc2c2fb8862bc5370d0303ddba53ba97e71f08023b6cd73d16a8",
+                "sha256:a08c6f0fe150303c1c6b71ebcd7213c2858041a7e01975da3a99aed1e7a378ef",
                 "sha256:a0cd17c15d3bb3fa06978b4e8958dcdc6e0174ccea823003a106c7d4d7899ac5",
                 "sha256:afd7e57eddb1a54f0f1a974bc4391af8bcce0b444685d936840f125cf046d5bd",
                 "sha256:b1275ad35a5d18c62a7220633c913e1b42d44b46ee12554e5fd39c70a243d6a3",
