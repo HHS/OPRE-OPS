@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "06148547c2a9fafda6fecd51a407fb522c388b7bf53d297e6469a0af89564169"
+            "sha256": "500a3b8312d5f17d65b0a1094bae928c86aa33448ce0eaf1329f2cb96009967f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -832,12 +832,12 @@
         },
         "flake8-bugbear": {
             "hashes": [
-                "sha256:1648f4a433d11da8fb4e148cbaa845692ff51379f3f598e3225010e3b9a667b7",
-                "sha256:e94514b1f866270663ce047d23dea731025c24ebacb4ce5999d8959076027504"
+                "sha256:46cc840ddaed26507cd0ada530d1526418b717ee76c9b5dfdbd238b5eab34139",
+                "sha256:bcb388a4f3b516258749b1e690ee394c082eff742f44595e3754cf5c7781c2c7"
             ],
             "index": "pypi",
             "markers": "python_full_version >= '3.8.1'",
-            "version": "==24.1.16"
+            "version": "==24.1.17"
         },
         "flake8-import-order": {
             "hashes": [
@@ -1777,11 +1777,11 @@
         },
         "types-paramiko": {
             "hashes": [
-                "sha256:209d1bbf7858dfbb2c1b704db8b5630ee914fb45659d843464e3dc7c95d427a2",
-                "sha256:bc71aa64b75e1e230f51b43c358091e0e76c6f29fd91666d180b4486f7e4de63"
+                "sha256:07e5992e995c2266a0803a332a69d912036be7664ca36a1ca01dac1b67643132",
+                "sha256:b0b44764c6c61a3e7629ee5923dc78b1a22b1d029522df321997697501e30d97"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==3.4.0.20240106"
+            "version": "==3.4.0.20240120"
         },
         "types-pathlib2": {
             "hashes": [
