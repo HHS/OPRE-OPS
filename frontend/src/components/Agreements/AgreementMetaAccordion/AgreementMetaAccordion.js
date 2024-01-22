@@ -10,9 +10,10 @@ import Term from "../../UI/Term";
  * @param {Object} [props.res] - The response object.
  * @param {Object} [props.cn] - The classnames object.
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
+ * @param {string} props.instructions - The instruction text of the agreement.
  * @returns {React.JSX.Element} - The rendered component.
  */
-const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, convertCodeForDisplay }) => {
+const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, convertCodeForDisplay, instructions }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members.length > 3;
 
     return (
@@ -20,7 +21,7 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
             heading="Review Agreement Details"
             level={2}
         >
-            <p>Please review the agreement details below and edit any information if necessary.</p>
+            <p>{instructions}</p>
             {/* WITH VALIDATION */}
             {res && (
                 <div className="grid-row grid-gap">
@@ -254,6 +255,7 @@ AgreementMetaAccordion.propTypes = {
     projectOfficerName: PropTypes.string,
     res: PropTypes.object,
     cn: PropTypes.func,
-    convertCodeForDisplay: PropTypes.func.isRequired
+    convertCodeForDisplay: PropTypes.func.isRequired,
+    instructions: PropTypes.string.isRequired
 };
 export default AgreementMetaAccordion;
