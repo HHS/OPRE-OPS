@@ -1,7 +1,11 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation, useGetWorkflowStepQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useAddWorkflowApproveMutation,
+    useGetWorkflowStepInstanceQuery
+} from "../../../api/opsAPI";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -16,11 +20,11 @@ import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { useSearchParams } from "react-router-dom";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import RadioButtonTile from "../../../components/UI/RadioButtonTile";
-import { actionOptions } from "../review/ReviewAgreement.constants";
+import { workflowActions } from "../review/ReviewAgreement.constants";
+import { useGetWorkflowInstanceFromId, useGetWorkflowStepInstanceFromId } from "../../../hooks/workflow.hooks.js";
 
 const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
-    const { data, error, isLoading } = useGetWorkflowStepQuery(workflowStepId, {
+    const { data, error, isLoading } = useGetWorkflowStepInstanceQuery(workflowStepId, {
         refetchOnMountOrArgChange: true
     });
     if (isLoading) {
@@ -61,7 +65,10 @@ const ApproveAgreement = () => {
     const [searchParams] = useSearchParams();
     const [workflowApprove] = useAddWorkflowApproveMutation();
     const stepId = searchParams.get("stepId");
-    // TODO: Get Workflow data and use BLI IDs to determine what's being approved (changes BLIRow.js)
+    const workflowStepInstance = useGetWorkflowStepInstanceFromId(stepId);
+    const { workflow_instance_id: workflowInstanceId } = workflowStepInstance;
+    const workflowInstance = useGetWorkflowInstanceFromId(workflowInstanceId);
+    const { workflow_action: action } = workflowInstance;
 
     const navigate = useNavigate();
     const {
@@ -73,15 +80,14 @@ const ApproveAgreement = () => {
     });
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const [afterApproval, setAfterApproval] = useToggle(true);
-    const [action, setAction] = React.useState(actionOptions.CHANGE_DRAFT_TO_PLANNED);
-    const goToText = action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? "Planned" : "Executing";
-    const fromToText = action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? "Draft to Planned" : "Planned to Executing";
+    const goToText = action === workflowActions.DRAFT_TO_PLANNED ? "Planned" : "Executing";
+    const fromToText = action === workflowActions.DRAFT_TO_PLANNED ? "Draft to Planned" : "Planned to Executing";
     const checkBoxText =
-        action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+        action === workflowActions.DRAFT_TO_PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
             : "I understand that approving these budget lines will start the Procurement Process";
     const approveModalHeading =
-        action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+        action === workflowActions.DRAFT_TO_PLANNED
             ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
             : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
 
@@ -176,30 +182,6 @@ const ApproveAgreement = () => {
                     secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
-            <section className="border-error border-dashed padding-1 margin-bottom-2">
-                <p className="text-error">TODO: Replace with workflow action</p>
-                <div className="grid-row grid-gap">
-                    <div className="grid-col">
-                        <RadioButtonTile
-                            label={actionOptions.CHANGE_DRAFT_TO_PLANNED}
-                            description=""
-                            setValue={setAction}
-                            disabled={false}
-                            checked={true}
-                            data-cy="change-draft-to-planned"
-                        />
-                    </div>
-                    <div className="grid-col">
-                        <RadioButtonTile
-                            label={actionOptions.CHANGE_PLANNED_TO_EXECUTING}
-                            description=""
-                            setValue={setAction}
-                            disabled={false}
-                            data-cy="change-planned-to-executing"
-                        />
-                    </div>
-                </div>
-            </section>
             <PageHeader
                 title={`Approval for ${goToText} Status`}
                 subTitle={agreement.name}
@@ -231,7 +213,7 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={action}
             />
-            {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
+            {action === workflowActions.DRAFT_TO_PLANNED && (
                 <AgreementChangesAccordion
                     changeInBudgetLines={budgetLinesWithActiveWorkflow.reduce((acc, { amount }) => acc + amount, 0)}
                     changeInCans={changeInCans}
