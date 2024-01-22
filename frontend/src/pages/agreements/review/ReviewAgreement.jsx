@@ -94,15 +94,11 @@ export const ReviewAgreement = () => {
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
     const changeInCans = getTotalBySelectedCans(budgetLines);
-    let workflow_action = "";
-    switch (action) {
-        case actionOptions.CHANGE_DRAFT_TO_PLANNED:
-            workflow_action = "DRAFT_TO_PLANNED";
-            break;
-        case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
-            workflow_action = "PLANNED_TO_EXECUTING";
-            break;
-    }
+    const actionOptionsToWorkflowActions = {
+        [actionOptions.CHANGE_DRAFT_TO_PLANNED]: "DRAFT_TO_PLANNED",
+        [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: "PLANNED_TO_EXECUTING"
+    };
+    let workflow_action = actionOptionsToWorkflowActions[action];
     const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
     const isDRAFTSubmissionReady =
         anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
@@ -195,6 +191,7 @@ export const ReviewAgreement = () => {
             )}
             <AgreementMetaAccordion
                 agreement={agreement}
+                instructions="Please review the agreement details below and edit any information if necessary."
                 projectOfficerName={projectOfficerName}
                 res={res}
                 cn={cn}
@@ -205,13 +202,15 @@ export const ReviewAgreement = () => {
                 optionOneDisabled={!anyBudgetLinesDraft}
                 optionTwoDisabled={!anyBudgetLinePlanned}
             />
-
             <AgreementBLIAccordion
                 title="Select Budget Lines"
+                instructions="  Select the budget lines you'd like this action to apply to. The agreement will be sent to your
+                Division Director to review and approve before changes are made."
                 budgetLineItems={getSelectedBudgetLines(budgetLines)}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
+                action={action}
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
@@ -247,15 +246,19 @@ export const ReviewAgreement = () => {
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
+                instructions="The budget lines you've selected are using funds from the CANs displayed below."
                 selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
+                action={action}
             />
-            <AgreementChangesAccordion
-                changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
-                changeInCans={changeInCans}
-            />
-            {workflow_action === "PLANNED_TO_EXECUTING" && <AgreementAddInfoAccordion />}
+            {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
+                <AgreementChangesAccordion
+                    changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
+                    changeInCans={changeInCans}
+                />
+            )}
+            {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && <AgreementAddInfoAccordion />}
             <section>
                 <h2 className="font-sans-lg text-semibold">Notes</h2>
                 <TextArea
