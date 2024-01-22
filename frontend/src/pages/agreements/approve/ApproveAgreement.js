@@ -1,11 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import App from "../../../App";
-import {
-    useGetAgreementByIdQuery,
-    useAddWorkflowApproveMutation,
-    useGetWorkflowStepInstanceQuery
-} from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation } from "../../../api/opsAPI";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -23,19 +19,8 @@ import useAlert from "../../../hooks/use-alert.hooks.js";
 import { workflowActions } from "../review/ReviewAgreement.constants";
 import { useGetWorkflowInstanceFromId, useGetWorkflowStepInstanceFromId } from "../../../hooks/workflow.hooks.js";
 
-const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
-    const { data, error, isLoading } = useGetWorkflowStepInstanceQuery(workflowStepId, {
-        refetchOnMountOrArgChange: true
-    });
-    if (isLoading) {
-        return <h1>Loading...</h1>;
-    }
-    if (error) {
-        console.log(error);
-        return <h1>Oops, an error occurred</h1>;
-    }
-    console.log({ data });
-    const workflowBudgetLineItemIds = data?.package_entities?.budget_line_item_ids;
+const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepInstance }) => {
+    const workflowBudgetLineItemIds = workflowStepInstance?.package_entities?.budget_line_item_ids;
     return (
         <BudgetLinesTable
             readOnly={true}
@@ -203,7 +188,7 @@ const ApproveAgreement = () => {
             >
                 <BudgetLinesTableWithWorkflowStep
                     agreement={agreement}
-                    workflowStepId={stepId}
+                    workflowStepInstance={workflowStepInstance}
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
