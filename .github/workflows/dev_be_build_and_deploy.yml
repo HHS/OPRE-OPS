@@ -1,8 +1,8 @@
-name: Dev BE Pull Request
+name: Dev Backend Build and Deploy
 
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches:
       - main
     paths:
@@ -12,7 +12,6 @@ on:
       - '!backend/tests/**'
 
 env:
-  TERRAFORM_VERSION: "1.6.6"
   TF_IN_AUTOMATION: "True"
   ENVIRONMENT: "dev"
   WORKING_DIR: "backend"
@@ -36,7 +35,7 @@ jobs:
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tag: ${{ github.sha }}
 
-  plan-backend-deploy:
+  backend-deploy:
     needs: build
     permissions:
       pull-requests: write
@@ -45,24 +44,22 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
-      - name: Terraform Plan
-        uses: ./.github/actions/tf-plan
+      - name: Terraform Apply
+        uses: ./.github/actions/tf-apply
         with:
           terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}"
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
           azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
           azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_id: ${{ github.event.pull_request.number }}
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",
               "container_tag": "${{ github.sha }}"
             }
 
-  plan-backend-asa-deploy:
+  backend-asa-deploy:
     needs: build
     permissions:
       pull-requests: write
@@ -71,17 +68,15 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
-      - name: Terraform Plan
-        uses: ./.github/actions/tf-plan
+      - name: Terraform Apply
+        uses: ./.github/actions/tf-apply
         with:
           terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa"
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
           azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
           azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_id: ${{ github.event.pull_request.number }}
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",
