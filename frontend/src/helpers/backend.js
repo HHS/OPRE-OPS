@@ -54,13 +54,12 @@ export const authConfig = {
         response_type: "code",
         scope: "https://opreops.onmicrosoft.com/3948e2a2-f0ea-444c-9ebc-c40c1de66698",
         redirect_uri: "http://localhost:3000/login",
-        acr_values: "",
-        logout_endpoint: ""
+        acr_values: 1,
+        logout_endpoint: "https://opreopsdeveussfest.z13.web.core.windows.net/logout"
+        /*
+            https://opreops.b2clogin.com/opreops.onmicrosoft.com/B2C_1_OPRE-OPS-FLEXION-SIGN-IN/oauth2/v2.0/authorize?client_id=3948e2a2-f0ea-444c-9ebc-c40c1de66698&nonce=585864647272&redirect_uri=https://jwt.ms&scope=https://opreops.onmicrosoft.com/3948e2a2-f0ea-444c-9ebc-c40c1de66698&response_type=code
+        */
     }
-    /*
-        https://opreops.b2clogin.com/opreops.onmicrosoft.com/B2C_1_OPRE-OPS-FLEXION-SIGN-IN/oauth2/v2.0/authorize?client_id=3948e2a2-f0ea-444c-9ebc-c40c1de66698&nonce=585864647272&redirect_uri=https://jwt.ms&scope=https://opreops.onmicrosoft.com/3948e2a2-f0ea-444c-9ebc-c40c1de66698&response_type=code
-
-    */
 };
 
 export const backEndConfig = {
