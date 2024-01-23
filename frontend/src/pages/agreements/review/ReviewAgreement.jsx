@@ -22,7 +22,7 @@ import useToggle from "../../../hooks/useToggle";
 import TextArea from "../../../components/UI/Form/TextArea";
 import PageHeader from "../../../components/UI/PageHeader";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
-import { actionOptions } from "./ReviewAgreement.constants";
+import { actionOptions, workflowActions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./reviewAgreement.hooks";
 import {
     anyBudgetLinesByStatus,
@@ -95,10 +95,10 @@ export const ReviewAgreement = () => {
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement, "PLANNED");
     const changeInCans = getTotalBySelectedCans(budgetLines);
     const actionOptionsToWorkflowActions = {
-        [actionOptions.CHANGE_DRAFT_TO_PLANNED]: "DRAFT_TO_PLANNED",
-        [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: "PLANNED_TO_EXECUTING"
+        [actionOptions.CHANGE_DRAFT_TO_PLANNED]: workflowActions.DRAFT_TO_PLANNED,
+        [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: workflowActions.PLANNED_TO_EXECUTING
     };
-    let workflow_action = actionOptionsToWorkflowActions[action];
+    let workflowAction = actionOptionsToWorkflowActions[action];
     const isAnythingSelected = getSelectedBudgetLines(budgetLines).length > 0;
     const isDRAFTSubmissionReady =
         anyBudgetLinesDraft && action === actionOptions.CHANGE_DRAFT_TO_PLANNED && isAnythingSelected;
@@ -129,7 +129,7 @@ export const ReviewAgreement = () => {
                 budget_line_item_ids: bli_ids,
                 submitter_id: user_id,
                 notes: notes,
-                workflow_action: workflow_action
+                workflow_action: workflowAction
             })
                 .unwrap()
                 .then((fulfilled) => {
@@ -210,7 +210,7 @@ export const ReviewAgreement = () => {
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                action={action}
+                action={workflowAction}
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
@@ -250,7 +250,7 @@ export const ReviewAgreement = () => {
                 selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                action={action}
+                action={workflowAction}
             />
             {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
                 <AgreementChangesAccordion
