@@ -248,12 +248,63 @@ class HhsAmsProvider(AuthenticationProvider):
         return True
 
 
+class AzureB2CProvider(AuthenticationProvider):
+    def __init__(self, config_name, key) -> None:
+        self.config = current_app.config["AUTHLIB_OAUTH_CLIENTS"][config_name]
+        self.client_id = self.config["client_id"]
+
+    def authenticate(self, auth_code):
+        client = OAuth2Session(
+            client_id=self.config["client_id"],
+            scope=self.config["client_kwargs"]["scope"],
+            redirect_uri=self.config["redirect_uri"],
+        )
+        expires = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
+        payload = {
+            "iss": self.client_id,
+            "sub": self.client_id,
+            "aud": self.config["aud"],
+            "jti": str(uuid.uuid4()),
+            "exp": int(time.time()) + expires.seconds,
+            "sso": "azureb2c",
+        }
+        provider_jwt = super().create_oauth_jwt(payload=payload)
+
+        token = client.fetch_token(
+            self.config["token_endpoint"],
+            client_assertion=provider_jwt,
+            client_assertion_type="",
+            grant_type="authorization_code",
+            code=auth_code,
+        )
+        return token
+
+    def get_user_info(self, token):
+        header = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json",
+        }
+        try:
+            user_jwt = requests.get(
+                self.config["user_info_url"],
+                headers=header,
+            ).content.decode("utf-8")
+            return user_jwt
+        except Exception as e:
+            current_app.logger.exception(e)
+            return None
+
+    def validate_token(self, token):
+        return True
+
+
 class AuthenticationGateway:
     def __init__(self, key) -> None:
         self.providers = {
             "fakeauth": FakeAuthProvider("fakeauth", "devkey"),
             "logingov": LoginGovProvider("logingov", key),
             "hhsams": HhsAmsProvider("hhsams", key),
+            "azureb2c": AzureB2CProvider("azureb2c", key),
         }
 
     def authenticate(self, provider_name, auth_code):

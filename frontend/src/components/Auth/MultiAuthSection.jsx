@@ -131,6 +131,14 @@ const MultiAuthSection = () => {
                         Sign in with FakeAuth®
                     </button>
                 </p>
+                <p>
+                    <button
+                        className="usa-button usa-button--outline width-full"
+                        onClick={() => handleSSOLogin("azureb2c")}
+                    >
+                        Sign in with Azure B2C
+                    </button>
+                </p>
                 <div className="border-top border-base-lighter margin-top-6 padding-top-1">
                     <p>
                         <strong>Don&apos;t have an account?</strong>

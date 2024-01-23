@@ -34,4 +34,13 @@ AUTHLIB_OAUTH_CLIENTS = {
         "aud": "http://localhost:5000/oidc/openid-connect/token",
         "redirect_uri": "http://localhost:3000/login",
     },
+    "azureb2c": {
+        "server_metadata_url": "https://opreops.b2clogin.com/opreops.onmicrosoft.com/B2C_1_OPRE-OPS-FLEXION-SIGN-IN/v2.0/.well-known/openid-configuration",
+        "token_endpoint": "https://opreops.b2clogin.com/opreops.onmicrosoft.com/b2c_1_opre-ops-flexion-sign-in/oauth2/v2.0/token",
+        "user_info_url": "",
+        "client_id": "3948e2a2-f0ea-444c-9ebc-c40c1de66698",
+        "client_kwargs": {"scope": "openid email"},
+        "aud": "https://opreops.b2clogin.com/opreops.onmicrosoft.com/b2c_1_opre-ops-flexion-sig",
+        "redirect_uri": "http://localhost:3000/login",
+    },
 }
