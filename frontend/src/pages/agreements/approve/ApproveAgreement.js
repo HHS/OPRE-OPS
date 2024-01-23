@@ -51,7 +51,12 @@ const ApproveAgreement = () => {
     const [workflowApprove] = useAddWorkflowApproveMutation();
     const stepId = searchParams.get("stepId");
     const workflowStepInstance = useGetWorkflowStepInstanceFromId(stepId);
-    const { workflow_instance_id: workflowInstanceId } = workflowStepInstance;
+    const { workflow_instance_id: workflowInstanceId, package_entities: packageEntities } = workflowStepInstance;
+    const workflowBudgetLineItemIds = packageEntities?.budget_line_item_ids;
+    const submittersNotes = packageEntities?.notes;
+    console.log("workflowBudgetLineItemIds", workflowBudgetLineItemIds);
+    console.log("workflowStepInstance", workflowStepInstance);
+    console.log("submittersNotes", submittersNotes);
     const workflowInstance = useGetWorkflowInstanceFromId(workflowInstanceId);
     const { workflow_action: action } = workflowInstance;
 
@@ -85,10 +90,6 @@ const ApproveAgreement = () => {
 
     const budgetLinesWithActiveWorkflow = agreement?.budget_line_items.filter((bli) => bli.has_active_workflow);
     const changeInCans = getTotalByCans(budgetLinesWithActiveWorkflow);
-
-    // TODO: Replace with real submitters notes from workflow
-    const submittersNotes =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eget egestas justo. Praesent consequat sem at sapien lacinia cursus. Mauris accumsan vehicula pharetra. Donec non elit mi. Ut faucibus tincidunt vulputate. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nam at magna et purus sodales tristique id ac quam. Vivamus in felis ipsum. Nam venenatis malesuada odio, at dignissim justo hendrerit nec. Nunc eget nibh justo. In malesuada maximus elit, at luctus justo euismod vitae. Proin sit amet sem pharetra, scelerisque enim at, tristique purus. Etiam purus diam, tristique sit amet odio rhoncus, venenatis bibendum ante.";
 
     const handleCancel = () => {
         setShowModal(true);
