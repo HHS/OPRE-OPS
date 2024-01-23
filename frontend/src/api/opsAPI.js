@@ -230,7 +230,11 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
         }),
-        getWorkflowStep: builder.query({
+        getWorkflowInstance: builder.query({
+            query: (id) => `/workflow-instance/${id}`,
+            providesTags: ["WorkflowInstance"]
+        }),
+        getWorkflowStepInstance: builder.query({
             query: (id) => `/workflow-step-instance/${id}`,
             providesTags: ["WorkflowStepInstance"]
         })
@@ -269,5 +273,6 @@ export const {
     useAddBliPackageMutation,
     useAddApprovalRequestMutation,
     useAddWorkflowApproveMutation,
-    useGetWorkflowStepQuery
+    useGetWorkflowInstanceQuery,
+    useGetWorkflowStepInstanceQuery
 } = opsApi;
