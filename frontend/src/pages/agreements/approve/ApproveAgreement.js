@@ -103,19 +103,46 @@ const ApproveAgreement = () => {
         });
     };
 
-    const handleDecline = () => {
+    const rejectStep = async () => {
+        const data = {
+            workflow_step_action: "REJECT",
+            workflow_step_id: stepId,
+            notes: notes
+        };
+
+        await workflowApprove(data)
+            .unwrap()
+            .then((fulfilled) => {
+                console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
+                setAlert({
+                    type: "success",
+                    heading: "Rejection Saved",
+                    message: `The rejection to change Budget Lines has been saved.`
+                });
+            })
+            .catch((rejected) => {
+                console.error(`ERROR with workflow-approve: ${JSON.stringify(rejected, null, 2)}`);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while saving the approval.",
+                    redirectUrl: "/error"
+                });
+            });
+    };
+
+    const handleDecline = async () => {
         setShowModal(true);
         setModalProps({
             heading: `Are you sure you want to decline these budget lines for ${goToText} Status?`,
             actionButtonText: "Decline",
             secondaryButtonText: "Cancel",
-            handleConfirm: () => {
-                alert("Not implemented yet");
+            handleConfirm: async () => {
+                await rejectStep();
                 navigate("/agreements");
             }
         });
     };
-
     const approveStep = async () => {
         const data = {
             workflow_step_action: "APPROVE",
