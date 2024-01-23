@@ -1,4 +1,5 @@
 """CAN models."""
+from datetime import timedelta
 from enum import Enum
 from typing import Any, List, Optional
 
@@ -182,12 +183,21 @@ class Agreement(BaseModel):
     project: Mapped[Optional["Project"]] = relationship(
         "Project", back_populates="agreements"
     )
+
     budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
         "BudgetLineItem",
         back_populates="agreement",
         lazy=True,
         cascade="all, delete",
     )
+
+    clins: Mapped[list["CLIN"]] = relationship(
+        "CLIN",
+        back_populates="agreement",
+        lazy=True,
+        cascade="all, delete",
+    )
+
     procurement_shop_id: Mapped[int] = mapped_column(
         ForeignKey("procurement_shop.id"), nullable=True
     )
@@ -259,6 +269,12 @@ class ContractAgreement(Agreement):
         User,
         secondary=contract_support_contacts,
         back_populates="contracts",
+    )
+    services_components: Mapped[list["ServicesComponent"]] = relationship(
+        "ServicesComponent",
+        back_populates="agreement",
+        lazy=True,
+        cascade="all, delete",
     )
 
     __mapper_args__ = {
@@ -372,6 +388,12 @@ class BudgetLineItem(BaseModel):
 
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", back_populates="budget_line_items")
+
+    services_component_id = Column(Integer, ForeignKey("services_component.id"))
+    services_component = relationship("ServicesComponent", back_populates="budget_line_items")
+
+    clin_id = Column(Integer, ForeignKey("clin.id"))
+    clin = relationship("CLIN", back_populates="budget_line_items")
 
     amount = Column(Numeric(12, 2))
 
@@ -492,3 +514,72 @@ class CAN(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
+
+
+
+class ServicesComponent(BaseModel):
+    """
+    A Services Component (SC) is the "what" when referring to an Agreement.
+    It outlines what work is occuring under a given Agreement.
+
+    This model contains all the relevant
+    descriptive information about a given Services Component
+    """
+
+    __tablename__ = "services_component"
+
+    id = Column(Integer, Identity(), primary_key=True)
+    #name = Column(String(256), nullable=False)
+    #title = Column(String(256))
+    number = Column(Integer)
+    optional = Column(Boolean, default=False)
+
+    clin_id = Column(Integer, ForeignKey("clin.id"), nullable=True)
+    clin = relationship("CLIN", back_populates="services_components")
+
+    description = Column(String)
+    period_start = Column(Date)
+    period_end = Column(Date)
+    budget_line_items = Mapped[list["BudgetLineItem"]] = relationship(
+        "BudgetLineItem",
+        back_populates="services_component",
+        lazy=True,
+    )
+
+    @property
+    def display_title(self):
+        return "" # TODO: implement
+
+    @property
+    def period_duration(self):
+        if self.period_start and self.period_end:
+            return abs(self.period_end - self.period_start)
+        return None
+
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        return self.name
+
+
+class CLIN(BaseModel):
+    """
+    Contract Line Item Number (CLIN) is a unique identifier for a contract line item,
+    """
+
+    __tablename__ = "clin"
+
+    id = Column(Integer, Identity(), primary_key=True)
+    name = Column(String(256), nullable=False)
+    source_id = Column(Integer)
+
+    agreement_id = Column(Integer, ForeignKey("agreement.id"))
+
+    services_component_id = Column(Integer, ForeignKey("services_component.id"), nullable=True)
+    services_component = relationship("ServicesComponent", back_populates="clins")
+
+    budget_line_items = Mapped[list["BudgetLineItem"]] = relationship(
+        "BudgetLineItem",
+        back_populates="clin",
+        lazy=True,
+    )
