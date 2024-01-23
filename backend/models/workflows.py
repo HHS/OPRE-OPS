@@ -206,7 +206,7 @@ class WorkflowStepInstance(BaseModel):
             .where(WorkflowInstance.id == self.id)
         ).all()
         bli_ids = [row[0] for row in results]
-        notes = results[0][1] if len(results) > 0 else "No Notes"
+        notes = results[0][1] if len(results) > 0 else None
         return {"budget_line_item_ids": bli_ids, "notes": notes}
 
     @override
