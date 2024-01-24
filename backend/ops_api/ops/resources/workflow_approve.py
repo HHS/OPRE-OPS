@@ -40,7 +40,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
         workflow_step_id = request.json.get("workflow_step_id")
         workflow_step_action = request.json.get("workflow_step_action")
-        workflow_notes = request.json.get("workflow_notes")
+        workflow_notes = request.json.get("notes")
 
         token = verify_jwt_in_request()
         user = get_user_from_token(token[1])
@@ -153,10 +153,15 @@ def create_approval_notification_for_submitter(workflow_step_instance):
 
 def create_rejection_notification_for_submitter(workflow_step_instance):
     if workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.DRAFT_TO_PLANNED:
+        message = "The budget lines you sent to your Division Director were declined from draft to planned status. "
+        message += f"{workflow_step_instance.notes=}"
+        if workflow_step_instance.notes:
+            message += (
+                "Please review the notes below, edit and re-submit." + "\n\nNotes: " + workflow_step_instance.notes
+            )
         notification = Notification(
             title="Budget Lines Rejected from changing from Draft to Planned Status",
-            message="The budget lines you sent to your Division Director were rejected from changing from draft to "
-            "planned status.",
+            message=message,
             is_read=False,
             recipient_id=workflow_step_instance.created_by,
             expires=date(2031, 12, 31),
@@ -164,13 +169,71 @@ def create_rejection_notification_for_submitter(workflow_step_instance):
         current_app.db_session.add(notification)
         current_app.db_session.commit()
     elif workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.PLANNED_TO_EXECUTING:
+        message = "The budget lines you sent to your Division Director were declined from planned to executing status. "
+        if workflow_step_instance.notes:
+            message += (
+                "Please review the notes below, edit and re-submit." + "\n\nNotes: " + workflow_step_instance.notes
+            )
         notification = Notification(
-            title="Budget Lines rejected from changing from Planned to Executing Status",
-            message="The budget lines you sent to your Division Director were rejected from changing from planned "
-            "to executing status.",
+            title="Budget Lines Declined from Planned to Executing Status",
+            message=message,
             is_read=False,
             recipient_id=workflow_step_instance.created_by,
             expires=date(2031, 12, 31),
         )
         current_app.db_session.add(notification)
         current_app.db_session.commit()
+
+
+# TODO: notify PO of rejection
+# def create_rejection_notification_for_project_officer(workflow_step_instance: WorkflowStepInstance):
+# submitter = workflow_step_instance.created_by
+# package_blis = workflow_step_instance.package_entities["budget_line_item_ids"]
+# bli = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(package_blis)).first()
+# results = current_app.db_session.execute(
+#     sa.select(PackageSnapshot.bli_id, Package.notes)
+#     .join(Package, Package.id == PackageSnapshot.package_id)
+#     .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+#     .join(WorkflowStepInstance, WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id)
+#     .where(WorkflowInstance.id == self.id)
+# ).all()
+# results = current_app.db_session.execute(
+#     sa.select(Agreement)
+#     .join(Package, Package.id == PackageSnapshot.package_id)
+#     .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+#     .join(WorkflowStepInstance, WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id)
+#     .where(WorkflowInstance.id == self.id)
+# ).all()
+#
+#
+# if workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.DRAFT_TO_PLANNED:
+#     message = "Budget lines sent to the Division Director were declined from draft to planned status. "
+#     if workflow_step_instance.notes:
+#         message += (
+#                 "Please review the notes below, edit and re-submit." + "\n\nNotes: " + workflow_step_instance.notes
+#         )
+#     notification = Notification(
+#         title="Budget Lines Rejected from changing from Draft to Planned Status",
+#         message="Budget lines sent to the Division Director were rejected from changing from draft to "
+#         "planned status.",
+#         is_read=False,
+#         recipient_id=workflow_step_instance.created_by,
+#         expires=date(2031, 12, 31),
+#     )
+#     current_app.db_session.add(notification)
+#     current_app.db_session.commit()
+# elif workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.PLANNED_TO_EXECUTING:
+#     message = "The budget lines you sent to your Division Director were declined from planned to executing status. "
+#     if workflow_step_instance.notes:
+#         message += (
+#                 "Please review the notes below, edit and re-submit." + "\n\nNotes: " + workflow_step_instance.notes
+#         )
+#     notification = Notification(
+#         title="Budget Lines Declined from Planned to Executing Status",
+#         message=message,
+#         is_read=False,
+#         recipient_id=workflow_step_instance.created_by,
+#         expires=date(2031, 12, 31),
+#     )
+#     current_app.db_session.add(notification)
+#     current_app.db_session.commit()
