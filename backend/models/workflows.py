@@ -199,14 +199,15 @@ class WorkflowStepInstance(BaseModel):
         if object_session(self) is None:
             return None
         results = object_session(self).execute(
-            sa.select(PackageSnapshot.bli_id)
+            sa.select(PackageSnapshot.bli_id, Package.notes)
             .join(Package, Package.id == PackageSnapshot.package_id)
             .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
             .join(WorkflowStepInstance, WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id)
             .where(WorkflowInstance.id == self.id)
         ).all()
         bli_ids = [row[0] for row in results]
-        return {"budget_line_item_ids": bli_ids}
+        notes = results[0][1] if len(results) > 0 else None
+        return {"budget_line_item_ids": bli_ids, "notes": notes}
 
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]

@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 
+import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
-from marshmallow import Schema, fields
+from marshmallow import EXCLUDE, Schema, fields
 from models.base import BaseModel
-from models.cans import BudgetLineItem
+from models.cans import BudgetLineItem, BudgetLineItemStatus
 from models.notifications import Notification
 from models.workflows import (
     Package,
@@ -17,6 +18,7 @@ from models.workflows import (
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
+from ops_api.ops.resources.budget_line_item_schemas import PATCHRequestBody
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
@@ -51,7 +53,15 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         budget_line_item_ids = request.json.get("budget_line_item_ids", [])
         submission_notes = request.json.get("notes")
         # Capture the use-case for this package (DRAFT_TO_PLANNED or PLANNED_TO_EXECUTED)
-        workflow_action = request.json.get("workflow_action")
+        requested_workflow_action = request.json.get("workflow_action")
+        workflow_action = WorkflowAction[requested_workflow_action]
+        target_bli_status = (
+            BudgetLineItemStatus.PLANNED
+            if workflow_action == WorkflowAction.DRAFT_TO_PLANNED
+            else BudgetLineItemStatus.IN_EXECUTION
+            if workflow_action == WorkflowAction.PLANNED_TO_EXECUTING
+            else None
+        )
         # Create new Package
         new_package = Package()
 
@@ -70,6 +80,8 @@ class WorkflowSubmisionListApi(BaseItemAPI):
             bli = current_app.db_session.get(BudgetLineItem, bli_id)
 
             if bli:
+                pending_changes = {"status": target_bli_status.name}
+                validate_bli(bli, pending_changes)
                 agreement_id = bli.agreement_id
                 new_package.package_snapshots.append(
                     PackageSnapshot(
@@ -84,7 +96,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         workflow_instance = WorkflowInstance()
         workflow_instance.workflow_template_id = 1  # We know this is a basic approval template
         workflow_instance.created_by = user.id
-        workflow_instance.workflow_action = WorkflowAction[workflow_action]
+        workflow_instance.workflow_action = workflow_action
 
         #  In order to know which workflow to follow, ie: who to send the approval request to,
         #  we need to know which CAN the BLIs are associated with. This is the associated_id,
@@ -97,7 +109,6 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         workflow_step_instance = WorkflowStepInstance(
             workflow_step_template_id=2,
             status=WorkflowStatus.REVIEW,
-            notes=submission_notes,
             created_by=user.id,
             time_started=datetime.now(),
             successor_dependencies=[],
@@ -134,3 +145,14 @@ Please review and approve. LINK to Agreement: {agreement_id}""",
         current_app.db_session.commit()
 
         return make_response_with_headers({"message": "Bli Package created", "id": new_package.id}, 201)
+
+
+def validate_bli(bli: BudgetLineItem, pending_changes: dict):
+    if bli is None:
+        raise ValueError("bli is a required argument")
+    schema = mmdc.class_schema(PATCHRequestBody)()
+    schema.context["id"] = bli.id
+    schema.context["method"] = "PATCH"
+    # validate
+    schema.dump(schema.load(pending_changes, unknown=EXCLUDE))
+    return
