@@ -191,13 +191,6 @@ class Agreement(BaseModel):
         cascade="all, delete",
     )
 
-    clins: Mapped[list["CLIN"]] = relationship(
-        "CLIN",
-        back_populates="agreement",
-        lazy=True,
-        cascade="all, delete",
-    )
-
     procurement_shop_id: Mapped[int] = mapped_column(
         ForeignKey("procurement_shop.id"), nullable=True
     )
@@ -270,12 +263,18 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    services_components: Mapped[list["ServicesComponent"]] = relationship(
-        "ServicesComponent",
-        back_populates="agreement",
-        lazy=True,
-        cascade="all, delete",
-    )
+    # services_components: Mapped[list["ServicesComponent"]] = relationship(
+    #     "ServicesComponent",
+    #     back_populates="contract_agreement",
+    #     lazy=True,
+    #     cascade="all, delete",
+    # )
+    # clins: Mapped[list["CLIN"]] = relationship(
+    #     "CLIN",
+    #     back_populates="contract_agreement",
+    #     lazy=True,
+    #     cascade="all, delete",
+    # )
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
@@ -376,6 +375,87 @@ class CANFiscalYearCarryForward(BaseModel):
     total_amount = column_property(received_amount + expected_amount)
 
 
+
+class ServicesComponent(BaseModel):
+    """
+    A Services Component (SC) is the "what" when referring to an Agreement.
+    It outlines what work is occuring under a given Agreement.
+
+    This model contains all the relevant
+    descriptive information about a given Services Component
+
+    number - The index number of the Services Component
+    optional - Whether the Services Component is optional or not (OSC or 'Option Period')
+    clin - The Contract Line Item Number (CLIN) associated with the Services Component
+    description - The description of the Services Component (not sure if needed)
+    period_start - The start date of the Services Component
+    period_end - The end date of the Services Component
+    budget_line_items - The Budget Line Items associated with the Services Component
+    period_duration - The duration of the Services Component (derived from period_start and period_end)
+    display_title - The long name of the Services Component (e.g. "Optional Services Component 1")
+    display_name - The short name of the Services Component (e.g. "OSC1")
+    """
+
+    __tablename__ = "services_component"
+
+    id = Column(Integer, Identity(), primary_key=True)
+    number = Column(Integer)
+    optional = Column(Boolean, default=False)
+
+    description = Column(String)
+    period_start = Column(Date)
+    period_end = Column(Date)
+
+    contract_agreement_id = Column(Integer, ForeignKey("contract_agreement.id"))
+    contract_agreement = relationship("ContractAgreement", backref="services_components")
+
+    clin_id = Column(Integer, ForeignKey('clin.id'), nullable=True)
+    clin = relationship("CLIN", back_populates="services_component", uselist=False)
+
+    # budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
+    #     "BudgetLineItem",
+    #     back_populates="services_component",
+    #     lazy=True,
+    # )
+
+    @property
+    def display_title(self):
+        optional = "Optional " if self.optional else ""
+        return f"{optional}Services Component {self.number}"
+
+    @property
+    def period_duration(self):
+        if self.period_start and self.period_end:
+            return abs(self.period_end - self.period_start)
+        return None
+
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        optional = "O" if self.optional else ""
+        return f"{optional}SC{self.number}"
+
+
+class CLIN(BaseModel):
+    """
+    Contract Line Item Number (CLIN) is a unique identifier for a contract line item,
+    """
+
+    __tablename__ = "clin"
+
+    id = Column(Integer, Identity(), primary_key=True)
+    name = Column(String(256), nullable=False)
+    source_id = Column(Integer) # purely an example
+
+    services_component = relationship("ServicesComponent", back_populates="clin", uselist=False)
+
+    # budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
+    #     "BudgetLineItem",
+    #     back_populates="clin",
+    #     lazy=True,
+    # )
+
+
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
@@ -390,10 +470,10 @@ class BudgetLineItem(BaseModel):
     can = relationship("CAN", back_populates="budget_line_items")
 
     services_component_id = Column(Integer, ForeignKey("services_component.id"))
-    services_component = relationship("ServicesComponent", back_populates="budget_line_items")
+    services_component = relationship(ServicesComponent, backref="budget_line_items")
 
     clin_id = Column(Integer, ForeignKey("clin.id"))
-    clin = relationship("CLIN", back_populates="budget_line_items")
+    clin = relationship("CLIN", backref="budget_line_items")
 
     amount = Column(Numeric(12, 2))
 
@@ -514,72 +594,3 @@ class CAN(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
-
-
-
-class ServicesComponent(BaseModel):
-    """
-    A Services Component (SC) is the "what" when referring to an Agreement.
-    It outlines what work is occuring under a given Agreement.
-
-    This model contains all the relevant
-    descriptive information about a given Services Component
-    """
-
-    __tablename__ = "services_component"
-
-    id = Column(Integer, Identity(), primary_key=True)
-    #name = Column(String(256), nullable=False)
-    #title = Column(String(256))
-    number = Column(Integer)
-    optional = Column(Boolean, default=False)
-
-    clin_id = Column(Integer, ForeignKey("clin.id"), nullable=True)
-    clin = relationship("CLIN", back_populates="services_components")
-
-    description = Column(String)
-    period_start = Column(Date)
-    period_end = Column(Date)
-    budget_line_items = Mapped[list["BudgetLineItem"]] = relationship(
-        "BudgetLineItem",
-        back_populates="services_component",
-        lazy=True,
-    )
-
-    @property
-    def display_title(self):
-        return "" # TODO: implement
-
-    @property
-    def period_duration(self):
-        if self.period_start and self.period_end:
-            return abs(self.period_end - self.period_start)
-        return None
-
-
-    @BaseModel.display_name.getter
-    def display_name(self):
-        return self.name
-
-
-class CLIN(BaseModel):
-    """
-    Contract Line Item Number (CLIN) is a unique identifier for a contract line item,
-    """
-
-    __tablename__ = "clin"
-
-    id = Column(Integer, Identity(), primary_key=True)
-    name = Column(String(256), nullable=False)
-    source_id = Column(Integer)
-
-    agreement_id = Column(Integer, ForeignKey("agreement.id"))
-
-    services_component_id = Column(Integer, ForeignKey("services_component.id"), nullable=True)
-    services_component = relationship("ServicesComponent", back_populates="clins")
-
-    budget_line_items = Mapped[list["BudgetLineItem"]] = relationship(
-        "BudgetLineItem",
-        back_populates="clin",
-        lazy=True,
-    )
