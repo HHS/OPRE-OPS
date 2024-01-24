@@ -68,30 +68,48 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
             create_approval_notification_for_submitter(workflow_step_instance)
 
+            update_blis(workflow_step_instance)
+
+            return make_response_with_headers(
+                {
+                    "message": "Workflow Status Accepted",
+                    "id": workflow_step_instance.id,
+                },
+                200,
+            )
+
         elif workflow_step_action == "REJECT":
-            # TODO: Update WorkflowStepInstance
-            pass
+            # Update WorkflowStepInstance
+            workflow_step_instance.status = WorkflowStatus.REJECTED
+            workflow_step_instance.time_completed = datetime.now()
+            workflow_step_instance.notes = workflow_notes
+            workflow_step_instance.updated_by = user.id
+
+            # If there are successor dependencies, update the workflow instance to the next step
+            workflow_step_instance.workflow_instance.current_workflow_step_instance_id = (
+                workflow_step_instance.successor_dependencies[0]
+                if workflow_step_instance.successor_dependencies
+                else None
+            )
+            current_app.db_session.add(workflow_step_instance)
+            current_app.db_session.commit()
+
+            create_rejection_notification_for_submitter(workflow_step_instance)
+            return make_response_with_headers(
+                {
+                    "message": "Workflow Status Rejected",
+                    "id": workflow_step_instance.id,
+                },
+                200,
+            )
         elif workflow_step_action == "CHANGES":
             # TODO: Update WorkflowStepInstance
             pass
         else:
             raise ValueError(f"Invalid WorkflowAction: {workflow_step_action}")
 
-        ####################################################
-        # Do we do this here...? Or in a listener?
-        ####################################################
-        UpdateBlis(workflow_step_instance)
 
-        return make_response_with_headers(
-            {
-                "message": "Workflow Status Accepted",
-                "id": workflow_step_instance.id,
-            },
-            201,
-        )
-
-
-def UpdateBlis(workflow_step_instance: WorkflowStepInstance):
+def update_blis(workflow_step_instance: WorkflowStepInstance):
     if workflow_step_instance.workflow_instance.workflow_status == WorkflowStatus.APPROVED:
         # BLI
         package_blis = workflow_step_instance.package_entities["budget_line_item_ids"]
@@ -125,6 +143,31 @@ def create_approval_notification_for_submitter(workflow_step_instance):
             title="Budget Lines Approved from Planned to Executing Status",
             message="The budget lines you sent to your Division Director were approved from planned to executing "
             "status.",
+            is_read=False,
+            recipient_id=workflow_step_instance.created_by,
+            expires=date(2031, 12, 31),
+        )
+        current_app.db_session.add(notification)
+        current_app.db_session.commit()
+
+
+def create_rejection_notification_for_submitter(workflow_step_instance):
+    if workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.DRAFT_TO_PLANNED:
+        notification = Notification(
+            title="Budget Lines Rejected from changing from Draft to Planned Status",
+            message="The budget lines you sent to your Division Director were rejected from changing from draft to "
+            "planned status.",
+            is_read=False,
+            recipient_id=workflow_step_instance.created_by,
+            expires=date(2031, 12, 31),
+        )
+        current_app.db_session.add(notification)
+        current_app.db_session.commit()
+    elif workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.PLANNED_TO_EXECUTING:
+        notification = Notification(
+            title="Budget Lines rejected from changing from Planned to Executing Status",
+            message="The budget lines you sent to your Division Director were rejected from changing from planned "
+            "to executing status.",
             is_read=False,
             recipient_id=workflow_step_instance.created_by,
             expires=date(2031, 12, 31),
