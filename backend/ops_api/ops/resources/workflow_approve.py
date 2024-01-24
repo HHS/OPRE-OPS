@@ -94,7 +94,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
             current_app.db_session.add(workflow_step_instance)
             current_app.db_session.commit()
 
-            create_approval_notification_for_submitter(workflow_step_instance)
+            create_rejection_notification_for_submitter(workflow_step_instance)
             return make_response_with_headers(
                 {
                     "message": "Workflow Status Rejected",
@@ -143,6 +143,31 @@ def create_approval_notification_for_submitter(workflow_step_instance):
             title="Budget Lines Approved from Planned to Executing Status",
             message="The budget lines you sent to your Division Director were approved from planned to executing "
             "status.",
+            is_read=False,
+            recipient_id=workflow_step_instance.created_by,
+            expires=date(2031, 12, 31),
+        )
+        current_app.db_session.add(notification)
+        current_app.db_session.commit()
+
+
+def create_rejection_notification_for_submitter(workflow_step_instance):
+    if workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.DRAFT_TO_PLANNED:
+        notification = Notification(
+            title="Budget Lines Rejected from changing from Draft to Planned Status",
+            message="The budget lines you sent to your Division Director were rejected from changing from draft to "
+            "planned status.",
+            is_read=False,
+            recipient_id=workflow_step_instance.created_by,
+            expires=date(2031, 12, 31),
+        )
+        current_app.db_session.add(notification)
+        current_app.db_session.commit()
+    elif workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.PLANNED_TO_EXECUTING:
+        notification = Notification(
+            title="Budget Lines rejected from changing from Planned to Executing Status",
+            message="The budget lines you sent to your Division Director were rejected from changing from planned "
+            "to executing status.",
             is_read=False,
             recipient_id=workflow_step_instance.created_by,
             expires=date(2031, 12, 31),
