@@ -263,18 +263,6 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    # services_components: Mapped[list["ServicesComponent"]] = relationship(
-    #     "ServicesComponent",
-    #     back_populates="contract_agreement",
-    #     lazy=True,
-    #     cascade="all, delete",
-    # )
-    # clins: Mapped[list["CLIN"]] = relationship(
-    #     "CLIN",
-    #     back_populates="contract_agreement",
-    #     lazy=True,
-    #     cascade="all, delete",
-    # )
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
@@ -412,11 +400,6 @@ class ServicesComponent(BaseModel):
     clin_id = Column(Integer, ForeignKey('clin.id'), nullable=True)
     clin = relationship("CLIN", back_populates="services_component", uselist=False)
 
-    # budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
-    #     "BudgetLineItem",
-    #     back_populates="services_component",
-    #     lazy=True,
-    # )
 
     @property
     def display_title(self):
@@ -448,12 +431,6 @@ class CLIN(BaseModel):
     source_id = Column(Integer) # purely an example
 
     services_component = relationship("ServicesComponent", back_populates="clin", uselist=False)
-
-    # budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
-    #     "BudgetLineItem",
-    #     back_populates="clin",
-    #     lazy=True,
-    # )
 
 
 class BudgetLineItem(BaseModel):
