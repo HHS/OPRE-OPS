@@ -272,7 +272,7 @@ const ApproveAgreement = () => {
                 <button
                     name="cancel"
                     className={`usa-button usa-button--unstyled margin-right-2`}
-                    data-cy="edit-agreement-btn"
+                    data-cy="cancel-approval-btn"
                     onClick={handleCancel}
                 >
                     Cancel
@@ -280,7 +280,7 @@ const ApproveAgreement = () => {
 
                 <button
                     className={`usa-button usa-button--outline margin-right-2`}
-                    data-cy="edit-agreement-btn"
+                    data-cy="decline-approval-btn"
                     onClick={handleDecline}
                 >
                     Decline

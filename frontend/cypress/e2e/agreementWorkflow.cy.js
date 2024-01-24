@@ -37,12 +37,12 @@ beforeEach(() => {
     cy.visit(`/`);
 });
 
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
 
-it("agreement for approval", () => {
+it("agreement (BLI) workflow for approval then rejection", () => {
     expect(localStorage.getItem("access_token")).to.exist;
 
     // create test agreement
@@ -108,43 +108,31 @@ it("agreement for approval", () => {
             cy.get("tbody tr").first().trigger("mouseover");
             cy.get("[data-cy='go-to-approve-row']").first().should("exist");
             cy.get("[data-cy='go-to-approve-row']").first().should("not.be.disabled");
-            cy.get("[data-cy='go-to-approve-row']")
-                .first()
-                .click()
+            cy.get("[data-cy='go-to-approve-row']").first().click();
+            cy.url().should("include", "/agreements/approve/").wait(1000);
+            cy.get("[data-cy='decline-approval-btn']").should("exist");
+            cy.get("[data-cy='decline-approval-btn']").first().should("not.be.disabled");
+            cy.get("[data-cy='decline-approval-btn']").first().click();
+            cy.get("#ops-modal-heading").should(
+                "have.text",
+                "Are you sure you want to decline these budget lines for Planned Status?"
+            );
+            // find the delete button and click
+            cy.get('[data-cy="confirm-action"]').click();
+            cy.url().should("eq", Cypress.config().baseUrl + "/agreements");
+            cy.get("h1")
+                .should("exist")
                 .then(() => {
-                    return { agreementId, bliId };
+                    cy.request({
+                        method: "DELETE",
+                        url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    }).then((response) => {
+                        expect(response.status).to.eq(200);
+                    });
                 });
         });
-    // .then(({ agreementId, bliId }) => {
-    //     cy.request({
-    //         method: "PATCH",
-    //         url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-    //         body: { status: "DRAFT" },
-    //         headers: {
-    //             Authorization: bearer_token,
-    //             Accept: "application/json"
-    //         }
-    //     }).then((response) => {
-    //         expect(response.status).to.eq(200);
-    //         return agreementId;
-    //     });
-    // })
-    //
-    // .then((agreementId) => {
-    //     cy.request({
-    //         method: "DELETE",
-    //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-    //         headers: {
-    //             Authorization: bearer_token,
-    //             Accept: "application/json"
-    //         }
-    //     }).then((response) => {
-    //         expect(response.status).to.eq(200);
-    //     });
-    // });
-
-    // .then(({ agreementId, bliId }) => {
-    //     cy.visit("/agreements?filter=for-approval");
-    //     cy.get(":nth-child(1) > .margin-0").should("have.text", "For Approval");
-    // });
 });
