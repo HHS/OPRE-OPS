@@ -3,7 +3,7 @@ import PoPStartDate from "../PoPStartDate";
 import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../../components/UI/Form/TextArea";
 
-function ServicesComponentForm({ serviceTypeReq, serviceComponent, setServiceComponent }) {
+function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit = () => {} }) {
     const nonSeverableOptions = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
     const severableOptions = [
         "Base Period",
@@ -16,7 +16,7 @@ function ServicesComponentForm({ serviceTypeReq, serviceComponent, setServiceCom
     ];
     const options = serviceTypeReq === "Severable" ? severableOptions : nonSeverableOptions;
     return (
-        <div>
+        <form onSubmit={handleSubmit}>
             <h2 className="font-sans-lg">Create Services Components</h2>
             <p>
                 Create the structure of the agreement using Services Components to describe the work being done. After
@@ -27,12 +27,12 @@ function ServicesComponentForm({ serviceTypeReq, serviceComponent, setServiceCom
                     <fieldset className="usa-fieldset display-flex flex-align-center">
                         <ServicesComponentSelect
                             onChange={(name, value) => {
-                                setServiceComponent({
-                                    ...serviceComponent,
+                                setFormData({
+                                    ...formData,
                                     servicesComponent: value
                                 });
                             }}
-                            value={serviceComponent?.servicesComponent || ""}
+                            value={formData?.servicesComponent || ""}
                             options={options}
                         />
                         {serviceTypeReq === "Non-Severable" && (
@@ -42,11 +42,11 @@ function ServicesComponentForm({ serviceTypeReq, serviceComponent, setServiceCom
                                     id="optional-services-component"
                                     type="checkbox"
                                     name="optional-services-checkbox"
-                                    value={serviceComponent?.optional}
+                                    value={formData?.optional}
                                     onChange={() => {
-                                        setServiceComponent({
-                                            ...serviceComponent,
-                                            optional: !serviceComponent?.optional
+                                        setFormData({
+                                            ...formData,
+                                            optional: !formData?.optional
                                         });
                                     }}
                                 />
@@ -61,12 +61,12 @@ function ServicesComponentForm({ serviceTypeReq, serviceComponent, setServiceCom
                     </fieldset>
                     <div className="display-flex flex-align-center margin-top-3">
                         <PoPStartDate
-                            serviceComponent={serviceComponent}
-                            setServiceComponent={setServiceComponent}
+                            serviceComponent={formData}
+                            setServiceComponent={setFormData}
                         />
                         <PoPEndDate
-                            serviceComponent={serviceComponent}
-                            setServiceComponent={setServiceComponent}
+                            serviceComponent={formData}
+                            setServiceComponent={setFormData}
                         />
                     </div>
                 </section>
@@ -78,18 +78,20 @@ function ServicesComponentForm({ serviceTypeReq, serviceComponent, setServiceCom
                         name="description"
                         label="Description"
                         maxLength={150}
-                        value={serviceComponent?.description || ""}
-                        onChange={(name, value) => setServiceComponent({ ...serviceComponent, description: value })}
+                        value={formData?.description || ""}
+                        onChange={(name, value) => setFormData({ ...formData, description: value })}
                     />
                 </section>
             </div>
-            <button>Submit</button>
-
-            <section className="border-dashed border-green margin-top-6">
-                <h2>Form Data</h2>
-                <pre>{JSON.stringify(serviceComponent, null, 2)}</pre>
-            </section>
-        </div>
+            <div className="display-flex flex-justify-end margin-top-2">
+                <button
+                    className="usa-button usa-button--outline"
+                    formAction="submit"
+                >
+                    Add Services Component
+                </button>
+            </div>
+        </form>
     );
 }
 
