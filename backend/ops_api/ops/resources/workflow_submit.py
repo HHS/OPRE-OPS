@@ -136,9 +136,9 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         notification = Notification(
             title="Approval Request",
             message=f"""An Agreement Approval Request has been submitted.
-Please review and approve. LINK to Agreement: {agreement_id}""",
+Please review and approve. LINK to Agreement: {agreement_id}""",  # TODO improve message and include Markdown link
             is_read=False,
-            recipient_id=23,
+            recipient_id=23,  # TODO: send to division directors (of CANs of BLIs)
             expires=date(2031, 12, 31),
         )
         current_app.db_session.add(notification)
