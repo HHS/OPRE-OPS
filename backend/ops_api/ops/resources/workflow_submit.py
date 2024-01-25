@@ -132,17 +132,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         new_package_dict = new_package.to_dict()
         current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_package_dict}")
 
-        # Create a notification for the approvers
-        notification = Notification(
-            title="Approval Request",
-            message=f"""An Agreement Approval Request has been submitted.
-Please review and approve. LINK to Agreement: {agreement_id}""",  # TODO improve message and include Markdown link
-            is_read=False,
-            recipient_id=23,  # TODO: send to division directors (of CANs of BLIs)
-            expires=date(2031, 12, 31),
-        )
-        current_app.db_session.add(notification)
-        current_app.db_session.commit()
+        create_notification_for_division_directors(agreement_id, workflow_step_instance, budget_line_item_ids)
 
         return make_response_with_headers({"message": "Bli Package created", "id": new_package.id}, 201)
 
@@ -156,3 +146,42 @@ def validate_bli(bli: BudgetLineItem, pending_changes: dict):
     # validate
     schema.dump(schema.load(pending_changes, unknown=EXCLUDE))
     return
+
+
+def create_notification_for_division_directors(agreement_id, workflow_step_instance, budget_line_item_ids):
+    # TODO: get division director IDs
+    # There's currently no data in division.division_director_id
+    #
+    # SQL test query
+    # select distinct division.division_director_id
+    # from ops.budget_line_item
+    # join ops.can on budget_line_item.can_id = can.id
+    # join ops.portfolio on can.managing_portfolio_id = portfolio.id
+    # join ops.division on portfolio.division_id = division.id
+    # where budget_line_item.id in (1,2)
+    #
+    # import sqlalchemy as sa
+    # from models import Division, Portfolio
+    # from models.cans import CAN
+    # results = current_app.db_session.execute(
+    #     sa.select(Division.division_director_id)
+    #     .join(Portfolio, Division.id == Portfolio.division_id)
+    #     .join(CAN, Portfolio.can_id == CAN.id)
+    #     .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
+    #     .where(BudgetLineItem.in_(budget_line_item_ids))
+    # ).all()
+    division_director_ids = [21, 23]
+    fe_url = current_app.config.get("OPS_FRONTEND_URL")
+    approve_url = f"{fe_url}/agreements/approve/{agreement_id}?stepId={workflow_step_instance.id}"
+    for division_director_id in division_director_ids:
+        notification = Notification(
+            title="Approval Request",
+            # NOTE: approve_url only renders as plain text in default react-markdown
+            message=f"An Agreement Approval Request has been submitted. "
+            f"Please review and approve. \n\\\n\\[Link]({approve_url})",
+            is_read=False,
+            recipient_id=division_director_id,
+            expires=date(2031, 12, 31),
+        )
+        current_app.db_session.add(notification)
+    current_app.db_session.commit()
