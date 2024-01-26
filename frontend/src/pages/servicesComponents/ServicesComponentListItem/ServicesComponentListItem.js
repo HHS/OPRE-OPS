@@ -1,4 +1,3 @@
-import React from "react";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -7,7 +6,7 @@ function ServicesComponentListItem({ item }) {
     return (
         <RoundedBox
             className="width-full flex-column padding-2"
-            style={{ width: " 100%" }}
+            style={{ width: "100%" }}
         >
             <section className="display-flex flex-justify">
                 <h2 className="margin-0">{item.servicesComponent}</h2>
@@ -42,25 +41,25 @@ function ServicesComponentListItem({ item }) {
                     </button>
                 </div>
             </section>
-            <section>
+            <section className="margin-top-0">
                 <dl className="display-flex font-12px">
                     <div>
-                        <dt className="margin-0 text-base-dark margin-top-3">Period of Performance - Start</dt>
+                        <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - Start</dt>
                         <dd className="margin-0 margin-top-05">
                             {item.popStartMonth}/{item.popStartDay}/{item.popStartYear}
                         </dd>
                     </div>
                     <div className="margin-left-4">
-                        <dt className="margin-0 text-base-dark margin-top-3">Period of Performace - End</dt>
+                        <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - End</dt>
                         <dd className="margin-0 margin-top-05">
                             {item.popEndMonth}/{item.popEndDay}/{item.popEndYear}
                         </dd>
                     </div>
                     <div
                         className="margin-left-auto"
-                        style={{ width: "400px" }}
+                        style={{ width: "25rem" }}
                     >
-                        <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
+                        <dt className="margin-0 text-base-dark margin-top-1px">Description</dt>
                         <dd className="margin-0 margin-top-05 text-semibold">{item.description}</dd>
                     </div>
                 </dl>

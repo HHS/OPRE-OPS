@@ -1,11 +1,9 @@
-import React from "react";
 import ServicesComponentListItem from "../ServicesComponentListItem";
 
 function ServicesComponentsList({ servicesComponents }) {
     return (
         <>
             <section className="margin-top-6">
-                <h2>Services Components</h2>
                 {servicesComponents.length > 0 ? (
                     servicesComponents.map((item, index) => (
                         <ServicesComponentListItem
