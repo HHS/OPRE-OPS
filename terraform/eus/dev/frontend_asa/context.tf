@@ -1,5 +1,5 @@
 module "ctx" {
-  source          = "git::https://github.com/HHS/OPRE-OPS.git//terraform/global/context?ref=v0.1"
+  source          = "../../../global/context" //"git::https://github.com/HHS/OPRE-OPS.git//terraform/global/context?ref=v0.1"
   environment     = var.environment
   custom_workload = "be4s"
 
