@@ -6,7 +6,7 @@ function ServicesComponentListItem({ item }) {
     return (
         <RoundedBox
             className="width-full flex-column padding-2"
-            style={{ width: "100%" }}
+            style={{ width: "100%", height: "auto", minHeight: "134px" }}
         >
             <section className="display-flex flex-justify">
                 <h2 className="margin-0">{item.servicesComponent}</h2>
