@@ -2,6 +2,8 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
 import PoPStartDate from "../PoPStartDate";
 import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../../components/UI/Form/TextArea";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAdd } from "@fortawesome/free-solid-svg-icons";
 
 function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit = () => {} }) {
     const nonSeverableOptions = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
@@ -42,7 +44,8 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                                     id="optional-services-component"
                                     type="checkbox"
                                     name="optional-services-checkbox"
-                                    value={formData?.optional}
+                                    value={formData?.optional || ""}
+                                    checked={formData?.optional}
                                     onChange={() => {
                                         setFormData({
                                             ...formData,
@@ -88,6 +91,10 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                     className="usa-button usa-button--outline"
                     formAction="submit"
                 >
+                    <FontAwesomeIcon
+                        icon={faAdd}
+                        className="height-2 width-2"
+                    />
                     Add Services Component
                 </button>
             </div>
