@@ -14,7 +14,7 @@ const Header = ({ servicesComponent, optional }) => {
     return <h2 className="margin-0">{servicesComponent}</h2>;
 };
 
-function ServicesComponentListItem({ item }) {
+function ServicesComponentListItem({ item, setFormDataById }) {
     return (
         <RoundedBox
             className="width-full flex-column padding-2 margin-top-4"
@@ -26,12 +26,9 @@ function ServicesComponentListItem({ item }) {
                     optional={item.optional}
                 />
                 <div>
-                    {/* TODO: Wire up Edit */}
                     <button
                         id="edit"
-                        onClick={() => {
-                            alert("not yet implemented");
-                        }}
+                        onClick={() => setFormDataById(item.id)}
                     >
                         <FontAwesomeIcon
                             icon={faPen}

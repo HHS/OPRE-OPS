@@ -87,16 +87,29 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                 </section>
             </div>
             <div className="display-flex flex-justify-end margin-top-2">
-                <button
-                    className="usa-button usa-button--outline"
-                    formAction="submit"
-                >
-                    <FontAwesomeIcon
-                        icon={faAdd}
-                        className="height-2 width-2"
-                    />
-                    Add Services Component
-                </button>
+                {formData.mode === "edit" ? (
+                    <button
+                        className="usa-button usa-button--outline"
+                        formAction="submit"
+                    >
+                        <FontAwesomeIcon
+                            icon={faAdd}
+                            className="height-2 width-2"
+                        />
+                        Edit Services Component
+                    </button>
+                ) : (
+                    <button
+                        className="usa-button usa-button--outline"
+                        formAction="submit"
+                    >
+                        <FontAwesomeIcon
+                            icon={faAdd}
+                            className="height-2 width-2"
+                        />
+                        Add Services Component
+                    </button>
+                )}
             </div>
         </form>
     );
