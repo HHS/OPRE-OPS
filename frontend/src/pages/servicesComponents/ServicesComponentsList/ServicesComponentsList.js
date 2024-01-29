@@ -15,7 +15,9 @@ function ServicesComponentsList({ servicesComponents }) {
                     <p>You have not added any Services Component yet.</p>
                 )}
             </section>
-            <pre className="border-dashed border-emergency ">{JSON.stringify(servicesComponents, null, 2)}</pre>
+            {import.meta.env.DEV && (
+                <pre className="border-dashed border-emergency ">{JSON.stringify(servicesComponents, null, 2)}</pre>
+            )}
         </>
     );
 }

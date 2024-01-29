@@ -3,14 +3,28 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../../components/UI/Tag";
 
+const addAnOInFront = (str) => {
+    return "O" + str;
+};
+
+const Header = ({ servicesComponent, optional }) => {
+    if (optional) {
+        return <h2 className="margin-0">{addAnOInFront(servicesComponent)}</h2>;
+    }
+    return <h2 className="margin-0">{servicesComponent}</h2>;
+};
+
 function ServicesComponentListItem({ item }) {
     return (
         <RoundedBox
             className="width-full flex-column padding-2 margin-top-4"
-            style={{ width: "100%", height: "auto", minHeight: "134px" }}
+            style={{ width: "100%", height: "auto", minHeight: "8.375rem" }}
         >
             <section className="display-flex flex-justify">
-                <h2 className="margin-0">{item.servicesComponent}</h2>
+                <Header
+                    servicesComponent={item.servicesComponent}
+                    optional={item.optional}
+                />
                 <div>
                     {/* TODO: Wire up Edit */}
                     <button

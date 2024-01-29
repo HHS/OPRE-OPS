@@ -9,8 +9,7 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
     // TODO: Add these to a constants file
     const nonSeverableOptions = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
     const severableOptions = [
-        "Base Period",
-        "Option Period 1",
+        "Base Period 1",
         "Option Period 2",
         "Option Period 3",
         "Option Period 4",

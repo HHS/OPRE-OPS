@@ -45,10 +45,12 @@ const ServicesComponents = () => {
                     setFormData={setFormData}
                     handleSubmit={handleSubmit}
                 />
-                <section className="border-dashed border-emergency margin-top-6">
-                    <h2>Form Data</h2>
-                    <pre>{JSON.stringify(formData, null, 2)}</pre>
-                </section>
+                {import.meta.env.DEV && (
+                    <section className="border-dashed border-emergency margin-top-6">
+                        <h2>Form Data</h2>
+                        <pre>{JSON.stringify(formData, null, 2)}</pre>
+                    </section>
+                )}
             </section>
             <ServicesComponentsList servicesComponents={servicesComponents} />
         </App>
