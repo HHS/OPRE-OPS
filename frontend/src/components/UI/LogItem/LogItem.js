@@ -3,6 +3,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import PropTypes from "prop-types";
 import { timeAgo } from "../../../helpers/utils.js";
 import styles from "./LogItem.module.css";
+import ReactMarkdown from "react-markdown";
 
 /**
  * Renders a Log item
@@ -39,7 +40,8 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
                     className={`margin-0 line-height-sans-2 margin-y-1 ${isLarge ? "font-body-sm" : undefined}`}
                     data-cy="log-item-message"
                 >
-                    {message}
+                    {/*{message}*/}
+                    <ReactMarkdown>{message}</ReactMarkdown>
                 </p>
             )}
             <div
