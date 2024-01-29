@@ -54,6 +54,22 @@ const AgreementCANReviewAccordion = ({
         if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
 
+    // TODO: Replace with actual data
+    let cansOutsideDivision = [
+        {
+            id: 1,
+            name: "Not"
+        },
+        {
+            id: 2,
+            name: "Yet"
+        },
+        {
+            id: 3,
+            name: "Implemented"
+        }
+    ];
+
     return (
         <Accordion
             heading="Review CANs"
@@ -95,6 +111,18 @@ const AgreementCANReviewAccordion = ({
                         tagStyle="primaryDarkTextLightBackground"
                     />
                 ))}
+            </div>
+            <div className="margin-top-1">
+                <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
+                {cansOutsideDivision.length > 0 &&
+                    cansOutsideDivision.map((portfolio) => (
+                        <Tag
+                            key={portfolio.id}
+                            className="margin-left-1"
+                            text={portfolio.name}
+                            tagStyle="primaryDarkTextLightBackground"
+                        />
+                    ))}
             </div>
         </Accordion>
     );
