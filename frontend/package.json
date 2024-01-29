@@ -14,7 +14,7 @@
         "@nivo/pie": "0.84.0",
         "@reduxjs/toolkit": "1.9.7",
         "@uswds/uswds": "3.7.1",
-        "axios": "1.6.6",
+        "axios": "1.6.7",
         "clsx": "2.1.0",
         "crypto-random-string": "5.0.0",
         "js-cookie": "3.0.5",
@@ -30,7 +30,7 @@
         "react-select": "5.8.0",
         "sass": "1.70.0",
         "sass-loader": "13.3.3",
-        "vest": "5.2.7"
+        "vest": "5.2.8"
     },
     "devDependencies": {
         "@testing-library/react": "14.1.2",
