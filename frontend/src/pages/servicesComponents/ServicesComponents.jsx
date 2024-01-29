@@ -21,6 +21,7 @@ const ServicesComponents = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        // TODO: add an unique id to each services component
         const newFormData = { ...formData };
         setServicesComponents([...servicesComponents, newFormData]);
         alert("Form submitted");

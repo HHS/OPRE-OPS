@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 
 function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit = () => {} }) {
+    // TODO: Add these to a constants file
     const nonSeverableOptions = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
     const severableOptions = [
         "Base Period",

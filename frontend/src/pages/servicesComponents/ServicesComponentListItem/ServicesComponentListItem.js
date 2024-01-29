@@ -12,6 +12,7 @@ function ServicesComponentListItem({ item }) {
             <section className="display-flex flex-justify">
                 <h2 className="margin-0">{item.servicesComponent}</h2>
                 <div>
+                    {/* TODO: Wire up Edit */}
                     <button
                         id="edit"
                         onClick={() => {
@@ -26,6 +27,7 @@ function ServicesComponentListItem({ item }) {
                             data-position="top"
                         />
                     </button>
+                    {/* TODO: Wire up Delete */}
                     <button
                         id="delete"
                         onClick={() => {
