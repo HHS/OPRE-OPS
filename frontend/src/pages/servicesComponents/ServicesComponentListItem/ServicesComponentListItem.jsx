@@ -14,7 +14,7 @@ const Header = ({ servicesComponent, optional }) => {
     return <h2 className="margin-0">{servicesComponent}</h2>;
 };
 
-function ServicesComponentListItem({ item, setFormDataById }) {
+function ServicesComponentListItem({ item, setFormDataById, handleDelete }) {
     return (
         <RoundedBox
             className="width-full flex-column padding-2 margin-top-4"
@@ -38,11 +38,10 @@ function ServicesComponentListItem({ item, setFormDataById }) {
                             data-position="top"
                         />
                     </button>
-                    {/* TODO: Wire up Delete */}
                     <button
                         id="delete"
                         onClick={() => {
-                            alert("not yet implemented");
+                            handleDelete(item.id);
                         }}
                     >
                         <FontAwesomeIcon

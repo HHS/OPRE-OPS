@@ -6,18 +6,7 @@ import ServicesComponentsList from "./ServicesComponentsList";
 
 const ServicesComponents = () => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState("");
-    const [formData, setFormData] = React.useState({
-        servicesComponent: "",
-        optional: "",
-        popStartMonth: "",
-        popStartDay: "",
-        popStartYear: "",
-        popEndMonth: "",
-        popEndDay: "",
-        popEndYear: "",
-        description: "",
-        mode: "add"
-    });
+    const [formData, setFormData] = React.useState(initialFormData);
     const [servicesComponents, setServicesComponents] = React.useState([initialServicesComponent]);
 
     const handleSubmit = (e) => {
@@ -29,12 +18,12 @@ const ServicesComponents = () => {
             };
             setServicesComponents([...servicesComponents, newFormData]);
             alert("Form submitted");
-            setFormData({});
+            setFormData(initialFormData);
         }
         if (formData.mode === "edit") {
             handleEdit(formData.id);
             alert("Form edited");
-            setFormData({});
+            setFormData(initialFormData);
         }
     };
 
@@ -43,7 +32,13 @@ const ServicesComponents = () => {
         const newServicesComponents = [...servicesComponents];
         newServicesComponents[index] = { ...servicesComponents[index], ...formData };
         setServicesComponents(newServicesComponents);
-        setFormData({});
+        const newFormData = { ...formData, mode: "add" };
+        setFormData(newFormData);
+    };
+
+    const handleDelete = (id) => {
+        const newServicesComponents = servicesComponents.filter((component) => component.id !== id);
+        setServicesComponents(newServicesComponents);
     };
 
     const setFormDataById = (id) => {
@@ -60,7 +55,7 @@ const ServicesComponents = () => {
                     value={serviceTypeReq}
                     onChange={(name, value) => {
                         setServiceTypeReq(value);
-                        setFormData({});
+                        setFormData(initialFormData);
                     }}
                 />
                 <ServicesComponentForm
@@ -71,7 +66,7 @@ const ServicesComponents = () => {
                 />
                 {import.meta.env.DEV && (
                     <section className="border-dashed border-emergency margin-top-6">
-                        <h2>Form Data</h2>
+                        <h2 className="margin-0">Form Data</h2>
                         <pre>{JSON.stringify(formData, null, 2)}</pre>
                     </section>
                 )}
@@ -79,6 +74,7 @@ const ServicesComponents = () => {
             <ServicesComponentsList
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
+                handleDelete={handleDelete}
             />
         </App>
     );
@@ -96,6 +92,19 @@ const initialServicesComponent = {
     popEndYear: "2025",
     description:
         "Develop a theory of change and identify ways to improve the program through continuous user feedback and engagement"
+};
+
+const initialFormData = {
+    servicesComponent: "",
+    optional: "",
+    popStartMonth: "",
+    popStartDay: "",
+    popStartYear: "",
+    popEndMonth: "",
+    popEndDay: "",
+    popEndYear: "",
+    description: "",
+    mode: "add"
 };
 
 export default ServicesComponents;

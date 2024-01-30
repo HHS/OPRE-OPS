@@ -92,10 +92,6 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                         className="usa-button usa-button--outline"
                         formAction="submit"
                     >
-                        <FontAwesomeIcon
-                            icon={faAdd}
-                            className="height-2 width-2"
-                        />
                         Edit Services Component
                     </button>
                 ) : (
