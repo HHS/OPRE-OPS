@@ -35,6 +35,9 @@ export const Menu = () => {
                 <li className="usa-nav__primary-item">
                     <Link to="/budget-lines">Budget Lines</Link>
                 </li>
+                <li className="usa-nav__primary-item  border-emergency border-dashed">
+                    <Link to="/services-component">SC Playground</Link>
+                </li>
                 <li className="usa-nav__primary-item margin-left-auto">
                     <button
                         type="button"
