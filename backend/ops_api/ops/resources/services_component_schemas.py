@@ -12,7 +12,6 @@ class RequestBody:
     description: Optional[str] = None
     period_start: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     period_end: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
-    # contract_agreement_id = Optional[int] = None
     clin_id: Optional[int] = None
 
 

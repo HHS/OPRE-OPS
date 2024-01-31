@@ -12,6 +12,7 @@ from ops_api.ops.resources.services_component_schemas import (
     QueryParameters,
     ServicesComponentItemResponse,
 )
+from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_model_instance
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -22,13 +23,53 @@ from typing_extensions import override
 ENDPOINT_STRING = "/services-components"
 
 
-# TODO: Permissions (stop using Permission.BUDGET_LINE_ITEM)
+# TODO: Permissions (stop using BLI perms and events and sort out rules for SCs)
 class ServicesComponentItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(ServicesComponentItemResponse)()
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
+
+    def _update(self, id, method, schema) -> Response:
+        message_prefix = f"{method} to {ENDPOINT_STRING}"
+
+        with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+            old_services_component: ServicesComponent = self._get_item(id)
+            if not old_services_component:
+                raise ValueError(f"Invalid ServicesComponent id: {id}.")
+
+            schema.context["id"] = id
+            schema.context["method"] = method
+
+            data = get_change_data(request.json, old_services_component, schema)
+            data["period_start"] = date.fromisoformat(data["period_start"]) if data.get("period_start") else None
+            data["period_end"] = date.fromisoformat(data["period_end"]) if data.get("period_end") else None
+            services_component = update_and_commit_model_instance(old_services_component, data)
+
+            sc_dict = self._response_schema.dump(services_component)
+            meta.metadata.update({"services_component": sc_dict})
+            current_app.logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
+
+            return make_response_with_headers(sc_dict, 200)
+
+    @override
+    @is_authorized(
+        PermissionType.PUT,
+        Permission.BUDGET_LINE_ITEM,
+    )
+    @handle_api_error
+    def put(self, id: int) -> Response:
+        return self._update(id, "PUT", self._put_schema)
+
+    @override
+    @is_authorized(
+        PermissionType.PATCH,
+        Permission.BUDGET_LINE_ITEM,
+    )
+    @handle_api_error
+    def patch(self, id: int) -> Response:
+        return self._update(id, "PATCH", self._patch_schema)
 
 
 class ServicesComponentListAPI(BaseListAPI):
