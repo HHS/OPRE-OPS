@@ -44,16 +44,16 @@ def test_services_component_creation(loaded_db):
     assert sc.display_name == "OSC2"
 
 
-def test_services_component_get_all(auth_client, loaded_db):
-    # count = loaded_db.query(ServicesComponent).count()
+def test_services_components_get_all(auth_client, loaded_db):
+    count = loaded_db.query(ServicesComponent).count()
 
-    response = auth_client.get("/api/v1/services_components/")
-    assert response.status_code == 404
-    # assert len(response.json) == count
+    response = auth_client.get("/api/v1/services-components/")
+    assert response.status_code == 200
+    assert len(response.json) == count
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_services_component_get_by_id(auth_client, loaded_db):
+def test_services_components_get_by_id(auth_client, loaded_db):
     response = auth_client.get("/api/v1/services-components/1")
     assert response.status_code == 200
     resp_json = response.json
@@ -97,34 +97,6 @@ def test_period_duration_calculation_with_missing_dates(loaded_db):
     sc_no_dates = ServicesComponent(number=6, optional=False, period_start=None, period_end=None)
 
     assert sc_no_dates.period_duration is None
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_services_components_get(auth_client, app):
-    session = app.db_session
-    sc = ServicesComponent(
-        contract_agreement_id=1,
-        number=1,
-        optional=False,
-        description="Test SC description",
-        period_start=datetime.date(2024, 1, 1),
-        period_end=datetime.date(2024, 6, 30),
-    )
-    session.add(sc)
-    session.commit()
-
-    assert sc.id is not None
-    new_sc_id = sc.id
-
-    response = auth_client.get(f"/api/v1/services-components/{new_sc_id}")
-    assert response.status_code == 200
-    resp_json = response.json
-    assert resp_json["number"] == 1
-    assert resp_json["description"] == "Test SC description"
-    assert resp_json["display_name"] == "SC1"
-    assert not resp_json["optional"]
-    assert resp_json["period_start"] == "2024-01-01"
-    assert resp_json["period_end"] == "2024-06-30"
 
 
 @pytest.mark.usefixtures("app_ctx")
