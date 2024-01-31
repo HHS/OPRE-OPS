@@ -5,7 +5,7 @@ import TextArea from "../../../components/UI/Form/TextArea";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 
-function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit = () => {} }) {
+function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit, handleCancel }) {
     // TODO: Add these to a constants file
     const nonSeverableOptions = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
     const severableOptions = [
@@ -88,12 +88,20 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
             </div>
             <div className="display-flex flex-justify-end margin-top-2">
                 {formData.mode === "edit" ? (
-                    <button
-                        className="usa-button usa-button--outline"
-                        formAction="submit"
-                    >
-                        Edit Services Component
-                    </button>
+                    <>
+                        <button
+                            className="usa-button"
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="usa-button usa-button--outline"
+                            formAction="submit"
+                        >
+                            Edit Services Component
+                        </button>
+                    </>
                 ) : (
                     <button
                         className="usa-button usa-button--outline"

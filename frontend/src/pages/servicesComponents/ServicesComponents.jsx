@@ -3,11 +3,14 @@ import App from "../../App";
 import ServiceReqTypeSelect from "./ServiceReqTypeSelect";
 import ServicesComponentForm from "./ServicesComponentForm";
 import ServicesComponentsList from "./ServicesComponentsList";
+import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 
 const ServicesComponents = () => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState("");
     const [formData, setFormData] = React.useState(initialFormData);
     const [servicesComponents, setServicesComponents] = React.useState([initialServicesComponent]);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -22,7 +25,7 @@ const ServicesComponents = () => {
         }
         if (formData.mode === "edit") {
             handleEdit(formData.id);
-            alert("Form edited");
+            alert("Services Component updated");
             setFormData(initialFormData);
         }
     };
@@ -30,15 +33,28 @@ const ServicesComponents = () => {
     const handleEdit = (id) => {
         const index = servicesComponents.findIndex((component) => component.id === id);
         const newServicesComponents = [...servicesComponents];
+        const newFormData = { ...formData, mode: "add" };
         newServicesComponents[index] = { ...servicesComponents[index], ...formData };
         setServicesComponents(newServicesComponents);
-        const newFormData = { ...formData, mode: "add" };
         setFormData(newFormData);
     };
 
     const handleDelete = (id) => {
         const newServicesComponents = servicesComponents.filter((component) => component.id !== id);
-        setServicesComponents(newServicesComponents);
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to delete this Services Component?",
+            actionButtonText: "Delete",
+            secondaryButtonText: "Cancel",
+            handleConfirm: () => {
+                setServicesComponents(newServicesComponents);
+            }
+        });
+    };
+
+    const handleCancel = (e) => {
+        e.preventDefault();
+        setFormData(initialFormData);
     };
 
     const setFormDataById = (id) => {
@@ -49,6 +65,15 @@ const ServicesComponents = () => {
 
     return (
         <App breadCrumbName="Playground">
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <section>
                 <h1>Services Components Playground</h1>
                 <ServiceReqTypeSelect
@@ -63,6 +88,7 @@ const ServicesComponents = () => {
                     formData={formData}
                     setFormData={setFormData}
                     handleSubmit={handleSubmit}
+                    handleCancel={handleCancel}
                 />
                 {import.meta.env.DEV && (
                     <section className="border-dashed border-emergency margin-top-6">
