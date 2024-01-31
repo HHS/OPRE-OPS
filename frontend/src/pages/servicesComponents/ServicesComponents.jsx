@@ -54,6 +54,7 @@ const ServicesComponents = () => {
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
+                serviceTypeReq={serviceTypeReq}
             />
         </App>
     );

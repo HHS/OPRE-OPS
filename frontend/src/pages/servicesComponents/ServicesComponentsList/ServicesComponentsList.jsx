@@ -1,7 +1,7 @@
 import ServicesComponentListItem from "../ServicesComponentListItem";
 import DebugCode from "../DebugCode";
 
-function ServicesComponentsList({ servicesComponents, setFormDataById, handleDelete }) {
+function ServicesComponentsList({ servicesComponents, serviceTypeReq, setFormDataById, handleDelete }) {
     return (
         <section className="margin-top-6">
             {servicesComponents.length > 0 ? (
@@ -11,6 +11,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
                         item={item}
                         setFormDataById={setFormDataById}
                         handleDelete={handleDelete}
+                        serviceTypeReq={serviceTypeReq}
                     />
                 ))
             ) : (

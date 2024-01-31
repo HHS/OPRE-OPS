@@ -1,6 +1,7 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, initialServicesComponent } from "./servicesComponents.constants";
+import { addOInFront } from "./servicesComponents.helpers";
 
 const useServicesComponents = () => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState("");
@@ -12,6 +13,11 @@ const useServicesComponents = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        let formattedServiceComponent = formData.servicesComponent;
+
+        if (formData.optional) {
+            formattedServiceComponent = addOInFront(formData.servicesComponent);
+        }
         if (formData.mode === "add") {
             const newFormData = {
                 id: crypto.randomUUID(),
@@ -21,7 +27,7 @@ const useServicesComponents = () => {
             setAlert({
                 type: "success",
                 heading: "Services Component Created",
-                message: `The Services Component ${formData.servicesComponent} has been successfully added.`
+                message: `The Services Component ${formattedServiceComponent} has been successfully added.`
             });
             setFormData(initialFormData);
         }
@@ -30,7 +36,7 @@ const useServicesComponents = () => {
             setAlert({
                 type: "success",
                 heading: "Services Component Updated",
-                message: `The Services Component ${formData.servicesComponent} has been successfully updated.`
+                message: `The Services Component ${formattedServiceComponent} has been successfully updated.`
             });
             setFormData(initialFormData);
         }

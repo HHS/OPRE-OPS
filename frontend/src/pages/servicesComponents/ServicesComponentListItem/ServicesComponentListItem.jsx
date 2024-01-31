@@ -2,16 +2,22 @@ import RoundedBox from "../../../components/UI/RoundedBox";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../../components/UI/Tag";
-import { addAnOInFront } from "../servicesComponents.helpers";
+import { addOptionalInFront, formatServiceComponent } from "../servicesComponents.helpers";
 
-const Header = ({ servicesComponent, optional }) => {
-    if (optional) {
-        return <h2 className="margin-0">{addAnOInFront(servicesComponent)}</h2>;
+const Header = ({ servicesComponent, optional, serviceTypeReq }) => {
+    const formattedServiceComponent = formatServiceComponent(servicesComponent);
+
+    if (serviceTypeReq === "Severable") {
+        return <h2 className="margin-0">{servicesComponent}</h2>;
     }
-    return <h2 className="margin-0">{servicesComponent}</h2>;
+
+    if (optional) {
+        return <h2 className="margin-0">{addOptionalInFront(formattedServiceComponent)}</h2>;
+    }
+    return <h2 className="margin-0">{formattedServiceComponent}</h2>;
 };
 
-function ServicesComponentListItem({ item, setFormDataById, handleDelete }) {
+function ServicesComponentListItem({ item, setFormDataById, handleDelete, serviceTypeReq }) {
     return (
         <RoundedBox
             className="width-full flex-column padding-2 margin-top-4"
@@ -21,6 +27,7 @@ function ServicesComponentListItem({ item, setFormDataById, handleDelete }) {
                 <Header
                     servicesComponent={item.servicesComponent}
                     optional={item.optional}
+                    serviceTypeReq={serviceTypeReq}
                 />
                 <div>
                     <button

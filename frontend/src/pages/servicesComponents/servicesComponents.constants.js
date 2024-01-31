@@ -26,6 +26,7 @@ export const initialFormData = {
 };
 
 export const nonSeverableOptions = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
+
 export const severableOptions = [
     "Base Period 1",
     "Option Period 2",
