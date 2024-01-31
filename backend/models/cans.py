@@ -363,7 +363,6 @@ class CANFiscalYearCarryForward(BaseModel):
     total_amount = column_property(received_amount + expected_amount)
 
 
-
 class ServicesComponent(BaseModel):
     """
     A Services Component (SC) is the "what" when referring to an Agreement.
@@ -386,7 +385,9 @@ class ServicesComponent(BaseModel):
 
     __tablename__ = "services_component"
 
-    id = Column(Integer, Identity(), primary_key=True)
+    # start Identity at 4 to allow for the records load with IDs
+    # in agreements_and_blin_data.json5
+    id = Column(Integer, Identity(start=4), primary_key=True)
     number = Column(Integer)
     optional = Column(Boolean, default=False)
 
