@@ -1,9 +1,10 @@
 from datetime import date
+from functools import partial
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import verify_jwt_in_request
-from models import OpsEventType, ServicesComponent
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from models import ContractAgreement, OpsEventType, ServicesComponent
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.services_component_schemas import (
@@ -13,7 +14,7 @@ from ops_api.ops.resources.services_component_schemas import (
     ServicesComponentItemResponse,
 )
 from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_model_instance
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
@@ -21,6 +22,49 @@ from sqlalchemy import select
 from typing_extensions import override
 
 ENDPOINT_STRING = "/services-components"
+
+
+def sc_associated_with_contract_agreement(self, id: int, permission_type: PermissionType) -> bool:
+    jwt_identity = get_jwt_identity()
+    try:
+        contract_agreement_id = request.json["contract_agreement_id"]
+        agreement_stmt = select(ContractAgreement).where(ContractAgreement.id == contract_agreement_id)
+        contract_agreement = current_app.db_session.scalar(agreement_stmt)
+
+    except KeyError:
+        sc_stmt = select(ServicesComponent).where(ServicesComponent.id == id)
+        sc: ServicesComponent = current_app.db_session.scalar(sc_stmt)
+        try:
+            contract_agreement = sc.contract_agreement
+        except AttributeError as e:
+            # No BLI found in the DB. Erroring out.
+            raise ExtraCheckError({}) from e
+
+    if contract_agreement is None:
+        # We are faking a validation check at this point. We know there is no agreement associated with the SC.
+        # This is made to emulate the validation check from a marshmallow schema.
+        if permission_type == PermissionType.PUT:
+            raise ExtraCheckError(
+                {
+                    "_schema": ["Services Component must have a Contract Agreement"],
+                    "contract_agreement_id": ["Missing data for required field."],
+                }
+            )
+        elif permission_type == PermissionType.PATCH:
+            raise ExtraCheckError({"_schema": ["Services Component must have a Contract Agreement"]})
+        else:
+            raise ExtraCheckError({})
+
+    oidc_ids = set()
+    if contract_agreement.created_by_user:
+        oidc_ids.add(str(contract_agreement.created_by_user.oidc_id))
+    if contract_agreement.project_officer:
+        oidc_ids.add(str(contract_agreement.project_officer.oidc_id))
+    oidc_ids |= set(str(tm.oidc_id) for tm in contract_agreement.team_members)
+
+    ret = jwt_identity in oidc_ids
+
+    return ret
 
 
 # TODO: Permissions (stop using BLI perms and events and sort out rules for SCs)
@@ -56,7 +100,9 @@ class ServicesComponentItemAPI(BaseItemAPI):
     @override
     @is_authorized(
         PermissionType.PUT,
-        Permission.BUDGET_LINE_ITEM,
+        Permission.SERVICES_COMPONENT,
+        extra_check=partial(sc_associated_with_contract_agreement, permission_type=PermissionType.PUT),
+        groups=["Budget Team", "Admins"],
     )
     @handle_api_error
     def put(self, id: int) -> Response:
@@ -65,7 +111,9 @@ class ServicesComponentItemAPI(BaseItemAPI):
     @override
     @is_authorized(
         PermissionType.PATCH,
-        Permission.BUDGET_LINE_ITEM,
+        Permission.SERVICES_COMPONENT,
+        extra_check=partial(sc_associated_with_contract_agreement, permission_type=PermissionType.PATCH),
+        groups=["Budget Team", "Admins"],
     )
     @handle_api_error
     def patch(self, id: int) -> Response:
@@ -104,7 +152,7 @@ class ServicesComponentListAPI(BaseListAPI):
         self._response_schema_collection = mmdc.class_schema(ServicesComponentItemResponse)(many=True)
 
     @override
-    @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
+    @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
     @handle_api_error
     def get(self) -> Response:
         data = self._get_schema.dump(self._get_schema.load(request.args))
@@ -119,7 +167,7 @@ class ServicesComponentListAPI(BaseListAPI):
         return response
 
     @override
-    @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
+    @is_authorized(PermissionType.POST, Permission.SERVICES_COMPONENT)
     @handle_api_error
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
