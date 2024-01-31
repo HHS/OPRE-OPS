@@ -1,4 +1,3 @@
-// import React from "react";
 import Select from "../Select";
 
 function ServiceReqTypeSelect({ value, onChange }) {

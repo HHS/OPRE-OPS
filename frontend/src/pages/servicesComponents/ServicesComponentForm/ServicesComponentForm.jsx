@@ -4,18 +4,10 @@ import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../../components/UI/Form/TextArea";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { nonSeverableOptions, severableOptions } from "../servicesComponents.constants";
+import DebugCode from "../DebugCode";
 
 function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit, handleCancel }) {
-    // TODO: Add these to a constants file
-    const nonSeverableOptions = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
-    const severableOptions = [
-        "Base Period 1",
-        "Option Period 2",
-        "Option Period 3",
-        "Option Period 4",
-        "Option Period 5",
-        "Option Period 6"
-    ];
     const options = serviceTypeReq === "Severable" ? severableOptions : nonSeverableOptions;
     return (
         <form onSubmit={handleSubmit}>
@@ -90,23 +82,17 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                 {formData.mode === "edit" ? (
                     <>
                         <button
-                            className="usa-button"
+                            className="usa-button--unstyled margin-right-2"
                             onClick={handleCancel}
                         >
                             Cancel
                         </button>
-                        <button
-                            className="usa-button usa-button--outline"
-                            formAction="submit"
-                        >
+                        <button className="usa-button usa-button--outline margin-right-0">
                             Edit Services Component
                         </button>
                     </>
                 ) : (
-                    <button
-                        className="usa-button usa-button--outline"
-                        formAction="submit"
-                    >
+                    <button className="usa-button usa-button--outline margin-right-0">
                         <FontAwesomeIcon
                             icon={faAdd}
                             className="height-2 width-2"
@@ -115,6 +101,10 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                     </button>
                 )}
             </div>
+            <DebugCode
+                title="Form Data"
+                data={formData}
+            />
         </form>
     );
 }

@@ -2,10 +2,7 @@ import RoundedBox from "../../../components/UI/RoundedBox";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../../components/UI/Tag";
-
-const addAnOInFront = (str) => {
-    return "O" + str;
-};
+import { addAnOInFront } from "../servicesComponents.helpers";
 
 const Header = ({ servicesComponent, optional }) => {
     if (optional) {
