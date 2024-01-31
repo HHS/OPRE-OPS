@@ -8,7 +8,7 @@ from typing import Optional
 @dataclass(kw_only=True)
 class RequestBody:
     number: Optional[int] = None
-    # optional = Column(Boolean, default=False)
+    optional: Optional[bool] = None
     description: Optional[str] = None
     period_start: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     period_end: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
@@ -19,6 +19,7 @@ class RequestBody:
 class POSTRequestBody(RequestBody):
     contract_agreement_id: int  # agreement_id is required for POST
     number: int  # number is required for POST
+    optional: bool
 
 
 @dataclass(kw_only=True)
@@ -36,6 +37,7 @@ class ServicesComponentItemResponse:
     id: int
     contract_agreement_id: int
     number: int
+    optional: bool
     description: str
     clin_id: int
     created_by: int

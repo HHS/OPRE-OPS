@@ -149,24 +149,6 @@ def test_services_components_post(auth_client, app):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_patch(auth_client, app):
-    # post_data = {
-    #     "contract_agreement_id": 1,
-    #     "description": "Test SC description",
-    #     # "display_name": "SC3",
-    #     # "id": 1,
-    #     "number": 99,
-    #     # "optional": True,
-    #     "period_start": "2043-06-13",
-    #     "period_end": "2044-06-13",
-    # }
-    # response = auth_client.post("/api/v1/services-components/", json=post_data)
-    # assert response.status_code == 201
-    # resp_json = response.json
-    # for key in post_data:
-    #     assert resp_json.get(key) == post_data.get(key)
-    # assert "id" in resp_json
-    # new_sc_id = resp_json["id"]
-
     session = app.db_session
     sc = ServicesComponent(
         number=99,
@@ -184,8 +166,6 @@ def test_services_components_patch(auth_client, app):
     patch_data = {
         "contract_agreement_id": 1,
         "description": "Test SC description Update",
-        # "display_name": "SC3",
-        # "id": 1,
         "number": 22,
         # "optional": True,
         "period_start": "2053-08-14",
@@ -228,10 +208,8 @@ def test_services_components_put(auth_client, app):
     put_data = {
         "contract_agreement_id": 1,
         "description": "Test SC description Update",
-        # "display_name": "SC3",
-        # "id": 1,
         "number": 22,
-        # "optional": True,
+        "optional": True,
         "period_start": "2053-08-14",
         "period_end": "2054-07-15",
     }
@@ -249,5 +227,6 @@ def test_services_components_put(auth_client, app):
     assert sc.id == new_sc_id
     assert sc.description == put_data["description"]
     assert sc.number == put_data["number"]
+    assert sc.optional == put_data["optional"]
     assert sc.period_start == datetime.date(2053, 8, 14)
     assert sc.period_end == datetime.date(2054, 7, 15)
