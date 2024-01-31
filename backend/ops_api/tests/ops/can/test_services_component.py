@@ -100,6 +100,34 @@ def test_period_duration_calculation_with_missing_dates(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_services_components_get(auth_client, app):
+    session = app.db_session
+    sc = ServicesComponent(
+        contract_agreement_id=1,
+        number=1,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    session.add(sc)
+    session.commit()
+
+    assert sc.id is not None
+    new_sc_id = sc.id
+
+    response = auth_client.get(f"/api/v1/services-components/{new_sc_id}")
+    assert response.status_code == 200
+    resp_json = response.json
+    assert resp_json["number"] == 1
+    assert resp_json["description"] == "Test SC description"
+    assert resp_json["display_name"] == "SC1"
+    assert not resp_json["optional"]
+    assert resp_json["period_start"] == "2024-01-01"
+    assert resp_json["period_end"] == "2024-06-30"
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_services_components_get_list(auth_client, app):
     response = auth_client.get(
         "/api/v1/services-components/?contract_agreement_id=1",
@@ -230,3 +258,27 @@ def test_services_components_put(auth_client, app):
     assert sc.optional == put_data["optional"]
     assert sc.period_start == datetime.date(2053, 8, 14)
     assert sc.period_end == datetime.date(2054, 7, 15)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_services_components_delete(auth_client, app):
+    session = app.db_session
+    sc = ServicesComponent(
+        contract_agreement_id=1,
+        number=1,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    session.add(sc)
+    session.commit()
+
+    assert sc.id is not None
+    new_sc_id = sc.id
+
+    response = auth_client.delete(f"/api/v1/services-components/{new_sc_id}")
+    assert response.status_code == 200
+
+    sc: ServicesComponent = session.get(ServicesComponent, new_sc_id)
+    assert not sc

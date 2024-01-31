@@ -34,7 +34,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{method} to {ENDPOINT_STRING}"
 
-        with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
+        with OpsEventHandler(OpsEventType.UPDATE_SERVICES_COMPONENT) as meta:
             old_services_component: ServicesComponent = self._get_item(id)
             if not old_services_component:
                 raise ValueError(f"Invalid ServicesComponent id: {id}.")
@@ -71,6 +71,29 @@ class ServicesComponentItemAPI(BaseItemAPI):
     def patch(self, id: int) -> Response:
         return self._update(id, "PATCH", self._patch_schema)
 
+    @override
+    @is_authorized(
+        PermissionType.DELETE,
+        Permission.AGREEMENT,
+    )
+    @handle_api_error
+    def delete(self, id: int) -> Response:
+        with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
+            sc: ServicesComponent = self._get_item(id)
+
+            if not sc:
+                raise RuntimeError(f"Invalid ServicesComponent id: {id}.")
+            # TODO when can we not delete?
+            # elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
+            #     raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+
+            current_app.db_session.delete(sc)
+            current_app.db_session.commit()
+
+            meta.metadata.update({"Deleted ServicesComponent": id})
+
+            return make_response_with_headers({"message": "ServicesComponent deleted", "id": sc.id}, 200)
+
 
 class ServicesComponentListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
@@ -100,7 +123,7 @@ class ServicesComponentListAPI(BaseListAPI):
     @handle_api_error
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
-        with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
+        with OpsEventHandler(OpsEventType.CREATE_SERVICES_COMPONENT) as meta:
             self._post_schema.context["method"] = "POST"
 
             data = self._post_schema.dump(self._post_schema.load(request.json))
