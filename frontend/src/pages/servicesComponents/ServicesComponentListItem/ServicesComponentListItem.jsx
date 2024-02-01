@@ -2,21 +2,37 @@ import RoundedBox from "../../../components/UI/RoundedBox";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../../components/UI/Tag";
+import { addOptionalInFront, formatServiceComponent } from "../servicesComponents.helpers";
 
-function ServicesComponentListItem({ item }) {
+const Header = ({ servicesComponent, optional, serviceTypeReq }) => {
+    const formattedServiceComponent = formatServiceComponent(servicesComponent);
+
+    if (serviceTypeReq === "Severable") {
+        return <h2 className="margin-0">{servicesComponent}</h2>;
+    }
+
+    if (optional) {
+        return <h2 className="margin-0">{addOptionalInFront(formattedServiceComponent)}</h2>;
+    }
+    return <h2 className="margin-0">{formattedServiceComponent}</h2>;
+};
+
+function ServicesComponentListItem({ item, setFormDataById, handleDelete, serviceTypeReq }) {
     return (
         <RoundedBox
             className="width-full flex-column padding-2 margin-top-4"
-            style={{ width: "100%", height: "auto", minHeight: "134px" }}
+            style={{ width: "100%", height: "auto", minHeight: "8.375rem" }}
         >
             <section className="display-flex flex-justify">
-                <h2 className="margin-0">{item.servicesComponent}</h2>
+                <Header
+                    servicesComponent={item.servicesComponent}
+                    optional={item.optional}
+                    serviceTypeReq={serviceTypeReq}
+                />
                 <div>
                     <button
                         id="edit"
-                        onClick={() => {
-                            alert("not yet implemented");
-                        }}
+                        onClick={() => setFormDataById(item.id)}
                     >
                         <FontAwesomeIcon
                             icon={faPen}
@@ -29,7 +45,7 @@ function ServicesComponentListItem({ item }) {
                     <button
                         id="delete"
                         onClick={() => {
-                            alert("not yet implemented");
+                            handleDelete(item.id);
                         }}
                     >
                         <FontAwesomeIcon
