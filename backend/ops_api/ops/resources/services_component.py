@@ -123,6 +123,8 @@ class ServicesComponentItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.DELETE,
         Permission.AGREEMENT,
+        extra_check=partial(sc_associated_with_contract_agreement, permission_type=PermissionType.PATCH),
+        groups=["Budget Team", "Admins"],
     )
     @handle_api_error
     def delete(self, id: int) -> Response:
