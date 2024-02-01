@@ -32,8 +32,7 @@ def sc_associated_with_contract_agreement(self, id: int, permission_type: Permis
         contract_agreement = current_app.db_session.scalar(agreement_stmt)
 
     except KeyError:
-        sc_stmt = select(ServicesComponent).where(ServicesComponent.id == id)
-        sc: ServicesComponent = current_app.db_session.scalar(sc_stmt)
+        sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
         try:
             contract_agreement = sc.contract_agreement
         except AttributeError as e:
