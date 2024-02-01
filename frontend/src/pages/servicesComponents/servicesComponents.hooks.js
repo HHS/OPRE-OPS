@@ -60,6 +60,11 @@ const useServicesComponents = () => {
             secondaryButtonText: "Cancel",
             handleConfirm: () => {
                 setServicesComponents(newServicesComponents);
+                setAlert({
+                    type: "success",
+                    heading: "Services Component Deleted",
+                    message: `The Services Component has been successfully deleted.`
+                });
             }
         });
     };

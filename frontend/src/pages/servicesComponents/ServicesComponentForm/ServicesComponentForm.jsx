@@ -88,7 +88,7 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                             Cancel
                         </button>
                         <button className="usa-button usa-button--outline margin-right-0">
-                            Edit Services Component
+                            Update Services Component
                         </button>
                     </>
                 ) : (
