@@ -131,9 +131,8 @@ class ServicesComponentItemAPI(BaseItemAPI):
 
             if not sc:
                 raise RuntimeError(f"Invalid ServicesComponent id: {id}.")
+
             # TODO when can we not delete?
-            # elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
-            #     raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
 
             current_app.db_session.delete(sc)
             current_app.db_session.commit()
