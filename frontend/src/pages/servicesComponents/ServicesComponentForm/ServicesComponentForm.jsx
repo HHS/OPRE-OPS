@@ -9,6 +9,7 @@ import DebugCode from "../DebugCode";
 
 function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit, handleCancel }) {
     const options = serviceTypeReq === "Severable" ? severableOptions : nonSeverableOptions;
+
     return (
         <form onSubmit={handleSubmit}>
             <h2 className="font-sans-lg">Create Services Components</h2>

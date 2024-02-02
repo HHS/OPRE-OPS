@@ -18,7 +18,7 @@ export const backendServicesComponents = {
     servicesComponents: [
         {
             id: "9ab46509-8a3c-498a-998d-b40e78df5cd3",
-            servicesComponent: "1",
+            servicesComponent: 1,
             optional: false,
             popStartDate: "2024-03-15",
             popEndDate: "2025-01-15",

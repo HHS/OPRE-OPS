@@ -1,7 +1,7 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, backendServicesComponents } from "./servicesComponents.constants";
-import { addOInFront, dateToYearMonthDay } from "./servicesComponents.helpers";
+import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
 
 const useServicesComponents = () => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
@@ -13,15 +13,16 @@ const useServicesComponents = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        let formattedServiceComponent = formData.servicesComponent;
+        let formattedServiceComponent = formatServiceComponent(
+            formData.servicesComponent,
+            formData.optional,
+            serviceTypeReq
+        );
 
-        if (formData.optional) {
-            formattedServiceComponent = addOInFront(formData.servicesComponent);
-        }
         if (formData.mode === "add") {
             const newFormData = {
                 id: crypto.randomUUID(),
-                servicesComponent: formData.servicesComponent,
+                servicesComponent: Number(formData.servicesComponent),
                 optional: Boolean(formData.optional),
                 popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
                 popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
@@ -31,7 +32,7 @@ const useServicesComponents = () => {
             setAlert({
                 type: "success",
                 heading: "Services Component Created",
-                message: `The Services Component ${formattedServiceComponent} has been successfully added.`
+                message: `${formattedServiceComponent} has been successfully added.`
             });
             setFormData(initialFormData);
         }
@@ -40,7 +41,7 @@ const useServicesComponents = () => {
             setAlert({
                 type: "success",
                 heading: "Services Component Updated",
-                message: `The Services Component ${formattedServiceComponent} has been successfully updated.`
+                message: `${formattedServiceComponent} has been successfully updated.`
             });
             setFormData(initialFormData);
         }
@@ -52,7 +53,7 @@ const useServicesComponents = () => {
         const newFormData = { ...formData, mode: "add" };
         newServicesComponents[index] = {
             ...servicesComponents[index],
-            servicesComponent: formData.servicesComponent,
+            servicesComponent: Number(formData.servicesComponent),
             optional: Boolean(formData.optional),
             popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
             popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
@@ -63,10 +64,18 @@ const useServicesComponents = () => {
     };
 
     const handleDelete = (id) => {
+        const index = servicesComponents.findIndex((component) => component.id === id);
+        const selectedServicesComponent = servicesComponents[index];
         const newServicesComponents = servicesComponents.filter((component) => component.id !== id);
+
+        let formattedServiceComponent = formatServiceComponent(
+            selectedServicesComponent.servicesComponent,
+            selectedServicesComponent.optional,
+            serviceTypeReq
+        );
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to delete this Services Component?",
+            heading: `Are you sure you want to delete ${formattedServiceComponent}?`,
             actionButtonText: "Delete",
             secondaryButtonText: "Cancel",
             handleConfirm: () => {
@@ -74,7 +83,7 @@ const useServicesComponents = () => {
                 setAlert({
                     type: "success",
                     heading: "Services Component Deleted",
-                    message: `The Services Component has been successfully deleted.`
+                    message: `${formattedServiceComponent} has been successfully deleted.`
                 });
             }
         });
