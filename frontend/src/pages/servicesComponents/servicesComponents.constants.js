@@ -12,6 +12,22 @@ export const initialServicesComponent = {
         "Develop a theory of change and identify ways to improve the program through continuous user feedback and engagement"
 };
 
+export const backendServicesComponents = {
+    agreementId: "1",
+    serviceReqType: "Non-Severable",
+    servicesComponents: [
+        {
+            id: "9ab46509-8a3c-498a-998d-b40e78df5cd3",
+            servicesComponent: "1",
+            optional: false,
+            popStartDate: "2024-03-15",
+            popEndDate: "2025-01-15",
+            description:
+                "Develop a theory of change and identify ways to improve the program through continuous user feedback and engagement"
+        }
+    ]
+};
+
 export const initialFormData = {
     servicesComponent: "",
     optional: "",

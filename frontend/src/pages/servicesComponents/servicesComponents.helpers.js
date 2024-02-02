@@ -15,3 +15,12 @@ export function formatServiceComponent(input) {
     }
     return null;
 }
+
+export const dateToYearMonthDay = (date) => {
+    if (date) {
+        const [year, month, day] = date.split("-").map((d) => parseInt(d, 10));
+        return { year, month, day };
+    } else {
+        return { year: "", month: "", day: "" };
+    }
+};

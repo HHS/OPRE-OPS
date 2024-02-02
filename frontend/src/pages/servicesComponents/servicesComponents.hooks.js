@@ -1,12 +1,12 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
-import { initialFormData, initialServicesComponent } from "./servicesComponents.constants";
+import { initialFormData, backendServicesComponents } from "./servicesComponents.constants";
 import { addOInFront } from "./servicesComponents.helpers";
 
 const useServicesComponents = () => {
-    const [serviceTypeReq, setServiceTypeReq] = React.useState("");
+    const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
     const [formData, setFormData] = React.useState(initialFormData);
-    const [servicesComponents, setServicesComponents] = React.useState([initialServicesComponent]);
+    const [servicesComponents, setServicesComponents] = React.useState(backendServicesComponents.servicesComponents);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const { setAlert } = useAlert();

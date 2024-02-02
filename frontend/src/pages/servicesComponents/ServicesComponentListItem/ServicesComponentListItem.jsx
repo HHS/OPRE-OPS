@@ -2,7 +2,7 @@ import RoundedBox from "../../../components/UI/RoundedBox";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../../components/UI/Tag";
-import { addOptionalInFront, formatServiceComponent } from "../servicesComponents.helpers";
+import { addOptionalInFront, formatServiceComponent, dateToYearMonthDay } from "../servicesComponents.helpers";
 
 const Header = ({ servicesComponent, optional, serviceTypeReq }) => {
     const formattedServiceComponent = formatServiceComponent(servicesComponent);
@@ -18,6 +18,9 @@ const Header = ({ servicesComponent, optional, serviceTypeReq }) => {
 };
 
 function ServicesComponentListItem({ item, setFormDataById, handleDelete, serviceTypeReq }) {
+    const { year: popStartYear, month: popStartMonth, day: popStartDay } = dateToYearMonthDay(item?.popStartDate);
+    const { year: popEndYear, month: popEndMonth, day: popEndDay } = dateToYearMonthDay(item?.popEndDate);
+
     return (
         <RoundedBox
             className="width-full flex-column padding-2 margin-top-4"
@@ -64,7 +67,7 @@ function ServicesComponentListItem({ item, setFormDataById, handleDelete, servic
                         <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - Start</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag tagStyle="primaryDarkTextLightBackground">
-                                {item.popStartMonth}/{item.popStartDay}/{item.popStartYear}
+                                {popStartMonth}/{popStartDay}/{popStartYear}
                             </Tag>
                         </dd>
                     </div>
@@ -72,7 +75,7 @@ function ServicesComponentListItem({ item, setFormDataById, handleDelete, servic
                         <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - End</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag tagStyle="primaryDarkTextLightBackground">
-                                {item.popEndMonth}/{item.popEndDay}/{item.popEndYear}
+                                {popEndMonth}/{popEndDay}/{popEndYear}
                             </Tag>
                         </dd>
                     </div>
