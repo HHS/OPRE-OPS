@@ -1,19 +1,11 @@
-import { nonSeverableOptions } from "./servicesComponents.constants";
-
-export const addOptionalInFront = (str) => {
-    return "Optional " + str;
-};
-
 export const addOInFront = (str) => {
     return "O" + str;
 };
 
-export function formatServiceComponent(input) {
-    const index = nonSeverableOptions.indexOf(input);
-    if (index !== -1) {
-        return `Services Component ${index + 1}`;
+export function formatServiceComponent(servicesComponent, optional, serviceReqType) {
+    if (serviceReqType === "Non-Severable") {
+        return `${optional ? "Optional" : ""} Services Component ${servicesComponent}`;
     }
-    return null;
 }
 
 export const dateToYearMonthDay = (date) => {

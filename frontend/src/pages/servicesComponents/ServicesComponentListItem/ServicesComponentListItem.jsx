@@ -2,18 +2,11 @@ import RoundedBox from "../../../components/UI/RoundedBox";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../../components/UI/Tag";
-import { addOptionalInFront, formatServiceComponent, dateToYearMonthDay } from "../servicesComponents.helpers";
+import { formatServiceComponent, dateToYearMonthDay } from "../servicesComponents.helpers";
 
 const Header = ({ servicesComponent, optional, serviceTypeReq }) => {
-    const formattedServiceComponent = formatServiceComponent(servicesComponent);
+    const formattedServiceComponent = formatServiceComponent(servicesComponent, optional, serviceTypeReq);
 
-    if (serviceTypeReq === "Severable") {
-        return <h2 className="margin-0">{servicesComponent}</h2>;
-    }
-
-    if (optional) {
-        return <h2 className="margin-0">{addOptionalInFront(formattedServiceComponent)}</h2>;
-    }
     return <h2 className="margin-0">{formattedServiceComponent}</h2>;
 };
 

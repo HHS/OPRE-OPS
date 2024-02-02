@@ -1,7 +1,7 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, backendServicesComponents } from "./servicesComponents.constants";
-import { addOInFront } from "./servicesComponents.helpers";
+import { addOInFront, dateToYearMonthDay } from "./servicesComponents.helpers";
 
 const useServicesComponents = () => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
@@ -21,7 +21,11 @@ const useServicesComponents = () => {
         if (formData.mode === "add") {
             const newFormData = {
                 id: crypto.randomUUID(),
-                ...formData
+                servicesComponent: formData.servicesComponent,
+                optional: Boolean(formData.optional),
+                popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
+                popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
+                description: formData.description
             };
             setServicesComponents([...servicesComponents, newFormData]);
             setAlert({
@@ -46,7 +50,14 @@ const useServicesComponents = () => {
         const index = servicesComponents.findIndex((component) => component.id === id);
         const newServicesComponents = [...servicesComponents];
         const newFormData = { ...formData, mode: "add" };
-        newServicesComponents[index] = { ...servicesComponents[index], ...formData };
+        newServicesComponents[index] = {
+            ...servicesComponents[index],
+            servicesComponent: formData.servicesComponent,
+            optional: Boolean(formData.optional),
+            popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
+            popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
+            description: formData.description
+        };
         setServicesComponents(newServicesComponents);
         setFormData(newFormData);
     };
@@ -76,7 +87,26 @@ const useServicesComponents = () => {
 
     const setFormDataById = (id) => {
         const index = servicesComponents.findIndex((component) => component.id === id);
-        const newFormData = { ...servicesComponents[index], mode: "edit" };
+        const {
+            year: popStartYear,
+            month: popStartMonth,
+            day: popStartDay
+        } = dateToYearMonthDay(servicesComponents[index].popStartDate);
+        const {
+            year: popEndYear,
+            month: popEndMonth,
+            day: popEndDay
+        } = dateToYearMonthDay(servicesComponents[index].popEndDate);
+        const newFormData = {
+            ...servicesComponents[index],
+            popEndYear,
+            popEndMonth,
+            popEndDay,
+            popStartYear,
+            popStartMonth,
+            popStartDay,
+            mode: "edit"
+        };
         setFormData(newFormData);
     };
 
