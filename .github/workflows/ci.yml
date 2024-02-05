@@ -24,11 +24,13 @@ jobs:
       - name: TruffleHog OSS
         id: trufflehog
         uses: trufflesecurity/trufflehog@main
+        env:
+          GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
         continue-on-error: true
         with:
           path: ./
           base: "${{ github.event.repository.default_branch }}"
-          head: HEAD
+          head: "$GITHUB_HEAD_REF_SAFE"
           extra_args: --debug --only-verified
       # - name: Setup Trufflehog [Docker]
       #   env:
