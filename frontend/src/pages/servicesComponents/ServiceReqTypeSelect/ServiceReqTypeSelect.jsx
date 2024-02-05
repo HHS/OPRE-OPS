@@ -1,15 +1,14 @@
-// import React from "react";
 import Select from "../Select";
 
 function ServiceReqTypeSelect({ value, onChange }) {
     return (
         <Select
             name="serviceReqType"
-            label="Service Request Type"
+            label="Service Requirement Type"
             onChange={onChange}
             value={value}
             messages={[]}
-            defaultOption="Select a Service Request Type"
+            defaultOption="Select a Service Requirement Type"
             options={["Severable", "Non-Severable"]}
         />
     );

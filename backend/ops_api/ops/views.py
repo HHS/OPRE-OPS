@@ -1,6 +1,14 @@
 from models import AdministrativeAndSupportProject, Notification, Project
 from models.base import BaseModel
-from models.cans import CAN, Agreement, BudgetLineItem, CANFiscalYear, ContractAgreement, ProductServiceCode
+from models.cans import (
+    CAN,
+    Agreement,
+    BudgetLineItem,
+    CANFiscalYear,
+    ContractAgreement,
+    ProductServiceCode,
+    ServicesComponent,
+)
 from models.history import OpsDBHistory
 from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
@@ -47,6 +55,7 @@ from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
 from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
 from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, ResearchProjectListAPI
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
+from ops_api.ops.resources.services_component import ServicesComponentItemAPI, ServicesComponentListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
 from ops_api.ops.resources.workflow_approve import WorkflowApprovalListApi
 from ops_api.ops.resources.workflow_instance import WorkflowInstanceItemAPI, WorkflowInstanceListAPI
@@ -196,3 +205,7 @@ WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC = WorkflowSubmisionListApi.as_view("workf
 
 # Workflow Approval ENDPOINTS
 WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC = WorkflowApprovalListApi.as_view("workflow-approval-list", BaseModel)
+
+# ServicesComponent ENDPOINTS
+SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)
+SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
