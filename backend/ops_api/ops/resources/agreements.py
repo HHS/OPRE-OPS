@@ -18,7 +18,14 @@ from models import (
     Vendor,
 )
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
+from models.cans import (
+    Agreement,
+    AgreementReason,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ServiceRequirementType,
+)
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
@@ -344,6 +351,11 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             case "contract_type":
                 if isinstance(data[item], str):
                     setattr(agreement, item, ContractType[data[item]])
+                    changed = True
+
+            case "service_requirement_type":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, ServiceRequirementType[data[item]])
                     changed = True
 
             case _:
