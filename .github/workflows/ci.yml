@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - name: Setup Trufflehog [Docker]
-      - uses: trufflesecurity/trufflehog@sha256:913f65536d26d0cbb682c3a47e72c9c00d0c4ce3761ec00c4cb4ba163085a52b # v3.67.1
+        uses: trufflesecurity/trufflehog@sha256:913f65536d26d0cbb682c3a47e72c9c00d0c4ce3761ec00c4cb4ba163085a52b # v3.67.1
       - name: Trufflehog Secret Scanning
         env:
           GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
