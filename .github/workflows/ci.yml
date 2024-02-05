@@ -19,9 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - name: Setup Trufflehog [Docker]
       - uses: trufflesecurity/trufflehog@sha256:913f65536d26d0cbb682c3a47e72c9c00d0c4ce3761ec00c4cb4ba163085a52b # v3.67.1
       - name: Trufflehog Secret Scanning
-        run: trufflehog git file://. --since-commit main --branch ${{ github.head_ref }} --only-verified --fail
+        env:
+          GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
+        run: |
+          trufflehog git file://. --since-commit main --branch "$GITHUB_HEAD_REF_SAFE" --only-verified --fail
 
   unit-tests:
     name: Unit Tests
