@@ -1,3 +1,19 @@
+export const SERVICE_REQ_TYPES = {
+    NON_SEVERABLE: "Non-Severable",
+    SEVERABLE: "Severable"
+};
+
+export const NON_SEVERABLE_OPTIONS = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
+
+export const SEVERABLE_OPTIONS = [
+    "Base Period 1",
+    "Option Period 2",
+    "Option Period 3",
+    "Option Period 4",
+    "Option Period 5",
+    "Option Period 6"
+];
+
 export const initialServicesComponent = {
     id: "9ab46509-8a3c-498a-998d-b40e78df5cd3",
     servicesComponent: "SC1",
@@ -14,7 +30,7 @@ export const initialServicesComponent = {
 
 export const backendServicesComponents = {
     agreementId: "1",
-    serviceReqType: "Non-Severable",
+    serviceReqType: SERVICE_REQ_TYPES.SEVERABLE,
     servicesComponents: [
         {
             id: "9ab46509-8a3c-498a-998d-b40e78df5cd3",
@@ -40,14 +56,3 @@ export const initialFormData = {
     description: "",
     mode: "add"
 };
-
-export const nonSeverableOptions = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
-
-export const severableOptions = [
-    "Base Period 1",
-    "Option Period 2",
-    "Option Period 3",
-    "Option Period 4",
-    "Option Period 5",
-    "Option Period 6"
-];

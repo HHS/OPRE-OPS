@@ -1,4 +1,5 @@
 import Select from "../Select";
+import { SERVICE_REQ_TYPES } from "../servicesComponents.constants";
 
 function ServiceReqTypeSelect({ value, onChange }) {
     return (
@@ -9,7 +10,7 @@ function ServiceReqTypeSelect({ value, onChange }) {
             value={value}
             messages={[]}
             defaultOption="Select a Service Requirement Type"
-            options={["Severable", "Non-Severable"]}
+            options={[SERVICE_REQ_TYPES.SEVERABLE, SERVICE_REQ_TYPES.NON_SEVERABLE]}
         />
     );
 }

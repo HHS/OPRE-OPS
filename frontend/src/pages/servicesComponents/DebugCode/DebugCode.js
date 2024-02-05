@@ -1,4 +1,4 @@
-function DebugCode({ title, data }) {
+function DebugCode({ title = "DEBUG CODE", data }) {
     return (
         import.meta.env.DEV && (
             <section className="border-dashed border-emergency margin-top-6">

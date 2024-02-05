@@ -4,11 +4,11 @@ import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../../components/UI/Form/TextArea";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
-import { nonSeverableOptions, severableOptions } from "../servicesComponents.constants";
+import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../servicesComponents.constants";
 import DebugCode from "../DebugCode";
 
 function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit, handleCancel }) {
-    const options = serviceTypeReq === "Severable" ? severableOptions : nonSeverableOptions;
+    const options = serviceTypeReq === SERVICE_REQ_TYPES.SEVERABLE ? SEVERABLE_OPTIONS : NON_SEVERABLE_OPTIONS;
 
     return (
         <form onSubmit={handleSubmit}>
@@ -30,7 +30,7 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                             value={formData?.servicesComponent || ""}
                             options={options}
                         />
-                        {serviceTypeReq === "Non-Severable" && (
+                        {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (
                             <div className="usa-checkbox margin-left-5">
                                 <input
                                     className="usa-checkbox__input"
