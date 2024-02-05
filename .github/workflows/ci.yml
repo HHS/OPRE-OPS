@@ -22,7 +22,7 @@ jobs:
       - name: Setup Trufflehog [Docker]
         env:
           GITHUB_HEAD_REF_SAFE: ${{ github.head_ref }}
-        run: docker run --rm -it -v "$PWD:/pwd" trufflesecurity/trufflehog:3.67.1 git file://. --since-commit main --branch "$GITHUB_HEAD_REF_SAFE" --only-verified --fail
+        run: docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:3.67.1 git file://. --since-commit main --branch "$GITHUB_HEAD_REF_SAFE" --only-verified --fail
 
   unit-tests:
     name: Unit Tests
