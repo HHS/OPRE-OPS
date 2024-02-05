@@ -1,11 +1,14 @@
-export const addOInFront = (str) => {
-    return "O" + str;
-};
+import { SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "./servicesComponents.constants";
 
 export function formatServiceComponent(servicesComponent, optional, serviceReqType) {
-    if (serviceReqType === "Non-Severable") {
+    if (serviceReqType === SERVICE_REQ_TYPES.NON_SEVERABLE) {
         return `${optional ? "Optional" : ""} Services Component ${servicesComponent}`;
     }
+    if (serviceReqType === SERVICE_REQ_TYPES.SEVERABLE) {
+        return `${SEVERABLE_OPTIONS[servicesComponent - 1]}`;
+    }
+
+    throw new Error("Invalid serviceReqType");
 }
 
 export const dateToYearMonthDay = (date) => {

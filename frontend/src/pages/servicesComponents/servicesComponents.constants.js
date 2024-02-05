@@ -30,7 +30,7 @@ export const initialServicesComponent = {
 
 export const backendServicesComponents = {
     agreementId: "1",
-    serviceReqType: SERVICE_REQ_TYPES.SEVERABLE,
+    serviceReqType: SERVICE_REQ_TYPES.NON_SEVERABLE,
     servicesComponents: [
         {
             id: "9ab46509-8a3c-498a-998d-b40e78df5cd3",
