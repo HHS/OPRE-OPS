@@ -1,41 +1,45 @@
-import React from "react";
 import App from "../../App";
 import ServiceReqTypeSelect from "./ServiceReqTypeSelect";
 import ServicesComponentForm from "./ServicesComponentForm";
 import ServicesComponentsList from "./ServicesComponentsList";
+import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
+import { initialFormData } from "./servicesComponents.constants";
+import useServicesComponents from "./servicesComponents.hooks";
 
 const ServicesComponents = () => {
-    const [serviceTypeReq, setServiceTypeReq] = React.useState("");
-    const [formData, setFormData] = React.useState({
-        servicesComponent: "",
-        optional: "",
-        popStartMonth: "",
-        popStartDay: "",
-        popStartYear: "",
-        popEndMonth: "",
-        popEndDay: "",
-        popEndYear: "",
-        description: ""
-    });
-    const [servicesComponents, setServicesComponents] = React.useState([initialServicesComponent]);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const newFormData = { ...formData };
-        setServicesComponents([...servicesComponents, newFormData]);
-        alert("Form submitted");
-        setFormData({});
-    };
+    const {
+        formData,
+        modalProps,
+        serviceTypeReq,
+        servicesComponents,
+        setFormData,
+        setServiceTypeReq,
+        setShowModal,
+        showModal,
+        handleSubmit,
+        handleDelete,
+        handleCancel,
+        setFormDataById
+    } = useServicesComponents();
 
     return (
         <App breadCrumbName="Playground">
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <section>
                 <h1>Services Components Playground</h1>
                 <ServiceReqTypeSelect
                     value={serviceTypeReq}
                     onChange={(name, value) => {
                         setServiceTypeReq(value);
-                        setFormData({});
+                        setFormData(initialFormData);
                     }}
                 />
                 <ServicesComponentForm
@@ -43,28 +47,17 @@ const ServicesComponents = () => {
                     formData={formData}
                     setFormData={setFormData}
                     handleSubmit={handleSubmit}
+                    handleCancel={handleCancel}
                 />
-                <section className="border-dashed border-emergency margin-top-6">
-                    <h2>Form Data</h2>
-                    <pre>{JSON.stringify(formData, null, 2)}</pre>
-                </section>
             </section>
-            <ServicesComponentsList servicesComponents={servicesComponents} />
+            <ServicesComponentsList
+                servicesComponents={servicesComponents}
+                setFormDataById={setFormDataById}
+                handleDelete={handleDelete}
+                serviceTypeReq={serviceTypeReq}
+            />
         </App>
     );
-};
-
-const initialServicesComponent = {
-    servicesComponent: "SC1",
-    optional: false,
-    popStartMonth: "03",
-    popStartDay: "15",
-    popStartYear: "2024",
-    popEndMonth: "01",
-    popEndDay: "15",
-    popEndYear: "2025",
-    description:
-        "Develop a theory of change and identify ways to improve the program through continuous user feedback and engagement"
 };
 
 export default ServicesComponents;

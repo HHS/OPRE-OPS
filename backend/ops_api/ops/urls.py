@@ -47,6 +47,8 @@ from ops_api.ops.views import (
     RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
     RESEARCH_TYPE_LIST_API_VIEW_FUNC,
+    SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
+    SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
     WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC,
@@ -316,4 +318,12 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/workflow-step-template/<int:id>",
         view_func=WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/services-components/<int:id>",
+        view_func=SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/services-components/",
+        view_func=SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
     )

@@ -44,6 +44,7 @@ class Permission(Enum):
     RESEARCH_PROJECT = auto()
     USER = auto()
     WORKFLOW = auto()
+    SERVICES_COMPONENT = auto()
 
 
 @jwtMgr.user_identity_loader
