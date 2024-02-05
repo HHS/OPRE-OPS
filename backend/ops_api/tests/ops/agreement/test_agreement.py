@@ -2,7 +2,7 @@ import numpy
 import pytest
 from flask import url_for
 from models import AgreementType, ContractAgreement, ContractType, GrantAgreement
-from models.cans import Agreement
+from models.cans import Agreement, ServiceRequirementType
 from sqlalchemy import func, select, update
 
 
@@ -195,6 +195,7 @@ def test_agreement_create_contract_agreement(loaded_db):
         name="CTXX12399",
         contract_number="XXXX000000002",
         contract_type=ContractType.RESEARCH,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
     )
@@ -206,6 +207,7 @@ def test_agreement_create_contract_agreement(loaded_db):
 
     assert agreement.contract_number == "XXXX000000002"
     assert agreement.contract_type == ContractType.RESEARCH
+    assert agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -230,6 +232,7 @@ def test_contract(loaded_db):
         name="CTXX12399",
         contract_number="XXXX000000002",
         contract_type=ContractType.RESEARCH,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
@@ -344,6 +347,23 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Grant Description"
     assert [m.id for m in agreement.team_members] == [1, 2, 3]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
+    response = auth_client.get(
+        url_for("api.agreements-item", id=test_contract.id),
+    )
+    assert response.status_code == 200
+    data = response.json
+    assert data["name"] == "CTXX12399"
+    assert data["contract_number"] == "XXXX000000002"
+    assert data["contract_type"] == ContractType.RESEARCH.name
+    assert data["service_requirement_type"] == ServiceRequirementType.NON_SEVERABLE.name
+    assert data["product_service_code_id"] == 2
+    assert data["agreement_type"] == AgreementType.CONTRACT.name
+    assert data["project_id"] == 1
+    assert data["created_by"] == 4
 
 
 @pytest.mark.usefixtures("app_ctx")

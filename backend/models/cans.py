@@ -1,4 +1,5 @@
 """CAN models."""
+import enum
 from datetime import timedelta
 from enum import Enum
 from typing import Any, List, Optional
@@ -236,6 +237,11 @@ class ContractType(Enum):
     SERVICE = 1
 
 
+class ServiceRequirementType(Enum):
+    SEVERABLE = enum.auto()
+    NON_SEVERABLE = enum.auto()
+
+
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
@@ -263,6 +269,7 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
+    service_requirement_type = mapped_column(ENUM(ServiceRequirementType))
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
