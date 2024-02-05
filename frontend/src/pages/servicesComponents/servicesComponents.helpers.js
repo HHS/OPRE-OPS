@@ -8,7 +8,7 @@ export function formatServiceComponent(servicesComponent, optional, serviceReqTy
         return `${SEVERABLE_OPTIONS[servicesComponent - 1]}`;
     }
 
-    throw new Error("Invalid serviceReqType");
+    console.error("Invalid serviceReqType");
 }
 
 export const dateToYearMonthDay = (date) => {

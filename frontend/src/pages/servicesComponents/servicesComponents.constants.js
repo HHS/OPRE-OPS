@@ -14,20 +14,6 @@ export const SEVERABLE_OPTIONS = [
     "Option Period 6"
 ];
 
-export const initialServicesComponent = {
-    id: "9ab46509-8a3c-498a-998d-b40e78df5cd3",
-    servicesComponent: "SC1",
-    optional: false,
-    popStartMonth: "3",
-    popStartDay: "15",
-    popStartYear: "2024",
-    popEndMonth: "1",
-    popEndDay: "15",
-    popEndYear: "2025",
-    description:
-        "Develop a theory of change and identify ways to improve the program through continuous user feedback and engagement"
-};
-
 export const backendServicesComponents = {
     agreementId: "1",
     serviceReqType: SERVICE_REQ_TYPES.NON_SEVERABLE,
