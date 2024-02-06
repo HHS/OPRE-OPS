@@ -1,0 +1,16 @@
+# Separation of System and User Functionality
+## SC-02 - Separation of System and User Functionality
+
+Separate user functionality, including user interface services, from system management functionality.
+
+## OPS Implementation
+
+TODO: Find/Author some good example text for separating IaaS management from OPS admin/user.
+
+At an application level, OPS implements role and group-based access and privilege separation for users such that only users that need and have been authorized for administrative functions within OPS will see and have access to those features.
+
+### Control Origination
+
+OPS system-specific
+
+### Related Content

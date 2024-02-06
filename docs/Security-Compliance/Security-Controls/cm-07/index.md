@@ -1,0 +1,48 @@
+# Configuration Management
+## CM-7 - Least Functionality
+
+a. Configure the system to provide only [ACF-defined mission essential capabilities]; and
+b. Prohibit or restrict the use of the following functions, ports, protocols, software, and/or services:
+
+[i. Domain Name System be (DNS)<br />
+• Port 53 / Transmission Control Protocol (TCP), User Datagram Protocol (UDP)
+
+ii. File Transfer Protocol (FTP)<br />
+• Ports 20, 21 / TCP
+
+iii. Hypertext Transfer Protocol (HTTP)<br />
+• Port 80 / TCP
+
+iv. Internet Message Access Protocol (IMAP)<br />
+• Port 143 / TCP, UDP
+
+v. Internet Relay Chat (IRC)<br />
+• Port 194 / UDP
+
+vi. Network Basic Input Output System (NetBIOS)<br />
+• Port 137 / TCP, UDP
+
+vii. Post Office Protocol 3 (POP3)<br />
+• Port 110 / TCP
+
+viii. Session Initiation Protocol (SIP)<br />
+• Port 5060 / TCP, UDP
+
+ix. Simple Mail Transfer Protocol (SMTP)<br />
+• Port 25 / TCP
+
+x. Simple Network Management Protocol (SNMP)<br />
+• Port 161 / TCP, UDP
+
+xi. Structured Query Language (SQL)<br />
+• Port 118 / TCP, UDP
+• Port 156 / TCP, UDP
+
+xii. Telnet<br />
+• Port 23 / TCP].
+
+## OPS Implementation
+
+TODO: Seek inheritance from cloud.gov
+
+### Related Content

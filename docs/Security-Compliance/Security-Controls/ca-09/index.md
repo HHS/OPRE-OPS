@@ -1,0 +1,22 @@
+# Assessment, Authorization, and Monitoring
+## CA-09 - Internal System Connections
+
+a. Authorize internal connections of [network components] to the system;
+
+b. Document, for each internal connection, the interface characteristics, security and privacy requirements, and the nature of the information communicated;
+
+c. Terminate internal system connections after [ACF-defined conditions]; and
+
+d. Review [ACF-defined frequency] the continued need for each internal connection.
+
+## OPS Implementation
+
+TODO: seek inherited text
+
+### Control Origination
+
+Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
+
+### Related Content
+
+connections internal to the OPS boundary is not in scope. just things outside of OPS

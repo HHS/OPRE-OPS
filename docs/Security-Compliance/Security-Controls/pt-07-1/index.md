@@ -1,0 +1,21 @@
+# Personally Identifiable Information Processing and Transparency
+## PT-7 (1) - Specific Categories of Personally Identifiable Information | Social Security Numbers
+
+When a system processes Social Security numbers:
+
+(a) Eliminate unnecessary collection, maintenance, and use of Social Security numbers, and explore alternatives to their use as a personal identifier;
+
+(b) Do not deny any individual any right, benefit, or privilege provided by law because of such individual’s refusal to disclose his or her Social Security number; and
+
+(c) Inform any individual who is asked to disclose his or her Social Security number whether that disclosure is mandatory or voluntary, by what statutory or other authority such number is solicited, and what uses will be made of it.
+
+## OPS Implementation
+
+OPS does not intend to collect or store SSNs. If one is utilized as a Taxpayer Identification Number (TIN) for purposes of vendor invoicing, it could potentially be included. More information can be found in the Privacy Impact Assessment (PIA).
+
+### Control Origination
+
+
+### Related Content
+
+Please note that truncated SSNs are considered SSNs

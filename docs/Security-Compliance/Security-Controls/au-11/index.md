@@ -1,0 +1,10 @@
+# Audit and Accountability  
+## AU-11 - Audit Record Retention
+
+Retain audit records for [no less than 30 days (for low information systems), 180 days (for moderate information systems), and 365 days (for high information systems)] to provide support for after-the-fact investigations of incidents and to meet regulatory and organizational information retention requirements.
+
+## OPS Implementation
+
+OPS retains application and security-related logging for 180 days.
+
+TODO: screenshot ?

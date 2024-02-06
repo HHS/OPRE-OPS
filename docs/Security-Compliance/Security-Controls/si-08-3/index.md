@@ -1,0 +1,14 @@
+# System and Information Integrity
+## SI-08 (3) - Spam Protection | Continuous Learning Capability
+
+Implement spam protection mechanisms with a learning capability to more effectively identify legitimate communications traffic.
+
+## OPS Implementation
+
+N/A. OPS does not receive or process inbound email messages.
+
+### Control Origination
+
+Hybrid with IaaS vendor and OPS
+
+### Related Content
