@@ -1,0 +1,11 @@
+# Identification and Authentication
+## IA-12-2 - Identity Proofing | Identity Evidence
+
+Require evidence of individual identification be presented to the registration authority.
+
+## OPS Implementation
+
+TODO: Inherit from OPS OAuth provider
+
+### Related Content
+Identity evidence, such as documentary evidence or a combination of documents and biometrics, reduces the likelihood of individuals using fraudulent identification to establish an identity or at least increases the work factor of potential adversaries. The forms of acceptable evidence are consistent with the risks to the systems, roles, and privileges associated with the user’s account.

@@ -1,0 +1,22 @@
+# Personnel Security
+## PS-05 - Personnel Transfer
+
+a. Review and confirm ongoing operational need for current logical and physical access authorizations to systems and facilities when individuals are reassigned or transferred to other positions within the organization;
+
+b. Initiate [the re-evaluation of that individual’s logical and physical access controls] within [as soon as possible, no later than 30 days following the formal transfer action];
+
+c. Modify access authorization as needed to correspond with any changes in operational need due to reassignment or transfer; and
+
+d. Notify [management personnel, systems administrators, physical security personnel] within [within 30 days of the formal transfer action].
+
+## OPS Implementation
+
+A system admin will alter user authorization within OPS within the required timeframe after receiving a qualified notification.
+
+TODO: seek inherited text
+
+### Control Origination
+
+Hybrid with OPS, HHS/ACF/OPRE, and ACF Tech
+
+### Related Content

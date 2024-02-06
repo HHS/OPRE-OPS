@@ -1,0 +1,26 @@
+# System and Services Acquisition
+## SA-04 - Acquisition Process
+
+Include the following requirements, descriptions, and criteria, explicitly or by reference, using [HHS Policy for Information Technology Procurements - Security And Privacy Language or ACF-defined contract language] in the acquisition contract for the system, system component, or system service:
+
+a. Security and privacy functional requirements;<br />
+b. Strength of mechanism requirements;<br />
+c. Security and privacy assurance requirements;<br />
+d. Controls needed to satisfy the security and privacy requirements.<br />
+e. Security and privacy documentation requirements;<br />
+f. Requirements for protecting security and privacy documentation;<br />
+g. Description of the system development environment and environment in which the system is intended to operate;<br />
+h. Allocation of responsibility or identification of parties responsible for information security, privacy, and supply chain risk management; and<br />
+i. Acceptance criteria.
+
+## OPS Implementation
+
+The afore-mentioned requirements, descriptions, and criteria are referenced in [Attachment 5](https://github.com/HHS/OPRE-OPS/wiki/files/Attachment%205%20-%20ACF%20Security%20Privacy%20and%20Task%20Standard%20Language%20for%20Acquisitions%20(03_25_2022)%20(1).pdf) of the OPS contract documentation
+
+### Control Origination:
+
+Hybrid with ACF Tech and OPS
+
+### Related Content
+
+Required security configurations and settings should also be included (see SA-4 (5)).
