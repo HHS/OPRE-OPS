@@ -80,8 +80,8 @@ const relations = {
     product_service_code_id: {
         eventKey: "product_service_code"
     },
-    research_project_id: {
-        eventKey: "research_project"
+    project_id: {
+        eventKey: "project"
     },
     can_id: {
         eventKey: "can"
@@ -164,7 +164,7 @@ const components = {
     project_officer: UserName,
     procurement_shop_id: ProcurementShopName,
     product_service_code_id: ProductServiceCodeName,
-    research_project_id: ResearchProjectName,
+    project_id: ResearchProjectName,
     can_id: CanName
 };
 

@@ -35,12 +35,20 @@ const AllBLIRow = ({
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
-    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    const doesBudgetLineHaveActiveWorkflow = budgetLine?.has_active_workflow;
+    const lockedMessage = doesBudgetLineHaveActiveWorkflow
+        ? "This budget line cannot be edited because it is currently In Review for a status change"
+        : "";
+    const isBudgetLineEditable =
+        (canUserEditAgreement || isUserBudgetLineCreator) &&
+        isBudgetLineEditableFromStatus &&
+        !doesBudgetLineHaveActiveWorkflow;
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const { isExpanded, setIsRowActive, isRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    console.log({ lockedMessage });
 
     const changeIcons = (
         <ChangeIcons
@@ -48,6 +56,7 @@ const AllBLIRow = ({
             handleDeleteItem={handleDeleteBudgetLine}
             handleSetItemForEditing={handleSetBudgetLineForEditing}
             isItemEditable={isBudgetLineEditable}
+            lockedMessage={lockedMessage}
             duplicateIcon={false}
         />
     );
@@ -106,7 +115,10 @@ const AllBLIRow = ({
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
                 ) : (
-                    <TableTag status={budgetLine.status} />
+                    <TableTag
+                        status={budgetLine?.status}
+                        inReview={budgetLine?.has_active_workflow}
+                    />
                 )}
             </td>
         </>

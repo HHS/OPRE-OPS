@@ -1,18 +1,19 @@
-from contextlib import contextmanager, suppress
+from contextlib import suppress
 from enum import Enum
+from functools import wraps
 from typing import Optional
 
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
-from marshmallow import Schema, ValidationError
+from marshmallow import EXCLUDE, Schema, ValidationError
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import PendingRollbackError
 from typing_extensions import override
 
 
@@ -23,14 +24,22 @@ def generate_validator(model: BaseModel) -> BaseModel.Validator:
         return None
 
 
-@contextmanager
-def handle_sql_error():
-    try:
-        yield
-    except SQLAlchemyError as se:
-        current_app.logger.error(se)
-        response = make_response_with_headers({}, 500)
-        return response
+def handle_api_error(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except (KeyError, RuntimeError, PendingRollbackError) as er:
+            current_app.logger.error(er)
+            return make_response_with_headers({}, 400)
+        except ValidationError as ve:
+            current_app.logger.error(ve)
+            return make_response_with_headers(ve.normalized_messages(), 400)
+        except Exception as e:
+            current_app.logger.error(e)
+            return make_response_with_headers({}, 500)
+
+    return decorated
 
 
 class OPSMethodView(MethodView):
@@ -55,44 +64,41 @@ class OPSMethodView(MethodView):
         return [row[0] for row in current_app.db_session.execute(stmt).all()]
 
     def _get_item_by_oidc_with_try(self, oidc: str):
-        with handle_sql_error():
-            item = self._get_item_by_oidc(oidc)
+        item = self._get_item_by_oidc(oidc)
 
-            if item:
-                response = make_response_with_headers(item.to_dict())
-            else:
-                response = make_response_with_headers({}, 404)
+        if item:
+            response = make_response_with_headers(item.to_dict())
+        else:
+            response = make_response_with_headers({}, 404)
 
-            return response
+        return response
 
-    def _get_item_with_try(self, id: int) -> Response:
-        with handle_sql_error():
-            item = self._get_item(id)
+    def _get_item_with_try(self, id: int, additional_fields: dict = None) -> Response:
+        item = self._get_item(id)
 
-            if item:
-                response = make_response_with_headers(item.to_dict())
-            else:
-                response = make_response_with_headers({}, 404)
+        if item:
+            item_dict = item.to_dict()
+            item_dict.update(additional_fields or {})
+            response = make_response_with_headers(item_dict)
+        else:
+            response = make_response_with_headers({}, 404)
 
         return response
 
     def _get_all_items_with_try(self) -> Response:
-        with handle_sql_error():
-            item_list = self._get_all_items()
+        item_list = self._get_all_items()
 
-            if item_list:
-                response = make_response_with_headers([item.to_dict() for item in item_list])
-            else:
-                response = make_response_with_headers({}, 404)
+        if item_list:
+            response = make_response_with_headers([item.to_dict() for item in item_list])
+        else:
+            response = make_response_with_headers({}, 404)
 
         return response
 
     @staticmethod
     def _validate_request(schema: Schema, message: Optional[str] = "", partial=False):
-        errors = schema.validate(request.json, partial=partial)
-        if errors:
-            current_app.logger.error(f"{message}: {errors}")
-            raise ValidationError(errors)
+        # schema.load will run the validator and throw a ValidationError if it fails
+        schema.load(request.json, unknown=EXCLUDE, partial=partial)
 
     @staticmethod
     def _get_query(model, search=None, **kwargs):
@@ -121,6 +127,7 @@ class BaseItemAPI(OPSMethodView):
     @override
     @jwt_required()
     @error_simulator
+    @handle_api_error
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -132,12 +139,14 @@ class BaseListAPI(OPSMethodView):
     @override
     @jwt_required()
     @error_simulator
+    @handle_api_error
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
     @override
     @jwt_required()
     @error_simulator
+    @handle_api_error
     def post(self) -> Response:
         raise NotImplementedError
 
@@ -155,6 +164,7 @@ class EnumListAPI(MethodView):
     @override
     @jwt_required()
     @error_simulator
+    @handle_api_error
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)

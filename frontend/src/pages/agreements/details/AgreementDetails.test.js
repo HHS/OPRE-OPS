@@ -1,32 +1,38 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-import "@testing-library/jest-dom";
 import AgreementDetails from "./AgreementDetails";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 const history = createMemoryHistory();
 import store from "../../../store";
+import { vi } from "vitest";
 
+const mockFn = TestApplicationContext.helpers().mockFn;
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
-jest.mock("@nivo/bar", () => ({
+vi.mock("@nivo/bar", () => ({
     __esModule: true,
     ResponsiveBar: () => {
         return <div />;
     }
 }));
 
-jest.mock("react-router-dom", () => ({
-    ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn()
-}));
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => mockFn
+    };
+});
 
-jest.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
-}));
+vi.mock("react", async () => {
+    const actual = await vi.importActual("react");
+    return {
+        ...actual,
+        useState: () => [null, mockFn]
+    };
+});
 
-// jest.mock("../../../../components/Agreements", () => () => <div />);
 const agreementHistoryData = [
     {
         changes: {
@@ -89,7 +95,7 @@ const agreementHistoryData = [
             },
             product_service_code_id: 1,
             project_officer_id: 1,
-            research_project: {
+            project: {
                 created_by: null,
                 created_on: "2023-08-24T16:18:48.654514",
                 description:
@@ -112,7 +118,7 @@ const agreementHistoryData = [
                 updated_on: "2023-08-24T16:18:48.654514",
                 url: "https://www.acf.hhs.gov/opre/project/acf-annual-performance-plans-and-reports-2000-2012"
             },
-            research_project_id: 3,
+            project_id: 3,
             support_contacts: [],
             team_members: [
                 {
@@ -236,11 +242,11 @@ const agreementHistoryData = [
             product_service_code: null,
             product_service_code_id: null,
             project_officer_id: null,
-            research_project: {
+            project: {
                 id: 3,
                 title: "Annual Performance Plans and Reports"
             },
-            research_project_id: 3,
+            project_id: 3,
             support_contacts: [],
             team_members: [],
             updated_on: "2023-08-29T21:36:25.183870",
@@ -316,7 +322,7 @@ const agreementHistoryData = [
             procurement_shop_id: {
                 new: 2
             },
-            research_project_id: {
+            project_id: {
                 new: 3
             }
         },
@@ -343,8 +349,8 @@ const agreementHistoryData = [
             product_service_code: null,
             product_service_code_id: null,
             project_officer_id: null,
-            research_project: null,
-            research_project_id: 3,
+            project: null,
+            project_id: 3,
             support_contacts: [],
             team_members: [],
             updated_on: "2023-08-29T21:36:25.183870",
@@ -359,7 +365,7 @@ const agreementHistoryData = [
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 describe("AgreementDetails", () => {
@@ -367,7 +373,7 @@ describe("AgreementDetails", () => {
         id: 1,
         name: "Test Agreement",
         description: "Test Description",
-        research_project: { title: "Test Project" },
+        project: { title: "Test Project" },
         agreement_type: "CONTRACT",
         product_service_code: {
             name: "Test PSC",
@@ -412,7 +418,7 @@ describe("AgreementDetails", () => {
         });
 
         // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = jest.fn();
+        const mockIntersectionObserver = mockFn;
         mockIntersectionObserver.mockReturnValue({
             observe: () => null,
             unobserve: () => null,
@@ -430,7 +436,7 @@ describe("AgreementDetails", () => {
                         agreement={agreement}
                         projectOfficer={projectOfficer}
                         isEditMode={false}
-                        setIsEditMode={jest.fn}
+                        setIsEditMode={mockFn}
                     />
                 </Router>
             </Provider>

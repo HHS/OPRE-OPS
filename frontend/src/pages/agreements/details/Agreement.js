@@ -52,9 +52,7 @@ const Agreement = () => {
     return (
         <App breadCrumbName={agreement?.name}>
             <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
-            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
-                {agreement.research_project?.title}
-            </h2>
+            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{agreement.project?.title}</h2>
 
             <div>
                 <section className="display-flex flex-justify margin-top-3">

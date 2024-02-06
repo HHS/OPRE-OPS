@@ -25,7 +25,7 @@ const severityIndicators = {
     minor: "⚪️",
     moderate: "🟡",
     serious: "🟠",
-    critical: "🔴",
+    critical: "🔴"
 };
 
 const violationHandler = (violations) => {
@@ -37,7 +37,7 @@ const violationHandler = (violations) => {
             name: `a11y ${severityIndicators[violation.impact]}`,
             message: `[${violation.help}](${violation.helpUrl})`,
             $el: violationJQueryNodesReference,
-            consoleProps: () => violation,
+            consoleProps: () => violation
         });
 
         violationDomNodes.forEach((node) => {
@@ -45,7 +45,7 @@ const violationHandler = (violations) => {
                 name: "node",
                 message: node.target,
                 $el: Cypress.$(node.target.join(",")),
-                consoleProps: () => violation,
+                consoleProps: () => violation
             });
         });
     });

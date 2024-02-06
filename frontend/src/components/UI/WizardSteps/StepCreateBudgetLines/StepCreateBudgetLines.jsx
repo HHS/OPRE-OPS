@@ -196,6 +196,7 @@ export const StepCreateBudgetLines = ({
         delete cleanData.updated_on;
         delete cleanData.can;
         delete cleanData.id;
+        delete cleanData.has_active_workflow;
         return { id: budgetLineId, data: cleanData };
     };
 

@@ -1,5 +1,7 @@
 from flask import Blueprint
 from ops_api.ops.views import (
+    ADMINISTRATIVE_AND_SUPPORT_PROJECT_ITEM_API_VIEW_FUNC,
+    ADMINISTRATIVE_AND_SUPPORT_PROJECT_LIST_API_VIEW_FUNC,
     AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     AGREEMENT_ITEM_API_VIEW_FUNC,
     AGREEMENT_LIST_API_VIEW_FUNC,
@@ -24,6 +26,10 @@ from ops_api.ops.views import (
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
     OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
+    PACKAGE_ITEM_API_VIEW_FUNC,
+    PACKAGE_LIST_API_VIEW_FUNC,
+    PACKAGE_SNAPSHOT_ITEM_API_VIEW_FUNC,
+    PACKAGE_SNAPSHOT_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -35,12 +41,26 @@ from ops_api.ops.views import (
     PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
+    PROJECT_ITEM_API_VIEW_FUNC,
+    PROJECT_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
     RESEARCH_TYPE_LIST_API_VIEW_FUNC,
+    SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
+    SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
+    WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC,
+    WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC,
+    WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC,
+    WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC,
+    WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC,
+    WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC,
+    WORKFLOW_STEP_TEMPLATE_LIST_API_VIEW_FUNC,
+    WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC,
+    WORKFLOW_TEMPLATE_ITEM_API_VIEW_FUNC,
+    WORKFLOW_TEMPLATE_LIST_API_VIEW_FUNC,
 )
 
 # Ideas from Flask docs: https://flask.palletsprojects.com/en/2.2.x/views/#method-dispatching-and-apis
@@ -117,6 +137,23 @@ def register_api(api_bp: Blueprint) -> None:
     )
 
     api_bp.add_url_rule(
+        "/packages/<int:id>",
+        view_func=PACKAGE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/packages/",
+        view_func=PACKAGE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/package-snapshots/<int:id>",
+        view_func=PACKAGE_SNAPSHOT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/package-snapshots/",
+        view_func=PACKAGE_SNAPSHOT_LIST_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
         "/procurement-shops/<int:id>",
         view_func=PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     )
@@ -166,12 +203,28 @@ def register_api(api_bp: Blueprint) -> None:
     )
 
     api_bp.add_url_rule(
+        "/projects/<int:id>",
+        view_func=PROJECT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/projects/",
+        view_func=PROJECT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
         "/research-projects/<int:id>",
         view_func=RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/research-projects/",
         view_func=RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/administrative-and-support-projects/<int:id>",
+        view_func=ADMINISTRATIVE_AND_SUPPORT_PROJECT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/administrative-and-support-projects/",
+        view_func=ADMINISTRATIVE_AND_SUPPORT_PROJECT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
         "/research-types/",
@@ -223,4 +276,54 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/notifications/<int:id>",
         view_func=NOTIFICATIONS_ITEM_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/workflow-approve/",
+        view_func=WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-submit/",
+        view_func=WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC,
+    )
+
+    api_bp.add_url_rule(
+        "/workflow-instance/",
+        view_func=WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-instance/<int:id>",
+        view_func=WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-step-instance/",
+        view_func=WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-step-instance/<int:id>",
+        view_func=WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-template/",
+        view_func=WORKFLOW_TEMPLATE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-template/<int:id>",
+        view_func=WORKFLOW_TEMPLATE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-step-template/",
+        view_func=WORKFLOW_STEP_TEMPLATE_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/workflow-step-template/<int:id>",
+        view_func=WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/services-components/<int:id>",
+        view_func=SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/services-components/",
+        view_func=SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
     )

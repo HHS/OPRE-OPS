@@ -1,0 +1,121 @@
+name: 'Terraform setup and apply'
+description: 'Setup Terraform and applies Terraform config'
+inputs:
+  terraform_directory:
+    description: 'Directory that holds Terraform code'
+    required: true
+  azure_client_id:
+    description: 'Azure client id'
+    required: true
+  azure_client_secret:
+    description: 'Azure client secret'
+    required: true
+  azure_subscription_id:
+    description: 'Azure subscription id'
+    required: true
+  azure_tenant_id:
+    description: 'Azure tenant id'
+    required: true
+  terraform_version:
+    description: 'Terraform Version'
+    required: true
+    default: 1.6.6
+  github_token:
+    description: 'GitHub token for auth'
+    required: true
+  pr_id:
+    description: 'Pull request ID'
+    required: false
+  tf_vars:
+    description: 'A map of variable inputs for Terraform'
+    required: false
+  plan_workflow_file:
+    description: 'Filename of workflow containing the tf plan artifact.'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get last directory name
+      id: get-tf-dir
+      run: |
+        tf_dir=$(echo ${{ inputs.terraform_directory }} | rev | cut -d'/' -f1 | rev)
+        echo "tf_dir=$tf_dir" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Set Terraform Variables
+      run: |
+        if [[ -n "${INPUT_TF_VARS}" ]]; then
+          for key in $(echo "${INPUT_TF_VARS}" | jq -r 'keys[]'); do
+            value=$(echo "${INPUT_TF_VARS}" | jq -r ".$key")
+
+            echo "TF_VAR_${key// /}=${value}" >> $GITHUB_ENV
+
+            # Print debug statement
+            echo "Exported TF_VAR_${key// /}=${value}"
+          done
+        fi
+      shell: bash
+      env:
+        INPUT_TF_VARS: ${{ inputs.tf_vars }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@a1502cd9e758c50496cc9ac5308c4843bcd56d36 #v3.0.0
+      with:
+        terraform_version: ${{ inputs.terraform_version }}
+        terraform_wrapper: false
+
+    - name: Terraform Init
+      id: init
+      working-directory: ${{ inputs.terraform_directory }}
+      shell: bash
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
+      run: |
+        terraform init
+
+    - name: Download Plan
+      id: download-plan
+      if: ${{ inputs.plan_workflow_file != '' }}
+      uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d #v3.0.0
+      with:
+        github_token: ${{ inputs.github_token }}
+        workflow: ${{ inputs.plan_workflow_file }}
+        pr: ${{ inputs.pr_id }}
+        name: ${{ inputs.pr_id }}-${{ steps.get-tf-dir.outputs.tf_dir }}-tf-plan
+        path: ${{ inputs.terraform_directory }}
+
+    - name: Terraform Apply
+      id: apply
+      working-directory: ${{ inputs.terraform_directory }}
+      shell: bash
+      env:
+        ARM_CLIENT_ID: ${{ inputs.azure_client_id }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure_client_secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id }}
+        ARM_TENANT_ID: ${{ inputs.azure_tenant_id }}
+      run: |
+        echo 'apply<<EOF' >> $GITHUB_OUTPUT
+        if [ -f "tfplan" ]; then
+          terraform apply -input=false -no-color tfplan >> $GITHUB_OUTPUT
+        else
+          terraform apply -auto-approve -input=false -no-color >> $GITHUB_OUTPUT
+        fi
+        echo 'EOF' >> $GITHUB_OUTPUT
+
+    - name: Comment Apply
+      id: comment-apply
+      if: ${{ inputs.pr_id != '' }}
+      uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 #v3.1.0
+      with:
+        token: ${{ inputs.github_token }}
+        issue-number: ${{ inputs.pr_id }}
+        body: |
+          Terraform Apply for for ${{ inputs.terraform_directory }}:
+
+          ```
+          ${{ steps.apply.outputs.apply }}
+          ```

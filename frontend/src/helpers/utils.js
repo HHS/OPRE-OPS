@@ -89,7 +89,6 @@ export const codesToDisplayText = {
     },
     budgetLineStatus: {
         DRAFT: "Draft",
-        UNDER_REVIEW: "In Review",
         PLANNED: "Planned",
         IN_EXECUTION: "Executing",
         OBLIGATED: "Obligated"
@@ -127,7 +126,7 @@ export const codesToDisplayText = {
         procurement_shop: "Procurement Shop",
         product_service_code: "Product Service Code",
         project_officer: "Project Officer",
-        research_project: "Research Project",
+        project: "Project",
         team_members: "Team Members",
         team_members_item: "Team Member",
         contract_number: "Contract Number",

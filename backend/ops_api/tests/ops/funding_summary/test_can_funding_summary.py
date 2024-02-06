@@ -14,6 +14,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db) -> None:
     # Remove these because they are set according to when the test was run
     del result["can"]["created_on"]
     del result["can"]["updated_on"]
+    del result["can"]["versions"]
 
     assert result == {
         "available_funding": -860000.0,
@@ -21,16 +22,23 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db) -> None:
             "appropriation_date": None,
             "appropriation_term": 1,
             "arrangement_type": "OPRE_APPROPRIATION",
+            "authorizer": 26,
             "authorizer_id": 26,
+            "budget_line_items": [9, 27, 28],
             "created_by": None,
+            "created_by_user": None,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
             "display_name": "G99HRF2",
-            "expiration_date": "01/09/2023",
+            "expiration_date": "2023-09-01T00:00:00.000000Z",
+            "funding_sources": [24, 26],
             "id": 1,
+            "managing_portfolio": 6,
             "managing_portfolio_id": 6,
             "nickname": "HMRF-OPRE",
             "number": "G99HRF2",
             "purpose": "",
+            "projects": [],
+            "shared_portfolios": [],
         },
         "carry_forward_funding": 0,
         "carry_forward_label": "Carry-Forward",
@@ -53,6 +61,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db) -> None:
     # Remove these because they are set according to when the test was run
     del result["can"]["created_on"]
     del result["can"]["updated_on"]
+    del result["can"]["versions"]
 
     assert result == {
         "available_funding": -860000.0,
@@ -60,16 +69,23 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db) -> None:
             "appropriation_date": None,
             "appropriation_term": 1,
             "arrangement_type": "OPRE_APPROPRIATION",
+            "authorizer": 26,
             "authorizer_id": 26,
+            "budget_line_items": [9, 27, 28],
             "created_by": None,
+            "created_by_user": None,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
             "display_name": "G99HRF2",
-            "expiration_date": "01/09/2023",
+            "expiration_date": "2023-09-01T00:00:00.000000Z",
+            "funding_sources": [24, 26],
             "id": 1,
+            "managing_portfolio": 6,
             "managing_portfolio_id": 6,
             "nickname": "HMRF-OPRE",
             "number": "G99HRF2",
             "purpose": "",
+            "projects": [],
+            "shared_portfolios": [],
         },
         "carry_forward_funding": 0,
         "carry_forward_label": "Carry-Forward",

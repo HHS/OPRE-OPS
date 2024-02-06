@@ -12,7 +12,7 @@ class OpsEventType(Enum):
     LOGIN_ATTEMPT = 1
     CREATE_BLI = 2
     UPDATE_BLI = 3
-    CREATE_RESEARCH_PROJECT = 4
+    CREATE_PROJECT = 4
     CREATE_NEW_AGREEMENT = 5
     UPDATE_AGREEMENT = 6
     SEND_BLI_FOR_APPROVAL = 7
@@ -22,6 +22,11 @@ class OpsEventType(Enum):
     CREATE_USER = 11
     UPDATE_USER = 12
     DEACTIVATE_USER = 13
+    CREATE_BLI_PACKAGE = 14
+    UPDATE_BLI_PACKAGE = 15
+    CREATE_SERVICES_COMPONENT = 16
+    UPDATE_SERVICES_COMPONENT = 17
+    DELETE_SERVICES_COMPONENT = 18
 
 
 class OpsEventStatus(Enum):
@@ -37,16 +42,3 @@ class OpsEvent(BaseModel):
     event_type = sa.Column(sa.Enum(OpsEventType))
     event_status = sa.Column(sa.Enum(OpsEventStatus))
     event_details = sa.Column(JSONB)
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        d.update(
-            {
-                "event_type": self.event_type.name if self.event_type else None,
-                "event_status": self.event_status.name if self.event_status else None,
-            }
-        )
-
-        return d

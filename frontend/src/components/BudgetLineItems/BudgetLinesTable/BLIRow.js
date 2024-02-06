@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
@@ -19,6 +20,7 @@ import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import Tooltip from "../../UI/USWDS/Tooltip";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -37,7 +39,8 @@ const BLIRow = ({
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
-    readOnly = false
+    readOnly = false,
+    isBLIInCurrentWorkflow = false
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
@@ -48,6 +51,7 @@ const BLIRow = ({
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    const location = useLocation();
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -61,6 +65,11 @@ const BLIRow = ({
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    // are you on the approve page?
+    const isApprovePage = location.pathname.includes("approve");
+    const isBLIInAnyActiveWorkflow = budgetLine?.has_active_workflow || false;
+    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    const inReview = isBLIInAnyActiveWorkflow;
 
     const TableRowData = (
         <>
@@ -72,7 +81,16 @@ const BLIRow = ({
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {budgetLine?.line_description}
+                {isApprovePageAndBLIIsNotInPacket ? (
+                    <Tooltip
+                        label="This budget line was not sent for approval"
+                        position="right"
+                    >
+                        <span>{budgetLine?.line_description}</span>
+                    </Tooltip>
+                ) : (
+                    budgetLine?.line_description
+                )}
             </th>
             <td
                 className={`${futureDateErrorClass(
@@ -149,7 +167,10 @@ const BLIRow = ({
                 {isRowActive && !isExpanded && !readOnly ? (
                     <div>{changeIcons}</div>
                 ) : (
-                    <TableTag status={budgetLine.status} />
+                    <TableTag
+                        inReview={inReview}
+                        status={budgetLine?.status}
+                    />
                 )}
             </td>
         </>
@@ -202,6 +223,7 @@ const BLIRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
+            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
         />
     );
 };
@@ -213,7 +235,8 @@ BLIRow.propTypes = {
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
+    isBLIInCurrentWorkflow: PropTypes.bool
 };
 
 export default BLIRow;

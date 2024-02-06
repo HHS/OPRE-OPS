@@ -41,12 +41,13 @@
     },
     "packageRules": [
         {
-            "matchPackageNames": ["python"],
+            "matchPackageNames": ["python", "oven/bun"],
             "enabled": false
         },
         {
             "matchPackageNames": [
-                "python"
+                "python",
+                "oven/bun"
             ],
             "enabled": false,
             "platformAutomerge": true

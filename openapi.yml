@@ -16,7 +16,7 @@ paths:
       description: Get Agreements
       parameters:
         - $ref: '#/components/parameters/simulatedError'
-        - name: research_project_id
+        - name: project_id
           in: query
           schema:
             type: integer
@@ -348,7 +348,7 @@ paths:
                         "expiration_date": "01/09/2024",
                         "id": 2,
                         "managing_portfolio_id": 1,
-                        "managing_research_project_id": null,
+                        "managing_project_id": null,
                         "nickname": "IAA-Incoming",
                         "number": "G99IA14",
                         "purpose": ""
@@ -362,7 +362,7 @@ paths:
                         "expiration_date": "01/09/2023",
                         "id": 4,
                         "managing_portfolio_id": 1,
-                        "managing_research_project_id": 1,
+                        "managing_project_id": 1,
                         "nickname": "ASPE SRCD-IDDA",
                         "number": "G990136",
                         "purpose": ""
@@ -420,7 +420,7 @@ paths:
                         type: integer
                       expiration_date:
                         type: string
-                      managing_research_project_id:
+                      managing_project_id:
                         type: integer
                   received_funding:
                     type: string
@@ -456,7 +456,7 @@ paths:
                         "expiration_date": "01/09/2023",
                         "id": 4,
                         "managing_portfolio_id": 1,
-                        "managing_research_project_id": 1,
+                        "managing_project_id": 1,
                         "nickname": "ASPE SRCD-IDDA",
                         "number": "G990136",
                         "purpose": ""
@@ -1123,7 +1123,7 @@ components:
           type: integer
         expiration_date:
           type: string
-        managing_research_project_id: { }
+        managing_project_id: { }
 
     Portfolio:
       description: Portfolio Object
@@ -1323,7 +1323,7 @@ components:
         updated_on:
           type: string
           example: "2023-04-06T20:33:38.292475"
-        research_project_id:
+        project_id:
           type: integer
           example: 1
         project_officer_id:
@@ -1560,15 +1560,15 @@ components:
 
     CAN:
       value:
-        - appropriation_date: "01/10/2023"
+        - appropriation_date: "2023-09-01T00:00:00.000000Z"
         - appropriation_term: 1
         - arrangement_type_id: 2
         - authorizer_id: 23
         - description: "Healthy Marriages Responsible Fatherhood - OFA"
-        - expiration_date: "01/09/2024"
+        - expiration_date: "2023-09-01T00:00:00.000000Z"
         - id: 10
         - managing_portfolio_id: 6
-        - managing_research_project_id: null
+        - managing_project_id: null
         - nickname: "HMRF-OFA"
         - number: "G99XXX3"
         - purpose: ""
@@ -1577,29 +1577,29 @@ components:
         {
           "cans": [
               {
-                  "appropriation_date": "01/10/2023",
+                  "appropriation_date": "2023-09-01T00:00:00.000000Z",
                   "appropriation_term": 1,
                   "arrangement_type_id": 3,
                   "authorizer_id": 26,
                   "description": "Incoming Interagency Agreements",
-                  "expiration_date": "01/09/2024",
+                  "expiration_date": "2023-09-01T00:00:00.000000Z",
                   "id": 2,
                   "managing_portfolio_id": 1,
-                  "managing_research_project_id": null,
+                  "managing_project_id": null,
                   "nickname": "IAA-Incoming",
                   "number": "G99IA14",
                   "purpose": ""
               },
               {
-                  "appropriation_date": "01/10/2022",
+                  "appropriation_date": "2023-09-01T00:00:00.000000Z",
                   "appropriation_term": 1,
                   "arrangement_type_id": 4,
                   "authorizer_id": 26,
                   "description": "Child Development Research Fellowship Grant Program",
-                  "expiration_date": "01/09/2023",
+                  "expiration_date": "2023-09-01T00:00:00.000000Z",
                   "id": 4,
                   "managing_portfolio_id": 1,
-                  "managing_research_project_id": 1,
+                  "managing_project_id": 1,
                   "nickname": "ASPE SRCD-IDDA",
                   "number": "G990136",
                   "purpose": ""
@@ -1704,7 +1704,7 @@ components:
                "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
                "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
                "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
-               "research_project_id": 1,
+               "project_id": 1,
                "description":
                    "This will be a contract to continue planned analyses to explore racial and ethnic disparities in Human Services.",
                "agreement_type": "CONTRACT",
@@ -1774,7 +1774,7 @@ components:
           "created_on": "2023-04-06T20:33:38.292475",
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
-          "research_project_id": 1,
+          "project_id": 1,
           "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
            cans: [],
            budget_line_items: [
@@ -1819,7 +1819,7 @@ components:
           "created_on": "2023-04-06T20:33:38.292475",
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
-          "research_project_id": 1,
+          "project_id": 1,
           "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
           cans: [],
           budget_line_items: [

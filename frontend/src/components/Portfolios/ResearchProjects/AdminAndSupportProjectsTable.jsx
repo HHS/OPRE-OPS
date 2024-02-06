@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import useSortableData from "../../../hooks/use-sortable-data.hooks";
 import CurrencyFormat from "react-currency-format";
 import "./tables.scss";
+import TextClip from "../../UI/Text/TextClip";
 
 const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     const { items: projectTableData, requestSort, sortConfig } = useSortableData(data);
@@ -25,13 +26,13 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
             >
                 <Link
                     to={link}
-                    className="text-ink text-no-underline hover:text-underline usa-tooltip"
-                    data-position="top"
-                    // only show tooltip if name is longer than 30 characters
-                    title={name.length > 30 ? name : ""}
+                    className="text-ink text-no-underline hover:text-underline"
                 >
-                    {/* truncate to 30 characters */}
-                    {name.length > 30 ? name.substring(0, 30) + "..." : name}
+                    <TextClip
+                        text={name}
+                        tooltipThreshold={30}
+                        maxLines={1}
+                    />
                 </Link>
             </th>
             <td

@@ -25,3 +25,7 @@ it("clicking on /portfolio nav while unauthenticated, should keep you at home pa
     cy.get("h1").contains("This is the OPRE OPS system prototype");
     cy.url().should("include", "/");
 });
+
+it.skip("Simulate a fail, to test the Cypress Action upload", () => {
+    expect(true).to.equal(false);
+});

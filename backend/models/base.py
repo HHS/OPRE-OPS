@@ -1,99 +1,82 @@
 """Base model and other useful tools for project models."""
-import decimal
-from typing import Annotated, ClassVar, Final, TypeAlias, TypedDict, TypeVar, cast
+import enum
+from typing import cast
 
-from marshmallow import Schema as MMSchema
-from models.mixins.repr import ReprMixin
-from models.mixins.serialize import SerializeMixin
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, func
-from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry, relationship
-from typing_extensions import Any, override
+import sqlalchemy
+from marshmallow import fields
+from marshmallow.exceptions import MarshmallowError
+from marshmallow_enum import EnumField
+from sqlalchemy import Column, DateTime, ForeignKey, func
+from sqlalchemy.orm import declarative_base, declared_attr, registry, relationship
+from typing_extensions import Any
 
 Base = declarative_base()
 reg = registry(metadata=Base.metadata)
 
-intpk = Annotated[int, mapped_column(init=False, repr=True, primary_key=True)]
-required_str = Annotated[str, mapped_column(nullable=False)]
-optional_str = Annotated[str, mapped_column(nullable=True)]
-currency = Annotated[decimal.Decimal, mapped_column(Numeric(12, 2), default=0.00)]
-# This is a simple type to make a standard int-base primary key field.
-
-_T = TypeVar("_T")
-_dict_registry: dict[str, TypeAlias] = {}
+from marshmallow_sqlalchemy import ModelConversionError, SQLAlchemyAutoSchema
 
 
-class _DictVar:
-    """Dynamically create a TypedDict for the object.
+def setup_schema(base: Base) -> callable:
+    def setup_schema_fn():
+        for class_ in base.registry._class_registry.values():
+            if hasattr(class_, "__tablename__"):
+                if class_.__name__.endswith("Schema"):
+                    raise ModelConversionError(
+                        "For safety, setup_schema can not be used when a"
+                        "Model class ends with 'Schema'"
+                    )
 
-    This is implemented as a descriptor so that all the fields can be
-    defined for the class prior to the TypedDict being created.
-    """
+                class Meta(object):
+                    model = class_
+                    dateformat = "%Y-%m-%d"
+                    datetimeformat = "%Y-%m-%dT%H:%M:%S.%fZ"
+                    include_relationships = True
+                    load_instance = True
+                    include_fk = True
 
-    def __get__(self, obj: _T, objtype: type[_T] | None = None) -> TypeAlias:
-        """Get or create the schema for this object type.
+                schema_class_name = f"{class_.__name__}Schema"
 
-        Note:
-            This expects to be used at the class-level, rather than
-            instance-level, so it expects that objtype will not be None.
-        """
-        if objtype is None:
-            raise ValueError("Must be set at class-level.")
-        name = objtype.__qualname__  # type: ignore [union-attr]
-        try:
-            return _dict_registry[name]
-        except KeyError:
-            _dict_registry[name] = TypedDict(  # type: ignore [operator]
-                f"{objtype.__name__}.Dict",  # type: ignore [union-attr]
-                objtype.__annotations__,
-            )
-            return _dict_registry[name]
+                schema_class = type(
+                    schema_class_name, (SQLAlchemyAutoSchema,), {"Meta": Meta}
+                )
 
+                for column in class_.__mapper__.columns:
+                    # handle enums
+                    if isinstance(column.type, sqlalchemy.sql.sqltypes.Enum):
+                        schema_class._declared_fields[column.key] = EnumField(
+                            column.type.enum_class
+                        )
 
-class BaseData:
-    """Base class used for dataclass models.
+                    # handle list of enums
+                    if isinstance(column.type, sqlalchemy.types.ARRAY) and isinstance(
+                        column.type.item_type.enum_class, enum.EnumMeta
+                    ):
+                        schema_class._declared_fields[column.key] = fields.List(
+                            EnumField(column.type.item_type.enum_class),
+                            default=[],
+                            allow_none=True,
+                        )
 
-    This provides some convenience attributes and methods to ease the
-    development of models. Schema is a simple marshmallow Schema that
-    is automatically generated for the dataclass model. Dict is an
-    automatically generated TypedDict.
+                    # handle Decimal
+                    if isinstance(column.type, sqlalchemy.types.Numeric):
+                        schema_class._declared_fields[column.key] = fields.Decimal(
+                            as_string=True
+                        )
 
-    Note:
-        This means that "<Classname>" is the dataclass,
-        while "<Classname>.Dict" is a TypedDict that has keys that match the dataclass
-        attributes.
-    """
+                setattr(class_, "__marshmallow__", schema_class)
 
-    Schema: ClassVar[MMSchema]
-    Dict: Final[TypeAlias] = _DictVar()  # type: ignore [valid-type]
-
-    @classmethod
-    def from_dict(cls, data: "BaseData.Dict") -> "BaseData":  # type: ignore [name-defined]
-        """Load the instance data from the given dict structure."""
-        return cls.Schema.load(data)  # type: ignore [no-any-return]
-
-    def to_dict(self) -> "BaseData.Dict":  # type: ignore [name-defined]
-        """Dump the instance data into a dict structure."""
-        return self.Schema.dump(self)
-
-    @classmethod
-    def from_json(cls, data: str) -> "BaseData":
-        """Load the instance data from the given json string."""
-        return cls.Schema.loads(data)  # type: ignore [no-any-return]
-
-    def to_json(self) -> str:
-        """Dump the instance data into a json string."""
-        return cast(str, self.Schema.dumps(self))
+    return setup_schema_fn
 
 
 from sqlalchemy_continuum import make_versioned
 
+# init sqlalchemy_continuum
 make_versioned(user_cls=None)
 
 
-class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-type]
+class BaseModel(Base):  # type: ignore [misc, valid-type]
     __versioned__ = {}
     __abstract__ = True
-    __repr__ = ReprMixin.__repr__
 
     @classmethod
     def model_lookup_by_table_name(cls, table_name):
@@ -103,6 +86,16 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
             model_class_name = model.__table__.name
             if model_class_name == table_name:
                 return model
+
+    def to_dict(self):
+        if not hasattr(self, "__marshmallow__"):
+            raise MarshmallowError(
+                f"Model {self.__class__.__name__} does not have a marshmallow schema"
+            )
+        schema = self.__marshmallow__()
+        data = schema.dump(self)
+        data["display_name"] = self.display_name
+        return data
 
     @declared_attr
     def created_by(cls):
@@ -130,20 +123,6 @@ class BaseModel(Base, SerializeMixin, ReprMixin):  # type: ignore [misc, valid-t
         @staticmethod
         def validate(item, data):  # type: ignore [no-untyped-def]
             pass
-
-    @override
-    def to_dict(self) -> dict[str, Any]:  # type: ignore [override]
-        d = super().to_dict()  # type: ignore [no-untyped-call]
-
-        d.update(
-            {
-                "created_on": self.created_on.isoformat() if self.created_on else None,
-                "updated_on": self.updated_on.isoformat() if self.updated_on else None,
-                "display_name": self.display_name,
-            }
-        )
-
-        return cast(dict[str, Any], d)
 
     def to_slim_dict(self) -> dict[str, Any]:
         d = {

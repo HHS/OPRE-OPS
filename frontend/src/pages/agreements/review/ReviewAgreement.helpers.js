@@ -1,3 +1,5 @@
+import { fiscalYearFromDate } from "../../../helpers/utils";
+
 /**
  * Validates that the agreement is an object.
  * @param {Object} prop - The agreement to validate.
@@ -61,4 +63,20 @@ export const getTotalBySelectedCans = (budgetLines) => {
         return { canNumber, amount, term: can.appropriation_term };
     });
     return canNumbersWithAmountsAndTerms;
+};
+
+export const getTotalByCans = (budgetLines) => {
+    handlePropType(budgetLines);
+    const totalByCans = budgetLines.reduce(totalByCan, {});
+    const cansNumberAndAmount = Object.entries(totalByCans).map(([canNumber, amount]) => ({ canNumber, amount }));
+    const canNumbersWithAmountsAndTerms = cansNumberAndAmount.map(({ canNumber, amount }) => {
+        const can = budgetLines.find((item) => item.can.number === canNumber).can;
+        return { canNumber, amount, term: can.appropriation_term };
+    });
+    return canNumbersWithAmountsAndTerms;
+};
+
+export const isBudgetLineInCurrentFiscalYear = (budgetLine) => {
+    const currentFiscalYear = fiscalYearFromDate(new Date());
+    return fiscalYearFromDate(budgetLine?.date_needed) === currentFiscalYear;
 };

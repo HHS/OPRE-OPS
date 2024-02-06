@@ -19,7 +19,7 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
         >
             <fieldset className="usa-fieldset">
                 <legend className="usa-legend maxw-full margin-bottom-2 margin-top-0">
-                    Choose which action you’d like to initiate and then select the budget lines below.
+                    Choose which action you&apos;d like to initiate and then select the budget lines below.
                 </legend>
                 <div className="grid-row grid-gap">
                     <div className="grid-col">
@@ -28,6 +28,7 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
                             description="This will subtract the amounts from the FY budget"
                             setValue={setAction}
                             disabled={optionOneDisabled}
+                            data-cy="change-draft-to-planned"
                         />
                     </div>
                     <div className="grid-col">
@@ -36,6 +37,7 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
                             description="This will start the procurement process"
                             setValue={setAction}
                             disabled={optionTwoDisabled}
+                            data-cy="change-planned-to-executing"
                         />
                     </div>
                 </div>

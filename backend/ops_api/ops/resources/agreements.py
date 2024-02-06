@@ -1,15 +1,25 @@
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from marshmallow import EXCLUDE, Schema, ValidationError
-from models import DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement, OpsEventType, User, Vendor
+from marshmallow import EXCLUDE, Schema
+from models import (
+    CAN,
+    ContractType,
+    DirectAgreement,
+    GrantAgreement,
+    IaaAaAgreement,
+    IaaAgreement,
+    OpsEventType,
+    User,
+    Vendor,
+)
 from models.base import BaseModel
 from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
@@ -19,7 +29,6 @@ from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 from sqlalchemy.future import select
 from typing_extensions import Any, override
 
@@ -53,98 +62,78 @@ class AgreementItemAPI(BaseItemAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @handle_api_error
     def get(self, id: int) -> Response:
-        response = self._get_item_with_try(id)
-        return response
+        item = self._get_item(id)
+        additional_fields = add_additional_fields_to_agreement_response(item)
+
+        return self._get_item_with_try(id, additional_fields=additional_fields)
 
     @override
     @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
+    @handle_api_error
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
-        try:
-            with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-                old_agreement: Agreement = self._get_item(id)
-                if not old_agreement:
-                    raise RuntimeError("Invalid Agreement id.")
-                elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
-                    raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
-                # reject change of agreement_type
-                # for PUT, it must exist in request
-                try:
-                    req_type = request.json["agreement_type"]
-                    if req_type != old_agreement.agreement_type.name:
-                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-                except (KeyError, ValueError) as e:
-                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+        with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
+            old_agreement: Agreement = self._get_item(id)
+            if not old_agreement:
+                raise RuntimeError("Invalid Agreement id.")
+            elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
+                raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
 
-                schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
+            req_type = reject_change_of_agreement_type(old_agreement)
 
-                OPSMethodView._validate_request(
-                    schema=schema,
-                    message=f"{message_prefix}: Params failed validation:",
-                )
+            schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
 
-                data = schema.dump(schema.load(request.json))
-                agreement = update_agreement(data, old_agreement)
-                agreement_dict = agreement.to_dict()
-                meta.metadata.update({"updated_agreement": agreement_dict})
-                current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+            OPSMethodView._validate_request(
+                schema=schema,
+                message=f"{message_prefix}: Params failed validation:",
+            )
 
-                return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+            data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
 
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+            if data.get("contract_type") and req_type == AgreementType.CONTRACT.name:
+                data["contract_type"] = ContractType[data["contract_type"]]
+
+            agreement = update_agreement(data, old_agreement)
+            agreement_dict = agreement.to_dict()
+            meta.metadata.update({"updated_agreement": agreement_dict})
+            current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+
+            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
 
     @override
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
+    @handle_api_error
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
-        try:
-            with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
-                old_agreement: Agreement = self._get_item(id)
-                if not old_agreement:
-                    raise RuntimeError(f"Invalid Agreement id: {id}.")
-                elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
-                    raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
-                # reject change of agreement_type
-                try:
-                    req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
-                    if req_type != old_agreement.agreement_type.name:
-                        raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
-                except (KeyError, ValueError) as e:
-                    raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+        with OpsEventHandler(OpsEventType.UPDATE_AGREEMENT) as meta:
+            old_agreement: Agreement = self._get_item(id)
+            if not old_agreement:
+                raise RuntimeError(f"Invalid Agreement id: {id}.")
+            elif any(bli.status == BudgetLineItemStatus.IN_EXECUTION for bli in old_agreement.budget_line_items):
+                raise RuntimeError(f"Agreement {id} has budget line items in executing status.")
+            # reject change of agreement_type
+            try:
+                req_type = request.json.get("agreement_type", old_agreement.agreement_type.name)
+                if req_type != old_agreement.agreement_type.name:
+                    raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+            except (KeyError, ValueError) as e:
+                raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
 
-                schema: Schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
+            schema: Schema = AGREEMENTS_REQUEST_SCHEMAS.get(old_agreement.agreement_type)
 
-                data = get_change_data(old_agreement, schema)
+            data = get_change_data(old_agreement, schema)
 
-                agreement = update_agreement(data, old_agreement)
+            agreement = update_agreement(data, old_agreement)
 
-                agreement_dict = agreement.to_dict()
-                meta.metadata.update({"updated_agreement": agreement_dict})
-                current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
+            agreement_dict = agreement.to_dict()
+            meta.metadata.update({"updated_agreement": agreement_dict})
+            current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
-                return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
 
     @override
     @is_authorized(
@@ -152,33 +141,24 @@ class AgreementItemAPI(BaseItemAPI):
         Permission.AGREEMENT,
         extra_check=associated_with_agreement,
     )
+    @handle_api_error
     def delete(self, id: int) -> Response:
-        message_prefix = f"DELETE from {ENDPOINT_STRING}"
+        with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
+            agreement: Agreement = self._get_item(id)
 
-        try:
-            with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
-                agreement: Agreement = self._get_item(id)
+            if not agreement:
+                raise RuntimeError(f"Invalid Agreement id: {id}.")
+            elif agreement.agreement_type != AgreementType.CONTRACT:
+                raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
+            elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
+                raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
 
-                if not agreement:
-                    raise RuntimeError(f"Invalid Agreement id: {id}.")
-                elif agreement.agreement_type != AgreementType.CONTRACT:
-                    raise RuntimeError(f"Invalid Agreement type: {agreement.agreement_type}.")
-                elif any(bli.status != BudgetLineItemStatus.DRAFT for bli in agreement.budget_line_items):
-                    raise RuntimeError(f"Agreement {id} has budget line items not in draft status.")
+            current_app.db_session.delete(agreement)
+            current_app.db_session.commit()
 
-                current_app.db_session.delete(agreement)
-                current_app.db_session.commit()
+            meta.metadata.update({"Deleted Agreement": id})
 
-                meta.metadata.update({"Deleted Agreement": id})
-
-                return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
-
-        except RuntimeError as e:
-            return make_response_with_headers({"message": f"{type(e)}: {e!s}", "id": agreement.id}, 400)
-
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"{message_prefix}: {se}")
-            return make_response_with_headers({}, 500)
+            return make_response_with_headers({"message": "Agreement deleted", "id": agreement.id}, 200)
 
 
 class AgreementListAPI(BaseListAPI):
@@ -187,6 +167,7 @@ class AgreementListAPI(BaseListAPI):
 
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @handle_api_error
     def get(self) -> Response:
         agreement_classes = [
             ContractAgreement,
@@ -199,58 +180,62 @@ class AgreementListAPI(BaseListAPI):
         for agreement_cls in agreement_classes:
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
-        return make_response_with_headers([i.to_dict() for item in result for i in item])
+        agreement_response: List[dict] = []
+        for item in result:
+            for agreement in item:
+                additional_fields = add_additional_fields_to_agreement_response(agreement)
+                agreement_dict = agreement.to_dict()
+                agreement_dict.update(additional_fields)
+                agreement_response.append(agreement_dict)
+
+        return make_response_with_headers(agreement_response)
 
     @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
+    @handle_api_error
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
-        try:
-            with OpsEventHandler(OpsEventType.CREATE_NEW_AGREEMENT) as meta:
-                if "agreement_type" not in request.json:
-                    raise RuntimeError(f"{message_prefix}: Params failed validation")
 
-                try:
-                    agreement_type = AgreementType[request.json["agreement_type"]]
-                except KeyError:
-                    raise ValueError("Invalid agreement_type")
+        with OpsEventHandler(OpsEventType.CREATE_NEW_AGREEMENT) as meta:
+            if "agreement_type" not in request.json:
+                raise RuntimeError(f"{message_prefix}: Params failed validation")
 
-                current_app.logger.info(agreement_type.name)
+            try:
+                agreement_type = AgreementType[request.json["agreement_type"]]
+            except KeyError:
+                raise ValueError("Invalid agreement_type")
 
-                schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
+            current_app.logger.info(agreement_type.name)
 
-                data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
+            schema = AGREEMENTS_REQUEST_SCHEMAS.get(agreement_type)
 
-                new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
+            data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
 
-                token = verify_jwt_in_request()
-                user = get_user_from_token(token[1])
-                new_agreement.created_by = user.id
+            new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
 
-                current_app.db_session.add(new_agreement)
-                current_app.db_session.commit()
+            token = verify_jwt_in_request()
+            user = get_user_from_token(token[1])
+            new_agreement.created_by = user.id
 
-                new_agreement_dict = new_agreement.to_dict()
-                meta.metadata.update({"New Agreement": new_agreement_dict})
-                current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
+            current_app.db_session.add(new_agreement)
+            current_app.db_session.commit()
 
-                return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
-        except (KeyError, RuntimeError, PendingRollbackError) as re:
-            current_app.logger.error(f"{message_prefix}: {re}")
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            # This is most likely the user's fault, e.g. a bad CAN or Agreement ID
-            current_app.logger.error(f"{message_prefix}: {ve}")
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except SQLAlchemyError as se:
-            current_app.logger.error(f"POST to {ENDPOINT_STRING}: {se}")
-            return make_response_with_headers({}, 500)
+            new_agreement_dict = new_agreement.to_dict()
+            meta.metadata.update({"New Agreement": new_agreement_dict})
+            current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Agreement created: {new_agreement_dict}")
+
+            return make_response_with_headers({"message": "Agreement created", "id": new_agreement.id}, 201)
 
     def _create_agreement(self, data, agreement_cls):
+        data["agreement_type"] = AgreementType[data["agreement_type"]] if data.get("agreement_type") else None
+        data["agreement_reason"] = AgreementReason[data["agreement_reason"]] if data.get("agreement_reason") else None
+
         tmp_team_members = data.get("team_members") or []
         data["team_members"] = []
 
         if agreement_cls == ContractAgreement:
+            data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
+
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []
 
@@ -282,6 +267,7 @@ class AgreementListAPI(BaseListAPI):
 class AgreementReasonListAPI(MethodView):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in AgreementReason]
         return make_response_with_headers(reasons)
@@ -290,6 +276,7 @@ class AgreementReasonListAPI(MethodView):
 class AgreementTypeListAPI(MethodView):
     @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @handle_api_error
     def get(self) -> Response:
         return make_response_with_headers([e.name for e in AgreementType])
 
@@ -309,15 +296,19 @@ def _get_user_list(data: Any):
 def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     changed = False
     for item in data:
-        if item in ["vendor", "incumbent"]:
+        if item in [
+            "vendor",
+            "incumbent",
+            "agreement_type",
+            "versions",
+            "created_by_user",  # handled by created_by
+            "project_officer",  # handled by project_officer_id
+        ]:
             continue
         # subclass attributes won't have the old (deleted) value in get_history
         # unless they were loaded before setting
         _hack_to_fix_get_history = getattr(agreement, item)  # noqa: F841
         match (item):
-            case "agreement_type":
-                continue
-
             case "team_members":
                 tmp_team_members = _get_user_list(data[item])
                 agreement.team_members = tmp_team_members if tmp_team_members else []
@@ -338,6 +329,21 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     for bli in agreement.budget_line_items:
                         if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
                             bli.proc_shop_fee_percentage = agreement.procurement_shop.fee
+                    changed = True
+
+            case "agreement_reason":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, AgreementReason[data[item]])
+                    changed = True
+
+            case "agreement_type":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, AgreementType[data[item]])
+                    changed = True
+
+            case "contract_type":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, ContractType[data[item]])
                     changed = True
 
             case _:
@@ -396,3 +402,59 @@ def add_vendor(data: dict, field_name: str = "vendor") -> None:
         else:
             data[f"{field_name}_id"] = vendor_obj.id
         del data[field_name]
+
+
+def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[str, Any]:
+    """
+    Add additional fields to the agreement response.
+
+    N.B. This is a temporary solution to add additional fields to the response.
+    This should be refactored to use marshmallow.
+    Also, the frontend/OpenAPI needs to be refactored to not use these fields.
+    """
+    if not agreement:
+        return {}
+
+    transformed_blis = []
+    for bli in agreement.budget_line_items:
+        transformed_bli = bli.to_dict()
+        if transformed_bli.get("amount"):
+            transformed_bli["amount"] = float(transformed_bli.get("amount"))
+        # nest the CAN object (temp needed for the frontend)
+        if transformed_bli.get("can"):
+            transformed_bli["can"] = current_app.db_session.get(CAN, transformed_bli.get("can")).to_dict()
+        # include has_active_workflow
+        transformed_bli["has_active_workflow"] = bli.has_active_workflow
+        # include active_workflow_current_step_id
+        transformed_bli["active_workflow_current_step_id"] = bli.active_workflow_current_step_id
+        transformed_blis.append(transformed_bli)
+
+    # change PS amount from string to float - this is a temporary solution in lieu of marshmallow
+    transformed_ps = agreement.procurement_shop.to_dict() if agreement.procurement_shop else {}
+    if transformed_ps:
+        transformed_ps["fee"] = float(transformed_ps.get("fee"))
+
+    return {
+        "agreement_type": agreement.agreement_type.name if agreement.agreement_type else None,
+        "agreement_reason": agreement.agreement_reason.name if agreement.agreement_reason else None,
+        "budget_line_items": transformed_blis,
+        "team_members": [tm.to_dict() for tm in agreement.team_members],
+        "project": agreement.project.to_dict() if agreement.project else None,
+        "procurement_shop": transformed_ps,
+        "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
+        "display_name": agreement.display_name,
+        "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
+        "incumbent": agreement.incumbent.name if hasattr(agreement, "incumbent") and agreement.incumbent else None,
+    }
+
+
+def reject_change_of_agreement_type(old_agreement):
+    # reject change of agreement_type
+    # for PUT, it must exist in request
+    try:
+        req_type = request.json["agreement_type"]
+        if req_type != old_agreement.agreement_type.name:
+            raise ValueError(f"{req_type} != {old_agreement.agreement_type.name}")
+    except (KeyError, ValueError) as e:
+        raise RuntimeError("Invalid agreement_type, agreement_type must not change") from e
+    return req_type

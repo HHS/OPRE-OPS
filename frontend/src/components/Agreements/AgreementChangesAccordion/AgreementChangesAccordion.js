@@ -42,7 +42,7 @@ const AgreementChangesAccordion = ({ children, changeInBudgetLines, changeInCans
                     <p className={`text-bold ${styles.font20}`}>
                         <FontAwesomeIcon
                             icon={faAdd}
-                            className="text-ink height-2 width-2 margin-right-1 usa-tooltip"
+                            className="text-ink height-2 width-2 margin-right-1"
                         />
                         <CurrencyFormat
                             value={changeInBudgetLines || 0}
@@ -65,7 +65,7 @@ const AgreementChangesAccordion = ({ children, changeInBudgetLines, changeInCans
                             <p className={`text-bold ${styles.font20}`}>
                                 <FontAwesomeIcon
                                     icon={faSubtract}
-                                    className="text-ink height-2 width-2 margin-right-1 usa-tooltip"
+                                    className="text-ink height-2 width-2 margin-right-1"
                                 />
                                 <CurrencyFormat
                                     value={amount || 0}

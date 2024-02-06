@@ -11,6 +11,7 @@ import AgreementBudgetLinesHeader from "../../../components/Agreements/Agreement
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
+import { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Renders Agreement budget lines view
@@ -24,7 +25,8 @@ import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsC
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = useState(false);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
+    const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveActiveWorkflow;
     const { setAlert } = useAlert();
 
     // eslint-disable-next-line no-unused-vars
@@ -104,7 +106,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     setIsEditMode={setIsEditMode}
                     isReviewMode={false}
                     selectedProcurementShop={agreement?.procurement_shop}
-                    selectedResearchProject={agreement?.research_project}
+                    selectedResearchProject={agreement?.project}
                     canUserEditBudgetLines={canUserEditAgreement}
                     wizardSteps={[]}
                     continueBtnText="Save Changes"
@@ -153,7 +155,7 @@ AgreementBudgetLines.propTypes = {
         id: PropTypes.number,
         budget_line_items: PropTypes.arrayOf(PropTypes.object),
         procurement_shop: PropTypes.object,
-        research_project: PropTypes.object,
+        project: PropTypes.object,
         team_members: PropTypes.arrayOf(PropTypes.object),
         created_by: PropTypes.number,
         project_officer_id: PropTypes.number

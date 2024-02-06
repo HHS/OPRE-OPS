@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-const ALL_BLI_TOTAL = "35,166,048.00";
-const ADMIN_BLI_TOTAL = "35,165,000.00";
-const DRAFT_BLI_TOTAL = "2,000,000.00";
+const ALL_BLI_TOTAL = "37,467,548.00";
+const ADMIN_BLI_TOTAL = "37,466,500.00";
+const DRAFT_BLI_TOTAL = "3,000,000.00";
 const IN_REVIEW_BLI_TOTAL = "0";
 const EXECUTING_BLI_TOTAL = "16,080,000.00";
-const PLANNED_BLI_TOTAL = "14,070,000.00";
+const PLANNED_BLI_TOTAL = "15,371,500.00";
 const OBLIGATED_BLI_TOTAL = "3,016,048.00";
 
 beforeEach(() => {
@@ -39,7 +39,9 @@ it("clicking the add budget lines button takes you to the create budget lines pa
 });
 
 it("pagination on the bli table works as expected", () => {
-    // initial page load
+    cy.visit("/budget-lines");
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(1000);
     cy.get("ul").should("have.class", "usa-pagination__list");
     cy.get("li").should("have.class", "usa-pagination__item").contains("1");
     cy.get("a").should("have.class", "usa-current").contains("1");
@@ -180,7 +182,8 @@ it("Total BLI Summary Card should calculate the total amount of the budget line 
     cy.get("@total-bli-card").contains(DRAFT_BLI_TOTAL);
 });
 
-it("Total BLI Summary Card should calculate the total amount of the budget line items in review status", () => {
+// TODO: This filter (on the BLI page) needs to change now that In Review (UNDER_REVIEW) is no longer used
+it.skip("Total BLI Summary Card should calculate the total amount of the budget line items in review status", () => {
     cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     filterByStatus("In Review");
     cy.get("@total-bli-card").contains(IN_REVIEW_BLI_TOTAL);

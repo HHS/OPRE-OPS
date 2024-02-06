@@ -1,5 +1,6 @@
 import { patchAgreement } from "./patchAgreements";
 import TestApplicationContext from "../applicationContext/TestApplicationContext";
+import { vi } from "vitest";
 
 describe("patchAgreement function", () => {
     const agreementId = 1;
@@ -11,7 +12,7 @@ describe("patchAgreement function", () => {
     const mockApiResponse = { id: 1, message: "Agreement Updated" };
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.resetAllMocks();
     });
 
     test("returns the API response data", async () => {

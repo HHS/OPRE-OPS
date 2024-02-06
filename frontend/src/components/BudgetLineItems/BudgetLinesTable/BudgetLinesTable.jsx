@@ -24,7 +24,8 @@ const BudgetLinesTable = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
-    showTotalSummaryCard = true
+    showTotalSummaryCard = true,
+    workflowBudgetLineItemIds = []
 }) => {
     const sortedBudgetLines = budgetLinesAdded
         .slice()
@@ -43,6 +44,9 @@ const BudgetLinesTable = ({
                         handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                         isReviewMode={isReviewMode}
                         readOnly={readOnly}
+                        isBLIInCurrentWorkflow={
+                            workflowBudgetLineItemIds && workflowBudgetLineItemIds.includes(budgetLine.id)
+                        }
                     />
                 ))}
             </Table>
@@ -60,7 +64,8 @@ BudgetLinesTable.propTypes = {
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
     isReviewMode: PropTypes.bool,
-    showTotalSummaryCard: PropTypes.bool
+    showTotalSummaryCard: PropTypes.bool,
+    workflowBudgetLineItemIds: PropTypes.arrayOf(PropTypes.number)
 };
 
 export default BudgetLinesTable;

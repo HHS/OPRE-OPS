@@ -1,8 +1,11 @@
 import { render, fireEvent, screen } from "@testing-library/react";
 import BLIStatusComboBox from "./BLIStatusComboBox";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 describe("BLIStatusComboBox", () => {
-    const mockSetSelectedBLIStatus = jest.fn();
+    const mockSetSelectedBLIStatus = mockFn;
 
     it("renders the component with the correct label", () => {
         render(
@@ -27,8 +30,9 @@ describe("BLIStatusComboBox", () => {
         fireEvent.keyDown(container.querySelector("input"), { key: "ArrowDown", code: 40 });
 
         expect(screen.getByText("Draft")).toBeInTheDocument();
-        expect(screen.getByText("In Review")).toBeInTheDocument();
         expect(screen.getByText("Planned")).toBeInTheDocument();
+        expect(screen.getByText("Executing")).toBeInTheDocument();
+        expect(screen.getByText("Obligated")).toBeInTheDocument();
     });
 
     it("updates the input value when the user types in the input field", () => {
@@ -44,7 +48,7 @@ describe("BLIStatusComboBox", () => {
     });
 
     it("updates the selected item when multiple options are selected", () => {
-        const setSelectedBLIStatus = jest.fn();
+        const setSelectedBLIStatus = mockFn;
         const { getByText, container } = render(
             <BLIStatusComboBox
                 selectedBLIStatus={null}
@@ -70,7 +74,7 @@ describe("BLIStatusComboBox", () => {
                 status: "DRAFT"
             },
             {
-                id: 3,
+                id: 2,
                 title: "Planned",
                 status: "PLANNED"
             }

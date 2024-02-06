@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import AgreementsTable from "./AgreementsTable";
 import configureStore from "redux-mock-store";
+import { vi } from "vitest";
 
 const mockStore = configureStore([]);
 const agreements = [
@@ -10,7 +11,7 @@ const agreements = [
         id: 1,
         name: "Test Agreement",
         display_name: "Test Agreement",
-        research_project: { title: "Test Project" },
+        project: { title: "Test Project" },
         agreement_type: "GRANT",
         project_officer_id: 1,
         team_members: [{ id: 1 }],
@@ -31,11 +32,14 @@ const userData = {
     full_name: "Test User"
 };
 
-jest.mock("../../../api/opsAPI", () => ({
-    ...jest.requireActual("../../../api/opsAPI"),
-    useGetUserByIdQuery: () => jest.fn(() => ({ data: userData })),
-    useGetAgreementByIdQuery: () => jest.fn(() => ({ data: agreements[0] }))
-}));
+vi.mock("../../../api/opsAPI", async () => {
+    const actual = await vi.importActual("../../../api/opsAPI");
+    return {
+        ...actual,
+        useGetUserByIdQuery: () => ({ data: userData }),
+        useGetAgreementByIdQuery: () => ({ data: agreements[0] })
+    };
+});
 
 const initialState = {
     auth: {

@@ -37,7 +37,7 @@
     }
   ],
   role: [
-    {
+    { // 1 Admin
       name: "admin",
       permissions: [
         "GET_AGREEMENT",
@@ -50,6 +50,16 @@
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
         "POST_BUDGET_LINE_ITEM",
+
+        "GET_SERVICES_COMPONENT",
+        "PUT_SERVICES_COMPONENT",
+        "PATCH_SERVICES_COMPONENT",
+        "POST_SERVICES_COMPONENT",
+
+        "GET_BLI_PACKAGE",
+        "PUT_BLI_PACKAGE",
+        "PATCH_BLI_PACKAGE",
+        "POST_BLI_PACKAGE",
 
         "GET_CAN",
 
@@ -72,13 +82,19 @@
 
         "GET_USERS",
         "GET_HISTORY",
+
+        "GET_WORKFLOW",
+        "PUT_WORKFLOW",
+        "PATCH_WORKFLOW",
+        "POST_WORKFLOW",
       ],
     },
-    {
+    { // 2 User
       name: "user",
       permissions: [
         "GET_AGREEMENT",
         "GET_BUDGET_LINE_ITEM",
+        "GET_SERVICES_COMPONENT",
         "GET_CAN",
         "GET_DIVISION",
         "GET_NOTIFICATION",
@@ -88,7 +104,7 @@
         "GET_HISTORY",
       ],
     },
-        {
+    { // 3 Unassigned (new user)
       name: "unassigned",
       permissions: [
         "GET_USER",
@@ -97,13 +113,113 @@
         "PATCH_USER",
       ],
     },
+    { // 4 Division Director
+      name: "division-director",
+      permissions: [
+        "GET_AGREEMENT",
+        "PUT_AGREEMENT",
+        "PATCH_AGREEMENT",
+        "POST_AGREEMENT",
+
+        "GET_BUDGET_LINE_ITEM",
+        "PUT_BUDGET_LINE_ITEM",
+        "PATCH_BUDGET_LINE_ITEM",
+        "POST_BUDGET_LINE_ITEM",
+
+        "GET_SERVICES_COMPONENT",
+        "PUT_SERVICES_COMPONENT",
+        "PATCH_SERVICES_COMPONENT",
+        "POST_SERVICES_COMPONENT",
+
+        "GET_BLI_PACKAGE",
+        "PUT_BLI_PACKAGE",
+        "PATCH_BLI_PACKAGE",
+        "POST_BLI_PACKAGE",
+
+        "GET_CAN",
+
+        "GET_DIVISION",
+
+        "GET_NOTIFICATION",
+        "PUT_NOTIFICATION",
+        "PATCH_NOTIFICATION",
+
+        "GET_PORTFOLIO",
+
+        "GET_RESEARCH_PROJECT",
+        "POST_RESEARCH_PROJECT",
+
+        "GET_USER",
+
+        "GET_USERS",
+        "GET_HISTORY",
+
+        "GET_WORKFLOW",
+        "PUT_WORKFLOW",
+        "PATCH_WORKFLOW",
+        "POST_WORKFLOW",
+      ]
+    },
+    { // 5 COR User
+      name: "cor-user",
+      permissions: [
+        "GET_AGREEMENT",
+        "PUT_AGREEMENT",
+        "PATCH_AGREEMENT",
+        "POST_AGREEMENT",
+
+        "GET_BUDGET_LINE_ITEM",
+        "PUT_BUDGET_LINE_ITEM",
+        "PATCH_BUDGET_LINE_ITEM",
+        "POST_BUDGET_LINE_ITEM",
+
+        "GET_SERVICES_COMPONENT",
+        "PUT_SERVICES_COMPONENT",
+        "PATCH_SERVICES_COMPONENT",
+        "POST_SERVICES_COMPONENT",
+
+        "GET_BLI_PACKAGE",
+        "PUT_BLI_PACKAGE",
+        "PATCH_BLI_PACKAGE",
+        "POST_BLI_PACKAGE",
+
+        "GET_CAN",
+
+        "GET_DIVISION",
+
+        "GET_NOTIFICATION",
+        "PUT_NOTIFICATION",
+        "PATCH_NOTIFICATION",
+
+        "GET_PORTFOLIO",
+
+        "GET_RESEARCH_PROJECT",
+        "POST_RESEARCH_PROJECT",
+
+        "GET_USER",
+
+        "GET_USERS",
+        "GET_HISTORY",
+
+        "GET_WORKFLOW",
+      ]
+    },
   ],
   group: [
-    {
+    { // 1
       name: "Budget Team",
     },
-    {
+    { // 2
       name: "Admins",
+    },
+    { // 3
+      name: "Division Directors",
+    },
+    { // 4
+      name: "COR Users",
+    },
+    { // 5
+      name: "Users",
     }
   ],
   user: [
@@ -287,7 +403,25 @@
       email: "user.demo@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000019",
       roles: [{"tablename":  "role", "id": 2}]
-    }
+    },
+    { // 23
+      first_name: "Dave",
+      last_name: "Director",
+      division: 1,
+      email: "dave.director@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000020",
+      roles: [{"tablename":  "role", "id": 4}],
+      groups: [{"tablename":  "group", "id": 3}]
+    },
+    { // 24
+      first_name: "COR",
+      last_name: "User",
+      division: 1,
+      email: "cor.user@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000021",
+      roles: [{"tablename":  "role", "id": 5}],
+      groups: [{"tablename":  "group", "id": 4}]
+    },
   ],
   notification: [
     {

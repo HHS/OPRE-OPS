@@ -1,5 +1,3 @@
-/// <reference types="jest" />
-
 import {
     getCurrentFiscalYear,
     calculatePercent,
@@ -45,5 +43,4 @@ test("renderField converts values correctly for display", async () => {
     expect(renderField(null, "agreement_reason", null)).toEqual(null);
     expect(renderField(null, "agreement_reason", "RECOMPETE")).toEqual("Recompete");
     expect(renderField(null, "agreement_type", "CONTRACT")).toEqual("Contract");
-    expect(renderField(null, "status", "UNDER_REVIEW")).toEqual("In Review");
 });

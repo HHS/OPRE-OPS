@@ -1,4 +1,5 @@
 {
+
   direct_agreement: [
     {
       name: "DIRECT ALLOCATION #2: African American Child and Family Research Center",
@@ -7,7 +8,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 1,
       agreement_type: "DIRECT_ALLOCATION",
-      research_project_id: 1,
+      project_id: 1,
       procurement_shop_id: 3,
       created_by: 4,
       payee: "The Foundation of People Who Get Paid",
@@ -35,7 +36,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 1,
       agreement_type: "GRANT",
-      research_project_id: 2,
+      project_id: 2,
       procurement_shop_id: 3,
       created_by: 4,
       foa: "This is an FOA value",
@@ -49,7 +50,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 1,
       agreement_type: "IAA",
-      research_project_id: 2,
+      project_id: 2,
       procurement_shop_id: 3,
       created_by: 4,
       iaa: "This is an IAA value",
@@ -63,7 +64,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 1,
       agreement_type: "MISCELLANEOUS",
-      research_project_id: 3,
+      project_id: 3,
       procurement_shop_id: 3,
       created_by: 4,
       iaa_aa: "This is an IAA-AA value",
@@ -77,7 +78,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 1,
       agreement_type: "CONTRACT",
-      research_project_id: 3,
+      project_id: 3,
       procurement_shop_id: 4,
       created_by: 4,
       contract_number: "XXXX000000006",
@@ -92,9 +93,9 @@
       description: "Test description",
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
-      project_officer_id: null,
+      project_officer_id: 21,
       agreement_type: "CONTRACT",
-      research_project_id: 13,
+      project_id: 13,
       procurement_shop_id: 4,
       created_by: 4,
       contract_number: "XXXX000000007",
@@ -109,9 +110,9 @@
       description: "Test description",
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
-      project_officer_id: null,
+      project_officer_id: 21,
       agreement_type: "CONTRACT",
-      research_project_id: 13,
+      project_id: 13,
       procurement_shop_id: 4,
       created_by: 4,
       contract_number: "XXXX000000008",
@@ -128,7 +129,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 4,
       agreement_type: "CONTRACT",
-      research_project_id: 3,
+      project_id: 3,
       procurement_shop_id: 3,
       created_by: 4,
       contract_number: "XXXX000000009",
@@ -148,6 +149,117 @@
         }
       ]
     },
+    {
+      name: "Contract Workflow Test",
+      description: "Test description",
+      product_service_code_id: 1,
+      agreement_reason: "RECOMPETE",
+      project_officer_id: 1,
+      agreement_type: "CONTRACT",
+      project_id: 1,
+      procurement_shop_id: 1,
+      created_by: 4,
+      contract_number: "XXXX000000001",
+      incumbent_id: 1,
+      vendor_id: 1,
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: [],
+      team_members: [
+        {
+          "tablename": "user",
+          "id": 1,
+        },
+        {
+          "tablename": "user",
+          "id": 4,
+        },
+        {
+          "tablename": "user",
+          "id": 21,
+        },
+        {
+          "tablename": "user",
+          "id": 23,
+        }
+      ],
+    },
+    {
+      name: "Support Contract #1",
+      description: "Test description",
+      product_service_code_id: 1,
+      agreement_reason: "NEW_REQ",
+      project_officer_id: 4,
+      agreement_type: "CONTRACT",
+      project_id: 14,
+      procurement_shop_id: 3,
+      created_by: 4,
+      contract_number: "XXXX000000010",
+      incumbent_id: null,
+      vendor_id: 3,
+      delivered_status: false,
+      contract_type: "RESEARCH",
+      support_contacts: [],
+      team_members: [
+        {
+          "tablename": "user",
+          "id": 12,
+        },
+        {
+          "tablename": "user",
+          "id": 21,
+        }
+      ]
+    }
+  ],
+  clin: [
+    {
+      id: 1,
+      name: "CLIN 1",
+      source_id: 49932,
+    },
+    {
+      id: 2,
+      name: "CLIN 2",
+      source_id: 49933,
+    },
+    {
+      id: 3,
+      name: "CLIN 3",
+      source_id: 49934,
+    }
+  ],
+  services_component: [
+    {
+      id: 1,
+      number: 1,
+      optional: false,
+      description: "Perform Research",
+      period_start: "2043-06-13T14:00:00",
+      period_end: "2044-06-13T14:00:00",
+      contract_agreement_id: 1,
+      clin_id: 1,
+    },
+    {
+      id: 2,
+      number: 2,
+      optional: false,
+      description: "Report on Research",
+      period_start: "2043-06-13T14:00:00",
+      period_end: "2044-06-13T14:00:00",
+      contract_agreement_id: 1,
+      clin_id: 2,
+    },
+    {
+      id: 3,
+      number: 3,
+      optional: true,
+      description: "Write a book based on the Research",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      contract_agreement_id: 1,
+      clin_id: 3,
+    }
   ],
   budget_line_item: [
     {
@@ -159,6 +271,7 @@
       status: "DRAFT",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0,
+      services_component_id: 1,
     },
     {
       line_description: "LI 2",
@@ -370,5 +483,35 @@
       date_needed: "2044-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
     },
+    {
+      line_description: "LI 1",
+      comments: "",
+      can_id: 5,
+      agreement_id: 10,
+      amount: 1000000.0,
+      status: "PLANNED",
+      date_needed: "2043-06-13T14:03:25.765487",
+      proc_shop_fee_percentage: 0,
+    },
+    {
+      line_description: "LI 2",
+      comments: "",
+      can_id: 5,
+      agreement_id: 10,
+      amount: 1000000.0,
+      status: "DRAFT",
+      date_needed: "2043-06-13T14:03:25.765487",
+      proc_shop_fee_percentage: 0,
+    },
+    {
+      line_description: "Support #1",
+      comments: "",
+      can_id: 17,
+      agreement_id: 11,
+      amount: 300000.0,
+      status: "PLANNED",
+      date_needed: "2044-06-13T14:03:25.765487",
+      proc_shop_fee_percentage: 0.005,
+    }
   ]
 }

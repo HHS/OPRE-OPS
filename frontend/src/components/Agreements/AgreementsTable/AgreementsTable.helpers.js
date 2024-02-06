@@ -1,5 +1,6 @@
 import { codesToDisplayText, draftBudgetLineStatuses, formatDate } from "../../../helpers/utils";
 export { getAgreementSubTotal, getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
+export { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
 
 const handleAgreementProp = (agreement) => {
     if (typeof agreement !== "object") {
@@ -14,7 +15,7 @@ export const getAgreementName = (agreement) => {
 
 export const getResearchProjectName = (agreement) => {
     handleAgreementProp(agreement);
-    return agreement.research_project?.title;
+    return agreement.project?.title;
 };
 
 export const getAgreementDescription = (agreement) => {

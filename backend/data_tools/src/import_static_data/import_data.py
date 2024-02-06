@@ -3,6 +3,7 @@ import os
 
 import json5
 import sqlalchemy.engine
+from data_tools.environment.azure import AzureConfig
 from data_tools.environment.cloudgov import CloudGovConfig
 from data_tools.environment.common import DataToolsConfig
 from data_tools.environment.dev import DevConfig
@@ -53,9 +54,19 @@ ALLOWED_TABLES = [
     "procurement_shop",
     "agreement_team_members",
     "notification",
+    "workflow_template",
+    "workflow_step_template",
+    "workflow_instance",
+    "workflow_step_instance",
+    "package",
+    "package_snapshot",
+    "workflow_step_dependency",
+    "step_approvers",
     "vendor",
     "contact",
     "vendor_contacts",
+    "clin",
+    "services_component",
 ]
 
 data = os.getenv("DATA")
@@ -78,6 +89,8 @@ def init_db(
 def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
     config: DataToolsConfig
     match environment_name:
+        case "azure":
+            config = AzureConfig()
         case "cloudgov":
             config = CloudGovConfig()
         case "local":

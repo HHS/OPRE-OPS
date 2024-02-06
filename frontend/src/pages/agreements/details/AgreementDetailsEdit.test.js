@@ -1,12 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
-import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
-import store from "../../../store";
 import { Provider } from "react-redux";
-// import { useGetProductServiceCodesQuery } from "../../../api/opsAPI";
-// import ProductServiceCodeSelect from "../../../components/UI/Form/ProductServiceCodeSelect"
+import { vi } from "vitest";
+import AgreementDetailsEdit from "./AgreementDetailsEdit";
+import store from "../../../store";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+
+const mockFn = TestApplicationContext.helpers().mockFn;
 
 const productServiceCodesData = [
     {
@@ -23,37 +24,49 @@ const productServiceCodesData = [
     }
 ];
 
-jest.mock("../../../api/opsAPI", () => ({
-    ...jest.requireActual("../../../api/opsAPI"),
-    useGetProductServiceCodesQuery: () => jest.fn(() => ({ data: productServiceCodesData }))
-}));
+vi.mock("../../../api/opsAPI", async () => {
+    const actual = await import("../../../api/opsAPI");
+    return {
+        ...actual,
+        useGetProductServiceCodesQuery: () => ({ data: productServiceCodesData })
+    };
+});
 
-// eslint-disable-next-line react/display-name
-jest.mock("../../../components/UI/Form/ProductServiceCodeSelect", () => () => {
-    return <div />;
+vi.mock("../../../components/UI/Form/ProductServiceCodeSelect", async () => {
+    const actual = await vi.importActual("../../../components/UI/Form/ProductServiceCodeSelect");
+    return {
+        ...actual,
+        default: () => <div />
+    };
 });
 
 // mocking ResponsiveBar until there's a solution for TypeError: Cannot read properties of null (reading 'width')
-jest.mock("@nivo/bar", () => ({
+vi.mock("@nivo/bar", () => ({
     __esModule: true,
     ResponsiveBar: () => {
         return <div />;
     }
 }));
 
-jest.mock("react-router-dom", () => ({
-    ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn()
-}));
+vi.mock("react-router-dom", async () => {
+    const actual = await import("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => mockFn
+    };
+});
 
-jest.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
-}));
+vi.mock("react", async () => {
+    const actual = await import("react");
+    return {
+        ...actual,
+        useState: () => [null, mockFn]
+    };
+});
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 const history = createMemoryHistory();
@@ -63,7 +76,7 @@ describe("AgreementDetailsEdit", () => {
         id: 1,
         name: "Test Agreement",
         description: "Test Description",
-        research_project: { title: "Test Project" },
+        project: { title: "Test Project" },
         agreement_type: "CONTRACT",
         product_service_code: {
             name: "Test PSC",
@@ -115,7 +128,7 @@ describe("AgreementDetailsEdit", () => {
                         agreement={agreement}
                         projectOfficer={projectOfficer}
                         isEditMode={true}
-                        setIsEditMode={jest.fn()}
+                        setIsEditMode={mockFn}
                     />
                 </Router>
             </Provider>

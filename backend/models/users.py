@@ -72,12 +72,12 @@ class User(BaseModel):
         viewonly=True,
     )
 
-    research_projects = relationship(
-        "ResearchProject",
+    projects = relationship(
+        "Project",
         back_populates="team_leaders",
-        secondary="research_project_team_leaders",
-        primaryjoin="User.id == ResearchProjectTeamLeaders.team_lead_id",
-        secondaryjoin="ResearchProject.id == ResearchProjectTeamLeaders.research_project_id",
+        secondary="project_team_leaders",
+        primaryjoin="User.id == ProjectTeamLeaders.team_lead_id",
+        secondaryjoin="Project.id == ProjectTeamLeaders.project_id",
         viewonly=True,
     )
 
@@ -108,27 +108,13 @@ class User(BaseModel):
     def display_name(self):
         return self.full_name if self.full_name else self.email
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d = super().to_dict()
-
-        d.update(
-            {
-                "oidc_id": f"{self.oidc_id}" if self.oidc_id else None,
-                "date_joined": self.date_joined.isoformat()
-                if self.date_joined
-                else None,
-            }
-        )
-
-        return cast(dict[str, Any], d)
-
 
 class Role(BaseModel):
     """Main Role model."""
 
     __tablename__ = "role"
     id = Column(Integer, Identity(), primary_key=True)
+
     name = Column(String, index=True, nullable=False)
     permissions = Column(String, nullable=False)
 

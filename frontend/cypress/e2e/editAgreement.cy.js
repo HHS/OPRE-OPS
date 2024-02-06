@@ -7,7 +7,7 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
     description: "Test Description",
-    research_project_id: 1,
+    project_id: 1,
     product_service_code_id: 1,
     procurement_shop_id: 1,
     incumbent: "Test Vendor",
@@ -181,20 +181,5 @@ it("can edit a budget line if it is in DRAFT or in REVIEW", () => {
     cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
     cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
     cy.get('[data-cy="continue-btn"]').should("exist");
-    cy.get('[data-cy="continue-btn"]').click();
-    cy.visit(`/agreements/1/budget-lines`);
-    cy.get('[data-cy="bli-tab-continue-btn"]').click();
-    cy.get('[data-cy="send-to-approval-btn"]').should("exist");
-    cy.get('[data-cy="send-to-approval-btn"]').click();
-    // the BLIS are now in Review
-    cy.visit(`/agreements/1/budget-lines`);
-    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
-    cy.get("#edit").should("exist");
-    // revert the BLIS back to DRAFT
-    cy.visit(`/agreements/1`);
-    cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
-    cy.get("#edit").should("exist");
-    cy.get("#edit").click();
-    cy.get("#agreementNotes").type("test edit notes");
     cy.get('[data-cy="continue-btn"]').click();
 });

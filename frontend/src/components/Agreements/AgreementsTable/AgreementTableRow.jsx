@@ -32,7 +32,8 @@ import {
     findNextBudgetLine,
     findNextNeedBy,
     getBudgetLineCountsByStatus,
-    getAgreementDescription
+    getAgreementDescription,
+    hasActiveWorkflow
 } from "./AgreementsTable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import TextClip from "../../UI/Text/TextClip";
@@ -75,7 +76,11 @@ export const AgreementTableRow = ({ agreement }) => {
     // Validations for editing/deleting an agreement
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const isEditable = isAgreementEditable && canUserEditAgreement;
+    const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
+    const lockedMessage = doesAgreementHaveActiveWorkflow
+        ? "This agreement cannot be edited because it is currently In Review for a status change"
+        : "";
+    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveActiveWorkflow;
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
@@ -93,6 +98,7 @@ export const AgreementTableRow = ({ agreement }) => {
         <ChangeIcons
             item={agreement}
             isItemEditable={isEditable}
+            lockedMessage={lockedMessage}
             isItemDeletable={canUserDeleteAgreement}
             handleDeleteItem={handleDeleteAgreement}
             handleSetItemForEditing={handleEditAgreement}
@@ -113,7 +119,7 @@ export const AgreementTableRow = ({ agreement }) => {
             >
                 <Link
                     className="text-ink text-no-underline"
-                    to={"/agreements/" + agreement.id}
+                    to={"/agreements/" + agreement?.id}
                 >
                     <TextClip text={agreementName} />
                 </Link>
@@ -284,7 +290,7 @@ AgreementTableRow.propTypes = {
     agreement: PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
-        research_project: PropTypes.shape({
+        project: PropTypes.shape({
             title: PropTypes.string.isRequired
         }),
         agreement_type: PropTypes.string.isRequired,

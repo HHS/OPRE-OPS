@@ -1,27 +1,35 @@
 import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import { AgreementTableRow } from "./AgreementTableRow";
 import { Router } from "react-router-dom";
 import { createMemoryHistory } from "history";
 import { Provider } from "react-redux";
 import configureStore from "redux-mock-store";
+import { vi } from "vitest";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
+const mockFn = TestApplicationContext.helpers().mockFn;
 const history = createMemoryHistory();
 const mockStore = configureStore([]);
 
-jest.mock("react", () => ({
-    ...jest.requireActual("react"),
-    useState: () => [null, jest.fn()]
-}));
+vi.mock("react", async () => {
+    const actual = await vi.importActual("react");
+    return {
+        ...actual,
+        useState: () => [null, mockFn]
+    };
+});
 
-jest.mock("react-router-dom", () => ({
-    ...jest.requireActual("react-router-dom"),
-    useNavigate: () => jest.fn()
-}));
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => mockFn
+    };
+});
 
 // This will reset all mocks after each test
 afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
 });
 
 const userData = {
@@ -29,16 +37,21 @@ const userData = {
     full_name: "Test User"
 };
 
-jest.mock("../../../api/opsAPI", () => ({
-    ...jest.requireActual("../../../api/opsAPI"),
-    useGetUserByIdQuery: () => jest.fn(() => ({ data: userData })),
-    useGetAgreementByIdQuery: () => jest.fn(() => ({ data: agreement }))
-}));
+vi.mock("../../../api/opsAPI", async () => {
+    const actual = await vi.importActual("../../../api/opsAPI");
+
+    return {
+        ...actual,
+        useGetUserByIdQuery: () => ({ data: userData }),
+        useGetAgreementByIdQuery: () => ({ data: agreement })
+    };
+});
+
 const agreement = {
     id: 1,
     name: "Test Agreement",
     display_name: "Test Agreement",
-    research_project: { title: "Test Project" },
+    project: { title: "Test Project" },
     agreement_type: "GRANT",
     project_officer_id: 1,
     team_members: [{ id: 1 }],

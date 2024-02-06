@@ -1,7 +1,9 @@
 import { rest } from "msw";
-import { setupServer } from "msw/lib/node";
+import { setupServer } from "msw/node";
 
-const BACKEND_DOMAIN = process.env.REACT_APP_BACKEND_DOMAIN;
+// const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
+// Adding optional runtime config.
+const BACKEND_DOMAIN = window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN || import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const handlers = [
     rest.get(`${BACKEND_DOMAIN}/api/v1/agreements/`, (req, res, ctx) => {

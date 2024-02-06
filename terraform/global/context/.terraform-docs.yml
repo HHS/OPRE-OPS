@@ -1,0 +1,17 @@
+formatter: markdown
+
+header-from: ./docs/header.md
+footer-from: ./docs/footer.md
+
+sections:
+  hide:
+    - requirements
+
+sort:
+  enabled: true
+
+show-footer: false
+
+
+
+output-values-from-inputs: true

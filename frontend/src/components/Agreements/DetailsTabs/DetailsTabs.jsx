@@ -49,6 +49,7 @@ const DetailsTabs = ({ agreementId, isEditMode, setIsEditMode }) => {
                 className={tabSelected ? selected : notSelected}
                 key={pathName}
                 onClick={handleClick}
+                data-cy={`details-tab-${path.label}`}
             >
                 {path.label}
             </button>

@@ -1,4 +1,5 @@
 """CAN models."""
+from datetime import timedelta
 from enum import Enum
 from typing import Any, List, Optional
 
@@ -6,6 +7,7 @@ import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio
 from models.users import User
+from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStatus, WorkflowStepInstance
 from sqlalchemy import (
     Boolean,
     Column,
@@ -19,19 +21,10 @@ from sqlalchemy import (
     Table,
     Text,
     case,
-    column,
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import (
-    InstrumentedAttribute,
-    Mapped,
-    column_property,
-    mapped_column,
-    object_session,
-    relationship,
-    with_polymorphic,
-)
+from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
 from typing_extensions import override
 
 
@@ -186,23 +179,27 @@ class Agreement(BaseModel):
         secondaryjoin="User.id == AgreementTeamMembers.user_id",
     )
 
-    research_project_id: Mapped[int] = mapped_column(
-        ForeignKey("research_project.id"), nullable=True
+    project_id: Mapped[int] = mapped_column(ForeignKey("project.id"), nullable=True)
+    project: Mapped[Optional["Project"]] = relationship(
+        "Project", back_populates="agreements"
     )
-    research_project: Mapped[Optional["ResearchProject"]] = relationship(
-        "ResearchProject", back_populates="agreements"
-    )
+
     budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
         "BudgetLineItem",
         back_populates="agreement",
         lazy=True,
         cascade="all, delete",
     )
+
     procurement_shop_id: Mapped[int] = mapped_column(
         ForeignKey("procurement_shop.id"), nullable=True
     )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
+
+    # @property
+    # def has_bli_in_workflow(self):
+    #     return any(bli.workflow_instance_id for bli in self.budget_line_items)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -212,36 +209,6 @@ class Agreement(BaseModel):
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
     }
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.agreement_type, str):
-            self.agreement_type = AgreementType[self.agreement_type]
-
-        if isinstance(self.agreement_reason, str):
-            self.agreement_reason = AgreementReason[self.agreement_reason]
-
-        d.update(
-            agreement_type=self.agreement_type.name if self.agreement_type else None,
-            agreement_reason=self.agreement_reason.name
-            if self.agreement_reason
-            else None,
-            budget_line_items=[bli.to_dict() for bli in self.budget_line_items],
-            team_members=[tm.to_dict() for tm in self.team_members],
-            research_project=self.research_project.to_dict()
-            if self.research_project
-            else None,
-            procurement_shop=self.procurement_shop.to_dict()
-            if self.procurement_shop
-            else None,
-            product_service_code=self.product_service_code.to_dict()
-            if self.product_service_code
-            else None,
-        )
-
-        return d
 
 
 contract_support_contacts = Table(
@@ -301,28 +268,6 @@ class ContractAgreement(Agreement):
         "polymorphic_identity": AgreementType.CONTRACT,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.contract_type, str):
-            self.contract_type = ContractType[self.contract_type]
-
-        d.update(
-            {
-                "contract_type": self.contract_type.name
-                if self.contract_type
-                else None,
-                "support_contacts": [
-                    contacts.to_dict() for contacts in self.support_contacts
-                ],
-                "vendor": self.vendor.name if self.vendor else None,
-                "incumbent": self.incumbent.name if self.incumbent else None,
-            }
-        )
-
-        return d
-
 
 # TODO: Skeleton, will need flushed out more when we know what all a Grant is.
 class GrantAgreement(Agreement):
@@ -336,11 +281,6 @@ class GrantAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,
     }
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
 
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA is.
@@ -357,11 +297,6 @@ class IaaAgreement(Agreement):
         "polymorphic_identity": AgreementType.IAA,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
-
 
 # TODO: Skeleton, will need flushed out more when we know what all an IAA-AA is. Inter-Agency-Agreement-Assisted-Aquisition
 ### Inter-Agency-Agreement-Assisted-Aquisition
@@ -377,11 +312,6 @@ class IaaAaAgreement(Agreement):
         "polymorphic_identity": AgreementType.MISCELLANEOUS,
     }
 
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
-
 
 class DirectAgreement(Agreement):
     """Direct Obligation Agreement Model"""
@@ -394,11 +324,6 @@ class DirectAgreement(Agreement):
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
     }
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-        return d
 
 
 class CANFiscalYear(BaseModel):
@@ -422,28 +347,6 @@ class CANFiscalYear(BaseModel):
             return f"{self.can.display_name}:{self.fiscal_year}"
         return f"CAN#{self.can_id}:{self.fiscal_year}"
 
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        d.update(
-            total_fiscal_year_funding=float(self.total_fiscal_year_funding)
-            if self.total_fiscal_year_funding
-            else None,
-            received_funding=float(self.received_funding)
-            if self.received_funding
-            else None,
-            expected_funding=float(self.expected_funding)
-            if self.expected_funding
-            else None,
-            potential_additional_funding=float(self.potential_additional_funding)
-            if self.potential_additional_funding
-            else None,
-            total_funding=float(self.total_funding) if self.total_funding else None,
-        )
-
-        return d
-
 
 class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
@@ -459,21 +362,76 @@ class CANFiscalYearCarryForward(BaseModel):
     notes = Column(String, default="")
     total_amount = column_property(received_amount + expected_amount)
 
-    @override
-    def to_dict(self):
-        d = super().to_dict()
 
-        d.update(
-            received_amount=float(self.received_amount)
-            if self.received_amount
-            else None,
-            expected_amount=float(self.expected_amount)
-            if self.expected_amount
-            else None,
-            total_amount=float(self.total_amount) if self.total_amount else None,
-        )
+class ServicesComponent(BaseModel):
+    """
+    A Services Component (SC) is the "what" when referring to an Agreement.
+    It outlines what work is occuring under a given Agreement.
 
-        return d
+    This model contains all the relevant
+    descriptive information about a given Services Component
+
+    number - The index number of the Services Component
+    optional - Whether the Services Component is optional or not (OSC or 'Option Period')
+    clin - The Contract Line Item Number (CLIN) associated with the Services Component
+    description - The description of the Services Component (not sure if needed)
+    period_start - The start date of the Services Component
+    period_end - The end date of the Services Component
+    budget_line_items - The Budget Line Items associated with the Services Component
+    period_duration - The duration of the Services Component (derived from period_start and period_end)
+    display_title - The long name of the Services Component (e.g. "Optional Services Component 1")
+    display_name - The short name of the Services Component (e.g. "OSC1")
+    """
+
+    __tablename__ = "services_component"
+
+    # start Identity at 4 to allow for the records load with IDs
+    # in agreements_and_blin_data.json5
+    id = Column(Integer, Identity(start=4), primary_key=True)
+    number = Column(Integer)
+    optional = Column(Boolean, default=False)
+
+    description = Column(String)
+    period_start = Column(Date)
+    period_end = Column(Date)
+
+    contract_agreement_id = Column(Integer, ForeignKey("contract_agreement.id"))
+    contract_agreement = relationship("ContractAgreement", backref="services_components")
+
+    clin_id = Column(Integer, ForeignKey('clin.id'), nullable=True)
+    clin = relationship("CLIN", back_populates="services_component", uselist=False)
+
+
+    @property
+    def display_title(self):
+        optional = "Optional " if self.optional else ""
+        return f"{optional}Services Component {self.number}"
+
+    @property
+    def period_duration(self):
+        if self.period_start and self.period_end:
+            return abs(self.period_end - self.period_start)
+        return None
+
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        optional = "O" if self.optional else ""
+        return f"{optional}SC{self.number}"
+
+
+class CLIN(BaseModel):
+    """
+    Contract Line Item Number (CLIN) is a unique identifier for a contract line item,
+    """
+
+    __tablename__ = "clin"
+
+    id = Column(Integer, Identity(), primary_key=True)
+    name = Column(String(256), nullable=False)
+    source_id = Column(Integer) # purely an example
+
+    services_component = relationship("ServicesComponent", back_populates="clin", uselist=False)
 
 
 class BudgetLineItem(BaseModel):
@@ -488,6 +446,12 @@ class BudgetLineItem(BaseModel):
 
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", back_populates="budget_line_items")
+
+    services_component_id = Column(Integer, ForeignKey("services_component.id"))
+    services_component = relationship(ServicesComponent, backref="budget_line_items")
+
+    clin_id = Column(Integer, ForeignKey("clin.id"))
+    clin = relationship("CLIN", backref="budget_line_items")
 
     amount = Column(Numeric(12, 2))
 
@@ -530,24 +494,39 @@ class BudgetLineItem(BaseModel):
     def team_members(self):
         return self.agreement.team_members if self.agreement else []
 
-    @override
-    def to_dict(self):
-        d = super().to_dict()
-
-        if isinstance(self.status, str):
-            self.status = BudgetLineItemStatus[self.status]
-
-        d.update(
-            status=self.status.name if self.status else None,
-            amount=float(self.amount) if self.amount else None,
-            proc_shop_fee_percentage=float(self.proc_shop_fee_percentage)
-            if self.proc_shop_fee_percentage
-            else None,
-            date_needed=self.date_needed.isoformat() if self.date_needed else None,
-            can=self.can.to_dict() if self.can else None,
+    @property
+    def has_active_workflow(self):
+        if object_session(self) is None:
+            return False
+        package = object_session(self).scalar(
+            select(Package)
+            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
+            .join(self.__class__, self.id == PackageSnapshot.bli_id)
+            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+            .join(
+                WorkflowStepInstance,
+                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+            )
+            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
         )
+        return package is not None
 
-        return d
+    @property
+    def active_workflow_current_step_id(self):
+        if object_session(self) is None:
+            return None
+        current_workflow_step_instance_id = object_session(self).scalar(
+            select(WorkflowInstance.id)
+            .join(
+                WorkflowStepInstance,
+                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+            )
+            .join(Package, WorkflowInstance.id == Package.workflow_id)
+            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
+            .join(self.__class__, self.id == PackageSnapshot.bli_id)
+            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+        )
+        return current_workflow_step_instance_id
 
 
 class CAN(BaseModel):
@@ -586,31 +565,10 @@ class CAN(BaseModel):
 
     budget_line_items = relationship("BudgetLineItem", back_populates="can")
 
-    research_projects: Mapped[List["ResearchProject"]] = relationship(
-        "ResearchProject", secondary="research_project_cans", back_populates="cans"
+    projects: Mapped[List["Project"]] = relationship(
+        "Project", secondary="project_cans", back_populates="cans"
     )
 
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
-
-    @override
-    def to_dict(self) -> dict[str, Any]:
-        d: dict[str, Any] = super().to_dict()
-
-        if isinstance(self.arrangement_type, str):
-            self.arrangement_type = CANArrangementType[self.arrangement_type]
-
-        d.update(
-            appropriation_date=self.appropriation_date.strftime("%d/%m/%Y")
-            if self.appropriation_date
-            else None,
-            expiration_date=self.expiration_date.strftime("%d/%m/%Y")
-            if self.expiration_date
-            else None,
-            arrangement_type=self.arrangement_type.name
-            if self.arrangement_type
-            else None,
-        )
-
-        return d

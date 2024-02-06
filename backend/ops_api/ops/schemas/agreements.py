@@ -14,7 +14,7 @@ class AgreementData(Schema):
     incumbent = fields.String(allow_none=True)
     project_officer_id = fields.Integer(allow_none=True)
     team_members = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)
-    research_project_id = fields.Integer(allow_none=True)
+    project_id = fields.Integer(allow_none=True)
     procurement_shop_id = fields.Integer(allow_none=True)
     notes = fields.String(allow_none=True)
 

@@ -7,10 +7,9 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
     description: "Test Description",
-    research_project_id: 1,
+    project_id: 1,
     product_service_code_id: 1,
     procurement_shop_id: 1,
-    incumbent: "Test Vendor",
     project_officer_id: 1,
     team_members: [
         {
@@ -96,7 +95,7 @@ it("edit an agreement", () => {
             .then(cy.log);
         cy.get(".usa-alert__body").should("contain", "The agreement Test Edit Title has been successfully updated");
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(6000);
+        cy.wait(6000); // modal to disappear
         cy.get("h1").should("have.text", "Test Edit Title");
         cy.get("[data-cy='details-notes']").should("exist");
         cy.get("[data-cy='details-notes']").should("have.text", "Test Notes test edit notes");

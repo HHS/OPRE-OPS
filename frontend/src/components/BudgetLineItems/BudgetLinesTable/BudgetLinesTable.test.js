@@ -1,9 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
+import { Router } from "react-router-dom";
 import BudgetLinesTable from "./BudgetLinesTable";
 import store from "../../../store";
 
-const dummyBudgetLines = [
+const mockBudgetLines = [
     {
         id: 1,
         line_description: "Description 1",
@@ -31,7 +32,11 @@ const dummyBudgetLines = [
 ];
 
 function customRender(ui, store) {
-    return render(<Provider store={store}>{ui}</Provider>);
+    return render(
+        <Router location="/">
+            <Provider store={store}>{ui}</Provider>
+        </Router>
+    );
 }
 
 describe("PreviewTable", () => {
@@ -39,7 +44,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLinesAdded={dummyBudgetLines}
+                budgetLinesAdded={mockBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
@@ -48,7 +53,7 @@ describe("PreviewTable", () => {
             />,
             store
         );
-        dummyBudgetLines.forEach((bl) => {
+        mockBudgetLines.forEach((bl) => {
             expect(screen.getByText(bl.line_description)).toBeInTheDocument();
         });
     });
@@ -57,7 +62,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLinesAdded={dummyBudgetLines}
+                budgetLinesAdded={mockBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
