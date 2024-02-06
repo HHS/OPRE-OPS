@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from models.cans import CLIN, ServicesComponent
+from models.cans import CLIN, ContractAgreement, ServicesComponent
 
 # Assuming that your testing setup includes a fixture for the database and an authenticated client
 
@@ -150,7 +150,9 @@ def test_services_components_post(auth_client, app):
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_patch(auth_client, app):
     session = app.db_session
+    contract: ContractAgreement = session.get(ContractAgreement, 1)
     sc = ServicesComponent(
+        contract_agreement=contract,
         number=99,
         optional=False,
         description="Test SC description",
@@ -164,35 +166,32 @@ def test_services_components_patch(auth_client, app):
     new_sc_id = sc.id
 
     patch_data = {
-        "contract_agreement_id": 1,
         "description": "Test SC description Update",
         "number": 22,
-        # "optional": True,
-        "period_start": "2053-08-14",
         "period_end": "2054-07-15",
     }
     response = auth_client.patch(f"/api/v1/services-components/{new_sc_id}", json=patch_data)
     assert response.status_code == 200
     resp_json = response.json
-    import json
-
-    print(json.dumps(resp_json, indent=4))
     for key in patch_data:
         assert resp_json.get(key) == patch_data.get(key)
+    assert resp_json["period_start"] == "2024-01-01"
 
     session = app.db_session
     sc: ServicesComponent = session.get(ServicesComponent, new_sc_id)
     assert sc.id == new_sc_id
     assert sc.description == patch_data["description"]
     assert sc.number == patch_data["number"]
-    assert sc.period_start == datetime.date(2053, 8, 14)
+    assert sc.period_start == datetime.date(2024, 1, 1)
     assert sc.period_end == datetime.date(2054, 7, 15)
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_services_components_put(auth_client, app):
     session = app.db_session
+    contract: ContractAgreement = session.get(ContractAgreement, 1)
     sc = ServicesComponent(
+        contract_agreement=contract,
         number=99,
         optional=False,
         description="Test SC description",
@@ -206,7 +205,7 @@ def test_services_components_put(auth_client, app):
     new_sc_id = sc.id
 
     put_data = {
-        "contract_agreement_id": 1,
+        "contract_agreement_id": 2,
         "description": "Test SC description Update",
         "number": 22,
         "optional": True,
@@ -216,11 +215,10 @@ def test_services_components_put(auth_client, app):
     response = auth_client.patch(f"/api/v1/services-components/{new_sc_id}", json=put_data)
     assert response.status_code == 200
     resp_json = response.json
-    import json
-
-    print(json.dumps(resp_json, indent=4))
+    assert resp_json["contract_agreement_id"] == 1  # not allowed to change
     for key in put_data:
-        assert resp_json.get(key) == put_data.get(key)
+        if key != "contract_agreement_id":
+            assert resp_json.get(key) == put_data.get(key)
 
     session = app.db_session
     sc: ServicesComponent = session.get(ServicesComponent, new_sc_id)
