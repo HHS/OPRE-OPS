@@ -65,6 +65,8 @@ ALLOWED_TABLES = [
     "vendor",
     "contact",
     "vendor_contacts",
+    "clin",
+    "services_component",
 ]
 
 data = os.getenv("DATA")

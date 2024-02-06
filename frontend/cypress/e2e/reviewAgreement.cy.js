@@ -651,7 +651,7 @@ describe("agreement review CANS accordion", () => {
         // select all BLIs to show CANS cards
         cy.get("h2").contains("Choose an Action").as("acc-btn").should("exist");
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("not.be.disabled");
-        // check the radio button
+        // check the radio button   
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
         cy.wait(1);

@@ -31,6 +31,7 @@ import ErrorPage from "./pages/ErrorPage";
 import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import ApproveAgreement from "./pages/agreements/approve";
+import ServicesComponents from "./pages/servicesComponents";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -252,6 +253,10 @@ const router = createBrowserRouter(
             <Route
                 path="/error"
                 element={<ErrorPage />}
+            />
+            <Route
+                path="/services-component"
+                element={<ServicesComponents />}
             />
             <Route
                 path="*"
