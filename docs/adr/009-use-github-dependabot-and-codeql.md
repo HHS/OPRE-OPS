@@ -29,7 +29,7 @@ We considered using [Snyk](https://snyk.io/) for dependency scanning, but we obs
 
 #### GitHub Dependabot
 
-* In [ADR #3](https://github.com/18F/OPRE-Unicorn/blob/main/docs/adr/003-use-github-for-version-control.md), we decided to use GitHub for version control.
+* In [ADR #3](003-use-github-for-version-control.md), we decided to use GitHub for version control.
 * GitHub also offers a dependency scanning tool called Dependabot, which other 18F teams at ACF are using successfully.
 * We predict that using a built-in GitHub tool for dependency scanning will allow us to configure and maintain the tool with less friction.
 
@@ -37,10 +37,6 @@ We considered using [Snyk](https://snyk.io/) for dependency scanning, but we obs
 
 * GitHub offers a static analysis tool called CodeQL, which other 18F teams are using successfully.
 * We predict that using a built-in GitHub tool will allow us to configure and maintain the tool with less friction.
-* We will need to either run CodeQL through an GitHub Actions workflow, or run it in CircleCI.
+* We will run CodeQL through a GitHub Actions workflow.
 
 ### Related issues
-
-* [#36](https://github.com/18F/OPRE-Unicorn/issues/36)
-* [#90](https://github.com/18F/OPRE-Unicorn/issues/90)
-* [#98](https://github.com/18F/OPRE-Unicorn/issues/98)
