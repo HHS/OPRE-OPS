@@ -56,7 +56,7 @@
       incumbent_id: 1,
       vendor_id: 1,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
       team_members: [
         {
