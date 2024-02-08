@@ -112,19 +112,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
             schema.context["id"] = id
             schema.context["method"] = method
-
-            if request.json.get("status") == BudgetLineItemStatus.UNDER_REVIEW.name:
-                with OpsEventHandler(OpsEventType.SEND_BLI_FOR_APPROVAL) as approval_meta:
-                    data = validate_and_normalize_request_data(schema)
-                    budget_line_item = self.update_and_commit_budget_line_item(data, id)
-
-                    approval_meta.metadata.update({"bli": budget_line_item.to_dict()})
-                    approval_meta.metadata.update({"agreement": budget_line_item.agreement.to_dict()})
-                    current_app.logger.info(f"{message_prefix}: BLI Sent For Approval: {budget_line_item.to_dict()}")
-            else:
-                data = validate_and_normalize_request_data(schema)
-                budget_line_item = self.update_and_commit_budget_line_item(data, id)
-
+            data = validate_and_normalize_request_data(schema)
+            budget_line_item = self.update_and_commit_budget_line_item(data, id)
             bli_dict = self._response_schema.dump(budget_line_item)
             meta.metadata.update({"bli": bli_dict})
             current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
