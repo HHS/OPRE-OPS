@@ -194,7 +194,7 @@ def test_agreement_create_contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
     )
@@ -205,7 +205,7 @@ def test_agreement_create_contract_agreement(loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.contract_number == "XXXX000000002"
-    assert agreement.contract_type == ContractType.RESEARCH
+    assert agreement.contract_type == ContractType.FIRM_FIXED_PRICE
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -229,7 +229,7 @@ def test_contract(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,

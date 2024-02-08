@@ -206,7 +206,7 @@ def agreement_null_project(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         procurement_shop_id=1,
@@ -226,7 +226,7 @@ def agreement_null_agreement_type(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         project_id=1,
         procurement_shop_id=1,
@@ -247,7 +247,7 @@ def agreement_empty_description(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
@@ -268,7 +268,7 @@ def agreement_null_product_service_code(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         procurement_shop_id=1,
@@ -288,7 +288,7 @@ def agreement_null_procurement_shop(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         product_service_code_id=2,
@@ -308,7 +308,7 @@ def agreement_null_agreement_reason(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         product_service_code_id=2,
@@ -328,7 +328,7 @@ def agreement_reason_with_incumbent(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         product_service_code_id=2,
@@ -352,7 +352,7 @@ def agreement_reason_with_incumbent_required(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         product_service_code_id=2,
@@ -373,7 +373,7 @@ def agreement_null_project_officer(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         product_service_code_id=2,
@@ -393,7 +393,7 @@ def agreement_null_team_members(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         product_service_code_id=2,
@@ -413,7 +413,7 @@ def valid_agreement(loaded_db, context):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         product_service_code_id=2,
