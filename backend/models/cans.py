@@ -387,7 +387,7 @@ class ServicesComponent(BaseModel):
 
     # start Identity at 4 to allow for the records load with IDs
     # in agreements_and_blin_data.json5
-    id = Column(Integer, Identity(start=4), primary_key=True)
+    id = Column(Integer, Identity(), primary_key=True)
     number = Column(Integer)
     optional = Column(Boolean, default=False)
 
