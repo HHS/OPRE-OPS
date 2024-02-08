@@ -20,7 +20,7 @@ class Division(BaseModel):
 
     __tablename__ = "division"
 
-    id: Mapped[int] = mapped_column(Integer, Identity(start=10), primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
     abbreviation: Mapped[str] = mapped_column(String(10), unique=True)
 
