@@ -115,7 +115,7 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
     (
         ("agreement_reason", "NEW_REQ"),
         ("contract_number", "XXXX000000001"),
-        ("contract_type", "RESEARCH"),
+        ("contract_type", "LABOR_HOUR"),
         ("agreement_type", "CONTRACT"),
         ("delivered_status", False),
         ("procurement_shop_id", 1),
