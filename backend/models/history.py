@@ -24,6 +24,7 @@ class OpsDBHistory(BaseModel):
     class_name = sa.Column(sa.String)
     row_key = sa.Column(sa.String)
     changes = sa.Column(JSONB)
+    agreement_id = sa.Column(sa.Integer)
 
 
 # index for typical change history queries to find all changes for a record (class+row_key), with recent first

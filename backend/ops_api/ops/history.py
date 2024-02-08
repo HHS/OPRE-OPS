@@ -9,7 +9,7 @@ from types import NoneType
 from flask import current_app
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
+from models import Agreement, BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy import inspect
 from sqlalchemy.cyextension.collections import IdentitySet
@@ -162,6 +162,9 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                     f"an OpsDBHistory record will not be created for this UPDATED event."
                 )
                 continue
+            agreement_id = getattr(obj, "agreement_id", None)
+            if isinstance(obj, Agreement):
+                agreement_id = obj.id
 
             ops_db = OpsDBHistory(
                 event_type=event_type,
@@ -170,6 +173,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 class_name=obj.__class__.__name__,
                 row_key=db_audit.row_key,
                 changes=db_audit.changes,
+                agreement_id=agreement_id,
             )
             result.append(ops_db)
     return result
