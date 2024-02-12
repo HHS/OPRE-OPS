@@ -36,7 +36,7 @@ def contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         created_by=4,
@@ -55,7 +55,7 @@ def contract_agreement_project_officer(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         created_by=1,
@@ -76,7 +76,7 @@ def contract_agreement_team_member(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         created_by=1,
@@ -99,7 +99,7 @@ def contract_agreement_not_associated(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         created_by=1,

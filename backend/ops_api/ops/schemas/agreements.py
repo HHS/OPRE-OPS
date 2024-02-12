@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 from models import ContractType
-from models.cans import AgreementReason, AgreementType
+from models.cans import AgreementReason, AgreementType, ServiceRequirementType
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.team_members import TeamMembers
 
@@ -25,6 +25,7 @@ class ContractAgreementData(AgreementData):
     vendor = fields.String(allow_none=True)
     delivered_status = fields.Bool(default=False)
     contract_type = fields.Enum(ContractType, allow_none=True)
+    service_requirement_type = fields.Enum(ServiceRequirementType, allow_none=True)
     support_contacts = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)
 
 

@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from models.cans import CLIN, ContractAgreement, ServicesComponent
+from models.cans import CLIN, ContractAgreement, ServiceRequirementType, ServicesComponent
 
 # Assuming that your testing setup includes a fixture for the database and an authenticated client
 
@@ -77,6 +77,33 @@ def test_period_duration_calculation_with_missing_dates(loaded_db):
     assert sc_no_dates.period_duration is None
 
 
+def test_services_component_naming(loaded_db):
+    sc = ServicesComponent(
+        number=1,
+        optional=False,
+    )
+    assert sc.display_title == "Services Component 1"
+    assert sc.display_name == "SC1"
+
+    contract = ContractAgreement(service_requirement_type=ServiceRequirementType.NON_SEVERABLE)
+    sc.contract_agreement = contract
+    sc.number = 2
+    sc.optional = True
+    assert sc.display_title == "Optional Services Component 2"
+    assert sc.display_name == "OSC2"
+
+    contract.service_requirement_type = ServiceRequirementType.SEVERABLE
+    sc.number = 1
+    sc.optional = False
+    assert sc.display_title == "Base Period 1"
+    assert sc.display_name == "Base Period 1"
+
+    sc.number = 2
+    sc.optional = True
+    assert sc.display_title == "Optional Period 2"
+    assert sc.display_name == "Optional Period 2"
+
+
 def test_services_components_get_all(auth_client, loaded_db):
     count = loaded_db.query(ServicesComponent).count()
 
@@ -93,6 +120,7 @@ def test_services_components_get_by_id(auth_client, loaded_db):
     assert resp_json["contract_agreement_id"] == 1
     assert resp_json["number"] == 1
     assert resp_json["description"] == "Perform Research"
+    assert resp_json["display_title"] == "Services Component 1"
     assert resp_json["display_name"] == "SC1"
     assert not resp_json["optional"]
     assert resp_json["period_start"] == "2043-06-13"
@@ -112,8 +140,9 @@ def test_services_components_get_list(auth_client, app):
     sc1 = resp_json[0]
     assert sc1["number"] == 1
     assert sc1["description"] == "Perform Research"
-    # assert sc1["display_name"] == "SC1"
-    # assert not sc1["optional"]
+    assert sc1["display_title"] == "Services Component 1"
+    assert sc1["display_name"] == "SC1"
+    assert not sc1["optional"]
     assert sc1["period_start"] == "2043-06-13"
     assert sc1["period_end"] == "2044-06-13"
 

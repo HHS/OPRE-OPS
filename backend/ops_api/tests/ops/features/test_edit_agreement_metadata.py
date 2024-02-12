@@ -22,7 +22,7 @@ def test_contract(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
     )

@@ -19,6 +19,7 @@ from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import override
 
 ENDPOINT_STRING = "/services-components"
@@ -68,6 +69,20 @@ class ServicesComponentItemAPI(BaseItemAPI):
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
+    def _get_item_with_try(self, id: int) -> Response:
+        try:
+            item = self._get_item(id)
+
+            if item:
+                response = make_response_with_headers(self._response_schema.dump(item))
+            else:
+                response = make_response_with_headers({}, 404)
+        except SQLAlchemyError as se:
+            current_app.logger.error(se)
+            response = make_response_with_headers({}, 500)
+
+        return response
+
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{method} to {ENDPOINT_STRING}"
 
@@ -90,6 +105,13 @@ class ServicesComponentItemAPI(BaseItemAPI):
             current_app.logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
 
             return make_response_with_headers(sc_dict, 200)
+
+    @override
+    @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
+    @handle_api_error
+    def get(self, id: int) -> Response:
+        response = self._get_item_with_try(id)
+        return response
 
     @override
     @is_authorized(
