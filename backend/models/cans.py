@@ -1,4 +1,5 @@
 """CAN models."""
+import enum
 from datetime import timedelta
 from enum import Enum
 from typing import Any, List, Optional
@@ -236,6 +237,11 @@ class ContractType(Enum):
     SERVICE = 1
 
 
+class ServiceRequirementType(Enum):
+    SEVERABLE = enum.auto()
+    NON_SEVERABLE = enum.auto()
+
+
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
 
@@ -263,6 +269,7 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
+    service_requirement_type = mapped_column(ENUM(ServiceRequirementType))
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
@@ -401,9 +408,14 @@ class ServicesComponent(BaseModel):
     clin_id = Column(Integer, ForeignKey('clin.id'), nullable=True)
     clin = relationship("CLIN", back_populates="services_component", uselist=False)
 
+    def severable(self):
+        return self.contract_agreement and self.contract_agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
 
     @property
     def display_title(self):
+        if self.severable():
+            pre = "Base" if self.number == 1 else "Optional"
+            return f"{pre} Period {self.number}"
         optional = "Optional " if self.optional else ""
         return f"{optional}Services Component {self.number}"
 
@@ -413,9 +425,11 @@ class ServicesComponent(BaseModel):
             return abs(self.period_end - self.period_start)
         return None
 
-
     @BaseModel.display_name.getter
     def display_name(self):
+        if self.severable():
+            pre = "Base" if self.number == 1 else "Optional"
+            return f"{pre} Period {self.number}"
         optional = "O" if self.optional else ""
         return f"{optional}SC{self.number}"
 
@@ -429,7 +443,7 @@ class CLIN(BaseModel):
 
     id = Column(Integer, Identity(), primary_key=True)
     name = Column(String(256), nullable=False)
-    source_id = Column(Integer) # purely an example
+    source_id = Column(Integer)  # purely an example
 
     services_component = relationship("ServicesComponent", back_populates="clin", uselist=False)
 
