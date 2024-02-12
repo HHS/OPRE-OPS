@@ -649,10 +649,10 @@ def test_patch_budget_line_items_update_status(auth_client, loaded_db):
         loaded_db.add(bli)
         loaded_db.commit()
 
-        data = {"status": "UNDER_REVIEW"}
+        data = {"status": "PLANNED"}
         response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
         assert response.status_code == 200
-        assert response.json["status"] == "UNDER_REVIEW"
+        assert response.json["status"] == "PLANNED"
 
     finally:
         # cleanup
