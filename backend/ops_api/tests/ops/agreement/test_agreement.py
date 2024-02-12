@@ -571,7 +571,7 @@ def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
     data = response.json
     assert data["name"] == "CTXX12399"
     assert data["contract_number"] == "XXXX000000002"
-    assert data["contract_type"] == ContractType.LABOR_HOUR.name
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
     assert data["service_requirement_type"] == ServiceRequirementType.NON_SEVERABLE.name
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name
@@ -593,7 +593,7 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
     data = response.json
     assert data["name"] == "CTXX12399"
     assert data["contract_number"] == "XXXX000000002"
-    assert data["contract_type"] == ContractType.LABOR_HOUR.name
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
     assert data["service_requirement_type"] == ServiceRequirementType.SEVERABLE.name
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name
