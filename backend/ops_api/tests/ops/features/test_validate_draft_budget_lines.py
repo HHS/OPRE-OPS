@@ -683,7 +683,7 @@ def submit(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -693,7 +693,7 @@ def submit(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -705,7 +705,7 @@ def submit_without_description(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -715,7 +715,7 @@ def submit_without_description(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -728,7 +728,7 @@ def submit_empty_description(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -738,7 +738,7 @@ def submit_empty_description(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -750,7 +750,7 @@ def submit_without_agreement(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -760,7 +760,7 @@ def submit_without_agreement(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -773,7 +773,7 @@ def submit_without_need_by_date(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "proc_shop_fee_percentage": 2.34,
     }
 
@@ -782,7 +782,7 @@ def submit_without_need_by_date(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -795,7 +795,7 @@ def submit_empty_need_by_date(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "  ",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -805,7 +805,7 @@ def submit_empty_need_by_date(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -817,7 +817,7 @@ def submit_without_can(client, context):
         "line_description": "Updated LI 1",
         "comments": "hah hah",
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -827,7 +827,7 @@ def submit_without_can(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -839,7 +839,7 @@ def submit_without_amount(client, context):
         "line_description": "Updated LI 1",
         "comments": "hah hah",
         "can_id": 2,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -849,7 +849,7 @@ def submit_without_amount(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -862,7 +862,7 @@ def submit_amount_less_than_zero(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": -200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -872,7 +872,7 @@ def submit_amount_less_than_zero(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
