@@ -36,7 +36,7 @@ def handle_api_error(f):
             current_app.logger.error(ve)
             return make_response_with_headers(ve.normalized_messages(), 400)
         except Exception as e:
-            current_app.logger.error(e)
+            current_app.logger.exception(e)
             return make_response_with_headers({}, 500)
 
     return decorated
