@@ -22,7 +22,7 @@ def original_agreement():
     return {
         "name": "CTXX12399",
         "contract_number": "CT0002",
-        "contract_type": ContractType.RESEARCH,
+        "contract_type": ContractType.FIRM_FIXED_PRICE,
         "agreement_type": AgreementType.CONTRACT,
         "project_id": 1,
         "product_service_code_id": 2,

@@ -348,7 +348,7 @@ def test_put_budget_line_items(auth_client, test_bli):
     assert response.json["line_description"] == "Updated LI 1"
     assert response.json["id"] == test_bli.id
     assert response.json["comments"] == "hah hah"
-    assert response.json["agreement_id"] == 2
+    assert response.json["agreement_id"] == 1  # not allowed to change
     assert response.json["can_id"] == 2
     assert response.json["amount"] == 200.24
     assert response.json["status"] == "DRAFT"
@@ -527,7 +527,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         assert response.json["line_description"] == "Updated LI 1"
         assert response.json["id"] == 1000
         assert response.json["comments"] == "hah hah"
-        assert response.json["agreement_id"] == 2
+        assert response.json["agreement_id"] == 1  # not allowed to change
         assert response.json["can_id"] == 2
         assert response.json["amount"] == 200.24
         assert response.json["status"] == "DRAFT"

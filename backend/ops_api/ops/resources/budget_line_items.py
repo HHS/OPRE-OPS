@@ -8,10 +8,10 @@ from typing import Optional
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from marshmallow import EXCLUDE, Schema
-from models import Agreement, BudgetLineItemStatus, OpsEventType
+from marshmallow import Schema
+from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
-from models.cans import AgreementType, BudgetLineItem
+from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.budget_line_item_schemas import (
     BudgetLineItemResponse,
@@ -19,6 +19,7 @@ from ops_api.ops.resources.budget_line_item_schemas import (
     POSTRequestBody,
     QueryParameters,
 )
+from ops_api.ops.utils.api_helpers import get_change_data
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -33,22 +34,12 @@ ENDPOINT_STRING = "/budget-line-items"
 
 def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
     jwt_identity = get_jwt_identity()
+    budget_line_item: BudgetLineItem = current_app.db_session.get(BudgetLineItem, id)
     try:
-        agreement_id = request.json["agreement_id"]
-        agreement_type = AgreementType[request.json["agreement_type"]]
-        agreement_cls = Agreement.get_class(agreement_type)
-        agreement_id_field = agreement_cls.get_class_field("id")
-        agreement_stmt = select(agreement_cls).where(agreement_id_field == agreement_id)
-        agreement = current_app.db_session.scalar(agreement_stmt)
-
-    except KeyError:
-        budget_line_item_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
-        budget_line_item = current_app.db_session.scalar(budget_line_item_stmt)
-        try:
-            agreement = budget_line_item.agreement
-        except AttributeError as e:
-            # No BLI found in the DB. Erroring out.
-            raise ExtraCheckError({}) from e
+        agreement = budget_line_item.agreement
+    except AttributeError as e:
+        # No BLI found in the DB. Erroring out.
+        raise ExtraCheckError({}) from e
 
     if agreement is None:
         # We are faking a validation check at this point. We know there is no agreement associated with the BLI.
@@ -246,20 +237,7 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
     id = schema.context["id"]
     bli_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
     existing_bli = current_app.db_session.scalar(bli_stmt)
-    try:
-        data = {
-            key: value for key, value in existing_bli.to_dict().items() if key in request.json
-        }  # only keep the attributes from the request body
-    except AttributeError:
-        data = {}
-    change_data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
-    change_data = {
-        key: value
-        for key, value in change_data.items()
-        if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
-    }  # only keep the attributes from the request body
-
-    data |= change_data
+    data = get_change_data(request.json, existing_bli, schema, ["id", "status", "agreement_id"], partial=False)
 
     with suppress(AttributeError):
         try:
@@ -267,7 +245,7 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
         except KeyError:
             status = existing_bli.status
 
-        if len(change_data) > 0 and status == BudgetLineItemStatus.PLANNED:
+        if len(data) > 0 and status == BudgetLineItemStatus.PLANNED:
             status = BudgetLineItemStatus.DRAFT
         data["status"] = status
 
