@@ -115,7 +115,7 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
     (
         ("agreement_reason", "NEW_REQ"),
         ("contract_number", "XXXX000000001"),
-        ("contract_type", "RESEARCH"),
+        ("contract_type", "LABOR_HOUR"),
         ("agreement_type", "CONTRACT"),
         ("delivered_status", False),
         ("procurement_shop_id", 1),
@@ -194,7 +194,7 @@ def test_agreement_create_contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
@@ -206,7 +206,7 @@ def test_agreement_create_contract_agreement(loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.contract_number == "XXXX000000002"
-    assert agreement.contract_type == ContractType.RESEARCH
+    assert agreement.contract_type == ContractType.FIRM_FIXED_PRICE
     assert agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
 
 
@@ -231,7 +231,7 @@ def test_contract(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
@@ -571,7 +571,7 @@ def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
     data = response.json
     assert data["name"] == "CTXX12399"
     assert data["contract_number"] == "XXXX000000002"
-    assert data["contract_type"] == ContractType.RESEARCH.name
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
     assert data["service_requirement_type"] == ServiceRequirementType.NON_SEVERABLE.name
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name
@@ -593,7 +593,7 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
     data = response.json
     assert data["name"] == "CTXX12399"
     assert data["contract_number"] == "XXXX000000002"
-    assert data["contract_type"] == ContractType.RESEARCH.name
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
     assert data["service_requirement_type"] == ServiceRequirementType.SEVERABLE.name
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name

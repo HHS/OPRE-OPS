@@ -1,7 +1,7 @@
 """CAN models."""
 import enum
 from datetime import timedelta
-from enum import Enum
+from enum import Enum, auto
 from typing import Any, List, Optional
 
 import sqlalchemy as sa
@@ -233,8 +233,12 @@ class AcquisitionType(Enum):
 
 
 class ContractType(Enum):
-    RESEARCH = 0
-    SERVICE = 1
+    FIRM_FIXED_PRICE = auto()
+    TIME_AND_MATERIALS = auto()
+    LABOR_HOUR = auto()
+    COST_PLUS_FIXED_FEE = auto()
+    COST_PLUS_AWARD_FEE = auto()
+    HYBRID = auto()
 
 
 class ServiceRequirementType(Enum):
