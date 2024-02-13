@@ -285,9 +285,9 @@ class PackageSnapshot(BaseModel):
     version = sa.Column(sa.Integer, nullable=True)
     # TODO: What should we do when we delete an Agreement (or a BLI)?
     # This CASCADE fixes the existing Agreement delete, but leaves behind empty workflows
-    object_type = sa.Column(sa.String, nullable=False)
-    object_id = sa.Column(sa.Integer, nullable=False)
-    # bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"), nullable=False)
+    object_type = sa.Column(sa.String, nullable=True)
+    object_id = sa.Column(sa.Integer, nullable=True)
+    bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"), nullable=False)
 
 
 # class Procurement(BaseModel):
@@ -307,8 +307,14 @@ class ProcurementStep(BaseModel):
     __tablename__ = "procurement_step"
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
-    agreement_id = sa.Column(sa.Integer, sa.ForeignKey("procurement.id"))
+    agreement_id = sa.Column(sa.Integer, sa.ForeignKey("agreement.id"))
     workflow_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"))
+
+    type = sa.Column(sa.String, nullable=False)
+    __mapper_args__ = {
+        "polymorphic_identity": "procurement_step",
+        "polymorphic_on": type,
+    }
 
 
 class Attestation(object):
@@ -324,28 +330,49 @@ class TargetDate(object):
 
 class AquicsitionPlanning(ProcurementStep, Attestation):
     __tablename__ = "procurement_acquisition_planning"
+    id = sa.Column(sa.Integer, sa.ForeignKey("procurement_step.id"), primary_key=True)
+    __mapper_args__ = {
+        "polymorphic_identity": "procurement_acquisition_planning",
+    }
 
 
 class PreSolicitation(ProcurementStep, Attestation, TargetDate):
     __tablename__ = "procurement_pre_solicitation"
-    documents = relationship("PreSolicitationDocument", backref="pre_solicitation")
+    id = sa.Column(sa.Integer, sa.ForeignKey("procurement_step.id"), primary_key=True)
+    __mapper_args__ = {
+        "polymorphic_identity": "procurement_pre_solicitation",
+    }
+    #documents = relationship("PreSolicitationDocument", backref="pre_solicitation")
 
 
 class Solicitation(ProcurementStep, Attestation, TargetDate):
     __tablename__ = "procurement_solicitation"
-
+    id = sa.Column(sa.Integer, sa.ForeignKey("procurement_step.id"), primary_key=True)
+    __mapper_args__ = {
+        "polymorphic_identity": "procurement_solicitation",
+    }
 
 class Evaluation(ProcurementStep, Attestation, TargetDate):
     __tablename__ = "procurement_evaluation"
+    id = sa.Column(sa.Integer, sa.ForeignKey("procurement_step.id"), primary_key=True)
+    __mapper_args__ = {
+        "polymorphic_identity": "procurement_evaluation",
+    }
 
 
 class PreAward(ProcurementStep, Attestation, TargetDate):
     __tablename__ = "procurement_preaward"
-
+    id = sa.Column(sa.Integer, sa.ForeignKey("procurement_step.id"), primary_key=True)
+    __mapper_args__ = {
+        "polymorphic_identity": "procurement_preaward",
+    }
 
 class Award(ProcurementStep):
     __tablename__ = "procurement_award"
-
+    id = sa.Column(sa.Integer, sa.ForeignKey("procurement_step.id"), primary_key=True)
+    __mapper_args__ = {
+        "polymorphic_identity": "procurement_award",
+    }
     vendor = sa.Column(sa.String, nullable=True)
     vendor_type = sa.Column(sa.String, nullable=True)
     financial_number = sa.Column(sa.String, nullable=True)

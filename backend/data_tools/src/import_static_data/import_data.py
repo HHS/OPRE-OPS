@@ -67,6 +67,12 @@ ALLOWED_TABLES = [
     "vendor_contacts",
     "clin",
     "services_component",
+    "procurement_step",
+    "procurement_acquisition_planning",
+    "procurement_pre_solicitation",
+    "procurement_solicitation",
+    "procurement_award"
+
 ]
 
 data = os.getenv("DATA")
