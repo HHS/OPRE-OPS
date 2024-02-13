@@ -323,28 +323,28 @@ class TargetDate(object):
 
 
 class AquicsitionPlanning(ProcurementStep, Attestation):
-    __tablename__ = "acquisition_planning"
+    __tablename__ = "procurement_acquisition_planning"
 
 
 class PreSolicitation(ProcurementStep, Attestation, TargetDate):
-    __tablename__ = "pre_solicitation"
+    __tablename__ = "procurement_pre_solicitation"
     documents = relationship("PreSolicitationDocument", backref="pre_solicitation")
 
 
 class Solicitation(ProcurementStep, Attestation, TargetDate):
-    __tablename__ = "solicitation"
+    __tablename__ = "procurement_solicitation"
 
 
 class Evaluation(ProcurementStep, Attestation, TargetDate):
-    __tablename__ = "evaluation"
+    __tablename__ = "procurement_evaluation"
 
 
 class PreAward(ProcurementStep, Attestation, TargetDate):
-    __tablename__ = "preaward"
+    __tablename__ = "procurement_preaward"
 
 
 class Award(ProcurementStep):
-    __tablename__ = "award"
+    __tablename__ = "procurement_award"
 
     vendor = sa.Column(sa.String, nullable=True)
     vendor_type = sa.Column(sa.String, nullable=True)
