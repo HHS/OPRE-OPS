@@ -285,4 +285,67 @@ class PackageSnapshot(BaseModel):
     version = sa.Column(sa.Integer, nullable=True)
     # TODO: What should we do when we delete an Agreement (or a BLI)?
     # This CASCADE fixes the existing Agreement delete, but leaves behind empty workflows
-    bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"), nullable=False)
+    object_type = sa.Column(sa.String, nullable=False)
+    object_id = sa.Column(sa.Integer, nullable=False)
+    # bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"), nullable=False)
+
+
+# class Procurement(BaseModel):
+#     __tablename__ = "procurement"
+
+#     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+#     workflow_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"))
+#     target_date = sa.Column(sa.DateTime, nullable=True)
+#     is_complete = sa.Column(sa.Boolean, nullable=False, default=False)
+#     actual_date = sa.Column(sa.DateTime, nullable=True)
+#     completed_by = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
+#     notes = sa.Column(sa.String, nullable=True)
+#     documents = relationship("ProcurementDocument", backref="procurement") # todo: need to figure out what to do with Docs
+
+
+class ProcurementStep(BaseModel):
+    __tablename__ = "procurement_step"
+
+    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    agreement_id = sa.Column(sa.Integer, sa.ForeignKey("procurement.id"))
+    workflow_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"))
+
+
+class Attestation(object):
+    is_complete = sa.Column(sa.Boolean, nullable=False, default=False)
+    actual_date = sa.Column(sa.DateTime, nullable=True)
+    completed_by = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
+    notes = sa.Column(sa.String, nullable=True)
+
+
+class TargetDate(object):
+    target_date = sa.Column(sa.DateTime, nullable=True)
+
+
+class AquicsitionPlanning(ProcurementStep, Attestation):
+    __tablename__ = "acquisition_planning"
+
+
+class PreSolicitation(ProcurementStep, Attestation, TargetDate):
+    __tablename__ = "pre_solicitation"
+    documents = relationship("PreSolicitationDocument", backref="pre_solicitation")
+
+
+class Solicitation(ProcurementStep, Attestation, TargetDate):
+    __tablename__ = "solicitation"
+
+
+class Evaluation(ProcurementStep, Attestation, TargetDate):
+    __tablename__ = "evaluation"
+
+
+class PreAward(ProcurementStep, Attestation, TargetDate):
+    __tablename__ = "preaward"
+
+
+class Award(ProcurementStep):
+    __tablename__ = "award"
+
+    vendor = sa.Column(sa.String, nullable=True)
+    vendor_type = sa.Column(sa.String, nullable=True)
+    financial_number = sa.Column(sa.String, nullable=True)
