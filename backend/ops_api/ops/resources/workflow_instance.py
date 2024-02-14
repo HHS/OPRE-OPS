@@ -11,8 +11,8 @@ from models.base import BaseModel
 from models.workflows import (
     WorkflowAction,
     WorkflowInstance,
-    WorkflowStatus,
     WorkflowStepDependency,
+    WorkflowStepStatus,
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
@@ -34,7 +34,7 @@ class WorkflowInstanceResponse:
     )
     workflow_action: Optional[WorkflowAction] = EnumField(WorkflowAction)
     current_workflow_step_instance_id: Optional[int] = None
-    workflow_status: Optional[WorkflowStatus] = EnumField(WorkflowStatus)
+    workflow_status: Optional[WorkflowStepStatus] = EnumField(WorkflowStepStatus)
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     created_by: Optional[int] = None
@@ -65,7 +65,7 @@ class WorkflowStatusListAPI(MethodView):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     @handle_api_error
     def get(self) -> Response:
-        reasons = [item.name for item in WorkflowStatus]
+        reasons = [item.name for item in WorkflowStepStatus]
         return reasons
 
 

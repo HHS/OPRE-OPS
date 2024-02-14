@@ -13,8 +13,8 @@ from models.workflows import (
     PackageSnapshot,
     WorkflowAction,
     WorkflowInstance,
-    WorkflowStatus,
     WorkflowStepInstance,
+    WorkflowStepStatus,
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
@@ -108,7 +108,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
 
         workflow_step_instance = WorkflowStepInstance(
             workflow_step_template_id=2,
-            status=WorkflowStatus.REVIEW,
+            status=WorkflowStepStatus.REVIEW,
             created_by=user.id,
             time_started=datetime.now(),
             successor_dependencies=[],

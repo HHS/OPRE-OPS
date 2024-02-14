@@ -1,4 +1,5 @@
 """Workflow models."""
+
 from enum import Enum, auto
 
 import sqlalchemy as sa
@@ -19,13 +20,15 @@ class WorkflowStepType(Enum):
     DOCUMENT_MGMT = 2
     VALIDATION = 3
     PROCUREMENT = 4
+    ATTESTATION = 5
 
 
-class WorkflowStatus(Enum):
+class WorkflowStepStatus(Enum):
     REVIEW = "In-Review"
     APPROVED = "Approved"
     REJECTED = "Rejected"
     CHANGES = "Changes Required"
+    COMPLETE = "Complete"
 
 
 class WorkflowTriggerType(Enum):
@@ -87,9 +90,9 @@ class WorkflowInstance(BaseModel):
     @property
     def workflow_status(self):
         status_order = [
-            WorkflowStatus.REJECTED,
-            WorkflowStatus.CHANGES,
-            WorkflowStatus.REVIEW,
+            WorkflowStepStatus.REJECTED,
+            WorkflowStepStatus.CHANGES,
+            WorkflowStepStatus.REVIEW,
         ]
         return next(
             (
@@ -97,9 +100,13 @@ class WorkflowInstance(BaseModel):
                 for status in status_order
                 if any(item.status == status for item in self.steps)
             ),
-            WorkflowStatus.APPROVED
-            if all(item.status == WorkflowStatus.APPROVED for item in self.steps)
-            else None,
+            (
+                WorkflowStepStatus.APPROVED
+                if all(
+                    item.status == WorkflowStepStatus.APPROVED for item in self.steps
+                )
+                else None
+            ),
         )
 
     @override
@@ -153,8 +160,10 @@ class WorkflowStepInstance(BaseModel):
     workflow_step_template_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_step_template.id")
     )
-    workflow_step_template = relationship("WorkflowStepTemplate", backref="workflow_step_instance")
-    status = sa.Column(sa.Enum(WorkflowStatus), nullable=False)
+    workflow_step_template = relationship(
+        "WorkflowStepTemplate", backref="workflow_step_instance"
+    )
+    status = sa.Column(sa.Enum(WorkflowStepStatus), nullable=False)
     notes = sa.Column(sa.String, nullable=True)
     time_started = sa.Column(sa.DateTime, nullable=True)
     time_completed = sa.Column(sa.DateTime, nullable=True)
@@ -176,8 +185,8 @@ class WorkflowStepInstance(BaseModel):
     def approvers(self):
         if self.workflow_step_template is None:
             return None
-        return (
-            {"users": [
+        return {
+            "users": [
                 approver.user_id
                 for approver in self.workflow_step_template.step_approvers
                 if approver.user_id is not None
@@ -191,20 +200,27 @@ class WorkflowStepInstance(BaseModel):
                 approver.role_id
                 for approver in self.workflow_step_template.step_approvers
                 if approver.role_id is not None
-            ]}
-        )
+            ],
+        }
 
     @property
     def package_entities(self):
         if object_session(self) is None:
             return None
-        results = object_session(self).execute(
-            sa.select(PackageSnapshot.bli_id, Package.notes)
-            .join(Package, Package.id == PackageSnapshot.package_id)
-            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
-            .join(WorkflowStepInstance, WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id)
-            .where(WorkflowInstance.id == self.id)
-        ).all()
+        results = (
+            object_session(self)
+            .execute(
+                sa.select(PackageSnapshot.bli_id, Package.notes)
+                .join(Package, Package.id == PackageSnapshot.package_id)
+                .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+                .join(
+                    WorkflowStepInstance,
+                    WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+                )
+                .where(WorkflowInstance.id == self.id)
+            )
+            .all()
+        )
         bli_ids = [row[0] for row in results]
         notes = results[0][1] if len(results) > 0 else None
         return {"budget_line_item_ids": bli_ids, "notes": notes}
@@ -219,7 +235,7 @@ class WorkflowStepInstance(BaseModel):
             time_started=str(self.time_started) if self.time_started else None,
             time_completed=str(self.time_completed) if self.time_completed else None,
             package_entities=self.package_entities,
-            approvers=self.approvers
+            approvers=self.approvers,
         )
         return d
 
@@ -287,7 +303,11 @@ class PackageSnapshot(BaseModel):
     # This CASCADE fixes the existing Agreement delete, but leaves behind empty workflows
     object_type = sa.Column(sa.String, nullable=True)
     object_id = sa.Column(sa.Integer, nullable=True)
-    bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"), nullable=False)
+    bli_id = sa.Column(
+        sa.Integer,
+        sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
 
 # class Procurement(BaseModel):
@@ -342,7 +362,7 @@ class PreSolicitation(ProcurementStep, Attestation, TargetDate):
     __mapper_args__ = {
         "polymorphic_identity": "procurement_pre_solicitation",
     }
-    #documents = relationship("PreSolicitationDocument", backref="pre_solicitation")
+    # documents = relationship("PreSolicitationDocument", backref="pre_solicitation")
 
 
 class Solicitation(ProcurementStep, Attestation, TargetDate):
@@ -351,6 +371,7 @@ class Solicitation(ProcurementStep, Attestation, TargetDate):
     __mapper_args__ = {
         "polymorphic_identity": "procurement_solicitation",
     }
+
 
 class Evaluation(ProcurementStep, Attestation, TargetDate):
     __tablename__ = "procurement_evaluation"
@@ -366,6 +387,7 @@ class PreAward(ProcurementStep, Attestation, TargetDate):
     __mapper_args__ = {
         "polymorphic_identity": "procurement_preaward",
     }
+
 
 class Award(ProcurementStep):
     __tablename__ = "procurement_award"
