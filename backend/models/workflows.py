@@ -348,7 +348,7 @@ class TargetDate(object):
     target_date = sa.Column(sa.DateTime, nullable=True)
 
 
-class AquicsitionPlanning(ProcurementStep, Attestation):
+class AcquisitionPlanning(ProcurementStep, Attestation):
     __tablename__ = "procurement_acquisition_planning"
     id = sa.Column(sa.Integer, sa.ForeignKey("procurement_step.id"), primary_key=True)
     __mapper_args__ = {

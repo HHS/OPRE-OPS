@@ -6,7 +6,7 @@ import marshmallow_dataclass as mmdc
 from flask import Response
 from models.base import BaseModel
 from models.workflows import (
-    AquicsitionPlanning,
+    AcquisitionPlanning,
     Award,
     Evaluation,
     PreAward,
@@ -33,7 +33,7 @@ class ProcurementStepResponse:
 
 
 @dataclass
-class AquicsitionPlanningResponse:
+class AcquisitionPlanningResponse:
     id: int
     agreement_id: Optional[int] = None
     workflow_step_id: Optional[int] = None
@@ -138,9 +138,9 @@ class ProcurementStepListAPI(BaseListAPI):
 
 # Acquisition Planning Endpoints
 class AcquisitionItemAPI(BaseItemAPI):
-    def __init__(self, model: BaseModel = AquicsitionPlanning):
+    def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(AquicsitionPlanningResponse)()
+        self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
@@ -150,9 +150,9 @@ class AcquisitionItemAPI(BaseItemAPI):
 
 
 class AcquisitionListAPI(BaseListAPI):
-    def __init__(self, model: BaseModel = AquicsitionPlanning):
+    def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(AquicsitionPlanningResponse)()
+        self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
