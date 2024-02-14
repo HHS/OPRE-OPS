@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import App from "../../../App";
 import { setUser } from "./userSlice";
 import UserInfo from "../../../components/Users/UserInfo/UserInfo";
+import FileUpload from "../../../components/UI/FileUpload/FileUpload";
 import { getUser } from "../../../api/getUser";
 
 const UserDetail = () => {
@@ -24,6 +25,7 @@ const UserDetail = () => {
     return (
         <App breadCrumbName={user?.email}>
             <UserInfo user={user} />
+            <FileUpload />
         </App>
     );
 };
