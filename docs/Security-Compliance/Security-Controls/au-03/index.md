@@ -1,0 +1,21 @@
+# Audit and Accountability
+## AU-03 - Content of Audit Records
+
+Ensure that audit records contain information that establishes the following:
+
+a. What type of event occurred;<br />
+b. When the event occurred;<br />
+c. Where the event occurred;<br />
+d. Source of the event;<br />
+e. Outcome of the event; and <br />
+f. Identity of any individuals, subjects, or objects/entities associated with the event.
+
+## OPS Implementation
+
+OPS provides a mechanism to consume its application logs of transactional user events including the attempted alteration of and request to change data
+
+### Related Files
+
+HHS/OPRE-OPS#676
+
+TODO: Screenshots

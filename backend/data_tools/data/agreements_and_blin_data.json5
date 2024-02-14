@@ -85,7 +85,7 @@
       incumbent_id: null,
       vendor_id: 1,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "FIRM_FIXED_PRICE",
       support_contacts: [],
     },
     {
@@ -102,7 +102,7 @@
       incumbent_id: null,
       vendor_id: 2,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "TIME_AND_MATERIALS",
       support_contacts: [],
     },
     {
@@ -119,7 +119,7 @@
       incumbent_id: null,
       vendor_id: 2,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
     },
     {
@@ -136,7 +136,7 @@
       incumbent_id: null,
       vendor_id: 3,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
       team_members: [
         {
@@ -163,7 +163,7 @@
       incumbent_id: 1,
       vendor_id: 1,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
       team_members: [
         {
@@ -198,7 +198,7 @@
       incumbent_id: null,
       vendor_id: 3,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
       team_members: [
         {

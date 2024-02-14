@@ -39,6 +39,8 @@ class ServicesComponentItemResponse:
     number: int
     optional: bool
     description: str
+    display_title: str
+    display_name: str
     clin_id: int
     created_by: int
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})

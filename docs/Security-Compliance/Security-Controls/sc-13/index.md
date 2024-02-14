@@ -1,0 +1,20 @@
+# Cryptographic Protection
+## SC-13 - Cryptographic Protection
+
+a. Determine the [cryptographic uses as defined in the HHS Policy for Encryption of Computing Devices and Information, and ACF-defined cryptographic uses]; and
+
+b. Implement the following types of cryptography required for each specified cryptographic use: [required cryptographic protections using cryptographic modules approved by the NIST Cryptographic Module Validation Program (including FIPS 140-1, FIPS 140-2, and future amendments or HHS cryptographic mechanisms as defined in the HHS Standard for Encryption of Computing Devices].
+
+## OPS Implementation
+
+All cryptographic keys for OPS are managed entirely by the IaaS provider
+
+TODO: Seek inherited text
+
+### Control Origination
+
+Hybrid inheritance with IaaS provider and OPS
+
+### Related Content
+
+Cryptography can be employed to support a variety of security solutions, including the protection of classified information and controlled unclassified information, the provision and implementation of digital signatures, and the enforcement of information separation when authorized individuals have the necessary clearances but lack the necessary formal access approvals. Cryptography can also be used to support random number and hash generation. Generally applicable cryptographic standards include FIPS-validated cryptography and NSA-approved cryptography. For example, organizations that need to protect classified information may specify the use of NSA-approved cryptography. Organizations that need to provision and implement digital signatures may specify the use of FIPS-validated cryptography. Cryptography is implemented in accordance with applicable laws, executive orders, directives, regulations, policies, standards, and guidelines.

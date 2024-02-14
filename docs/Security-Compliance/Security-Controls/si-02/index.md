@@ -1,0 +1,29 @@
+# System and Information Integrity
+## SI-02 - Flaw Remediation
+
+a. Identify, report, and correct system flaws;
+
+b. Test software and firmware updates related to flaw remediation for effectiveness and potential side effects before installation;
+
+c. Install security-relevant software and firmware updates within [Vulnerabilities ranked high or critical must be mitigated and reported to CSIRC within two (2) business days after testing is completed. Vulnerabilities ranked moderate/medium must be mitigated and reported to CSIRC within seven (7) business days after testing is completed. Vulnerabilities ranked low must be mitigated within 30 days] of the release of the updates; and
+
+d. Incorporate flaw remediation into the organizational configuration management process.
+
+## OPS Implementation
+
+TODO: Text for a (dependabot, renovate, findings from ACF Tech tools), b (CI/CD), and d?
+
+TODO: VMP? Scan and Pentest reports we'll get from ACF Tech
+
+c and d.  OPS utilizes tooling including but not limited to Dependabot and Renovatebot which will automatically check for and detect security-relevant software updates on a frequent basis. These tools will automatically open pull requests if there is an update to any software or code library in use by OPS. Resulting pull requests are reviewed and remediated in a timely fashion as necessary. As part of the Continuous Integration and Continuous Deployment methodologies used by OPS, when these pull requests have met necessary requirements, the updates are automatically deployed. If there are no findings, no pull requests will be opened.
+
+TODO: Seek inherited text
+
+
+### Control Origination
+
+Hybrid with IaaS vendor and OPS. Inherited from ACF Tech (AMS)
+
+### Related Content
+
+[cm-4](../cm-04/index.md).

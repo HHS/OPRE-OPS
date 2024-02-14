@@ -1,0 +1,17 @@
+# Planning
+## PL-04 (1) - Rules of Behavior | Social Media and External Site/application Usage Restrictions
+
+Include in the rules of behavior, restrictions on:<br />
+(a) Use of social media, social networking sites, and external sites/applications;<br />
+(b) Posting organizational information on public websites; and<br />
+(c) Use of organization-provided identifiers (e.g., email addresses) and authentication secrets (e.g., passwords) for creating accounts on external sites/applications.
+
+## OPS Implementation
+
+TODO: Seek inherited text. IaaS provider ?
+
+### Control Origination
+
+Inherited from HHS/ACF
+
+### Related Content

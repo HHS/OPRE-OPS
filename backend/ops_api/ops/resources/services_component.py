@@ -4,7 +4,7 @@ from functools import partial
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
-from models import ContractAgreement, OpsEventType, ServicesComponent
+from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.services_component_schemas import (
@@ -19,6 +19,7 @@ from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import override
 
 ENDPOINT_STRING = "/services-components"
@@ -26,18 +27,12 @@ ENDPOINT_STRING = "/services-components"
 
 def sc_associated_with_contract_agreement(self, id: int, permission_type: PermissionType) -> bool:
     jwt_identity = get_jwt_identity()
+    sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
     try:
-        contract_agreement_id = request.json["contract_agreement_id"]
-        agreement_stmt = select(ContractAgreement).where(ContractAgreement.id == contract_agreement_id)
-        contract_agreement = current_app.db_session.scalar(agreement_stmt)
-
-    except KeyError:
-        sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
-        try:
-            contract_agreement = sc.contract_agreement
-        except AttributeError as e:
-            # No BLI found in the DB. Erroring out.
-            raise ExtraCheckError({}) from e
+        contract_agreement = sc.contract_agreement
+    except AttributeError as e:
+        # No SC found in the DB. Erroring out.
+        raise ExtraCheckError({}) from e
 
     if contract_agreement is None:
         # We are faking a validation check at this point. We know there is no agreement associated with the SC.
@@ -74,6 +69,20 @@ class ServicesComponentItemAPI(BaseItemAPI):
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
+    def _get_item_with_try(self, id: int) -> Response:
+        try:
+            item = self._get_item(id)
+
+            if item:
+                response = make_response_with_headers(self._response_schema.dump(item))
+            else:
+                response = make_response_with_headers({}, 404)
+        except SQLAlchemyError as se:
+            current_app.logger.error(se)
+            response = make_response_with_headers({}, 500)
+
+        return response
+
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{method} to {ENDPOINT_STRING}"
 
@@ -85,9 +94,10 @@ class ServicesComponentItemAPI(BaseItemAPI):
             schema.context["id"] = id
             schema.context["method"] = method
 
-            data = get_change_data(request.json, old_services_component, schema)
-            data["period_start"] = date.fromisoformat(data["period_start"]) if data.get("period_start") else None
-            data["period_end"] = date.fromisoformat(data["period_end"]) if data.get("period_end") else None
+            data = get_change_data(request.json, old_services_component, schema, ["id", "contract_agreement_id"])
+            for k in ["period_start", "period_end"]:
+                if k in data:
+                    data[k] = date.fromisoformat(data[k])
             services_component = update_and_commit_model_instance(old_services_component, data)
 
             sc_dict = self._response_schema.dump(services_component)
@@ -95,6 +105,13 @@ class ServicesComponentItemAPI(BaseItemAPI):
             current_app.logger.info(f"{message_prefix}: Updated ServicesComponent: {sc_dict}")
 
             return make_response_with_headers(sc_dict, 200)
+
+    @override
+    @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
+    @handle_api_error
+    def get(self, id: int) -> Response:
+        response = self._get_item_with_try(id)
+        return response
 
     @override
     @is_authorized(

@@ -1,0 +1,20 @@
+# Secure Name/address Resolution Service (recursive or Caching Resolver)
+## SC-21 - Secure Name/address Resolution Service (recursive or Caching Resolver)
+
+Request and perform data origin authentication and data integrity verification on the name/address resolution responses the system receives from authoritative sources.
+
+## OPS Implementation
+
+OPS does not provide domain name resolution services.
+
+TODO: Seek any inherited text from IaaS provider / ACF Tech
+
+### Control Origination
+
+Inherited from IaaS provider / ACF Tech
+
+### Related Content
+
+Reference: HHS Policy for Domain Name System (DNS) and Domain Name System Security Extensions (DNSSEC) Services.
+
+The information system also disables recursive lookups on all publicly accessible domain name system (DNS) servers.

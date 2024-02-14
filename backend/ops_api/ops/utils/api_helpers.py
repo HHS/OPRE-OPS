@@ -7,12 +7,16 @@ from sqlalchemy import inspect
 
 
 def get_change_data(
-    request_json, model_instance: BaseModel, schema: Schema, protected: tuple[str] = ("id",), partial: bool = True
+    request_json, model_instance: BaseModel, schema: Schema, protected=None, partial: bool = False
 ) -> dict[str, Any]:
+    if protected is None:
+        protected = ["id"]
     try:
         data = {
-            key: value for key, value in model_instance.to_dict().items() if key in request_json
-        }  # only keep the attributes from the request body
+            key: value
+            for key, value in model_instance.to_dict().items()
+            if key in request_json and key not in protected
+        }  # only keep the attributes from the request body and omit protected ones
     except AttributeError:
         data = {}
     change_data = schema.dump(schema.load(request_json, unknown=EXCLUDE, partial=partial))
@@ -20,7 +24,7 @@ def get_change_data(
         key: value
         for key, value in change_data.items()
         if key not in protected and key in request_json and value != data.get(key, None)
-    }  # only keep the attributes from the request body
+    }  # only keep the attributes from the request body and omit protected ones
     data |= change_data
     return data
 

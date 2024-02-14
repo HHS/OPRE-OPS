@@ -1,0 +1,28 @@
+# System and Information Integrity
+## SI-12 - Information Management and Retention
+
+Manage and retain information within the system and information output from the system in accordance with applicable laws, executive orders, directives, regulations, policies, standards, guidelines and operational requirements.
+
+## OPS Implementation
+
+OPS handles and retains information within the information system and information output in accordance with all applicable federal laws, Executive Orders, directives, policies, regulations, standards, and operational requirements including but not limited to:
+
+- Federal Information Security Modernization Act (FISMA) of 2014
+- Computer Fraud and Abuse Act of 1986.
+- Privacy Act of 1974
+- OMB Circular No. A 130, Appendix III
+- Federal Information Processing Standards (FIPS) Publication 199, Standards for Security Categorization of Federal Information and Information Systems, February 2004
+- Federal Information Processing Standards (FIPS) Publication 200, Minimum Security Requirements for Federal Information and Information Systems, March 2006
+- NIST Special Publication (SP) 800-18 Revision 1 - Guide for Developing Security Plans for Federal Information Systems, February 2006
+- NIST SP 800-30 Revision 1- Risk Management Guide for Information Technology Systems, September 2010
+- NIST SP 800-37 Revision 2
+- HHS Security and Privacy Policy
+- HHS/ACF Records Management Policy
+
+TODO: Check list of artifacts and revise as needed
+
+### Control Origination
+
+Hybrid with IaaS provider, OPRE, and OPS
+
+### Related Content
