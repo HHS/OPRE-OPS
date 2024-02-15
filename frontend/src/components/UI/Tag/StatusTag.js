@@ -3,7 +3,6 @@ import Tag from "../Tag/Tag";
 
 const statusClasses = {
     DRAFT: "bg-brand-neutral-lighter",
-    UNDER_REVIEW: "bg-brand-data-viz-secondary-23 text-white",
     PLANNED: "bg-brand-data-viz-primary-11 text-white",
     IN_EXECUTION: "bg-brand-data-viz-primary-8",
     OBLIGATED: "bg-brand-data-viz-primary-6 text-white"

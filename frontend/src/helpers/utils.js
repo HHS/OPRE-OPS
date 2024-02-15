@@ -58,8 +58,8 @@ export const formatDateToMonthDayYear = (date) => {
     return new Date(date).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
 };
 
-// List of BLI statuses which are considered Draft
-export const draftBudgetLineStatuses = ["DRAFT", "UNDER_REVIEW"];
+// List of BLI statuses which are considered Draft, this used to include UNDER_REVIEW which no longer exists
+export const draftBudgetLineStatuses = ["DRAFT"];
 
 /**
  * Object containing display text for various codes.
