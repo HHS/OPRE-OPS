@@ -152,6 +152,10 @@ export const codesToDisplayText = {
         COST_PLUS_FIXED_FEE: "Cost Plus Fixed Fee (CPFF)",
         COST_PLUS_AWARD_FEE: "Cost Plus Award Fee (CPAF)",
         HYBRID: "Hybrid (Any combination of the above)"
+    },
+    serviceRequirementType: {
+        SEVERABLE: "Severable",
+        NON_SEVERABLE: "Non-Severable"
     }
 };
 
