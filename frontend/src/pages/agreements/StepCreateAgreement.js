@@ -16,7 +16,6 @@ export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode
                 currentStep={2}
             />
             <ProjectSummaryCard selectedResearchProject={selectedResearchProject} />
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
             <AgreementEditForm
                 goBack={goBack}
                 goToNext={goToNext}
