@@ -162,12 +162,12 @@
 
   package: [
     {
-      workflow_id: 1,
+      workflow_instance_id: 1,
       submitter_id: 21,
       notes: "Urgent approval needed",
     },
     {
-      workflow_id: 2,
+      workflow_instance_id: 2,
       submitter_id: 21,
       notes: "Urgent approval needed",
     }

@@ -45,7 +45,7 @@ def test_creating_procurement_tracker_workflow(loaded_db):
 
     package = Mock(Package)
     package.submitter_id = 21
-    package.workflow_id = workflow_step_instance_acquisition.id
+    package.workflow_instance_id = workflow_step_instance_acquisition.id
     package.notes = ""
 
     package_snapshot = Mock(PackageSnapshot)

@@ -205,7 +205,7 @@ def create_rejection_notification_for_project_officer(workflow_step_instance: Wo
         .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id)
         .join(PackageSnapshot, PackageSnapshot.bli_id == BudgetLineItem.id)
         .join(Package, Package.id == PackageSnapshot.package_id)
-        .join(WorkflowInstance, WorkflowInstance.id == Package.workflow_id)
+        .join(WorkflowInstance, WorkflowInstance.id == Package.workflow_instance_id)
         .join(WorkflowStepInstance, WorkflowStepInstance.workflow_instance_id == WorkflowInstance.id)
         .where(WorkflowStepInstance.id == workflow_step_instance.id)
     ).first()

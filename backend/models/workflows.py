@@ -77,7 +77,7 @@ class WorkflowInstance(BaseModel):
     #     results = object_session(self).execute(
     #         sa.select(PackageSnapshot.bli_id)
     #         .join(Package, Package.id == PackageSnapshot.package_id)
-    #         .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+    #         .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
     #         .where(WorkflowInstance.id == self.id)
     #     ).all()
     #     bli_ids = [row[0] for row in results]
@@ -213,7 +213,7 @@ class WorkflowStepInstance(BaseModel):
             .execute(
                 sa.select(PackageSnapshot.bli_id, Package.notes)
                 .join(Package, Package.id == PackageSnapshot.package_id)
-                .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+                .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
                 .join(
                     WorkflowStepInstance,
                     WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
@@ -283,8 +283,7 @@ class Package(BaseModel):
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     submitter_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"))
-    # FIX THIS
-    workflow_id = sa.Column(
+    workflow_instance_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True
     )
     notes = sa.Column(sa.String, nullable=True)

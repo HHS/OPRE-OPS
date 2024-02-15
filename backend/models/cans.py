@@ -529,7 +529,7 @@ class BudgetLineItem(BaseModel):
             select(Package)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+            .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
             .join(
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
@@ -548,7 +548,7 @@ class BudgetLineItem(BaseModel):
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
             )
-            .join(Package, WorkflowInstance.id == Package.workflow_id)
+            .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
             .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
