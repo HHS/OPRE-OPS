@@ -70,19 +70,6 @@ class WorkflowInstance(BaseModel):
     workflow_action = sa.Column(sa.Enum(WorkflowAction), nullable=False)
     current_workflow_step_instance_id = sa.Column(sa.Integer, nullable=True)
 
-    # @property
-    # def package_entities(self):
-    #     if object_session(self) is None:
-    #         return None
-    #     results = object_session(self).execute(
-    #         sa.select(PackageSnapshot.bli_id)
-    #         .join(Package, Package.id == PackageSnapshot.package_id)
-    #         .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
-    #         .where(WorkflowInstance.id == self.id)
-    #     ).all()
-    #     bli_ids = [row[0] for row in results]
-    #     return {"budget_line_item_ids": bli_ids}
-
     # REJECTED = "Rejected" (any --> Rejected)
     # CHANGES = "Changes Required" (any --> Changes Required)
     # REVIEW = "In-Review" (any --> In-Review)
