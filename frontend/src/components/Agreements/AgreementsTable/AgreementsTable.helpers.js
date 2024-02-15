@@ -59,12 +59,6 @@ export const getAgreementCreatedDate = (agreement) => {
         : formattedToday;
 };
 
-export const getAgreementStatus = (agreement) => {
-    handleAgreementProp(agreement);
-
-    return agreement.budget_line_items?.find((bli) => bli.status === "UNDER_REVIEW") ? "In Review" : "Draft";
-};
-
 export const areAllBudgetLinesInStatus = (agreement, status) => {
     handleAgreementProp(agreement);
 
