@@ -32,8 +32,9 @@ class WorkflowStepStatus(Enum):
 
 
 class WorkflowTriggerType(Enum):
-    CAN = 1
-    PROCUREMENT_SHOP = 2
+    CAN = auto()
+    PROCUREMENT_SHOP = auto()
+    AGREEMENT = auto()
 
 
 class WorkflowTemplate(BaseModel):
@@ -282,6 +283,7 @@ class Package(BaseModel):
 
     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
     submitter_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"))
+    # FIX THIS
     workflow_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True
     )
@@ -306,7 +308,7 @@ class PackageSnapshot(BaseModel):
     bli_id = sa.Column(
         sa.Integer,
         sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
     )
 
 
