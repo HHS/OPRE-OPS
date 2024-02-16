@@ -19,7 +19,8 @@ export const opsApi = createApi({
         "Portfolios",
         "CanFunding",
         "Notifications",
-        "WorkflowStepInstance"
+        "WorkflowStepInstance",
+        "ServicesComponents"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -237,6 +238,28 @@ export const opsApi = createApi({
         getWorkflowStepInstance: builder.query({
             query: (id) => `/workflow-step-instance/${id}`,
             providesTags: ["WorkflowStepInstance"]
+        }),
+        addServicesComponent: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/services-component/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        updateServicesComponent: builder.mutation({
+            query: ({ id, data }) => {
+                return {
+                    url: `/services-component/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         })
     })
 });
@@ -274,5 +297,7 @@ export const {
     useAddApprovalRequestMutation,
     useAddWorkflowApproveMutation,
     useGetWorkflowInstanceQuery,
-    useGetWorkflowStepInstanceQuery
+    useGetWorkflowStepInstanceQuery,
+    useAddServicesComponentMutation,
+    useUpdateServicesComponentMutation
 } = opsApi;

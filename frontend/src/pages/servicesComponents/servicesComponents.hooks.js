@@ -2,16 +2,18 @@ import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, backendServicesComponents } from "./servicesComponents.constants";
 import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
+import { useAddServicesComponentMutation, useUpdateServicesComponentMutation } from "../../api/opsAPI";
 
 const useServicesComponents = () => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
     const [formData, setFormData] = React.useState(initialFormData);
-    const [servicesComponents, setServicesComponents] = React.useState(backendServicesComponents.servicesComponents);
+    const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const { setAlert } = useAlert();
-
+    const [addServicesComponent] = useAddServicesComponentMutation();
     const handleSubmit = (e) => {
+        // NOTE: Services Components here: https://github.com/HHS/OPRE-OPS/pull/1927
         e.preventDefault();
         let formattedServiceComponent = formatServiceComponent(
             formData.servicesComponent,
@@ -21,14 +23,32 @@ const useServicesComponents = () => {
 
         if (formData.mode === "add") {
             const newFormData = {
-                id: crypto.randomUUID(),
-                servicesComponent: Number(formData.servicesComponent),
+                // id: crypto.randomUUID(),
+                number: Number(formData.servicesComponent),
                 optional: Boolean(formData.optional),
-                popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
-                popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
-                description: formData.description
+                description: formData.description,
+                period_start: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
+                period_end: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
             };
             setServicesComponents([...servicesComponents, newFormData]);
+
+            // eslint-disable-next-line no-unused-vars
+            addServicesComponent(newFormData)
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log("Created New Services Component:", fulfilled);
+                })
+                .catch((rejected) => {
+                    console.error("Error Creating Services Component");
+                    console.error({ rejected });
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred. Please try again.",
+                        navigateUrl: "/error"
+                    });
+                });
+
             setAlert({
                 type: "success",
                 heading: "Services Component Created",

@@ -1,12 +1,13 @@
-import App from "../../App";
-import ServiceReqTypeSelect from "./ServiceReqTypeSelect";
+// import App from "../../App";
+// import ServiceReqTypeSelect from "./ServiceReqTypeSelect";
 import ServicesComponentForm from "./ServicesComponentForm";
 import ServicesComponentsList from "./ServicesComponentsList";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
-import { initialFormData } from "./servicesComponents.constants";
+// import { initialFormData } from "./servicesComponents.constants";
 import useServicesComponents from "./servicesComponents.hooks";
+import DebugCode from "./DebugCode";
 
-const ServicesComponents = () => {
+const ServicesComponents = ({ agreement }) => {
     const {
         formData,
         modalProps,
@@ -23,7 +24,7 @@ const ServicesComponents = () => {
     } = useServicesComponents();
 
     return (
-        <App breadCrumbName="Playground">
+        <>
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -34,16 +35,8 @@ const ServicesComponents = () => {
                 />
             )}
             <section>
-                <h1>Services Components Playground</h1>
-                <ServiceReqTypeSelect
-                    value={serviceTypeReq}
-                    onChange={(name, value) => {
-                        setServiceTypeReq(value);
-                        setFormData(initialFormData);
-                    }}
-                />
                 <ServicesComponentForm
-                    serviceTypeReq={serviceTypeReq}
+                    serviceTypeReq={agreement?.service_requirement_type}
                     formData={formData}
                     setFormData={setFormData}
                     handleSubmit={handleSubmit}
@@ -56,7 +49,11 @@ const ServicesComponents = () => {
                 handleDelete={handleDelete}
                 serviceTypeReq={serviceTypeReq}
             />
-        </App>
+            <DebugCode
+                title="Agreement"
+                data={agreement}
+            />
+        </>
     );
 };
 
