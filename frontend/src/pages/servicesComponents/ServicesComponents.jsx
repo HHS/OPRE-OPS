@@ -36,7 +36,7 @@ const ServicesComponents = () => {
             <section>
                 <h1>Services Components Playground</h1>
                 <ServiceReqTypeSelect
-                    value=""
+                    value={serviceTypeReq}
                     onChange={(name, value) => {
                         setServiceTypeReq(value);
                         setFormData(initialFormData);

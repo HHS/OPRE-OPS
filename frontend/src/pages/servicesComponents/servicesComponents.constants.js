@@ -1,6 +1,6 @@
 export const SERVICE_REQ_TYPES = {
-    NON_SEVERABLE: "Non-Severable",
-    SEVERABLE: "Severable"
+    NON_SEVERABLE: "NON_SEVERABLE",
+    SEVERABLE: "SEVERABLE"
 };
 
 export const NON_SEVERABLE_OPTIONS = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
