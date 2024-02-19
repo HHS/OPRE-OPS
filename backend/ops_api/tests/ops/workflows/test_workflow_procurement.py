@@ -10,6 +10,9 @@ from models.workflows import WorkflowTriggerType
 def test_creating_procurement_tracker_workflow(loaded_db):
     # Create a mock WorkflowStepInstance with the required attributes
 
+    # Where and how should we create a Procurement workflow?
+    # Do we want to rework the dependencies
+
     procurement_workflow = Mock(spec=WorkflowInstance)
     procurement_workflow.workflow_template_id = 2
     procurement_workflow.associated_id = 1

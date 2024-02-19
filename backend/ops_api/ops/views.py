@@ -15,6 +15,7 @@ from models.procurement_shops import ProcurementShop
 from models.projects import ResearchProject, ResearchType
 from models.users import User
 from models.workflows import (
+    AcquisitionPlanning,
     Package,
     PackageSnapshot,
     WorkflowInstance,
@@ -50,6 +51,7 @@ from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSumm
 from ops_api.ops.resources.portfolio_status import PortfolioStatusItemAPI, PortfolioStatusListAPI
 from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
 from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
+from ops_api.ops.resources.procurement_steps import AcquisitionItemAPI, AcquisitionListAPI
 from ops_api.ops.resources.product_service_code import ProductServiceCodeItemAPI, ProductServiceCodeListAPI
 from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
 from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
@@ -209,3 +211,12 @@ WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC = WorkflowApprovalListApi.as_view("workflow
 # ServicesComponent ENDPOINTS
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)
 SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
+
+
+# Procurement - Acquisition ENDPOINTS
+PROCUREMENT_ACQUISITION_ITEM_API_VIEW_FUNC = AcquisitionItemAPI.as_view(
+    "procurement-acquisition-item", AcquisitionPlanning
+)
+PROCUREMENT_ACQUISITION_LIST_API_VIEW_FUNC = AcquisitionListAPI.as_view(
+    "procurement-acquisition-group", AcquisitionPlanning
+)

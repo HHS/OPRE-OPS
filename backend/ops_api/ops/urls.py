@@ -37,6 +37,8 @@ from ops_api.ops.views import (
     PORTFOLIO_LIST_API_VIEW_FUNC,
     PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
     PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
+    PROCUREMENT_ACQUISITION_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_ACQUISITION_LIST_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
@@ -326,4 +328,12 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/services-components/",
         view_func=SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-acquisitions/",
+        view_func=PROCUREMENT_ACQUISITION_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-acquisitions/<int:id>",
+        view_func=PROCUREMENT_ACQUISITION_ITEM_API_VIEW_FUNC,
     )
