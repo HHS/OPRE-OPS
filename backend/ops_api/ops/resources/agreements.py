@@ -242,6 +242,11 @@ class AgreementListAPI(BaseListAPI):
 
         if agreement_cls == ContractAgreement:
             data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
+            data["service_requirement_type"] = (
+                ServiceRequirementType[data["service_requirement_type"]]
+                if data.get("service_requirement_type")
+                else None
+            )
 
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []

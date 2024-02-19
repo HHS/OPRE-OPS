@@ -16,6 +16,7 @@ import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgree
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
+import ContractTypeSelect from "../../../pages/servicesComponents/ContractTypeSelect";
 import {
     useAddAgreementMutation,
     useGetProductServiceCodesQuery,
@@ -23,6 +24,7 @@ import {
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import useAlert from "../../../hooks/use-alert.hooks";
+import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTypeSelect";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -53,6 +55,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
     const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
+    const setContractType = useUpdateAgreement("contract_type");
+    const setServiceReqType = useUpdateAgreement("service_requirement_type");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -77,7 +81,9 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         name: agreementTitle,
         description: agreementDescription,
         agreement_reason: agreementReason,
-        team_members: selectedTeamMembers
+        team_members: selectedTeamMembers,
+        contract_type: contractType,
+        service_requirement_type: serviceReqType
     } = agreement;
 
     const {
@@ -252,7 +258,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-
+            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Select the Agreement Type</h2>
+            <p className="margin-top-1">Select the type of agreement you&apos;d like to create.</p>
             <AgreementTypeSelect
                 name="agreement_type"
                 label="Agreement Type"
@@ -264,7 +271,20 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     runValidate(name, value);
                 }}
             />
-
+            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
+            <ContractTypeSelect
+                value={contractType}
+                onChange={(name, value) => {
+                    setContractType(value);
+                }}
+            />
+            <ServiceReqTypeSelect
+                className="margin-top-3"
+                value={serviceReqType}
+                onChange={(name, value) => {
+                    setServiceReqType(value);
+                }}
+            />
             <Input
                 name="name"
                 label="Agreement Title"
@@ -276,7 +296,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     runValidate(name, value);
                 }}
             />
-
             <TextArea
                 name="description"
                 label="Description"

@@ -1,33 +1,38 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
-import { initialFormData, initialServicesComponent } from "./servicesComponents.constants";
-import { addOInFront } from "./servicesComponents.helpers";
+import { initialFormData, backendServicesComponents } from "./servicesComponents.constants";
+import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
 
 const useServicesComponents = () => {
-    const [serviceTypeReq, setServiceTypeReq] = React.useState("");
+    const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
     const [formData, setFormData] = React.useState(initialFormData);
-    const [servicesComponents, setServicesComponents] = React.useState([initialServicesComponent]);
+    const [servicesComponents, setServicesComponents] = React.useState(backendServicesComponents.servicesComponents);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const { setAlert } = useAlert();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        let formattedServiceComponent = formData.servicesComponent;
+        let formattedServiceComponent = formatServiceComponent(
+            formData.servicesComponent,
+            formData.optional,
+            serviceTypeReq
+        );
 
-        if (formData.optional) {
-            formattedServiceComponent = addOInFront(formData.servicesComponent);
-        }
         if (formData.mode === "add") {
             const newFormData = {
                 id: crypto.randomUUID(),
-                ...formData
+                servicesComponent: Number(formData.servicesComponent),
+                optional: Boolean(formData.optional),
+                popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
+                popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
+                description: formData.description
             };
             setServicesComponents([...servicesComponents, newFormData]);
             setAlert({
                 type: "success",
                 heading: "Services Component Created",
-                message: `The Services Component ${formattedServiceComponent} has been successfully added.`
+                message: `${formattedServiceComponent} has been successfully added.`
             });
             setFormData(initialFormData);
         }
@@ -36,7 +41,7 @@ const useServicesComponents = () => {
             setAlert({
                 type: "success",
                 heading: "Services Component Updated",
-                message: `The Services Component ${formattedServiceComponent} has been successfully updated.`
+                message: `${formattedServiceComponent} has been successfully updated.`
             });
             setFormData(initialFormData);
         }
@@ -46,16 +51,31 @@ const useServicesComponents = () => {
         const index = servicesComponents.findIndex((component) => component.id === id);
         const newServicesComponents = [...servicesComponents];
         const newFormData = { ...formData, mode: "add" };
-        newServicesComponents[index] = { ...servicesComponents[index], ...formData };
+        newServicesComponents[index] = {
+            ...servicesComponents[index],
+            servicesComponent: Number(formData.servicesComponent),
+            optional: Boolean(formData.optional),
+            popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
+            popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
+            description: formData.description
+        };
         setServicesComponents(newServicesComponents);
         setFormData(newFormData);
     };
 
     const handleDelete = (id) => {
+        const index = servicesComponents.findIndex((component) => component.id === id);
+        const selectedServicesComponent = servicesComponents[index];
         const newServicesComponents = servicesComponents.filter((component) => component.id !== id);
+
+        let formattedServiceComponent = formatServiceComponent(
+            selectedServicesComponent.servicesComponent,
+            selectedServicesComponent.optional,
+            serviceTypeReq
+        );
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to delete this Services Component?",
+            heading: `Are you sure you want to delete ${formattedServiceComponent}?`,
             actionButtonText: "Delete",
             secondaryButtonText: "Cancel",
             handleConfirm: () => {
@@ -63,7 +83,7 @@ const useServicesComponents = () => {
                 setAlert({
                     type: "success",
                     heading: "Services Component Deleted",
-                    message: `The Services Component has been successfully deleted.`
+                    message: `${formattedServiceComponent} has been successfully deleted.`
                 });
             }
         });
@@ -76,7 +96,26 @@ const useServicesComponents = () => {
 
     const setFormDataById = (id) => {
         const index = servicesComponents.findIndex((component) => component.id === id);
-        const newFormData = { ...servicesComponents[index], mode: "edit" };
+        const {
+            year: popStartYear,
+            month: popStartMonth,
+            day: popStartDay
+        } = dateToYearMonthDay(servicesComponents[index].popStartDate);
+        const {
+            year: popEndYear,
+            month: popEndMonth,
+            day: popEndDay
+        } = dateToYearMonthDay(servicesComponents[index].popEndDate);
+        const newFormData = {
+            ...servicesComponents[index],
+            popEndYear,
+            popEndMonth,
+            popEndDay,
+            popStartYear,
+            popStartMonth,
+            popStartDay,
+            mode: "edit"
+        };
         setFormData(newFormData);
     };
 

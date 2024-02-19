@@ -1,6 +1,6 @@
 import Select from "../Select";
 
-function ServiceReqTypeSelect({ value, onChange }) {
+function ServiceReqTypeSelect({ value, onChange, ...rest }) {
     return (
         <Select
             name="serviceReqType"
@@ -9,9 +9,21 @@ function ServiceReqTypeSelect({ value, onChange }) {
             value={value}
             messages={[]}
             defaultOption="Select a Service Requirement Type"
-            options={["Severable", "Non-Severable"]}
+            options={SERVICE_REQ_TYPES_OPTIONS}
+            {...rest}
         />
     );
 }
+
+const SERVICE_REQ_TYPES_OPTIONS = [
+    {
+        label: "Non-Severable",
+        value: "NON_SEVERABLE"
+    },
+    {
+        label: "Severable",
+        value: "SEVERABLE"
+    }
+];
 
 export default ServiceReqTypeSelect;
