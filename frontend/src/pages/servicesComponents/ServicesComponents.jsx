@@ -47,7 +47,7 @@ const ServicesComponents = ({ serviceRequirementType }) => {
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
-                serviceTypeReq={serviceTypeReq}
+                serviceTypeReq={serviceRequirementType}
             />
             <DebugCode
                 title="service_requirement_type"

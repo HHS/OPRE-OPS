@@ -24,10 +24,10 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                             onChange={(name, value) => {
                                 setFormData({
                                     ...formData,
-                                    servicesComponent: value
+                                    number: value
                                 });
                             }}
-                            value={formData?.servicesComponent || ""}
+                            value={formData?.number || ""}
                             options={options}
                         />
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (

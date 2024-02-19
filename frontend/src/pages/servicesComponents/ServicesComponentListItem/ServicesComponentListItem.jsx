@@ -11,8 +11,8 @@ const Header = ({ servicesComponent, optional, serviceTypeReq }) => {
 };
 
 function ServicesComponentListItem({ item, setFormDataById, handleDelete, serviceTypeReq }) {
-    const { year: popStartYear, month: popStartMonth, day: popStartDay } = dateToYearMonthDay(item?.popStartDate);
-    const { year: popEndYear, month: popEndMonth, day: popEndDay } = dateToYearMonthDay(item?.popEndDate);
+    const { year: popStartYear, month: popStartMonth, day: popStartDay } = dateToYearMonthDay(item?.period_start);
+    const { year: popEndYear, month: popEndMonth, day: popEndDay } = dateToYearMonthDay(item?.period_end);
 
     return (
         <RoundedBox
@@ -21,7 +21,7 @@ function ServicesComponentListItem({ item, setFormDataById, handleDelete, servic
         >
             <section className="display-flex flex-justify">
                 <Header
-                    servicesComponent={item.servicesComponent}
+                    servicesComponent={item.number}
                     optional={item.optional}
                     serviceTypeReq={serviceTypeReq}
                 />

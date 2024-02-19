@@ -1,4 +1,4 @@
-import StepCreateBLIsAndSCs from "./StepCreateBudgetLines";
+import StepCreateBLIsAndSCs from "./StepCreateBLIsAndSCs";
 import { CreateBudgetLinesProvider } from "./context";
 
 /**

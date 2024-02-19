@@ -31,7 +31,7 @@ export const backendServicesComponents = {
 };
 
 export const initialFormData = {
-    servicesComponent: "",
+    number: "",
     optional: "",
     popStartMonth: "",
     popStartDay: "",

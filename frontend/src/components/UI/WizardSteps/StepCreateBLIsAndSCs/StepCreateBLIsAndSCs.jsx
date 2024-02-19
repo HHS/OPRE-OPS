@@ -357,7 +357,8 @@ export const StepCreateBLIsAndSCs = ({
                         selectedAgreement={selectedAgreement}
                         selectedProcurementShop={selectedProcurementShop}
                     />
-                    <ServicesComponents serviceRequirementType={selectedAgreement.service_requirement_type} />
+                    <ServicesComponents serviceRequirementType={selectedAgreement
+                        .service_requirement_type} />
                     <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
                     <p>Complete the information below to create new budget lines.</p>
                 </>

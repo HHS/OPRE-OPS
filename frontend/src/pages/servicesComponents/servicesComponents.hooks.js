@@ -15,16 +15,12 @@ const useServicesComponents = () => {
     const handleSubmit = (e) => {
         // NOTE: Services Components here: https://github.com/HHS/OPRE-OPS/pull/1927
         e.preventDefault();
-        let formattedServiceComponent = formatServiceComponent(
-            formData.servicesComponent,
-            formData.optional,
-            serviceTypeReq
-        );
+        let formattedServiceComponent = formatServiceComponent(formData.number, formData.optional, serviceTypeReq);
 
         if (formData.mode === "add") {
             const newFormData = {
-                // id: crypto.randomUUID(),
-                number: Number(formData.servicesComponent),
+                id: crypto.randomUUID(),
+                number: Number(formData.number),
                 optional: Boolean(formData.optional),
                 description: formData.description,
                 period_start: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
@@ -73,7 +69,7 @@ const useServicesComponents = () => {
         const newFormData = { ...formData, mode: "add" };
         newServicesComponents[index] = {
             ...servicesComponents[index],
-            servicesComponent: Number(formData.servicesComponent),
+            number: Number(formData.number),
             optional: Boolean(formData.optional),
             popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
             popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
@@ -120,12 +116,12 @@ const useServicesComponents = () => {
             year: popStartYear,
             month: popStartMonth,
             day: popStartDay
-        } = dateToYearMonthDay(servicesComponents[index].popStartDate);
+        } = dateToYearMonthDay(servicesComponents[index].period_start);
         const {
             year: popEndYear,
             month: popEndMonth,
             day: popEndDay
-        } = dateToYearMonthDay(servicesComponents[index].popEndDate);
+        } = dateToYearMonthDay(servicesComponents[index].period_end);
         const newFormData = {
             ...servicesComponents[index],
             popEndYear,
