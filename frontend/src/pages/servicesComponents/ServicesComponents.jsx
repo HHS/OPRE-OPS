@@ -7,7 +7,7 @@ import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import useServicesComponents from "./servicesComponents.hooks";
 import DebugCode from "./DebugCode";
 
-const ServicesComponents = ({ agreement }) => {
+const ServicesComponents = ({ serviceRequirementType }) => {
     const {
         formData,
         modalProps,
@@ -36,7 +36,7 @@ const ServicesComponents = ({ agreement }) => {
             )}
             <section>
                 <ServicesComponentForm
-                    serviceTypeReq={agreement?.service_requirement_type}
+                    serviceTypeReq={serviceRequirementType}
                     formData={formData}
                     setFormData={setFormData}
                     handleSubmit={handleSubmit}
@@ -50,8 +50,8 @@ const ServicesComponents = ({ agreement }) => {
                 serviceTypeReq={serviceTypeReq}
             />
             <DebugCode
-                title="Agreement"
-                data={agreement}
+                title="service_requirement_type"
+                data={serviceRequirementType}
             />
         </>
     );
