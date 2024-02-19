@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d3f8e4d5e92d99e1ee761c643d8b2c0d515677cd3d2d75e8cc1c7c0f6912ffd0"
+            "sha256": "2a3a75ab36ccc938d5eeb87ac128c0aedd379c226b3c41cf1498128236693f7c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -846,12 +846,12 @@
         },
         "flake8-bugbear": {
             "hashes": [
-                "sha256:46cc840ddaed26507cd0ada530d1526418b717ee76c9b5dfdbd238b5eab34139",
-                "sha256:bcb388a4f3b516258749b1e690ee394c082eff742f44595e3754cf5c7781c2c7"
+                "sha256:663ef5de80cd32aacd39d362212983bc4636435a6f83700b4ed35acbd0b7d1b8",
+                "sha256:f9cb5f2a9e792dd80ff68e89a14c12eed8620af8b41a49d823b7a33064ac9658"
             ],
             "index": "pypi",
             "markers": "python_full_version >= '3.8.1'",
-            "version": "==24.1.17"
+            "version": "==24.2.6"
         },
         "flake8-import-order": {
             "hashes": [
@@ -962,12 +962,12 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:2f21bd3fc1d51550c89ee3944ae04bbc7bc79e129ea0937da6e6c68bfdbf117a",
-                "sha256:bc9716aad6f29f36c449e30821c9dd0c1c1a7b59ddcc26931685b87b4c569619"
+                "sha256:1050a3ab8473488d7eee163796b02e511d0735cf43a04ba2a8348bd0f2eaf8a5",
+                "sha256:48fbc236fbe0e138b88773fa0437751f14c3645fb483f1d4c5dee58b37e5ce73"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==8.20.0"
+            "version": "==8.21.0"
         },
         "jedi": {
             "hashes": [
@@ -1296,11 +1296,11 @@
                 "docker-compose-v2"
             ],
             "hashes": [
-                "sha256:31d834d5788baa88e3adbcbdc802a01133af83fcaeb58220af6c3f0adb341025",
-                "sha256:6357207a760452257476911458f51b9e9df194e76d7f59cf94728b3437534e5b"
+                "sha256:8ee9c9742d58ac079c81c03635bb830881f7f4d529f0f53f4ba2c89ffc9c7137",
+                "sha256:b083fd2ae69212369390033c22228d3263555a5f3b4bef87b74160e07218f377"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==2.1.0"
+            "version": "==2.2.0"
         },
         "pytest-mock": {
             "hashes": [
