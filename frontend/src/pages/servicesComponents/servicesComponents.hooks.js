@@ -2,7 +2,11 @@ import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, backendServicesComponents } from "./servicesComponents.constants";
 import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
-import { useAddServicesComponentMutation, useUpdateServicesComponentMutation } from "../../api/opsAPI";
+import {
+    useAddServicesComponentMutation,
+    useUpdateServicesComponentMutation,
+    useGetServicesComponentsListQuery
+} from "../../api/opsAPI";
 
 const useServicesComponents = (serviceRequirementType, agreementId) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
@@ -13,7 +17,25 @@ const useServicesComponents = (serviceRequirementType, agreementId) => {
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
 
-    console.log({ agreementId });
+    // get all services components by agreement id
+    const { data, isSuccess, error, isLoading } = useGetServicesComponentsListQuery(1);
+
+    React.useEffect(() => {
+        if (isSuccess) {
+            setServicesComponents(data);
+        }
+        if (error) {
+            console.error("Error Fetching Services Components");
+            console.error({ error });
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred. Please try again.",
+                navigateUrl: "/error"
+            });
+        }
+    }, [isSuccess, error, data, setAlert]);
+
     const handleSubmit = (e) => {
         // NOTE: Services Components here: https://github.com/HHS/OPRE-OPS/pull/1927
         e.preventDefault();

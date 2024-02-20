@@ -4,10 +4,11 @@ import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../../components/UI/Tag";
 import { formatServiceComponent, dateToYearMonthDay } from "../servicesComponents.helpers";
 
-const Header = ({ servicesComponent, optional, serviceTypeReq }) => {
-    const formattedServiceComponent = formatServiceComponent(servicesComponent, optional, serviceTypeReq);
+const Header = ({ servicesComponent, optional, serviceTypeReq, title }) => {
+    // const formattedServiceComponent = formatServiceComponent(servicesComponent, optional, serviceTypeReq);
 
-    return <h2 className="margin-0">{formattedServiceComponent}</h2>;
+    // return <h2 className="margin-0">{formattedServiceComponent}</h2>;
+    return <h2 className="margin-0">{title}</h2>;
 };
 
 function ServicesComponentListItem({ item, setFormDataById, handleDelete, serviceTypeReq }) {
@@ -24,6 +25,7 @@ function ServicesComponentListItem({ item, setFormDataById, handleDelete, servic
                     servicesComponent={item.number}
                     optional={item.optional}
                     serviceTypeReq={serviceTypeReq}
+                    title={item.display_title}
                 />
                 <div>
                     <button

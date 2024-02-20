@@ -260,6 +260,14 @@ export const opsApi = createApi({
                 };
             },
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        getServicesComponentById: builder.query({
+            query: (id) => `/services-components/${id}`,
+            providesTags: ["ServicesComponents"]
+        }),
+        getServicesComponentsList: builder.query({
+            query: (agreementId) => `/services-components/?contract_agreement_id=${agreementId}`,
+            providesTags: ["ServicesComponents"]
         })
     })
 });
@@ -299,5 +307,7 @@ export const {
     useGetWorkflowInstanceQuery,
     useGetWorkflowStepInstanceQuery,
     useAddServicesComponentMutation,
-    useUpdateServicesComponentMutation
+    useUpdateServicesComponentMutation,
+    useGetServicesComponentByIdQuery,
+    useGetServicesComponentsListQuery
 } = opsApi;
