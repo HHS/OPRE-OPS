@@ -2,10 +2,12 @@ import ServicesComponentListItem from "../ServicesComponentListItem";
 import DebugCode from "../DebugCode";
 
 function ServicesComponentsList({ servicesComponents, serviceTypeReq, setFormDataById, handleDelete }) {
+    const sortedServicesComponents = [...servicesComponents].sort((a, b) => a.number - b.number);
+
     return (
         <section className="margin-top-6">
             {servicesComponents.length > 0 ? (
-                servicesComponents.map((item, index) => (
+                sortedServicesComponents.map((item, index) => (
                     <ServicesComponentListItem
                         key={index}
                         item={item}
