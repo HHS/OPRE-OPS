@@ -16,8 +16,8 @@ const useServicesComponents = (serviceRequirementType, agreementId) => {
     const [modalProps, setModalProps] = React.useState({});
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
+    const [updateServicesComponent] = useUpdateServicesComponentMutation();
 
-    // get all services components by agreement id
     const { data, isSuccess, error, isLoading } = useGetServicesComponentsListQuery(1);
 
     React.useEffect(() => {
@@ -40,24 +40,27 @@ const useServicesComponents = (serviceRequirementType, agreementId) => {
         // NOTE: Services Components here: https://github.com/HHS/OPRE-OPS/pull/1927
         e.preventDefault();
         let formattedServiceComponent = formatServiceComponent(formData.number, formData.optional, serviceTypeReq);
+        const newFormData = {
+            contract_agreement_id: agreementId,
+            number: Number(formData.number),
+            optional: Boolean(formData.optional),
+            description: formData.description,
+            period_start: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
+            period_end: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
+        };
+        const { id } = formData;
 
         if (formData.mode === "add") {
-            const newFormData = {
-                // id: crypto.randomUUID(),
-                contract_agreement_id: agreementId,
-                number: Number(formData.number),
-                optional: Boolean(formData.optional),
-                description: formData.description,
-                period_start: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
-                period_end: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
-            };
-            setServicesComponents([...servicesComponents, newFormData]);
-
             // eslint-disable-next-line no-unused-vars
             addServicesComponent(newFormData)
                 .unwrap()
                 .then((fulfilled) => {
                     console.log("Created New Services Component:", fulfilled);
+                    setAlert({
+                        type: "success",
+                        heading: "Services Component Created",
+                        message: `${formattedServiceComponent} has been successfully added.`
+                    });
                 })
                 .catch((rejected) => {
                     console.error("Error Creating Services Component");
@@ -70,38 +73,32 @@ const useServicesComponents = (serviceRequirementType, agreementId) => {
                     });
                 });
 
-            setAlert({
-                type: "success",
-                heading: "Services Component Created",
-                message: `${formattedServiceComponent} has been successfully added.`
-            });
             setFormData(initialFormData);
         }
         if (formData.mode === "edit") {
-            handleEdit(formData.id);
-            setAlert({
-                type: "success",
-                heading: "Services Component Updated",
-                message: `${formattedServiceComponent} has been successfully updated.`
-            });
+            updateServicesComponent({ id, data: newFormData })
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log("Updated Services Component:", fulfilled);
+                    setAlert({
+                        type: "success",
+                        heading: "Services Component Updated",
+                        message: `${formattedServiceComponent} has been successfully updated.`
+                    });
+                })
+                .catch((rejected) => {
+                    console.error("Error Updating Services Component");
+                    console.error({ rejected });
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred. Please try again.",
+                        navigateUrl: "/error"
+                    });
+                });
+
             setFormData(initialFormData);
         }
-    };
-
-    const handleEdit = (id) => {
-        const index = servicesComponents.findIndex((component) => component.id === id);
-        const newServicesComponents = [...servicesComponents];
-        const newFormData = { ...formData, mode: "add" };
-        newServicesComponents[index] = {
-            ...servicesComponents[index],
-            number: Number(formData.number),
-            optional: Boolean(formData.optional),
-            popStartDate: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
-            popEndDate: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`,
-            description: formData.description
-        };
-        setServicesComponents(newServicesComponents);
-        setFormData(newFormData);
     };
 
     const handleDelete = (id) => {
@@ -173,7 +170,6 @@ const useServicesComponents = (serviceRequirementType, agreementId) => {
         setModalProps,
         setAlert,
         handleSubmit,
-        handleEdit,
         handleDelete,
         handleCancel,
         setFormDataById
