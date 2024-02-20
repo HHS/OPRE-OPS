@@ -7,7 +7,7 @@ import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import useServicesComponents from "./servicesComponents.hooks";
 import DebugCode from "./DebugCode";
 
-const ServicesComponents = ({ serviceRequirementType }) => {
+const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
     const {
         formData,
         modalProps,
@@ -21,7 +21,7 @@ const ServicesComponents = ({ serviceRequirementType }) => {
         handleDelete,
         handleCancel,
         setFormDataById
-    } = useServicesComponents();
+    } = useServicesComponents(serviceRequirementType, agreementId);
 
     return (
         <>

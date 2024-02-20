@@ -242,7 +242,7 @@ export const opsApi = createApi({
         addServicesComponent: builder.mutation({
             query: (data) => {
                 return {
-                    url: `/services-component/`,
+                    url: `/services-components/`,
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: data
@@ -253,7 +253,7 @@ export const opsApi = createApi({
         updateServicesComponent: builder.mutation({
             query: ({ id, data }) => {
                 return {
-                    url: `/services-component/${id}`,
+                    url: `/services-components/${id}`,
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: data

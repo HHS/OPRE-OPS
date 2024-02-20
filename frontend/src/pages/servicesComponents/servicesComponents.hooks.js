@@ -4,7 +4,7 @@ import { initialFormData, backendServicesComponents } from "./servicesComponents
 import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
 import { useAddServicesComponentMutation, useUpdateServicesComponentMutation } from "../../api/opsAPI";
 
-const useServicesComponents = () => {
+const useServicesComponents = (serviceRequirementType, agreementId) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
     const [formData, setFormData] = React.useState(initialFormData);
     const [servicesComponents, setServicesComponents] = React.useState([]);
@@ -12,6 +12,8 @@ const useServicesComponents = () => {
     const [modalProps, setModalProps] = React.useState({});
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
+
+    console.log({ agreementId });
     const handleSubmit = (e) => {
         // NOTE: Services Components here: https://github.com/HHS/OPRE-OPS/pull/1927
         e.preventDefault();
@@ -19,7 +21,8 @@ const useServicesComponents = () => {
 
         if (formData.mode === "add") {
             const newFormData = {
-                id: crypto.randomUUID(),
+                // id: crypto.randomUUID(),
+                contract_agreement_id: agreementId,
                 number: Number(formData.number),
                 optional: Boolean(formData.optional),
                 description: formData.description,
