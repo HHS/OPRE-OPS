@@ -5,7 +5,8 @@ import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents
 import {
     useAddServicesComponentMutation,
     useUpdateServicesComponentMutation,
-    useGetServicesComponentsListQuery
+    useGetServicesComponentsListQuery,
+    useDeleteServicesComponentMutation
 } from "../../api/opsAPI";
 
 const useServicesComponents = (serviceRequirementType, agreementId) => {
@@ -17,8 +18,9 @@ const useServicesComponents = (serviceRequirementType, agreementId) => {
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
+    const [deleteServicesComponent] = useDeleteServicesComponentMutation();
 
-    const { data, isSuccess, error, isLoading } = useGetServicesComponentsListQuery(1);
+    const { data, isSuccess, error } = useGetServicesComponentsListQuery(1);
 
     React.useEffect(() => {
         if (isSuccess) {
@@ -104,24 +106,18 @@ const useServicesComponents = (serviceRequirementType, agreementId) => {
     const handleDelete = (id) => {
         const index = servicesComponents.findIndex((component) => component.id === id);
         const selectedServicesComponent = servicesComponents[index];
-        const newServicesComponents = servicesComponents.filter((component) => component.id !== id);
 
-        let formattedServiceComponent = formatServiceComponent(
-            selectedServicesComponent.servicesComponent,
-            selectedServicesComponent.optional,
-            serviceTypeReq
-        );
         setShowModal(true);
         setModalProps({
-            heading: `Are you sure you want to delete ${formattedServiceComponent}?`,
+            heading: `Are you sure you want to delete ${selectedServicesComponent.display_title}?`,
             actionButtonText: "Delete",
             secondaryButtonText: "Cancel",
             handleConfirm: () => {
-                setServicesComponents(newServicesComponents);
+                deleteServicesComponent(id);
                 setAlert({
                     type: "success",
                     heading: "Services Component Deleted",
-                    message: `${formattedServiceComponent} has been successfully deleted.`
+                    message: `${selectedServicesComponent.display_title} has been successfully deleted.`
                 });
             }
         });
