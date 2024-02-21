@@ -156,6 +156,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             })
         };
         const { id, cleanData } = cleanAgreementForApi(data);
+        // TODO: check if agreement data has changed and return if not
 
         if (id) {
             await updateAgreement({ id: id, data: cleanData })
