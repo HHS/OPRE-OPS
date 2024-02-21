@@ -47,6 +47,9 @@ it("can create an agreement", () => {
     cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    // complete contract type and service req type
+    cy.get("#contractType").select("FIRM_FIXED_PRICE");
+    cy.get("#serviceReqType").select("SEVERABLE");
     // Test validation for Agreement Title
     cy.get("#name").type("Test Agreement Title");
     cy.get("#name").clear();
@@ -119,8 +122,8 @@ it("can create an agreement", () => {
             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
             headers: {
                 Authorization: bearer_token,
-                Accept: "application/json",
-            },
+                Accept: "application/json"
+            }
         }).then((response) => {
             expect(response.status).to.eq(200);
         });

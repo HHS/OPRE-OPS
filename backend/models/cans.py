@@ -32,10 +32,9 @@ from typing_extensions import override
 
 class BudgetLineItemStatus(Enum):
     DRAFT = 1
-    UNDER_REVIEW = 2
-    PLANNED = 3
-    IN_EXECUTION = 4
-    OBLIGATED = 5
+    PLANNED = 2
+    IN_EXECUTION = 3
+    OBLIGATED = 4
 
 
 class CANArrangementType(Enum):
