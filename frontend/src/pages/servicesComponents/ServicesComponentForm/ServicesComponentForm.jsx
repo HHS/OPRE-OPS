@@ -19,7 +19,7 @@ import DebugCode from "../DebugCode";
  * @param {Function} props.handleSubmit - Function to handle form submission.
  * @param {Function} props.handleCancel - Function to handle form cancellation.
  * @returns {JSX.Element} The rendered ServicesComponentForm component.
- * 
+ *
  * @example
  * <ServicesComponentForm serviceTypeReq="SEVERABLE" formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} handleCancel={handleCancel} />
  */
