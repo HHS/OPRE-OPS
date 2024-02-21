@@ -6,6 +6,8 @@ import suite from "./suite";
 import Input from "../Input";
 import TextArea from "../TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
+import AllServicesComponentSelect from "../../../../pages/servicesComponents/AllServicesComponentSelect";
+import DebugCode from "../../../../pages/servicesComponents/DebugCode";
 
 /**
  * A form for creating or editing a budget line.
@@ -50,7 +52,8 @@ export const CreateBudgetLinesForm = ({
     handleEditForm = () => {},
     handleSubmitForm = () => {},
     handleResetForm = () => {},
-    isReviewMode
+    isReviewMode,
+    agreementId
 }) => {
     let res = suite.get();
 
@@ -93,7 +96,8 @@ export const CreateBudgetLinesForm = ({
         <form className="grid-row grid-gap">
             <div className="grid-col-4">
                 <div className="usa-form-group">
-                    <Input
+                    <AllServicesComponentSelect agreementId={agreementId} />
+                    {/* <Input
                         name="enteredDescription"
                         label="Description"
                         messages={res.getErrors("enteredDescription")}
@@ -105,7 +109,7 @@ export const CreateBudgetLinesForm = ({
                                 runValidate(name, value);
                             }
                         }}
-                    />
+                    /> */}
                 </div>
                 <div className="usa-form-group">
                     <CanSelect
@@ -194,6 +198,18 @@ export const CreateBudgetLinesForm = ({
                     </button>
                 )}
             </div>
+            <DebugCode
+                title="Form Data"
+                data={{
+                    selectedCan,
+                    enteredAmount,
+                    enteredMonth,
+                    enteredDay,
+                    enteredYear,
+                    enteredComments,
+                    isEditing
+                }}
+            />
         </form>
     );
 };

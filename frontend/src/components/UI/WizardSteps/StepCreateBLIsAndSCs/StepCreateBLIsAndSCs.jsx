@@ -16,8 +16,8 @@ import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 import ServicesComponents from "../../../../pages/servicesComponents";
 
 /**
- * Renders the Create Budget Lines component with React context.
- *
+ * Renders the Create Budget Lines and Services Components with React context.
+ * @component
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
  * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
@@ -386,6 +386,7 @@ export const StepCreateBLIsAndSCs = ({
                 handleSubmitForm={handleSubmitForm}
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
+                agreementId={selectedAgreement.id}
             />
             {workflow !== "none" && (
                 <>
