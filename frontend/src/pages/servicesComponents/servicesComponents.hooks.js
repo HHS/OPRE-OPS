@@ -20,7 +20,7 @@ const useServicesComponents = (agreementId) => {
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
     const [deleteServicesComponent] = useDeleteServicesComponentMutation();
 
-    const { data, isSuccess, error } = useGetServicesComponentsListQuery(1);
+    const { data, isSuccess, error } = useGetServicesComponentsListQuery(agreementId);
 
     React.useEffect(() => {
         if (isSuccess) {
