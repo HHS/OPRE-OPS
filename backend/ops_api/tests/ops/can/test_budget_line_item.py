@@ -116,12 +116,14 @@ def test_post_budget_line_items(auth_client):
         status="DRAFT",
         date_needed="2043-01-01",
         proc_shop_fee_percentage=1.23,
+        services_component_id=1,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
     assert response.status_code == 201
     assert response.json["line_description"] == "LI 1"
     assert response.json["amount"] == 100.12
     assert response.json["status"] == "DRAFT"
+    assert response.json["services_component_id"] == 1
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -496,6 +498,8 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items(auth_client, loaded_db):
+    # TODO: setting the services_component_id is not working on create
+    # sc: ServicesComponent = loaded_db.get(ServicesComponent, 1)
     bli = BudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -507,7 +511,10 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         date_needed=datetime.date(2043, 1, 1),
         proc_shop_fee_percentage=1.23,
         created_by=1,
+        # services_component_id=1
+        # services_component=sc
     )
+    # bli.services_component_id = 1
     try:
         loaded_db.add(bli)
         loaded_db.commit()
@@ -521,6 +528,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
             status="PLANNED",
             date_needed="2044-01-01",
             proc_shop_fee_percentage=2.34,
+            services_component_id=2,
         )
         response = auth_client.patch("/api/v1/budget-line-items/1000", json=data.__dict__)
         assert response.status_code == 200
@@ -534,6 +542,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         assert response.json["date_needed"] == "2044-01-01"
         assert response.json["proc_shop_fee_percentage"] == 2.34
         assert response.json["created_on"] != response.json["updated_on"]
+        assert response.json["services_component_id"] == 2
 
     finally:
         # cleanup
