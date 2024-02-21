@@ -4,6 +4,8 @@ from typing import Optional
 
 import marshmallow_dataclass as mmdc
 from flask import Response
+
+# from models import OpsEventType
 from models.base import BaseModel
 from models.workflows import (
     AcquisitionPlanning,
@@ -16,7 +18,11 @@ from models.workflows import (
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+
+# from ops_api.ops.utils.events import OpsEventHandler
 from typing_extensions import override
+
+PROCUREMENT_ACQUISITIONS_ENDPOINT_STRING = "/procurement-acquisitions/"
 
 
 @dataclass
@@ -159,6 +165,33 @@ class AcquisitionListAPI(BaseListAPI):
     @handle_api_error
     def get(self) -> Response:
         return super().get()
+
+    # @override
+    # @is_authorized(PermissionType.POST, Permission.WORKFLOW)
+    # @handle_api_error
+    # def post(self) -> Response:
+    #     message_prefix = f"POST to {PROCUREMENT_ACQUISITIONS_ENDPOINT_STRING}"
+    #     with OpsEventHandler(OpsEventType.CREATE_PROCUREMENT_ACQUISITION) as meta:
+    #         self._post_schema.context["method"] = "POST"
+    #
+    #         data = self._post_schema.dump(self._post_schema.load(request.json))
+    #         data["period_start"] = date.fromisoformat(data["period_start"]) if data.get("period_start") else None
+    #         data["period_end"] = date.fromisoformat(data["period_end"]) if data.get("period_end") else None
+    #
+    #         new_sc = ServicesComponent(**data)
+    #
+    #         token = verify_jwt_in_request()
+    #         user = get_user_from_token(token[1])
+    #         new_sc.created_by = user.id
+    #
+    #         current_app.db_session.add(new_sc)
+    #         current_app.db_session.commit()
+    #
+    #         new_sc_dict = self._response_schema.dump(new_sc)
+    #         meta.metadata.update({"new_sc": new_sc_dict})
+    #         current_app.logger.info(f"{message_prefix}: New BLI created: {new_sc_dict}")
+    #
+    #         return make_response_with_headers(new_sc_dict, 201)
 
 
 # Pre-Solicitation Endpoints
