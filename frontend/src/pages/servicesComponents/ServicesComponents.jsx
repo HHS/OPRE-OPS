@@ -13,6 +13,9 @@ import DebugCode from "./DebugCode";
  * @param {string} props.serviceRequirementType - The type of service requirement.
  * @param {number} props.agreementId - The ID of the agreement.
  * @returns {JSX.Element}
+ *
+ * @example
+ *  <ServicesComponents serviceRequirementType="SEVERABLE" agreementId={123} />
  */
 const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
     const {
@@ -26,7 +29,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
         handleDelete,
         handleCancel,
         setFormDataById
-    } = useServicesComponents(serviceRequirementType, agreementId);
+    } = useServicesComponents(agreementId);
 
     return (
         <>

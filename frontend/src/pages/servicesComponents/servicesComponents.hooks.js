@@ -9,7 +9,7 @@ import {
     useDeleteServicesComponentMutation
 } from "../../api/opsAPI";
 
-const useServicesComponents = (serviceRequirementType, agreementId) => {
+const useServicesComponents = (agreementId) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
     const [formData, setFormData] = React.useState(initialFormData);
     const [servicesComponents, setServicesComponents] = React.useState([]);
