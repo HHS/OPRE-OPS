@@ -3,17 +3,21 @@ import { createContext, useContext, useReducer } from "react";
 export const CreateBudgetLinesContext = createContext(null);
 export const CreateBudgetLinesDispatchContext = createContext(null);
 
-const initialState = {
-    new_budget_lines: [],
+const initialForm = {
     is_editing_budget_line: false,
     selected_can: {},
-    entered_description: "",
+    services_component_id: -1,
     entered_amount: null,
     entered_month: "",
     entered_day: "",
     entered_year: "",
     entered_comments: "",
     budget_line_being_edited: -1
+};
+
+const initialState = {
+    new_budget_lines: [],
+    ...initialForm
 };
 
 export function CreateBudgetLinesProvider({ children }) {
@@ -135,31 +139,11 @@ function budgetLinesReducer(state, action) {
         case "RESET_FORM": {
             return {
                 ...state,
-                entered_description: "",
-                entered_comments: "",
-                selected_can: {},
-                entered_amount: null,
-                entered_month: "",
-                entered_day: "",
-                entered_year: "",
-                budget_line_being_edited: -1,
-                is_editing_budget_line: false
+                ...initialForm
             };
         }
         case "RESET_FORM_AND_BUDGET_LINES": {
-            return {
-                ...state,
-                entered_description: "",
-                entered_comments: "",
-                selected_can: {},
-                entered_amount: null,
-                entered_month: "",
-                entered_day: "",
-                entered_year: "",
-                budget_line_being_edited: -1,
-                is_editing_budget_line: false,
-                new_budget_lines: []
-            };
+            return initialState;
         }
         case "RESET_TO_INITIAL_STATE": {
             return initialState;

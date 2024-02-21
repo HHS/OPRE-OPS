@@ -3,7 +3,6 @@ import classnames from "vest/classnames";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
 import suite from "./suite";
-import Input from "../Input";
 import TextArea from "../TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../../../pages/servicesComponents/AllServicesComponentSelect";
@@ -13,14 +12,14 @@ import DebugCode from "../../../../pages/servicesComponents/DebugCode";
  * A form for creating or editing a budget line.
  * @param {Object} props - The component props.
  * @param {Object} props.selectedCan - The currently selected CAN.
- * @param {string} props.enteredDescription - The entered budget line description.
+ * @param {number} props.servicesComponentId - The selected services component ID.
  * @param {number} props.enteredAmount - The entered budget line amount.
  * @param {string|number} props.enteredMonth - The entered budget line desired award month.
  * @param {string|number} props.enteredDay - The entered budget line desired award day.
  * @param {string|number} props.enteredYear - The entered budget line desired award year.
  * @param {string} props.enteredComments - The entered budget line comments.
  * @param {boolean} props.isEditing - Whether the form is in edit mode.
- * @param {function} props.setEnteredDescription - A function to set the entered budget line description.
+ * @param {function} props.setServicesComponentId - A function to set the selected services component ID.
  * @param {function} props.setSelectedCan - A function to set the selected CAN.
  * @param {function} props.setEnteredAmount - A function to set the entered budget line amount.
  * @param {function} props.setEnteredMonth - A function to set the entered budget line desired award month.
@@ -31,18 +30,19 @@ import DebugCode from "../../../../pages/servicesComponents/DebugCode";
  * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
+ * @param {number} props.agreementId - The agreement ID.
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
     selectedCan,
-    enteredDescription,
+    servicesComponentId,
     enteredAmount,
     enteredMonth,
     enteredDay,
     enteredYear,
     enteredComments,
     isEditing,
-    setEnteredDescription,
+    setServicesComponentId,
     setSelectedCan,
     setEnteredAmount,
     setEnteredMonth,
@@ -63,13 +63,13 @@ export const CreateBudgetLinesForm = ({
         warning: "warning"
     });
     const isFormComplete =
-        selectedCan && enteredDescription && enteredAmount && enteredMonth && enteredDay && enteredYear;
+        selectedCan && servicesComponentId && enteredAmount && enteredMonth && enteredDay && enteredYear;
 
     // validate all budgetline fields if in review mode and is editing
     if (isReviewMode && isEditing) {
         suite({
             selectedCan,
-            enteredDescription,
+            // enteredDescription,
             enteredAmount,
             enteredMonth,
             enteredDay,
@@ -81,7 +81,7 @@ export const CreateBudgetLinesForm = ({
         suite(
             {
                 selectedCan,
-                enteredDescription,
+                // enteredDescription,
                 enteredAmount,
                 enteredMonth,
                 enteredDay,
@@ -96,20 +96,13 @@ export const CreateBudgetLinesForm = ({
         <form className="grid-row grid-gap">
             <div className="grid-col-4">
                 <div className="usa-form-group">
-                    <AllServicesComponentSelect agreementId={agreementId} />
-                    {/* <Input
-                        name="enteredDescription"
-                        label="Description"
-                        messages={res.getErrors("enteredDescription")}
-                        className={cn("enteredDescription")}
-                        value={enteredDescription || ""}
+                    <AllServicesComponentSelect
+                        agreementId={agreementId}
+                        value={servicesComponentId || ""}
                         onChange={(name, value) => {
-                            setEnteredDescription(value);
-                            if (isReviewMode) {
-                                runValidate(name, value);
-                            }
+                            setServicesComponentId(+value);
                         }}
-                    /> */}
+                    />
                 </div>
                 <div className="usa-form-group">
                     <CanSelect
@@ -201,6 +194,7 @@ export const CreateBudgetLinesForm = ({
             <DebugCode
                 title="Form Data"
                 data={{
+                    servicesComponentId,
                     selectedCan,
                     enteredAmount,
                     enteredMonth,
@@ -216,14 +210,14 @@ export const CreateBudgetLinesForm = ({
 
 CreateBudgetLinesForm.propTypes = {
     selectedCan: PropTypes.object,
-    enteredDescription: PropTypes.string,
+    servicesComponentId: PropTypes.number,
     enteredAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     enteredComments: PropTypes.string,
     isEditing: PropTypes.bool,
-    setEnteredDescription: PropTypes.func,
+    setServicesComponentId: PropTypes.func,
     setSelectedCan: PropTypes.func,
     setEnteredAmount: PropTypes.func,
     setEnteredMonth: PropTypes.func,
@@ -233,7 +227,8 @@ CreateBudgetLinesForm.propTypes = {
     handleEditForm: PropTypes.func,
     handleSubmitForm: PropTypes.func,
     handleResetForm: PropTypes.func,
-    isReviewMode: PropTypes.bool
+    isReviewMode: PropTypes.bool,
+    agreementId: PropTypes.number
 };
 
 export default CreateBudgetLinesForm;

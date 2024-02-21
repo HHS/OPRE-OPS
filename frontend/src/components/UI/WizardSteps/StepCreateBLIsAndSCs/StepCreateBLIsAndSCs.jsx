@@ -14,6 +14,7 @@ import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from ".
 import useAlert from "../../../../hooks/use-alert.hooks";
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 import ServicesComponents from "../../../../pages/servicesComponents";
+import DebugCode from "../../../../pages/servicesComponents/DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -62,7 +63,7 @@ export const StepCreateBLIsAndSCs = ({
 
     const {
         selected_can: selectedCan,
-        entered_description: enteredDescription,
+        services_component_id: servicesComponentId,
         entered_amount: enteredAmount,
         entered_month: enteredMonth,
         entered_day: enteredDay,
@@ -90,7 +91,7 @@ export const StepCreateBLIsAndSCs = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { setAlert } = useAlert();
     // setters
-    const setEnteredDescription = useSetState("entered_description");
+    const setServicesComponentId = useSetState("services_component_id");
     const setSelectedCan = useSetState("selected_can");
     const setEnteredAmount = useSetState("entered_amount");
     const setEnteredMonth = useSetState("entered_month");
@@ -117,7 +118,7 @@ export const StepCreateBLIsAndSCs = ({
             type: "ADD_BUDGET_LINE",
             payload: {
                 id: crypto.getRandomValues(new Uint32Array(1))[0],
-                line_description: enteredDescription || "",
+                services_component_id: servicesComponentId || -1,
                 comments: enteredComments || "",
                 can_id: selectedCan?.id || null,
                 can: selectedCan || null,
@@ -142,7 +143,7 @@ export const StepCreateBLIsAndSCs = ({
             type: "EDIT_BUDGET_LINE",
             payload: {
                 id: newBudgetLines[budgetLineBeingEdited].id,
-                line_description: enteredDescription,
+                services_component_id: servicesComponentId,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
                 can: selectedCan,
@@ -367,14 +368,14 @@ export const StepCreateBLIsAndSCs = ({
             )}
             <CreateBudgetLinesForm
                 selectedCan={selectedCan}
-                enteredDescription={enteredDescription}
+                servicesComponentId={servicesComponentId}
                 enteredAmount={enteredAmount}
                 enteredMonth={enteredMonth}
                 enteredDay={enteredDay}
                 enteredYear={enteredYear}
                 enteredComments={enteredComments}
                 isEditing={isEditing}
-                setEnteredDescription={setEnteredDescription}
+                setServicesComponentId={setServicesComponentId}
                 setSelectedCan={setSelectedCan}
                 setEnteredAmount={setEnteredAmount}
                 setEnteredMonth={setEnteredMonth}
@@ -431,6 +432,10 @@ export const StepCreateBLIsAndSCs = ({
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                 canUserEditBudgetLines={canUserEditBudgetLines}
                 isReviewMode={isReviewMode}
+            />
+            <DebugCode
+                title="Budget Lines"
+                data={newBudgetLines}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button

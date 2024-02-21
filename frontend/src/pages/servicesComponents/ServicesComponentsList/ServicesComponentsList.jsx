@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import ServicesComponentListItem from "../ServicesComponentListItem";
-import DebugCode from "../DebugCode";
 
 /**
  * ServicesComponentsList is a component that displays a list of service components.
@@ -36,10 +35,6 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
             ) : (
                 <p>You have not added any Services Component yet.</p>
             )}
-            <DebugCode
-                title="Services Components"
-                data={servicesComponents}
-            />
         </section>
     );
 }

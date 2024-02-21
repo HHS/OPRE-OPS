@@ -1,7 +1,7 @@
 import Select from "../Select";
 import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 
-function AllServicesComponentSelect({ value, onChange, options, agreementId }) {
+function AllServicesComponentSelect({ value, onChange, agreementId }) {
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId);
 
     const selectOptions = servicesComponents?.map((serviceComponent) => {
