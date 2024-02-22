@@ -214,9 +214,9 @@ SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("servic
 
 
 # Procurement - Acquisition ENDPOINTS
-PROCUREMENT_ACQUISITION_ITEM_API_VIEW_FUNC = AcquisitionItemAPI.as_view(
-    "procurement-acquisition-item", AcquisitionPlanning
+PROCUREMENT_ACQUISITION_PLANNING_LIST_API_VIEW_FUNC = AcquisitionListAPI.as_view(
+    "procurement-acquisition-planning-group", AcquisitionPlanning
 )
-PROCUREMENT_ACQUISITION_LIST_API_VIEW_FUNC = AcquisitionListAPI.as_view(
-    "procurement-acquisition-group", AcquisitionPlanning
+PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC = AcquisitionItemAPI.as_view(
+    "procurement-acquisition-planning-item", AcquisitionPlanning
 )

@@ -328,12 +328,14 @@ class ProcurementStep(BaseModel):
 
 class Attestation(object):
     is_complete = sa.Column(sa.Boolean, nullable=False, default=False)
+    # Q: should this be a Date
     actual_date = sa.Column(sa.DateTime, nullable=True)
     completed_by = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
     notes = sa.Column(sa.String, nullable=True)
 
 
 class TargetDate(object):
+    # Q: should this be a Date
     target_date = sa.Column(sa.DateTime, nullable=True)
 
 
