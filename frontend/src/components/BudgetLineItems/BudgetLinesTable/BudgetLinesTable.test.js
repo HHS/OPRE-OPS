@@ -44,7 +44,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLinesAdded={mockBudgetLines}
+                budgetLines={mockBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
@@ -62,7 +62,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLinesAdded={mockBudgetLines}
+                budgetLines={mockBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}

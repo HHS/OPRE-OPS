@@ -426,7 +426,7 @@ export const StepCreateBLIsAndSCs = ({
                 </ul>
             )}
             <BudgetLinesTable
-                budgetLinesAdded={newBudgetLines}
+                budgetLines={newBudgetLines}
                 handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                 handleDeleteBudgetLine={handleDeleteBudgetLine}
                 handleDuplicateBudgetLine={handleDuplicateBudgetLine}

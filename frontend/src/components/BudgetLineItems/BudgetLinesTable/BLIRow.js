@@ -31,6 +31,7 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
  * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
+ * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @returns {React.JSX.Element} The BLIRow component.
  **/
 const BLIRow = ({
@@ -75,10 +76,7 @@ const BLIRow = ({
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(
-                    budgetLine?.line_description,
-                    isReviewMode
-                )} ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(budgetLine?.display_name, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {isApprovePageAndBLIIsNotInPacket ? (
