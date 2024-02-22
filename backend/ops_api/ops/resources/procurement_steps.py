@@ -1,6 +1,4 @@
-from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Optional
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
@@ -17,122 +15,23 @@ from models.workflows import (
     Solicitation,
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.schemas.procurement_steps import (
+    AcquisitionPlanningPatch,
+    AcquisitionPlanningPost,
+    AcquisitionPlanningResponse,
+    AwardResponse,
+    EvaluationResponse,
+    PreAwardResponse,
+    PreSolicitationResponse,
+    ProcurementStepResponse,
+    SolicitationResponse,
+)
 from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_model_instance
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 from typing_extensions import override
-
-
-@dataclass
-class ProcurementStepResponse:
-    id: int
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    target_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    created_by: Optional[int] = None
-
-
-@dataclass
-class AcquisitionPlanningResponse:
-    id: int
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    created_by: Optional[int] = None
-
-
-@dataclass
-class AcquisitionPlanningPost:
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-
-
-@dataclass
-class AcquisitionPlanningPatch:
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-
-
-@dataclass
-class PreSolicitationResponse:
-    id: int
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    target_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    created_by: Optional[int] = None
-
-
-@dataclass
-class SolicitationResponse:
-    id: int
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    target_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    created_by: Optional[int] = None
-
-
-@dataclass
-class EvaluationResponse:
-    id: int
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    target_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    created_by: Optional[int] = None
-
-
-@dataclass
-class PreAwardResponse:
-    id: int
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    target_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    created_by: Optional[int] = None
-
-
-@dataclass
-class AwardResponse:
-    id: int
-    agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
-    is_complete: Optional[bool] = None
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    completed_by: Optional[int] = None
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    created_by: Optional[int] = None
-    vendor: Optional[str] = None
-    vendor_type: Optional[str] = None
-    financial_number: Optional[str] = None
 
 
 # Procurement Step Endpoints
