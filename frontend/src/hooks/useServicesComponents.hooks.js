@@ -25,7 +25,7 @@ export const useGetServicesComponentDisplayName = (id) => {
 /**
  * This hook returns the long title of a services component given its id.
  * @param {number} id - The id of the services component.
- * @returns {string} - The short code of the services component.
+ * @returns {string} - The long form title of the services component.
  *
  * @example
  * const servicesComponentDisplayTitle = useGetServicesComponentDisplayTitle(1);
