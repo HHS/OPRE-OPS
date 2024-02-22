@@ -17,12 +17,12 @@ function ServiceReqTypeSelect({ value, onChange, ...rest }) {
 
 const SERVICE_REQ_TYPES_OPTIONS = [
     {
-        label: "Non-Severable",
-        value: "NON_SEVERABLE"
-    },
-    {
         label: "Severable",
         value: "SEVERABLE"
+    },
+    {
+        label: "Non-Severable",
+        value: "NON_SEVERABLE"
     }
 ];
 
