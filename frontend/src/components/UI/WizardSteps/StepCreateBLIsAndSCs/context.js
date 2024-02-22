@@ -71,7 +71,7 @@ function budgetLinesReducer(state, action) {
             const index = state.new_budget_lines.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
-                const { line_description, comments, can, amount, date_needed } = state.new_budget_lines[index];
+                const { services_component_id, comments, can, amount, date_needed } = state.new_budget_lines[index];
                 let entered_year = "";
                 let entered_month = "";
                 let entered_day = "";
@@ -83,7 +83,7 @@ function budgetLinesReducer(state, action) {
                 return {
                     ...state,
                     is_editing_budget_line: true,
-                    entered_description: line_description,
+                    services_component_id,
                     entered_comments: comments,
                     selected_can: {
                         ...can
