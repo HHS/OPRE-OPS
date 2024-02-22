@@ -14,7 +14,6 @@ import "./BudgetLinesTable.scss";
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
- * @param {Boolean} [props.showTotalSummaryCard] - A flag to indicate if the total summary card should be displayed.
  * @param {Array<number>} [props.workflowBudgetLineItemIds] - An array of budget line item ids that are in the current workflow. - optional
  * @returns {JSX.Element} - The rendered table component.
  */
@@ -25,7 +24,6 @@ const BudgetLinesTable = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
-    showTotalSummaryCard = true,
     workflowBudgetLineItemIds = []
 }) => {
     const sortedBudgetLines = budgetLines
@@ -51,7 +49,6 @@ const BudgetLinesTable = ({
                     />
                 ))}
             </Table>
-            {showTotalSummaryCard && <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>}
         </>
     );
 };
@@ -65,7 +62,6 @@ BudgetLinesTable.propTypes = {
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
     isReviewMode: PropTypes.bool,
-    showTotalSummaryCard: PropTypes.bool,
     workflowBudgetLineItemIds: PropTypes.arrayOf(PropTypes.number)
 };
 
