@@ -108,7 +108,10 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                         </button>
                     </>
                 ) : (
-                    <button className="usa-button usa-button--outline margin-right-0">
+                    <button
+                        className="usa-button usa-button--outline margin-right-0"
+                        data-cy="add-services-component-btn"
+                    >
                         <FontAwesomeIcon
                             icon={faAdd}
                             className="height-2 width-2"

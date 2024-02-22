@@ -161,7 +161,7 @@ it("click on edit bli and check to see if the form is populated", () => {
     cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
     cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
-    cy.get("#enteredDescription").should("have.value", "LI 1");
+    cy.get("#allServicesComponentSelect").should("have.value", "1");
     cy.get("#selectedCan").should("have.value", "G994426");
     cy.get("#enteredMonth").should("have.value", "6");
     cy.get("#enteredDay").should("have.value", "13");

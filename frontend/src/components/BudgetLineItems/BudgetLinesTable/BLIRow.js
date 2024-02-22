@@ -15,6 +15,7 @@ import {
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
@@ -46,6 +47,7 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
+    const servicesComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
@@ -84,10 +86,10 @@ const BLIRow = ({
                         label="This budget line was not sent for approval"
                         position="right"
                     >
-                        <span>{budgetLine?.line_description}</span>
+                        <span>{budgetLine?.display_name}</span>
                     </Tooltip>
                 ) : (
-                    budgetLine?.line_description
+                    budgetLine?.display_name || servicesComponentName
                 )}
             </th>
             <td
