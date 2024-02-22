@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import Table from "../../UI/Table";
-import TotalSummaryCard from "../TotalSummaryCard";
 import BLIRow from "./BLIRow";
 import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
 import "./BudgetLinesTable.scss";
