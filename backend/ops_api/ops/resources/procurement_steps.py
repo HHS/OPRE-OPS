@@ -17,7 +17,7 @@ from models.workflows import (
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.procurement_steps import (
     AcquisitionPlanningPatch,
-    AcquisitionPlanningPost,
+    AcquisitionPlanningRequestPost,
     AcquisitionPlanningResponse,
     AwardResponse,
     EvaluationResponse,
@@ -64,7 +64,7 @@ class AcquisitionItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
-        self._patch_schema = mmdc.class_schema(AcquisitionPlanningPatch)()
+        self._patch_schema = mmdc.class_schema(AcquisitionPlanningPatch)(dump_only=["type"])
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
@@ -82,9 +82,9 @@ class AcquisitionItemAPI(BaseItemAPI):
                 raise ValueError(f"Invalid AcquisitionPlanning id: {id}.")
             schema.context["id"] = id
             schema.context["method"] = method
-            print(f"{request.json['actual_date']=}")
-            data = get_change_data(request.json, old_acquisition_planning, schema, ["id", "agreement_id"])
-            print(f"{data['actual_date']=}")
+            print(f"{request.json=}")
+            data = get_change_data(request.json, old_acquisition_planning, schema, ["id", "type", "agreement_id"])
+            print(f"{data=}")
             data["actual_date"] = (
                 datetime.fromisoformat(data["actual_date"].replace("Z", "+00:00")) if data.get("actual_date") else None
             )
@@ -116,7 +116,7 @@ class AcquisitionListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
-        self._post_schema = mmdc.class_schema(AcquisitionPlanningPost)()
+        self._post_schema = mmdc.class_schema(AcquisitionPlanningRequestPost)(exclude=["type"])
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
@@ -133,6 +133,7 @@ class AcquisitionListAPI(BaseListAPI):
             self._post_schema.context["method"] = "POST"
 
             data = self._post_schema.dump(self._post_schema.load(request.json))
+            # data.pop("type", None)
             data["actual_date"] = date.fromisoformat(data["actual_date"]) if data.get("actual_date") else None
 
             new_sc = AcquisitionPlanning(**data)
