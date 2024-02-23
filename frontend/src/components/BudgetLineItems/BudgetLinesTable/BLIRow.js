@@ -47,7 +47,7 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const servicesComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
+    const servicesComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? "TBD");
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
@@ -86,10 +86,10 @@ const BLIRow = ({
                         label="This budget line was not sent for approval"
                         position="right"
                     >
-                        <span>{budgetLine?.display_name}</span>
+                        <span>{servicesComponentName}</span>
                     </Tooltip>
                 ) : (
-                    budgetLine?.display_name || servicesComponentName
+                    servicesComponentName
                 )}
             </th>
             <td
