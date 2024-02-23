@@ -183,3 +183,12 @@ it("can edit a budget line if it is in DRAFT", () => {
     cy.get('[data-cy="continue-btn"]').should("exist");
     cy.get('[data-cy="continue-btn"]').click();
 });
+
+it("should not PATCH an agreement when no changes are made", () => {
+    cy.visit(`/agreements/edit/1`);
+    // step one
+    cy.get("#continue").click();
+    // step two and make NO change
+    cy.get("#continue").click();
+    cy.get("[data-cy='alert']").should("not.exist");
+});
