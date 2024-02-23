@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import useAlert from "../../../../hooks/use-alert.hooks";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
@@ -6,6 +7,19 @@ import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 import { useNavigate } from "react-router-dom";
 import suite from "./suite";
 
+/**
+ * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
+ *
+ * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
+ * @param {Array<Object>} existingBudgetLines - Array of existing budget lines.
+ * @param {Function} goToNext - Function to navigate to the next step.
+ * @param {Function} continueOverRide - Function to override the continue action.
+ * @param {Object} selectedAgreement - Selected agreement object.
+ * @param {Object} selectedProcurementShop - Selected procurement shop object.
+ * @param {Function} setIsEditMode - Function to set the edit mode.
+ *
+ * @returns {Object} Contains various state variables and functions to manage budget line items and service components.
+ */
 const useCreateBLIsAndSCs = (
     isReviewMode,
     existingBudgetLines,
@@ -315,6 +329,16 @@ const useCreateBLIsAndSCs = (
         newBudgetLines,
         res
     };
+};
+
+useCreateBLIsAndSCs.propTypes = {
+    isReviewMode: PropTypes.bool,
+    existingBudgetLines: PropTypes.array,
+    goToNext: PropTypes.func,
+    continueOverRide: PropTypes.func,
+    selectedAgreement: PropTypes.object,
+    selectedProcurementShop: PropTypes.object,
+    setIsEditMode: PropTypes.func
 };
 
 export default useCreateBLIsAndSCs;
