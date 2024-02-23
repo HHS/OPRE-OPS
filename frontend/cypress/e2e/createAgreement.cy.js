@@ -25,7 +25,7 @@ it("project type select has some projects", () => {
     cy.get("#project-combobox-input").type("{esc}");
 });
 
-it.only("can create an agreement", () => {
+it("can create an agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
     // Step One - Select a Project
@@ -78,7 +78,7 @@ it.only("can create an agreement", () => {
 
     cy.get("#agreementNotes").type("This is a note.");
     cy.get("[data-cy='continue-btn']").click();
-    // TODO: Add Services Component
+    //  Add Services Component
     cy.get("p").should("contain", "You have not added any Services Component yet.");
     cy.get("#servicesComponentSelect").select("1");
     cy.get("#popStartMonth").select("01 - Jan");
@@ -100,12 +100,11 @@ it.only("can create an agreement", () => {
     cy.get("#selectedCan").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
-    cy.pause();
     cy.get("#add-budget-line").click();
 
     // Duplicate budget line item
-    // cy.get("[id^=expand-]").click();
-    // cy.get("[id^=duplicate-]").click();
+    cy.get("[id^=expand-]").click();
+    cy.get("[id^=duplicate-]").click();
 
     // expand budget line and check that the "created by" name is not empty.
     cy.get("[id^=expand-]").each((_, element) => {
