@@ -4,6 +4,20 @@ import { Router } from "react-router-dom";
 import BudgetLinesTable from "./BudgetLinesTable";
 import store from "../../../store";
 
+const mockBudgetLinesOne = [
+    {
+        id: 1,
+        display_name: "TBD",
+        created_on: "2021-08-20",
+        date_needed: "2021-09-15",
+        can: { number: "001" },
+        amount: 1200,
+        proc_shop_fee_percentage: 0.05,
+        status: "DRAFT",
+        created_by: "1",
+        comments: "Note 1"
+    }
+];
 const mockBudgetLines = [
     {
         id: 1,
@@ -44,7 +58,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLines={mockBudgetLines}
+                budgetLines={mockBudgetLinesOne}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
@@ -53,7 +67,7 @@ describe("PreviewTable", () => {
             />,
             store
         );
-        mockBudgetLines.forEach((bl) => {
+        mockBudgetLinesOne.forEach((bl) => {
             expect(screen.getByText(bl.display_name)).toBeInTheDocument();
         });
     });
