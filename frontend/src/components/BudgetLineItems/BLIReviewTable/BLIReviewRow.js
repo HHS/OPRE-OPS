@@ -73,10 +73,7 @@ const BLIReviewRow = ({
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(
-                    budgetLine?.line_description,
-                    isReviewMode
-                )} ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(budgetLine?.display_name, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <input
@@ -97,7 +94,7 @@ const BLIReviewRow = ({
                     data-position="top"
                     title={toolTipMsg}
                 >
-                    {budgetLine?.line_description}
+                    {budgetLine?.display_name}
                 </label>
             </th>
             <td
