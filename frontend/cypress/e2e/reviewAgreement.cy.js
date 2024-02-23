@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe("agreement review workflow", () => {
-    it.only("review an agreement", () => {
+    it("review an agreement", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -245,7 +245,7 @@ describe("agreement review workflow", () => {
             });
         });
     });
-    it("review an agreement and DRAFT to PLANNED to EXECUTING", () => {
+    it.only("review an agreement and DRAFT to PLANNED to EXECUTING", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -281,10 +281,23 @@ describe("agreement review workflow", () => {
             cy.get("#description").type("Test Description");
             cy.get("#product_service_code_id").select(1);
             cy.get("#agreement_reason").select("NEW_REQ");
+            cy.get("#serviceReqType").select("Severable");
             cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
             cy.get("#team-member-combobox-input").type("Admin Demo{enter}");
             cy.get("#agreementNotes").type("This is a note.");
             cy.get("[data-cy='continue-btn']").click();
+            //  Add Services Component
+            cy.get("p").should("contain", "You have not added any Services Component yet.");
+            cy.get("#servicesComponentSelect").select("1");
+            cy.get("#popStartMonth").select("01 - Jan");
+            cy.get("#popStartDay").type("1");
+            cy.get("#popStartYear").type("2024");
+            cy.get("#popEndMonth").select("01 - Jan");
+            cy.get("#popEndDay").type("1");
+            cy.get("#popEndYear").type("2025");
+            cy.get("#description").type("This is a description.");
+            cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get("h2").should("contain", "Base Period 1");
             //create a budget line with errors
             cy.get("#add-budget-line").should("be.disabled");
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
@@ -423,6 +436,7 @@ describe("agreement review workflow", () => {
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             // table should have 2 rows
             cy.get("tbody").children().as("table-rows").should("have.length", 2);
+            cy.pause();
 
             // get table rows and should have text In Review
             cy.get("@table-rows").eq(0).should("contain", "In Review");
