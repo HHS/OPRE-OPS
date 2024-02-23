@@ -245,7 +245,7 @@ describe("agreement review workflow", () => {
             });
         });
     });
-    it.only("review an agreement and DRAFT to PLANNED to EXECUTING", () => {
+    it("review an agreement and DRAFT to PLANNED to EXECUTING", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
