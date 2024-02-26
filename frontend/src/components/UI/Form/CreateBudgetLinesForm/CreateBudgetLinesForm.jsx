@@ -66,10 +66,10 @@ export const CreateBudgetLinesForm = ({
         selectedCan && servicesComponentId && enteredAmount && enteredMonth && enteredDay && enteredYear;
 
     // validate all budgetline fields if in review mode and is editing
+    //TODO: update suite for Services Components
     if (isReviewMode && isEditing) {
         suite({
             selectedCan,
-            // enteredDescription,
             enteredAmount,
             enteredMonth,
             enteredDay,
@@ -81,7 +81,6 @@ export const CreateBudgetLinesForm = ({
         suite(
             {
                 selectedCan,
-                // enteredDescription,
                 enteredAmount,
                 enteredMonth,
                 enteredDay,

@@ -33,7 +33,7 @@ def test_budget_line_item_has_active_workflow(loaded_db):
 
 def test_budget_line_item_creation():
     bli = BudgetLineItem(
-        line_description="Grant Expendeture GA999",
+        line_description="Grant Expenditure GA999",
         agreement_id=1,
         can_id=1,
         amount=850450.00,
@@ -149,7 +149,6 @@ def test_post_budget_line_items_missing_agreement(auth_client):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
-        # agreement_id=1, # missing agreement number
         "can_id": 1,
         "amount": 100.12,
         "status": "DRAFT",
@@ -499,7 +498,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items(auth_client, loaded_db):
     # TODO: setting the services_component_id is not working on create
-    # sc: ServicesComponent = loaded_db.get(ServicesComponent, 1)
+    
     bli = BudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -511,10 +510,8 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         date_needed=datetime.date(2043, 1, 1),
         proc_shop_fee_percentage=1.23,
         created_by=1,
-        # services_component_id=1
-        # services_component=sc
     )
-    # bli.services_component_id = 1
+    
     try:
         loaded_db.add(bli)
         loaded_db.commit()
