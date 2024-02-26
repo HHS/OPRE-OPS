@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - cml/data-tools
     paths:
       - 'frontend/**'
 
