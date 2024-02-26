@@ -38,7 +38,14 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
  * @returns {React.JSX.Element} - The component JSX.
  */
-export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
+export const AgreementEditForm = ({
+    setHasAgreementChanged = () => {},
+    goBack,
+    goToNext,
+    isReviewMode,
+    isEditMode,
+    setIsEditMode
+}) => {
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -95,6 +102,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     // make a copy of the agreement object
     const hasAgreementChanged = useHasStateChanged(agreement);
+    setHasAgreementChanged(hasAgreementChanged);
 
     if (isReviewMode) {
         suite({
@@ -214,12 +222,14 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const handleContinue = async () => {
         await saveAgreement();
+        setHasAgreementChanged(false);
         if (isEditMode && setIsEditMode) setIsEditMode(false);
         await goToNext();
     };
 
     const handleDraft = async () => {
         await saveAgreement();
+        setHasAgreementChanged(false);
         await navigate("/agreements");
     };
 
@@ -236,6 +246,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     if (isEditMode && setIsEditMode) setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
+                setHasAgreementChanged(false);
             }
         });
     };
