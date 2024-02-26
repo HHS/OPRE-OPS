@@ -19,6 +19,7 @@ from models.workflows import (
     Package,
     PackageSnapshot,
     PreSolicitation,
+    Solicitation,
     WorkflowInstance,
     WorkflowStepInstance,
     WorkflowStepTemplate,
@@ -57,6 +58,8 @@ from ops_api.ops.resources.procurement_steps import (
     AcquisitionPlanningListAPI,
     PreSolicitationItemAPI,
     PreSolicitationListAPI,
+    SolicitationItemAPI,
+    SolicitationListAPI,
 )
 from ops_api.ops.resources.product_service_code import ProductServiceCodeItemAPI, ProductServiceCodeListAPI
 from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
@@ -227,10 +230,16 @@ PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC = AcquisitionPlanningItemAPI
     "procurement-acquisition-planning-item", AcquisitionPlanning
 )
 
-# Procurement: AcquisitionPlanning ENDPOINTS
+# Procurement: PreSolicitation ENDPOINTS
 PROCUREMENT_PRE_SOLICITATION_LIST_API_VIEW_FUNC = PreSolicitationListAPI.as_view(
     "procurement-pre-solicitation-group", PreSolicitation
 )
 PROCUREMENT_PRE_SOLICITATION_ITEM_API_VIEW_FUNC = PreSolicitationItemAPI.as_view(
     "procurement-pre-solicitation-item", PreSolicitation
 )
+
+# Procurement: Solicitation ENDPOINTS
+PROCUREMENT_SOLICITATION_LIST_API_VIEW_FUNC = SolicitationListAPI.as_view(
+    "procurement-solicitation-group", Solicitation
+)
+PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC = SolicitationItemAPI.as_view("procurement-solicitation-item", Solicitation)

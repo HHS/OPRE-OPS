@@ -43,6 +43,8 @@ from ops_api.ops.views import (
     PROCUREMENT_PRE_SOLICITATION_LIST_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
+    PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_SOLICITATION_LIST_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
@@ -346,4 +348,12 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/procurement-pre-solicitations/<int:id>",
         view_func=PROCUREMENT_PRE_SOLICITATION_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-solicitations/",
+        view_func=PROCUREMENT_SOLICITATION_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-solicitations/<int:id>",
+        view_func=PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC,
     )

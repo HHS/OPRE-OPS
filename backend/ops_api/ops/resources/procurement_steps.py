@@ -26,6 +26,7 @@ from ops_api.ops.schemas.procurement_steps import (
     PreSolicitationResponse,
     ProcurementStepRequest,
     ProcurementStepResponse,
+    SolicitationRequest,
     SolicitationResponse,
 )
 from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_model_instance
@@ -93,7 +94,7 @@ class ProcurementStepItemAPI(BaseItemAPI):
             data = get_change_data(request.json, old_instance, schema, ["id", "type", "agreement_id"])
             print(f"{data=}")
             for k in ["actual_date", "target_date"]:
-                if k in data:
+                if k in data and data[k] is not None:
                     data[k] = date.fromisoformat(data[k])
 
             updated_instance = update_and_commit_model_instance(old_instance, data)
@@ -158,28 +159,19 @@ class PreSolicitationItemAPI(ProcurementStepItemAPI):
 
 
 # Solicitation Endpoints
-class SolicitationItemAPI(BaseItemAPI):
+
+
+class SolicitationListAPI(ProcurementStepListAPI):
     def __init__(self, model: BaseModel = Solicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(SolicitationResponse)()
 
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self, id: int) -> Response:
-        return self._get_item_with_try(id)
 
-
-class SolicitationListAPI(BaseListAPI):
+class SolicitationItemAPI(ProcurementStepItemAPI):
     def __init__(self, model: BaseModel = Solicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(SolicitationResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self) -> Response:
-        return super().get()
+        self._patch_schema = mmdc.class_schema(SolicitationRequest)(dump_only=["type"])
 
 
 # Evaluation Endpoints
