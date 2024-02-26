@@ -47,13 +47,13 @@ class AcquisitionPlanningRequestPost(AcquisitionPlanningRequest):
     agreement_id: int
 
 
-@dataclass(kw_only=True)
-class AcquisitionPlanningPatch(AcquisitionPlanningRequest):
+@dataclass
+class PreSolicitationResponse(ProcurementStepResponse, Attestation, TargetDate):
     pass
 
 
 @dataclass
-class PreSolicitationResponse(ProcurementStepResponse, Attestation, TargetDate):
+class PreSolicitationRequest(ProcurementStepRequest, Attestation, TargetDate):
     pass
 
 

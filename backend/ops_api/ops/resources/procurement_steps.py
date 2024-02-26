@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
@@ -16,13 +16,15 @@ from models.workflows import (
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.procurement_steps import (
-    AcquisitionPlanningPatch,
+    AcquisitionPlanningRequest,
     AcquisitionPlanningRequestPost,
     AcquisitionPlanningResponse,
     AwardResponse,
     EvaluationResponse,
     PreAwardResponse,
+    PreSolicitationRequest,
     PreSolicitationResponse,
+    ProcurementStepRequest,
     ProcurementStepResponse,
     SolicitationResponse,
 )
@@ -34,8 +36,7 @@ from ops_api.ops.utils.user import get_user_from_token
 from typing_extensions import override
 
 
-# Procurement Step Endpoints
-class ProcurementStepItemAPI(BaseItemAPI):
+class BaseProcurementStepItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = ProcurementStep):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
@@ -45,6 +46,64 @@ class ProcurementStepItemAPI(BaseItemAPI):
     @handle_api_error
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
+
+
+# Procurement Step Endpoints
+def get_current_user_id():
+    token = verify_jwt_in_request()
+    user = get_user_from_token(token[1])
+    return user.id
+
+
+class ProcurementStepItemAPI(BaseItemAPI):
+    def __init__(self, model: BaseModel = ProcurementStep):
+        super().__init__(model)
+        self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
+        self._patch_schema = mmdc.class_schema(ProcurementStepRequest)(dump_only=["type"])
+
+    @override
+    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
+    @handle_api_error
+    def get(self, id: int) -> Response:
+        return self._get_item_with_try(id)
+
+    def _update(self, id, method, schema) -> Response:
+        message_prefix = f"{request.method} to {request.path}"
+        print(message_prefix)
+
+        with OpsEventHandler(OpsEventType.UPDATE_PROCUREMENT_ACQUISITION_PLANNING) as meta:
+            old_instance = self._get_item(id)
+            if not old_instance:
+                raise ValueError(f"Invalid {self.model.__name__} id: {id}.")
+            schema.context["id"] = id
+            schema.context["method"] = method
+            print(f"{request.json=}")
+            data = get_change_data(request.json, old_instance, schema, ["id", "type", "agreement_id"])
+            print(f"{data=}")
+            for k in ["actual_date", "target_date"]:
+                if k in data:
+                    data[k] = date.fromisoformat(data[k])
+
+            updated_instance = update_and_commit_model_instance(old_instance, data)
+            resp_dict = self._response_schema.dump(updated_instance)
+            import json
+
+            print(json.dumps(resp_dict, indent=2))
+            meta.metadata.update({self.model.__name__: resp_dict})
+            current_app.logger.info(f"{message_prefix}: Updated {self.model.__name__}: {resp_dict}")
+            resp_dict = {"message": f"{self.model.__name__} updated", "id": id}
+            return make_response_with_headers(resp_dict, 200)
+
+    @is_authorized(
+        PermissionType.PATCH,
+        Permission.WORKFLOW,
+        # TODO: extra check?
+        # extra_check=partial(sc_associated_with_contract_agreement, permission_type=PermissionType.PATCH),
+        # groups=["Budget Team", "Admins"],
+    )
+    @handle_api_error
+    def patch(self, id: int) -> Response:
+        return self._update(id, "PATCH", self._patch_schema)
 
 
 class ProcurementStepListAPI(BaseListAPI):
@@ -60,59 +119,14 @@ class ProcurementStepListAPI(BaseListAPI):
 
 
 # Acquisition Planning Endpoints
-class AcquisitionItemAPI(BaseItemAPI):
+class AcquisitionPlanningItemAPI(ProcurementStepItemAPI):
     def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
-        self._patch_schema = mmdc.class_schema(AcquisitionPlanningPatch)(dump_only=["type"])
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self, id: int) -> Response:
-        return self._get_item_with_try(id)
-
-    def _update(self, id, method, schema) -> Response:
-        message_prefix = f"{request.method} to {request.path}"
-        print(message_prefix)
-
-        with OpsEventHandler(OpsEventType.UPDATE_PROCUREMENT_ACQUISITION_PLANNING) as meta:
-            old_acquisition_planning: AcquisitionPlanning = self._get_item(id)
-            if not old_acquisition_planning:
-                raise ValueError(f"Invalid AcquisitionPlanning id: {id}.")
-            schema.context["id"] = id
-            schema.context["method"] = method
-            print(f"{request.json=}")
-            data = get_change_data(request.json, old_acquisition_planning, schema, ["id", "type", "agreement_id"])
-            print(f"{data=}")
-            data["actual_date"] = (
-                datetime.fromisoformat(data["actual_date"].replace("Z", "+00:00")) if data.get("actual_date") else None
-            )
-            print(f"{data['actual_date']=}")
-
-            acquisition_planning = update_and_commit_model_instance(old_acquisition_planning, data)
-            resp_dict = self._response_schema.dump(acquisition_planning)
-            import json
-
-            print(json.dumps(resp_dict, indent=2))
-            meta.metadata.update({"acquisition_planning": resp_dict})
-            current_app.logger.info(f"{message_prefix}: Updated AcquisitionPlanning: {resp_dict}")
-            resp_dict = {"id": id, "method": method}
-            return make_response_with_headers(resp_dict, 200)
-
-    @override
-    @is_authorized(
-        PermissionType.PATCH,
-        Permission.WORKFLOW,
-        # extra_check=partial(sc_associated_with_contract_agreement, permission_type=PermissionType.PATCH),
-        # groups=["Budget Team", "Admins"],
-    )
-    @handle_api_error
-    def patch(self, id: int) -> Response:
-        return self._update(id, "PATCH", self._patch_schema)
+        self._patch_schema = mmdc.class_schema(AcquisitionPlanningRequest)(dump_only=["type"])
 
 
-class AcquisitionListAPI(BaseListAPI):
+class AcquisitionPlanningListAPI(ProcurementStepListAPI):
     def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
@@ -124,57 +138,19 @@ class AcquisitionListAPI(BaseListAPI):
     def get(self) -> Response:
         return super().get()
 
-    @override
-    @is_authorized(PermissionType.POST, Permission.WORKFLOW)
-    @handle_api_error
-    def post(self) -> Response:
-        message_prefix = f"{request.method} to {request.path}"
-        with OpsEventHandler(OpsEventType.CREATE_PROCUREMENT_ACQUISITION_PLANNING) as meta:
-            self._post_schema.context["method"] = "POST"
-
-            data = self._post_schema.dump(self._post_schema.load(request.json))
-            # data.pop("type", None)
-            data["actual_date"] = date.fromisoformat(data["actual_date"]) if data.get("actual_date") else None
-
-            new_sc = AcquisitionPlanning(**data)
-
-            token = verify_jwt_in_request()
-            user = get_user_from_token(token[1])
-            new_sc.created_by = user.id
-
-            current_app.db_session.add(new_sc)
-            current_app.db_session.commit()
-
-            new_sc_dict = self._response_schema.dump(new_sc)
-            meta.metadata.update({"new_sc": new_sc_dict})
-            current_app.logger.info(f"{message_prefix}: New BLI created: {new_sc_dict}")
-
-            return make_response_with_headers(new_sc_dict, 201)
-
 
 # Pre-Solicitation Endpoints
-class PreSolicitationItemAPI(BaseItemAPI):
+class PreSolicitationItemAPI(ProcurementStepItemAPI):
     def __init__(self, model: BaseModel = PreSolicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self, id: int) -> Response:
-        return self._get_item_with_try(id)
+        self._patch_schema = mmdc.class_schema(PreSolicitationRequest)(dump_only=["type"])
 
 
-class PreSolicitationListAPI(BaseListAPI):
+class PreSolicitationListAPI(ProcurementStepListAPI):
     def __init__(self, model: BaseModel = PreSolicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self) -> Response:
-        return super().get()
 
 
 # Solicitation Endpoints

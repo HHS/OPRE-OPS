@@ -18,6 +18,7 @@ from models.workflows import (
     AcquisitionPlanning,
     Package,
     PackageSnapshot,
+    PreSolicitation,
     WorkflowInstance,
     WorkflowStepInstance,
     WorkflowStepTemplate,
@@ -51,7 +52,12 @@ from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSumm
 from ops_api.ops.resources.portfolio_status import PortfolioStatusItemAPI, PortfolioStatusListAPI
 from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
 from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
-from ops_api.ops.resources.procurement_steps import AcquisitionItemAPI, AcquisitionListAPI
+from ops_api.ops.resources.procurement_steps import (
+    AcquisitionPlanningItemAPI,
+    AcquisitionPlanningListAPI,
+    PreSolicitationItemAPI,
+    PreSolicitationListAPI,
+)
 from ops_api.ops.resources.product_service_code import ProductServiceCodeItemAPI, ProductServiceCodeListAPI
 from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
 from ops_api.ops.resources.research_project_funding_summary import ResearchProjectFundingSummaryListAPI
@@ -213,10 +219,18 @@ SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("servic
 SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
 
 
-# Procurement - Acquisition ENDPOINTS
-PROCUREMENT_ACQUISITION_PLANNING_LIST_API_VIEW_FUNC = AcquisitionListAPI.as_view(
+# Procurement: AcquisitionPlanning ENDPOINTS
+PROCUREMENT_ACQUISITION_PLANNING_LIST_API_VIEW_FUNC = AcquisitionPlanningListAPI.as_view(
     "procurement-acquisition-planning-group", AcquisitionPlanning
 )
-PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC = AcquisitionItemAPI.as_view(
+PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC = AcquisitionPlanningItemAPI.as_view(
     "procurement-acquisition-planning-item", AcquisitionPlanning
+)
+
+# Procurement: AcquisitionPlanning ENDPOINTS
+PROCUREMENT_PRE_SOLICITATION_LIST_API_VIEW_FUNC = PreSolicitationListAPI.as_view(
+    "procurement-pre-solicitation-group", PreSolicitation
+)
+PROCUREMENT_PRE_SOLICITATION_ITEM_API_VIEW_FUNC = PreSolicitationItemAPI.as_view(
+    "procurement-pre-solicitation-item", PreSolicitation
 )
