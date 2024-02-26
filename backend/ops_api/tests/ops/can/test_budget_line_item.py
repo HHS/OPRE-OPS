@@ -498,7 +498,6 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items(auth_client, loaded_db):
     # TODO: setting the services_component_id is not working on create
-    
     bli = BudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -511,11 +510,10 @@ def test_patch_budget_line_items(auth_client, loaded_db):
         proc_shop_fee_percentage=1.23,
         created_by=1,
     )
-    
     try:
         loaded_db.add(bli)
         loaded_db.commit()
-
+        
         data = PATCHRequestBody(
             line_description="Updated LI 1",
             comments="hah hah",
