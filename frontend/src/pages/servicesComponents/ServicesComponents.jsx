@@ -3,7 +3,6 @@ import ServicesComponentForm from "./ServicesComponentForm";
 import ServicesComponentsList from "./ServicesComponentsList";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import useServicesComponents from "./servicesComponents.hooks";
-import DebugCode from "./DebugCode";
 
 /**
  * ServicesComponents is a component that handles the display and functionality of service components.
@@ -56,10 +55,6 @@ const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
                 serviceTypeReq={serviceRequirementType}
-            />
-            <DebugCode
-                title="service_requirement_type"
-                data={serviceRequirementType}
             />
         </>
     );

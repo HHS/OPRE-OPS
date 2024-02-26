@@ -127,9 +127,8 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 />
             ) : agreement?.budget_line_items.length > 0 ? (
                 <BudgetLinesTable
-                    budgetLinesAdded={agreement?.budget_line_items}
+                    budgetLines={agreement?.budget_line_items}
                     readOnly={!isEditMode}
-                    showTotalSummaryCard={false}
                 />
             ) : (
                 <p>No budget lines.</p>

@@ -1,12 +1,8 @@
 import { create, test, enforce, group } from "vest";
-
+// TODO: add tests for Services Components
 const suite = create((data) => {
     // uncomment to test only one field at a time which breaks the group validation
     // only(fieldName);
-
-    test("enteredDescription", "This is required information", () => {
-        enforce(data.enteredDescription).isNotBlank();
-    });
     test("selectedCan", "This is required information", () => {
         enforce(data.selectedCan).isNotBlank();
     });

@@ -15,6 +15,7 @@ import {
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
@@ -31,6 +32,7 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
  * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
+ * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @returns {React.JSX.Element} The BLIRow component.
  **/
 const BLIRow = ({
@@ -45,6 +47,7 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
+    const servicesComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? "TBD");
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
@@ -75,10 +78,7 @@ const BLIRow = ({
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(
-                    budgetLine?.line_description,
-                    isReviewMode
-                )} ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(budgetLine?.display_name, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {isApprovePageAndBLIIsNotInPacket ? (
@@ -86,10 +86,10 @@ const BLIRow = ({
                         label="This budget line was not sent for approval"
                         position="right"
                     >
-                        <span>{budgetLine?.line_description}</span>
+                        <span>{servicesComponentName}</span>
                     </Tooltip>
                 ) : (
-                    budgetLine?.line_description
+                    servicesComponentName
                 )}
             </th>
             <td

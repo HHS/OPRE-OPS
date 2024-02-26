@@ -6,7 +6,6 @@ import TextArea from "../../../components/UI/Form/TextArea";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../servicesComponents.constants";
-import DebugCode from "../DebugCode";
 
 /**
  * ServicesComponentForm is a form component for creating and editing service components.
@@ -109,7 +108,10 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                         </button>
                     </>
                 ) : (
-                    <button className="usa-button usa-button--outline margin-right-0">
+                    <button
+                        className="usa-button usa-button--outline margin-right-0"
+                        data-cy="add-services-component-btn"
+                    >
                         <FontAwesomeIcon
                             icon={faAdd}
                             className="height-2 width-2"
@@ -118,10 +120,6 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                     </button>
                 )}
             </div>
-            <DebugCode
-                title="Form Data"
-                data={formData}
-            />
         </form>
     );
 }
