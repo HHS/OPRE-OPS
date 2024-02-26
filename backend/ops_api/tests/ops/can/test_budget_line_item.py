@@ -513,7 +513,7 @@ def test_patch_budget_line_items(auth_client, loaded_db):
     try:
         loaded_db.add(bli)
         loaded_db.commit()
-        
+
         data = PATCHRequestBody(
             line_description="Updated LI 1",
             comments="hah hah",
