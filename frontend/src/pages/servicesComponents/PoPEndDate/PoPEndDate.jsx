@@ -7,7 +7,7 @@ function PoPEndDate({ serviceComponent, setServiceComponent }) {
         <fieldset className="usa-fieldset display-flex">
             <legend className={`usa-legend margin-top-0 }`}>Period of Performance-End</legend>
             <MonthSelect
-                name="popStartMonth"
+                name="popEndMonth"
                 label="Month"
                 value={serviceComponent?.popEndMonth || 0}
                 onChange={(name, value) => {

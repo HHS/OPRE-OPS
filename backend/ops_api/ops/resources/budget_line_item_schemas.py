@@ -46,6 +46,7 @@ class RequestBody:
     date_needed: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     comments: Optional[str] = None
     proc_shop_fee_percentage: Optional[float] = None
+    services_component_id: Optional[int] = None
 
     @validates_schema(skip_on_field_errors=False)
     def validate_agreement_id(self, data, **kwargs):
@@ -252,3 +253,4 @@ class BudgetLineItemResponse:
     fiscal_year: Optional[int] = None
     team_members: Optional[list[BLITeamMembers]] = field(default_factory=lambda: [])
     has_active_workflow: bool = False
+    services_component_id: Optional[int] = None

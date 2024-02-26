@@ -78,13 +78,26 @@ it("can create an agreement", () => {
 
     cy.get("#agreementNotes").type("This is a note.");
     cy.get("[data-cy='continue-btn']").click();
+    //  Add Services Component
+    cy.get("p").should("contain", "You have not added any Services Component yet.");
+    cy.get("#servicesComponentSelect").select("1");
+    cy.get("#popStartMonth").select("01 - Jan");
+    cy.get("#popStartDay").type("1");
+    cy.get("#popStartYear").type("2024");
+    cy.get("#popEndMonth").select("01 - Jan");
+    cy.get("#popEndDay").type("1");
+    cy.get("#popEndYear").type("2025");
+    cy.get("#description").type("This is a description.");
+    cy.get("[data-cy='add-services-component-btn']").click();
+    cy.get("h2").should("contain", "Base Period 1");
 
     // Add a new budget line item
-    cy.get("#enteredDescription").type("Test BLI Description");
+    cy.get("#allServicesComponentSelect").should("exist");
+    cy.get("#allServicesComponentSelect").select("Base Period 1");
     cy.get("#enteredMonth").select("01 - Jan");
     cy.get("#enteredDay").type("1");
     cy.get("#enteredYear").type("2024");
-    cy.get("#selectedCan").type("G99MVT3");
+    cy.get("#selectedCan").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();

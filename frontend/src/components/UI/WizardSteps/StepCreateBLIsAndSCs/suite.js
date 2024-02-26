@@ -9,13 +9,13 @@ const suite = create((data) => {
     });
     // test budget_line_items array
     each(data.new_budget_lines, (item) => {
-        test(`Budget line item (${item.line_description})`, "This is required information", () => {
-            enforce(item.line_description).isNotBlank();
+        test(`Budget line item (${item.display_name})`, "This is required information", () => {
+            // enforce(item.line_description).isNotBlank();
             enforce(item.date_needed).isNotBlank();
             enforce(item.can_id).isNotBlank();
             enforce(item.amount).greaterThan(0);
         });
-        test(`Budget line item (${item.line_description})`, "Need by date must be in the future", () => {
+        test(`Budget line item (${item.line_display_name})`, "Need by date must be in the future", () => {
             const today = new Date().valueOf();
             const dateNeeded = new Date(item.date_needed).valueOf();
             enforce(dateNeeded).greaterThan(today);
