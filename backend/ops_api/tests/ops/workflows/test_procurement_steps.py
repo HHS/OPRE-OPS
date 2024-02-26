@@ -2,9 +2,6 @@ import pytest
 from flask import url_for
 from models.workflows import AcquisitionPlanning, PreSolicitation
 
-# from ops_api.ops.utils.procurement_workflow_helper import create_procurement_workflow
-
-
 # STEP 1 : AcquisitionPlanning
 
 
@@ -20,9 +17,12 @@ def create_test_acquisition_planning(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_procurement_workflow(auth_client, loaded_db):
-    # create workflow instance with what workflow template?
-    pass
+def test__acquisition_planning_get_list(auth_client, loaded_db):
+    create_test_acquisition_planning(loaded_db)
+    response = auth_client.get(url_for("api.procurement-acquisition-planning-group"))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["type"] == "procurement_acquisition_planning"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -100,6 +100,15 @@ def create_test_pre_solicitation(loaded_db):
     loaded_db.commit()
     assert acquisition_planning.id is not None
     return acquisition_planning
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_pre_solicitation_get_list(auth_client, loaded_db):
+    create_test_pre_solicitation(loaded_db)
+    response = auth_client.get(url_for("api.procurement-pre-solicitation-group"))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["type"] == "procurement_pre_solicitation"
 
 
 @pytest.mark.usefixtures("app_ctx")
