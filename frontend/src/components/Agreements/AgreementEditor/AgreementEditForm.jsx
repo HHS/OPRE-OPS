@@ -31,6 +31,7 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
  * @param {Object} props - The component props.
+ * @param {Function} [props.setHasAgreementChanged] - A function to set the agreement changed state. - optional
  * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
  * @param {Function} [props.goToNext] - A function to go to the next step. - optional
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
@@ -473,6 +474,7 @@ export const AgreementEditForm = ({
 };
 
 AgreementEditForm.propTypes = {
+    setHasAgreementChanged: PropTypes.func,
     goBack: PropTypes.func,
     goToNext: PropTypes.func,
     isReviewMode: PropTypes.bool,
