@@ -55,6 +55,18 @@ def get_current_user_id():
     return user.id
 
 
+class ProcurementStepListAPI(BaseListAPI):
+    def __init__(self, model: BaseModel = ProcurementStep):
+        super().__init__(model)
+        self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
+
+    @override
+    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
+    @handle_api_error
+    def get(self) -> Response:
+        return super().get()
+
+
 class ProcurementStepItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = ProcurementStep):
         super().__init__(model)
@@ -106,24 +118,7 @@ class ProcurementStepItemAPI(BaseItemAPI):
         return self._update(id, "PATCH", self._patch_schema)
 
 
-class ProcurementStepListAPI(BaseListAPI):
-    def __init__(self, model: BaseModel = ProcurementStep):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self) -> Response:
-        return super().get()
-
-
 # Acquisition Planning Endpoints
-class AcquisitionPlanningItemAPI(ProcurementStepItemAPI):
-    def __init__(self, model: BaseModel = AcquisitionPlanning):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
-        self._patch_schema = mmdc.class_schema(AcquisitionPlanningRequest)(dump_only=["type"])
 
 
 class AcquisitionPlanningListAPI(ProcurementStepListAPI):
@@ -139,18 +134,27 @@ class AcquisitionPlanningListAPI(ProcurementStepListAPI):
         return super().get()
 
 
-# Pre-Solicitation Endpoints
-class PreSolicitationItemAPI(ProcurementStepItemAPI):
-    def __init__(self, model: BaseModel = PreSolicitation):
+class AcquisitionPlanningItemAPI(ProcurementStepItemAPI):
+    def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
-        self._patch_schema = mmdc.class_schema(PreSolicitationRequest)(dump_only=["type"])
+        self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
+        self._patch_schema = mmdc.class_schema(AcquisitionPlanningRequest)(dump_only=["type"])
+
+
+# Pre-Solicitation Endpoints
 
 
 class PreSolicitationListAPI(ProcurementStepListAPI):
     def __init__(self, model: BaseModel = PreSolicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
+
+
+class PreSolicitationItemAPI(ProcurementStepItemAPI):
+    def __init__(self, model: BaseModel = PreSolicitation):
+        super().__init__(model)
+        self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
+        self._patch_schema = mmdc.class_schema(PreSolicitationRequest)(dump_only=["type"])
 
 
 # Solicitation Endpoints
