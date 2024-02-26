@@ -200,7 +200,10 @@ class WorkflowStepInstance(BaseModel):
             .execute(
                 sa.select(PackageSnapshot.bli_id, Package.notes)
                 .join(Package, Package.id == PackageSnapshot.package_id)
-                .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
+                .join(
+                    WorkflowInstance,
+                    Package.workflow_instance_id == WorkflowInstance.id,
+                )
                 .join(
                     WorkflowStepInstance,
                     WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
@@ -328,15 +331,13 @@ class ProcurementStep(BaseModel):
 
 class Attestation(object):
     is_complete = sa.Column(sa.Boolean, nullable=False, default=False)
-    # Q: should this be a Date
-    actual_date = sa.Column(sa.DateTime, nullable=True)
+    actual_date = sa.Column(sa.Date, nullable=True)
     completed_by = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
     notes = sa.Column(sa.String, nullable=True)
 
 
 class TargetDate(object):
-    # Q: should this be a Date
-    target_date = sa.Column(sa.DateTime, nullable=True)
+    target_date = sa.Column(sa.Date, nullable=True)
 
 
 class AcquisitionPlanning(ProcurementStep, Attestation):

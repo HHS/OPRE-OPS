@@ -61,7 +61,7 @@ def test_acquisition_planning_patch_by_id(auth_client, loaded_db):
     assert acquisition_planning.id is not None
 
     # acquisition_planning = create_test_acquisition_planning(loaded_db)
-    patch_data = {"actual_date": "2024-10-15T14:31:23.123456Z", "is_complete": True, "completed_by": 5}
+    patch_data = {"actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
     response = auth_client.patch(
         url_for("api.procurement-acquisition-planning-item", id=acquisition_planning.id), json=patch_data
     )
@@ -75,6 +75,6 @@ def test_acquisition_planning_patch_by_id(auth_client, loaded_db):
     response = auth_client.get(url_for("api.procurement-acquisition-planning-item", id=acquisition_planning.id))
     resp_json = response.json
     assert resp_json["agreement_id"] == 1
-    assert resp_json["actual_date"] == "2024-10-15T14:31:23.123456Z"
+    assert resp_json["actual_date"] == "2024-10-15"
     assert resp_json["is_complete"]
     assert not resp_json["completed_by"] == 4

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 
@@ -23,13 +23,13 @@ class ProcurementStepResponse(ProcurementStepRequest):
 @dataclass(kw_only=True)
 class Attestation:
     is_complete: Optional[bool] = None
-    actual_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    actual_date: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     completed_by: Optional[int] = None
 
 
 @dataclass(kw_only=True)
 class TargetDate:
-    target_date: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    target_date: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
 
 
 @dataclass(kw_only=True)
