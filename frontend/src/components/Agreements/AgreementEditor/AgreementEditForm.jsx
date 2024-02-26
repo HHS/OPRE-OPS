@@ -92,6 +92,12 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery();
 
+    // make a copy of the agreement object
+    const agreementCopy = React.useMemo(() => {
+        return { ...agreement };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     if (isReviewMode) {
         suite({
             ...agreement
@@ -156,7 +162,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             })
         };
         const { id, cleanData } = cleanAgreementForApi(data);
-        // TODO: check if agreement data has changed and return if not
+
+        if (JSON.stringify(agreementCopy) === JSON.stringify(agreement)) {
+            return;
+        }
 
         if (id) {
             await updateAgreement({ id: id, data: cleanData })
