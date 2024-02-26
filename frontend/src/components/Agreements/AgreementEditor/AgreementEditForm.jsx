@@ -25,6 +25,7 @@ import {
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import useAlert from "../../../hooks/use-alert.hooks";
 import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTypeSelect";
+import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -93,10 +94,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     } = useGetProductServiceCodesQuery();
 
     // make a copy of the agreement object
-    const agreementCopy = React.useMemo(() => {
-        return { ...agreement };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const hasAgreementChanged = useHasStateChanged(agreement);
 
     if (isReviewMode) {
         suite({
@@ -163,7 +161,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         };
         const { id, cleanData } = cleanAgreementForApi(data);
 
-        if (JSON.stringify(agreementCopy) === JSON.stringify(agreement)) {
+        if (!hasAgreementChanged) {
             return;
         }
 
