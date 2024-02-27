@@ -37,7 +37,6 @@ from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import override
 
 
@@ -66,20 +65,6 @@ class ProcurementStepListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = ProcurementStep):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
-
-    def _get_item_with_try(self, id: int) -> Response:
-        try:
-            item = self._get_item(id)
-
-            if item:
-                response = make_response_with_headers(self._response_schema.dump(item))
-            else:
-                response = make_response_with_headers({}, 404)
-        except SQLAlchemyError as se:
-            current_app.logger.error(se)
-            response = make_response_with_headers({}, 500)
-
-        return response
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
