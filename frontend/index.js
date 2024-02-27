@@ -1,6 +1,6 @@
 const path = require('path');
 
-const BASE_PATH = "./";
+const BASE_PATH = path.resolve(__dirname, "./");
 
 Bun.serve({
   port: 3000,
