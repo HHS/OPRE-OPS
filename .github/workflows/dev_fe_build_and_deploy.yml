@@ -57,7 +57,11 @@ jobs:
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",
-              "containerImageTag": "${{ github.sha }}"
+              "containerImageTag": "${{ github.sha }}",
+              "dnsZoneName" = "opre-ops.flexion.us",
+              "frontendName" = "opre-ops-dev-frontend",
+              "containerAppEnvName" = "opre-ops-dev-app-cae",
+              "resourceGroupName"  = "opre-ops-dev-app-rg",
             }
 
   
