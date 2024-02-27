@@ -2,14 +2,16 @@ import pytest
 from flask import url_for
 from models.workflows import AcquisitionPlanning, Award, Evaluation, PreAward, PreSolicitation, Solicitation
 
+TEST_AGREEMENT_ID = 1
+TEST_CREATED_BY = 3
+
 # STEP 1 : AcquisitionPlanning
 
 
-def create_test_acquisition_planning(loaded_db):
-    # test_procurement_workflow_instance, acquisition_workflow_step_instance = create_procurement_workflow(1)
+def create_test_acquisition_planning(loaded_db, agreement_id=TEST_AGREEMENT_ID):
     acquisition_planning = AcquisitionPlanning()
-    acquisition_planning.agreement_id = 1
-    # acquisition_planning.workflow_step_id = acquisition_workflow_step_instance.id
+    acquisition_planning.agreement_id = agreement_id
+    acquisition_planning.created_by = TEST_CREATED_BY
     loaded_db.add(acquisition_planning)
     loaded_db.commit()
     assert acquisition_planning.id is not None
@@ -31,15 +33,15 @@ def test_acquisition_planning_get_by_id(auth_client, loaded_db):
 
     response = auth_client.get(url_for("api.procurement-acquisition-planning-item", id=acquisition_planning.id))
     assert response.status_code == 200
-    # import json
-    #
-    # print(json.dumps(response.json, indent=2))
+    import json
+
+    print(json.dumps(response.json, indent=2))
     resp_json = response.json
     keys = [
         "id",
         "agreement_id",
         "completed_by",
-        "created_by_user",
+        "created_by",
         "created_on",
         "display_name",
         "is_complete",
@@ -50,8 +52,7 @@ def test_acquisition_planning_get_by_id(auth_client, loaded_db):
     ]
     for key in keys:
         assert key in resp_json
-        # if key in ["id", "agreement_id", "created_by_user", "created_on", "display_name", "type", "updated_on"]:
-        if key in ["id", "agreement_id", "created_on", "display_name", "type", "updated_on"]:
+        if key in ["id", "agreement_id", "created_by", "created_on", "display_name", "type", "updated_on"]:
             assert resp_json[key]
         else:
             assert not resp_json[key]
@@ -60,15 +61,9 @@ def test_acquisition_planning_get_by_id(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_acquisition_planning_patch_by_id(auth_client, loaded_db):
-    # test_procurement_workflow_instance, acquisition_workflow_step_instance = create_procurement_workflow(1)
-    acquisition_planning = AcquisitionPlanning()
-    acquisition_planning.agreement_id = 1
-    # acquisition_planning.workflow_step_id = acquisition_workflow_step_instance.id
-    loaded_db.add(acquisition_planning)
-    loaded_db.commit()
+    acquisition_planning = create_test_acquisition_planning(loaded_db)
     assert acquisition_planning.id is not None
 
-    # acquisition_planning = create_test_acquisition_planning(loaded_db)
     patch_data = {"actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
     response = auth_client.patch(
         url_for("api.procurement-acquisition-planning-item", id=acquisition_planning.id), json=patch_data
@@ -88,9 +83,9 @@ def test_acquisition_planning_patch_by_id(auth_client, loaded_db):
 # STEP 2: PreSolicitation
 
 
-def create_test_pre_solicitation(loaded_db):
+def create_test_pre_solicitation(loaded_db, agreement_id=TEST_AGREEMENT_ID):
     pre_solicitation = PreSolicitation()
-    pre_solicitation.agreement_id = 1
+    pre_solicitation.agreement_id = agreement_id
     loaded_db.add(pre_solicitation)
     loaded_db.commit()
     assert pre_solicitation.id is not None
@@ -109,7 +104,6 @@ def test_pre_solicitation_get_list(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_pre_solicitation_get_by_id(auth_client, loaded_db):
     pre_solicitation = create_test_pre_solicitation(loaded_db)
-
     response = auth_client.get(url_for("api.procurement-pre-solicitation-item", id=pre_solicitation.id))
     assert response.status_code == 200
 
@@ -129,7 +123,7 @@ def test_pre_solicitation_get_by_id(auth_client, loaded_db):
     ]
     for key in keys:
         assert key in resp_json
-        # if key in ["id", "agreement_id", "created_by_user", "display_name", "type", "updated_on"]:
+        # if key in ["id", "agreement_id", "created_by", "created_by_user", "display_name", "type", "updated_on"]:
         if key in ["id", "agreement_id", "display_name", "type", "updated_on"]:
             assert resp_json[key]
         else:
@@ -140,10 +134,7 @@ def test_pre_solicitation_get_by_id(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_pre_solicitation_patch_by_id(auth_client, loaded_db):
-    pre_solicitation = PreSolicitation()
-    pre_solicitation.agreement_id = 1
-    loaded_db.add(pre_solicitation)
-    loaded_db.commit()
+    pre_solicitation = create_test_pre_solicitation(loaded_db)
     assert pre_solicitation.id is not None
 
     patch_data = {"target_date": "2024-10-01", "actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
@@ -166,9 +157,9 @@ def test_pre_solicitation_patch_by_id(auth_client, loaded_db):
 # STEP 3: Solicitation
 
 
-def create_test_solicitation(loaded_db):
+def create_test_solicitation(loaded_db, agreement_id=TEST_AGREEMENT_ID):
     solicitation = Solicitation()
-    solicitation.agreement_id = 1
+    solicitation.agreement_id = agreement_id
     loaded_db.add(solicitation)
     loaded_db.commit()
     assert solicitation.id is not None
@@ -187,7 +178,6 @@ def test_solicitation_get_list(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_solicitation_get_by_id(auth_client, loaded_db):
     solicitation = create_test_solicitation(loaded_db)
-
     response = auth_client.get(url_for("api.procurement-solicitation-item", id=solicitation.id))
     assert response.status_code == 200
 
@@ -207,7 +197,7 @@ def test_solicitation_get_by_id(auth_client, loaded_db):
     ]
     for key in keys:
         assert key in resp_json
-        # if key in ["id", "agreement_id", "created_by_user", "display_name", "type", "updated_on"]:
+        # if key in ["id", "agreement_id", "created_by", "created_by_user", "display_name", "type", "updated_on"]:
         if key in ["id", "agreement_id", "display_name", "type", "updated_on"]:
             assert resp_json[key]
         else:
@@ -218,10 +208,7 @@ def test_solicitation_get_by_id(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_solicitation_patch_by_id(auth_client, loaded_db):
-    solicitation = Solicitation()
-    solicitation.agreement_id = 1
-    loaded_db.add(solicitation)
-    loaded_db.commit()
+    solicitation = create_test_solicitation(loaded_db)
     assert solicitation.id is not None
 
     patch_data = {"target_date": "2024-10-01", "actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
@@ -242,9 +229,9 @@ def test_solicitation_patch_by_id(auth_client, loaded_db):
 # STEP 4: Evaluation
 
 
-def create_test_evaluation(loaded_db):
+def create_test_evaluation(loaded_db, agreement_id=TEST_AGREEMENT_ID):
     evaluation = Evaluation()
-    evaluation.agreement_id = 1
+    evaluation.agreement_id = agreement_id
     loaded_db.add(evaluation)
     loaded_db.commit()
     assert evaluation.id is not None
@@ -263,7 +250,6 @@ def test_evaluation_get_list(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_evaluation_get_by_id(auth_client, loaded_db):
     evaluation = create_test_evaluation(loaded_db)
-
     response = auth_client.get(url_for("api.procurement-evaluation-item", id=evaluation.id))
     assert response.status_code == 200
 
@@ -283,7 +269,7 @@ def test_evaluation_get_by_id(auth_client, loaded_db):
     ]
     for key in keys:
         assert key in resp_json
-        # if key in ["id", "agreement_id", "created_by_user", "display_name", "type", "updated_on"]:
+        # if key in ["id", "agreement_id", "created_by", "created_by_user", "display_name", "type", "updated_on"]:
         if key in ["id", "agreement_id", "display_name", "type", "updated_on"]:
             assert resp_json[key]
         else:
@@ -318,9 +304,9 @@ def test_evaluation_patch_by_id(auth_client, loaded_db):
 # STEP 5: PreAward
 
 
-def create_test_pre_award(loaded_db):
+def create_test_pre_award(loaded_db, agreement_id=TEST_AGREEMENT_ID):
     pre_award = PreAward()
-    pre_award.agreement_id = 1
+    pre_award.agreement_id = agreement_id
     loaded_db.add(pre_award)
     loaded_db.commit()
     assert pre_award.id is not None
@@ -339,7 +325,6 @@ def test_pre_award_get_list(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_pre_award_get_by_id(auth_client, loaded_db):
     pre_award = create_test_pre_award(loaded_db)
-
     response = auth_client.get(url_for("api.procurement-pre-award-item", id=pre_award.id))
     assert response.status_code == 200
 
@@ -359,7 +344,7 @@ def test_pre_award_get_by_id(auth_client, loaded_db):
     ]
     for key in keys:
         assert key in resp_json
-        # if key in ["id", "agreement_id", "created_by_user", "display_name", "type", "updated_on"]:
+        # if key in ["id", "agreement_id", "created_by", "created_by_user", "display_name", "type", "updated_on"]:
         if key in ["id", "agreement_id", "display_name", "type", "updated_on"]:
             assert resp_json[key]
         else:
@@ -370,12 +355,7 @@ def test_pre_award_get_by_id(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_pre_award_patch_by_id(auth_client, loaded_db):
-    pre_award = PreAward()
-    pre_award.agreement_id = 1
-    loaded_db.add(pre_award)
-    loaded_db.commit()
-    assert pre_award.id is not None
-
+    pre_award = create_test_pre_award(loaded_db)
     patch_data = {"target_date": "2024-10-01", "actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
     response = auth_client.patch(url_for("api.procurement-pre-award-item", id=pre_award.id), json=patch_data)
     assert response.status_code == 200
@@ -394,9 +374,9 @@ def test_pre_award_patch_by_id(auth_client, loaded_db):
 # STEP 6: Award
 
 
-def create_test_award(loaded_db):
+def create_test_award(loaded_db, agreement_id=TEST_AGREEMENT_ID):
     award = Award()
-    award.agreement_id = 1
+    award.agreement_id = agreement_id
     loaded_db.add(award)
     loaded_db.commit()
     assert award.id is not None
@@ -415,7 +395,6 @@ def test_award_get_list(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_award_get_by_id(auth_client, loaded_db):
     award = create_test_award(loaded_db)
-
     response = auth_client.get(url_for("api.procurement-award-item", id=award.id))
     assert response.status_code == 200
 
@@ -437,7 +416,7 @@ def test_award_get_by_id(auth_client, loaded_db):
     ]
     for key in keys:
         assert key in resp_json
-        # if key in ["id", "agreement_id", "created_by_user", "display_name", "type", "updated_on"]:
+        # if key in ["id", "agreement_id", "created_by", "created_by_user", "display_name", "type", "updated_on"]:
         if key in ["id", "agreement_id", "display_name", "type", "updated_on"]:
             assert resp_json[key]
         else:
@@ -448,10 +427,7 @@ def test_award_get_by_id(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_award_patch_by_id(auth_client, loaded_db):
-    award = Award()
-    award.agreement_id = 1
-    loaded_db.add(award)
-    loaded_db.commit()
+    award = create_test_award(loaded_db)
     assert award.id is not None
 
     patch_data = {

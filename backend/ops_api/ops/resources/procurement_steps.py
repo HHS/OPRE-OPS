@@ -27,6 +27,7 @@ from ops_api.ops.schemas.procurement_steps import (
     PreAwardResponse,
     PreSolicitationRequest,
     PreSolicitationResponse,
+    ProcurementStepListQuery,
     ProcurementStepRequest,
     ProcurementStepResponse,
     SolicitationRequest,
@@ -37,19 +38,9 @@ from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import override
-
-
-class BaseProcurementStepItemAPI(BaseItemAPI):
-    def __init__(self, model: BaseModel = ProcurementStep):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self, id: int) -> Response:
-        return self._get_item_with_try(id)
 
 
 def get_current_user_id():
@@ -58,26 +49,51 @@ def get_current_user_id():
     return user.id
 
 
-# Procurement Step (Base) Endpoint
+# Base Procurement Step APIs
 
 
-class ProcurementStepListAPI(BaseListAPI):
+class BaseProcurementStepListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = ProcurementStep):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
+        self._request_schema = mmdc.class_schema(ProcurementStepListQuery)()
+        self._response_schema_collection = mmdc.class_schema(ProcurementStepResponse)(many=True)
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     @handle_api_error
     def get(self) -> Response:
-        return super().get()
+        data = self._request_schema.dump(self._request_schema.load(request.args))
+
+        stmt = select(self.model)
+        if data.get("contract_agreement_id"):
+            stmt = stmt.where(self.model.agreement_id == data.get("agreement_id"))
+
+        result = current_app.db_session.execute(stmt).all()
+        response = make_response_with_headers(self._response_schema_collection.dump([sc[0] for sc in result]))
+
+        return response
 
 
-class ProcurementStepItemAPI(BaseItemAPI):
+class BaseProcurementStepItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = ProcurementStep):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
-        self._patch_schema = mmdc.class_schema(ProcurementStepRequest)(dump_only=["type"])
+
+    # Can this be moved to super like this where it uses the schema if it's there?
+    def _get_item_with_try(self, id: int) -> Response:
+        try:
+            item = self._get_item(id)
+            if item:
+                resp_schema = getattr(self, "_response_schema", None)
+                resp_dict = resp_schema.dump(item) if resp_schema else item.to_dict()
+                response = make_response_with_headers(resp_dict)
+            else:
+                response = make_response_with_headers({}, 404)
+        except SQLAlchemyError as se:
+            current_app.logger.error(se)
+            response = make_response_with_headers({}, 500)
+
+        return response
 
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
@@ -85,9 +101,15 @@ class ProcurementStepItemAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
+
+class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
+    def __init__(self, model: BaseModel = ProcurementStep):
+        super().__init__(model)
+        self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
+        self._patch_schema = mmdc.class_schema(ProcurementStepRequest)(dump_only=["type"])
+
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{request.method} to {request.path}"
-
         with OpsEventHandler(OpsEventType.UPDATE_PROCUREMENT_ACQUISITION_PLANNING) as meta:
             old_instance = self._get_item(id)
             if not old_instance:
@@ -118,10 +140,27 @@ class ProcurementStepItemAPI(BaseItemAPI):
         return self._update(id, "PATCH", self._patch_schema)
 
 
+# Generic Procurement Step Endpoints
+
+
+class ProcurementStepListAPI(BaseProcurementStepListAPI):
+    def __init__(self, model: BaseModel = ProcurementStep):
+        super().__init__(model)
+        # self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
+        self._response_schema = None  # just using to_dict
+
+
+class ProcurementStepItemAPI(BaseProcurementStepItemAPI):
+    def __init__(self, model: BaseModel = ProcurementStep):
+        super().__init__(model)
+        # self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
+        self._response_schema = None  # just using to_dict
+
+
 # Acquisition Planning Endpoints
 
 
-class AcquisitionPlanningListAPI(ProcurementStepListAPI):
+class AcquisitionPlanningListAPI(BaseProcurementStepListAPI):
     def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
@@ -134,7 +173,7 @@ class AcquisitionPlanningListAPI(ProcurementStepListAPI):
         return super().get()
 
 
-class AcquisitionPlanningItemAPI(ProcurementStepItemAPI):
+class AcquisitionPlanningItemAPI(EditableProcurementStepItemAPI):
     def __init__(self, model: BaseModel = AcquisitionPlanning):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
@@ -144,13 +183,13 @@ class AcquisitionPlanningItemAPI(ProcurementStepItemAPI):
 # Pre-Solicitation Endpoints
 
 
-class PreSolicitationListAPI(ProcurementStepListAPI):
+class PreSolicitationListAPI(BaseProcurementStepListAPI):
     def __init__(self, model: BaseModel = PreSolicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
 
 
-class PreSolicitationItemAPI(ProcurementStepItemAPI):
+class PreSolicitationItemAPI(EditableProcurementStepItemAPI):
     def __init__(self, model: BaseModel = PreSolicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
@@ -160,13 +199,13 @@ class PreSolicitationItemAPI(ProcurementStepItemAPI):
 # Solicitation Endpoints
 
 
-class SolicitationListAPI(ProcurementStepListAPI):
+class SolicitationListAPI(BaseProcurementStepListAPI):
     def __init__(self, model: BaseModel = Solicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(SolicitationResponse)()
 
 
-class SolicitationItemAPI(ProcurementStepItemAPI):
+class SolicitationItemAPI(EditableProcurementStepItemAPI):
     def __init__(self, model: BaseModel = Solicitation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(SolicitationResponse)()
@@ -176,13 +215,13 @@ class SolicitationItemAPI(ProcurementStepItemAPI):
 # Evaluation Endpoints
 
 
-class EvaluationListAPI(ProcurementStepListAPI):
+class EvaluationListAPI(BaseProcurementStepListAPI):
     def __init__(self, model: BaseModel = Evaluation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(EvaluationResponse)()
 
 
-class EvaluationItemAPI(ProcurementStepItemAPI):
+class EvaluationItemAPI(EditableProcurementStepItemAPI):
     def __init__(self, model: BaseModel = Evaluation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(EvaluationResponse)()
@@ -192,13 +231,13 @@ class EvaluationItemAPI(ProcurementStepItemAPI):
 # Pre-Award Endpoints
 
 
-class PreAwardListAPI(ProcurementStepListAPI):
+class PreAwardListAPI(BaseProcurementStepListAPI):
     def __init__(self, model: BaseModel = PreAward):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreAwardResponse)()
 
 
-class PreAwardItemAPI(ProcurementStepItemAPI):
+class PreAwardItemAPI(EditableProcurementStepItemAPI):
     def __init__(self, model: BaseModel = PreAward):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreAwardResponse)()
@@ -208,13 +247,13 @@ class PreAwardItemAPI(ProcurementStepItemAPI):
 # Award Endpoints
 
 
-class AwardListAPI(ProcurementStepListAPI):
+class AwardListAPI(BaseProcurementStepListAPI):
     def __init__(self, model: BaseModel = Award):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreAwardResponse)()
 
 
-class AwardItemAPI(ProcurementStepItemAPI):
+class AwardItemAPI(EditableProcurementStepItemAPI):
     def __init__(self, model: BaseModel = Award):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AwardResponse)()

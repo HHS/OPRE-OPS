@@ -5,17 +5,26 @@ from typing import Optional
 
 @dataclass(kw_only=True)
 class ProcurementStepRequest:
-    # Should we include type to handle a generic list endpoint?
     type: Optional[str] = None
     agreement_id: Optional[int] = None
     workflow_step_id: Optional[int] = None
+    # From BaseModel
+    display_name: Optional[str] = None
+    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    created_by: Optional[str] = None
+    # created_by_user: Optional[dict] = None
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    created_by: Optional[int] = None
+
+
+@dataclass(kw_only=True)
+class ProcurementStepListQuery:
+    agreement_id: Optional[int] = None
 
 
 @dataclass(kw_only=True)
 class ProcurementStepResponse(ProcurementStepRequest):
-    # Is it possible to move this to the parent and eliminate this class
+    # response includes ID even while request doesn't
+    # Is it possible to move this to the parent (request) and eliminate this class
     # and use schema constructor args like dump_only instead of separate schemas?
     id: int
 
@@ -25,6 +34,7 @@ class Attestation:
     is_complete: Optional[bool] = None
     actual_date: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     completed_by: Optional[int] = None
+    notes: Optional[str] = None
 
 
 @dataclass(kw_only=True)
