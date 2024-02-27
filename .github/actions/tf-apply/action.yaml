@@ -80,7 +80,7 @@ runs:
     - name: Download Plan
       id: download-plan
       if: ${{ inputs.plan_workflow_file != '' }}
-      uses: dawidd6/action-download-artifact@72aaadce3bc708349fc665eee3785cbb1b6e51d0 # v3.1.1
+      uses: dawidd6/action-download-artifact@71072fbb1229e1317f1a8de6b04206afb461bd67 # v3.1.2
       with:
         github_token: ${{ inputs.github_token }}
         workflow: ${{ inputs.plan_workflow_file }}
