@@ -65,8 +65,7 @@ jobs:
               "backendName": "opre-ops-dev-backend",
               "containerAppEnvName": "opre-ops-dev-app-cae",
               "resourceGroupName": "opre-ops-dev-app-rg",
-              "postgresServerName" : "opre-ops-dev-db-psql",
-              "keyVaultId" : "/subscriptions/91ab8ed2-74e6-4366-aaf5-036186ec70db/resourceGroups/opre-ops-dev-app-rg/providers/Microsoft.KeyVault/vaults/opre-ops-dev-kv"
-
+              "postgresServerName": "opre-ops-dev-db-psql",
+              "keyVaultName": "opre-ops-dev-kv"
             }
   
