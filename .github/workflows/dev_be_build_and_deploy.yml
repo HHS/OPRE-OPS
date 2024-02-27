@@ -47,7 +47,7 @@ jobs:
       - name: Terraform Apply
         uses: ./.github/actions/tf-apply
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}"
+          terraform_directory: "terraform/eastus/ops/${{ env.ENVIRONMENT }}/stacks/${{ env.WORKING_DIR }}"
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
           azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
           azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
@@ -56,29 +56,13 @@ jobs:
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",
-              "container_tag": "${{ github.sha }}"
+              "containerImageTag": "${{ github.sha }}",
+              "dnsZoneName": "opre-ops.flexion.us",
+              "backendName": "opre-ops-dev-backend",
+              "containerAppEnvName": "opre-ops-dev-app-cae",
+              "resourceGroupName": "opre-ops-dev-app-rg",
+              "postgresServerName" : "opre-ops-dev-db-psql",
+              "keyVaultId" : "/subscriptions/91ab8ed2-74e6-4366-aaf5-036186ec70db/resourceGroups/opre-ops-dev-app-rg/providers/Microsoft.KeyVault/vaults/opre-ops-dev-kv"
+
             }
-
-  backend-asa-deploy:
-    needs: build
-    permissions:
-      pull-requests: write
-
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-
-      - name: Terraform Apply
-        uses: ./.github/actions/tf-apply
-        with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "container_tag": "${{ github.sha }}"
-            }
+  
