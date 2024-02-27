@@ -58,10 +58,10 @@ jobs:
             {
               "environment": "${{ env.ENVIRONMENT }}",
               "containerImageTag": "${{ github.sha }}",
-              "dnsZoneName" = "opre-ops.flexion.us",
-              "frontendName" = "opre-ops-dev-frontend",
-              "containerAppEnvName" = "opre-ops-dev-app-cae",
-              "resourceGroupName"  = "opre-ops-dev-app-rg",
+              "dnsZoneName": "opre-ops.flexion.us",
+              "frontendName": "opre-ops-dev-frontend",
+              "containerAppEnvName": "opre-ops-dev-app-cae",
+              "resourceGroupName": "opre-ops-dev-app-rg",
             }
 
   
