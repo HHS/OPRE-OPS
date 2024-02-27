@@ -1,6 +1,6 @@
 import pytest
 from flask import url_for
-from models.workflows import AcquisitionPlanning, PreSolicitation, Solicitation
+from models.workflows import AcquisitionPlanning, Evaluation, PreSolicitation, Solicitation
 
 # STEP 1 : AcquisitionPlanning
 
@@ -244,6 +244,87 @@ def test_solicitation_patch_by_id(auth_client, loaded_db):
     assert "id" in resp_json
 
     response = auth_client.get(url_for("api.procurement-solicitation-item", id=solicitation.id))
+    resp_json = response.json
+    assert resp_json["agreement_id"] == 1
+    assert resp_json["target_date"] == "2024-10-01"
+    assert resp_json["actual_date"] == "2024-10-15"
+    assert resp_json["is_complete"]
+    assert resp_json["completed_by"] == 5
+
+
+# STEP 3: Evaluation
+
+
+def create_test_evaluation(loaded_db):
+    evaluation = Evaluation()
+    evaluation.agreement_id = 1
+    loaded_db.add(evaluation)
+    loaded_db.commit()
+    assert evaluation.id is not None
+    return evaluation
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_evaluation_get_list(auth_client, loaded_db):
+    create_test_evaluation(loaded_db)
+    response = auth_client.get(url_for("api.procurement-evaluation-group"))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["type"] == "procurement_evaluation"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_evaluation_get_by_id(auth_client, loaded_db):
+    evaluation = create_test_evaluation(loaded_db)
+
+    response = auth_client.get(url_for("api.procurement-evaluation-item", id=evaluation.id))
+    assert response.status_code == 200
+    import json
+
+    print(json.dumps(response.json, indent=2))
+    resp_json = response.json
+    keys = [
+        "id",
+        "agreement_id",
+        "completed_by",
+        "created_by_user",
+        "display_name",
+        "is_complete",
+        "notes",
+        "target_date",
+        "type",
+        "updated_on",
+        "workflow_step_id",
+    ]
+    for key in keys:
+        assert key in resp_json
+        # if key in ["id", "agreement_id", "created_by_user", "display_name", "type", "updated_on"]:
+        if key in ["id", "agreement_id", "display_name", "type", "updated_on"]:
+            assert resp_json[key]
+        else:
+            assert not resp_json[key]
+
+    assert resp_json["type"] == "procurement_evaluation"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_evaluation_patch_by_id(auth_client, loaded_db):
+    evaluation = Evaluation()
+    evaluation.agreement_id = 1
+    loaded_db.add(evaluation)
+    loaded_db.commit()
+    assert evaluation.id is not None
+
+    patch_data = {"target_date": "2024-10-01", "actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
+    response = auth_client.patch(url_for("api.procurement-evaluation-item", id=evaluation.id), json=patch_data)
+    assert response.status_code == 200
+    resp_json = response.json
+    import json
+
+    print(json.dumps(response.json, indent=2))
+    assert "id" in resp_json
+
+    response = auth_client.get(url_for("api.procurement-evaluation-item", id=evaluation.id))
     resp_json = response.json
     assert resp_json["agreement_id"] == 1
     assert resp_json["target_date"] == "2024-10-01"

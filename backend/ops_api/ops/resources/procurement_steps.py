@@ -20,6 +20,7 @@ from ops_api.ops.schemas.procurement_steps import (
     AcquisitionPlanningRequestPost,
     AcquisitionPlanningResponse,
     AwardResponse,
+    EvaluationRequest,
     EvaluationResponse,
     PreAwardResponse,
     PreSolicitationRequest,
@@ -174,29 +175,18 @@ class SolicitationItemAPI(ProcurementStepItemAPI):
         self._patch_schema = mmdc.class_schema(SolicitationRequest)(dump_only=["type"])
 
 
+class EvaluationListAPI(ProcurementStepListAPI):
+    def __init__(self, model: BaseModel = Evaluation):
+        super().__init__(model)
+        self._response_schema = mmdc.class_schema(EvaluationResponse)()
+
+
 # Evaluation Endpoints
-class EvaluationItemAPI(BaseItemAPI):
+class EvaluationItemAPI(ProcurementStepItemAPI):
     def __init__(self, model: BaseModel = Evaluation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(EvaluationResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self, id: int) -> Response:
-        return self._get_item_with_try(id)
-
-
-class EvaluationListAPI(BaseListAPI):
-    def __init__(self, model: BaseModel = Evaluation):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(EvaluationResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self) -> Response:
-        return super().get()
+        self._patch_schema = mmdc.class_schema(EvaluationRequest)(dump_only=["type"])
 
 
 # Pre-Award Endpoints

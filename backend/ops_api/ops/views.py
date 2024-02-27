@@ -16,6 +16,7 @@ from models.projects import ResearchProject, ResearchType
 from models.users import User
 from models.workflows import (
     AcquisitionPlanning,
+    Evaluation,
     Package,
     PackageSnapshot,
     PreSolicitation,
@@ -56,6 +57,8 @@ from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, Pro
 from ops_api.ops.resources.procurement_steps import (
     AcquisitionPlanningItemAPI,
     AcquisitionPlanningListAPI,
+    EvaluationItemAPI,
+    EvaluationListAPI,
     PreSolicitationItemAPI,
     PreSolicitationListAPI,
     SolicitationItemAPI,
@@ -243,3 +246,7 @@ PROCUREMENT_SOLICITATION_LIST_API_VIEW_FUNC = SolicitationListAPI.as_view(
     "procurement-solicitation-group", Solicitation
 )
 PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC = SolicitationItemAPI.as_view("procurement-solicitation-item", Solicitation)
+
+# Procurement: Evaluation ENDPOINTS
+PROCUREMENT_EVALUATION_LIST_API_VIEW_FUNC = EvaluationListAPI.as_view("procurement-evaluation-group", Evaluation)
+PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procurement-evaluation-item", Evaluation)

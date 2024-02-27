@@ -73,6 +73,11 @@ class EvaluationResponse(ProcurementStepResponse, Attestation, TargetDate):
 
 
 @dataclass
+class EvaluationRequest(ProcurementStepRequest, Attestation, TargetDate):
+    pass
+
+
+@dataclass
 class PreAwardResponse(ProcurementStepResponse, Attestation, TargetDate):
     pass
 
