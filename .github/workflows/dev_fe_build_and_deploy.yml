@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - cml/deploy-new-infra
     paths:
       - 'frontend/**'
 
@@ -32,44 +32,6 @@ jobs:
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tag: ${{ github.sha }}
 
-  build-asa:
-    permissions:
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@9b21598af8d4dfc302e5a30250007de0fda92acc #v1.1.1
-        with:
-          bun-version: 1.0.15
-
-      - name: Install dependencies
-        working-directory: ${{ env.WORKING_DIR }}
-        run: bun install
-
-      - name: Build Bun
-        uses: ./.github/actions/tf-apply
-        with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa/build_bun"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "commit_hash": "${{ github.sha }}",
-              "frontend_dir": "../../../../../frontend"
-            }
-
-      - name: Archive Artifacts
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-        with:
-          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
-          path: ${{ env.WORKING_DIR }}/build
-
   frontend-deploy:
     needs: build
     permissions:
@@ -78,6 +40,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+      
+      - uses: twingate/github-action@V1.1
+        with:
+          service-key: ${{ secrets.TWINGATE_SERVICE_KEY }}
 
       - name: Terraform Apply
         uses: ./.github/actions/tf-apply
@@ -94,32 +60,4 @@ jobs:
               "container_tag": "${{ github.sha }}"
             }
 
-  frontend-asa-deploy:
-    needs: build-asa
-    permissions:
-      pull-requests: write
-
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-
-      - name: Download Frontend Artifacts
-        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 #v4.1.3
-        with:
-          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
-          path: ${{ env.WORKING_DIR }}/build
-
-      - name: Terraform Apply
-        uses: ./.github/actions/tf-apply
-        with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend_asa"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "commit_hash": "${{ github.sha }}}"
-            }
+  
