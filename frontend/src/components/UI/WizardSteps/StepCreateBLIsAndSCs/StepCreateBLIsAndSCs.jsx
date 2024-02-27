@@ -200,18 +200,19 @@ export const StepCreateBLIsAndSCs = ({
             )}
             {groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group) => (
-                    <div key={group.servicesComponentId}>
-                        <ServicesComponentAccordion servicesComponentId={group.servicesComponentId}>
-                            <BudgetLinesTable
-                                budgetLines={group.budgetLines}
-                                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                                canUserEditBudgetLines={canUserEditBudgetLines}
-                                isReviewMode={isReviewMode}
-                            />
-                        </ServicesComponentAccordion>
-                    </div>
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                    >
+                        <BudgetLinesTable
+                            budgetLines={group.budgetLines}
+                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                            handleDeleteBudgetLine={handleDeleteBudgetLine}
+                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                            canUserEditBudgetLines={canUserEditBudgetLines}
+                            isReviewMode={isReviewMode}
+                        />
+                    </ServicesComponentAccordion>
                 ))}
             <DebugCode
                 title="Budget Lines BY Services Component"
