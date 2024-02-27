@@ -61,7 +61,7 @@ jobs:
               "dnsZoneName": "opre-ops.flexion.us",
               "frontendName": "opre-ops-dev-frontend",
               "containerAppEnvName": "opre-ops-dev-app-cae",
-              "resourceGroupName": "opre-ops-dev-app-rg",
+              "resourceGroupName": "opre-ops-dev-app-rg"
             }
 
   
