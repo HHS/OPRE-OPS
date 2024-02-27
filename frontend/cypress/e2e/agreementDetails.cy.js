@@ -35,3 +35,9 @@ it("agreement loads with budget lines", () => {
     cy.get('[data-cy="currency-summary-card"]').contains("$ 2,000,000.00");
     cy.get('[data-cy="blis-by-fy-card"]').contains("$2,000,000.00");
 });
+
+// TODO: Add tests for checking state of agreement when switching between tabs
+it.only("should not warn when not making changes to agreement", () => {
+    // should have a h2 with text "AgreementHasChanged" that has a child pre tag with text "false"
+    cy.get("#AgreementHasChanged").parent().find("pre").contains("false");
+});
