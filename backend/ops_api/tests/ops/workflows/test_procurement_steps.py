@@ -3,6 +3,7 @@ from flask import url_for
 from models.workflows import AcquisitionPlanning, Award, Evaluation, PreAward, PreSolicitation, Solicitation
 
 TEST_AGREEMENT_ID = 1
+TEST_AGREEMENT_ID2 = 2
 TEST_CREATED_BY = 3
 
 # STEP 1 : AcquisitionPlanning
@@ -452,3 +453,17 @@ def test_award_patch_by_id(auth_client, loaded_db):
     assert resp_json["vendor"] == "Test Vendor"
     assert resp_json["vendor_type"] == "Test Vendor Type"
     assert resp_json["financial_number"] == "Test Financial Number"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_procurement_step_get_list(auth_client, loaded_db):
+    create_test_acquisition_planning(loaded_db)
+    create_test_pre_solicitation(loaded_db)
+    create_test_solicitation(loaded_db, TEST_AGREEMENT_ID2)
+    response = auth_client.get(url_for("api.procurement-step-group"))
+    assert response.status_code == 200
+    assert len(response.json) == 3
+
+    response = auth_client.get(url_for("api.procurement-step-group"), query_string={"agreement_id": "1"})
+    assert response.status_code == 200
+    assert len(response.json) == 2

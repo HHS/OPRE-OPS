@@ -65,7 +65,7 @@ class BaseProcurementStepListAPI(BaseListAPI):
         data = self._request_schema.dump(self._request_schema.load(request.args))
 
         stmt = select(self.model)
-        if data.get("contract_agreement_id"):
+        if data.get("agreement_id"):
             stmt = stmt.where(self.model.agreement_id == data.get("agreement_id"))
 
         result = current_app.db_session.execute(stmt).all()

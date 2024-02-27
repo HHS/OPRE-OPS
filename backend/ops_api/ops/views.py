@@ -22,6 +22,7 @@ from models.workflows import (
     PackageSnapshot,
     PreAward,
     PreSolicitation,
+    ProcurementStep,
     Solicitation,
     WorkflowInstance,
     WorkflowStepInstance,
@@ -65,6 +66,7 @@ from ops_api.ops.resources.procurement_steps import (
     EvaluationListAPI,
     PreSolicitationItemAPI,
     PreSolicitationListAPI,
+    ProcurementStepListAPI,
     SolicitationItemAPI,
     SolicitationListAPI,
 )
@@ -228,6 +230,9 @@ WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC = WorkflowApprovalListApi.as_view("workflow
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)
 SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
 
+
+# Procurement: Generic Step ENDPOINT
+PROCUREMENT_STEP_LIST_API_VIEW_FUNC = ProcurementStepListAPI.as_view("procurement-step-group", ProcurementStep)
 
 # Procurement: AcquisitionPlanning ENDPOINTS
 PROCUREMENT_ACQUISITION_PLANNING_LIST_API_VIEW_FUNC = AcquisitionPlanningListAPI.as_view(
