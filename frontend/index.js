@@ -1,4 +1,3 @@
-const { Bun } = require('bun-http');
 const path = require('path');
 
 const BASE_PATH = "./";
