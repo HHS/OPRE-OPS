@@ -9,12 +9,13 @@ import { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
  * Renders the details of an agreement, including budget lines, spending, and other information.
  * @param {object} props - The component props.
  * @param {object} props.agreement - The agreement object to display details for.
+ * @param {function} props.setHasAgreementChanged - The function to set the agreement changed state.
  * @param {object} props.projectOfficer - The project officer object for the agreement.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
-const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode }) => {
+const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer, isEditMode, setIsEditMode }) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
@@ -34,6 +35,7 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
             {isEditMode ? (
                 <AgreementDetailsEdit
                     agreement={agreement}
+                    setHasAgreementChanged={setHasAgreementChanged}
                     projectOfficer={projectOfficer}
                     isEditMode={isEditMode}
                     setIsEditMode={setIsEditMode}
@@ -50,6 +52,7 @@ const AgreementDetails = ({ agreement, projectOfficer, isEditMode, setIsEditMode
 
 AgreementDetails.propTypes = {
     agreement: PropTypes.object.isRequired,
+    setHasAgreementChanged: PropTypes.func.isRequired,
     projectOfficer: PropTypes.object.isRequired,
     isEditMode: PropTypes.bool.isRequired,
     setIsEditMode: PropTypes.func.isRequired

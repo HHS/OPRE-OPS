@@ -25,11 +25,13 @@ import {
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import useAlert from "../../../hooks/use-alert.hooks";
 import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTypeSelect";
+import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
  * @param {Object} props - The component props.
+ * @param {Function} [props.setHasAgreementChanged] - A function to set the agreement changed state. - optional
  * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
  * @param {Function} [props.goToNext] - A function to go to the next step. - optional
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
@@ -37,7 +39,14 @@ import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTy
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
  * @returns {React.JSX.Element} - The component JSX.
  */
-export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
+export const AgreementEditForm = ({
+    setHasAgreementChanged = () => {},
+    goBack,
+    goToNext,
+    isReviewMode,
+    isEditMode,
+    setIsEditMode
+}) => {
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -93,10 +102,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     } = useGetProductServiceCodesQuery();
 
     // make a copy of the agreement object
-    const agreementCopy = React.useMemo(() => {
-        return { ...agreement };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const hasAgreementChanged = useHasStateChanged(agreement);
+    setHasAgreementChanged(hasAgreementChanged);
 
     if (isReviewMode) {
         suite({
@@ -163,7 +170,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         };
         const { id, cleanData } = cleanAgreementForApi(data);
 
-        if (JSON.stringify(agreementCopy) === JSON.stringify(agreement)) {
+        if (!hasAgreementChanged) {
             return;
         }
 
@@ -216,12 +223,14 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const handleContinue = async () => {
         await saveAgreement();
+        setHasAgreementChanged(false);
         if (isEditMode && setIsEditMode) setIsEditMode(false);
         await goToNext();
     };
 
     const handleDraft = async () => {
         await saveAgreement();
+        setHasAgreementChanged(false);
         await navigate("/agreements");
     };
 
@@ -238,6 +247,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     if (isEditMode && setIsEditMode) setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
+                setHasAgreementChanged(false);
             }
         });
     };
@@ -464,6 +474,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 };
 
 AgreementEditForm.propTypes = {
+    setHasAgreementChanged: PropTypes.func,
     goBack: PropTypes.func,
     goToNext: PropTypes.func,
     isReviewMode: PropTypes.bool,

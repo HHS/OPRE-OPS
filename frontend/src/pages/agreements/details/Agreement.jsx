@@ -12,6 +12,7 @@ const Agreement = () => {
     const agreementId = parseInt(urlPathParams.id);
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
+    const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
@@ -57,6 +58,8 @@ const Agreement = () => {
             <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs
+                        hasAgreementChanged={hasAgreementChanged}
+                        setHasAgreementChanged={setHasAgreementChanged}
                         agreementId={agreement.id}
                         isEditMode={isEditMode}
                         setIsEditMode={setIsEditMode}
@@ -68,6 +71,7 @@ const Agreement = () => {
                         path=""
                         element={
                             <AgreementDetails
+                                setHasAgreementChanged={setHasAgreementChanged}
                                 agreement={agreement}
                                 projectOfficer={projectOfficer}
                                 isEditMode={isEditMode}
