@@ -22,6 +22,7 @@ from ops_api.ops.schemas.procurement_steps import (
     AwardResponse,
     EvaluationRequest,
     EvaluationResponse,
+    PreAwardRequest,
     PreAwardResponse,
     PreSolicitationRequest,
     PreSolicitationResponse,
@@ -50,11 +51,13 @@ class BaseProcurementStepItemAPI(BaseItemAPI):
         return self._get_item_with_try(id)
 
 
-# Procurement Step Endpoints
 def get_current_user_id():
     token = verify_jwt_in_request()
     user = get_user_from_token(token[1])
     return user.id
+
+
+# Procurement Step (Base) Endpoints
 
 
 class ProcurementStepListAPI(BaseListAPI):
@@ -175,13 +178,15 @@ class SolicitationItemAPI(ProcurementStepItemAPI):
         self._patch_schema = mmdc.class_schema(SolicitationRequest)(dump_only=["type"])
 
 
+# Evaluation Endpoints
+
+
 class EvaluationListAPI(ProcurementStepListAPI):
     def __init__(self, model: BaseModel = Evaluation):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(EvaluationResponse)()
 
 
-# Evaluation Endpoints
 class EvaluationItemAPI(ProcurementStepItemAPI):
     def __init__(self, model: BaseModel = Evaluation):
         super().__init__(model)
@@ -190,28 +195,19 @@ class EvaluationItemAPI(ProcurementStepItemAPI):
 
 
 # Pre-Award Endpoints
-class PreAwardItemAPI(BaseItemAPI):
+
+
+class PreAwardListAPI(ProcurementStepListAPI):
     def __init__(self, model: BaseModel = PreAward):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreAwardResponse)()
 
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self, id: int) -> Response:
-        return self._get_item_with_try(id)
 
-
-class PreAwardListAPI(BaseListAPI):
+class PreAwardItemAPI(ProcurementStepItemAPI):
     def __init__(self, model: BaseModel = PreAward):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(PreAwardResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self) -> Response:
-        return super().get()
+        self._patch_schema = mmdc.class_schema(PreAwardRequest)(dump_only=["type"])
 
 
 # Award Endpoints

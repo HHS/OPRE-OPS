@@ -19,6 +19,7 @@ from models.workflows import (
     Evaluation,
     Package,
     PackageSnapshot,
+    PreAward,
     PreSolicitation,
     Solicitation,
     WorkflowInstance,
@@ -250,3 +251,7 @@ PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC = SolicitationItemAPI.as_view("procu
 # Procurement: Evaluation ENDPOINTS
 PROCUREMENT_EVALUATION_LIST_API_VIEW_FUNC = EvaluationListAPI.as_view("procurement-evaluation-group", Evaluation)
 PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procurement-evaluation-item", Evaluation)
+
+# Procurement: PreAward ENDPOINTS
+PROCUREMENT_PRE_AWARD_LIST_API_VIEW_FUNC = EvaluationListAPI.as_view("procurement-pre-award-group", PreAward)
+PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procurement-pre-award-item", PreAward)

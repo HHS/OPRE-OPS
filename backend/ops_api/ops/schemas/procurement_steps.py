@@ -83,6 +83,11 @@ class PreAwardResponse(ProcurementStepResponse, Attestation, TargetDate):
 
 
 @dataclass
+class PreAwardRequest(ProcurementStepRequest, Attestation, TargetDate):
+    pass
+
+
+@dataclass
 class AwardResponse(ProcurementStepResponse, Attestation, TargetDate):
     vendor: Optional[str] = None
     vendor_type: Optional[str] = None
