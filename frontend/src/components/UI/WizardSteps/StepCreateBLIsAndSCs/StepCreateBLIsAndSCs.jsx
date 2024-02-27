@@ -136,8 +136,8 @@ export const StepCreateBLIsAndSCs = ({
                         serviceRequirementType={selectedAgreement.service_requirement_type}
                         agreementId={selectedAgreement.id}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
-                    <p>Complete the information below to create new budget lines.</p>
+                    <h2 className="font-sans-lg margin-top-3">Add Budget Lines</h2>
+                    <p>Add Budget lines to each Services Component to outline how the work will be funded.</p>
                 </>
             )}
             <CreateBudgetLinesForm
@@ -162,7 +162,7 @@ export const StepCreateBLIsAndSCs = ({
                 isReviewMode={isReviewMode}
                 agreementId={selectedAgreement.id}
             />
-            {workflow !== "none" && (
+            {workflow === "budgetLines" && (
                 <>
                     <h2 className="font-sans-lg">Budget Lines</h2>
                     <p>

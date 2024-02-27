@@ -297,7 +297,6 @@ const useCreateBLIsAndSCs = (
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [budgetLineIdFromUrl, newBudgetLines]);
 
-    // group budget lines by services component id into an array
     const groupedBudgetLinesByServicesComponent = newBudgetLines
         .reduce((acc, budgetLine) => {
             const servicesComponentId = budgetLine.services_component_id;
@@ -309,7 +308,11 @@ const useCreateBLIsAndSCs = (
             }
             return acc;
         }, [])
-        .sort((a, b) => a.servicesComponentId - b.servicesComponentId);
+        .sort((a, b) => {
+            if (a.servicesComponentId === null) return 1;
+            if (b.servicesComponentId === null) return -1;
+            return a.servicesComponentId - b.servicesComponentId;
+        });
 
     return {
         handleSubmitForm,
