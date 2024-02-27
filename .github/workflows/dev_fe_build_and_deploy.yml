@@ -57,7 +57,7 @@ jobs:
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",
-              "container_tag": "${{ github.sha }}"
+              "containerImageTag": "${{ github.sha }}"
             }
 
   
