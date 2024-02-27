@@ -3,17 +3,21 @@ import { createContext, useContext, useReducer } from "react";
 export const CreateBudgetLinesContext = createContext(null);
 export const CreateBudgetLinesDispatchContext = createContext(null);
 
-const initialState = {
-    new_budget_lines: [],
+const initialForm = {
     is_editing_budget_line: false,
     selected_can: {},
-    entered_description: "",
+    services_component_id: -1,
     entered_amount: null,
     entered_month: "",
     entered_day: "",
     entered_year: "",
     entered_comments: "",
     budget_line_being_edited: -1
+};
+
+const initialState = {
+    new_budget_lines: [],
+    ...initialForm
 };
 
 export function CreateBudgetLinesProvider({ children }) {
@@ -67,7 +71,7 @@ function budgetLinesReducer(state, action) {
             const index = state.new_budget_lines.findIndex((budget_line) => budget_line.id === action.payload.id);
 
             if (index !== -1) {
-                const { line_description, comments, can, amount, date_needed } = state.new_budget_lines[index];
+                const { services_component_id, comments, can, amount, date_needed } = state.new_budget_lines[index];
                 let entered_year = "";
                 let entered_month = "";
                 let entered_day = "";
@@ -79,7 +83,7 @@ function budgetLinesReducer(state, action) {
                 return {
                     ...state,
                     is_editing_budget_line: true,
-                    entered_description: line_description,
+                    services_component_id,
                     entered_comments: comments,
                     selected_can: {
                         ...can
@@ -135,31 +139,11 @@ function budgetLinesReducer(state, action) {
         case "RESET_FORM": {
             return {
                 ...state,
-                entered_description: "",
-                entered_comments: "",
-                selected_can: {},
-                entered_amount: null,
-                entered_month: "",
-                entered_day: "",
-                entered_year: "",
-                budget_line_being_edited: -1,
-                is_editing_budget_line: false
+                ...initialForm
             };
         }
         case "RESET_FORM_AND_BUDGET_LINES": {
-            return {
-                ...state,
-                entered_description: "",
-                entered_comments: "",
-                selected_can: {},
-                entered_amount: null,
-                entered_month: "",
-                entered_day: "",
-                entered_year: "",
-                budget_line_being_edited: -1,
-                is_editing_budget_line: false,
-                new_budget_lines: []
-            };
+            return initialState;
         }
         case "RESET_TO_INITIAL_STATE": {
             return initialState;

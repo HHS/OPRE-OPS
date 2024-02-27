@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import Table from "../../UI/Table";
-import TotalSummaryCard from "../TotalSummaryCard";
 import BLIReviewRow from "./BLIReviewRow";
 import { BUDGET_LINE_TABLE_HEADERS } from "./BLIReviewTable.constants";
 import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
@@ -14,7 +13,6 @@ import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
- * @param {Boolean} [props.showTotalSummaryCard] - A flag to indicate if the total summary card should be displayed.
  * @param {Function} [props.setSelectedBLIs] - A function to set the selected budget line items.
  * @param {Function} [props.toggleSelectActionableBLIs] - A function to toggle the selection of actionable budget line items.
  * @param {Boolean} [props.mainToggleSelected] - A flag to indicate if the main toggle is selected.
@@ -28,7 +26,6 @@ const AgreementBLIReviewTable = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
-    showTotalSummaryCard = true,
     setSelectedBLIs,
     toggleSelectActionableBLIs = () => {},
     mainToggleSelected,
@@ -62,7 +59,7 @@ const AgreementBLIReviewTable = ({
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
             >
-                Description
+                SC
             </label>
         </th>
     );
@@ -86,7 +83,6 @@ const AgreementBLIReviewTable = ({
                     />
                 ))}
             </Table>
-            {showTotalSummaryCard && <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>}
         </>
     );
 };
@@ -100,7 +96,6 @@ AgreementBLIReviewTable.propTypes = {
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
     isReviewMode: PropTypes.bool,
-    showTotalSummaryCard: PropTypes.bool,
     setSelectedBLIs: PropTypes.func,
     toggleSelectActionableBLIs: PropTypes.func,
     mainToggleSelected: PropTypes.bool,

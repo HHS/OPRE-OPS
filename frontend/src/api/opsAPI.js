@@ -19,7 +19,8 @@ export const opsApi = createApi({
         "Portfolios",
         "CanFunding",
         "Notifications",
-        "WorkflowStepInstance"
+        "WorkflowStepInstance",
+        "ServicesComponents"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -237,6 +238,43 @@ export const opsApi = createApi({
         getWorkflowStepInstance: builder.query({
             query: (id) => `/workflow-step-instance/${id}`,
             providesTags: ["WorkflowStepInstance"]
+        }),
+        addServicesComponent: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/services-components/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        updateServicesComponent: builder.mutation({
+            query: ({ id, data }) => {
+                return {
+                    url: `/services-components/${id}`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        getServicesComponentById: builder.query({
+            query: (id) => `/services-components/${id}`,
+            providesTags: ["ServicesComponents"]
+        }),
+        getServicesComponentsList: builder.query({
+            query: (agreementId) => `/services-components/?contract_agreement_id=${agreementId}`,
+            providesTags: ["ServicesComponents"]
+        }),
+        deleteServicesComponent: builder.mutation({
+            query: (id) => ({
+                url: `/services-components/${id}`,
+                method: "DELETE"
+            }),
+            invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         })
     })
 });
@@ -274,5 +312,10 @@ export const {
     useAddApprovalRequestMutation,
     useAddWorkflowApproveMutation,
     useGetWorkflowInstanceQuery,
-    useGetWorkflowStepInstanceQuery
+    useGetWorkflowStepInstanceQuery,
+    useAddServicesComponentMutation,
+    useUpdateServicesComponentMutation,
+    useGetServicesComponentByIdQuery,
+    useGetServicesComponentsListQuery,
+    useDeleteServicesComponentMutation
 } = opsApi;

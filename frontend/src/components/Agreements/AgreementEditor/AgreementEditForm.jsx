@@ -92,6 +92,12 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery();
 
+    // make a copy of the agreement object
+    const agreementCopy = React.useMemo(() => {
+        return { ...agreement };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     if (isReviewMode) {
         suite({
             ...agreement
@@ -144,7 +150,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const cleanAgreementForApi = (data) => {
         // eslint-disable-next-line no-unused-vars
-        const { id, budget_line_items, created_by, created_on, updated_on, ...cleanData } = data;
+        const { id, budget_line_items, services_components, created_by, created_on, updated_on, ...cleanData } = data;
         return { id: id, cleanData: cleanData };
     };
 
@@ -156,6 +162,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             })
         };
         const { id, cleanData } = cleanAgreementForApi(data);
+
+        if (JSON.stringify(agreementCopy) === JSON.stringify(agreement)) {
+            return;
+        }
 
         if (id) {
             await updateAgreement({ id: id, data: cleanData })

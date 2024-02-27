@@ -1,57 +1,34 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
-import StepIndicator from "../../StepIndicator/StepIndicator";
-import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
-import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
-import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
-import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
-import suite from "./suite";
-import { convertCodeForDisplay } from "../../../../helpers/utils";
-import ConfirmationModal from "../../Modals/ConfirmationModal";
-import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 import useAlert from "../../../../hooks/use-alert.hooks";
+import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
+import { useNavigate } from "react-router-dom";
+import suite from "./suite";
 
 /**
- * Renders the Create Budget Lines component with React context.
+ * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
- * @param {Object} props - The component props.
- * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
- * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
- * @param {Array<String>} props.wizardSteps - An array of objects representing the steps in the flow.
- * @param {number} props.currentStep - The index of the current step in the flow.
- * @param {Object} props.selectedResearchProject - The selected research project.
- * @param {Object} props.selectedAgreement - The selected agreement.
- * @param {Object} props.selectedProcurementShop - The selected procurement shop.
- * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
- * @param {string} props.continueBtnText - The text to display on the "Continue" button.
- * @param {boolean} props.isEditMode - Whether the form is in edit mode.
- * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
- * @param {Function} props.setIsEditMode - A function to set the edit mode state.
- * @param {boolean} props.isReviewMode - Whether the form is in review mode.
- * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
- * @param {"agreement" | "budgetLines" | "none"} props.workflow - The workflow type.
- * @returns {React.JSX.Element} - The rendered component.
+ * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
+ * @param {Array<Object>} existingBudgetLines - Array of existing budget lines.
+ * @param {Function} goToNext - Function to navigate to the next step.
+ * @param {Function} continueOverRide - Function to override the continue action.
+ * @param {Object} selectedAgreement - Selected agreement object.
+ * @param {Object} selectedProcurementShop - Selected procurement shop object.
+ * @param {Function} setIsEditMode - Function to set the edit mode.
+ *
+ * @returns {Object} Contains various state variables and functions to manage budget line items and service components.
  */
-export const StepCreateBudgetLines = ({
-    goToNext,
-    goBack,
-    wizardSteps,
-    currentStep,
-    selectedResearchProject = {},
-    selectedAgreement = {},
-    selectedProcurementShop = {},
-    existingBudgetLines = [],
-    continueBtnText,
-    continueOverRide,
-    isEditMode,
-    canUserEditBudgetLines = false,
-    setIsEditMode = () => {},
+const useCreateBLIsAndSCs = (
     isReviewMode,
-    workflow
-}) => {
+    existingBudgetLines,
+    goToNext,
+    continueOverRide,
+    selectedAgreement,
+    selectedProcurementShop,
+    setIsEditMode
+) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
     const searchParams = new URLSearchParams(location.search);
@@ -61,7 +38,7 @@ export const StepCreateBudgetLines = ({
 
     const {
         selected_can: selectedCan,
-        entered_description: enteredDescription,
+        services_component_id: servicesComponentId,
         entered_amount: enteredAmount,
         entered_month: enteredMonth,
         entered_day: enteredDay,
@@ -72,7 +49,7 @@ export const StepCreateBudgetLines = ({
         new_budget_lines: newBudgetLines
     } = useBudgetLines() || {
         selected_can: null,
-        entered_description: null,
+        services_component_id: -1,
         entered_amount: null,
         entered_month: null,
         entered_day: null,
@@ -89,7 +66,7 @@ export const StepCreateBudgetLines = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { setAlert } = useAlert();
     // setters
-    const setEnteredDescription = useSetState("entered_description");
+    const setServicesComponentId = useSetState("services_component_id");
     const setSelectedCan = useSetState("selected_can");
     const setEnteredAmount = useSetState("entered_amount");
     const setEnteredMonth = useSetState("entered_month");
@@ -109,14 +86,14 @@ export const StepCreateBudgetLines = ({
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
-    // TODO: Refactor to use custom hooks
     const handleSubmitForm = (e) => {
         e.preventDefault();
         dispatch({
             type: "ADD_BUDGET_LINE",
             payload: {
                 id: crypto.getRandomValues(new Uint32Array(1))[0],
-                line_description: enteredDescription || "",
+                line_description: ".",
+                services_component_id: servicesComponentId,
                 comments: enteredComments || "",
                 can_id: selectedCan?.id || null,
                 can: selectedCan || null,
@@ -141,7 +118,8 @@ export const StepCreateBudgetLines = ({
             type: "EDIT_BUDGET_LINE",
             payload: {
                 id: newBudgetLines[budgetLineBeingEdited].id,
-                line_description: enteredDescription,
+                line_description: ".",
+                services_component_id: servicesComponentId,
                 comments: enteredComments,
                 can_id: selectedCan?.id,
                 can: selectedCan,
@@ -319,172 +297,50 @@ export const StepCreateBudgetLines = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [budgetLineIdFromUrl, newBudgetLines]);
 
-    return (
-        <>
-            {showModal && (
-                <ConfirmationModal
-                    heading={modalProps.heading}
-                    setShowModal={setShowModal}
-                    actionButtonText={modalProps.actionButtonText}
-                    handleConfirm={modalProps.handleConfirm}
-                />
-            )}
-
-            {
-                // TODO: consider moving this to a separate component for BudgetLine tab
-                // if workflow is none, skip the title
-                workflow !== "none" ? (
-                    workflow === "agreement" ? (
-                        <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-                    ) : (
-                        <>
-                            <h2 className="font-sans-lg">Create New Budget Line</h2>
-                            <p>Step Two: Text explaining this page</p>
-                        </>
-                    )
-                ) : null
-            }
-
-            {workflow !== "none" && (
-                <>
-                    <StepIndicator
-                        steps={wizardSteps}
-                        currentStep={currentStep}
-                    />
-                    <ProjectAgreementSummaryCard
-                        selectedResearchProject={selectedResearchProject}
-                        selectedAgreement={selectedAgreement}
-                        selectedProcurementShop={selectedProcurementShop}
-                    />
-                    <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
-                    <p>Complete the information below to create new budget lines.</p>
-                </>
-            )}
-            <CreateBudgetLinesForm
-                selectedCan={selectedCan}
-                enteredDescription={enteredDescription}
-                enteredAmount={enteredAmount}
-                enteredMonth={enteredMonth}
-                enteredDay={enteredDay}
-                enteredYear={enteredYear}
-                enteredComments={enteredComments}
-                isEditing={isEditing}
-                setEnteredDescription={setEnteredDescription}
-                setSelectedCan={setSelectedCan}
-                setEnteredAmount={setEnteredAmount}
-                setEnteredMonth={setEnteredMonth}
-                setEnteredDay={setEnteredDay}
-                setEnteredYear={setEnteredYear}
-                setEnteredComments={setEnteredComments}
-                handleEditForm={handleEditForm}
-                handleResetForm={handleResetForm}
-                handleSubmitForm={handleSubmitForm}
-                isEditMode={isEditMode}
-                isReviewMode={isReviewMode}
-            />
-            {workflow !== "none" && (
-                <>
-                    <h2 className="font-sans-lg">Budget Lines</h2>
-                    <p>
-                        This is a list of all budget lines for the selected project and agreement. The budget lines you
-                        add will display in draft status. The Fiscal Year (FY) will populate based on the election date
-                        you provide.
-                    </p>
-                </>
-            )}
-            {budgetLinePageErrorsExist && (
-                <ul
-                    className="usa-list--unstyled font-12px text-error"
-                    data-cy="error-list"
-                >
-                    {Object.entries(pageErrors).map(([key, value]) => (
-                        <li
-                            key={key}
-                            className="border-left-2px padding-left-1"
-                            data-cy="error-item"
-                        >
-                            <strong>{convertCodeForDisplay("validation", key)}: </strong>
-                            {
-                                <span>
-                                    {value.map((message, index) => (
-                                        <React.Fragment key={index}>
-                                            <span>{message}</span>
-                                            {index < value.length - 1 && <span>, </span>}
-                                        </React.Fragment>
-                                    ))}
-                                </span>
-                            }
-                        </li>
-                    ))}
-                </ul>
-            )}
-            <BudgetLinesTable
-                budgetLinesAdded={newBudgetLines}
-                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                canUserEditBudgetLines={canUserEditBudgetLines}
-                isReviewMode={isReviewMode}
-            />
-            <div className="grid-row flex-justify-end margin-top-1">
-                <button
-                    className="usa-button usa-button--unstyled margin-right-2"
-                    data-cy="back-button"
-                    onClick={() => {
-                        // if no budget lines have been added, go back
-                        if (newBudgetLines?.length === 0) {
-                            if (workflow === "none") {
-                                setIsEditMode(false);
-                                navigate(`/agreements/${selectedAgreement?.id}`);
-                            } else {
-                                goBack();
-                                return;
-                            }
-                        }
-                        // if budget lines have been added, show modal
-                        setShowModal(true);
-                        setModalProps({
-                            heading: "Are you sure you want to go back? Your budget lines will not be saved.",
-                            actionButtonText: "Go Back",
-                            handleConfirm: () => {
-                                dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
-                                setModalProps({});
-                                goBack();
-                            }
-                        });
-                    }}
-                >
-                    Back
-                </button>
-                <button
-                    className="usa-button"
-                    data-cy="continue-btn"
-                    onClick={saveBudgetLineItems}
-                    disabled={isReviewMode && !res.isValid()}
-                >
-                    {isReviewMode ? "Review" : continueBtnText}
-                </button>
-            </div>
-        </>
-    );
+    return {
+        handleSubmitForm,
+        handleEditForm,
+        handleDeleteBudgetLine,
+        handleResetForm,
+        handleSetBudgetLineForEditing,
+        handleDuplicateBudgetLine,
+        saveBudgetLineItems,
+        isEditing,
+        budgetLineBeingEdited,
+        budgetLinePageErrorsExist,
+        pageErrors,
+        showModal,
+        setShowModal,
+        modalProps,
+        setModalProps,
+        setServicesComponentId,
+        setSelectedCan,
+        setEnteredAmount,
+        setEnteredMonth,
+        setEnteredDay,
+        setEnteredYear,
+        setEnteredComments,
+        resetQueryParams,
+        selectedCan,
+        enteredAmount,
+        enteredMonth,
+        enteredDay,
+        enteredYear,
+        enteredComments,
+        servicesComponentId,
+        newBudgetLines,
+        res
+    };
 };
 
-StepCreateBudgetLines.propTypes = {
+useCreateBLIsAndSCs.propTypes = {
+    isReviewMode: PropTypes.bool,
+    existingBudgetLines: PropTypes.array,
     goToNext: PropTypes.func,
-    goBack: PropTypes.func,
-    wizardSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
-    currentStep: PropTypes.number.isRequired,
-    selectedResearchProject: PropTypes.object,
+    continueOverRide: PropTypes.func,
     selectedAgreement: PropTypes.object,
     selectedProcurementShop: PropTypes.object,
-    existingBudgetLines: PropTypes.arrayOf(PropTypes.object),
-    continueBtnText: PropTypes.string.isRequired,
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
-    canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    continueOverRide: PropTypes.func,
-    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired
+    setIsEditMode: PropTypes.func
 };
 
-export default StepCreateBudgetLines;
+export default useCreateBLIsAndSCs;

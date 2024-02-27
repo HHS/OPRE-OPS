@@ -64,7 +64,7 @@ const Select = ({
                     onChange={handleChange}
                     value={value}
                 >
-                    <option value={0}>- {defaultOption} -</option>
+                    <option value={null}>- {defaultOption} -</option>
                     {options.map((option, index) => (
                         <option
                             key={index + 1}
