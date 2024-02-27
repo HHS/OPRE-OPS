@@ -16,6 +16,7 @@ from models.projects import ResearchProject, ResearchType
 from models.users import User
 from models.workflows import (
     AcquisitionPlanning,
+    Award,
     Evaluation,
     Package,
     PackageSnapshot,
@@ -58,6 +59,8 @@ from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, Pro
 from ops_api.ops.resources.procurement_steps import (
     AcquisitionPlanningItemAPI,
     AcquisitionPlanningListAPI,
+    AwardItemAPI,
+    AwardListAPI,
     EvaluationItemAPI,
     EvaluationListAPI,
     PreSolicitationItemAPI,
@@ -255,3 +258,7 @@ PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procureme
 # Procurement: PreAward ENDPOINTS
 PROCUREMENT_PRE_AWARD_LIST_API_VIEW_FUNC = EvaluationListAPI.as_view("procurement-pre-award-group", PreAward)
 PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procurement-pre-award-item", PreAward)
+
+# Procurement: Award ENDPOINTS
+PROCUREMENT_AWARD_LIST_API_VIEW_FUNC = AwardListAPI.as_view("procurement-award-group", Award)
+PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC = AwardItemAPI.as_view("procurement-award-item", Award)

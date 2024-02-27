@@ -1,6 +1,6 @@
 import pytest
 from flask import url_for
-from models.workflows import AcquisitionPlanning, Evaluation, PreAward, PreSolicitation, Solicitation
+from models.workflows import AcquisitionPlanning, Award, Evaluation, PreAward, PreSolicitation, Solicitation
 
 # STEP 1 : AcquisitionPlanning
 
@@ -412,3 +412,95 @@ def test_pre_award_patch_by_id(auth_client, loaded_db):
     assert resp_json["actual_date"] == "2024-10-15"
     assert resp_json["is_complete"]
     assert resp_json["completed_by"] == 5
+
+
+# STEP 6: Award
+
+
+def create_test_award(loaded_db):
+    award = Award()
+    award.agreement_id = 1
+    loaded_db.add(award)
+    loaded_db.commit()
+    assert award.id is not None
+    return award
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_award_get_list(auth_client, loaded_db):
+    create_test_award(loaded_db)
+    response = auth_client.get(url_for("api.procurement-award-group"))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["type"] == "procurement_award"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_award_get_by_id(auth_client, loaded_db):
+    award = create_test_award(loaded_db)
+
+    response = auth_client.get(url_for("api.procurement-award-item", id=award.id))
+    assert response.status_code == 200
+    import json
+
+    print(json.dumps(response.json, indent=2))
+    resp_json = response.json
+    keys = [
+        "id",
+        "agreement_id",
+        "completed_by",
+        "created_by_user",
+        "display_name",
+        "financial_number",
+        "is_complete",
+        "notes",
+        "type",
+        "updated_on",
+        "vendor",
+        "vendor_type",
+        "workflow_step_id",
+    ]
+    for key in keys:
+        assert key in resp_json
+        # if key in ["id", "agreement_id", "created_by_user", "display_name", "type", "updated_on"]:
+        if key in ["id", "agreement_id", "display_name", "type", "updated_on"]:
+            assert resp_json[key]
+        else:
+            assert not resp_json[key]
+
+    assert resp_json["type"] == "procurement_award"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_award_patch_by_id(auth_client, loaded_db):
+    award = Award()
+    award.agreement_id = 1
+    loaded_db.add(award)
+    loaded_db.commit()
+    assert award.id is not None
+
+    patch_data = {
+        "actual_date": "2024-10-15",
+        "is_complete": True,
+        "completed_by": 5,
+        "vendor": "Test Vendor",
+        "vendor_type": "Test Vendor Type",
+        "financial_number": "Test Financial Number",
+    }
+    response = auth_client.patch(url_for("api.procurement-award-item", id=award.id), json=patch_data)
+    assert response.status_code == 200
+    resp_json = response.json
+    import json
+
+    print(json.dumps(response.json, indent=2))
+    assert "id" in resp_json
+
+    response = auth_client.get(url_for("api.procurement-award-item", id=award.id))
+    resp_json = response.json
+    assert resp_json["agreement_id"] == 1
+    assert resp_json["actual_date"] == "2024-10-15"
+    assert resp_json["is_complete"]
+    assert resp_json["completed_by"] == 5
+    assert resp_json["vendor"] == "Test Vendor"
+    assert resp_json["vendor_type"] == "Test Vendor Type"
+    assert resp_json["financial_number"] == "Test Financial Number"

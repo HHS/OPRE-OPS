@@ -19,6 +19,7 @@ from ops_api.ops.schemas.procurement_steps import (
     AcquisitionPlanningRequest,
     AcquisitionPlanningRequestPost,
     AcquisitionPlanningResponse,
+    AwardRequest,
     AwardResponse,
     EvaluationRequest,
     EvaluationResponse,
@@ -57,7 +58,7 @@ def get_current_user_id():
     return user.id
 
 
-# Procurement Step (Base) Endpoints
+# Procurement Step (Base) Endpoint
 
 
 class ProcurementStepListAPI(BaseListAPI):
@@ -82,6 +83,7 @@ class ProcurementStepItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     @handle_api_error
     def get(self, id: int) -> Response:
+        print(f"~~~~~~~~~~ {request.method} to {request.path}")
         return self._get_item_with_try(id)
 
     def _update(self, id, method, schema) -> Response:
@@ -211,25 +213,16 @@ class PreAwardItemAPI(ProcurementStepItemAPI):
 
 
 # Award Endpoints
-class AwardItemAPI(BaseItemAPI):
+
+
+class AwardListAPI(ProcurementStepListAPI):
+    def __init__(self, model: BaseModel = Award):
+        super().__init__(model)
+        self._response_schema = mmdc.class_schema(PreAwardResponse)()
+
+
+class AwardItemAPI(ProcurementStepItemAPI):
     def __init__(self, model: BaseModel = Award):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(AwardResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self, id: int) -> Response:
-        return self._get_item_with_try(id)
-
-
-class AwardListAPI(BaseListAPI):
-    def __init__(self, model: BaseModel = Award):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(AwardResponse)()
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self) -> Response:
-        return super().get()
+        self._patch_schema = mmdc.class_schema(AwardRequest)(dump_only=["type"])

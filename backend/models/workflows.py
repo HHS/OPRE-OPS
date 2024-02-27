@@ -381,7 +381,7 @@ class PreAward(ProcurementStep, Attestation, TargetDate):
     }
 
 
-class Award(ProcurementStep):
+class Award(ProcurementStep, Attestation):
     __tablename__ = "procurement_award"
     id = sa.Column(sa.Integer, sa.ForeignKey("procurement_step.id"), primary_key=True)
     __mapper_args__ = {

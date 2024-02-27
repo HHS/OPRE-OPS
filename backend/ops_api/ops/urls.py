@@ -39,6 +39,8 @@ from ops_api.ops.views import (
     PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
     PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC,
     PROCUREMENT_ACQUISITION_PLANNING_LIST_API_VIEW_FUNC,
+    PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_AWARD_LIST_API_VIEW_FUNC,
     PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC,
     PROCUREMENT_EVALUATION_LIST_API_VIEW_FUNC,
     PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC,
@@ -376,4 +378,12 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/procurement-pre-awards/<int:id>",
         view_func=PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-awards/",
+        view_func=PROCUREMENT_AWARD_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-awards/<int:id>",
+        view_func=PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
     )

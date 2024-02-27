@@ -47,48 +47,55 @@ class AcquisitionPlanningRequestPost(AcquisitionPlanningRequest):
     agreement_id: int
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PreSolicitationResponse(ProcurementStepResponse, Attestation, TargetDate):
     pass
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PreSolicitationRequest(ProcurementStepRequest, Attestation, TargetDate):
     pass
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SolicitationResponse(ProcurementStepResponse, Attestation, TargetDate):
     pass
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SolicitationRequest(ProcurementStepRequest, Attestation, TargetDate):
     pass
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EvaluationResponse(ProcurementStepResponse, Attestation, TargetDate):
     pass
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EvaluationRequest(ProcurementStepRequest, Attestation, TargetDate):
     pass
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PreAwardResponse(ProcurementStepResponse, Attestation, TargetDate):
     pass
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PreAwardRequest(ProcurementStepRequest, Attestation, TargetDate):
     pass
 
 
-@dataclass
+@dataclass(kw_only=True)
 class AwardResponse(ProcurementStepResponse, Attestation, TargetDate):
+    vendor: Optional[str] = None
+    vendor_type: Optional[str] = None
+    financial_number: Optional[str] = None
+
+
+@dataclass(kw_only=True)
+class AwardRequest(ProcurementStepRequest, Attestation):
     vendor: Optional[str] = None
     vendor_type: Optional[str] = None
     financial_number: Optional[str] = None
