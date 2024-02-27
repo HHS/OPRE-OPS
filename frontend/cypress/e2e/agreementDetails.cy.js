@@ -36,8 +36,15 @@ it("agreement loads with budget lines", () => {
     cy.get('[data-cy="blis-by-fy-card"]').contains("$2,000,000.00");
 });
 
-// TODO: Add tests for checking state of agreement when switching between tabs
-it.only("should not warn when not making changes to agreement", () => {
-    // should have a h2 with text "AgreementHasChanged" that has a child pre tag with text "false"
-    cy.get("#AgreementHasChanged").parent().find("pre").contains("false");
+it("should not warn when not making changes to agreement and tabbing to BLI tab", () => {
+    cy.get("#edit").click();
+    cy.get('[data-cy="details-tab-Budget Lines"]').click();
+    cy.get("#ops-modal").should("not.exist");
+});
+
+it("should warn when making changes to agreement and tabbing out", () => {
+    cy.get("#edit").click();
+    cy.get("#contractType").select("Firm Fixed Price (FFP)");
+    cy.get('[data-cy="details-tab-Agreement Details"]').click();
+    cy.get("#ops-modal").should("exist");
 });

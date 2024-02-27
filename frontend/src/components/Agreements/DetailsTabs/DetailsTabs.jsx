@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import { useLocation, useNavigate } from "react-router-dom";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
-import DebugCode from "../../../pages/servicesComponents/DebugCode";
 import styles from "./DetailsTabs.module.scss";
 
 /**
@@ -99,10 +98,6 @@ const DetailsTabs = ({ hasAgreementChanged, setHasAgreementChanged, agreementId,
             >
                 {links}
             </nav>
-            <DebugCode
-                title="AgreementHasChanged"
-                data={hasAgreementChanged}
-            />
         </>
     );
 };
