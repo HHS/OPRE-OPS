@@ -297,6 +297,20 @@ const useCreateBLIsAndSCs = (
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [budgetLineIdFromUrl, newBudgetLines]);
 
+    // group budget lines by services component id into an array
+    const groupedBudgetLinesByServicesComponent = newBudgetLines
+        .reduce((acc, budgetLine) => {
+            const servicesComponentId = budgetLine.services_component_id;
+            const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+            if (index === -1) {
+                acc.push({ servicesComponentId, budgetLines: [budgetLine] });
+            } else {
+                acc[index].budgetLines.push(budgetLine);
+            }
+            return acc;
+        }, [])
+        .sort((a, b) => a.servicesComponentId - b.servicesComponentId);
+
     return {
         handleSubmitForm,
         handleEditForm,
@@ -329,6 +343,7 @@ const useCreateBLIsAndSCs = (
         enteredComments,
         servicesComponentId,
         newBudgetLines,
+        groupedBudgetLinesByServicesComponent,
         res
     };
 };
