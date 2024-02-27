@@ -48,7 +48,7 @@ jobs:
       - name: Terraform Apply
         uses: ./.github/actions/tf-apply
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend"
+          terraform_directory: "terraform/eastus/ops/${{ env.ENVIRONMENT }}/stacks/${{ env.WORKING_DIR }}"
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
           azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
           azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
