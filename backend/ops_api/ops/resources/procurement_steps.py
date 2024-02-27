@@ -37,6 +37,7 @@ from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
+from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import override
 
 
@@ -66,6 +67,20 @@ class ProcurementStepListAPI(BaseListAPI):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
 
+    def _get_item_with_try(self, id: int) -> Response:
+        try:
+            item = self._get_item(id)
+
+            if item:
+                response = make_response_with_headers(self._response_schema.dump(item))
+            else:
+                response = make_response_with_headers({}, 404)
+        except SQLAlchemyError as se:
+            current_app.logger.error(se)
+            response = make_response_with_headers({}, 500)
+
+        return response
+
     @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     @handle_api_error
@@ -83,12 +98,10 @@ class ProcurementStepItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     @handle_api_error
     def get(self, id: int) -> Response:
-        print(f"~~~~~~~~~~ {request.method} to {request.path}")
         return self._get_item_with_try(id)
 
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{request.method} to {request.path}"
-        print(message_prefix)
 
         with OpsEventHandler(OpsEventType.UPDATE_PROCUREMENT_ACQUISITION_PLANNING) as meta:
             old_instance = self._get_item(id)
@@ -96,18 +109,13 @@ class ProcurementStepItemAPI(BaseItemAPI):
                 raise ValueError(f"Invalid {self.model.__name__} id: {id}.")
             schema.context["id"] = id
             schema.context["method"] = method
-            print(f"{request.json=}")
             data = get_change_data(request.json, old_instance, schema, ["id", "type", "agreement_id"])
-            print(f"{data=}")
             for k in ["actual_date", "target_date"]:
                 if k in data and data[k] is not None:
                     data[k] = date.fromisoformat(data[k])
 
             updated_instance = update_and_commit_model_instance(old_instance, data)
             resp_dict = self._response_schema.dump(updated_instance)
-            import json
-
-            print(json.dumps(resp_dict, indent=2))
             meta.metadata.update({self.model.__name__: resp_dict})
             current_app.logger.info(f"{message_prefix}: Updated {self.model.__name__}: {resp_dict}")
             resp_dict = {"message": f"{self.model.__name__} updated", "id": id}

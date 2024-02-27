@@ -17,7 +17,7 @@ def create_test_acquisition_planning(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test__acquisition_planning_get_list(auth_client, loaded_db):
+def test_acquisition_planning_get_list(auth_client, loaded_db):
     create_test_acquisition_planning(loaded_db)
     response = auth_client.get(url_for("api.procurement-acquisition-planning-group"))
     assert response.status_code == 200
@@ -75,9 +75,6 @@ def test_acquisition_planning_patch_by_id(auth_client, loaded_db):
     )
     assert response.status_code == 200
     resp_json = response.json
-    import json
-
-    print(json.dumps(response.json, indent=2))
     assert "id" in resp_json
 
     response = auth_client.get(url_for("api.procurement-acquisition-planning-item", id=acquisition_planning.id))
@@ -115,9 +112,7 @@ def test_pre_solicitation_get_by_id(auth_client, loaded_db):
 
     response = auth_client.get(url_for("api.procurement-pre-solicitation-item", id=pre_solicitation.id))
     assert response.status_code == 200
-    import json
 
-    print(json.dumps(response.json, indent=2))
     resp_json = response.json
     keys = [
         "id",
@@ -157,9 +152,6 @@ def test_pre_solicitation_patch_by_id(auth_client, loaded_db):
     )
     assert response.status_code == 200
     resp_json = response.json
-    import json
-
-    print(json.dumps(response.json, indent=2))
     assert "id" in resp_json
 
     response = auth_client.get(url_for("api.procurement-pre-solicitation-item", id=pre_solicitation.id))
@@ -198,9 +190,7 @@ def test_solicitation_get_by_id(auth_client, loaded_db):
 
     response = auth_client.get(url_for("api.procurement-solicitation-item", id=solicitation.id))
     assert response.status_code == 200
-    import json
 
-    print(json.dumps(response.json, indent=2))
     resp_json = response.json
     keys = [
         "id",
@@ -238,9 +228,6 @@ def test_solicitation_patch_by_id(auth_client, loaded_db):
     response = auth_client.patch(url_for("api.procurement-solicitation-item", id=solicitation.id), json=patch_data)
     assert response.status_code == 200
     resp_json = response.json
-    import json
-
-    print(json.dumps(response.json, indent=2))
     assert "id" in resp_json
 
     response = auth_client.get(url_for("api.procurement-solicitation-item", id=solicitation.id))
@@ -279,9 +266,7 @@ def test_evaluation_get_by_id(auth_client, loaded_db):
 
     response = auth_client.get(url_for("api.procurement-evaluation-item", id=evaluation.id))
     assert response.status_code == 200
-    import json
 
-    print(json.dumps(response.json, indent=2))
     resp_json = response.json
     keys = [
         "id",
@@ -319,9 +304,6 @@ def test_evaluation_patch_by_id(auth_client, loaded_db):
     response = auth_client.patch(url_for("api.procurement-evaluation-item", id=evaluation.id), json=patch_data)
     assert response.status_code == 200
     resp_json = response.json
-    import json
-
-    print(json.dumps(response.json, indent=2))
     assert "id" in resp_json
 
     response = auth_client.get(url_for("api.procurement-evaluation-item", id=evaluation.id))
@@ -360,9 +342,7 @@ def test_pre_award_get_by_id(auth_client, loaded_db):
 
     response = auth_client.get(url_for("api.procurement-pre-award-item", id=pre_award.id))
     assert response.status_code == 200
-    import json
 
-    print(json.dumps(response.json, indent=2))
     resp_json = response.json
     keys = [
         "id",
@@ -400,9 +380,6 @@ def test_pre_award_patch_by_id(auth_client, loaded_db):
     response = auth_client.patch(url_for("api.procurement-pre-award-item", id=pre_award.id), json=patch_data)
     assert response.status_code == 200
     resp_json = response.json
-    import json
-
-    print(json.dumps(response.json, indent=2))
     assert "id" in resp_json
 
     response = auth_client.get(url_for("api.procurement-pre-award-item", id=pre_award.id))
@@ -441,9 +418,7 @@ def test_award_get_by_id(auth_client, loaded_db):
 
     response = auth_client.get(url_for("api.procurement-award-item", id=award.id))
     assert response.status_code == 200
-    import json
 
-    print(json.dumps(response.json, indent=2))
     resp_json = response.json
     keys = [
         "id",
@@ -490,9 +465,6 @@ def test_award_patch_by_id(auth_client, loaded_db):
     response = auth_client.patch(url_for("api.procurement-award-item", id=award.id), json=patch_data)
     assert response.status_code == 200
     resp_json = response.json
-    import json
-
-    print(json.dumps(response.json, indent=2))
     assert "id" in resp_json
 
     response = auth_client.get(url_for("api.procurement-award-item", id=award.id))
