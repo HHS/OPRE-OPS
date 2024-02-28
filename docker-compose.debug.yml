@@ -30,9 +30,10 @@ services:
     container_name: ops-data-import
     environment:
       - ENV=local
+      - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
     command: >
       bash -c "
-      python ./data_tools/src/import_static_data/load_db.py &&
+      .local/bin/alembic upgrade head &&
       DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
@@ -40,7 +41,9 @@ services:
       DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/can_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py
+      DATA=./data_tools/data/first_contract_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
+      DATA=./data_tools/data/workflow_data.json5 python ./data_tools/src/import_static_data/import_data.py
       "
 
     volumes:
