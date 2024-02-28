@@ -69,8 +69,8 @@ runs:
         terraform_wrapper: false
 
     - name: Twingate Connect
-      uses: twingate/github-action@4493ffc3806241aa98194a3fa679f874bce013b5
       if: ${{ inputs.twingate_service_key != '' }}
+      uses: twingate/github-action@4493ffc3806241aa98194a3fa679f874bce013b5
         with:
           service-key: ${{ inputs.twingate_service_key }}
 
