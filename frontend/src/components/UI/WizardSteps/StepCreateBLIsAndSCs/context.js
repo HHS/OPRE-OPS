@@ -6,7 +6,7 @@ export const CreateBudgetLinesDispatchContext = createContext(null);
 const initialForm = {
     is_editing_budget_line: false,
     selected_can: {},
-    services_component_id: -1,
+    services_component_id: null,
     entered_amount: null,
     entered_month: "",
     entered_day: "",
