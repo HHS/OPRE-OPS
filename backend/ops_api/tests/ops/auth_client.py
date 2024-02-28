@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask.testing import FlaskClient
 from flask_jwt_extended import create_access_token
 from models.users import User
@@ -13,7 +11,6 @@ class AuthClient(FlaskClient):
             email="unit-test@ops-api.gov",
             first_name="Unit",
             last_name="Test",
-            updated=datetime.now(),
             division=1,
         )
         additional_claims = {}
