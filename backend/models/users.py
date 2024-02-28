@@ -1,11 +1,10 @@
 """User models."""
-from typing import Any, List, cast
+from typing import List
 
 from models import BaseModel
-from sqlalchemy import Column, DateTime, ForeignKey, Identity, Integer, String, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
-from typing_extensions import override
 
 
 class UserRole(BaseModel):
@@ -35,7 +34,7 @@ class User(BaseModel):
 
     __tablename__ = "user"
 
-    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
+    id: Mapped[int] = BaseModel.get_fk_column()
     oidc_id = Column(UUID(as_uuid=True), unique=True, index=True)
     hhs_id = Column(String)
     email = Column(String, index=True, nullable=False)
@@ -113,7 +112,7 @@ class Role(BaseModel):
     """Main Role model."""
 
     __tablename__ = "role"
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
 
     name = Column(String, index=True, nullable=False)
     permissions = Column(String, nullable=False)
@@ -135,7 +134,7 @@ class Group(BaseModel):
     """Main Group model."""
 
     __tablename__ = "group"
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     name = Column(String, index=True, nullable=False)
 
     users: Mapped[List["User"]] = relationship(

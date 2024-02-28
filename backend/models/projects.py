@@ -1,13 +1,13 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from models.base import BaseModel
-from sqlalchemy import Column, Date, ForeignKey, Identity, Integer, String, Table, Text
+from sqlalchemy import Column, Date, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing_extensions import List, override
+from typing_extensions import List
 
 
 # These are example methodologies derived from:
@@ -68,7 +68,7 @@ class Project(BaseModel):
         "polymorphic_on": "project_type",
     }
 
-    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
+    id: Mapped[int] = BaseModel.get_fk_column()
     project_type: Mapped[ProjectType] = mapped_column(ENUM(ProjectType), nullable=False)
     title: Mapped[str] = mapped_column(String(), nullable=False)
     short_title: Mapped[str] = mapped_column(String(), nullable=False, unique=True)

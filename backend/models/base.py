@@ -6,7 +6,7 @@ import sqlalchemy
 from marshmallow import fields
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
-from sqlalchemy import Column, DateTime, ForeignKey, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
 from sqlalchemy.orm import declarative_base, declared_attr, registry, relationship
 from typing_extensions import Any
 
@@ -86,6 +86,16 @@ class BaseModel(Base):  # type: ignore [misc, valid-type]
             model_class_name = model.__table__.name
             if model_class_name == table_name:
                 return model
+
+    @classmethod
+    def get_fk_column(cls, column_name: str = "id"):
+        return Column(
+            column_name,
+            Integer,
+            primary_key=True,
+            nullable=False,
+            autoincrement=True,
+        )
 
     def to_dict(self):
         if not hasattr(self, "__marshmallow__"):

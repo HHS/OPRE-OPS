@@ -1,12 +1,11 @@
 """Portfolio models."""
 from enum import Enum
-from typing import Any, List, cast
+from typing import List
 
 import sqlalchemy as sa
 from models.base import BaseModel
-from sqlalchemy import Column, ForeignKey, Identity, Integer, String, Table, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
-from typing_extensions import override
 
 
 class PortfolioStatus(Enum):
@@ -20,7 +19,7 @@ class Division(BaseModel):
 
     __tablename__ = "division"
 
-    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
+    id: Mapped[int] = BaseModel.get_fk_column()
     name: Mapped[str] = mapped_column(String(100), unique=True)
     abbreviation: Mapped[str] = mapped_column(String(10), unique=True)
 
@@ -39,7 +38,7 @@ class PortfolioUrl(BaseModel):
     """
 
     __tablename__ = "portfolio_url"
-    id = Column(Integer, primary_key=True)
+    id = BaseModel.get_fk_column()
     portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     portfolio = relationship("Portfolio", back_populates="urls")
     url = Column(String)
@@ -75,7 +74,7 @@ class Portfolio(BaseModel):
     """Main Portfolio model."""
 
     __tablename__ = "portfolio"
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     name = Column(String, nullable=False)
     abbreviation = Column(String)
     status = Column(sa.Enum(PortfolioStatus))

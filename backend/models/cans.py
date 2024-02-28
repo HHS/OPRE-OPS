@@ -1,32 +1,16 @@
 """CAN models."""
 import enum
-from datetime import timedelta
 from enum import Enum, auto
-from typing import Any, List, Optional
+from typing import List, Optional
 
 import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio
 from models.users import User
 from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStatus, WorkflowStepInstance
-from sqlalchemy import (
-    Boolean,
-    Column,
-    Date,
-    DateTime,
-    ForeignKey,
-    Identity,
-    Integer,
-    Numeric,
-    String,
-    Table,
-    Text,
-    case,
-    select,
-)
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, Numeric, String, Table, Text, case, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
-from typing_extensions import override
 
 
 class BudgetLineItemStatus(Enum):
@@ -68,7 +52,7 @@ class FundingSource(BaseModel):
 
     __tablename__ = "funding_source"
 
-    id = Column(Integer, primary_key=True)
+    id = BaseModel.get_fk_column()
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
 
@@ -88,7 +72,7 @@ class FundingPartner(BaseModel):
     """
 
     __tablename__ = "funding_partner"
-    id = Column(Integer, primary_key=True)
+    id = BaseModel.get_fk_column()
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
 
@@ -132,7 +116,7 @@ class ProductServiceCode(BaseModel):
 
     __tablename__ = "product_service_code"
 
-    id = Column(Integer, primary_key=True)
+    id = BaseModel.get_fk_column()
     name = Column(String, nullable=False)
     naics = Column(Integer, nullable=True)
     support_code = Column(String, nullable=True)
@@ -149,7 +133,7 @@ class Agreement(BaseModel):
 
     __tablename__ = "agreement"
 
-    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
+    id: Mapped[int] = BaseModel.get_fk_column()
     agreement_type = mapped_column(ENUM(AgreementType), nullable=False)
     name: Mapped[str] = mapped_column(
         String, nullable=False, comment="In MAPS this was PROJECT.PROJECT_TITLE"
@@ -196,10 +180,6 @@ class Agreement(BaseModel):
     )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
-
-    # @property
-    # def has_bli_in_workflow(self):
-    #     return any(bli.workflow_instance_id for bli in self.budget_line_items)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -362,7 +342,7 @@ class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
     __tablename__ = "can_fiscal_year_carry_forward"
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)
@@ -397,7 +377,7 @@ class ServicesComponent(BaseModel):
 
     # start Identity at 4 to allow for the records load with IDs
     # in agreements_and_blin_data.json5
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     number = Column(Integer)
     optional = Column(Boolean, default=False)
 
@@ -406,13 +386,19 @@ class ServicesComponent(BaseModel):
     period_end = Column(Date)
 
     contract_agreement_id = Column(Integer, ForeignKey("contract_agreement.id"))
-    contract_agreement = relationship("ContractAgreement", backref="services_components")
+    contract_agreement = relationship(
+        "ContractAgreement", backref="services_components"
+    )
 
-    clin_id = Column(Integer, ForeignKey('clin.id'), nullable=True)
+    clin_id = Column(Integer, ForeignKey("clin.id"), nullable=True)
     clin = relationship("CLIN", back_populates="services_component", uselist=False)
 
     def severable(self):
-        return self.contract_agreement and self.contract_agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
+        return (
+            self.contract_agreement
+            and self.contract_agreement.service_requirement_type
+            == ServiceRequirementType.SEVERABLE
+        )
 
     @property
     def display_title(self):
@@ -444,17 +430,19 @@ class CLIN(BaseModel):
 
     __tablename__ = "clin"
 
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     name = Column(String(256), nullable=False)
     source_id = Column(Integer)  # purely an example
 
-    services_component = relationship("ServicesComponent", back_populates="clin", uselist=False)
+    services_component = relationship(
+        "ServicesComponent", back_populates="clin", uselist=False
+    )
 
 
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     line_description = Column(String)
     comments = Column(Text)
 
@@ -557,7 +545,7 @@ class CAN(BaseModel):
 
     __tablename__ = "can"
 
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     number = Column(String(30), nullable=False)
     description = Column(String)
     purpose = Column(String, default="")

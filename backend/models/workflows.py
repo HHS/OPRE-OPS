@@ -1,9 +1,8 @@
 """Workflow models."""
-from enum import Enum, auto
+from enum import Enum
 
 import sqlalchemy as sa
 from models.base import BaseModel
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import object_session, relationship
 from typing_extensions import Any, override
 
@@ -37,7 +36,7 @@ class WorkflowTemplate(BaseModel):
     """Workflow structure without being tied to any specific real-world entity"""
 
     __tablename__ = "workflow_template"
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     name = sa.Column(sa.String, nullable=False)
     steps = relationship("WorkflowStepTemplate", backref="workflow_template")
 
@@ -56,7 +55,7 @@ class WorkflowInstance(BaseModel):
 
     __tablename__ = "workflow_instance"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     associated_id = sa.Column(sa.Integer, nullable=False)
     associated_type = sa.Column(
         sa.Enum(WorkflowTriggerType), nullable=False
@@ -123,7 +122,7 @@ class WorkflowStepTemplate(BaseModel):
 
     __tablename__ = "workflow_step_template"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     name = sa.Column(sa.String, nullable=False)
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
     workflow_type = sa.Column(sa.Enum(WorkflowStepType), nullable=False)
@@ -148,12 +147,14 @@ class WorkflowStepInstance(BaseModel):
 
     __tablename__ = "workflow_step_instance"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     workflow_instance_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_instance.id"))
     workflow_step_template_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_step_template.id")
     )
-    workflow_step_template = relationship("WorkflowStepTemplate", backref="workflow_step_instance")
+    workflow_step_template = relationship(
+        "WorkflowStepTemplate", backref="workflow_step_instance"
+    )
     status = sa.Column(sa.Enum(WorkflowStatus), nullable=False)
     notes = sa.Column(sa.String, nullable=True)
     time_started = sa.Column(sa.DateTime, nullable=True)
@@ -176,8 +177,8 @@ class WorkflowStepInstance(BaseModel):
     def approvers(self):
         if self.workflow_step_template is None:
             return None
-        return (
-            {"users": [
+        return {
+            "users": [
                 approver.user_id
                 for approver in self.workflow_step_template.step_approvers
                 if approver.user_id is not None
@@ -191,20 +192,27 @@ class WorkflowStepInstance(BaseModel):
                 approver.role_id
                 for approver in self.workflow_step_template.step_approvers
                 if approver.role_id is not None
-            ]}
-        )
+            ],
+        }
 
     @property
     def package_entities(self):
         if object_session(self) is None:
             return None
-        results = object_session(self).execute(
-            sa.select(PackageSnapshot.bli_id, Package.notes)
-            .join(Package, Package.id == PackageSnapshot.package_id)
-            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
-            .join(WorkflowStepInstance, WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id)
-            .where(WorkflowInstance.id == self.id)
-        ).all()
+        results = (
+            object_session(self)
+            .execute(
+                sa.select(PackageSnapshot.bli_id, Package.notes)
+                .join(Package, Package.id == PackageSnapshot.package_id)
+                .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+                .join(
+                    WorkflowStepInstance,
+                    WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+                )
+                .where(WorkflowInstance.id == self.id)
+            )
+            .all()
+        )
         bli_ids = [row[0] for row in results]
         notes = results[0][1] if len(results) > 0 else None
         return {"budget_line_item_ids": bli_ids, "notes": notes}
@@ -219,7 +227,7 @@ class WorkflowStepInstance(BaseModel):
             time_started=str(self.time_started) if self.time_started else None,
             time_completed=str(self.time_completed) if self.time_completed else None,
             package_entities=self.package_entities,
-            approvers=self.approvers
+            approvers=self.approvers,
         )
         return d
 
@@ -250,7 +258,7 @@ class StepApprovers(BaseModel):
     """Step Approvers model for WorkflowStepTemplates"""
 
     __tablename__ = "step_approvers"
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     workflow_step_template_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_step_template.id")
     )
@@ -264,7 +272,7 @@ class Package(BaseModel):
 
     __tablename__ = "package"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     submitter_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"))
     workflow_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True
@@ -279,10 +287,14 @@ class Package(BaseModel):
 
 class PackageSnapshot(BaseModel):
     __tablename__ = "package_snapshot"
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_fk_column()
     # make package_id a read-only field
     package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=True)
     version = sa.Column(sa.Integer, nullable=True)
     # TODO: What should we do when we delete an Agreement (or a BLI)?
     # This CASCADE fixes the existing Agreement delete, but leaves behind empty workflows
-    bli_id = sa.Column(sa.Integer, sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"), nullable=False)
+    bli_id = sa.Column(
+        sa.Integer,
+        sa.ForeignKey("budget_line_item.id", ondelete="CASCADE"),
+        nullable=False,
+    )
