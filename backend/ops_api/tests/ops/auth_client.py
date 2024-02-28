@@ -13,7 +13,6 @@ class AuthClient(FlaskClient):
             email="unit-test@ops-api.gov",
             first_name="Unit",
             last_name="Test",
-            date_joined=datetime.now(),
             updated=datetime.now(),
             division=1,
         )
