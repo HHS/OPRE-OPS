@@ -12,6 +12,7 @@ import { workflowActions } from "../../../pages/agreements/review/ReviewAgreemen
  * Renders an accordion component for selecting budget lines for an agreement.
  * @param {Object} props - The component props.
  * @param {string} props.title - The title of the accordion.
+ * @param {string} props.instructions - The instructions for the accordion.
  * @param {Object[]} props.budgetLineItems - An array of budget line items.
  * @param {React.ReactNode} props.children - Child components to be rendered inside the accordion.
  * @param {Object} props.agreement - The agreement object.
@@ -58,7 +59,8 @@ function AgreementBLIAccordion({
                     total={totalsForCards}
                     subtotal={subTotalForCards}
                     fees={feesForCards}
-                    procurementShop={agreement.procurement_shop}
+                    procurementShopAbbr={agreement.procurement_shop?.abbr}
+                    procurementShopFee={agreement.procurement_shop?.fee}
                 />
             </div>
             {children}

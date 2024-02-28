@@ -88,7 +88,8 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     total={totals["Agreement"]["total"]}
                     subtotal={totals["Agreement"]["subtotal"]}
                     fees={totals["Agreement"]["fees"]}
-                    procurementShop={agreement.procurement_shop}
+                    procurementShopAbbr={agreement.procurement_shop?.abbr}
+                    procurementShopFee={agreement.procurement_shop?.fee}
                 />
             </div>
             <AgreementDetailHeader

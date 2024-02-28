@@ -1,11 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import useAlert from "../../../../hooks/use-alert.hooks";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
-import { useNavigate } from "react-router-dom";
 import suite from "./suite";
+import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
+import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -73,6 +75,9 @@ const useCreateBLIsAndSCs = (
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
+    const feesForCards = getProcurementShopSubTotal(selectedAgreement, newBudgetLines);
+    const subTotalForCards = budgetLinesTotal(newBudgetLines);
+    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, newBudgetLines);
 
     // Validation
     let res = suite.get();
@@ -347,7 +352,10 @@ const useCreateBLIsAndSCs = (
         servicesComponentId,
         newBudgetLines,
         groupedBudgetLinesByServicesComponent,
-        res
+        res,
+        feesForCards,
+        subTotalForCards,
+        totalsForCards
     };
 };
 

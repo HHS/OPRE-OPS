@@ -13,6 +13,9 @@ import { useBudgetLinesDispatch } from "./context";
 import useCreateBLIsAndSCs from "./useCreateBLIsAndSCs.hooks";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ServicesComponentAccordion from "../../../../pages/servicesComponents/ServicesComponentAccordion";
+import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import AgreementTotalCard from "../../../Agreements/AgreementDetailsCards/AgreementTotalCard";
+
 /**
  * Renders the Create Budget Lines and Services Components with React context.
  * @component
@@ -84,7 +87,10 @@ export const StepCreateBLIsAndSCs = ({
         servicesComponentId,
         newBudgetLines,
         groupedBudgetLinesByServicesComponent,
-        res
+        res,
+        feesForCards,
+        subTotalForCards,
+        totalsForCards
     } = useCreateBLIsAndSCs(
         isReviewMode,
         existingBudgetLines,
@@ -172,6 +178,16 @@ export const StepCreateBLIsAndSCs = ({
                     </p>
                 </>
             )}
+            <div className="display-flex flex-justify margin-y-2">
+                <BLIsByFYSummaryCard budgetLineItems={newBudgetLines} />
+                <AgreementTotalCard
+                    total={totalsForCards}
+                    subtotal={subTotalForCards}
+                    fees={feesForCards}
+                    procurementShopAbbr={selectedProcurementShop?.abbr}
+                    procurementShopFee={selectedProcurementShop?.fee}
+                />
+            </div>
             {budgetLinePageErrorsExist && (
                 <ul
                     className="usa-list--unstyled font-12px text-error"
