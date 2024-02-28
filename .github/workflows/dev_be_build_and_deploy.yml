@@ -44,9 +44,9 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
-      - uses: twingate/github-action@V1.1
-        with:
-          service-key: ${{ secrets.TWINGATE_SERVICE_KEY }}
+      # - uses: twingate/github-action@V1.1
+      #   with:
+      #     service-key: 
 
       - name: Terraform Apply
         uses: ./.github/actions/tf-apply
@@ -57,6 +57,7 @@ jobs:
           azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          twingate_service_key: ${{ secrets.TWINGATE_SERVICE_KEY }}
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",

@@ -32,6 +32,9 @@ inputs:
   plan_workflow_file:
     description: 'Filename of workflow containing the tf plan artifact.'
     required: false
+  twingate_service_key:
+    description: 'The key of the Twingate Service Account.'
+    required: false
 
 runs:
   using: "composite"
@@ -64,6 +67,12 @@ runs:
       with:
         terraform_version: ${{ inputs.terraform_version }}
         terraform_wrapper: false
+
+    - name: Twingate Connect
+      uses: twingate/github-action@4493ffc3806241aa98194a3fa679f874bce013b5
+      if: inputs.twingate_service_key != ''
+        with:
+          service-key: ${{ inputs.twingate_service_key }}
 
     - name: Terraform Init
       id: init
