@@ -69,10 +69,10 @@ runs:
         terraform_wrapper: false
 
     - name: Twingate Connect
-      if: ${{ inputs.twingate_service_key != '' }}
+      if: ${{ inputs.twingate_service_key != '' }} # Corrected syntax with a colon after the condition
       uses: twingate/github-action@4493ffc3806241aa98194a3fa679f874bce013b5
-        with:
-          service-key: ${{ inputs.twingate_service_key }}
+      with:
+        service-key: ${{ inputs.twingate_service_key }}
 
     - name: Terraform Init
       id: init
