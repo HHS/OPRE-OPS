@@ -301,19 +301,6 @@ class PackageSnapshot(BaseModel):
     )
 
 
-# class Procurement(BaseModel):
-#     __tablename__ = "procurement"
-
-#     id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
-#     workflow_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"))
-#     target_date = sa.Column(sa.DateTime, nullable=True)
-#     is_complete = sa.Column(sa.Boolean, nullable=False, default=False)
-#     actual_date = sa.Column(sa.DateTime, nullable=True)
-#     completed_by = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
-#     notes = sa.Column(sa.String, nullable=True)
-#     documents = relationship("ProcurementDocument", backref="procurement") # todo: need to figure out what to do with Docs
-
-
 class ProcurementStep(BaseModel):
     __tablename__ = "procurement_step"
 
