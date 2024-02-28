@@ -99,7 +99,7 @@
     },
     {
       id: 9,
-      name: "Acquisition Planning",
+      name: "Awarded",
       workflow_template_id: 2,
       workflow_type: "APPROVAL",
       index: 6,
