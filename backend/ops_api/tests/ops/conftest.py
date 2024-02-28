@@ -16,9 +16,8 @@ from sqlalchemy.exc import OperationalError
 from tests.ops.auth_client import AuthClient
 
 
-@pytest.mark.usefixtures("db_service")
 @pytest.fixture()
-def app(db_service: Engine) -> Generator[Flask, None, None]:
+def app(db_service) -> Generator[Flask, None, None]:
     """Make and return the flask app."""
     app = create_app({"TESTING": True})
     yield app
