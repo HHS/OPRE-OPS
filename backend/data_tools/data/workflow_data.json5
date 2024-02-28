@@ -59,7 +59,7 @@
     },
     {
       id: 5,
-      name: "Soliciation",
+      name: "Solicitation",
       workflow_template_id: 2,
       workflow_type: "ATTESTATION",
       index: 2,
