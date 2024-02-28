@@ -10,7 +10,7 @@ class ProcurementShop(BaseModel):
 
     __tablename__ = "procurement_shop"
 
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     name = Column(String, nullable=False)
     abbr = Column(String, nullable=False)
     fee = Column(Float, default=0.0)

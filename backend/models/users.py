@@ -1,4 +1,5 @@
 """User models."""
+from datetime import datetime
 from typing import List
 
 from models import BaseModel
@@ -30,21 +31,26 @@ class UserGroup(BaseModel):
 
 
 class User(BaseModel):
-    """Main User model."""
+    """Main User mod."""
 
     __tablename__ = "user"
 
-    id: Mapped[int] = BaseModel.get_fk_column()
-    oidc_id = Column(UUID(as_uuid=True), unique=True, index=True)
-    hhs_id = Column(String)
-    email = Column(String, index=True, nullable=False)
-    first_name = Column(String)
-    last_name = Column(String)
-    full_name = column_property(first_name + " " + last_name)
-    date_joined = Column(DateTime, server_default=func.now())
-    updated = Column(DateTime, onupdate=func.now())
+    id: Mapped[int] = BaseModel.get_pk_column()
+    oidc_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), unique=True, index=True)
+    hhs_id: Mapped[str]
+    email: Mapped[str] = mapped_column(index=True, nullable=False)
+    first_name: Mapped[str]
+    last_name: Mapped[str]
+    date_joined: Mapped[datetime] = mapped_column(server_default=func.now())
+    updated: Mapped[datetime] = mapped_column(onupdate=func.now())
 
-    division = Column(Integer, ForeignKey("division.id", name="fk_user_division"))
+    division: Mapped[int] = mapped_column(
+        ForeignKey("division.id", name="fk_user_division")
+    )
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
     roles: Mapped[List["Role"]] = relationship(
         "Role",
@@ -62,7 +68,7 @@ class User(BaseModel):
         secondaryjoin="Group.id == UserGroup.group_id",
     )
 
-    portfolios = relationship(
+    portfolios: Mapped[List["Portfolio"]] = relationship(
         "Portfolio",
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
@@ -71,7 +77,7 @@ class User(BaseModel):
         viewonly=True,
     )
 
-    projects = relationship(
+    projects: Mapped[List["Project"]] = relationship(
         "Project",
         back_populates="team_leaders",
         secondary="project_team_leaders",
@@ -88,14 +94,14 @@ class User(BaseModel):
         secondaryjoin="Agreement.id == AgreementTeamMembers.agreement_id",
     )
 
-    contracts = relationship(
+    contracts: Mapped[List["ContractAgreement"]] = relationship(
         "ContractAgreement",
         back_populates="support_contacts",
         secondary="contract_support_contacts",
         viewonly=True,
     )
 
-    notifications = relationship(
+    notifications: Mapped[List["Notification"]] = relationship(
         "Notification",
         foreign_keys="Notification.recipient_id",
     )
@@ -112,10 +118,10 @@ class Role(BaseModel):
     """Main Role model."""
 
     __tablename__ = "role"
-    id = BaseModel.get_fk_column()
+    id: Mapped[int] = BaseModel.get_pk_column()
 
-    name = Column(String, index=True, nullable=False)
-    permissions = Column(String, nullable=False)
+    name: Mapped[str] = mapped_column(index=True, nullable=False)
+    permissions: Mapped[str] = mapped_column(nullable=False)
 
     users: Mapped[List["User"]] = relationship(
         "User",
@@ -134,8 +140,8 @@ class Group(BaseModel):
     """Main Group model."""
 
     __tablename__ = "group"
-    id = BaseModel.get_fk_column()
-    name = Column(String, index=True, nullable=False)
+    id: Mapped[int] = BaseModel.get_pk_column()
+    name: Mapped[str] = mapped_column(index=True, nullable=False)
 
     users: Mapped[List["User"]] = relationship(
         "User",

@@ -7,7 +7,7 @@ from marshmallow import fields
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
-from sqlalchemy.orm import declarative_base, declared_attr, registry, relationship
+from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry, relationship
 from typing_extensions import Any
 
 Base = declarative_base()
@@ -88,10 +88,10 @@ class BaseModel(Base):  # type: ignore [misc, valid-type]
                 return model
 
     @classmethod
-    def get_fk_column(cls, column_name: str = "id"):
-        return Column(
+    def get_pk_column(cls, column_name: str = "id"):
+        return mapped_column(
             column_name,
-            Integer,
+            Integer(),
             primary_key=True,
             nullable=False,
             autoincrement=True,

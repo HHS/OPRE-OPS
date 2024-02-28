@@ -16,7 +16,7 @@ class OpsDBHistoryType(Enum):
 
 class OpsDBHistory(BaseModel):
     __tablename__ = "ops_db_history"
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     event_type = sa.Column(sa.Enum(OpsDBHistoryType))
     event_details = sa.Column(JSONB)
     class_name = sa.Column(sa.String)

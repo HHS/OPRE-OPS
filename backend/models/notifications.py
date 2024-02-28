@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 
 class Notification(BaseModel):
     __tablename__ = "notification"
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     title = Column(String)
     message = Column(String)
     is_read = Column(Boolean, default=False)

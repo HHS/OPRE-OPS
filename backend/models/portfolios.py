@@ -19,7 +19,7 @@ class Division(BaseModel):
 
     __tablename__ = "division"
 
-    id: Mapped[int] = BaseModel.get_fk_column()
+    id: Mapped[int] = BaseModel.get_pk_column()
     name: Mapped[str] = mapped_column(String(100), unique=True)
     abbreviation: Mapped[str] = mapped_column(String(10), unique=True)
 
@@ -38,7 +38,7 @@ class PortfolioUrl(BaseModel):
     """
 
     __tablename__ = "portfolio_url"
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
     portfolio = relationship("Portfolio", back_populates="urls")
     url = Column(String)
@@ -74,7 +74,7 @@ class Portfolio(BaseModel):
     """Main Portfolio model."""
 
     __tablename__ = "portfolio"
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     name = Column(String, nullable=False)
     abbreviation = Column(String)
     status = Column(sa.Enum(PortfolioStatus))

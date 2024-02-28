@@ -52,7 +52,7 @@ class FundingSource(BaseModel):
 
     __tablename__ = "funding_source"
 
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
 
@@ -72,7 +72,7 @@ class FundingPartner(BaseModel):
     """
 
     __tablename__ = "funding_partner"
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
 
@@ -116,7 +116,7 @@ class ProductServiceCode(BaseModel):
 
     __tablename__ = "product_service_code"
 
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     name = Column(String, nullable=False)
     naics = Column(Integer, nullable=True)
     support_code = Column(String, nullable=True)
@@ -133,7 +133,7 @@ class Agreement(BaseModel):
 
     __tablename__ = "agreement"
 
-    id: Mapped[int] = BaseModel.get_fk_column()
+    id: Mapped[int] = BaseModel.get_pk_column()
     agreement_type = mapped_column(ENUM(AgreementType), nullable=False)
     name: Mapped[str] = mapped_column(
         String, nullable=False, comment="In MAPS this was PROJECT.PROJECT_TITLE"
@@ -342,7 +342,7 @@ class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
     __tablename__ = "can_fiscal_year_carry_forward"
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)
@@ -377,7 +377,7 @@ class ServicesComponent(BaseModel):
 
     # start Identity at 4 to allow for the records load with IDs
     # in agreements_and_blin_data.json5
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     number = Column(Integer)
     optional = Column(Boolean, default=False)
 
@@ -430,7 +430,7 @@ class CLIN(BaseModel):
 
     __tablename__ = "clin"
 
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     name = Column(String(256), nullable=False)
     source_id = Column(Integer)  # purely an example
 
@@ -442,7 +442,7 @@ class CLIN(BaseModel):
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     line_description = Column(String)
     comments = Column(Text)
 
@@ -545,7 +545,7 @@ class CAN(BaseModel):
 
     __tablename__ = "can"
 
-    id = BaseModel.get_fk_column()
+    id = BaseModel.get_pk_column()
     number = Column(String(30), nullable=False)
     description = Column(String)
     purpose = Column(String, default="")
