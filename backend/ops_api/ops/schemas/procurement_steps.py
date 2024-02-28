@@ -98,7 +98,7 @@ class PreAwardRequest(ProcurementStepRequest, Attestation, TargetDate):
 
 
 @dataclass(kw_only=True)
-class AwardResponse(ProcurementStepResponse, Attestation, TargetDate):
+class AwardResponse(ProcurementStepResponse, Attestation):
     vendor: Optional[str] = None
     vendor_type: Optional[str] = None
     financial_number: Optional[str] = None
