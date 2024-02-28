@@ -1,11 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import { useBudgetLines, useBudgetLinesDispatch, useSetState } from "./context";
 import useAlert from "../../../../hooks/use-alert.hooks";
 import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
-import { useNavigate } from "react-router-dom";
 import suite from "./suite";
+import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
+import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -73,6 +75,9 @@ const useCreateBLIsAndSCs = (
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
+    const feesForCards = getProcurementShopSubTotal(selectedAgreement, newBudgetLines);
+    const subTotalForCards = budgetLinesTotal(newBudgetLines);
+    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, newBudgetLines);
 
     // Validation
     let res = suite.get();
@@ -297,6 +302,23 @@ const useCreateBLIsAndSCs = (
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [budgetLineIdFromUrl, newBudgetLines]);
 
+    const groupedBudgetLinesByServicesComponent = newBudgetLines
+        .reduce((acc, budgetLine) => {
+            const servicesComponentId = budgetLine.services_component_id;
+            const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+            if (index === -1) {
+                acc.push({ servicesComponentId, budgetLines: [budgetLine] });
+            } else {
+                acc[index].budgetLines.push(budgetLine);
+            }
+            return acc;
+        }, [])
+        .sort((a, b) => {
+            if (a.servicesComponentId === null) return 1;
+            if (b.servicesComponentId === null) return -1;
+            return a.servicesComponentId - b.servicesComponentId;
+        });
+
     return {
         handleSubmitForm,
         handleEditForm,
@@ -329,7 +351,11 @@ const useCreateBLIsAndSCs = (
         enteredComments,
         servicesComponentId,
         newBudgetLines,
-        res
+        groupedBudgetLinesByServicesComponent,
+        res,
+        feesForCards,
+        subTotalForCards,
+        totalsForCards
     };
 };
 
