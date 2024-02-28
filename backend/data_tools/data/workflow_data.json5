@@ -99,7 +99,7 @@
     },
     {
       id: 9,
-      name: "Awarded",
+      name: "Award",
       workflow_template_id: 2,
       workflow_type: "APPROVAL",
       index: 6,
