@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
-import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
+import StepCreateBudgetLinesAndSCs from "../../components/UI/WizardSteps/StepCreateBLIsAndSCs";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import useAlert from "../../hooks/use-alert.hooks";
 
@@ -52,7 +52,7 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
             />
-            <StepCreateBudgetLines
+            <StepCreateBudgetLinesAndSCs
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}

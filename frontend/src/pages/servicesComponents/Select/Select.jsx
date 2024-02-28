@@ -10,7 +10,8 @@ import cx from "clsx";
  * @param {string} props.value - The currently selected option
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
- * @param {Array<String>} [props.options] - An array of options to display (optional).
+ * @param {Array<Object>} [props.options] - An array of options to display (optional).
+ * @param {boolean} [props.valueOverride] - A flag to indicate if the value should be an index (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {string} [props.defaultOption] - The default option to display (optional).
  * @returns {JSX.Element} - The rendered component.
@@ -22,7 +23,17 @@ const Select = ({
     onChange,
     pending = false,
     messages = [],
-    options = ["Option 1", "Option 2", "Option 3", "Option 4"],
+    options = [
+        {
+            label: "Option 1",
+            value: "OPTION_1"
+        },
+        {
+            label: "Option 2",
+            value: "OPTION_2"
+        }
+    ],
+    valueOverride = false,
     className,
     defaultOption = "Select an option"
 }) => {
@@ -53,13 +64,13 @@ const Select = ({
                     onChange={handleChange}
                     value={value}
                 >
-                    <option value={0}>- {defaultOption} -</option>
+                    <option value={null}>- {defaultOption} -</option>
                     {options.map((option, index) => (
                         <option
                             key={index + 1}
-                            value={option}
+                            value={valueOverride ? index + 1 : option?.value}
                         >
-                            {option}
+                            {option?.label ?? option}
                         </option>
                     ))}
                 </select>

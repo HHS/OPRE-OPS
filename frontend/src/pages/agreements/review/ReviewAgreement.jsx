@@ -238,7 +238,6 @@ export const ReviewAgreement = () => {
                     readOnly={true}
                     budgetLines={budgetLines}
                     isReviewMode={true}
-                    showTotalSummaryCard={false}
                     setSelectedBLIs={handleSelectBLI}
                     toggleSelectActionableBLIs={toggleSelectActionableBLIs}
                     mainToggleSelected={mainToggleSelected}

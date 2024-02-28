@@ -10,6 +10,7 @@ function ServicesComponentSelect({ value, onChange, options }) {
             messages={[]}
             defaultOption=""
             options={options}
+            valueOverride={true}
         />
     );
 }

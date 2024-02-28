@@ -1,29 +1,37 @@
-import App from "../../App";
-import ServiceReqTypeSelect from "./ServiceReqTypeSelect";
+import PropTypes from "prop-types";
 import ServicesComponentForm from "./ServicesComponentForm";
 import ServicesComponentsList from "./ServicesComponentsList";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
-import { initialFormData } from "./servicesComponents.constants";
 import useServicesComponents from "./servicesComponents.hooks";
 
-const ServicesComponents = () => {
+/**
+ * ServicesComponents is a component that handles the display and functionality of service components.
+ *
+ * @component
+ * @param {object} props
+ * @param {string} props.serviceRequirementType - The type of service requirement.
+ * @param {number} props.agreementId - The ID of the agreement.
+ * @returns {JSX.Element}
+ *
+ * @example
+ *  <ServicesComponents serviceRequirementType="SEVERABLE" agreementId={123} />
+ */
+const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
     const {
         formData,
         modalProps,
-        serviceTypeReq,
         servicesComponents,
         setFormData,
-        setServiceTypeReq,
         setShowModal,
         showModal,
         handleSubmit,
         handleDelete,
         handleCancel,
         setFormDataById
-    } = useServicesComponents();
+    } = useServicesComponents(agreementId);
 
     return (
-        <App breadCrumbName="Playground">
+        <>
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -34,16 +42,8 @@ const ServicesComponents = () => {
                 />
             )}
             <section>
-                <h1>Services Components Playground</h1>
-                <ServiceReqTypeSelect
-                    value={serviceTypeReq}
-                    onChange={(name, value) => {
-                        setServiceTypeReq(value);
-                        setFormData(initialFormData);
-                    }}
-                />
                 <ServicesComponentForm
-                    serviceTypeReq={serviceTypeReq}
+                    serviceTypeReq={serviceRequirementType}
                     formData={formData}
                     setFormData={setFormData}
                     handleSubmit={handleSubmit}
@@ -54,10 +54,14 @@ const ServicesComponents = () => {
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
                 handleDelete={handleDelete}
-                serviceTypeReq={serviceTypeReq}
+                serviceTypeReq={serviceRequirementType}
             />
-        </App>
+        </>
     );
 };
 
+ServicesComponents.propTypes = {
+    serviceRequirementType: PropTypes.string.isRequired,
+    agreementId: PropTypes.string.isRequired
+};
 export default ServicesComponents;

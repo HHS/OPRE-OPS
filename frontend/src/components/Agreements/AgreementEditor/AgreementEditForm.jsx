@@ -16,6 +16,7 @@ import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgree
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
+import ContractTypeSelect from "../../../pages/servicesComponents/ContractTypeSelect";
 import {
     useAddAgreementMutation,
     useGetProductServiceCodesQuery,
@@ -23,11 +24,14 @@ import {
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import useAlert from "../../../hooks/use-alert.hooks";
+import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTypeSelect";
+import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
  * @param {Object} props - The component props.
+ * @param {Function} [props.setHasAgreementChanged] - A function to set the agreement changed state. - optional
  * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
  * @param {Function} [props.goToNext] - A function to go to the next step. - optional
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
@@ -35,7 +39,14 @@ import useAlert from "../../../hooks/use-alert.hooks";
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
  * @returns {React.JSX.Element} - The component JSX.
  */
-export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
+export const AgreementEditForm = ({
+    setHasAgreementChanged = () => {},
+    goBack,
+    goToNext,
+    isReviewMode,
+    isEditMode,
+    setIsEditMode
+}) => {
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -53,6 +64,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
     const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
+    const setContractType = useUpdateAgreement("contract_type");
+    const setServiceReqType = useUpdateAgreement("service_requirement_type");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -77,7 +90,9 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         name: agreementTitle,
         description: agreementDescription,
         agreement_reason: agreementReason,
-        team_members: selectedTeamMembers
+        team_members: selectedTeamMembers,
+        contract_type: contractType,
+        service_requirement_type: serviceReqType
     } = agreement;
 
     const {
@@ -85,6 +100,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         error: errorProductServiceCodes,
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery();
+
+    // make a copy of the agreement object
+    const hasAgreementChanged = useHasStateChanged(agreement);
+    setHasAgreementChanged(hasAgreementChanged);
 
     if (isReviewMode) {
         suite({
@@ -138,7 +157,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const cleanAgreementForApi = (data) => {
         // eslint-disable-next-line no-unused-vars
-        const { id, budget_line_items, created_by, created_on, updated_on, ...cleanData } = data;
+        const { id, budget_line_items, services_components, created_by, created_on, updated_on, ...cleanData } = data;
         return { id: id, cleanData: cleanData };
     };
 
@@ -150,6 +169,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             })
         };
         const { id, cleanData } = cleanAgreementForApi(data);
+
+        if (!hasAgreementChanged) {
+            return;
+        }
 
         if (id) {
             await updateAgreement({ id: id, data: cleanData })
@@ -200,12 +223,14 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const handleContinue = async () => {
         await saveAgreement();
+        setHasAgreementChanged(false);
         if (isEditMode && setIsEditMode) setIsEditMode(false);
         await goToNext();
     };
 
     const handleDraft = async () => {
         await saveAgreement();
+        setHasAgreementChanged(false);
         await navigate("/agreements");
     };
 
@@ -222,6 +247,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     if (isEditMode && setIsEditMode) setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
+                setHasAgreementChanged(false);
             }
         });
     };
@@ -252,7 +278,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-
+            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Select the Agreement Type</h2>
+            <p className="margin-top-1">Select the type of agreement you&apos;d like to create.</p>
             <AgreementTypeSelect
                 name="agreement_type"
                 label="Agreement Type"
@@ -264,7 +291,20 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     runValidate(name, value);
                 }}
             />
-
+            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
+            <ContractTypeSelect
+                value={contractType}
+                onChange={(name, value) => {
+                    setContractType(value);
+                }}
+            />
+            <ServiceReqTypeSelect
+                className="margin-top-3"
+                value={serviceReqType}
+                onChange={(name, value) => {
+                    setServiceReqType(value);
+                }}
+            />
             <Input
                 name="name"
                 label="Agreement Title"
@@ -276,7 +316,6 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     runValidate(name, value);
                 }}
             />
-
             <TextArea
                 name="description"
                 label="Description"
@@ -435,6 +474,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 };
 
 AgreementEditForm.propTypes = {
+    setHasAgreementChanged: PropTypes.func,
     goBack: PropTypes.func,
     goToNext: PropTypes.func,
     isReviewMode: PropTypes.bool,

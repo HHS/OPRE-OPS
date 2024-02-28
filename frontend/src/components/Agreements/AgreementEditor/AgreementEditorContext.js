@@ -11,11 +11,13 @@ const defaultState = {
         description: "",
         product_service_code_id: null,
         incumbent: null,
-        project_officer_id: null, // this is the ID
+        project_officer_id: null,
         team_members: [],
         notes: "",
         project_id: null,
-        procurement_shop_id: null
+        procurement_shop_id: null,
+        contract_type: "",
+        service_requirement_type: ""
     },
     selected_project: {},
     selected_product_service_code: {},

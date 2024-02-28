@@ -1,14 +1,30 @@
+import PropTypes from "prop-types";
 import ServicesComponentSelect from "../ServicesComponentSelect";
 import PoPStartDate from "../PoPStartDate";
 import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../../components/UI/Form/TextArea";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
-import { nonSeverableOptions, severableOptions } from "../servicesComponents.constants";
-import DebugCode from "../DebugCode";
+import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../servicesComponents.constants";
 
+/**
+ * ServicesComponentForm is a form component for creating and editing service components.
+ *
+ * @component
+ * @param {Object} props - The properties object.
+ * @param {string} props.serviceTypeReq - The type of service request.
+ * @param {Object} props.formData - The form data.
+ * @param {Function} props.setFormData - Function to set form data.
+ * @param {Function} props.handleSubmit - Function to handle form submission.
+ * @param {Function} props.handleCancel - Function to handle form cancellation.
+ * @returns {JSX.Element} The rendered ServicesComponentForm component.
+ *
+ * @example
+ * <ServicesComponentForm serviceTypeReq="SEVERABLE" formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} handleCancel={handleCancel} />
+ */
 function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit, handleCancel }) {
-    const options = serviceTypeReq === "Severable" ? severableOptions : nonSeverableOptions;
+    const options = serviceTypeReq === SERVICE_REQ_TYPES.SEVERABLE ? SEVERABLE_OPTIONS : NON_SEVERABLE_OPTIONS;
+
     return (
         <form onSubmit={handleSubmit}>
             <h2 className="font-sans-lg">Create Services Components</h2>
@@ -23,13 +39,13 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                             onChange={(name, value) => {
                                 setFormData({
                                     ...formData,
-                                    servicesComponent: value
+                                    number: value
                                 });
                             }}
-                            value={formData?.servicesComponent || ""}
+                            value={formData?.number || ""}
                             options={options}
                         />
-                        {serviceTypeReq === "Non-Severable" && (
+                        {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (
                             <div className="usa-checkbox margin-left-5">
                                 <input
                                     className="usa-checkbox__input"
@@ -92,7 +108,10 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                         </button>
                     </>
                 ) : (
-                    <button className="usa-button usa-button--outline margin-right-0">
+                    <button
+                        className="usa-button usa-button--outline margin-right-0"
+                        data-cy="add-services-component-btn"
+                    >
                         <FontAwesomeIcon
                             icon={faAdd}
                             className="height-2 width-2"
@@ -101,12 +120,16 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                     </button>
                 )}
             </div>
-            <DebugCode
-                title="Form Data"
-                data={formData}
-            />
         </form>
     );
 }
+
+ServicesComponentForm.propTypes = {
+    serviceTypeReq: PropTypes.string.isRequired,
+    formData: PropTypes.object.isRequired,
+    setFormData: PropTypes.func.isRequired,
+    handleSubmit: PropTypes.func.isRequired,
+    handleCancel: PropTypes.func.isRequired
+};
 
 export default ServicesComponentForm;

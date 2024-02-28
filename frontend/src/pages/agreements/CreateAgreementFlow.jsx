@@ -4,7 +4,7 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
     const [formData, setFormData] = React.useState({});
     const [currentIndex, setCurrentIndex] = React.useState(0);
 
-    const wizardSteps = ["Project", "Agreement", "Budget Lines"];
+    const wizardSteps = ["Project", "Agreement", "Services Components & Budget Lines"];
 
     const goBack = () => {
         const previousIndex = currentIndex - 1;
