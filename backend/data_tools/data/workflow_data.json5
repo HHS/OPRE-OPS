@@ -9,7 +9,7 @@
     },
     {
       id: 2,
-      name: "Procuremnt Tracker",
+      name: "Procurement Tracker",
       created_on: "2023-11-07T10:00:00Z",
       updated_on: "2023-11-07T10:00:00Z",
       created_by: 21,
