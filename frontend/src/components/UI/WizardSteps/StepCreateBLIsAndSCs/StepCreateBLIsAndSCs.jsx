@@ -12,6 +12,10 @@ import DebugCode from "../../../../pages/servicesComponents/DebugCode";
 import { useBudgetLinesDispatch } from "./context";
 import useCreateBLIsAndSCs from "./useCreateBLIsAndSCs.hooks";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
+import ServicesComponentAccordion from "../../../../pages/servicesComponents/ServicesComponentAccordion";
+import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import AgreementTotalCard from "../../../Agreements/AgreementDetailsCards/AgreementTotalCard";
+
 /**
  * Renders the Create Budget Lines and Services Components with React context.
  * @component
@@ -82,7 +86,11 @@ export const StepCreateBLIsAndSCs = ({
         enteredComments,
         servicesComponentId,
         newBudgetLines,
-        res
+        groupedBudgetLinesByServicesComponent,
+        res,
+        feesForCards,
+        subTotalForCards,
+        totalsForCards
     } = useCreateBLIsAndSCs(
         isReviewMode,
         existingBudgetLines,
@@ -134,8 +142,8 @@ export const StepCreateBLIsAndSCs = ({
                         serviceRequirementType={selectedAgreement.service_requirement_type}
                         agreementId={selectedAgreement.id}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
-                    <p>Complete the information below to create new budget lines.</p>
+                    <h2 className="font-sans-lg margin-top-3">Add Budget Lines</h2>
+                    <p>Add Budget lines to each Services Component to outline how the work will be funded.</p>
                 </>
             )}
             <CreateBudgetLinesForm
@@ -157,11 +165,10 @@ export const StepCreateBLIsAndSCs = ({
                 handleEditForm={handleEditForm}
                 handleResetForm={handleResetForm}
                 handleSubmitForm={handleSubmitForm}
-                isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
                 agreementId={selectedAgreement.id}
             />
-            {workflow !== "none" && (
+            {workflow === "budgetLines" && (
                 <>
                     <h2 className="font-sans-lg">Budget Lines</h2>
                     <p>
@@ -171,6 +178,16 @@ export const StepCreateBLIsAndSCs = ({
                     </p>
                 </>
             )}
+            <div className="display-flex flex-justify margin-y-2">
+                <BLIsByFYSummaryCard budgetLineItems={newBudgetLines} />
+                <AgreementTotalCard
+                    total={totalsForCards}
+                    subtotal={subTotalForCards}
+                    fees={feesForCards}
+                    procurementShopAbbr={selectedProcurementShop?.abbr}
+                    procurementShopFee={selectedProcurementShop?.fee}
+                />
+            </div>
             {budgetLinePageErrorsExist && (
                 <ul
                     className="usa-list--unstyled font-12px text-error"
@@ -197,17 +214,25 @@ export const StepCreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
-            <BudgetLinesTable
-                budgetLines={newBudgetLines}
-                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                canUserEditBudgetLines={canUserEditBudgetLines}
-                isReviewMode={isReviewMode}
-            />
+            {groupedBudgetLinesByServicesComponent.length > 0 &&
+                groupedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                    >
+                        <BudgetLinesTable
+                            budgetLines={group.budgetLines}
+                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                            handleDeleteBudgetLine={handleDeleteBudgetLine}
+                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                            canUserEditBudgetLines={canUserEditBudgetLines}
+                            isReviewMode={isReviewMode}
+                        />
+                    </ServicesComponentAccordion>
+                ))}
             <DebugCode
-                title="Budget Lines"
-                data={newBudgetLines}
+                title="Budget Lines BY Services Component"
+                data={groupedBudgetLinesByServicesComponent}
             />
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
