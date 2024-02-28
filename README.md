@@ -208,3 +208,37 @@ TBD
 TBD
 
 With the move away from Django, we need to create a new process/tooling for generating the Data Model diagrams from SQLAlchemy or directly from the DB.
+
+## SQLAlchemy DB Schema Migrations with Alembic
+
+When updating the SQLAlchemy models, you will need to generate a new migration script for the database schema.  This is
+done using [Alembic](https://alembic.sqlalchemy.org/en/latest/).
+
+First start the DB and update it to the latest version...
+
+```shell
+docker compose up db data-import --build
+```
+
+
+To generate a new migration script, run...
+
+```shell
+cd ./backend/
+alembic revision --autogenerate -m "Your migration message here"
+```
+
+This will create a new migration script in the `./backend/alembic/versions` directory.  Review the script to
+ensure it is doing what you expect.  If it is, you can apply the migration to the database by running...
+
+```shell
+cd ./backend/
+alembic upgrade head
+```
+
+If you need to rollback the migration, you can do so by running...
+
+```shell
+cd ./backend/
+pipenv run alembic downgrade -1
+```

@@ -1,6 +1,6 @@
 """User models."""
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from models import BaseModel
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
@@ -36,14 +36,13 @@ class User(BaseModel):
     __tablename__ = "user"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    oidc_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), unique=True, index=True)
-    hhs_id: Mapped[str]
+    oidc_id: Mapped[Optional[UUID]] = mapped_column(
+        UUID(as_uuid=True), unique=True, index=True
+    )
+    hhs_id: Mapped[Optional[str]]
     email: Mapped[str] = mapped_column(index=True, nullable=False)
-    first_name: Mapped[str]
-    last_name: Mapped[str]
-    date_joined: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated: Mapped[datetime] = mapped_column(onupdate=func.now())
-
+    first_name: Mapped[Optional[str]]
+    last_name: Mapped[Optional[str]]
     division: Mapped[int] = mapped_column(
         ForeignKey("division.id", name="fk_user_division")
     )
@@ -120,8 +119,8 @@ class Role(BaseModel):
     __tablename__ = "role"
     id: Mapped[int] = BaseModel.get_pk_column()
 
-    name: Mapped[str] = mapped_column(index=True, nullable=False)
-    permissions: Mapped[str] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(index=True)
+    permissions: Mapped[str]
 
     users: Mapped[List["User"]] = relationship(
         "User",
@@ -141,7 +140,7 @@ class Group(BaseModel):
 
     __tablename__ = "group"
     id: Mapped[int] = BaseModel.get_pk_column()
-    name: Mapped[str] = mapped_column(index=True, nullable=False)
+    name: Mapped[str] = mapped_column(index=True)
 
     users: Mapped[List["User"]] = relationship(
         "User",
