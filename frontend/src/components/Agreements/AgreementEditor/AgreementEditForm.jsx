@@ -23,6 +23,7 @@ import {
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
+import GoBackButton from "../../UI/Button/GoBackButton";
 import useAlert from "../../../hooks/use-alert.hooks";
 import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTypeSelect";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
@@ -430,16 +431,7 @@ export const AgreementEditForm = ({
                 onChange={(name, value) => setAgreementNotes(value)}
             />
             <div className="grid-row flex-justify margin-top-8">
-                {isWizardMode ? (
-                    <button
-                        className="usa-button usa-button--unstyled margin-right-2"
-                        onClick={() => goBack()}
-                    >
-                        Go Back
-                    </button>
-                ) : (
-                    <div />
-                )}
+                {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
                 <div>
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"

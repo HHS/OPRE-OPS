@@ -15,21 +15,24 @@ import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helper
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
  * @param {Array<Object>} existingBudgetLines - Array of existing budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
+ * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
  * @param {Object} selectedAgreement - Selected agreement object.
  * @param {Object} selectedProcurementShop - Selected procurement shop object.
  * @param {Function} setIsEditMode - Function to set the edit mode.
+ * @param {string} workflow - The workflow type ("agreement" or "budgetLines").
  *
- * @returns {Object} Contains various state variables and functions to manage budget line items and service components.
  */
 const useCreateBLIsAndSCs = (
     isReviewMode,
     existingBudgetLines,
     goToNext,
+    goBack,
     continueOverRide,
     selectedAgreement,
     selectedProcurementShop,
-    setIsEditMode
+    setIsEditMode,
+    workflow
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -236,6 +239,7 @@ const useCreateBLIsAndSCs = (
                 );
             }
         };
+
         const newBudgetLineItems = newBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
         const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
@@ -273,7 +277,44 @@ const useCreateBLIsAndSCs = (
             payload: { ...budgetLine, created_by: loggedInUserFullName }
         });
     };
-    // TODO: consider moving this to a separate helper function
+
+    const handleCancel = () => {
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel? Your budget lines will not be saved.",
+            actionButtonText: "Cancel",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                navigate("/agreements");
+            }
+        });
+    };
+
+    const handleGoBack = () => {
+        // if no budget lines have been added, go back
+        if (newBudgetLines?.length === 0) {
+            if (workflow === "none") {
+                setIsEditMode(false);
+                navigate(`/agreements/${selectedAgreement?.id}`);
+            } else {
+                goBack();
+                return;
+            }
+        }
+        // if budget lines have been added, show modal
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to go back? Your budget lines will not be saved.",
+            actionButtonText: "Go Back",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => {
+                dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
+                setModalProps({});
+                goBack();
+            }
+        });
+    };
+
     const resetQueryParams = () => {
         setBudgetLineIdFromUrl(null);
         const url = new URL(window.location);
@@ -355,7 +396,9 @@ const useCreateBLIsAndSCs = (
         res,
         feesForCards,
         subTotalForCards,
-        totalsForCards
+        totalsForCards,
+        handleCancel,
+        handleGoBack
     };
 };
 
@@ -363,10 +406,12 @@ useCreateBLIsAndSCs.propTypes = {
     isReviewMode: PropTypes.bool,
     existingBudgetLines: PropTypes.array,
     goToNext: PropTypes.func,
+    goBack: PropTypes.func,
     continueOverRide: PropTypes.func,
     selectedAgreement: PropTypes.object,
     selectedProcurementShop: PropTypes.object,
-    setIsEditMode: PropTypes.func
+    setIsEditMode: PropTypes.func,
+    workflow: PropTypes.string
 };
 
 export default useCreateBLIsAndSCs;

@@ -4,7 +4,7 @@ import LogItem from "../LogItem";
 
 /**
  * A modal component that can be used to display a message or prompt the user for confirmation.
- *
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading text to display in the modal.
  * @param {string|Array<any>} [props.description=""] - The description text to display in the modal.
@@ -12,7 +12,7 @@ import LogItem from "../LogItem";
  * @param {string} props.actionButtonText - The text to display on the primary action button.
  * @param {string} [props.secondaryButtonText="Cancel"] - The text to display on the secondary action button.
  * @param {function} [props.handleConfirm=() => {}] - A function to handle the primary action button click.
- * @returns {React.JSX.Element} - The modal component JSX.
+ * @returns {JSX.Element} - The modal component JSX.
  */
 export const ConfirmationModal = ({
     heading,
