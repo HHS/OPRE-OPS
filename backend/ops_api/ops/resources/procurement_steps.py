@@ -3,7 +3,11 @@ from functools import partial
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from typing_extensions import override
+
 from models import Agreement, OpsEventType
 from models.base import BaseModel
 from models.workflows import (
@@ -38,16 +42,6 @@ from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_mod
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from typing_extensions import override
-
-
-def get_current_user_id():
-    token = verify_jwt_in_request()
-    user = get_user_from_token(token[1])
-    return user.id
 
 
 # TODO: considering refactoring to DRYer along with similar code in services_component.py and budget_line_items.py

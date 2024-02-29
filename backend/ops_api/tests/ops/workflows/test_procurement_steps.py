@@ -1,5 +1,6 @@
 import pytest
 from flask import url_for
+
 from models.workflows import AcquisitionPlanning, Award, Evaluation, PreAward, PreSolicitation, Solicitation
 
 TEST_AGREEMENT_ID = 1
@@ -96,16 +97,6 @@ def test_award(loaded_db):
 
 
 # STEP 1 : AcquisitionPlanning
-
-
-# def create_test_acquisition_planning(loaded_db, agreement_id=TEST_AGREEMENT_ID):
-#     acquisition_planning = AcquisitionPlanning()
-#     acquisition_planning.agreement_id = agreement_id
-#     acquisition_planning.created_by = TEST_CREATED_BY
-#     loaded_db.add(acquisition_planning)
-#     loaded_db.commit()
-#     assert acquisition_planning.id is not None
-#     return acquisition_planning
 
 
 @pytest.mark.usefixtures("app_ctx")
