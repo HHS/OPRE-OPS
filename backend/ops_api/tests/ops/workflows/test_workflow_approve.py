@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
-from models import BudgetLineItem, BudgetLineItemStatus, WorkflowAction, WorkflowStatus, WorkflowStepInstance
+from models import BudgetLineItem, BudgetLineItemStatus, WorkflowAction, WorkflowStepInstance, WorkflowStepStatus
 from ops_api.ops.resources.workflow_approve import update_blis
 
 
@@ -9,7 +9,7 @@ from ops_api.ops.resources.workflow_approve import update_blis
 def test_update_blis_draft_to_planned(loaded_db):
     # Create a mock WorkflowStepInstance with the required attributes
     workflow_step_instance = Mock(spec=WorkflowStepInstance)
-    workflow_step_instance.workflow_instance.workflow_status = WorkflowStatus.APPROVED
+    workflow_step_instance.workflow_instance.workflow_status = WorkflowStepStatus.APPROVED
     workflow_step_instance.workflow_instance.workflow_action = WorkflowAction.DRAFT_TO_PLANNED
     workflow_step_instance.package_entities = {"budget_line_item_ids": [1, 2, 3]}
 

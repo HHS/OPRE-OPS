@@ -1,4 +1,5 @@
 """CAN models."""
+
 import enum
 from datetime import timedelta
 from enum import Enum, auto
@@ -8,7 +9,7 @@ import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio
 from models.users import User
-from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStatus, WorkflowStepInstance
+from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStepInstance, WorkflowStepStatus
 from sqlalchemy import (
     Boolean,
     Column,
@@ -406,13 +407,19 @@ class ServicesComponent(BaseModel):
     period_end = Column(Date)
 
     contract_agreement_id = Column(Integer, ForeignKey("contract_agreement.id"))
-    contract_agreement = relationship("ContractAgreement", backref="services_components")
+    contract_agreement = relationship(
+        "ContractAgreement", backref="services_components"
+    )
 
-    clin_id = Column(Integer, ForeignKey('clin.id'), nullable=True)
+    clin_id = Column(Integer, ForeignKey("clin.id"), nullable=True)
     clin = relationship("CLIN", back_populates="services_component", uselist=False)
 
     def severable(self):
-        return self.contract_agreement and self.contract_agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
+        return (
+            self.contract_agreement
+            and self.contract_agreement.service_requirement_type
+            == ServiceRequirementType.SEVERABLE
+        )
 
     @property
     def display_title(self):
@@ -448,7 +455,9 @@ class CLIN(BaseModel):
     name = Column(String(256), nullable=False)
     source_id = Column(Integer)  # purely an example
 
-    services_component = relationship("ServicesComponent", back_populates="clin", uselist=False)
+    services_component = relationship(
+        "ServicesComponent", back_populates="clin", uselist=False
+    )
 
 
 class BudgetLineItem(BaseModel):
@@ -519,12 +528,12 @@ class BudgetLineItem(BaseModel):
             select(Package)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+            .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
             .join(
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
             )
-            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return package is not None
 
@@ -538,10 +547,10 @@ class BudgetLineItem(BaseModel):
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
             )
-            .join(Package, WorkflowInstance.id == Package.workflow_id)
+            .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return current_workflow_step_instance_id
 
