@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - cml/deploy-new-infra
+      - main
     paths:
       - backend/data-tools/**
       - backend/Dockerfile.data-tools-import
