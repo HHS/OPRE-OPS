@@ -7,6 +7,7 @@ on:
       - cml/deploy-new-infra
     paths:
       - backend/data-tools/**
+      - backend/Dockerfile.data-tools-import
       
 env:
   TERRAFORM_VERSION: "1.6.6"
