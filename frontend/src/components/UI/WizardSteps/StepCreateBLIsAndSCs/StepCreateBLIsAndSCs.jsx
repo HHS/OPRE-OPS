@@ -7,7 +7,6 @@ import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import ServicesComponents from "../../../../pages/servicesComponents";
-import DebugCode from "../../../../pages/servicesComponents/DebugCode";
 import useCreateBLIsAndSCs from "./useCreateBLIsAndSCs.hooks";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ServicesComponentAccordion from "../../../../pages/servicesComponents/ServicesComponentAccordion";
@@ -231,10 +230,6 @@ export const StepCreateBLIsAndSCs = ({
                         />
                     </ServicesComponentAccordion>
                 ))}
-            <DebugCode
-                title="Agreement"
-                data={selectedAgreement}
-            />
             <div className="display-flex flex-justify margin-top-1">
                 <GoBackButton handleGoBack={handleGoBack} />
                 <div>

@@ -190,19 +190,6 @@ export const CreateBudgetLinesForm = ({
                     </button>
                 )}
             </div>
-            <DebugCode
-                title="Form Data"
-                data={{
-                    servicesComponentId,
-                    selectedCan,
-                    enteredAmount,
-                    enteredMonth,
-                    enteredDay,
-                    enteredYear,
-                    enteredComments,
-                    isEditing
-                }}
-            />
         </form>
     );
 };
