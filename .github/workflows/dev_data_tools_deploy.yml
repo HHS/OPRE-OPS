@@ -1,4 +1,4 @@
-name: Dev BE Data-tools Deploy
+name: Dev Data-tools Build and Deploy
 
 on:
   workflow_dispatch:
