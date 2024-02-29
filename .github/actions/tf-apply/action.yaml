@@ -68,28 +68,11 @@ runs:
         terraform_version: ${{ inputs.terraform_version }}
         terraform_wrapper: false
 
-    # - name: Twingate Connect
-    #   if: ${{ inputs.twingate_service_key != '' }} # Corrected syntax with a colon after the condition
-    #   uses: twingate/github-action@4493ffc3806241aa98194a3fa679f874bce013b5
-    #   with:
-    #     service-key: ${{ inputs.twingate_service_key }}
-
-    - name: Install Twingate
-      if: ${{ inputs.twingate_service_key != '' }}
-      shell: bash
-      run: |
-        echo "deb [trusted=yes] https://packages.twingate.com/apt/ /" | sudo tee /etc/apt/sources.list.d/twingate.list
-        sudo apt update -yq
-        sudo apt install -yq twingate
-
-    - name: Setup and start Twingate
-      if: ${{ inputs.twingate_service_key != '' }}
-      shell: bash
-      env:
-        TWINGATE_SERVICE_KEY: ${{ inputs.twingate_service_key }}
-      run: |
-        echo $TWINGATE_SERVICE_KEY | sudo twingate setup --headless=-
-        sudo twingate start
+    - name: Twingate Connect
+      if: ${{ inputs.twingate_service_key != '' }} # Corrected syntax with a colon after the condition
+      uses: twingate/github-action@4493ffc3806241aa98194a3fa679f874bce013b5
+      with:
+        service-key: ${{ inputs.twingate_service_key }}
 
     - name: Terraform Init
       id: init
@@ -145,7 +128,3 @@ runs:
           ```
           ${{ steps.apply.outputs.apply }}
           ```
-    - name: Stop Twingate
-      if: ${{ inputs.twingate_service_key != '' }}
-      shell: bash
-      run: sudo twingate stop
