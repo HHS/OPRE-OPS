@@ -7,7 +7,7 @@ from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.resources.services_component_schemas import (
+from ops_api.ops.schemas.services_component import (
     PATCHRequestBody,
     POSTRequestBody,
     QueryParameters,

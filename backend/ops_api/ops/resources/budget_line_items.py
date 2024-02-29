@@ -13,7 +13,7 @@ from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.resources.budget_line_item_schemas import (
+from ops_api.ops.schemas.budget_line_item import (
     BudgetLineItemResponse,
     PATCHRequestBody,
     POSTRequestBody,

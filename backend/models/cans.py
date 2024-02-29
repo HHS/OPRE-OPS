@@ -1,4 +1,5 @@
 """CAN models."""
+
 import enum
 from enum import Enum, auto
 from typing import List, Optional
@@ -7,8 +8,22 @@ import sqlalchemy as sa
 from models.base import BaseModel
 from models.portfolios import Portfolio
 from models.users import User
-from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStatus, WorkflowStepInstance
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, Numeric, String, Table, Text, case, select
+from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStepInstance, WorkflowStepStatus
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Integer,
+    Numeric,
+    String,
+    Table,
+    Text,
+    case,
+    select,
+)
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
 
@@ -507,12 +522,12 @@ class BudgetLineItem(BaseModel):
             select(Package)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+            .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
             .join(
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
             )
-            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return package is not None
 
@@ -526,10 +541,10 @@ class BudgetLineItem(BaseModel):
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
             )
-            .join(Package, WorkflowInstance.id == Package.workflow_id)
+            .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return current_workflow_step_instance_id
 

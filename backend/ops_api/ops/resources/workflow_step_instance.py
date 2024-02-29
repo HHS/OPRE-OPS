@@ -5,7 +5,7 @@ from typing import Optional
 from flask import Response
 from marshmallow_enum import EnumField
 from models.base import BaseModel
-from models.workflows import WorkflowStatus, WorkflowStepInstance
+from models.workflows import WorkflowStepInstance, WorkflowStepStatus
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from typing_extensions import override
@@ -18,7 +18,7 @@ class WorkflowStepInstanceResponse:
     id: int
     workflow_instance_id: Optional[int] = None
     workflow_step_template_id: Optional[int] = None
-    status: Optional[WorkflowStatus] = EnumField(WorkflowStatus)
+    status: Optional[WorkflowStepStatus] = EnumField(WorkflowStepStatus)
     notes: Optional[str] = None
     time_started: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     time_completed: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
