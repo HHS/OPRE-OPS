@@ -1080,6 +1080,104 @@ paths:
         '500':
           description: Internal Server Error
 
+  /api/v1/services-components/:
+    get:
+      description: Get Services Components
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+        - name: contract_agreement_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesComponents'
+    post:
+      summary: Create a new Service Component
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicesComponentRequestPost'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /api/v1/services-components/{id}:
+    get:
+      description: Get Services Component by id
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesComponent'
+
+    put:
+      summary: Update a Services Component (Over-write)
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicesComponentRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+    patch:
+      summary: Update a Services Component (Merge)
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicesComponentRequest'
+
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
 
 components:
   parameters:
@@ -1555,6 +1653,97 @@ components:
         recipient_id:
           type: integer
           example: 1
+
+    ServicesComponents:
+      description: OPS List of Services Components
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/ServicesComponent"
+
+    ServicesComponent:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        contract_agreement_id:
+          type: integer
+          example: 1
+        number:
+          type: integer
+          example: 1
+        optional:
+          type: boolean
+          example: false
+        description:
+          type: string
+        display_title:
+          type: string
+        display_name:
+          type: string
+        clin_id:
+          type: integer
+          example: 1
+        created_by:
+          type: string
+        created_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        updated_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        period_start:
+          type: string
+          example: '2023-05-06'
+        period_end:
+          type: string
+          example: '2023-06-30'
+
+    ServicesComponentRequest:
+      type: object
+      properties:
+        contract_agreement_id:
+          type: integer
+          example: 1
+        number:
+          type: integer
+          example: 1
+        optional:
+          type: boolean
+          example: false
+        description:
+          type: string
+        display_title:
+          type: string
+        display_name:
+          type: string
+        clin_id:
+          type: integer
+          example: 1
+        created_by:
+          type: string
+        created_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        updated_on:
+          type: string
+          example: '2023-04-06T19:02:38.409254'
+        period_start:
+          type: string
+          example: '2023-05-06'
+        period_end:
+          type: string
+          example: '2023-06-30'
+
+    ServicesComponentRequestPost:
+      allOf:
+        - $ref: "#/components/schemas/ServicesComponentRequest"
+        - type: object
+          required:
+            - contract_agreement_id
+            - number
+            - optional
 
   examples:
 
