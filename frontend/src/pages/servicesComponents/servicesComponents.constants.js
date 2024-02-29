@@ -14,6 +14,17 @@ export const SEVERABLE_OPTIONS = [
     "Option Period 6"
 ];
 
+export const SERVICE_REQ_TYPES_OPTIONS = [
+    {
+        label: "Severable",
+        value: SERVICE_REQ_TYPES.SEVERABLE
+    },
+    {
+        label: "Non-Severable",
+        value: SERVICE_REQ_TYPES.NON_SEVERABLE
+    }
+];
+
 export const backendServicesComponents = {
     agreementId: "1",
     serviceReqType: SERVICE_REQ_TYPES.NON_SEVERABLE,

@@ -1,8 +1,9 @@
 import cx from "clsx";
-// import { convertCodeForDisplay } from "../../../helpers/utils";
+import PropTypes from "prop-types";
 
 /**
- * A select input for building select inputs.
+ * A base-level UI select input for building select inputs.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
@@ -35,7 +36,7 @@ const Select = ({
     ],
     valueOverride = false,
     className,
-    defaultOption = "Select an option"
+    defaultOption = "-Select an option-"
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
@@ -64,7 +65,7 @@ const Select = ({
                     onChange={handleChange}
                     value={value}
                 >
-                    <option value={null}>- {defaultOption} -</option>
+                    <option value={null}>{defaultOption}</option>
                     {options.map((option, index) => (
                         <option
                             key={index + 1}
@@ -79,4 +80,24 @@ const Select = ({
     );
 };
 
+Select.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    value: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
+    pending: PropTypes.bool,
+    messages: PropTypes.arrayOf(PropTypes.string),
+    options: PropTypes.arrayOf(
+        PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.shape({
+                label: PropTypes.string,
+                value: PropTypes.string
+            })
+        ])
+    ),
+    valueOverride: PropTypes.bool,
+    className: PropTypes.string,
+    defaultOption: PropTypes.string
+};
 export default Select;

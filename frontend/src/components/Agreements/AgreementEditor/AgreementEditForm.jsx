@@ -27,6 +27,7 @@ import GoBackButton from "../../UI/Button/GoBackButton";
 import useAlert from "../../../hooks/use-alert.hooks";
 import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTypeSelect";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import DebugCode from "../../../pages/servicesComponents/DebugCode";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -48,6 +49,7 @@ export const AgreementEditForm = ({
     isEditMode,
     setIsEditMode
 }) => {
+    // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -282,8 +284,6 @@ export const AgreementEditForm = ({
             <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Select the Agreement Type</h2>
             <p className="margin-top-1">Select the type of agreement you&apos;d like to create.</p>
             <AgreementTypeSelect
-                name="agreement_type"
-                label="Agreement Type"
                 messages={res.getErrors("agreement_type")}
                 className={cn("agreement_type")}
                 selectedAgreementType={agreementType || ""}
@@ -300,11 +300,17 @@ export const AgreementEditForm = ({
                 }}
             />
             <ServiceReqTypeSelect
-                className="margin-top-3"
+                messages={res.getErrors("serviceReqType")}
+                className={`margin-top-3 ${cn("serviceReqType")}`}
                 value={serviceReqType}
                 onChange={(name, value) => {
                     setServiceReqType(value);
+                    runValidate(name, value);
                 }}
+            />
+            <DebugCode
+                title="Res"
+                data={res}
             />
             <Input
                 name="name"

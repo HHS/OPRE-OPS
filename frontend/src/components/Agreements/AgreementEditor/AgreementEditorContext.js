@@ -1,4 +1,6 @@
 import { createContext, useContext, useReducer } from "react";
+import { SERVICE_REQ_TYPES } from "../../../pages/servicesComponents/servicesComponents.constants";
+
 export const AgreementEditorContext = createContext(null);
 export const EditAgreementDispatchContext = createContext(null);
 
@@ -17,7 +19,7 @@ const defaultState = {
         project_id: null,
         procurement_shop_id: null,
         contract_type: "",
-        service_requirement_type: ""
+        service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE
     },
     selected_project: {},
     selected_product_service_code: {},

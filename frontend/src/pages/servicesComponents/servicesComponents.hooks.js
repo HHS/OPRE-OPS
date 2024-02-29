@@ -39,7 +39,6 @@ const useServicesComponents = (agreementId) => {
     }, [isSuccess, error, data, setAlert]);
 
     const handleSubmit = (e) => {
-        // NOTE: Services Components here: https://github.com/HHS/OPRE-OPS/pull/1927
         e.preventDefault();
         let formattedServiceComponent = formatServiceComponent(formData.number, formData.optional, serviceTypeReq);
         const newFormData = {
