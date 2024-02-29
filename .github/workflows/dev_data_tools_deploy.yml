@@ -2,13 +2,18 @@ name: Dev BE Data-tools Deploy
 
 on:
   workflow_dispatch:
-
+  push:
+    branches:
+      - cml/deploy-new-infra
+    paths:
+      - backend/data-tools/**
+      
 env:
   TERRAFORM_VERSION: "1.6.6"
   TF_IN_AUTOMATION: "True"
   ENVIRONMENT: "dev"
   WORKING_DIR: "backend"
-  DOCKER_FILE: "Dockerfile.data-tools"
+  DOCKER_FILE: "Dockerfile.data-tools-import"
 
 jobs:
   build:
@@ -45,8 +50,13 @@ jobs:
           azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          twingate_service_key: ${{ secrets.TWINGATE_SERVICE_KEY }}
           tf_vars: |
             {
               "environment": "${{ env.ENVIRONMENT }}",
-              "container_tag": "${{ github.sha }}"
+              "containerImageTag": "${{ github.sha }}",
+              "containerAppEnvName": "opre-ops-dev-app-cae",
+              "resourceGroupName": "opre-ops-dev-app-rg",
+              "postgresServerName": "opre-ops-dev-db-psql",
+              "keyVaultName": "opre-ops-dev-kv"
             }
