@@ -44,7 +44,7 @@ jobs:
       - name: Deploy
         uses: ./.github/actions/tf-apply
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/data-tools"
+          terraform_directory: "terraform/eastus/ops/${{ env.ENVIRONMENT }}/stacks/data-tools"
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
           azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
