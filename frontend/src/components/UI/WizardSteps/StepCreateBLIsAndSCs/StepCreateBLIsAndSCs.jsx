@@ -232,8 +232,8 @@ export const StepCreateBLIsAndSCs = ({
                     </ServicesComponentAccordion>
                 ))}
             <DebugCode
-                title="Budget Lines BY Services Component"
-                data={groupedBudgetLinesByServicesComponent}
+                title="Agreement"
+                data={selectedAgreement}
             />
             <div className="display-flex flex-justify margin-top-1">
                 <GoBackButton handleGoBack={handleGoBack} />

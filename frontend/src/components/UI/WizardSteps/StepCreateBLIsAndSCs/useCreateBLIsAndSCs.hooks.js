@@ -8,6 +8,7 @@ import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 import suite from "./suite";
 import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
+import { useDeleteAgreementMutation } from "../../../../api/opsAPI";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -40,6 +41,7 @@ const useCreateBLIsAndSCs = (
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
     );
+    const [deleteAgreement] = useDeleteAgreementMutation();
 
     const {
         selected_can: selectedCan,
@@ -281,11 +283,30 @@ const useCreateBLIsAndSCs = (
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your budget lines will not be saved.",
+            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                navigate("/agreements");
+                deleteAgreement(selectedAgreement?.id)
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement cancelled",
+                            message: `Agreement ${selectedAgreement?.name} has been successfully cancelled.`,
+                            redirectUrl: "/agreements"
+                        });
+                    })
+                    .catch((rejected) => {
+                        console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred while deleting the agreement.",
+                            redirectUrl: "/error"
+                        });
+                    });
             }
         });
     };
