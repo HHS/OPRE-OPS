@@ -1,0 +1,163 @@
+name: "push-to-ghcr"
+author: "@macbre"
+description: "This action simplifies pushes of Docker images ot ghcr.io repository"
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
+branding:
+  icon: "arrow-up-circle"
+  color: "blue"
+  
+inputs:
+  github_token: 
+     description: "Your secrets.GITHUB_TOKEN"
+     required: true
+
+  image_name:
+    description: "Image name, e.g. my-user-name/my-repo (will be lowercased)"
+    required: true
+
+  dockerfile:
+    description: "A path to the Dockerfile (if it's not in the repository's root directory)"
+    required: false
+    default: "./Dockerfile"
+
+  context:
+    description: "A path to the context in which the build will happen, see https://docs.docker.com/engine/reference/commandline/build/"
+    required: false
+    default: "."
+
+  repository:
+    description: "Docker repository to push an image to, defaults to ghcr.io"
+    required: true
+    default: "ghcr.io"
+
+  docker_io_user:
+    description: "A username to use when pushing an image to docker.io (defaults to the github.actor)"
+    required: false
+
+  docker_io_token:
+    description: "Your docker.io token created via https://hub.docker.com/settings/security"
+    required: false
+  
+  image_tag:
+    description: Image tag, e.g. latest. Will overwrite the tag latest tag on a push, and have no effect on a release.
+    required: false
+
+  additional_tags:
+    description: "Additional tags for the Docker image"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
+    - name: Log in to the Container registry
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        DOCKER_BUILDKIT: 1
+        DOCKER_IO_USER: ${{ inputs.docker_io_user }}
+        DOCKER_IO_TOKEN: ${{ inputs.docker_io_token }}
+        IMAGE_NAME: ${{ inputs.image_name }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        ADDITIONAL_TAGS: ${{ inputs.additional_tags }}
+
+      run: |
+        echo "Using $(docker -v)"
+
+        echo "::group::Logging into the GitHub Container registry (ghcr.io) ..."
+        echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        echo "::endgroup::"
+
+        echo "::group::Set commit tag and image name"
+        if [ "${{ github.event_name }}" = "release" ]; then
+          export COMMIT_TAG=${GITHUB_REF:10}
+          export COMMIT_TAG=${COMMIT_TAG//v/}
+        else
+          if [ -z ${IMAGE_TAG} ]; then
+            export COMMIT_TAG=latest
+          else
+            export COMMIT_TAG=${IMAGE_TAG}
+          fi
+        fi
+
+        # Adding additional tags
+        if [ -n "${ADDITIONAL_TAGS}" ]; then
+          export ADDITIONAL_TAGS_ARRAY=(${ADDITIONAL_TAGS})
+          for tag in "${ADDITIONAL_TAGS_ARRAY[@]}"; do
+            docker tag ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} ${{ inputs.repository }}/${IMAGE_NAME}:${tag}
+          done
+        fi
+
+        # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
+        export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
+
+        echo "Tagging with ${COMMIT_TAG}"
+        echo "::endgroup::"
+
+        export BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        export GITHUB_URL=https://github.com/${{ github.repository }}
+
+        echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} from ${{ inputs.dockerfile }} in ${{ inputs.context}} context ..."
+
+        # https://docs.docker.com/develop/develop-images/build_enhancements/
+        # https://docs.docker.com/engine/reference/commandline/build/#specifying-external-cache-sources
+        set -x
+        >&0 docker build \
+          --file ${{ inputs.dockerfile }} \
+          --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:latest \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          \
+          --build-arg BUILD_DATE=${BUILD_DATE} \
+          --build-arg GITHUB_SHA=${GITHUB_SHA} \
+          \
+          --tag ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} \
+          --tag docker.io/${IMAGE_NAME}:${COMMIT_TAG} \
+          \
+          --label org.label-schema.build-date=${BUILD_DATE} \
+          --label org.label-schema.vcs-url=${GITHUB_URL} \
+          --label org.label-schema.vcs-ref=${GITHUB_SHA} \
+          \
+          --label org.opencontainers.image.created=${BUILD_DATE} \
+          --label org.opencontainers.image.source=${GITHUB_URL} \
+          --label org.opencontainers.image.revision=${GITHUB_SHA} \
+          ${{ inputs.context }}
+        set +x
+
+        # Pushing additional tags
+        if [ -n "${ADDITIONAL_TAGS}" ]; then
+          for tag in "${ADDITIONAL_TAGS_ARRAY[@]}"; do
+            >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:${tag} && echo "Pushed"
+          done
+        fi
+
+        echo "::endgroup::"
+
+        echo "::group::Inspecting the image ..."
+        docker images
+
+        echo "Labels:"
+        docker image inspect ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} | jq '.[].Config.Labels'
+
+        echo "Env variables:"
+        docker image inspect ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} | jq '.[].Config.Env'
+
+        echo "::endgroup::"
+
+        echo "::group::Pushing the Docker image to ${{ inputs.repository }} ..."
+        >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
+        echo "::endgroup::"
+
+        if [ -z "${DOCKER_IO_TOKEN}" ]; then
+          echo "::notice::NOT pushing the Docker image to docker.io ... Provide 'docker_io_token' if needed."
+        else
+          if [ -z ${DOCKER_IO_USER} ]; then
+            export DOCKER_IO_USER="${{ github.actor }}"
+          fi
+
+          echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER}..."
+          echo "${DOCKER_IO_TOKEN}" | docker login docker.io -u "${DOCKER_IO_USER}" --password-stdin
+
+          >&0 docker push docker.io/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
+
+          echo "::endgroup::"
+        fi
