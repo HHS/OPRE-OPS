@@ -26,7 +26,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
+from sqlalchemy.orm import Mapped, backref, column_property, mapped_column, object_session, relationship
 from typing_extensions import override
 
 
@@ -406,9 +406,12 @@ class ServicesComponent(BaseModel):
     period_start = Column(Date)
     period_end = Column(Date)
 
-    contract_agreement_id = Column(Integer, ForeignKey("contract_agreement.id"))
+    contract_agreement_id = Column(
+        Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE"), nullable=False
+    )
     contract_agreement = relationship(
-        "ContractAgreement", backref="services_components"
+        "ContractAgreement",
+        passive_deletes=True,
     )
 
     clin_id = Column(Integer, ForeignKey("clin.id"), nullable=True)

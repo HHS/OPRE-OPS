@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from models.cans import CLIN, ContractAgreement, ServiceRequirementType, ServicesComponent
+from models.cans import CLIN, AgreementType, ContractAgreement, ContractType, ServiceRequirementType, ServicesComponent
 
 # Assuming that your testing setup includes a fixture for the database and an authenticated client
 
@@ -281,3 +281,93 @@ def test_services_components_delete(auth_client, app):
 
     sc: ServicesComponent = session.get(ServicesComponent, new_sc_id)
     assert not sc
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_services_components_delete_cascades_from_agreement(auth_client, app, loaded_db):
+    session = app.db_session
+    ca = ContractAgreement(
+        name="CTXX12399",
+        contract_number="XXXX000000002",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=1,
+        created_by=4,
+    )
+    session.add(ca)
+    session.commit()
+    assert ca.id is not None
+    new_ca_id = ca.id
+
+    sc = ServicesComponent(
+        contract_agreement_id=new_ca_id,
+        number=1,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    session.add(sc)
+    session.commit()
+
+    assert sc.id is not None
+    new_sc_id = sc.id
+
+    session.delete(ca)
+    session.commit()
+
+    deleted_ca: ContractAgreement = loaded_db.get(ContractAgreement, new_ca_id)
+    assert not deleted_ca
+
+    deleted_sc: ServicesComponent = session.get(ServicesComponent, new_sc_id)
+    assert not deleted_sc
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_services_components_delete_does_not_cascade_to_agreement(auth_client, app, loaded_db):
+    session = app.db_session
+    ca = ContractAgreement(
+        name="CTXX12399",
+        contract_number="XXXX000000002",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=1,
+        created_by=4,
+    )
+    session.add(ca)
+    session.commit()
+    assert ca.id is not None
+    new_ca_id = ca.id
+
+    sc = ServicesComponent(
+        contract_agreement_id=new_ca_id,
+        number=1,
+        optional=False,
+        description="Test SC description",
+        period_start=datetime.date(2024, 1, 1),
+        period_end=datetime.date(2024, 6, 30),
+    )
+    session.add(sc)
+    session.commit()
+
+    assert sc.id is not None
+    new_sc_id = sc.id
+
+    remaining_ca: ContractAgreement = loaded_db.get(ContractAgreement, new_ca_id)
+    assert remaining_ca is not None
+
+    session.delete(sc)
+    session.commit()
+
+    deleted_sc: ServicesComponent = session.get(ServicesComponent, new_sc_id)
+    assert not deleted_sc
+
+    remaining_ca: ContractAgreement = loaded_db.get(ContractAgreement, new_ca_id)
+    assert remaining_ca is not None
+
+    session.delete(remaining_ca)
+    session.commit()
