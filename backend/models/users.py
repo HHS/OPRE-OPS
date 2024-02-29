@@ -41,15 +41,12 @@ class User(BaseModel):
     )
     hhs_id: Mapped[Optional[str]]
     email: Mapped[str] = mapped_column(index=True, nullable=False)
-    first_name: Mapped[Optional[str]]
-    last_name: Mapped[Optional[str]]
+    first_name: Mapped[Optional[str]] = mapped_column(nullable=True)
+    last_name: Mapped[Optional[str]] = mapped_column(nullable=True)
+    full_name: Mapped[str] = column_property(first_name + " " + last_name)
     division: Mapped[int] = mapped_column(
         ForeignKey("division.id", name="fk_user_division")
     )
-
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
 
     roles: Mapped[List["Role"]] = relationship(
         "Role",
