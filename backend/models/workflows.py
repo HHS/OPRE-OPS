@@ -302,7 +302,7 @@ class PackageSnapshot(BaseModel):
 class ProcurementStep(BaseModel):
     __tablename__ = "procurement_step"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     agreement_id = sa.Column(sa.Integer, sa.ForeignKey("agreement.id"))
     # TODO: Q: should this be named workflow_step_instance_id (or alternatively leave off _instance in all FKs)
     workflow_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"))

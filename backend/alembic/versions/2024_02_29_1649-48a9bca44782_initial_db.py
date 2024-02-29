@@ -1,8 +1,8 @@
 """initial db
 
-Revision ID: f515d8d67b78
+Revision ID: 48a9bca44782
 Revises:
-Create Date: 2024-02-28 15:14:01.810646+00:00
+Create Date: 2024-02-29 16:49:20.070463+00:00
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "f515d8d67b78"
+revision: str = "48a9bca44782"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,11 +27,7 @@ def upgrade() -> None:
         sa.Column("email", sa.String(), nullable=False),
         sa.Column("first_name", sa.String(), nullable=True),
         sa.Column("last_name", sa.String(), nullable=True),
-        sa.Column(
-            "date_joined", sa.DateTime(), server_default=sa.text("now()"), nullable=True
-        ),
-        sa.Column("updated", sa.DateTime(), nullable=True),
-        sa.Column("division", sa.Integer(), nullable=True),
+        sa.Column("division", sa.Integer(), nullable=False),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
         sa.Column("created_by", sa.Integer(), nullable=True),
@@ -39,11 +35,8 @@ def upgrade() -> None:
             ["created_by"],
             ["user.id"],
         ),
-        # sa.ForeignKeyConstraint(["division"], ["division.id"], name="fk_user_division"),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_user_email"), "user", ["email"], unique=False)
-    op.create_index(op.f("ix_user_oidc_id"), "user", ["oidc_id"], unique=True)
     op.create_table(
         "division",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
@@ -1008,6 +1001,9 @@ def upgrade() -> None:
                 "CREATE_SERVICES_COMPONENT",
                 "UPDATE_SERVICES_COMPONENT",
                 "DELETE_SERVICES_COMPONENT",
+                "CREATE_PROCUREMENT_ACQUISITION_PLANNING",
+                "UPDATE_PROCUREMENT_ACQUISITION_PLANNING",
+                "DELETE_PROCUREMENT_ACQUISITION_PLANNING",
                 name="opseventtype",
             ),
             autoincrement=False,
@@ -1058,6 +1054,8 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("package_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("version", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("object_type", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("object_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("bli_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
@@ -1091,7 +1089,9 @@ def upgrade() -> None:
         "package_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("submitter_id", sa.Integer(), autoincrement=False, nullable=True),
-        sa.Column("workflow_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "workflow_instance_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
         sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
@@ -1228,6 +1228,172 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
+        "procurement_acquisition_planning_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_acquisition_planning_version_end_transaction_id"),
+        "procurement_acquisition_planning_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_acquisition_planning_version_operation_type"),
+        "procurement_acquisition_planning_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_acquisition_planning_version_transaction_id"),
+        "procurement_acquisition_planning_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_award_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("vendor", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("vendor_type", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("financial_number", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_award_version_end_transaction_id"),
+        "procurement_award_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_award_version_operation_type"),
+        "procurement_award_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_award_version_transaction_id"),
+        "procurement_award_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_evaluation_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("target_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_evaluation_version_end_transaction_id"),
+        "procurement_evaluation_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_evaluation_version_operation_type"),
+        "procurement_evaluation_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_evaluation_version_transaction_id"),
+        "procurement_evaluation_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_pre_solicitation_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("target_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_pre_solicitation_version_end_transaction_id"),
+        "procurement_pre_solicitation_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_pre_solicitation_version_operation_type"),
+        "procurement_pre_solicitation_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_pre_solicitation_version_transaction_id"),
+        "procurement_pre_solicitation_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_preaward_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("target_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_preaward_version_end_transaction_id"),
+        "procurement_preaward_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_preaward_version_operation_type"),
+        "procurement_preaward_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_preaward_version_transaction_id"),
+        "procurement_preaward_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
         "procurement_shop_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("name", sa.String(), autoincrement=False, nullable=True),
@@ -1258,6 +1424,73 @@ def upgrade() -> None:
     op.create_index(
         op.f("ix_procurement_shop_version_transaction_id"),
         "procurement_shop_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_solicitation_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("target_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_solicitation_version_end_transaction_id"),
+        "procurement_solicitation_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_solicitation_version_operation_type"),
+        "procurement_solicitation_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_solicitation_version_transaction_id"),
+        "procurement_solicitation_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_step_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("workflow_step_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("type", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_step_version_end_transaction_id"),
+        "procurement_step_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_step_version_operation_type"),
+        "procurement_step_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_step_version_transaction_id"),
+        "procurement_step_version",
         ["transaction_id"],
         unique=False,
     )
@@ -1619,6 +1852,8 @@ def upgrade() -> None:
         sa.Column("issued_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(op.f("ix_user_email"), "user", ["email"], unique=False)
+    op.create_index(op.f("ix_user_oidc_id"), "user", ["oidc_id"], unique=True)
     op.create_table(
         "user_group_version",
         sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=False),
@@ -1691,14 +1926,6 @@ def upgrade() -> None:
         sa.Column("email", sa.String(), autoincrement=False, nullable=True),
         sa.Column("first_name", sa.String(), autoincrement=False, nullable=True),
         sa.Column("last_name", sa.String(), autoincrement=False, nullable=True),
-        sa.Column(
-            "date_joined",
-            sa.DateTime(),
-            server_default=sa.text("now()"),
-            autoincrement=False,
-            nullable=True,
-        ),
-        sa.Column("updated", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("division", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
@@ -1806,7 +2033,7 @@ def upgrade() -> None:
         sa.Column("associated_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "associated_type",
-            sa.Enum("CAN", "PROCUREMENT_SHOP", name="workflowtriggertype"),
+            sa.Enum("CAN", "PROCUREMENT_SHOP", "AGREEMENT", name="workflowtriggertype"),
             autoincrement=False,
             nullable=True,
         ),
@@ -1910,7 +2137,14 @@ def upgrade() -> None:
         ),
         sa.Column(
             "status",
-            sa.Enum("REVIEW", "APPROVED", "REJECTED", "CHANGES", name="workflowstatus"),
+            sa.Enum(
+                "REVIEW",
+                "APPROVED",
+                "REJECTED",
+                "CHANGES",
+                "COMPLETE",
+                name="workflowstepstatus",
+            ),
             autoincrement=False,
             nullable=True,
         ),
@@ -1960,6 +2194,7 @@ def upgrade() -> None:
                 "DOCUMENT_MGMT",
                 "VALIDATION",
                 "PROCUREMENT",
+                "ATTESTATION",
                 name="workflowsteptype",
             ),
             autoincrement=False,
@@ -2178,6 +2413,9 @@ def upgrade() -> None:
                 "CREATE_SERVICES_COMPONENT",
                 "UPDATE_SERVICES_COMPONENT",
                 "DELETE_SERVICES_COMPONENT",
+                "CREATE_PROCUREMENT_ACQUISITION_PLANNING",
+                "UPDATE_PROCUREMENT_ACQUISITION_PLANNING",
+                "DELETE_PROCUREMENT_ACQUISITION_PLANNING",
                 name="opseventtype",
             ),
             nullable=True,
@@ -2601,7 +2839,7 @@ def upgrade() -> None:
         sa.Column("associated_id", sa.Integer(), nullable=False),
         sa.Column(
             "associated_type",
-            sa.Enum("CAN", "PROCUREMENT_SHOP", name="workflowtriggertype"),
+            sa.Enum("CAN", "PROCUREMENT_SHOP", "AGREEMENT", name="workflowtriggertype"),
             nullable=False,
         ),
         sa.Column("workflow_template_id", sa.Integer(), nullable=True),
@@ -2641,6 +2879,7 @@ def upgrade() -> None:
                 "DOCUMENT_MGMT",
                 "VALIDATION",
                 "PROCUREMENT",
+                "ATTESTATION",
                 name="workflowsteptype",
             ),
             nullable=False,
@@ -2848,7 +3087,7 @@ def upgrade() -> None:
         "package",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("submitter_id", sa.Integer(), nullable=True),
-        sa.Column("workflow_id", sa.Integer(), nullable=True),
+        sa.Column("workflow_instance_id", sa.Integer(), nullable=True),
         sa.Column("notes", sa.String(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
@@ -2862,7 +3101,7 @@ def upgrade() -> None:
             ["user.id"],
         ),
         sa.ForeignKeyConstraint(
-            ["workflow_id"],
+            ["workflow_instance_id"],
             ["workflow_instance.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
@@ -2948,7 +3187,14 @@ def upgrade() -> None:
         sa.Column("workflow_step_template_id", sa.Integer(), nullable=True),
         sa.Column(
             "status",
-            sa.Enum("REVIEW", "APPROVED", "REJECTED", "CHANGES", name="workflowstatus"),
+            sa.Enum(
+                "REVIEW",
+                "APPROVED",
+                "REJECTED",
+                "CHANGES",
+                "COMPLETE",
+                name="workflowstepstatus",
+            ),
             nullable=False,
         ),
         sa.Column("notes", sa.String(), nullable=True),
@@ -2989,6 +3235,29 @@ def upgrade() -> None:
             ["user.id"],
         ),
         sa.PrimaryKeyConstraint("contract_id", "users_id"),
+    )
+    op.create_table(
+        "procurement_step",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), nullable=True),
+        sa.Column("workflow_step_id", sa.Integer(), nullable=True),
+        sa.Column("type", sa.String(), nullable=False),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["agreement_id"],
+            ["agreement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["workflow_step_id"],
+            ["workflow_step_instance.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "services_component",
@@ -3089,11 +3358,122 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
+        "procurement_acquisition_planning",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_award",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("vendor", sa.String(), nullable=True),
+        sa.Column("vendor_type", sa.String(), nullable=True),
+        sa.Column("financial_number", sa.String(), nullable=True),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_evaluation",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_pre_solicitation",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_preaward",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_solicitation",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
         "package_snapshot",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("package_id", sa.Integer(), nullable=True),
         sa.Column("version", sa.Integer(), nullable=True),
-        sa.Column("bli_id", sa.Integer(), nullable=False),
+        sa.Column("object_type", sa.String(), nullable=True),
+        sa.Column("object_id", sa.Integer(), nullable=True),
+        sa.Column("bli_id", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
         sa.Column("created_by", sa.Integer(), nullable=True),
@@ -3116,9 +3496,16 @@ def upgrade() -> None:
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_table("package_snapshot")
+    op.drop_table("procurement_solicitation")
+    op.drop_table("procurement_preaward")
+    op.drop_table("procurement_pre_solicitation")
+    op.drop_table("procurement_evaluation")
+    op.drop_table("procurement_award")
+    op.drop_table("procurement_acquisition_planning")
     op.drop_table("budget_line_item")
     op.drop_table("workflow_step_dependency")
     op.drop_table("services_component")
+    op.drop_table("procurement_step")
     op.drop_table("contract_support_contacts")
     op.drop_table("workflow_step_instance")
     op.drop_table("step_approvers")
@@ -3388,6 +3775,32 @@ def downgrade() -> None:
     )
     op.drop_table("product_service_code_version")
     op.drop_index(
+        op.f("ix_procurement_step_version_transaction_id"),
+        table_name="procurement_step_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_step_version_operation_type"),
+        table_name="procurement_step_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_step_version_end_transaction_id"),
+        table_name="procurement_step_version",
+    )
+    op.drop_table("procurement_step_version")
+    op.drop_index(
+        op.f("ix_procurement_solicitation_version_transaction_id"),
+        table_name="procurement_solicitation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_solicitation_version_operation_type"),
+        table_name="procurement_solicitation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_solicitation_version_end_transaction_id"),
+        table_name="procurement_solicitation_version",
+    )
+    op.drop_table("procurement_solicitation_version")
+    op.drop_index(
         op.f("ix_procurement_shop_version_transaction_id"),
         table_name="procurement_shop_version",
     )
@@ -3400,6 +3813,71 @@ def downgrade() -> None:
         table_name="procurement_shop_version",
     )
     op.drop_table("procurement_shop_version")
+    op.drop_index(
+        op.f("ix_procurement_preaward_version_transaction_id"),
+        table_name="procurement_preaward_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_preaward_version_operation_type"),
+        table_name="procurement_preaward_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_preaward_version_end_transaction_id"),
+        table_name="procurement_preaward_version",
+    )
+    op.drop_table("procurement_preaward_version")
+    op.drop_index(
+        op.f("ix_procurement_pre_solicitation_version_transaction_id"),
+        table_name="procurement_pre_solicitation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_pre_solicitation_version_operation_type"),
+        table_name="procurement_pre_solicitation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_pre_solicitation_version_end_transaction_id"),
+        table_name="procurement_pre_solicitation_version",
+    )
+    op.drop_table("procurement_pre_solicitation_version")
+    op.drop_index(
+        op.f("ix_procurement_evaluation_version_transaction_id"),
+        table_name="procurement_evaluation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_evaluation_version_operation_type"),
+        table_name="procurement_evaluation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_evaluation_version_end_transaction_id"),
+        table_name="procurement_evaluation_version",
+    )
+    op.drop_table("procurement_evaluation_version")
+    op.drop_index(
+        op.f("ix_procurement_award_version_transaction_id"),
+        table_name="procurement_award_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_award_version_operation_type"),
+        table_name="procurement_award_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_award_version_end_transaction_id"),
+        table_name="procurement_award_version",
+    )
+    op.drop_table("procurement_award_version")
+    op.drop_index(
+        op.f("ix_procurement_acquisition_planning_version_transaction_id"),
+        table_name="procurement_acquisition_planning_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_acquisition_planning_version_operation_type"),
+        table_name="procurement_acquisition_planning_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_acquisition_planning_version_end_transaction_id"),
+        table_name="procurement_acquisition_planning_version",
+    )
+    op.drop_table("procurement_acquisition_planning_version")
     op.drop_index(
         op.f("ix_portfolio_version_transaction_id"), table_name="portfolio_version"
     )
