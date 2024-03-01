@@ -120,38 +120,3 @@ runs:
         echo "Env variables:"
         docker image inspect ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} | jq '.[].Config.Env'
 
-        echo "::endgroup::"
-
-        echo "::group::Pushing the Docker image to ${{ inputs.repository }} ..."
-        >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
-        >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:unstable && echo "Pushed"
-
-        # Tagging with additional tags
-        for tag in "${IMAGE_TAGS[@]}"; do
-          >&0 docker tag "${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG}" "${{ inputs.repository }}/${IMAGE_NAME}:${tag}" && echo "Tagged with ${tag}"
-          >&0 docker tag "${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG}" "docker.io/${IMAGE_NAME}:${tag}" && echo "Tagged with ${tag}"
-          >&0 docker push "${{ inputs.repository }}/${IMAGE_NAME}:${tag}" && echo "Pushed tagged image with ${tag}"
-        done
-
-        echo "::endgroup::"
-
-        if [ -z "${DOCKER_IO_TOKEN}" ]; then
-          echo "::notice::NOT pushing the Docker image to docker.io ... Provide 'docker_io_token' if needed."
-        else
-          if [ -z ${DOCKER_IO_USER} ]; then
-            export DOCKER_IO_USER="${{ github.actor }}"
-          fi
-
-          echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER}..."
-          echo "${DOCKER_IO_TOKEN}" | docker login docker.io -u "${DOCKER_IO_USER}" --password-stdin
-
-          >&0 docker push docker.io/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
-          >&0 docker push docker.io/${IMAGE_NAME}:unstable && echo "Pushed"
-
-          # Pushing tagged images with additional tags
-          for tag in "${IMAGE_TAGS[@]}"; do
-            >&0 docker push docker.io/${IMAGE_NAME}:${tag} && echo "Pushed tagged image with ${tag}"
-          done
-
-          echo "::endgroup::"
-        fi
