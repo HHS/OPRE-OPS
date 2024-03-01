@@ -124,9 +124,11 @@ runs:
         set +x
 
         # Pushing additional tags
+        # Adding additional tags
         if [ -n "${ADDITIONAL_TAGS}" ]; then
+          export ADDITIONAL_TAGS_ARRAY=($(echo ${ADDITIONAL_TAGS} | tr ',' '\n'))
           for tag in "${ADDITIONAL_TAGS_ARRAY[@]}"; do
-            >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:${tag} && echo "Pushed"
+            docker tag ghcr.io/${IMAGE_NAME}:${COMMIT_TAG} ghcr.io/${IMAGE_NAME}:${tag}
           done
         fi
 
