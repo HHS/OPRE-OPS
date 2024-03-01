@@ -46,7 +46,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
     - name: Log in to the Container registry
       shell: bash
       env:
@@ -120,3 +119,8 @@ runs:
         echo "Env variables:"
         docker image inspect ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} | jq '.[].Config.Env'
 
+        echo "::endgroup::"
+
+        echo "::group::Pushing the Docker image to ${{ inputs.repository }} ..."
+        >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
+        >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:unstable && echo "Pushed
