@@ -25,21 +25,28 @@ export const SERVICE_REQ_TYPES_OPTIONS = [
     }
 ];
 
-export const backendServicesComponents = {
-    agreementId: "1",
-    serviceReqType: SERVICE_REQ_TYPES.NON_SEVERABLE,
-    servicesComponents: [
-        {
-            id: "9ab46509-8a3c-498a-998d-b40e78df5cd3",
-            servicesComponent: 1,
-            optional: false,
-            popStartDate: "2024-03-15",
-            popEndDate: "2025-01-15",
-            description:
-                "Develop a theory of change and identify ways to improve the program through continuous user feedback and engagement"
-        }
-    ]
-};
+export const CONTRACT_TYPE_OPTIONS = [
+    {
+        label: "Firm Fixed Price (FFP)",
+        value: "FIRM_FIXED_PRICE"
+    },
+    {
+        label: "Time & Materials (T&M)",
+        value: "TIME_AND_MATERIALS"
+    },
+    {
+        label: "Labor Hour (LH)",
+        value: "LABOR_HOUR"
+    },
+    {
+        label: "Cost Plus Fixed Fee (CPFF)",
+        value: "COST_PLUS_FIXED_FEE"
+    },
+    {
+        label: "Cost Plus Award Fee (CPAF)",
+        value: "COST_PLUS_AWARD_FEE"
+    }
+];
 
 export const initialFormData = {
     number: "",

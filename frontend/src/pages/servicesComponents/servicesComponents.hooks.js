@@ -1,6 +1,6 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
-import { initialFormData, backendServicesComponents } from "./servicesComponents.constants";
+import { initialFormData, SERVICE_REQ_TYPES } from "./servicesComponents.constants";
 import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
 import {
     useAddServicesComponentMutation,
@@ -10,7 +10,7 @@ import {
 } from "../../api/opsAPI";
 
 const useServicesComponents = (agreementId) => {
-    const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
+    const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
     const [formData, setFormData] = React.useState(initialFormData);
     const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);

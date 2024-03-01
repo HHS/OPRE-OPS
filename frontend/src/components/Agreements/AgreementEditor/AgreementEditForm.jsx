@@ -280,44 +280,37 @@ export const AgreementEditForm = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Select the Agreement Type</h2>
-            <p className="margin-top-1">Select the type of agreement you&apos;d like to create.</p>
+            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Agreement Type</h2>
+            <p className="margin-top-1">Select the agreement type to get started.</p>
             <AgreementTypeSelect
                 messages={res.getErrors("agreement_type")}
                 className={cn("agreement_type")}
                 selectedAgreementType={agreementType || ""}
+                isRequired={true}
                 onChange={(name, value) => {
                     setAgreementType(value);
                     runValidate(name, value);
                 }}
             />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <ContractTypeSelect
-                value={contractType}
-                onChange={(name, value) => {
-                    setContractType(value);
-                }}
-            />
-            <ServiceReqTypeSelect
-                messages={res.getErrors("serviceReqType")}
-                className={`margin-top-3 ${cn("serviceReqType")}`}
-                value={serviceReqType}
-                onChange={(name, value) => {
-                    setServiceReqType(value);
-                    runValidate(name, value);
-                }}
-            />
+            <p className="margin-top-1">
+                Tell us a little more about this agreement. Make sure you complete the required information in order to
+                proceed. For everything else you can skip the parts you do not know or come back to edit the information
+                later.
+            </p>
             <Input
                 name="name"
                 label="Agreement Title"
                 messages={res.getErrors("name")}
                 className={cn("name")}
+                isRequired={true}
                 value={agreementTitle}
                 onChange={(name, value) => {
                     setAgreementTitle(value);
                     runValidate(name, value);
                 }}
             />
+            {/* TODO: Add Agreement Nickname/Acronym */}
             <TextArea
                 name="description"
                 label="Description"
@@ -332,7 +325,23 @@ export const AgreementEditForm = ({
                     }
                 }}
             />
-
+            <ContractTypeSelect
+                className="margin-top-3"
+                value={contractType}
+                onChange={(name, value) => {
+                    setContractType(value);
+                }}
+            />
+            <ServiceReqTypeSelect
+                messages={res.getErrors("serviceReqType")}
+                className={`margin-top-3 ${cn("serviceReqType")}`}
+                isRequired={true}
+                value={serviceReqType}
+                onChange={(name, value) => {
+                    setServiceReqType(value);
+                    runValidate(name, value);
+                }}
+            />
             <ProductServiceCodeSelect
                 name="product_service_code_id"
                 label="Product Service Code"

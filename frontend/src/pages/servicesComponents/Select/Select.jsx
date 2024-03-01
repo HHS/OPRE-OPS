@@ -1,6 +1,6 @@
 import cx from "clsx";
 import PropTypes from "prop-types";
-
+import IsRequiredHelper from "../../../components/UI/Form/IsRequiredHelper";
 /**
  * A base-level UI select input for building select inputs.
  * @component
@@ -15,6 +15,7 @@ import PropTypes from "prop-types";
  * @param {boolean} [props.valueOverride] - A flag to indicate if the value should be an index (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {string} [props.defaultOption] - The default option to display (optional).
+ * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 const Select = ({
@@ -36,11 +37,13 @@ const Select = ({
     ],
     valueOverride = false,
     className,
-    defaultOption = "-Select an option-"
+    defaultOption = "-Select an option-",
+    isRequired = false
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
     }
+
     return (
         <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
             <label
@@ -49,13 +52,15 @@ const Select = ({
             >
                 {label}
             </label>
-            {messages.length > 0 && (
+            {messages.length > 0 ? (
                 <span
                     className="usa-error-message"
                     role="alert"
                 >
                     {messages[0]}
                 </span>
+            ) : (
+                <IsRequiredHelper isRequired={isRequired} />
             )}
             <div className="display-flex flex-align-center margin-top-1">
                 <select
@@ -98,6 +103,7 @@ Select.propTypes = {
     ),
     valueOverride: PropTypes.bool,
     className: PropTypes.string,
-    defaultOption: PropTypes.string
+    defaultOption: PropTypes.string,
+    isRequired: PropTypes.bool
 };
 export default Select;
