@@ -27,7 +27,6 @@ import GoBackButton from "../../UI/Button/GoBackButton";
 import useAlert from "../../../hooks/use-alert.hooks";
 import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTypeSelect";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
-import DebugCode from "../../../pages/servicesComponents/DebugCode";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -307,10 +306,6 @@ export const AgreementEditForm = ({
                     setServiceReqType(value);
                     runValidate(name, value);
                 }}
-            />
-            <DebugCode
-                title="Res"
-                data={res}
             />
             <Input
                 name="name"
