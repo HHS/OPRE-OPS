@@ -34,7 +34,7 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           #image_tag: ${{ github.sha }}
-          image_tags: '["latest", ${{ github.sha }}]'
+          image_tags: '["latest", "${{ github.sha }}"]'
           #additional_tags: latest
 
   backend-deploy:
