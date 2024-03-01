@@ -67,13 +67,11 @@ runs:
         if [ "${{ github.event_name }}" = "release" ]; then
           export COMMIT_TAG=${GITHUB_REF:10}
           export COMMIT_TAG=${COMMIT_TAG//v/}
+        elif [ -n "${IMAGE_TAGS}" ]; then
+          export COMMIT_TAG="${IMAGE_TAGS[0]}"
         else
           export COMMIT_TAG=latest
         fi
-        
-        # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
-        export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
-
         echo "Tagging with ${COMMIT_TAG} and unstable"
         echo "::endgroup::"
 
