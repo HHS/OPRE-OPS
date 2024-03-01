@@ -128,9 +128,9 @@ runs:
 
         # Tagging with additional tags
         for tag in "${IMAGE_TAGS[@]}"; do
-          >&0 docker tag ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} ${{ inputs.repository }}/${IMAGE_NAME}:${tag} && echo "Tagged with ${tag}"
-          >&0 docker tag ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} docker.io/${IMAGE_NAME}:${tag} && echo "Tagged with ${tag}"
-          >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:${tag} && echo "Pushed tagged image with ${tag}"
+          >&0 docker tag "${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG}" "${{ inputs.repository }}/${IMAGE_NAME}:${tag}" && echo "Tagged with ${tag}"
+          >&0 docker tag "${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG}" "docker.io/${IMAGE_NAME}:${tag}" && echo "Tagged with ${tag}"
+          >&0 docker push "${{ inputs.repository }}/${IMAGE_NAME}:${tag}" && echo "Pushed tagged image with ${tag}"
         done
 
         echo "::endgroup::"
