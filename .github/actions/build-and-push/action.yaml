@@ -80,15 +80,7 @@ runs:
           fi
         fi
 
-        # Adding additional tags
-        if [ -n "${ADDITIONAL_TAGS}" ]; then
-          export ADDITIONAL_TAGS_ARRAY=(${ADDITIONAL_TAGS})
-          for tag in "${ADDITIONAL_TAGS_ARRAY[@]}"; do
-            docker tag ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} ${{ inputs.repository }}/${IMAGE_NAME}:${tag}
-          done
-        fi
-
-        # Lowercase the image name
+        # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
         export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
 
         echo "Tagging with ${COMMIT_TAG}"
@@ -119,47 +111,4 @@ runs:
           \
           --label org.opencontainers.image.created=${BUILD_DATE} \
           --label org.opencontainers.image.source=${GITHUB_URL} \
-          --label org.opencontainers.image.revision=${GITHUB_SHA} \
-          ${{ inputs.context }}
-        set +x
-
-        # Pushing additional tags
-        # Adding additional tags
-        if [ -n "${ADDITIONAL_TAGS}" ]; then
-          export ADDITIONAL_TAGS_ARRAY=($(echo ${ADDITIONAL_TAGS} | tr ',' '\n'))
-          for tag in "${ADDITIONAL_TAGS_ARRAY[@]}"; do
-            docker tag ghcr.io/${IMAGE_NAME}:${COMMIT_TAG} ghcr.io/${IMAGE_NAME}:${tag}
-          done
-        fi
-
-        echo "::endgroup::"
-
-        echo "::group::Inspecting the image ..."
-        docker images
-
-        echo "Labels:"
-        docker image inspect ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} | jq '.[].Config.Labels'
-
-        echo "Env variables:"
-        docker image inspect ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} | jq '.[].Config.Env'
-
-        echo "::endgroup::"
-
-        echo "::group::Pushing the Docker image to ${{ inputs.repository }} ..."
-        >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
-        echo "::endgroup::"
-
-        if [ -z "${DOCKER_IO_TOKEN}" ]; then
-          echo "::notice::NOT pushing the Docker image to docker.io ... Provide 'docker_io_token' if needed."
-        else
-          if [ -z ${DOCKER_IO_USER} ]; then
-            export DOCKER_IO_USER="${{ github.actor }}"
-          fi
-
-          echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER}..."
-          echo "${DOCKER_IO_TOKEN}" | docker login docker.io -u "${DOCKER_IO_USER}" --password-stdin
-
-          >&0 docker push docker.io/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
-
-          echo "::endgroup::"
-        fi
+          --label
