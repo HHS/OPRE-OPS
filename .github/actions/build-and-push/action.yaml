@@ -88,7 +88,7 @@ runs:
           done
         fi
 
-        # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
+        # Lowercase the image name
         export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
 
         echo "Tagging with ${COMMIT_TAG}"
