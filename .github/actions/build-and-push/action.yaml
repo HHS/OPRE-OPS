@@ -49,7 +49,7 @@ runs:
     - name: Parse image tags
       id: parse_tags
       run: |
-        echo "::set-output name=tags::$(echo '${{ inputs.image_tags }}' | jq -r '.')"
+        echo "::set-output name=tags::$(echo '${{ inputs.image_tags }}' | jq -c -r '.')"
       shell: bash
 
     - name: Log in to the Container registry
