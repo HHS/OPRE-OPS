@@ -59,7 +59,7 @@ runs:
         echo "Using $(docker -v)"
 
         echo "::group::Logging into the GitHub Container registry (ghcr.io) ..."
-        echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
         echo "::endgroup::"
 
         echo "::group::Set commit tag and image name"
@@ -149,4 +149,9 @@ runs:
           # Pushing tagged images with additional tags
           if [ "${#IMAGE_TAGS[@]}" -gt 0 ]; then
             for tag in "${IMAGE_TAGS[@]:1}"; do
-              docker push docker.io/${IMAGE_NAME}:${tag} &&
+              docker push docker.io/${IMAGE_NAME}:${tag} && echo "Pushed tagged image with ${tag}"
+            done
+          fi
+
+          echo "::endgroup::"
+        fi
