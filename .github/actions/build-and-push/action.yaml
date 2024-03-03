@@ -68,10 +68,12 @@ runs:
           export COMMIT_TAG=${COMMIT_TAG//v/}
         else
           echo "Parsing additional tags"
-          IMAGE_TAGS=($(echo ${{ inputs.image_tags }} | jq -r '.[]'))
-          echo "Parsed tags: ${IMAGE_TAGS[@]}"
-          if [ ${#IMAGE_TAGS[@]} -eq 0 ]; then
+          IMAGE_TAGS=$(echo ${{ inputs.image_tags }} | jq -r '.[]')
+          echo "Parsed tags: ${IMAGE_TAGS}"
+          if [ -z "${IMAGE_TAGS}" ]; then
             export COMMIT_TAG=latest
+          else
+            export COMMIT_TAG=${IMAGE_TAGS}
           fi
         fi
         
