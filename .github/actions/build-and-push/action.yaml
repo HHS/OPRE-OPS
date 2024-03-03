@@ -62,20 +62,21 @@ runs:
         echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
         echo "::endgroup::"
 
-        echo "::group::Set commit tag and image name"
+                echo "::group::Set commit tag and image name"
         if [ "${{ github.event_name }}" = "release" ]; then
           export COMMIT_TAG=${GITHUB_REF:10}
           export COMMIT_TAG=${COMMIT_TAG//v/}
         else
           echo "Parsing additional tags"
-          IMAGE_TAGS=$(echo ${{ inputs.image_tags }} | jq -r '.[]')
-          echo "Parsed tags: ${IMAGE_TAGS}"
-          if [ -z "${IMAGE_TAGS}" ]; then
+          IFS=',' read -r -a IMAGE_TAGS <<< "${{ inputs.image_tags }}"
+          echo "Parsed tags: ${IMAGE_TAGS[@]}"
+          if [ ${#IMAGE_TAGS[@]} -eq 0 ]; then
             export COMMIT_TAG=latest
           else
-            export COMMIT_TAG=${IMAGE_TAGS}
+            export COMMIT_TAG=${IMAGE_TAGS[0]}
           fi
         fi
+
         
         # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
         export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
