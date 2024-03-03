@@ -67,7 +67,7 @@ runs:
         if [ "${{ github.event_name }}" = "release" ]; then
           export COMMIT_TAG=${GITHUB_REF:10}
           export COMMIT_TAG=${COMMIT_TAG//v/}
-        elif [ -n "${IMAGE_TAGS}" ]; then
+        elif [ "${#IMAGE_TAGS[@]}" -gt 0 ]; then
           export COMMIT_TAG="${IMAGE_TAGS[0]}"
         else
           export COMMIT_TAG=latest
@@ -124,11 +124,13 @@ runs:
         >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:unstable && echo "Pushed"
 
         # Tagging with additional tags
-        for tag in "${IMAGE_TAGS[@]}"; do
-          >&0 docker tag "${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG}" "${{ inputs.repository }}/${IMAGE_NAME}:${tag}" && echo "Tagged with ${tag}"
-          >&0 docker tag "${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG}" "docker.io/${IMAGE_NAME}:${tag}" && echo "Tagged with ${tag}"
-          >&0 docker push "${{ inputs.repository }}/${IMAGE_NAME}:${tag}" && echo "Pushed tagged image with ${tag}"
-        done
+        if [ "${#IMAGE_TAGS[@]}" -gt 0 ]; then
+          for tag in "${IMAGE_TAGS[@]}"; do
+            >&0 docker tag "${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG}" "${{ inputs.repository }}/${IMAGE_NAME}:${tag}" && echo "Tagged with ${tag}"
+            >&0 docker tag "${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG}" "docker.io/${IMAGE_NAME}:${tag}" && echo "Tagged with ${tag}"
+            >&0 docker push "${{ inputs.repository }}/${IMAGE_NAME}:${tag}" && echo "Pushed tagged image with ${tag}"
+          done
+        fi
 
         echo "::endgroup::"
 
@@ -146,9 +148,11 @@ runs:
           >&0 docker push docker.io/${IMAGE_NAME}:unstable && echo "Pushed"
 
           # Pushing tagged images with additional tags
-          for tag in "${IMAGE_TAGS[@]}"; do
-            >&0 docker push docker.io/${IMAGE_NAME}:${tag} && echo "Pushed tagged image with ${tag}"
-          done
+          if [ "${#IMAGE_TAGS[@]}" -gt 0 ]; then
+            for tag in "${IMAGE_TAGS[@]}"; do
+              >&0 docker push docker.io/${IMAGE_NAME}:${tag} && echo "Pushed tagged image with ${tag}"
+            done
+          fi
 
           echo "::endgroup::"
         fi
