@@ -91,7 +91,8 @@ runs:
 
         echo "::group::Building and pushing the Docker image to ${{ inputs.repository }} ..."
 
-        for tag in ${COMMIT_TAGS[@]}; do
+        IFS=',' read -ra TAGS_ARRAY <<< "${COMMIT_TAGS}"
+        for tag in "${TAGS_ARRAY[@]}"; do
           echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${tag} from ${{ inputs.dockerfile }} in ${{ inputs.context}} context ..."
 
           # https://docs.docker.com/develop/develop-images/build_enhancements/
@@ -140,7 +141,7 @@ runs:
           echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER}..."
           echo "${DOCKER_IO_TOKEN}" | docker login docker.io -u "${DOCKER_IO_USER}" --password-stdin
 
-          for tag in ${COMMIT_TAGS[@]}; do
+          for tag in "${TAGS_ARRAY[@]}"; do
             echo "::group::Pushing the Docker image ${{ inputs.repository }}/${IMAGE_NAME}:${tag} to docker.io ..."
             docker push docker.io/${IMAGE_NAME}:${tag} && echo "Pushed"
             echo "::endgroup::"
