@@ -1,5 +1,5 @@
-name: "build-and-push"
-author: "@devops-chris"
+name: "push-to-ghcr"
+author: "@macbre"
 description: "This action simplifies pushes of Docker images to ghcr.io repository"
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
 branding:
@@ -50,6 +50,7 @@ runs:
       id: parse_tags
       run: |
         echo "::set-output name=tags::$(echo '${{ inputs.image_tags }}' | jq -r '.')"
+      shell: bash
 
     - name: Log in to the Container registry
       shell: bash
@@ -124,4 +125,26 @@ runs:
           docker push ${{ inputs.repository }}/${IMAGE_NAME}:${tag} && echo "Pushed"
           docker push docker.io/${IMAGE_NAME}:${tag} && echo "Pushed"
 
-          echo
+          echo "::endgroup::"
+        done
+
+        echo "::endgroup::"
+
+        if [ -z "${DOCKER_IO_TOKEN}" ]; then
+          echo "::notice::NOT pushing the Docker image to docker.io ... Provide 'docker_io_token' if needed."
+        else
+          if [ -z ${DOCKER_IO_USER} ]; then
+            export DOCKER_IO_USER="${{ github.actor }}"
+          fi
+
+          echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER}..."
+          echo "${DOCKER_IO_TOKEN}" | docker login docker.io -u "${DOCKER_IO_USER}" --password-stdin
+
+          for tag in ${COMMIT_TAGS[@]}; do
+            echo "::group::Pushing the Docker image ${{ inputs.repository }}/${IMAGE_NAME}:${tag} to docker.io ..."
+            docker push docker.io/${IMAGE_NAME}:${tag} && echo "Pushed"
+            echo "::endgroup::"
+          done
+
+          echo "::endgroup::"
+        fi
