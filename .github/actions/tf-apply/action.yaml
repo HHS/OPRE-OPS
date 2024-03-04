@@ -1,4 +1,5 @@
 name: 'Terraform setup and apply'
+author: "@devops-chris"
 description: 'Setup Terraform and applies Terraform config'
 inputs:
   terraform_directory:

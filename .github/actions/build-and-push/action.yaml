@@ -1,10 +1,7 @@
-name: "push-to-ghcr"
-author: "@macbre"
+name: "build-and-push"
+author: "@devops-chris"
 description: "This action simplifies pushes of Docker images to ghcr.io repository"
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
-branding:
-  icon: "arrow-up-circle"
-  color: "blue"
   
 inputs:
   github_token: 
