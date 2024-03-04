@@ -400,9 +400,12 @@ class ServicesComponent(BaseModel):
     period_start = Column(Date)
     period_end = Column(Date)
 
-    contract_agreement_id = Column(Integer, ForeignKey("contract_agreement.id"))
+    contract_agreement_id = Column(
+        Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE"), nullable=False
+    )
     contract_agreement = relationship(
-        "ContractAgreement", backref="services_components"
+        "ContractAgreement",
+        passive_deletes=True,
     )
 
     clin_id = Column(Integer, ForeignKey("clin.id"), nullable=True)
