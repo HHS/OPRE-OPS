@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import Select from "../../../pages/servicesComponents/Select";
 import { useGetAgreementTypesQuery } from "../../../api/opsAPI";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import { isRequired } from "../../../utils";
 
 /**
  * A select input for choosing an agreement type.
