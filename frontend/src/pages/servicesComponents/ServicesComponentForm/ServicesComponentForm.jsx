@@ -39,7 +39,7 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                             onChange={(name, value) => {
                                 setFormData({
                                     ...formData,
-                                    number: value
+                                    number: +value
                                 });
                             }}
                             value={formData?.number || ""}
@@ -60,7 +60,7 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                                             optional: !formData?.optional
                                         });
                                     }}
-                                    disabled={formData?.number === "1" || formData?.number === ""}
+                                    disabled={formData?.number === 1 || formData?.number === ""}
                                 />
                                 <label
                                     className="usa-checkbox__label"
