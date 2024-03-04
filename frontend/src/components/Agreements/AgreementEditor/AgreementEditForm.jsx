@@ -206,11 +206,13 @@ export const AgreementEditForm = ({
                 })
                 .then((fulfilled) => {
                     console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Draft Saved",
-                        message: `The agreement ${agreement.name} has been successfully created.`
-                    });
+                    if (!isWizardMode) {
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Draft Saved",
+                            message: `The agreement ${agreement.name} has been successfully created.`
+                        });
+                    }
                 })
                 .catch((rejected) => {
                     console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
