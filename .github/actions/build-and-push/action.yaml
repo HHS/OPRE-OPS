@@ -1,6 +1,6 @@
 name: "push-to-ghcr"
 author: "@macbre"
-description: "This action simplifies pushes of Docker images ot ghcr.io repository"
+description: "This action simplifies pushes of Docker images to ghcr.io repository"
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
 branding:
   icon: "arrow-up-circle"
@@ -38,17 +38,14 @@ inputs:
     description: "Your docker.io token created via https://hub.docker.com/settings/security"
     required: false
   
-  image_tag:
-    description: Image tag, e.g. latest. Will overwrite the tag latest tag on a push, and have no effect on a release.
-    required: false
-
-  additional_tags:
-    description: "Additional tags to apply to the Docker image (comma-separated string)"
+  image_tags:
+    description: "Image tags separated by comma, e.g. latest,1.0.0"
     required: false
 
 runs:
   using: "composite"
   steps:
+    # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
     - name: Log in to the Container registry
       shell: bash
       env:
@@ -57,7 +54,7 @@ runs:
         DOCKER_IO_USER: ${{ inputs.docker_io_user }}
         DOCKER_IO_TOKEN: ${{ inputs.docker_io_token }}
         IMAGE_NAME: ${{ inputs.image_name }}
-        IMAGE_TAG: ${{ inputs.image_tag }}
+        IMAGE_TAGS: ${{ inputs.image_tags }}
 
       run: |
         echo "Using $(docker -v)"
@@ -71,64 +68,50 @@ runs:
           export COMMIT_TAG=${GITHUB_REF:10}
           export COMMIT_TAG=${COMMIT_TAG//v/}
         else
-          if [ -z ${IMAGE_TAG} ]; then
-            export COMMIT_TAG=latest
+          if [ -z ${IMAGE_TAGS} ]; then
+            export COMMIT_TAGS=latest
           else
-            export COMMIT_TAG=${IMAGE_TAG}
+            export COMMIT_TAGS=${IMAGE_TAGS}
           fi
         fi
         
         # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
         export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
 
-        echo "Tagging with ${COMMIT_TAG}"
+        echo "Tagging with ${COMMIT_TAGS}"
         echo "::endgroup::"
 
         export BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
         export GITHUB_URL=https://github.com/${{ github.repository }}
 
-        echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} from ${{ inputs.dockerfile }} in ${{ inputs.context}} context ..."
+        # Split image tags by comma and iterate over them
+        IFS=',' read -ra TAGS <<< "${COMMIT_TAGS}"
+        for TAG in "${TAGS[@]}"; do
+          echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} from ${{ inputs.dockerfile }} in ${{ inputs.context}} context ..."
+          set -x
+          docker build \
+            --file ${{ inputs.dockerfile }} \
+            --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:latest \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --build-arg BUILD_DATE=${BUILD_DATE} \
+            --build-arg GITHUB_SHA=${GITHUB_SHA} \
+            --tag ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} \
+            --tag docker.io/${IMAGE_NAME}:${TAG} \
+            --label org.label-schema.build-date=${BUILD_DATE} \
+            --label org.label-schema.vcs-url=${GITHUB_URL} \
+            --label org.label-schema.vcs-ref=${GITHUB_SHA} \
+            --label org.opencontainers.image.created=${BUILD_DATE} \
+            --label org.opencontainers.image.source=${GITHUB_URL} \
+            --label org.opencontainers.image.revision=${GITHUB_SHA} \
+            ${{ inputs.context }}
+          set +x
 
-        # https://docs.docker.com/develop/develop-images/build_enhancements/
-        # https://docs.docker.com/engine/reference/commandline/build/#specifying-external-cache-sources
-        set -x
-        >&0 docker build \
-          --file ${{ inputs.dockerfile }} \
-          --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:latest \
-          --build-arg BUILDKIT_INLINE_CACHE=1 \
-          \
-          --build-arg BUILD_DATE=${BUILD_DATE} \
-          --build-arg GITHUB_SHA=${GITHUB_SHA} \
-          \
-          --tag ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} \
-          --tag docker.io/${IMAGE_NAME}:${COMMIT_TAG} \
-          \
-          --label org.label-schema.build-date=${BUILD_DATE} \
-          --label org.label-schema.vcs-url=${GITHUB_URL} \
-          --label org.label-schema.vcs-ref=${GITHUB_SHA} \
-          \
-          --label org.opencontainers.image.created=${BUILD_DATE} \
-          --label org.opencontainers.image.source=${GITHUB_URL} \
-          --label org.opencontainers.image.revision=${GITHUB_SHA} \
-          ${{ inputs.context }}
-        set +x
+          echo "::endgroup::"
 
-        echo "::endgroup::"
-
-        echo "::group::Inspecting the image ..."
-        docker images
-
-        echo "Labels:"
-        docker image inspect ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} | jq '.[].Config.Labels'
-
-        echo "Env variables:"
-        docker image inspect ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} | jq '.[].Config.Env'
-
-        echo "::endgroup::"
-
-        echo "::group::Pushing the Docker image to ${{ inputs.repository }} ..."
-        >&0 docker push ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
-        echo "::endgroup::"
+          echo "::group::Pushing the Docker image to ${{ inputs.repository }} with tag ${TAG}..."
+          docker push ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} && echo "Pushed"
+          echo "::endgroup::"
+        done
 
         if [ -z "${DOCKER_IO_TOKEN}" ]; then
           echo "::notice::NOT pushing the Docker image to docker.io ... Provide 'docker_io_token' if needed."
@@ -140,24 +123,12 @@ runs:
           echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER}..."
           echo "${DOCKER_IO_TOKEN}" | docker login docker.io -u "${DOCKER_IO_USER}" --password-stdin
 
-          >&0 docker push docker.io/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
-
-          echo "::endgroup::"
-        fi
-
-        # Tag and push additional tags
-        if [ -n "${ADDITIONAL_TAGS}" ]; then
-          echo "::group::Parsing additional tags"
-          IFS=',' read -ra TAGS <<< "${ADDITIONAL_TAGS}"
-          echo "Parsed tags: ${TAGS[@]}"
-          echo "::endgroup::"
-
+          # Push each tag to docker.io
           for TAG in "${TAGS[@]}"; do
-            echo "::group::Tagging with ${TAG}"
-            docker tag ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} ${{ inputs.repository }}/${IMAGE_NAME}:${TAG}
-            docker push ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} && echo "Pushed"
+            echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER} with tag ${TAG}..."
+            docker push docker.io/${IMAGE_NAME}:${TAG} && echo "Pushed"
             echo "::endgroup::"
           done
-        else
-          echo "::notice::No additional tags provided."
+
+          echo "::endgroup::"
         fi
