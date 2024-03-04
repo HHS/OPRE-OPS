@@ -19,6 +19,8 @@ marshmallow-enum = "==1.5.1"
 marshmallow-dataclass = "==8.6.0"
 sqlalchemy-continuum = "==1.4.0"
 marshmallow-sqlalchemy = "==0.30.0"
+alembic = "==1.13.1"
+alembic-postgresql-enum = "*"
 
 [dev-packages]
 flake8 = "==7.0.0"

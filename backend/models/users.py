@@ -1,11 +1,10 @@
 """User models."""
-from typing import Any, List, cast
+from typing import List, Optional
 
 from models import BaseModel
-from sqlalchemy import Column, DateTime, ForeignKey, Identity, Integer, String, func
+from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
-from typing_extensions import override
 
 
 class UserRole(BaseModel):
@@ -31,21 +30,22 @@ class UserGroup(BaseModel):
 
 
 class User(BaseModel):
-    """Main User model."""
+    """Main User mod."""
 
     __tablename__ = "user"
 
-    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
-    oidc_id = Column(UUID(as_uuid=True), unique=True, index=True)
-    hhs_id = Column(String)
-    email = Column(String, index=True, nullable=False)
-    first_name = Column(String)
-    last_name = Column(String)
-    full_name = column_property(first_name + " " + last_name)
-    date_joined = Column(DateTime, server_default=func.now())
-    updated = Column(DateTime, onupdate=func.now())
-
-    division = Column(Integer, ForeignKey("division.id", name="fk_user_division"))
+    id: Mapped[int] = BaseModel.get_pk_column()
+    oidc_id: Mapped[Optional[UUID]] = mapped_column(
+        UUID(as_uuid=True), unique=True, index=True
+    )
+    hhs_id: Mapped[Optional[str]]
+    email: Mapped[str] = mapped_column(index=True, nullable=False)
+    first_name: Mapped[Optional[str]] = mapped_column(nullable=True)
+    last_name: Mapped[Optional[str]] = mapped_column(nullable=True)
+    full_name: Mapped[str] = column_property(first_name + " " + last_name)
+    division: Mapped[int] = mapped_column(
+        ForeignKey("division.id", name="fk_user_division")
+    )
 
     roles: Mapped[List["Role"]] = relationship(
         "Role",
@@ -63,7 +63,7 @@ class User(BaseModel):
         secondaryjoin="Group.id == UserGroup.group_id",
     )
 
-    portfolios = relationship(
+    portfolios: Mapped[List["Portfolio"]] = relationship(
         "Portfolio",
         back_populates="team_leaders",
         secondary="portfolio_team_leaders",
@@ -72,7 +72,7 @@ class User(BaseModel):
         viewonly=True,
     )
 
-    projects = relationship(
+    projects: Mapped[List["Project"]] = relationship(
         "Project",
         back_populates="team_leaders",
         secondary="project_team_leaders",
@@ -89,14 +89,14 @@ class User(BaseModel):
         secondaryjoin="Agreement.id == AgreementTeamMembers.agreement_id",
     )
 
-    contracts = relationship(
+    contracts: Mapped[List["ContractAgreement"]] = relationship(
         "ContractAgreement",
         back_populates="support_contacts",
         secondary="contract_support_contacts",
         viewonly=True,
     )
 
-    notifications = relationship(
+    notifications: Mapped[List["Notification"]] = relationship(
         "Notification",
         foreign_keys="Notification.recipient_id",
     )
@@ -113,10 +113,10 @@ class Role(BaseModel):
     """Main Role model."""
 
     __tablename__ = "role"
-    id = Column(Integer, Identity(), primary_key=True)
+    id: Mapped[int] = BaseModel.get_pk_column()
 
-    name = Column(String, index=True, nullable=False)
-    permissions = Column(String, nullable=False)
+    name: Mapped[str] = mapped_column(index=True)
+    permissions: Mapped[str]
 
     users: Mapped[List["User"]] = relationship(
         "User",
@@ -135,8 +135,8 @@ class Group(BaseModel):
     """Main Group model."""
 
     __tablename__ = "group"
-    id = Column(Integer, Identity(), primary_key=True)
-    name = Column(String, index=True, nullable=False)
+    id: Mapped[int] = BaseModel.get_pk_column()
+    name: Mapped[str] = mapped_column(index=True)
 
     users: Mapped[List["User"]] = relationship(
         "User",
