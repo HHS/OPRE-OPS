@@ -214,7 +214,7 @@ export const StepCreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
-            {groupedBudgetLinesByServicesComponent.length > 0 &&
+            {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
                         key={group.servicesComponentId}
@@ -229,7 +229,10 @@ export const StepCreateBLIsAndSCs = ({
                             isReviewMode={isReviewMode}
                         />
                     </ServicesComponentAccordion>
-                ))}
+                ))
+            ) : (
+                <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
+            )}
             <div className="display-flex flex-justify margin-top-1">
                 <GoBackButton handleGoBack={handleGoBack} />
                 <div>
