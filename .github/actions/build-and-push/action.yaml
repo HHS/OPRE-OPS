@@ -5,9 +5,9 @@ description: "This action simplifies pushes of Docker images to ghcr.io reposito
 branding:
   icon: "arrow-up-circle"
   color: "blue"
-  
+
 inputs:
-  github_token: 
+  github_token:
     description: "Your secrets.GITHUB_TOKEN"
     required: true
 
@@ -37,15 +37,18 @@ inputs:
   docker_io_token:
     description: "Your docker.io token created via https://hub.docker.com/settings/security"
     required: false
-  
+
+  image_tag:
+    description: "Image tag, e.g. latest. Will overwrite the tag latest tag on a push, and have no effect on a release."
+    required: false
+
   additional_tags:
-    description: "Additional tags to apply to the Docker image (comma-separated)"
+    description: "Additional tags to apply to the Docker image. Comma-separated list."
     required: false
 
 runs:
   using: "composite"
   steps:
-    # Log in to the Container registry
     - name: Log in to the Container registry
       shell: bash
       env:
@@ -54,6 +57,7 @@ runs:
         DOCKER_IO_USER: ${{ inputs.docker_io_user }}
         DOCKER_IO_TOKEN: ${{ inputs.docker_io_token }}
         IMAGE_NAME: ${{ inputs.image_name }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
         ADDITIONAL_TAGS: ${{ inputs.additional_tags }}
 
       run: |
@@ -68,10 +72,14 @@ runs:
           export COMMIT_TAG=${GITHUB_REF:10}
           export COMMIT_TAG=${COMMIT_TAG//v/}
         else
-          export COMMIT_TAG=latest
+          if [ -z ${IMAGE_TAG} ]; then
+            export COMMIT_TAG=latest
+          else
+            export COMMIT_TAG=${IMAGE_TAG}
+          fi
         fi
-        
-        # Lowercase the image name
+
+        # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
         export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
 
         echo "Tagging with ${COMMIT_TAG}"
@@ -80,10 +88,9 @@ runs:
         export BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
         export GITHUB_URL=https://github.com/${{ github.repository }}
 
-        echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} from ${{ inputs.dockerfile }} in ${{ inputs.context}} context ..."
+        echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} from ${{ inputs.dockerfile }} in ${{ inputs.context }} context ..."
 
         # Build the Docker image
-        set -x
         docker build \
           --file ${{ inputs.dockerfile }} \
           --cache-from ${{ inputs.repository }}/${IMAGE_NAME}:latest \
@@ -99,7 +106,6 @@ runs:
           --label org.opencontainers.image.source=${GITHUB_URL} \
           --label org.opencontainers.image.revision=${GITHUB_SHA} \
           ${{ inputs.context }}
-        set +x
 
         echo "::endgroup::"
 
@@ -114,24 +120,9 @@ runs:
 
         echo "::endgroup::"
 
-        # Push the Docker image to the registry
         echo "::group::Pushing the Docker image to ${{ inputs.repository }} ..."
         docker push ${{ inputs.repository }}/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
         echo "::endgroup::"
-
-        # Push the Docker image to docker.io if Docker.io token is provided
-        if [ -n "${DOCKER_IO_TOKEN}" ]; then
-          if [ -z "${DOCKER_IO_USER}" ]; then
-            export DOCKER_IO_USER="${{ github.actor }}"
-          fi
-
-          echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER}..."
-          echo "${DOCKER_IO_TOKEN}" | docker login docker.io -u "${DOCKER_IO_USER}" --password-stdin
-          docker push docker.io/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
-          echo "::endgroup::"
-        else
-          echo "::notice::NOT pushing the Docker image to docker.io ... Provide 'docker_io_token' if needed."
-        fi
 
         # Tag and push additional tags
         if [ -n "${ADDITIONAL_TAGS}" ]; then
@@ -148,4 +139,19 @@ runs:
           done
         else
           echo "::notice::No additional tags provided."
+        fi
+
+        if [ -z "${DOCKER_IO_TOKEN}" ]; then
+          echo "::notice::NOT pushing the Docker image to docker.io ... Provide 'docker_io_token' if needed."
+        else
+          if [ -z ${DOCKER_IO_USER} ]; then
+            export DOCKER_IO_USER="${{ github.actor }}"
+          fi
+
+          echo "::group::Pushing the Docker image to docker.io as ${DOCKER_IO_USER}..."
+          echo "${DOCKER_IO_TOKEN}" | docker login docker.io -u "${DOCKER_IO_USER}" --password-stdin
+
+          docker push docker.io/${IMAGE_NAME}:${COMMIT_TAG} && echo "Pushed"
+
+          echo "::endgroup::"
         fi
