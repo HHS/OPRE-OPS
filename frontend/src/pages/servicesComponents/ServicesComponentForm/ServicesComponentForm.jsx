@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import ServicesComponentSelect from "../ServicesComponentSelect";
 import PoPStartDate from "../PoPStartDate";
 import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../../components/UI/Form/TextArea";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../servicesComponents.constants";
 
 /**
@@ -60,6 +60,7 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                                             optional: !formData?.optional
                                         });
                                     }}
+                                    disabled={formData?.number === "1" || formData?.number === ""}
                                 />
                                 <label
                                     className="usa-checkbox__label"
