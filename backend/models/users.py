@@ -54,7 +54,7 @@ class User(BaseModel):
         ForeignKey("division.id", name="fk_user_division")
     )
     status: Mapped[UserStatus] = mapped_column(
-        ENUM(UserStatus), nullable=False, default=UserStatus.INACTIVE
+        ENUM(UserStatus), nullable=False, server_default=UserStatus.INACTIVE.name
     )
 
     roles: Mapped[List["Role"]] = relationship(
