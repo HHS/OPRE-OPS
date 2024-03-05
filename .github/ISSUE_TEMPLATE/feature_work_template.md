@@ -27,6 +27,7 @@ _As a [type of user], I want to [do something] [to produce this outcome]_
 - [ ] Usability validated (UX team)
 - [ ] PR(s) have been merged to main
 - [ ] Design/tech debt eliminated
+- [ ] New design/tech debt documented
 - [ ] Build process updated
 - [ ] Documentation updated or added
 - [ ] Feature flags/toggles created
