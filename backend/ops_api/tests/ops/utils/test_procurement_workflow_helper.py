@@ -56,9 +56,9 @@ def test_create_procurement_workflow(loaded_db):
     stmt = select(PackageSnapshot).where(PackageSnapshot.package_id == package.id)
     snapshot_results = loaded_db.execute(stmt).all()
     assert len(snapshot_results) == 1
-    snapshot: PackageSnapshot = snapshot_results[0][0]
-    assert snapshot.object_type == "AGREEMENT"
-    assert snapshot.object_id == test_agreement_id
+    package_snapshot: PackageSnapshot = snapshot_results[0][0]
+    assert package_snapshot.object_type == "AGREEMENT"
+    assert package_snapshot.object_id == test_agreement_id
 
     # TODO: find this workflow by agreement_id
 
@@ -81,3 +81,13 @@ def test_create_procurement_workflow(loaded_db):
             assert procurement_step.workflow_step_id == pre_award_workflow_step.id
         elif isinstance(procurement_step, Award):
             assert procurement_step.workflow_step_id == award_workflow_step.id
+
+    # cleanup  (is there, or should there be, cascading for more of this)
+    for procurement_step in procurement_steps:
+        loaded_db.delete(procurement_step)
+    loaded_db.delete(package_snapshot)
+    loaded_db.delete(package)
+    for workflow_step in workflow_instance.steps:
+        loaded_db.delete(workflow_step)
+    loaded_db.delete(workflow_instance)
+    loaded_db.commit()
