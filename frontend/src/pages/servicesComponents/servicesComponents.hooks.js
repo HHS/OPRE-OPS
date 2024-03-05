@@ -46,8 +46,15 @@ const useServicesComponents = (agreementId) => {
             number: Number(formData.number),
             optional: Boolean(formData.optional),
             description: formData.description,
-            period_start: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
-            period_end: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
+            period_start:
+                formData.popStartYear && formData.popStartMonth && formData.popStartDay
+                    ? `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`
+                    : null,
+
+            period_end:
+                formData.popEndYear && formData.popEndMonth && formData.popEndDay
+                    ? `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
+                    : null
         };
         const { id } = formData;
 
