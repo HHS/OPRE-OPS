@@ -3,10 +3,12 @@ from datetime import datetime
 from flask import current_app
 
 # from flask_jwt_extended import verify_jwt_in_request
-from models import (  # Package,; PackageSnapshot,
+from models import (
     AcquisitionPlanning,
     Award,
     Evaluation,
+    Package,
+    PackageSnapshot,
     PreAward,
     PreSolicitation,
     ProcurementStep,
@@ -48,11 +50,11 @@ def create_procurement_workflow(agreement_id):
     # TODO: How to get user when there might not be a request (in testing, etc)
     # token = verify_jwt_in_request()
     # user = get_user_from_token(token[1])
-    template = get_procurement_workflow_template()
+    workflow_template = get_procurement_workflow_template()
     session = current_app.db_session
 
     workflow_instance = WorkflowInstance()
-    workflow_instance.workflow_template_id = template.id
+    workflow_instance.workflow_template_id = workflow_template.id
     workflow_instance.associated_id = agreement_id
     workflow_instance.associated_type = WorkflowTriggerType.AGREEMENT
     workflow_instance.workflow_action = WorkflowAction.GENERIC
@@ -63,19 +65,33 @@ def create_procurement_workflow(agreement_id):
     # assert workflow_instance.id is not None
     session.commit()
 
-    data = {}
     workflow_step_template: WorkflowStepTemplate
-    for workflow_step_template in template.steps:
+
+    workflow_step_instances = []
+    for workflow_step_template in workflow_template.steps:
         # workflow step
         workflow_step_instance = WorkflowStepInstance()
         workflow_step_instance.workflow_instance_id = workflow_instance.id
         workflow_step_instance.workflow_step_template_id = workflow_step_template.id
+        workflow_step_instance.index = workflow_step_template.index
         workflow_step_instance.status = WorkflowStepStatus.REVIEW  # ???
         # workflow_step_instance.notes = ""
         workflow_step_instance.time_started = datetime.now()
         workflow_step_instance.created_by = user_id
 
-        # TODO package
+        workflow_step_instances.append(workflow_step_instance)
+
+        package = Package()
+        package.submitter_id = user_id
+        package.workflow_instance_id = workflow_instance.id
+        # package.notes = ""
+        session.add(package)
+
+        package_snapshot = PackageSnapshot()
+        package_snapshot.package_id = package.id
+        package_snapshot.object_type = "AGREEMENT"
+        package_snapshot.object_id = agreement_id
+        session.add(package_snapshot)
 
         session.add(workflow_step_instance)
         session.commit()
@@ -90,12 +106,13 @@ def create_procurement_workflow(agreement_id):
         session.commit()
 
         # putting all into map for now for testing
-        data[workflow_step_template.name] = {
-            "workflow_step": {
-                "class_name": workflow_step_instance.__class__.__name__,
-                "data": workflow_step_instance.to_dict(),
-            },
-            "procurement_step": {"class_name": proc_step.__class__.__name__, "data": workflow_step_instance.to_dict()},
-        }
+        # data = {}
+        # data[workflow_step_template.name] = {
+        #     "workflow_step": {
+        #         "class_name": workflow_step_instance.__class__.__name__,
+        #         "data": workflow_step_instance.to_dict(),
+        #     },
+        #     "procurement_step": {"class_name": proc_step.__class__.__name__, "data": workflow_step_instance.to_dict()},
+        # }
 
-    return data
+    return workflow_instance
