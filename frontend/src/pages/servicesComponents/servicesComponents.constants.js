@@ -3,15 +3,22 @@ export const SERVICE_REQ_TYPES = {
     SEVERABLE: "SEVERABLE"
 };
 
-export const NON_SEVERABLE_OPTIONS = ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6"];
+export const NON_SEVERABLE_OPTIONS = [
+    { label: "SC1", value: 1 },
+    { label: "SC2", value: 2 },
+    { label: "SC3", value: 3 },
+    { label: "SC4", value: 4 },
+    { label: "SC5", value: 5 },
+    { label: "SC6", value: 6 }
+];
 
 export const SEVERABLE_OPTIONS = [
-    "Base Period 1",
-    "Option Period 2",
-    "Option Period 3",
-    "Option Period 4",
-    "Option Period 5",
-    "Option Period 6"
+    { label: "Base Period 1", value: 1 },
+    { label: "Option Period 2", value: 2 },
+    { label: "Option Period 3", value: 3 },
+    { label: "Option Period 4", value: 4 },
+    { label: "Option Period 5", value: 5 },
+    { label: "Option Period 6", value: 6 }
 ];
 
 export const SERVICE_REQ_TYPES_OPTIONS = [

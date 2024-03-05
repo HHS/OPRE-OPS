@@ -152,6 +152,8 @@ const useServicesComponents = (agreementId) => {
         setFormData(newFormData);
     };
 
+    const servicesComponentsNumbers = servicesComponents.map((component) => component.number);
+
     return {
         serviceTypeReq,
         setServiceTypeReq,
@@ -167,7 +169,8 @@ const useServicesComponents = (agreementId) => {
         handleSubmit,
         handleDelete,
         handleCancel,
-        setFormDataById
+        setFormDataById,
+        servicesComponentsNumbers
     };
 };
 

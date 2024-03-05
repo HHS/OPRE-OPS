@@ -35,7 +35,6 @@ const Select = ({
             value: "OPTION_2"
         }
     ],
-    valueOverride = false,
     className,
     defaultOption = "-Select an option-",
     isRequired = false
@@ -71,12 +70,13 @@ const Select = ({
                     value={value}
                 >
                     <option value={null}>{defaultOption}</option>
-                    {options.map((option, index) => (
+                    {options.map((option) => (
                         <option
-                            key={index + 1}
-                            value={valueOverride ? index + 1 : option?.value}
+                            key={option.value}
+                            value={option?.value}
+                            disabled={option?.disabled}
                         >
-                            {option?.label ?? option}
+                            {option?.label}
                         </option>
                     ))}
                 </select>

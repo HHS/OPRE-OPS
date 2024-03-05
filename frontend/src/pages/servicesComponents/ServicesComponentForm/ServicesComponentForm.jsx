@@ -17,13 +17,30 @@ import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../
  * @param {Function} props.setFormData - Function to set form data.
  * @param {Function} props.handleSubmit - Function to handle form submission.
  * @param {Function} props.handleCancel - Function to handle form cancellation.
+ * @param {Array} props.servicesComponentsNumbers - The service component numbers.
  * @returns {JSX.Element} The rendered ServicesComponentForm component.
  *
  * @example
  * <ServicesComponentForm serviceTypeReq="SEVERABLE" formData={formData} setFormData={setFormData} handleSubmit={handleSubmit} handleCancel={handleCancel} />
  */
-function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSubmit, handleCancel }) {
+function ServicesComponentForm({
+    serviceTypeReq,
+    formData,
+    setFormData,
+    handleSubmit,
+    handleCancel,
+    servicesComponentsNumbers = []
+}) {
     const options = serviceTypeReq === SERVICE_REQ_TYPES.SEVERABLE ? SEVERABLE_OPTIONS : NON_SEVERABLE_OPTIONS;
+    const optionsWithSelected = options.map((option) => {
+        if (servicesComponentsNumbers.includes(option.value)) {
+            return {
+                ...option,
+                disabled: true
+            };
+        }
+        return option;
+    });
 
     return (
         <form onSubmit={handleSubmit}>
@@ -39,11 +56,12 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                             onChange={(name, value) => {
                                 setFormData({
                                     ...formData,
-                                    number: +value
+                                    number: +value,
+                                    optional: false
                                 });
                             }}
                             value={formData?.number || ""}
-                            options={options}
+                            options={optionsWithSelected}
                         />
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (
                             <div className="usa-checkbox margin-left-5">
@@ -60,7 +78,9 @@ function ServicesComponentForm({ serviceTypeReq, formData, setFormData, handleSu
                                             optional: !formData?.optional
                                         });
                                     }}
-                                    disabled={formData?.number === 1 || formData?.number === ""}
+                                    disabled={
+                                        formData?.number === 0 || formData?.number === 1 || formData?.number === ""
+                                    }
                                 />
                                 <label
                                     className="usa-checkbox__label"
@@ -130,7 +150,8 @@ ServicesComponentForm.propTypes = {
     formData: PropTypes.object.isRequired,
     setFormData: PropTypes.func.isRequired,
     handleSubmit: PropTypes.func.isRequired,
-    handleCancel: PropTypes.func.isRequired
+    handleCancel: PropTypes.func.isRequired,
+    servicesComponentsNumbers: PropTypes.array
 };
 
 export default ServicesComponentForm;
