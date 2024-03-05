@@ -17,7 +17,7 @@ import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../
  * @param {Function} props.setFormData - Function to set form data.
  * @param {Function} props.handleSubmit - Function to handle form submission.
  * @param {Function} props.handleCancel - Function to handle form cancellation.
- * @param {Array} props.servicesComponentsNumbers - The service component numbers.
+ * @param {Array<number>} props.servicesComponentsNumbers - The service component numbers.
  * @returns {JSX.Element} The rendered ServicesComponentForm component.
  *
  * @example
@@ -62,9 +62,10 @@ function ServicesComponentForm({
                             }}
                             value={formData?.number || ""}
                             options={optionsWithSelected}
+                            isRequired={true}
                         />
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (
-                            <div className="usa-checkbox margin-left-5">
+                            <div className="usa-checkbox margin-left-5 margin-top-3">
                                 <input
                                     className="usa-checkbox__input"
                                     id="optional-services-component"

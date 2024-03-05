@@ -68,6 +68,7 @@ const Select = ({
                     name={name}
                     onChange={handleChange}
                     value={value}
+                    required={isRequired}
                 >
                     <option value={null}>{defaultOption}</option>
                     {options.map((option) => (
