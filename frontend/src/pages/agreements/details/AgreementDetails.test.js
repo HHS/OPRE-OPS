@@ -124,7 +124,6 @@ const agreementHistoryData = [
                 {
                     created_by: null,
                     created_on: "2023-08-24T16:18:57.391020",
-                    date_joined: "2023-08-24T16:18:57.391020",
                     division: 1,
                     email: "Amy.Madigan@example.com",
                     first_name: "Amy",
@@ -133,7 +132,6 @@ const agreementHistoryData = [
                     id: 2,
                     last_name: "Madigan",
                     oidc_id: "00000000-0000-1111-a111-000000000002",
-                    updated: null,
                     updated_on: "2023-08-24T16:18:57.391020"
                 }
             ],
