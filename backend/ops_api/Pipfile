@@ -19,13 +19,15 @@ marshmallow-enum = "==1.5.1"
 marshmallow-dataclass = "==8.6.0"
 sqlalchemy-continuum = "==1.4.0"
 marshmallow-sqlalchemy = "==0.30.0"
+alembic = "==1.13.1"
+alembic-postgresql-enum = "*"
 
 [dev-packages]
 flake8 = "==7.0.0"
 isort = "==5.13.2"
 pytest = "==7.4.4"
 nox = "==2023.4.22"
-ipython = "==8.21.0"
+ipython = "==8.22.1"
 types-all = "==1.0.0"
 pytest-flask = "==1.3.0"
 black = {extras = ["d"], version = "==23.12.1"}

@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
@@ -8,10 +7,13 @@ import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import ServicesComponents from "../../../../pages/servicesComponents";
-import DebugCode from "../../../../pages/servicesComponents/DebugCode";
-import { useBudgetLinesDispatch } from "./context";
 import useCreateBLIsAndSCs from "./useCreateBLIsAndSCs.hooks";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
+import ServicesComponentAccordion from "../../../../pages/servicesComponents/ServicesComponentAccordion";
+import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import AgreementTotalCard from "../../../Agreements/AgreementDetailsCards/AgreementTotalCard";
+import GoBackButton from "../../Button/GoBackButton";
+
 /**
  * Renders the Create Budget Lines and Services Components with React context.
  * @component
@@ -50,8 +52,6 @@ export const StepCreateBLIsAndSCs = ({
     isReviewMode,
     workflow
 }) => {
-    const navigate = useNavigate();
-    const dispatch = useBudgetLinesDispatch();
     const {
         budgetLinePageErrorsExist,
         handleDeleteBudgetLine,
@@ -69,7 +69,6 @@ export const StepCreateBLIsAndSCs = ({
         setEnteredDay,
         setEnteredMonth,
         setEnteredYear,
-        setModalProps,
         setSelectedCan,
         setServicesComponentId,
         setShowModal,
@@ -82,15 +81,23 @@ export const StepCreateBLIsAndSCs = ({
         enteredComments,
         servicesComponentId,
         newBudgetLines,
-        res
+        groupedBudgetLinesByServicesComponent,
+        res,
+        feesForCards,
+        subTotalForCards,
+        totalsForCards,
+        handleCancel,
+        handleGoBack
     } = useCreateBLIsAndSCs(
         isReviewMode,
         existingBudgetLines,
         goToNext,
+        goBack,
         continueOverRide,
         selectedAgreement,
         selectedProcurementShop,
-        setIsEditMode
+        setIsEditMode,
+        workflow
     );
 
     return (
@@ -100,6 +107,7 @@ export const StepCreateBLIsAndSCs = ({
                     heading={modalProps.heading}
                     setShowModal={setShowModal}
                     actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
@@ -134,8 +142,8 @@ export const StepCreateBLIsAndSCs = ({
                         serviceRequirementType={selectedAgreement.service_requirement_type}
                         agreementId={selectedAgreement.id}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Budget Line Details</h2>
-                    <p>Complete the information below to create new budget lines.</p>
+                    <h2 className="font-sans-lg margin-top-3">Add Budget Lines</h2>
+                    <p>Add Budget lines to each Services Component to outline how the work will be funded.</p>
                 </>
             )}
             <CreateBudgetLinesForm
@@ -157,11 +165,10 @@ export const StepCreateBLIsAndSCs = ({
                 handleEditForm={handleEditForm}
                 handleResetForm={handleResetForm}
                 handleSubmitForm={handleSubmitForm}
-                isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
                 agreementId={selectedAgreement.id}
             />
-            {workflow !== "none" && (
+            {workflow === "budgetLines" && (
                 <>
                     <h2 className="font-sans-lg">Budget Lines</h2>
                     <p>
@@ -171,6 +178,16 @@ export const StepCreateBLIsAndSCs = ({
                     </p>
                 </>
             )}
+            <div className="display-flex flex-justify margin-y-2">
+                <BLIsByFYSummaryCard budgetLineItems={newBudgetLines} />
+                <AgreementTotalCard
+                    total={totalsForCards}
+                    subtotal={subTotalForCards}
+                    fees={feesForCards}
+                    procurementShopAbbr={selectedProcurementShop?.abbr}
+                    procurementShopFee={selectedProcurementShop?.fee}
+                />
+            </div>
             {budgetLinePageErrorsExist && (
                 <ul
                     className="usa-list--unstyled font-12px text-error"
@@ -197,56 +214,41 @@ export const StepCreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
-            <BudgetLinesTable
-                budgetLines={newBudgetLines}
-                handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                handleDeleteBudgetLine={handleDeleteBudgetLine}
-                handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                canUserEditBudgetLines={canUserEditBudgetLines}
-                isReviewMode={isReviewMode}
-            />
-            <DebugCode
-                title="Budget Lines"
-                data={newBudgetLines}
-            />
-            <div className="grid-row flex-justify-end margin-top-1">
-                <button
-                    className="usa-button usa-button--unstyled margin-right-2"
-                    data-cy="back-button"
-                    onClick={() => {
-                        // if no budget lines have been added, go back
-                        if (newBudgetLines?.length === 0) {
-                            if (workflow === "none") {
-                                setIsEditMode(false);
-                                navigate(`/agreements/${selectedAgreement?.id}`);
-                            } else {
-                                goBack();
-                                return;
-                            }
-                        }
-                        // if budget lines have been added, show modal
-                        setShowModal(true);
-                        setModalProps({
-                            heading: "Are you sure you want to go back? Your budget lines will not be saved.",
-                            actionButtonText: "Go Back",
-                            handleConfirm: () => {
-                                dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
-                                setModalProps({});
-                                goBack();
-                            }
-                        });
-                    }}
-                >
-                    Back
-                </button>
-                <button
-                    className="usa-button"
-                    data-cy="continue-btn"
-                    onClick={saveBudgetLineItems}
-                    disabled={isReviewMode && !res.isValid()}
-                >
-                    {isReviewMode ? "Review" : continueBtnText}
-                </button>
+            {groupedBudgetLinesByServicesComponent.length > 0 &&
+                groupedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                    >
+                        <BudgetLinesTable
+                            budgetLines={group.budgetLines}
+                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                            handleDeleteBudgetLine={handleDeleteBudgetLine}
+                            handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                            canUserEditBudgetLines={canUserEditBudgetLines}
+                            isReviewMode={isReviewMode}
+                        />
+                    </ServicesComponentAccordion>
+                ))}
+            <div className="display-flex flex-justify margin-top-1">
+                <GoBackButton handleGoBack={handleGoBack} />
+                <div>
+                    <button
+                        className="usa-button usa-button--unstyled margin-right-2"
+                        data-cy="cancel-button"
+                        onClick={handleCancel}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        className="usa-button"
+                        data-cy="continue-btn"
+                        onClick={saveBudgetLineItems}
+                        disabled={isReviewMode && !res.isValid()}
+                    >
+                        {isReviewMode ? "Review" : continueBtnText}
+                    </button>
+                </div>
             </div>
         </>
     );

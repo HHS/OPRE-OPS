@@ -6,7 +6,6 @@ import suite from "./suite";
 import TextArea from "../TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../../../pages/servicesComponents/AllServicesComponentSelect";
-import DebugCode from "../../../../pages/servicesComponents/DebugCode";
 
 /**
  * A form for creating or editing a budget line.
@@ -190,19 +189,6 @@ export const CreateBudgetLinesForm = ({
                     </button>
                 )}
             </div>
-            <DebugCode
-                title="Form Data"
-                data={{
-                    servicesComponentId,
-                    selectedCan,
-                    enteredAmount,
-                    enteredMonth,
-                    enteredDay,
-                    enteredYear,
-                    enteredComments,
-                    isEditing
-                }}
-            />
         </form>
     );
 };

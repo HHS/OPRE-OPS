@@ -32,7 +32,7 @@ const UserInfo = () => {
                             </tr>
                             <tr>
                                 <td>Date Joined</td>
-                                <td>: {user?.date_joined}</td>
+                                <td>: {user?.created_on}</td>
                             </tr>
                             <tr>
                                 <td>Role(s)</td>

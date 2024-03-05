@@ -1,9 +1,7 @@
 from enum import Enum
-from typing import Any
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
-from typing_extensions import override
 
 from .base import BaseModel
 
@@ -27,6 +25,9 @@ class OpsEventType(Enum):
     CREATE_SERVICES_COMPONENT = 16
     UPDATE_SERVICES_COMPONENT = 17
     DELETE_SERVICES_COMPONENT = 18
+    CREATE_PROCUREMENT_ACQUISITION_PLANNING = 19
+    UPDATE_PROCUREMENT_ACQUISITION_PLANNING = 20
+    DELETE_PROCUREMENT_ACQUISITION_PLANNING = 21
 
 
 class OpsEventStatus(Enum):
@@ -38,7 +39,7 @@ class OpsEventStatus(Enum):
 class OpsEvent(BaseModel):
     __tablename__ = "ops_event"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     event_type = sa.Column(sa.Enum(OpsEventType))
     event_status = sa.Column(sa.Enum(OpsEventStatus))
     event_details = sa.Column(JSONB)

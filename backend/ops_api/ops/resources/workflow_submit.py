@@ -13,12 +13,12 @@ from models.workflows import (
     PackageSnapshot,
     WorkflowAction,
     WorkflowInstance,
-    WorkflowStatus,
     WorkflowStepInstance,
+    WorkflowStepStatus,
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
-from ops_api.ops.resources.budget_line_item_schemas import PATCHRequestBody
+from ops_api.ops.schemas.budget_line_item import PATCHRequestBody
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
@@ -108,7 +108,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
 
         workflow_step_instance = WorkflowStepInstance(
             workflow_step_template_id=2,
-            status=WorkflowStatus.REVIEW,
+            status=WorkflowStepStatus.REVIEW,
             created_by=user.id,
             time_started=datetime.now(),
             successor_dependencies=[],
@@ -123,7 +123,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         current_app.db_session.commit()
 
         # updated the current step in the bli package to the first step in the workflow
-        new_package.workflow_id = workflow_instance.id
+        new_package.workflow_instance_id = workflow_instance.id
 
         # commit our new bli package
         current_app.db_session.add(new_package)

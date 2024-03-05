@@ -5,7 +5,19 @@ import StepIndicator from "../../components/UI/StepIndicator";
 import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 
-export const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizardSteps }) => {
+/**
+ * StepCreateAgreement is a component that represents a step in a wizard for creating or editing an agreement.
+ * It displays the title of the mode (edit or review), a step indicator, a summary of the selected research project, and an agreement edit form.
+ * @component
+ * @param {Object} props - The properties passed to this component.
+ * @param {function} props.goBack - The function to go back to the previous step.
+ * @param {function} props.goToNext - The function to go to the next step.
+ * @param {boolean} props.isEditMode - Indicates if the wizard is in edit mode.
+ * @param {boolean} props.isReviewMode - Indicates if the wizard is in review mode.
+ * @param {Array.<string>} props.wizardSteps - The steps of the wizard.
+ * @returns {JSX.Element} The rendered StepCreateAgreement component.
+ */
+const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizardSteps }) => {
     const { selected_project: selectedResearchProject } = useEditAgreement();
 
     return (

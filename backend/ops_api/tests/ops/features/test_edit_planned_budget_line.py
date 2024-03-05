@@ -13,7 +13,7 @@ from models import (
     Role,
     User,
 )
-from ops_api.ops.resources.budget_line_item_schemas import RequestBody
+from ops_api.ops.schemas.budget_line_item import RequestBody
 from pytest_bdd import given, scenario, then, when
 
 

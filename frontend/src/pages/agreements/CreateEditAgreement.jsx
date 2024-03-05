@@ -56,7 +56,7 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
-                continueBtnText="Save Draft"
+                continueBtnText="Create Agreement"
                 continueOverRide={() =>
                     setAlert({
                         type: "success",
