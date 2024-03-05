@@ -31,7 +31,7 @@ workflow_step_to_procurement_class_map = {
     "Pre-Solicitation": PreSolicitation,
     "Solicitation": Solicitation,
     # ISSUE: can't have two workflow steps go the same procurement step (ProcurementStep.workflow_step_id)
-    "Evaluation Approval": Evaluation,
+    # "Evaluation Approval": Evaluation,
     "Evaluation Attestation": Evaluation,
     "Pre-Award": PreAward,
     "Award": Award,
@@ -64,10 +64,25 @@ def create_procurement_workflow(agreement_id):
     # This fails since no ID before save
     # assert workflow_instance.id is not None
     session.commit()
+    assert workflow_instance.id
+
+    # package and snapshot
+    package = Package()
+    package.submitter_id = user_id
+    package.workflow_instance_id = workflow_instance.id
+    # package.notes = ""
+    session.add(package)
+    session.commit()
+    assert package.id
+    package_snapshot = PackageSnapshot()
+    package_snapshot.package_id = package.id
+    package_snapshot.object_type = "AGREEMENT"
+    package_snapshot.object_id = agreement_id
+    session.add(package_snapshot)
+    session.commit()
+    assert package_snapshot.id
 
     workflow_step_template: WorkflowStepTemplate
-
-    workflow_step_instances = []
     for workflow_step_template in workflow_template.steps:
         # workflow step
         workflow_step_instance = WorkflowStepInstance()
@@ -78,41 +93,19 @@ def create_procurement_workflow(agreement_id):
         # workflow_step_instance.notes = ""
         workflow_step_instance.time_started = datetime.now()
         workflow_step_instance.created_by = user_id
-
-        workflow_step_instances.append(workflow_step_instance)
-
-        package = Package()
-        package.submitter_id = user_id
-        package.workflow_instance_id = workflow_instance.id
-        # package.notes = ""
-        session.add(package)
-
-        package_snapshot = PackageSnapshot()
-        package_snapshot.package_id = package.id
-        package_snapshot.object_type = "AGREEMENT"
-        package_snapshot.object_id = agreement_id
-        session.add(package_snapshot)
-
         session.add(workflow_step_instance)
         session.commit()
         assert workflow_step_instance.id
 
         # procurement step
-        proc_step: ProcurementStep = workflow_step_to_procurement_class_map[workflow_step_template.name]()
-        proc_step.agreement_id = agreement_id
-        proc_step.workflow_step_id = workflow_step_instance.id
-        proc_step.created_by = user_id
-        session.add(proc_step)
-        session.commit()
-
-        # putting all into map for now for testing
-        # data = {}
-        # data[workflow_step_template.name] = {
-        #     "workflow_step": {
-        #         "class_name": workflow_step_instance.__class__.__name__,
-        #         "data": workflow_step_instance.to_dict(),
-        #     },
-        #     "procurement_step": {"class_name": proc_step.__class__.__name__, "data": workflow_step_instance.to_dict()},
-        # }
+        procurement_step_class = workflow_step_to_procurement_class_map.get(workflow_step_template.name, None)
+        if procurement_step_class is not None:
+            proc_step: ProcurementStep = procurement_step_class()
+            proc_step.agreement_id = agreement_id
+            proc_step.workflow_step_id = workflow_step_instance.id
+            proc_step.created_by = user_id
+            session.add(proc_step)
+            session.commit()
+            assert proc_step.id
 
     return workflow_instance
