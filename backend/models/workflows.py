@@ -3,7 +3,6 @@ from enum import Enum, auto
 
 import sqlalchemy as sa
 from models.base import BaseModel
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import object_session, relationship
 from typing_extensions import Any, override
