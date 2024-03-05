@@ -14,7 +14,7 @@ variable "resourceGroupName" {}
 variable "containerImageTag" {
   description = "Container image tag"
   type        = string
-  default     = "902c0296d292a73ab6d66d39c2cc9a7fdfd387d0"
+  default     = "unstable"
 }
 
 # variable "cpu" {
