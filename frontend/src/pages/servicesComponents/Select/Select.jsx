@@ -1,8 +1,9 @@
 import cx from "clsx";
-// import { convertCodeForDisplay } from "../../../helpers/utils";
-
+import PropTypes from "prop-types";
+import IsRequiredHelper from "../../../components/UI/Form/IsRequiredHelper";
 /**
- * A select input for building select inputs.
+ * A base-level UI select input for building select inputs.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
@@ -14,6 +15,7 @@ import cx from "clsx";
  * @param {boolean} [props.valueOverride] - A flag to indicate if the value should be an index (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {string} [props.defaultOption] - The default option to display (optional).
+ * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 const Select = ({
@@ -33,13 +35,14 @@ const Select = ({
             value: "OPTION_2"
         }
     ],
-    valueOverride = false,
     className,
-    defaultOption = "Select an option"
+    defaultOption = "-Select an option-",
+    isRequired = false
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
     }
+
     return (
         <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
             <label
@@ -48,13 +51,15 @@ const Select = ({
             >
                 {label}
             </label>
-            {messages.length > 0 && (
+            {messages.length > 0 ? (
                 <span
                     className="usa-error-message"
                     role="alert"
                 >
                     {messages[0]}
                 </span>
+            ) : (
+                <IsRequiredHelper isRequired={isRequired} />
             )}
             <div className="display-flex flex-align-center margin-top-1">
                 <select
@@ -63,14 +68,16 @@ const Select = ({
                     name={name}
                     onChange={handleChange}
                     value={value}
+                    required={isRequired}
                 >
-                    <option value={null}>- {defaultOption} -</option>
-                    {options.map((option, index) => (
+                    <option value={null}>{defaultOption}</option>
+                    {options.map((option) => (
                         <option
-                            key={index + 1}
-                            value={valueOverride ? index + 1 : option?.value}
+                            key={option.value}
+                            value={option?.value}
+                            disabled={option?.disabled}
                         >
-                            {option?.label ?? option}
+                            {option?.label}
                         </option>
                     ))}
                 </select>
@@ -79,4 +86,25 @@ const Select = ({
     );
 };
 
+Select.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    value: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
+    pending: PropTypes.bool,
+    messages: PropTypes.arrayOf(PropTypes.string),
+    options: PropTypes.arrayOf(
+        PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.shape({
+                label: PropTypes.string,
+                value: PropTypes.string
+            })
+        ])
+    ),
+    valueOverride: PropTypes.bool,
+    className: PropTypes.string,
+    defaultOption: PropTypes.string,
+    isRequired: PropTypes.bool
+};
 export default Select;

@@ -146,6 +146,26 @@ export const StepCreateBLIsAndSCs = ({
                     <p>Add Budget lines to each Services Component to outline how the work will be funded.</p>
                 </>
             )}
+            {workflow === "budgetLines" && (
+                <>
+                    <h2 className="font-sans-lg">Budget Lines</h2>
+                    <p>
+                        This is a list of all budget lines for the selected project and agreement. The budget lines you
+                        add will display in draft status. The Fiscal Year (FY) will populate based on the election date
+                        you provide.
+                    </p>
+                </>
+            )}
+            <div className="display-flex flex-justify margin-y-2">
+                <BLIsByFYSummaryCard budgetLineItems={newBudgetLines} />
+                <AgreementTotalCard
+                    total={totalsForCards}
+                    subtotal={subTotalForCards}
+                    fees={feesForCards}
+                    procurementShopAbbr={selectedProcurementShop?.abbr}
+                    procurementShopFee={selectedProcurementShop?.fee}
+                />
+            </div>
             <CreateBudgetLinesForm
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
@@ -168,26 +188,6 @@ export const StepCreateBLIsAndSCs = ({
                 isReviewMode={isReviewMode}
                 agreementId={selectedAgreement.id}
             />
-            {workflow === "budgetLines" && (
-                <>
-                    <h2 className="font-sans-lg">Budget Lines</h2>
-                    <p>
-                        This is a list of all budget lines for the selected project and agreement. The budget lines you
-                        add will display in draft status. The Fiscal Year (FY) will populate based on the election date
-                        you provide.
-                    </p>
-                </>
-            )}
-            <div className="display-flex flex-justify margin-y-2">
-                <BLIsByFYSummaryCard budgetLineItems={newBudgetLines} />
-                <AgreementTotalCard
-                    total={totalsForCards}
-                    subtotal={subTotalForCards}
-                    fees={feesForCards}
-                    procurementShopAbbr={selectedProcurementShop?.abbr}
-                    procurementShopFee={selectedProcurementShop?.fee}
-                />
-            </div>
             {budgetLinePageErrorsExist && (
                 <ul
                     className="usa-list--unstyled font-12px text-error"
@@ -214,7 +214,7 @@ export const StepCreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
-            {groupedBudgetLinesByServicesComponent.length > 0 &&
+            {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
                         key={group.servicesComponentId}
@@ -229,7 +229,10 @@ export const StepCreateBLIsAndSCs = ({
                             isReviewMode={isReviewMode}
                         />
                     </ServicesComponentAccordion>
-                ))}
+                ))
+            ) : (
+                <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
+            )}
             <div className="display-flex flex-justify margin-top-1">
                 <GoBackButton handleGoBack={handleGoBack} />
                 <div>

@@ -33,7 +33,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
                     />
                 ))
             ) : (
-                <p>You have not added any Services Component yet.</p>
+                <p className="text-center margin-y-7">You have not added any Services Component yet.</p>
             )}
         </section>
     );
