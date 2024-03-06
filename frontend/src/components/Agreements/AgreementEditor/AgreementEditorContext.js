@@ -18,7 +18,7 @@ const defaultState = {
         notes: "",
         project_id: null,
         procurement_shop_id: null,
-        contract_type: "",
+        contract_type: null,
         service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE
     },
     selected_project: {},
