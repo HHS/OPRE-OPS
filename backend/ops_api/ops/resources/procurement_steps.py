@@ -1,4 +1,3 @@
-from datetime import date
 from functools import partial
 
 import marshmallow_dataclass as mmdc
@@ -33,7 +32,11 @@ from ops_api.ops.schemas.procurement_steps import (
     SolicitationRequest,
     SolicitationResponse,
 )
-from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_model_instance
+from ops_api.ops.utils.api_helpers import (
+    convert_date_strings_to_dates,
+    get_change_data,
+    update_and_commit_model_instance,
+)
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -156,10 +159,7 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
             schema.context["id"] = id
             schema.context["method"] = method
             data = get_change_data(request.json, old_instance, schema, ["id", "type", "agreement_id"])
-            for k in ["actual_date", "target_date"]:
-                if k in data and data[k] is not None:
-                    data[k] = date.fromisoformat(data[k])
-
+            data = convert_date_strings_to_dates(data)
             updated_instance = update_and_commit_model_instance(old_instance, data)
             resp_dict = self._response_schema.dump(updated_instance)
             meta.metadata.update({self.model.__name__: resp_dict})
