@@ -1,32 +1,19 @@
-import cx from "clsx";
+import PropTypes from "prop-types";
+import Select from "../../../pages/servicesComponents/Select";
 import { useGetAgreementTypesQuery } from "../../../api/opsAPI";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
  * A select input for choosing an agreement type.
+ *
+ * @component
  * @param {Object} props - The component props.
- * @param {string} props.name - The name of the input field.
- * @param {string} [props.label] - The label to display for the input field (optional).
  * @param {string} props.selectedAgreementType - The currently selected agreement type.
- * @param {Function} props.onChange - A function to call when the input value changes.
- * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
- * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
- * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
- * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
- * @param {string} [props.defaultString] - Initial text to display in select (optional).
+ * @param {Function} props.onChange - The function to call when the select value changes.
+ * @param {Object} [props.rest] - Any additional properties to pass to the Select component. optional
  * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementTypeSelect = ({
-    name,
-    label = name,
-    selectedAgreementType,
-    onChange,
-    pending = false,
-    messages = [],
-    className,
-    legendClassname = "margin-top-205",
-    defaultString = "- Select Agreement Type -"
-}) => {
+export const AgreementTypeSelect = ({ selectedAgreementType, onChange, ...rest }) => {
     const {
         data: agreementTypes,
         error: errorAgreementTypes,
@@ -40,47 +27,31 @@ export const AgreementTypeSelect = ({
         return <div>Oops, an error occurred</div>;
     }
 
-    const handleChange = (e) => {
-        onChange(name, e.target.value);
-    };
+    const agreementTypesOptions = agreementTypes.map((agreementType) => {
+        return {
+            label: convertCodeForDisplay("agreementType", agreementType),
+            value: agreementType
+        };
+    });
 
     return (
-        <div className={cx("usa-form-group", pending && "pending", className)}>
-            <label
-                className={`usa-label ${messages.length ? "usa-label--error" : null} ${legendClassname}`}
-                htmlFor={name}
-            >
-                {label}
-            </label>
-            {messages.length ? (
-                <span
-                    className="usa-error-message"
-                    role="alert"
-                >
-                    {messages[0]}
-                </span>
-            ) : null}
-            <div className="display-flex flex-align-center">
-                <select
-                    className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : null}`}
-                    name={name}
-                    id={name}
-                    onChange={handleChange}
-                    value={selectedAgreementType}
-                >
-                    <option value={0}>{defaultString}</option>
-                    {agreementTypes.map((type, index) => (
-                        <option
-                            key={index + 1}
-                            value={type}
-                        >
-                            {convertCodeForDisplay("agreementType", type)}
-                        </option>
-                    ))}
-                </select>
-            </div>
-        </div>
+        <Select
+            name="agreement_type"
+            label="Agreement Type"
+            onChange={onChange}
+            value={selectedAgreementType}
+            messages={[]}
+            defaultOption="Select Agreement Type"
+            options={agreementTypesOptions}
+            {...rest}
+        />
     );
+};
+
+AgreementTypeSelect.propTypes = {
+    selectedAgreementType: PropTypes.string,
+    onChange: PropTypes.func,
+    rest: PropTypes.object
 };
 
 export default AgreementTypeSelect;
