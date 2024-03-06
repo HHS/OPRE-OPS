@@ -197,6 +197,7 @@ def test_services_components_patch(auth_client, app):
     patch_data = {
         "description": "Test SC description Update",
         "number": 22,
+        "period_start": None,
         "period_end": "2054-07-15",
     }
     response = auth_client.patch(f"/api/v1/services-components/{new_sc_id}", json=patch_data)
@@ -204,14 +205,12 @@ def test_services_components_patch(auth_client, app):
     resp_json = response.json
     for key in patch_data:
         assert resp_json.get(key) == patch_data.get(key)
-    assert resp_json["period_start"] == "2024-01-01"
 
-    session = app.db_session
     sc: ServicesComponent = session.get(ServicesComponent, new_sc_id)
     assert sc.id == new_sc_id
     assert sc.description == patch_data["description"]
     assert sc.number == patch_data["number"]
-    assert sc.period_start == datetime.date(2024, 1, 1)
+    assert sc.period_start is None
     assert sc.period_end == datetime.date(2054, 7, 15)
 
 

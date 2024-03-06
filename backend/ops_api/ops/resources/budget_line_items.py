@@ -19,7 +19,7 @@ from ops_api.ops.schemas.budget_line_item import (
     POSTRequestBody,
     QueryParameters,
 )
-from ops_api.ops.utils.api_helpers import get_change_data
+from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, get_change_data
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -179,7 +179,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         data = self._get_schema.dump(self._get_schema.load(request.args))
 
         data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-        data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+        data = convert_date_strings_to_dates(data)
 
         stmt = self._get_query(data.get("can_id"), data.get("agreement_id"), data.get("status"))
 
@@ -199,7 +199,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
             data = self._post_schema.dump(self._post_schema.load(request.json))
             data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-            data["date_needed"] = date.fromisoformat(data["date_needed"]) if data.get("date_needed") else None
+            data = convert_date_strings_to_dates(data)
 
             new_bli = BudgetLineItem(**data)
 
