@@ -3,6 +3,7 @@ from enum import Enum, auto
 
 import sqlalchemy as sa
 from models.base import BaseModel
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import object_session, relationship
 from typing_extensions import Any, override
 
@@ -41,7 +42,12 @@ class WorkflowTemplate(BaseModel):
     __tablename__ = "workflow_template"
     id = BaseModel.get_pk_column()
     name = sa.Column(sa.String, nullable=False)
-    steps = relationship("WorkflowStepTemplate", backref="workflow_template")
+    steps = relationship(
+        "WorkflowStepTemplate",
+        backref="workflow_template",
+        order_by="WorkflowStepTemplate.index",
+        collection_class=ordering_list("index"),
+    )
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -64,7 +70,12 @@ class WorkflowInstance(BaseModel):
         sa.Enum(WorkflowTriggerType), nullable=False
     )  # could use Enum based on the entities
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
-    steps = relationship("WorkflowStepInstance", backref="workflow_instance")
+    steps = relationship(
+        "WorkflowStepInstance",
+        backref="workflow_instance",
+        order_by="WorkflowStepInstance.index",
+        collection_class=ordering_list("index"),
+    )
     workflow_action = sa.Column(sa.Enum(WorkflowAction), nullable=False)
     current_workflow_step_instance_id = sa.Column(sa.Integer, nullable=True)
 
@@ -149,6 +160,7 @@ class WorkflowStepInstance(BaseModel):
     workflow_step_template = relationship(
         "WorkflowStepTemplate", backref="workflow_step_instance"
     )
+    index = sa.Column(sa.Integer)
     status = sa.Column(sa.Enum(WorkflowStepStatus), nullable=False)
     notes = sa.Column(sa.String, nullable=True)
     time_started = sa.Column(sa.DateTime, nullable=True)
