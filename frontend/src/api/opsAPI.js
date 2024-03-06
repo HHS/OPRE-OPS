@@ -65,14 +65,14 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         deleteAgreement: builder.mutation({
             query: (id) => ({
                 url: `/agreements/${id}`,
                 method: "DELETE"
             }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         getBudgetLineItems: builder.query({
             query: () => `/budget-line-items/`,
