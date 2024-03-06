@@ -1,6 +1,6 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
-import { initialFormData, backendServicesComponents } from "./servicesComponents.constants";
+import { initialFormData, SERVICE_REQ_TYPES } from "./servicesComponents.constants";
 import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
 import {
     useAddServicesComponentMutation,
@@ -10,7 +10,7 @@ import {
 } from "../../api/opsAPI";
 
 const useServicesComponents = (agreementId) => {
-    const [serviceTypeReq, setServiceTypeReq] = React.useState(backendServicesComponents.serviceReqType);
+    const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
     const [formData, setFormData] = React.useState(initialFormData);
     const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
@@ -39,7 +39,6 @@ const useServicesComponents = (agreementId) => {
     }, [isSuccess, error, data, setAlert]);
 
     const handleSubmit = (e) => {
-        // NOTE: Services Components here: https://github.com/HHS/OPRE-OPS/pull/1927
         e.preventDefault();
         let formattedServiceComponent = formatServiceComponent(formData.number, formData.optional, serviceTypeReq);
         const newFormData = {
@@ -47,8 +46,15 @@ const useServicesComponents = (agreementId) => {
             number: Number(formData.number),
             optional: Boolean(formData.optional),
             description: formData.description,
-            period_start: `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`,
-            period_end: `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
+            period_start:
+                formData.popStartYear && formData.popStartMonth && formData.popStartDay
+                    ? `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`
+                    : null,
+
+            period_end:
+                formData.popEndYear && formData.popEndMonth && formData.popEndDay
+                    ? `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
+                    : null
         };
         const { id } = formData;
 
@@ -153,6 +159,8 @@ const useServicesComponents = (agreementId) => {
         setFormData(newFormData);
     };
 
+    const servicesComponentsNumbers = servicesComponents.map((component) => component.number);
+
     return {
         serviceTypeReq,
         setServiceTypeReq,
@@ -168,7 +176,8 @@ const useServicesComponents = (agreementId) => {
         handleSubmit,
         handleDelete,
         handleCancel,
-        setFormDataById
+        setFormDataById,
+        servicesComponentsNumbers
     };
 };
 
