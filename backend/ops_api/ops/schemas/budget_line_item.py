@@ -215,9 +215,15 @@ class RequestBody:
         services_component_id = data.get("services_component_id")
         if services_component_id is not None:
             sc: ServicesComponent = current_app.db_session.get(ServicesComponent, services_component_id)
-            bli: BudgetLineItem = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
-            if sc.contract_agreement_id != bli.agreement_id:
-                raise ValidationError("The Services Component must belong to the same Agreement as the BLI")
+            if sc:
+                sc_contract_agreement_id = sc.contract_agreement_id
+                if self.context.get("method") in ["POST"]:
+                    bli_agreement_id = data.get("agreement_id")
+                else:
+                    bli: BudgetLineItem = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+                    bli_agreement_id = bli.agreement_id if bli else None
+                if sc_contract_agreement_id != bli_agreement_id:
+                    raise ValidationError("The Services Component must belong to the same Agreement as the BLI")
 
 
 @dataclass(kw_only=True)
