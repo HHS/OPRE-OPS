@@ -312,28 +312,12 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleGoBack = () => {
-        // if no budget lines have been added, go back
-        if (newBudgetLines?.length === 0) {
-            if (workflow === "none") {
-                setIsEditMode(false);
-                navigate(`/agreements/${selectedAgreement?.id}`);
-            } else {
-                goBack();
-                return;
-            }
+        if (workflow === "none") {
+            setIsEditMode(false);
+            navigate(`/agreements/${selectedAgreement?.id}`);
+        } else {
+            goBack();
         }
-        // if budget lines have been added, show modal
-        setShowModal(true);
-        setModalProps({
-            heading: "Are you sure you want to go back? Your budget lines will not be saved.",
-            actionButtonText: "Go Back",
-            secondaryButtonText: "Continue Editing",
-            handleConfirm: () => {
-                dispatch({ type: "RESET_FORM_AND_BUDGET_LINES" });
-                setModalProps({});
-                goBack();
-            }
-        });
     };
 
     const resetQueryParams = () => {
