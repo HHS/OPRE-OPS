@@ -91,14 +91,6 @@ def test_valid_project_officer(loaded_db, context):
 
 @scenario(
     "validate_draft_budget_lines_in_workflow.feature",
-    "Valid BLI Description",
-)
-def test_valid_description_not_null(loaded_db, context):
-    ...
-
-
-@scenario(
-    "validate_draft_budget_lines_in_workflow.feature",
     "Valid Need By Date: Not Null",
 )
 def test_valid_need_by_date_not_null(loaded_db, context):
@@ -382,25 +374,6 @@ def bli(loaded_db, context):
     initial_bli = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
-        line_description="LI 1",
-        amount=100.12,
-        can_id=1,
-        date_needed=datetime.date(2043, 1, 1),
-        status=BudgetLineItemStatus.DRAFT,
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
-    loaded_db.add(initial_bli)
-    loaded_db.commit()
-
-    context["initial_bli"] = initial_bli
-
-
-@when("I have a BLI in DRAFT status without a Description")
-def bli_without_description(loaded_db, context):
-    initial_bli = BudgetLineItem(
-        agreement_id=context["agreement"].id,
-        comments="blah blah",
         amount=100.12,
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
@@ -419,7 +392,6 @@ def bli_without_need_by_date(loaded_db, context):
     initial_bli = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
-        line_description="LI 1",
         amount=100.12,
         can_id=1,
         status=BudgetLineItemStatus.DRAFT,
@@ -437,7 +409,6 @@ def bli_past_need_by_date(loaded_db, context):
     initial_bli = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
-        line_description="LI 1",
         amount=100.12,
         can_id=1,
         date_needed=datetime.date(2022, 1, 1),
@@ -456,7 +427,6 @@ def bli_without_can(loaded_db, context):
     initial_bli = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
-        line_description="LI 1",
         amount=100.12,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
@@ -474,7 +444,6 @@ def bli_without_amount(loaded_db, context):
     initial_bli = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
-        line_description="LI 1",
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
@@ -492,7 +461,6 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
     initial_bli = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
-        line_description="LI 1",
         amount=0,
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
@@ -510,7 +478,6 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context):
 def bli_without_agreement(loaded_db, context):
     initial_bli = BudgetLineItem(
         comments="blah blah",
-        line_description="LI 1",
         amount=100.12,
         can_id=1,
         date_needed=datetime.date(2043, 1, 1),
@@ -613,16 +580,6 @@ def error_message_valid_project_officer(context, setup_and_teardown):
     assert context["response_post"].status_code == 400
     assert context["response_post"].json == {
         "_schema": ["BLI's Agreement must have a ProjectOfficer when status is not DRAFT"]
-    }
-
-
-@then("I should get an error message that the BLI must have a Description")
-def error_message_valid_description(context, setup_and_teardown):
-    assert context["response_post"].status_code == 400
-    assert context["response_post"].json == {
-        "_schema": [
-            "BLI must valid a valid Description when status is not DRAFT",
-        ]
     }
 
 
