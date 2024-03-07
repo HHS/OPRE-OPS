@@ -22,6 +22,8 @@ from models import (
     WorkflowTriggerType,
 )
 
+# from sqlalchemy import select
+
 # from ops_api.ops.utils.user import get_user_from_token
 
 PROCUREMENT_WORKFLOW_TEMPLATE_NAME = "Procurement Tracker"
@@ -109,3 +111,23 @@ def create_procurement_workflow(agreement_id):
             assert proc_step.id
 
     return workflow_instance
+
+
+# TODO: delete entire procurement workflow (mostly for testing cleanup)
+# def delete_procurement_workflow(agreement_id):
+#     session = current_app.db_session
+#     stmt = select(ProcurementStep).where(ProcurementStep.agreement_id == agreement_id)
+#     procurement_step_results = session.execute(stmt).all()
+#     procurement_steps = [p[0] for p in procurement_step_results]
+#     procurement_step: ProcurementStep
+#     for procurement_step in procurement_steps:
+#         session.delete(procurement_step)
+# cleanup  (is there, or should there be, cascading for more of this)
+#     for procurement_step in procurement_steps:
+#         loaded_db.delete(procurement_step)
+#     loaded_db.delete(package_snapshot)
+#     loaded_db.delete(package)
+#     for workflow_step in workflow_instance.steps:
+#         loaded_db.delete(workflow_step)
+#     loaded_db.delete(workflow_instance)
+#     loaded_db.commit()

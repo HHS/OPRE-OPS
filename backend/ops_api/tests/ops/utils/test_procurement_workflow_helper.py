@@ -1,6 +1,7 @@
 import pytest
 from models import (
     AcquisitionPlanning,
+    Agreement,
     Award,
     Evaluation,
     Package,
@@ -61,6 +62,8 @@ def test_create_procurement_workflow(loaded_db):
     assert package_snapshot.object_id == test_agreement_id
 
     # TODO: find this workflow by agreement_id
+    agreement = loaded_db.get(Agreement, test_agreement_id)
+    assert agreement.procurement_tracker_workflow_id == workflow_instance.id
 
     # procurement steps tied to this agreement and workflow steps
     stmt = select(ProcurementStep).where(ProcurementStep.agreement_id == test_agreement_id)

@@ -12,6 +12,7 @@ class WorkflowAction(Enum):
     DRAFT_TO_PLANNED = 1
     PLANNED_TO_EXECUTING = 2
     GENERIC = 3
+    # PROCUREMENT_TRACKING = 4
 
 
 class WorkflowStepType(Enum):
