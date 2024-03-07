@@ -223,34 +223,17 @@ class Agreement(BaseModel):
     def procurement_tracker_workflow_id(self):
         if object_session(self) is None:
             return False
-        # workflow_id = object_session(self).scalar(
-        #     select(WorkflowInstance.id).where(
-        #         and_(
-        #             WorkflowInstance.workflow_action == WorkflowAction.PROCUREMENT_TRACKING,
-        #             WorkflowInstance.associated_type == WorkflowTriggerType.AGREEMENT,
-        #             WorkflowInstance.associated_id == self.id,
-        #         )
-        #     )
-        # )
         workflow_id = object_session(self).scalar(
-            select(WorkflowInstance.id)
-            .join(
-                WorkflowTemplate,
-                WorkflowInstance.workflow_template_id == WorkflowTemplate.id,
-            )
-            .where(
+            select(WorkflowInstance.id).where(
                 and_(
-                    WorkflowInstance.workflow_action == WorkflowAction.GENERIC,
+                    WorkflowInstance.workflow_action
+                    == WorkflowAction.PROCUREMENT_TRACKING,
                     WorkflowInstance.associated_type == WorkflowTriggerType.AGREEMENT,
                     WorkflowInstance.associated_id == self.id,
-                    WorkflowTemplate.name == "Procurement Tracker",
                 )
             )
         )
         return workflow_id
-
-
-#     .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
 
 
 contract_support_contacts = Table(

@@ -59,7 +59,7 @@ def create_procurement_workflow(agreement_id):
     workflow_instance.workflow_template_id = workflow_template.id
     workflow_instance.associated_id = agreement_id
     workflow_instance.associated_type = WorkflowTriggerType.AGREEMENT
-    workflow_instance.workflow_action = WorkflowAction.GENERIC
+    workflow_instance.workflow_action = WorkflowAction.PROCUREMENT_TRACKING
     workflow_instance.created_by = user_id
 
     session.add(workflow_instance)
