@@ -14,7 +14,7 @@ import { useDeleteAgreementMutation } from "../../../../api/opsAPI";
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
- * @param {Array<Object>} existingBudgetLines - Array of existing budget lines.
+ * @param {Array<Object>} budgetLines - Array of budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
@@ -26,7 +26,7 @@ import { useDeleteAgreementMutation } from "../../../../api/opsAPI";
  */
 const useCreateBLIsAndSCs = (
     isReviewMode,
-    existingBudgetLines,
+    budgetLines,
     goToNext,
     goBack,
     continueOverRide,
@@ -52,8 +52,7 @@ const useCreateBLIsAndSCs = (
         entered_year: enteredYear,
         entered_comments: enteredComments,
         is_editing_budget_line: isEditing,
-        budget_line_being_edited: budgetLineBeingEdited,
-        new_budget_lines: newBudgetLines
+        budget_line_being_edited: budgetLineBeingEdited
     } = useBudgetLines() || {
         selected_can: null,
         services_component_id: -1,
@@ -80,9 +79,9 @@ const useCreateBLIsAndSCs = (
     const setEnteredDay = useSetState("entered_day");
     const setEnteredYear = useSetState("entered_year");
     const setEnteredComments = useSetState("entered_comments");
-    const feesForCards = getProcurementShopSubTotal(selectedAgreement, newBudgetLines);
-    const subTotalForCards = budgetLinesTotal(newBudgetLines);
-    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, newBudgetLines);
+    const feesForCards = getProcurementShopSubTotal(selectedAgreement, budgetLines);
+    const subTotalForCards = budgetLinesTotal(budgetLines);
+    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLines);
 
     // Validation
     let res = suite.get();
@@ -90,7 +89,7 @@ const useCreateBLIsAndSCs = (
 
     if (isReviewMode) {
         suite({
-            new_budget_lines: newBudgetLines
+            new_budget_lines: budgetLines
         });
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
@@ -127,7 +126,7 @@ const useCreateBLIsAndSCs = (
         dispatch({
             type: "EDIT_BUDGET_LINE",
             payload: {
-                id: newBudgetLines[budgetLineBeingEdited].id,
+                id: budgetLines[budgetLineBeingEdited].id,
                 line_description: ".",
                 services_component_id: servicesComponentId,
                 comments: enteredComments,
@@ -242,8 +241,8 @@ const useCreateBLIsAndSCs = (
             }
         };
 
-        const newBudgetLineItems = newBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
-        const existingBudgetLineItems = newBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
+        const newBudgetLineItems = budgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
+        const existingBudgetLineItems = budgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
         if (newBudgetLineItems.length > 0) {
             mutateBudgetLineItems("POST", newBudgetLineItems);
@@ -329,26 +328,26 @@ const useCreateBLIsAndSCs = (
 
     // combine arrays of new budget lines and existing budget lines added
     // only run once on page load if there are existing budget lines
-    React.useEffect(() => {
-        if (existingBudgetLines.length > 0) {
-            dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [existingBudgetLines]);
+    // React.useEffect(() => {
+    //     if (existingBudgetLines.length > 0) {
+    //         dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [existingBudgetLines]);
 
     // check budget line id from context and if found, set edit mode to true and set budget line for editing
     React.useEffect(() => {
         if (budgetLineIdFromUrl) {
             setIsEditMode(true);
-            const budgetLineFromUrl = newBudgetLines.find((budgetLine) => budgetLine.id === +budgetLineIdFromUrl);
+            const budgetLineFromUrl = budgetLines.find((budgetLine) => budgetLine.id === +budgetLineIdFromUrl);
             if (budgetLineFromUrl) {
                 handleSetBudgetLineForEditing(budgetLineFromUrl);
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [budgetLineIdFromUrl, newBudgetLines]);
+    }, [budgetLineIdFromUrl, budgetLines]);
 
-    const groupedBudgetLinesByServicesComponent = newBudgetLines
+    const groupedBudgetLinesByServicesComponent = budgetLines
         .reduce((acc, budgetLine) => {
             const servicesComponentId = budgetLine.services_component_id;
             const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
@@ -396,7 +395,7 @@ const useCreateBLIsAndSCs = (
         enteredYear,
         enteredComments,
         servicesComponentId,
-        newBudgetLines,
+        budgetLines,
         groupedBudgetLinesByServicesComponent,
         res,
         feesForCards,
@@ -409,7 +408,7 @@ const useCreateBLIsAndSCs = (
 
 useCreateBLIsAndSCs.propTypes = {
     isReviewMode: PropTypes.bool,
-    existingBudgetLines: PropTypes.array,
+    budgetLines: PropTypes.array,
     goToNext: PropTypes.func,
     goBack: PropTypes.func,
     continueOverRide: PropTypes.func,

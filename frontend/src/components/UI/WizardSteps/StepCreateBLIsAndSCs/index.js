@@ -28,7 +28,7 @@ const CreateBudgetLines = ({
     selectedResearchProject,
     selectedAgreement,
     selectedProcurementShop,
-    existingBudgetLines,
+    budgetLines,
     continueBtnText,
     continueOverRide,
     isEditMode,
@@ -45,7 +45,7 @@ const CreateBudgetLines = ({
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
-                existingBudgetLines={existingBudgetLines}
+                budgetLines={budgetLines}
                 continueBtnText={continueBtnText}
                 continueOverRide={continueOverRide}
                 isEditMode={isEditMode}

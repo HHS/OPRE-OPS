@@ -26,7 +26,7 @@ import DebugCode from "../../../../pages/servicesComponents/DebugCode";
  * @param {Object} props.selectedResearchProject - The selected research project.
  * @param {Object} props.selectedAgreement - The selected agreement.
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
- * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
+ * @param {Array<any>} props.budgetLines - The selected Agreements budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
@@ -44,7 +44,7 @@ export const StepCreateBLIsAndSCs = ({
     selectedResearchProject = {},
     selectedAgreement = {},
     selectedProcurementShop = {},
-    existingBudgetLines = [],
+    budgetLines = [],
     continueBtnText,
     continueOverRide,
     isEditMode,
@@ -81,7 +81,6 @@ export const StepCreateBLIsAndSCs = ({
         enteredYear,
         enteredComments,
         servicesComponentId,
-        newBudgetLines,
         groupedBudgetLinesByServicesComponent,
         res,
         feesForCards,
@@ -91,7 +90,7 @@ export const StepCreateBLIsAndSCs = ({
         handleGoBack
     } = useCreateBLIsAndSCs(
         isReviewMode,
-        existingBudgetLines,
+        budgetLines,
         goToNext,
         goBack,
         continueOverRide,
@@ -158,7 +157,7 @@ export const StepCreateBLIsAndSCs = ({
                 </>
             )}
             <div className="display-flex flex-justify margin-y-2">
-                <BLIsByFYSummaryCard budgetLineItems={newBudgetLines} />
+                <BLIsByFYSummaryCard budgetLineItems={budgetLines} />
                 <AgreementTotalCard
                     total={totalsForCards}
                     subtotal={subTotalForCards}
@@ -167,10 +166,10 @@ export const StepCreateBLIsAndSCs = ({
                     procurementShopFee={selectedProcurementShop?.fee}
                 />
             </div>
-            <DebugCode
-                title="newBudgetLines"
-                data={newBudgetLines}
-            />
+            {/* <DebugCode
+                title="budgetLines"
+                data={budgetLines}
+            /> */}
             <CreateBudgetLinesForm
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
@@ -270,7 +269,7 @@ StepCreateBLIsAndSCs.propTypes = {
     selectedResearchProject: PropTypes.object,
     selectedAgreement: PropTypes.object,
     selectedProcurementShop: PropTypes.object,
-    existingBudgetLines: PropTypes.arrayOf(PropTypes.object),
+    budgetLines: PropTypes.array,
     continueBtnText: PropTypes.string.isRequired,
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func,
