@@ -66,7 +66,7 @@ const ChangeIcons = ({
                                 title="Edit"
                                 aria-label="Edit"
                                 data-cy="edit-row"
-                                onClick={() => handleSetItemForEditing(item)}
+                                onClick={() => handleSetItemForEditing(item?.id)}
                             >
                                 <FontAwesomeIcon
                                     title="Edit"

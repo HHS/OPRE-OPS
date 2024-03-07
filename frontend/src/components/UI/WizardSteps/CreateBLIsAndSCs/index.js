@@ -1,4 +1,4 @@
-import StepCreateBLIsAndSCs from "./StepCreateBLIsAndSCs";
+import CreateBLIsAndSCs from "./CreateBLIsAndSCs";
 import { CreateBudgetLinesProvider } from "./context";
 
 /**
@@ -37,7 +37,7 @@ const CreateBudgetLines = ({
 }) => {
     return (
         <CreateBudgetLinesProvider>
-            <StepCreateBLIsAndSCs
+            <CreateBLIsAndSCs
                 goToNext={goToNext}
                 goBack={goBack}
                 wizardSteps={wizardSteps}

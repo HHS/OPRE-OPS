@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
-import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/StepCreateBLIsAndSCs/context";
+import { CreateBudgetLinesProvider } from "../../../components/UI/WizardSteps/CreateBLIsAndSCs/context";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
-import StepCreateBLIsAndSCs from "../../../components/UI/WizardSteps/StepCreateBLIsAndSCs/StepCreateBLIsAndSCs";
+import CreateBLIsAndSCs from "../../../components/UI/WizardSteps/CreateBLIsAndSCs/CreateBLIsAndSCs";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useState } from "react";
@@ -100,7 +100,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 isEditable={canUserEditAgreement}
             />
             {isEditMode ? (
-                <StepCreateBLIsAndSCs
+                <CreateBLIsAndSCs
                     selectedAgreement={agreement}
                     existingBudgetLines={agreement?.budget_line_items}
                     isEditMode={isEditMode}

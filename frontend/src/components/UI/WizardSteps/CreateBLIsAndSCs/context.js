@@ -67,36 +67,37 @@ function budgetLinesReducer(state, action) {
                 new_budget_lines: state.new_budget_lines.filter((bl) => bl.id !== action.id)
             };
         }
-        case "SET_BUDGET_LINE_FOR_EDITING": {
-            const index = state.new_budget_lines.findIndex((budget_line) => budget_line.id === action.payload.id);
+        // case "SET_BUDGET_LINE_FOR_EDITING": {
+        //     //
+        //     const index = new_budget_lines.findIndex((budget_line) => budget_line.id === action.id);
 
-            if (index !== -1) {
-                const { services_component_id, comments, can, amount, date_needed } = state.new_budget_lines[index];
-                let entered_year = "";
-                let entered_month = "";
-                let entered_day = "";
+        //     if (index !== -1) {
+        //         const { services_component_id, comments, can, amount, date_needed } = state.new_budget_lines[index];
+        //         let entered_year = "";
+        //         let entered_month = "";
+        //         let entered_day = "";
 
-                if (date_needed) {
-                    [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
-                }
+        //         if (date_needed) {
+        //             [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
+        //         }
 
-                return {
-                    ...state,
-                    is_editing_budget_line: true,
-                    services_component_id,
-                    entered_comments: comments,
-                    selected_can: {
-                        ...can
-                    },
-                    entered_amount: amount,
-                    entered_month,
-                    entered_day,
-                    entered_year,
-                    budget_line_being_edited: index
-                };
-            }
-            return state;
-        }
+        //         return {
+        //             ...state,
+        //             is_editing_budget_line: true,
+        //             services_component_id,
+        //             entered_comments: comments,
+        //             selected_can: {
+        //                 ...can
+        //             },
+        //             entered_amount: amount,
+        //             entered_month,
+        //             entered_day,
+        //             entered_year,
+        //             budget_line_being_edited: index
+        //         };
+        //     }
+        //     return state;
+        // }
         case "EDIT_BUDGET_LINE": {
             const updatedBudgetLines = state.new_budget_lines.map((budgetLine) => {
                 if (budgetLine.id === action.payload.id) {

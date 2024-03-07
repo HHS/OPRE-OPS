@@ -9,6 +9,7 @@ import suite from "./suite";
 import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
 import { useDeleteAgreementMutation } from "../../../../api/opsAPI";
+import { set } from "lodash";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -37,48 +38,26 @@ const useCreateBLIsAndSCs = (
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [servicesComponentId, setServicesComponentId] = React.useState(-1);
+    const [selectedCan, setSelectedCan] = React.useState(null);
+    const [enteredAmount, setEnteredAmount] = React.useState(null);
+    const [enteredMonth, setEnteredMonth] = React.useState(null);
+    const [enteredDay, setEnteredDay] = React.useState(null);
+    const [enteredYear, setEnteredYear] = React.useState(null);
+    const [enteredComments, setEnteredComments] = React.useState(null);
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
     const searchParams = new URLSearchParams(location.search);
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
     );
     const [deleteAgreement] = useDeleteAgreementMutation();
-
-    const {
-        selected_can: selectedCan,
-        services_component_id: servicesComponentId,
-        entered_amount: enteredAmount,
-        entered_month: enteredMonth,
-        entered_day: enteredDay,
-        entered_year: enteredYear,
-        entered_comments: enteredComments,
-        is_editing_budget_line: isEditing,
-        budget_line_being_edited: budgetLineBeingEdited
-    } = useBudgetLines() || {
-        selected_can: null,
-        services_component_id: -1,
-        entered_amount: null,
-        entered_month: null,
-        entered_day: null,
-        entered_year: null,
-        entered_comments: null,
-        is_editing_budget_line: null,
-        budget_line_being_edited: null,
-        new_budget_lines: []
-    };
     const dispatch = useBudgetLinesDispatch();
     const navigate = useNavigate();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { setAlert } = useAlert();
-    // setters
-    const setServicesComponentId = useSetState("services_component_id");
-    const setSelectedCan = useSetState("selected_can");
-    const setEnteredAmount = useSetState("entered_amount");
-    const setEnteredMonth = useSetState("entered_month");
-    const setEnteredDay = useSetState("entered_day");
-    const setEnteredYear = useSetState("entered_year");
-    const setEnteredComments = useSetState("entered_comments");
     const feesForCards = getProcurementShopSubTotal(selectedAgreement, budgetLines);
     const subTotalForCards = budgetLinesTotal(budgetLines);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLines);
@@ -95,24 +74,36 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
-    const handleSubmitForm = (e) => {
+    const handleAddBLI = (e) => {
         e.preventDefault();
-        dispatch({
-            type: "ADD_BUDGET_LINE",
-            payload: {
-                id: crypto.getRandomValues(new Uint32Array(1))[0],
-                services_component_id: servicesComponentId,
-                comments: enteredComments || "",
-                can_id: selectedCan?.id || null,
-                can: selectedCan || null,
-                agreement_id: selectedAgreement?.id || null,
-                amount: enteredAmount || 0,
-                status: "DRAFT",
-                date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
-                proc_shop_fee_percentage: selectedProcurementShop?.fee || null
-            }
-        });
-        dispatch({ type: "RESET_FORM" });
+        const payload = {
+            services_component_id: servicesComponentId,
+            comments: enteredComments || "",
+            can_id: selectedCan?.id || null,
+            can: selectedCan || null,
+            agreement_id: selectedAgreement?.id || null,
+            amount: enteredAmount || 0,
+            status: "DRAFT",
+            date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+            proc_shop_fee_percentage: selectedProcurementShop?.fee || null
+        };
+        const { data } = cleanBudgetLineItemForApi(payload);
+        addBudgetLineItem(data)
+            .unwrap()
+            .then((fulfilled) => {
+                console.log("Created New BLIs:", fulfilled);
+            })
+            .catch((rejected) => {
+                console.error("Error Creating Budget Lines");
+                console.error({ rejected });
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred. Please try again.",
+                    navigateUrl: "/error"
+                });
+            });
+        resetForm();
         setAlert({
             type: "success",
             heading: "Budget Line Added",
@@ -120,25 +111,38 @@ const useCreateBLIsAndSCs = (
         });
     };
 
-    const handleEditForm = (e) => {
+    const handleEditBLI = (e) => {
         e.preventDefault();
-        dispatch({
-            type: "EDIT_BUDGET_LINE",
-            payload: {
-                id: budgetLines[budgetLineBeingEdited].id,
-                services_component_id: servicesComponentId,
-                comments: enteredComments,
-                can_id: selectedCan?.id,
-                can: selectedCan,
-                agreement_id: selectedAgreement?.id,
-                amount: enteredAmount,
-                date_needed:
-                    enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-                proc_shop_fee_percentage: selectedProcurementShop?.fee
-            }
-        });
 
-        dispatch({ type: "RESET_FORM" });
+        const payload = {
+            id: budgetLines[budgetLineBeingEdited].id,
+            services_component_id: servicesComponentId,
+            comments: enteredComments,
+            can_id: selectedCan?.id,
+            can: selectedCan,
+            agreement_id: selectedAgreement?.id,
+            amount: enteredAmount,
+            date_needed:
+                enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
+            proc_shop_fee_percentage: selectedProcurementShop?.fee
+        };
+        const { id, data } = cleanBudgetLineItemForApi(payload);
+        updateBudgetLineItem({ id, data })
+            .unwrap()
+            .then((fulfilled) => {
+                console.log("Updated BLI:", fulfilled);
+            })
+            .catch((rejected) => {
+                console.error("Error Updating Budget Line");
+                console.error({ rejected });
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred. Please try again.",
+                    navigateUrl: "/error"
+                });
+            });
+        resetForm();
         if (budgetLineIdFromUrl) {
             resetQueryParams();
         }
@@ -264,10 +268,28 @@ const useCreateBLIsAndSCs = (
         }
     };
 
-    const handleResetForm = () => dispatch({ type: "RESET_FORM" });
+    const handleSetBudgetLineForEditingById = (budgetLineId) => {
+        const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
+        if (index !== -1) {
+            const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];
+            let entered_year = "";
+            let entered_month = "";
+            let entered_day = "";
 
-    const handleSetBudgetLineForEditing = (budgetLine) => {
-        dispatch({ type: "SET_BUDGET_LINE_FOR_EDITING", payload: budgetLine });
+            if (date_needed) {
+                [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
+            }
+
+            setServicesComponentId(services_component_id);
+            setSelectedCan(can);
+            setEnteredAmount(amount);
+            setEnteredMonth(entered_month);
+            setEnteredDay(entered_day);
+            setEnteredYear(entered_year);
+            setEnteredComments(comments);
+            setIsEditing(true);
+            setBudgetLineBeingEdited(index);
+        }
     };
 
     const handleDuplicateBudgetLine = (budgetLine) => {
@@ -324,22 +346,23 @@ const useCreateBLIsAndSCs = (
         window.history.replaceState({}, "", url);
     };
 
-    // combine arrays of new budget lines and existing budget lines added
-    // only run once on page load if there are existing budget lines
-    // React.useEffect(() => {
-    //     if (existingBudgetLines.length > 0) {
-    //         dispatch({ type: "ADD_EXISTING_BUDGET_LINES", payload: existingBudgetLines });
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [existingBudgetLines]);
+    const resetForm = () => {
+        setIsEditing(false);
+        setServicesComponentId(null);
+        setSelectedCan(null);
+        setEnteredAmount(null);
+        setEnteredMonth(null);
+        setEnteredDay(null);
+        setEnteredYear(null);
+        setEnteredComments(null);
+    };
 
-    // check budget line id from context and if found, set edit mode to true and set budget line for editing
     React.useEffect(() => {
         if (budgetLineIdFromUrl) {
             setIsEditMode(true);
             const budgetLineFromUrl = budgetLines.find((budgetLine) => budgetLine.id === +budgetLineIdFromUrl);
             if (budgetLineFromUrl) {
-                handleSetBudgetLineForEditing(budgetLineFromUrl);
+                handleSetBudgetLineForEditingById(budgetLineFromUrl);
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -363,11 +386,11 @@ const useCreateBLIsAndSCs = (
         });
 
     return {
-        handleSubmitForm,
-        handleEditForm,
+        handleAddBLI,
+        handleEditBLI,
         handleDeleteBudgetLine,
-        handleResetForm,
-        handleSetBudgetLineForEditing,
+        handleResetForm: resetForm,
+        handleSetBudgetLineForEditingById,
         handleDuplicateBudgetLine,
         saveBudgetLineItems,
         isEditing,

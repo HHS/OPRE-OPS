@@ -3,11 +3,11 @@ import PropTypes from "prop-types";
 import StepIndicator from "../../StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Form/ProjectAgreementSummaryCard";
 import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
-import CreateBudgetLinesForm from "../../Form/CreateBudgetLinesForm";
+import CreateBudgetLinesForm from "../../Form/BudgetLinesForm";
 import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import ServicesComponents from "../../../../pages/servicesComponents";
-import useCreateBLIsAndSCs from "./useCreateBLIsAndSCs.hooks";
+import useCreateBLIsAndSCs from "./createBLIsAndSCs.hooks";
 import { convertCodeForDisplay } from "../../../../helpers/utils";
 import ServicesComponentAccordion from "../../../../pages/servicesComponents/ServicesComponentAccordion";
 import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
@@ -34,9 +34,9 @@ import DebugCode from "../../../../pages/servicesComponents/DebugCode";
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines" | "none"} props.workflow - The workflow type.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
-export const StepCreateBLIsAndSCs = ({
+export const CreateBLIsAndSCs = ({
     goToNext,
     goBack,
     wizardSteps,
@@ -57,10 +57,10 @@ export const StepCreateBLIsAndSCs = ({
         budgetLinePageErrorsExist,
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
-        handleEditForm,
+        handleEditBLI,
         handleResetForm,
-        handleSetBudgetLineForEditing,
-        handleSubmitForm,
+        handleSetBudgetLineForEditingById,
+        handleAddBLI,
         isEditing,
         modalProps,
         pageErrors,
@@ -166,10 +166,18 @@ export const StepCreateBLIsAndSCs = ({
                     procurementShopFee={selectedProcurementShop?.fee}
                 />
             </div>
-            {/* <DebugCode
-                title="budgetLines"
-                data={budgetLines}
-            /> */}
+            <DebugCode
+                title="formData"
+                data={{
+                    enteredAmount,
+                    enteredMonth,
+                    enteredDay,
+                    enteredYear,
+                    enteredComments,
+                    servicesComponentId,
+                    selectedCan
+                }}
+            />
             <CreateBudgetLinesForm
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
@@ -186,9 +194,9 @@ export const StepCreateBLIsAndSCs = ({
                 setEnteredDay={setEnteredDay}
                 setEnteredYear={setEnteredYear}
                 setEnteredComments={setEnteredComments}
-                handleEditForm={handleEditForm}
+                handleEditBLI={handleEditBLI}
                 handleResetForm={handleResetForm}
-                handleSubmitForm={handleSubmitForm}
+                handleAddBLI={handleAddBLI}
                 isReviewMode={isReviewMode}
                 agreementId={selectedAgreement.id}
             />
@@ -226,7 +234,7 @@ export const StepCreateBLIsAndSCs = ({
                     >
                         <BudgetLinesTable
                             budgetLines={group.budgetLines}
-                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                            handleSetBudgetLineForEditing={handleSetBudgetLineForEditingById}
                             handleDeleteBudgetLine={handleDeleteBudgetLine}
                             handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                             canUserEditBudgetLines={canUserEditBudgetLines}
@@ -261,7 +269,7 @@ export const StepCreateBLIsAndSCs = ({
     );
 };
 
-StepCreateBLIsAndSCs.propTypes = {
+CreateBLIsAndSCs.propTypes = {
     goToNext: PropTypes.func,
     goBack: PropTypes.func,
     wizardSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -279,4 +287,4 @@ StepCreateBLIsAndSCs.propTypes = {
     workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired
 };
 
-export default StepCreateBLIsAndSCs;
+export default CreateBLIsAndSCs;
