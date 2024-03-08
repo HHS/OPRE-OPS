@@ -66,4 +66,5 @@ resource "azurerm_key_vault_secret" "role_password" {
   name         = "${var.roleName}-role-password"
   value        = local.password
   key_vault_id = var.keyVaultId
+  content_type = "password"
 }
