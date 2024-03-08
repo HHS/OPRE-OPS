@@ -136,18 +136,6 @@ class RequestBody:
                 raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
 
     @validates_schema(skip_on_field_errors=False)
-    def validate_description(self, data: dict, **kwargs):
-        if is_changing_status(data):
-            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
-            bli_description = bli.line_description if bli else None
-            data_description = data.get("line_description")
-            msg = "BLI must valid a valid Description when status is not DRAFT"
-            if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_description, data_description):
-                raise ValidationError(msg)
-            if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_description, data_description):
-                raise ValidationError(msg)
-
-    @validates_schema(skip_on_field_errors=False)
     def validate_need_by_date(self, data: dict, **kwargs):
         if is_changing_status(data):
             bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))

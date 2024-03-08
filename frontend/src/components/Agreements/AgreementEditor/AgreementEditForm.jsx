@@ -31,6 +31,7 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
+ * @component
  * @param {Object} props - The component props.
  * @param {Function} [props.setHasAgreementChanged] - A function to set the agreement changed state. - optional
  * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
@@ -38,7 +39,7 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
- * @returns {React.JSX.Element} - The component JSX.
+ * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementEditForm = ({
     setHasAgreementChanged = () => {},
@@ -48,6 +49,7 @@ export const AgreementEditForm = ({
     isEditMode,
     setIsEditMode
 }) => {
+    // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -204,11 +206,13 @@ export const AgreementEditForm = ({
                 })
                 .then((fulfilled) => {
                     console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Draft Saved",
-                        message: `The agreement ${agreement.name} has been successfully created.`
-                    });
+                    if (!isWizardMode) {
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Draft Saved",
+                            message: `The agreement ${agreement.name} has been successfully created.`
+                        });
+                    }
                 })
                 .catch((rejected) => {
                     console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
@@ -279,44 +283,37 @@ export const AgreementEditForm = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Select the Agreement Type</h2>
-            <p className="margin-top-1">Select the type of agreement you&apos;d like to create.</p>
+            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Agreement Type</h2>
+            <p className="margin-top-1">Select the agreement type to get started.</p>
             <AgreementTypeSelect
-                name="agreement_type"
-                label="Agreement Type"
                 messages={res.getErrors("agreement_type")}
                 className={cn("agreement_type")}
                 selectedAgreementType={agreementType || ""}
+                isRequired={true}
                 onChange={(name, value) => {
                     setAgreementType(value);
                     runValidate(name, value);
                 }}
             />
             <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <ContractTypeSelect
-                value={contractType}
-                onChange={(name, value) => {
-                    setContractType(value);
-                }}
-            />
-            <ServiceReqTypeSelect
-                className="margin-top-3"
-                value={serviceReqType}
-                onChange={(name, value) => {
-                    setServiceReqType(value);
-                }}
-            />
+            <p className="margin-top-1">
+                Tell us a little more about this agreement. Make sure you complete the required information in order to
+                proceed. For everything else you can skip the parts you do not know or come back to edit the information
+                later.
+            </p>
             <Input
                 name="name"
                 label="Agreement Title"
                 messages={res.getErrors("name")}
                 className={cn("name")}
+                isRequired={true}
                 value={agreementTitle}
                 onChange={(name, value) => {
                     setAgreementTitle(value);
                     runValidate(name, value);
                 }}
             />
+            {/* TODO: Add Agreement Nickname/Acronym */}
             <TextArea
                 name="description"
                 label="Description"
@@ -331,7 +328,23 @@ export const AgreementEditForm = ({
                     }
                 }}
             />
-
+            <ContractTypeSelect
+                className="margin-top-3"
+                value={contractType}
+                onChange={(name, value) => {
+                    setContractType(value);
+                }}
+            />
+            <ServiceReqTypeSelect
+                messages={res.getErrors("serviceReqType")}
+                className={`margin-top-3 ${cn("serviceReqType")}`}
+                isRequired={true}
+                value={serviceReqType}
+                onChange={(name, value) => {
+                    setServiceReqType(value);
+                    runValidate(name, value);
+                }}
+            />
             <ProductServiceCodeSelect
                 name="product_service_code_id"
                 label="Product Service Code"

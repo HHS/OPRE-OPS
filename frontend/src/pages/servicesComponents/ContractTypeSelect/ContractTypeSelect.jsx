@@ -1,5 +1,18 @@
+import PropTypes from "prop-types";
 import Select from "../Select";
+import { CONTRACT_TYPE_OPTIONS } from "../servicesComponents.constants";
 
+/**
+ * ContractTypeSelect component.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {string} props.value - The current value of the select.
+ * @param {Function} props.onChange - Function to call when the select value changes.
+ * @param {Object} props.rest - Additional props to pass to the Select component.
+ *
+ * @returns {JSX.Element} The rendered component.
+ */
 function ContractTypeSelect({ value, onChange, ...rest }) {
     return (
         <Select
@@ -14,27 +27,10 @@ function ContractTypeSelect({ value, onChange, ...rest }) {
     );
 }
 
-const CONTRACT_TYPE_OPTIONS = [
-    {
-        label: "Firm Fixed Price (FFP)",
-        value: "FIRM_FIXED_PRICE"
-    },
-    {
-        label: "Time & Materials (T&M)",
-        value: "TIME_AND_MATERIALS"
-    },
-    {
-        label: "Labor Hour (LH)",
-        value: "LABOR_HOUR"
-    },
-    {
-        label: "Cost Plus Fixed Fee (CPFF)",
-        value: "COST_PLUS_FIXED_FEE"
-    },
-    {
-        label: "Cost Plus Award Fee (CPAF)",
-        value: "COST_PLUS_AWARD_FEE"
-    }
-];
+ContractTypeSelect.propTypes = {
+    value: PropTypes.string,
+    onChange: PropTypes.func,
+    rest: PropTypes.object
+};
 
 export default ContractTypeSelect;

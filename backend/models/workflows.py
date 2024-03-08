@@ -1,10 +1,9 @@
 """Workflow models."""
-
 from enum import Enum, auto
 
 import sqlalchemy as sa
 from models.base import BaseModel
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import object_session, relationship
 from typing_extensions import Any, override
 
@@ -41,9 +40,14 @@ class WorkflowTemplate(BaseModel):
     """Workflow structure without being tied to any specific real-world entity"""
 
     __tablename__ = "workflow_template"
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     name = sa.Column(sa.String, nullable=False)
-    steps = relationship("WorkflowStepTemplate", backref="workflow_template")
+    steps = relationship(
+        "WorkflowStepTemplate",
+        backref="workflow_template",
+        order_by="WorkflowStepTemplate.index",
+        collection_class=ordering_list("index"),
+    )
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -60,13 +64,18 @@ class WorkflowInstance(BaseModel):
 
     __tablename__ = "workflow_instance"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     associated_id = sa.Column(sa.Integer, nullable=False)
     associated_type = sa.Column(
         sa.Enum(WorkflowTriggerType), nullable=False
     )  # could use Enum based on the entities
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
-    steps = relationship("WorkflowStepInstance", backref="workflow_instance")
+    steps = relationship(
+        "WorkflowStepInstance",
+        backref="workflow_instance",
+        order_by="WorkflowStepInstance.index",
+        collection_class=ordering_list("index"),
+    )
     workflow_action = sa.Column(sa.Enum(WorkflowAction), nullable=False)
     current_workflow_step_instance_id = sa.Column(sa.Integer, nullable=True)
 
@@ -118,7 +127,7 @@ class WorkflowStepTemplate(BaseModel):
 
     __tablename__ = "workflow_step_template"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     name = sa.Column(sa.String, nullable=False)
     workflow_template_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_template.id"))
     workflow_type = sa.Column(sa.Enum(WorkflowStepType), nullable=False)
@@ -143,7 +152,7 @@ class WorkflowStepInstance(BaseModel):
 
     __tablename__ = "workflow_step_instance"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     workflow_instance_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_instance.id"))
     workflow_step_template_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_step_template.id")
@@ -151,6 +160,7 @@ class WorkflowStepInstance(BaseModel):
     workflow_step_template = relationship(
         "WorkflowStepTemplate", backref="workflow_step_instance"
     )
+    index = sa.Column(sa.Integer)
     status = sa.Column(sa.Enum(WorkflowStepStatus), nullable=False)
     notes = sa.Column(sa.String, nullable=True)
     time_started = sa.Column(sa.DateTime, nullable=True)
@@ -257,7 +267,7 @@ class StepApprovers(BaseModel):
     """Step Approvers model for WorkflowStepTemplates"""
 
     __tablename__ = "step_approvers"
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     workflow_step_template_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_step_template.id")
     )
@@ -271,7 +281,7 @@ class Package(BaseModel):
 
     __tablename__ = "package"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     submitter_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"))
     workflow_instance_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True
@@ -286,7 +296,7 @@ class Package(BaseModel):
 
 class PackageSnapshot(BaseModel):
     __tablename__ = "package_snapshot"
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     # make package_id a read-only field
     package_id = sa.Column(sa.Integer, sa.ForeignKey("package.id"), nullable=True)
     version = sa.Column(sa.Integer, nullable=True)
@@ -304,7 +314,7 @@ class PackageSnapshot(BaseModel):
 class ProcurementStep(BaseModel):
     __tablename__ = "procurement_step"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     agreement_id = sa.Column(sa.Integer, sa.ForeignKey("agreement.id"))
     # TODO: Q: should this be named workflow_step_instance_id (or alternatively leave off _instance in all FKs)
     workflow_step_id = sa.Column(sa.Integer, sa.ForeignKey("workflow_step_instance.id"))

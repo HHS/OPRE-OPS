@@ -52,6 +52,5 @@ class UserResponse:
     full_name: str
     division: int
     roles: list[RoleResponse] = field(default_factory=lambda: [])
-    date_joined: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})

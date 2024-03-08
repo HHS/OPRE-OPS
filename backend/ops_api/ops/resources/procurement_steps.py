@@ -1,4 +1,3 @@
-from datetime import date
 from functools import partial
 
 import marshmallow_dataclass as mmdc
@@ -18,7 +17,6 @@ from models.workflows import (
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.procurement_steps import (
     AcquisitionPlanningRequest,
-    AcquisitionPlanningRequestPost,
     AcquisitionPlanningResponse,
     AwardRequest,
     AwardResponse,
@@ -34,7 +32,11 @@ from ops_api.ops.schemas.procurement_steps import (
     SolicitationRequest,
     SolicitationResponse,
 )
-from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_model_instance
+from ops_api.ops.utils.api_helpers import (
+    convert_date_strings_to_dates,
+    get_change_data,
+    update_and_commit_model_instance,
+)
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -157,10 +159,7 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
             schema.context["id"] = id
             schema.context["method"] = method
             data = get_change_data(request.json, old_instance, schema, ["id", "type", "agreement_id"])
-            for k in ["actual_date", "target_date"]:
-                if k in data and data[k] is not None:
-                    data[k] = date.fromisoformat(data[k])
-
+            data = convert_date_strings_to_dates(data)
             updated_instance = update_and_commit_model_instance(old_instance, data)
             resp_dict = self._response_schema.dump(updated_instance)
             meta.metadata.update({self.model.__name__: resp_dict})
@@ -196,20 +195,7 @@ class ProcurementStepItemAPI(BaseProcurementStepItemAPI):
         self._response_schema = None  # just using to_dict
 
 
-# Acquisition Planning Endpoints
-
-
-class AcquisitionPlanningListAPI(BaseProcurementStepListAPI):
-    def __init__(self, model: BaseModel = AcquisitionPlanning):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(AcquisitionPlanningResponse)()
-        self._post_schema = mmdc.class_schema(AcquisitionPlanningRequestPost)(exclude=["type"])
-
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
-    def get(self) -> Response:
-        return super().get()
+# Acquisition Planning Endpoint
 
 
 class AcquisitionPlanningItemAPI(EditableProcurementStepItemAPI):
@@ -219,13 +205,7 @@ class AcquisitionPlanningItemAPI(EditableProcurementStepItemAPI):
         self._patch_schema = mmdc.class_schema(AcquisitionPlanningRequest)(dump_only=["type"])
 
 
-# Pre-Solicitation Endpoints
-
-
-class PreSolicitationListAPI(BaseProcurementStepListAPI):
-    def __init__(self, model: BaseModel = PreSolicitation):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(PreSolicitationResponse)()
+# Pre-Solicitation Endpoint
 
 
 class PreSolicitationItemAPI(EditableProcurementStepItemAPI):
@@ -235,13 +215,7 @@ class PreSolicitationItemAPI(EditableProcurementStepItemAPI):
         self._patch_schema = mmdc.class_schema(PreSolicitationRequest)(dump_only=["type"])
 
 
-# Solicitation Endpoints
-
-
-class SolicitationListAPI(BaseProcurementStepListAPI):
-    def __init__(self, model: BaseModel = Solicitation):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(SolicitationResponse)()
+# Solicitation Endpoint
 
 
 class SolicitationItemAPI(EditableProcurementStepItemAPI):
@@ -251,13 +225,7 @@ class SolicitationItemAPI(EditableProcurementStepItemAPI):
         self._patch_schema = mmdc.class_schema(SolicitationRequest)(dump_only=["type"])
 
 
-# Evaluation Endpoints
-
-
-class EvaluationListAPI(BaseProcurementStepListAPI):
-    def __init__(self, model: BaseModel = Evaluation):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(EvaluationResponse)()
+# Evaluation Endpoint
 
 
 class EvaluationItemAPI(EditableProcurementStepItemAPI):
@@ -267,13 +235,7 @@ class EvaluationItemAPI(EditableProcurementStepItemAPI):
         self._patch_schema = mmdc.class_schema(EvaluationRequest)(dump_only=["type"])
 
 
-# Pre-Award Endpoints
-
-
-class PreAwardListAPI(BaseProcurementStepListAPI):
-    def __init__(self, model: BaseModel = PreAward):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(PreAwardResponse)()
+# Pre-Award Endpoint
 
 
 class PreAwardItemAPI(EditableProcurementStepItemAPI):
@@ -283,13 +245,7 @@ class PreAwardItemAPI(EditableProcurementStepItemAPI):
         self._patch_schema = mmdc.class_schema(PreAwardRequest)(dump_only=["type"])
 
 
-# Award Endpoints
-
-
-class AwardListAPI(BaseProcurementStepListAPI):
-    def __init__(self, model: BaseModel = Award):
-        super().__init__(model)
-        self._response_schema = mmdc.class_schema(PreAwardResponse)()
+# Award Endpoint
 
 
 class AwardItemAPI(EditableProcurementStepItemAPI):

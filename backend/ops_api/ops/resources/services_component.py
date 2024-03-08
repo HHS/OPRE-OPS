@@ -1,4 +1,3 @@
-from datetime import date
 from functools import partial
 
 import marshmallow_dataclass as mmdc
@@ -13,7 +12,11 @@ from ops_api.ops.schemas.services_component import (
     QueryParameters,
     ServicesComponentItemResponse,
 )
-from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_model_instance
+from ops_api.ops.utils.api_helpers import (
+    convert_date_strings_to_dates,
+    get_change_data,
+    update_and_commit_model_instance,
+)
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -95,9 +98,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             schema.context["method"] = method
 
             data = get_change_data(request.json, old_services_component, schema, ["id", "contract_agreement_id"])
-            for k in ["period_start", "period_end"]:
-                if k in data:
-                    data[k] = date.fromisoformat(data[k])
+            data = convert_date_strings_to_dates(data)
             services_component = update_and_commit_model_instance(old_services_component, data)
 
             sc_dict = self._response_schema.dump(services_component)
@@ -192,8 +193,7 @@ class ServicesComponentListAPI(BaseListAPI):
             self._post_schema.context["method"] = "POST"
 
             data = self._post_schema.dump(self._post_schema.load(request.json))
-            data["period_start"] = date.fromisoformat(data["period_start"]) if data.get("period_start") else None
-            data["period_end"] = date.fromisoformat(data["period_end"]) if data.get("period_end") else None
+            data = convert_date_strings_to_dates(data)
 
             new_sc = ServicesComponent(**data)
 

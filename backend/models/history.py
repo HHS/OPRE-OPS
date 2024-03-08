@@ -1,10 +1,8 @@
 from enum import Enum
-from typing import Any
 
 import sqlalchemy as sa
 from sqlalchemy import Index
 from sqlalchemy.dialects.postgresql import JSONB
-from typing_extensions import override
 
 from .base import BaseModel
 
@@ -18,7 +16,7 @@ class OpsDBHistoryType(Enum):
 
 class OpsDBHistory(BaseModel):
     __tablename__ = "ops_db_history"
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     event_type = sa.Column(sa.Enum(OpsDBHistoryType))
     event_details = sa.Column(JSONB)
     class_name = sa.Column(sa.String)

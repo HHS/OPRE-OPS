@@ -15,7 +15,6 @@ describe("postAgreement function", () => {
             {
                 created_by: null,
                 created_on: "2023-04-25T17:22:11.766571",
-                date_joined: "2023-04-25T17:22:11.766571",
                 division: 1,
                 email: "Ivelisse.Martinez-Beck@example.com",
                 first_name: "Ivelisse",
@@ -29,7 +28,6 @@ describe("postAgreement function", () => {
             {
                 created_by: null,
                 created_on: "2023-04-25T17:22:11.766571",
-                date_joined: "2023-04-25T17:22:11.766571",
                 division: 3,
                 email: "Tia.Brown@example.com",
                 first_name: "Tia",
@@ -86,7 +84,6 @@ describe("formatTeamMember function", () => {
         const input = {
             created_by: null,
             created_on: "2023-04-24T18:14:38.156209",
-            date_joined: "2023-04-24T18:14:38.156209",
             division: 1,
             email: "tm_a@test.com",
             first_name: "Team",
@@ -94,7 +91,6 @@ describe("formatTeamMember function", () => {
             id: 123,
             last_name: "Member A",
             oidc_id: "00000000-0000-1111-a111-000000000002",
-            updated: null,
             updated_on: "2023-04-24T18:14:38.156209"
         };
 

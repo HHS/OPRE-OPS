@@ -95,25 +95,29 @@ def test_award(loaded_db):
     loaded_db.commit()
 
 
-# STEP 1 : AcquisitionPlanning
-
-
-# def create_test_acquisition_planning(loaded_db, agreement_id=TEST_AGREEMENT_ID):
-#     acquisition_planning = AcquisitionPlanning()
-#     acquisition_planning.agreement_id = agreement_id
-#     acquisition_planning.created_by = TEST_CREATED_BY
-#     loaded_db.add(acquisition_planning)
-#     loaded_db.commit()
-#     assert acquisition_planning.id is not None
-#     return acquisition_planning
-
-
+#  Procurement Step List of all types with query by agreement_id
 @pytest.mark.usefixtures("app_ctx")
-def test_acquisition_planning_get_list(auth_client, loaded_db, test_acquisition_planning):
-    response = auth_client.get(url_for("api.procurement-acquisition-planning-group"))
+def test_procurement_step_get_list(auth_client, loaded_db, test_acquisition_planning, test_pre_solicitation):
+    # create another step with a different agreement ID
+    solicitation = Solicitation()
+    solicitation.agreement_id = TEST_AGREEMENT_ID2
+    solicitation.created_by = TEST_CREATED_BY
+    loaded_db.add(solicitation)
+    loaded_db.commit()
+
+    response = auth_client.get(url_for("api.procurement-step-group"))
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["type"] == "procurement_acquisition_planning"
+    assert len(response.json) == 3
+
+    response = auth_client.get(url_for("api.procurement-step-group"), query_string={"agreement_id": "1"})
+    assert response.status_code == 200
+    assert len(response.json) == 2
+
+    loaded_db.delete(solicitation)
+    loaded_db.commit()
+
+
+# STEP 1 : AcquisitionPlanning
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -170,14 +174,6 @@ def test_acquisition_planning_patch_by_id(auth_client, loaded_db, test_acquisiti
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_pre_solicitation_get_list(auth_client, loaded_db, test_pre_solicitation):
-    response = auth_client.get(url_for("api.procurement-pre-solicitation-group"))
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["type"] == "procurement_pre_solicitation"
-
-
-@pytest.mark.usefixtures("app_ctx")
 def test_pre_solicitation_get_by_id(auth_client, loaded_db, test_pre_solicitation):
     response = auth_client.get(url_for("api.procurement-pre-solicitation-item", id=test_pre_solicitation.id))
     assert response.status_code == 200
@@ -228,14 +224,6 @@ def test_pre_solicitation_patch_by_id(auth_client, loaded_db, test_pre_solicitat
 
 
 # STEP 3: Solicitation
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_solicitation_get_list(auth_client, loaded_db, test_solicitation):
-    response = auth_client.get(url_for("api.procurement-solicitation-group"))
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["type"] == "procurement_solicitation"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -290,14 +278,6 @@ def test_solicitation_patch_by_id(auth_client, loaded_db, test_solicitation):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_evaluation_get_list(auth_client, loaded_db, test_evaluation):
-    response = auth_client.get(url_for("api.procurement-evaluation-group"))
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["type"] == "procurement_evaluation"
-
-
-@pytest.mark.usefixtures("app_ctx")
 def test_evaluation_get_by_id(auth_client, loaded_db, test_evaluation):
     response = auth_client.get(url_for("api.procurement-evaluation-item", id=test_evaluation.id))
     assert response.status_code == 200
@@ -349,14 +329,6 @@ def test_evaluation_patch_by_id(auth_client, loaded_db, test_evaluation):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_pre_award_get_list(auth_client, loaded_db, test_pre_award):
-    response = auth_client.get(url_for("api.procurement-pre-award-group"))
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["type"] == "procurement_preaward"
-
-
-@pytest.mark.usefixtures("app_ctx")
 def test_pre_award_get_by_id(auth_client, loaded_db, test_pre_award):
     response = auth_client.get(url_for("api.procurement-pre-award-item", id=test_pre_award.id))
     assert response.status_code == 200
@@ -403,14 +375,6 @@ def test_pre_award_patch_by_id(auth_client, loaded_db, test_pre_award):
 
 
 # STEP 6: Award
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_award_get_list(auth_client, loaded_db, test_award):
-    response = auth_client.get(url_for("api.procurement-award-group"))
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["type"] == "procurement_award"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -470,24 +434,3 @@ def test_award_patch_by_id(auth_client, loaded_db, test_award):
     assert resp_json["vendor"] == "Test Vendor"
     assert resp_json["vendor_type"] == "Test Vendor Type"
     assert resp_json["financial_number"] == "Test Financial Number"
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_procurement_step_get_list(auth_client, loaded_db, test_acquisition_planning, test_pre_solicitation):
-    # create another step with a different agreement ID
-    solicitation = Solicitation()
-    solicitation.agreement_id = TEST_AGREEMENT_ID2
-    solicitation.created_by = TEST_CREATED_BY
-    loaded_db.add(solicitation)
-    loaded_db.commit()
-
-    response = auth_client.get(url_for("api.procurement-step-group"))
-    assert response.status_code == 200
-    assert len(response.json) == 3
-
-    response = auth_client.get(url_for("api.procurement-step-group"), query_string={"agreement_id": "1"})
-    assert response.status_code == 200
-    assert len(response.json) == 2
-
-    loaded_db.delete(solicitation)
-    loaded_db.commit()

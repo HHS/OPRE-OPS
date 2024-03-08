@@ -1,8 +1,10 @@
+import PropTypes from "prop-types";
 import cx from "clsx";
-
+import IsRequiredHelper from "../IsRequiredHelper";
 /**
  * A form input component.
  *
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
@@ -11,9 +13,19 @@ import cx from "clsx";
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.value] - The value of the input field.(optional)
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
+ * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
-const Input = ({ name, label = name, onChange, pending = false, messages = [], value, className }) => {
+const Input = ({
+    name,
+    label = name,
+    onChange,
+    pending = false,
+    messages = [],
+    value,
+    className,
+    isRequired = false
+}) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
@@ -29,7 +41,9 @@ const Input = ({ name, label = name, onChange, pending = false, messages = [], v
                 >
                     {messages[0]}
                 </span>
-            ) : null}
+            ) : (
+                <IsRequiredHelper isRequired={isRequired} />
+            )}
             <input
                 id={name}
                 name={name}
@@ -45,6 +59,17 @@ const Input = ({ name, label = name, onChange, pending = false, messages = [], v
     function handleChange(e) {
         onChange(name, e.target.value);
     }
+};
+
+Input.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    pending: PropTypes.bool,
+    messages: PropTypes.array,
+    value: PropTypes.string,
+    className: PropTypes.string,
+    isRequired: PropTypes.bool
 };
 
 export default Input;

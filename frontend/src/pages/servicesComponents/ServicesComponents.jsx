@@ -27,7 +27,8 @@ const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
         handleSubmit,
         handleDelete,
         handleCancel,
-        setFormDataById
+        setFormDataById,
+        servicesComponentsNumbers
     } = useServicesComponents(agreementId);
 
     return (
@@ -48,6 +49,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
                     setFormData={setFormData}
                     handleSubmit={handleSubmit}
                     handleCancel={handleCancel}
+                    servicesComponentsNumbers={servicesComponentsNumbers}
                 />
             </section>
             <ServicesComponentsList

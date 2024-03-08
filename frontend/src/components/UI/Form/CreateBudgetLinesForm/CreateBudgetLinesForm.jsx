@@ -1,5 +1,7 @@
 import PropTypes from "prop-types";
 import classnames from "vest/classnames";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import CanSelect from "../CanSelect";
 import DesiredAwardDate from "../DesiredAwardDate";
 import suite from "./suite";
@@ -185,6 +187,10 @@ export const CreateBudgetLinesForm = ({
                         disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
                         onClick={handleSubmitForm}
                     >
+                        <FontAwesomeIcon
+                            icon={faAdd}
+                            className="height-2 width-2"
+                        />
                         Add Budget Line
                     </button>
                 )}

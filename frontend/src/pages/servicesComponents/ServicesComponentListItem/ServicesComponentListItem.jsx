@@ -68,7 +68,9 @@ function ServicesComponentListItem({ id, title, periodStart, periodEnd, setFormD
                         <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - Start</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag tagStyle="primaryDarkTextLightBackground">
-                                {popStartMonth}/{popStartDay}/{popStartYear}
+                                {popStartYear && popStartMonth && popStartDay
+                                    ? `${popStartMonth}/${popStartDay}/${popStartYear}`
+                                    : "TBD"}
                             </Tag>
                         </dd>
                     </div>
@@ -76,7 +78,9 @@ function ServicesComponentListItem({ id, title, periodStart, periodEnd, setFormD
                         <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - End</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag tagStyle="primaryDarkTextLightBackground">
-                                {popEndMonth}/{popEndDay}/{popEndYear}
+                                {popEndYear && popEndMonth && popEndDay
+                                    ? `${popEndMonth}/${popEndDay}/${popEndYear}`
+                                    : "TBD"}
                             </Tag>
                         </dd>
                     </div>

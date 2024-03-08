@@ -102,7 +102,6 @@ const useCreateBLIsAndSCs = (
             type: "ADD_BUDGET_LINE",
             payload: {
                 id: crypto.getRandomValues(new Uint32Array(1))[0],
-                line_description: ".",
                 services_component_id: servicesComponentId,
                 comments: enteredComments || "",
                 can_id: selectedCan?.id || null,
@@ -128,7 +127,6 @@ const useCreateBLIsAndSCs = (
             type: "EDIT_BUDGET_LINE",
             payload: {
                 id: newBudgetLines[budgetLineBeingEdited].id,
-                line_description: ".",
                 services_component_id: servicesComponentId,
                 comments: enteredComments,
                 can_id: selectedCan?.id,

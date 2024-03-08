@@ -59,16 +59,11 @@ from ops_api.ops.resources.portfolios import PortfolioItemAPI, PortfolioListAPI
 from ops_api.ops.resources.procurement_shops import ProcurementShopsItemAPI, ProcurementShopsListAPI
 from ops_api.ops.resources.procurement_steps import (
     AcquisitionPlanningItemAPI,
-    AcquisitionPlanningListAPI,
     AwardItemAPI,
-    AwardListAPI,
     EvaluationItemAPI,
-    EvaluationListAPI,
     PreSolicitationItemAPI,
-    PreSolicitationListAPI,
     ProcurementStepListAPI,
     SolicitationItemAPI,
-    SolicitationListAPI,
 )
 from ops_api.ops.resources.product_service_code import ProductServiceCodeItemAPI, ProductServiceCodeListAPI
 from ops_api.ops.resources.projects import ProjectItemAPI, ProjectListAPI
@@ -234,36 +229,24 @@ SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("servic
 # Procurement: Generic Step ENDPOINT
 PROCUREMENT_STEP_LIST_API_VIEW_FUNC = ProcurementStepListAPI.as_view("procurement-step-group", ProcurementStep)
 
-# Procurement: AcquisitionPlanning ENDPOINTS
-PROCUREMENT_ACQUISITION_PLANNING_LIST_API_VIEW_FUNC = AcquisitionPlanningListAPI.as_view(
-    "procurement-acquisition-planning-group", AcquisitionPlanning
-)
+# Procurement: AcquisitionPlanning ENDPOINT
 PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC = AcquisitionPlanningItemAPI.as_view(
     "procurement-acquisition-planning-item", AcquisitionPlanning
 )
 
-# Procurement: PreSolicitation ENDPOINTS
-PROCUREMENT_PRE_SOLICITATION_LIST_API_VIEW_FUNC = PreSolicitationListAPI.as_view(
-    "procurement-pre-solicitation-group", PreSolicitation
-)
+# Procurement: PreSolicitation ENDPOINT
 PROCUREMENT_PRE_SOLICITATION_ITEM_API_VIEW_FUNC = PreSolicitationItemAPI.as_view(
     "procurement-pre-solicitation-item", PreSolicitation
 )
 
-# Procurement: Solicitation ENDPOINTS
-PROCUREMENT_SOLICITATION_LIST_API_VIEW_FUNC = SolicitationListAPI.as_view(
-    "procurement-solicitation-group", Solicitation
-)
+# Procurement: Solicitation ENDPOINT
 PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC = SolicitationItemAPI.as_view("procurement-solicitation-item", Solicitation)
 
-# Procurement: Evaluation ENDPOINTS
-PROCUREMENT_EVALUATION_LIST_API_VIEW_FUNC = EvaluationListAPI.as_view("procurement-evaluation-group", Evaluation)
+# Procurement: Evaluation ENDPOINT
 PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procurement-evaluation-item", Evaluation)
 
-# Procurement: PreAward ENDPOINTS
-PROCUREMENT_PRE_AWARD_LIST_API_VIEW_FUNC = EvaluationListAPI.as_view("procurement-pre-award-group", PreAward)
+# Procurement: PreAward ENDPOINT
 PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procurement-pre-award-item", PreAward)
 
-# Procurement: Award ENDPOINTS
-PROCUREMENT_AWARD_LIST_API_VIEW_FUNC = AwardListAPI.as_view("procurement-award-group", Award)
+# Procurement: Award ENDPOINT
 PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC = AwardItemAPI.as_view("procurement-award-item", Award)
