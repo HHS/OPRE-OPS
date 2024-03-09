@@ -1,14 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { useBudgetLinesDispatch } from "./context";
 import useAlert from "../../../../hooks/use-alert.hooks";
-import { useUpdateBudgetLineItemMutation, useAddBudgetLineItemMutation } from "../../../../api/opsAPI";
+import {
+    useUpdateBudgetLineItemMutation,
+    useAddBudgetLineItemMutation,
+    useDeleteAgreementMutation
+} from "../../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 import suite from "./suite";
 import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
-import { useDeleteAgreementMutation } from "../../../../api/opsAPI";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -51,7 +53,6 @@ const useCreateBLIsAndSCs = (
         () => searchParams.get("budget-line-id") || null
     );
     const [deleteAgreement] = useDeleteAgreementMutation();
-    const dispatch = useBudgetLinesDispatch();
     const navigate = useNavigate();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
@@ -152,26 +153,8 @@ const useCreateBLIsAndSCs = (
         });
     };
 
-    const handleDeleteBudgetLine = (budgetLineId) => {
-        setShowModal(true);
-        setModalProps({
-            heading: "Are you sure you want to delete this budget line?",
-            actionButtonText: "Delete",
-            handleConfirm: () => {
-                dispatch({
-                    type: "DELETE_BUDGET_LINE",
-                    id: budgetLineId
-                });
-                dispatch({ type: "RESET_FORM" });
-                setAlert({
-                    type: "success",
-                    heading: "Budget Line Deleted",
-                    message: "The budget line has been successfully deleted."
-                });
-                setModalProps({});
-            }
-        });
-    };
+    // TODO: Refactor to use new api call not yet implemented
+    const handleDeleteBudgetLine = () => {};
 
     const cleanBudgetLineItemForApi = (data) => {
         const cleanData = { ...data };
@@ -185,86 +168,8 @@ const useCreateBLIsAndSCs = (
         delete cleanData.can;
         delete cleanData.id;
         delete cleanData.has_active_workflow;
+
         return { id: budgetLineId, data: cleanData };
-    };
-
-    const saveBudgetLineItems = async (event) => {
-        event.preventDefault();
-
-        const mutateBudgetLineItems = async (method, items) => {
-            if (items.length === 0) {
-                return;
-            }
-            if (method === "POST") {
-                return Promise.all(
-                    items.map((item) => {
-                        // eslint-disable-next-line no-unused-vars
-                        const { id, data } = cleanBudgetLineItemForApi(item);
-                        addBudgetLineItem(data)
-                            .unwrap()
-                            .then((fulfilled) => {
-                                console.log("Created New BLIs:", fulfilled);
-                            })
-                            .catch((rejected) => {
-                                console.error("Error Creating Budget Lines");
-                                console.error({ rejected });
-                                setAlert({
-                                    type: "error",
-                                    heading: "Error",
-                                    message: "An error occurred. Please try again.",
-                                    navigateUrl: "/error"
-                                });
-                            });
-                    })
-                );
-            }
-            if (method === "PATCH") {
-                return Promise.all(
-                    items.map((item) => {
-                        const { id, data } = cleanBudgetLineItemForApi(item);
-                        updateBudgetLineItem({ id, data })
-                            .unwrap()
-                            .then((fulfilled) => {
-                                console.log("Updated BLIs:", fulfilled);
-                            })
-                            .catch((rejected) => {
-                                console.error("Error Updating Budget Lines");
-                                console.error({ rejected });
-                                setAlert({
-                                    type: "error",
-                                    heading: "Error",
-                                    message: "An error occurred. Please try again.",
-                                    navigateUrl: "/error"
-                                });
-                            });
-                    })
-                );
-            }
-        };
-
-        const newBudgetLineItems = budgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
-        const existingBudgetLineItems = budgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
-
-        if (newBudgetLineItems.length > 0) {
-            mutateBudgetLineItems("POST", newBudgetLineItems);
-        }
-        if (existingBudgetLineItems.length > 0) {
-            mutateBudgetLineItems("PATCH", existingBudgetLineItems);
-        }
-        // cleanup
-        dispatch({ type: "RESET_FORM" });
-        setIsEditMode(false);
-
-        // handle next step
-        if (isReviewMode) {
-            navigate(`/agreements/review/${selectedAgreement.id}`);
-        } else if (continueOverRide) {
-            continueOverRide();
-        } else if (goToNext) {
-            goToNext();
-        } else {
-            navigate(-1); // go back
-        }
     };
 
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
@@ -291,11 +196,50 @@ const useCreateBLIsAndSCs = (
         }
     };
 
-    const handleDuplicateBudgetLine = (budgetLine) => {
-        dispatch({
-            type: "DUPLICATE_BUDGET_LINE",
-            payload: { ...budgetLine, created_by: loggedInUserFullName }
-        });
+    const handleDuplicateBudgetLine = (budgetLineId) => {
+        const budgetLine = budgetLines.find((bl) => bl.id === budgetLineId);
+        if (!budgetLine) {
+            return;
+        }
+        const {
+            services_component_id,
+            comments,
+            can_id,
+            can,
+            agreement_id,
+            amount,
+            date_needed,
+            proc_shop_fee_percentage
+        } = budgetLine;
+        const payload = {
+            services_component_id,
+            comments,
+            can_id,
+            can,
+            agreement_id,
+            amount,
+            date_needed,
+            proc_shop_fee_percentage,
+            status: "DRAFT",
+            created_by: loggedInUserFullName
+        };
+        const { data } = cleanBudgetLineItemForApi(payload);
+        addBudgetLineItem(data)
+            .unwrap()
+            .then((fulfilled) => {
+                console.log("Duplicated BLI:", fulfilled);
+            })
+            .catch((rejected) => {
+                console.error("Error Duplicating Budget Line");
+                console.error({ rejected });
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred. Please try again.",
+                    navigateUrl: "/error"
+                });
+            });
+        resetForm();
     };
 
     const handleCancel = () => {
@@ -391,7 +335,6 @@ const useCreateBLIsAndSCs = (
         handleResetForm: resetForm,
         handleSetBudgetLineForEditingById,
         handleDuplicateBudgetLine,
-        saveBudgetLineItems,
         isEditing,
         budgetLineBeingEdited,
         budgetLinePageErrorsExist,

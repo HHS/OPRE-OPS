@@ -150,7 +150,7 @@ const ChangeIcons = ({
                             title="Duplicate"
                             aria-label="Duplicate"
                             data-cy="duplicate-row"
-                            onClick={() => handleDuplicateItem(item)}
+                            onClick={() => handleDuplicateItem(item?.id)}
                         >
                             <FontAwesomeIcon
                                 icon={faClone}

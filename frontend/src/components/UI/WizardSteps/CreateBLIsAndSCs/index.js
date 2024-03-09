@@ -1,5 +1,4 @@
 import CreateBLIsAndSCs from "./CreateBLIsAndSCs";
-import { CreateBudgetLinesProvider } from "./context";
 
 /**
  * Renders the Create Budget Lines component with React context.
@@ -36,23 +35,21 @@ const CreateBudgetLines = ({
     workflow
 }) => {
     return (
-        <CreateBudgetLinesProvider>
-            <CreateBLIsAndSCs
-                goToNext={goToNext}
-                goBack={goBack}
-                wizardSteps={wizardSteps}
-                currentStep={currentStep}
-                selectedResearchProject={selectedResearchProject}
-                selectedAgreement={selectedAgreement}
-                selectedProcurementShop={selectedProcurementShop}
-                budgetLines={budgetLines}
-                continueBtnText={continueBtnText}
-                continueOverRide={continueOverRide}
-                isEditMode={isEditMode}
-                isReviewMode={isReviewMode}
-                workflow={workflow}
-            />
-        </CreateBudgetLinesProvider>
+        <CreateBLIsAndSCs
+            goToNext={goToNext}
+            goBack={goBack}
+            wizardSteps={wizardSteps}
+            currentStep={currentStep}
+            selectedResearchProject={selectedResearchProject}
+            selectedAgreement={selectedAgreement}
+            selectedProcurementShop={selectedProcurementShop}
+            budgetLines={budgetLines}
+            continueBtnText={continueBtnText}
+            continueOverRide={continueOverRide}
+            isEditMode={isEditMode}
+            isReviewMode={isReviewMode}
+            workflow={workflow}
+        />
     );
 };
 

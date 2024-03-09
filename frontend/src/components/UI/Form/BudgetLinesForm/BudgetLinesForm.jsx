@@ -93,7 +93,7 @@ export const CreateBudgetLinesForm = ({
     };
 
     return (
-        <form className="grid-row grid-gap">
+        <form className="grid-row grid-gap margin-y-3">
             <div className="grid-col-4">
                 <div className="usa-form-group">
                     <AllServicesComponentSelect

@@ -13,7 +13,6 @@ import ServicesComponentAccordion from "../../../../pages/servicesComponents/Ser
 import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../../../Agreements/AgreementDetailsCards/AgreementTotalCard";
 import GoBackButton from "../../Button/GoBackButton";
-import DebugCode from "../../../../pages/servicesComponents/DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -64,7 +63,6 @@ export const CreateBLIsAndSCs = ({
         isEditing,
         modalProps,
         pageErrors,
-        saveBudgetLineItems,
         setEnteredAmount,
         setEnteredComments,
         setEnteredDay,
@@ -166,18 +164,6 @@ export const CreateBLIsAndSCs = ({
                     procurementShopFee={selectedProcurementShop?.fee}
                 />
             </div>
-            <DebugCode
-                title="formData"
-                data={{
-                    enteredAmount,
-                    enteredMonth,
-                    enteredDay,
-                    enteredYear,
-                    enteredComments,
-                    servicesComponentId,
-                    selectedCan
-                }}
-            />
             <CreateBudgetLinesForm
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
