@@ -244,7 +244,9 @@ export const CreateBLIsAndSCs = ({
                     <button
                         className="usa-button"
                         data-cy="continue-btn"
-                        onClick={saveBudgetLineItems}
+                        onClick={() => {
+                            alert("not yet implemented");
+                        }}
                         disabled={isReviewMode && !res.isValid()}
                     >
                         {isReviewMode ? "Review" : continueBtnText}
