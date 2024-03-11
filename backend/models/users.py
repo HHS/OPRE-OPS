@@ -1,9 +1,10 @@
 """User models."""
+from enum import Enum, auto
 from typing import List, Optional
 
 from models import BaseModel
 from sqlalchemy import ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ENUM, UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 
@@ -29,6 +30,12 @@ class UserGroup(BaseModel):
         return f"User Group: user_id={self.user_id}; group_id={self.group_id}"
 
 
+class UserStatus(Enum):
+    ACTIVE = auto()
+    INACTIVE = auto()
+    LOCKED = auto()
+
+
 class User(BaseModel):
     """Main User mod."""
 
@@ -45,6 +52,9 @@ class User(BaseModel):
     full_name: Mapped[str] = column_property(first_name + " " + last_name)
     division: Mapped[int] = mapped_column(
         ForeignKey("division.id", name="fk_user_division")
+    )
+    status: Mapped[UserStatus] = mapped_column(
+        ENUM(UserStatus), nullable=False, server_default=UserStatus.INACTIVE.name
     )
 
     roles: Mapped[List["Role"]] = relationship(
