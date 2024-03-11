@@ -42,6 +42,10 @@ const UserInfo = () => {
                                 <td>Division(s)</td>
                                 <td>: {user?.division}</td>
                             </tr>
+                            <tr>
+                                <td>Status</td>
+                                <td>: {user?.status}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
