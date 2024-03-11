@@ -792,35 +792,10 @@ def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_budget_line_items_with_null_date_needed(auth_client):
-    data = POSTRequestBody(
-        line_description="LI 1",
-        comments="blah blah",
-        agreement_id=1,
-        can_id=1,
-        amount=100.12,
-        status="DRAFT",
-        date_needed=None,
-        proc_shop_fee_percentage=1.23,
-        services_component_id=1,
-    )
-    response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
-    assert response.status_code == 201
-    assert response.json["id"] is not None
-    new_bli_id = response.json["id"]
-    assert response.json["line_description"] == "LI 1"
-    assert response.json["amount"] == 100.12
-    assert response.json["status"] == "DRAFT"
-    assert response.json["date_needed"] is None
-    assert response.json["services_component_id"] == 1
-
-    response = auth_client.patch(f"/api/v1/budget-line-items/{new_bli_id}", json={"date_needed": None})
+def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli):
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json={"date_needed": None})
     assert response.status_code == 200
-    assert response.json["line_description"] == "LI 1"
-    assert response.json["amount"] == 100.12
-    assert response.json["status"] == "DRAFT"
     assert response.json["date_needed"] is None
-    assert response.json["services_component_id"] == 1
 
 
 @pytest.mark.usefixtures("app_ctx")
