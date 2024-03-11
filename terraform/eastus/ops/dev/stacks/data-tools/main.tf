@@ -78,15 +78,15 @@ data "azurerm_key_vault" "vault" {
 #   key_vault_id = data.azurerm_key_vault.vault.id
 # }
 
-module "ops_schema" {
-  source       = "../../modules/pg-schema"
-  schemaName   = "ops"
-  roleName     = "ops"
-  keyVaultId   = data.azurerm_key_vault.vault.id
-  dbServerName = var.postgresServerName
-  # lifecycle {
-  #   replace_triggered_by = [
-  #     module.data-tools
-  #   ]
-  # }
-}
+# module "ops_schema" {
+#   source       = "../../modules/pg-schema"
+#   schemaName   = "ops"
+#   roleName     = "ops"
+#   keyVaultId   = data.azurerm_key_vault.vault.id
+#   dbServerName = var.postgresServerName
+#   # lifecycle {
+#   #   replace_triggered_by = [
+#   #     module.data-tools
+#   #   ]
+#   # }
+# }
