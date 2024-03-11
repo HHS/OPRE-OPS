@@ -1,5 +1,5 @@
 FROM python:3.10-slim
-RUN apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client=15+248 && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.7.24 && useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app
@@ -17,14 +17,17 @@ RUN pipenv install --dev --system --deploy
 COPY ./ /home/app
 
 # Execute data load when run
-CMD ["bash", "-c", "python ./data_tools/src/import_static_data/load_db.py && \
-DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/can_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/first_contract_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
-DATA=./data_tools/data/workflow_data.json5 python ./data_tools/src/import_static_data/import_data.py"]
+CMD ["bash", "-c", "\
+      psql postgresql://postgres:local_password@db:5432/postgres -c 'DROP SCHEMA IF EXISTS ops CASCADE;CREATE SCHEMA ops;GRANT ALL ON SCHEMA ops TO ops;' && \
+      .local/bin/alembic upgrade head && \
+      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/can_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/first_contract_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
+      DATA=./data_tools/data/workflow_data.json5 python ./data_tools/src/import_static_data/import_data.py \
+      "]
