@@ -1,4 +1,5 @@
 name: 'Terraform setup and apply'
+author: "@devops-chris"
 description: 'Setup Terraform and applies Terraform config'
 inputs:
   terraform_directory:
@@ -32,6 +33,9 @@ inputs:
   plan_workflow_file:
     description: 'Filename of workflow containing the tf plan artifact.'
     required: false
+  twingate_service_key:
+    description: 'The key of the Twingate Service Account.'
+    required: false
 
 runs:
   using: "composite"
@@ -64,6 +68,12 @@ runs:
       with:
         terraform_version: ${{ inputs.terraform_version }}
         terraform_wrapper: false
+
+    - name: Twingate Connect
+      if: ${{ inputs.twingate_service_key != '' }} # Corrected syntax with a colon after the condition
+      uses: twingate/github-action@4493ffc3806241aa98194a3fa679f874bce013b5
+      with:
+        service-key: ${{ inputs.twingate_service_key }}
 
     - name: Terraform Init
       id: init
