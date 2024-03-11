@@ -38,18 +38,6 @@ const ChangeIcons = ({
     goToApproveIcon = false,
     handleGoToApprove = () => {}
 }) => {
-    // if (!isItemEditable) {
-    //     return (
-    //         <DisabledChangeIcons
-    //             lockedMessage={lockedMessage}
-    //             duplicateIcon={duplicateIcon}
-    //             sendToReviewIcon={sendToReviewIcon}
-    //             handleDuplicateItem={() => handleDuplicateItem(item)}
-    //             goToApproveIcon={goToApproveIcon}
-    //         />
-    //     );
-    // }
-
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
     return (

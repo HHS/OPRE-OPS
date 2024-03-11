@@ -19,6 +19,7 @@ import "./BudgetLinesTable.scss";
 const BudgetLinesTable = ({
     budgetLines = [],
     handleSetBudgetLineForEditing = () => {},
+    handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
@@ -36,7 +37,7 @@ const BudgetLinesTable = ({
                     <BLIRow
                         key={budgetLine.id}
                         budgetLine={budgetLine}
-                        handleDeleteBudgetLine={() => alert("not yet implemented")}
+                        handleDeleteBudgetLine={handleDeleteBudgetLine}
                         handleDuplicateBudgetLine={handleDuplicateBudgetLine}
                         handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                         isReviewMode={isReviewMode}

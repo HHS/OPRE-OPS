@@ -84,7 +84,8 @@ const useCreateBLIsAndSCs = (
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
             status: "DRAFT",
-            date_needed: `${enteredYear}-${enteredMonth}-${enteredDay}` || null,
+            date_needed:
+                enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
         const { data } = cleanBudgetLineItemForApi(payload);
@@ -154,7 +155,9 @@ const useCreateBLIsAndSCs = (
     };
 
     // TODO: Refactor to use new api call not yet implemented
-    const handleDeleteBudgetLine = () => {};
+    const handleDeleteBudgetLine = () => {
+        alert("Not yet implemented");
+    };
 
     const cleanBudgetLineItemForApi = (data) => {
         const cleanData = { ...data };
