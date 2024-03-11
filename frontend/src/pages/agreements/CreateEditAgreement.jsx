@@ -61,8 +61,8 @@ export const CreateAgreement = ({ budgetLines }) => {
                 continueOverRide={() =>
                     setAlert({
                         type: "success",
-                        heading: "Agreement draft saved",
-                        message: "The agreement has been successfully saved.",
+                        heading: "Agreement Created",
+                        message: `The agreement ${selectedAgreement?.name} has been successfully created.`,
                         redirectUrl: "/agreements"
                     })
                 }

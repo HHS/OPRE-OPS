@@ -244,9 +244,7 @@ export const CreateBLIsAndSCs = ({
                     <button
                         className="usa-button"
                         data-cy="continue-btn"
-                        onClick={() => {
-                            alert("not yet implemented");
-                        }}
+                        onClick={continueOverRide ? continueOverRide : goToNext}
                         disabled={isReviewMode && !res.isValid()}
                     >
                         {isReviewMode ? "Review" : continueBtnText}

@@ -11,7 +11,7 @@ import CreateBLIsAndSCs from "./CreateBLIsAndSCs";
  * @param {Object} props.selectedResearchProject - The selected research project.
  * @param {Object} props.selectedAgreement - The selected agreement.
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
- * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
+ * @param {Array<any>} props.budgetLines - An array of existing budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether or not the form is in edit mode.
  * @param {boolean} props.isReviewMode - Whether or not the form is in review mode.
