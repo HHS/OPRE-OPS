@@ -230,6 +230,7 @@
       email: "chris.fortunato@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000001",
       roles: [{"tablename":  "role", "id": 1}],
+      status: "INACTIVE",
     },
     { // 2
       first_name: "Amy",
@@ -237,7 +238,8 @@
       division: 1,
       email: "Amy.Madigan@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000002",
-      roles: [{"tablename":  "role", "id": 1}]
+      roles: [{"tablename":  "role", "id": 1}],
+      status: "INACTIVE"
     },
     { // 3
       first_name: "Ivelisse",
@@ -245,7 +247,8 @@
       division: 1,
       email: "Ivelisse.Martinez-Beck@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000003",
-      roles: [{"tablename":  "role", "id": 2}]
+      roles: [{"tablename":  "role", "id": 2}],
+      status: "INACTIVE"
     },
     { // 4 - THIS IS USED IN THE TESTS (AUTH_CLIENT)
       first_name: "Amelia",
@@ -255,6 +258,7 @@
       oidc_id: "00000000-0000-1111-a111-000000000004",
       roles: [{"tablename":  "role", "id": 1}],
       groups: [{"tablename":  "group", "id": 1}],
+      status: "ACTIVE"
     },
     { // 5
       first_name: "Tia",
@@ -262,7 +266,8 @@
       division: 3,
       email: "Tia.Brown@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000005",
-      roles: [{"tablename":  "role", "id": 1}]
+      roles: [{"tablename":  "role", "id": 1}],
+      status: "INACTIVE"
     },
     { // 6
       first_name: "Katie",
@@ -270,7 +275,8 @@
       division: 3,
       email: "Katie.Pahigiannis@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000006",
-      roles: [{"tablename":  "role", "id": 1}]
+      roles: [{"tablename":  "role", "id": 1}],
+      status: "INACTIVE"
     },
     { // 7
       first_name: "Nancy",
@@ -278,6 +284,7 @@
       division: 3,
       email: "Nancy.Margie@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000007",
+      status: "INACTIVE"
     },
     { // 8
       first_name: "Nicole",
@@ -285,6 +292,7 @@
       division: 4,
       email: "Nicole.Deterding@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000008",
+      status: "INACTIVE"
     },
     { // 9
       first_name: "Valeria",
@@ -292,6 +300,7 @@
       division: 4,
       email: "Valeria.Butler@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000009",
+      status: "INACTIVE"
     },
     { // 10
       first_name: "Beth Ann",
@@ -299,6 +308,7 @@
       division: 4,
       email: "BethAnn.Barnes@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000010",
+      status: "INACTIVE"
     },
     { // 11
       first_name: "Laura",
@@ -306,6 +316,7 @@
       division: 4,
       email: "Laura.Nerenberg@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000011",
+      status: "INACTIVE"
     },
     { // 12
       first_name: "Niki",
@@ -314,6 +325,7 @@
       email: "Niki.Denmark@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000012",
       roles: [{"tablename":  "role", "id": 1}],
+      status: "INACTIVE"
     },
     { // 13
       first_name: "Tim",
@@ -323,7 +335,8 @@
       //oidc_id: "e5711101-bc3e-41e5-a6a2-000000000000",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}]
+      groups: [{"tablename":  "group", "id": 2}],
+      status: "ACTIVE"
     },
     { // 14
       first_name: "John",
@@ -332,7 +345,8 @@
       email: "jdeangelis@flexion.us",
       oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}]
+      groups: [{"tablename":  "group", "id": 2}],
+      status: "ACTIVE"
     },
     { // 15
       first_name: "Frank",
@@ -341,7 +355,8 @@
       email: "fpigeon@flexion.us",
       oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}]
+      groups: [{"tablename":  "group", "id": 2}],
+      status: "ACTIVE"
     },
     { // 16
       first_name: "Cliff",
@@ -350,7 +365,8 @@
       email: "chill@flexion.us",
       oidc_id: "c8102694-a707-418d-9698-1d33db337b86",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}]
+      groups: [{"tablename":  "group", "id": 2}],
+      status: "INACTIVE"
     },
     { // 17
       first_name: "Steve",
@@ -359,7 +375,8 @@
       email: "stekell+sandbox@flexion.us",
       oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}]
+      groups: [{"tablename":  "group", "id": 2}],
+      status: "ACTIVE"
     },
     { // 18
       first_name: "Jonathan",
@@ -368,7 +385,8 @@
       email: "jnalley+logingovsandbox@flexion.us",
       oidc_id: "48f7db91-1861-4d4b-813c-a6221cb61b60",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}]
+      groups: [{"tablename":  "group", "id": 2}],
+      status: "ACTIVE"
     },
     { // 19
       first_name: "Andressa",
@@ -377,7 +395,8 @@
       email: "acurvelodasilva@flexion.us",
       oidc_id: "6e672c19-15bc-4901-8cee-b57cd8c6d0c1",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}]
+      groups: [{"tablename":  "group", "id": 2}],
+      status: "ACTIVE"
     },
     { // 20
       first_name: "Kim",
@@ -386,7 +405,8 @@
       email: "kschulke@flexion.us",
       oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}]
+      groups: [{"tablename":  "group", "id": 2}],
+      status: "ACTIVE"
     },
     { // 21 User is used in E2E tests
       first_name: "Admin",
@@ -395,6 +415,7 @@
       email: "admin.demo@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000018",
       roles: [{"tablename":  "role", "id": 1}],
+      status: "ACTIVE"
     },
     { // 22
       first_name: "User",
@@ -402,7 +423,8 @@
       division: 3,
       email: "user.demo@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000019",
-      roles: [{"tablename":  "role", "id": 2}]
+      roles: [{"tablename":  "role", "id": 2}],
+      status: "ACTIVE"
     },
     { // 23
       first_name: "Dave",
@@ -411,7 +433,8 @@
       email: "dave.director@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000020",
       roles: [{"tablename":  "role", "id": 4}],
-      groups: [{"tablename":  "group", "id": 3}]
+      groups: [{"tablename":  "group", "id": 3}],
+      status: "ACTIVE"
     },
     { // 24
       first_name: "COR",
@@ -420,7 +443,8 @@
       email: "cor.user@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000021",
       roles: [{"tablename":  "role", "id": 5}],
-      groups: [{"tablename":  "group", "id": 4}]
+      groups: [{"tablename":  "group", "id": 4}],
+      status: "ACTIVE"
     },
   ],
   notification: [

@@ -1,5 +1,6 @@
 import pytest
 from flask_jwt_extended import create_access_token
+from models import UserStatus
 from models.users import User
 
 
@@ -18,6 +19,7 @@ def test_get_users_by_id_with_auth(auth_client, loaded_db):
     response = auth_client.get("/api/v1/users/4", headers={"Authorization": f"Bearer {str(access_token)}"})
     assert response.status_code == 200
     assert response.json["id"] == 4
+    assert response.json["status"] == UserStatus.ACTIVE.name
 
 
 @pytest.mark.skip("Need to rework this endpoint.")
