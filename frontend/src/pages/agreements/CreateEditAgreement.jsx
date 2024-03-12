@@ -48,10 +48,12 @@ export const CreateAgreement = ({ budgetLines }) => {
             <StepSelectProject
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
+                selectedAgreementId={selectedAgreement?.id}
             />
             <StepCreateAgreement
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
+                selectedAgreementId={selectedAgreement?.id}
             />
             <StepCreateBudgetLinesAndSCs
                 selectedResearchProject={selectedResearchProject}

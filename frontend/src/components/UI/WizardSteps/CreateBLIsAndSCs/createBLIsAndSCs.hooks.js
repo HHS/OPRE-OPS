@@ -5,7 +5,8 @@ import useAlert from "../../../../hooks/use-alert.hooks";
 import {
     useUpdateBudgetLineItemMutation,
     useAddBudgetLineItemMutation,
-    useDeleteAgreementMutation
+    useDeleteAgreementMutation,
+    useGetAgreementByIdQuery
 } from "../../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 import suite from "./suite";
@@ -248,8 +249,8 @@ const useCreateBLIsAndSCs = (
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
-            actionButtonText: "Cancel",
+            heading: "Are you sure you want to cancel creating a new agreement? Your progress will not be saved.",
+            actionButtonText: "Cancel Agreement",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 deleteAgreement(selectedAgreement?.id)
@@ -258,8 +259,8 @@ const useCreateBLIsAndSCs = (
                         console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
                         setAlert({
                             type: "success",
-                            heading: "Agreement cancelled",
-                            message: `Agreement ${selectedAgreement?.name} has been successfully cancelled.`,
+                            heading: "Create New Agreement Cancelled",
+                            message: "Your agreement has been cancelled.",
                             redirectUrl: "/agreements"
                         });
                     })

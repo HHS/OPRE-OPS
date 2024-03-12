@@ -13,6 +13,7 @@ import ServicesComponentAccordion from "../../../../pages/servicesComponents/Ser
 import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../../../Agreements/AgreementDetailsCards/AgreementTotalCard";
 import GoBackButton from "../../Button/GoBackButton";
+import DebugCode from "../../../../pages/servicesComponents/DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -130,6 +131,10 @@ export const CreateBLIsAndSCs = ({
                     <StepIndicator
                         steps={wizardSteps}
                         currentStep={currentStep}
+                    />
+                    <DebugCode
+                        title="selectedAgreement"
+                        data={selectedAgreement}
                     />
                     <ProjectAgreementSummaryCard
                         selectedResearchProject={selectedResearchProject}
