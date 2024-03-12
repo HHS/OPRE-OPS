@@ -9,6 +9,7 @@ from flask_jwt_extended import jwt_required
 from marshmallow import EXCLUDE, Schema, ValidationError
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
+from ops_api.ops.utils.authentication_gateway import NotActiveUserError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -35,6 +36,9 @@ def handle_api_error(f):
         except ValidationError as ve:
             current_app.logger.error(ve)
             return make_response_with_headers(ve.normalized_messages(), 400)
+        except NotActiveUserError as e:
+            current_app.logger.error(e)
+            return make_response_with_headers({}, 403)
         except Exception as e:
             current_app.logger.exception(e)
             return make_response_with_headers({}, 500)

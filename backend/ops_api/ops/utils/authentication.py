@@ -246,21 +246,3 @@ class HhsAmsProvider(AuthenticationProvider):
 
     def validate_token(self, token):
         return True
-
-
-class AuthenticationGateway:
-    def __init__(self, key) -> None:
-        self.providers = {
-            "fakeauth": FakeAuthProvider("fakeauth", "devkey"),
-            "logingov": LoginGovProvider("logingov", key),
-            "hhsams": HhsAmsProvider("hhsams", key),
-        }
-
-    def authenticate(self, provider_name, auth_code):
-        return self.providers[provider_name].authenticate(auth_code)
-
-    def get_user_info(self, provider: str, token: str):
-        return self.providers[provider].get_user_info(token)
-
-    def validate_token(self, provider: str, token: str):
-        return self.providers[provider].validate_token(token)
