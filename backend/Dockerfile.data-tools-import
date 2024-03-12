@@ -18,7 +18,7 @@ COPY ./ /home/app
 
 # Execute data load when run
 CMD ["bash", "-c", "\
-      psql postgresql://$PGUSER:'$PGPASSWORD'@$PGHOST:5432/postgres?sslmode=require -c 'DROP SCHEMA IF EXISTS ops CASCADE;CREATE SCHEMA ops;GRANT ALL ON SCHEMA ops TO ops;' && \
+      psql postgresql://$PGUSER:$PGPASSWORD@$PGHOST:5432/postgres?sslmode=require -c 'DROP SCHEMA IF EXISTS ops CASCADE;CREATE SCHEMA ops;GRANT ALL ON SCHEMA ops TO ops;' && \
       .local/bin/alembic upgrade head && \
       DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
       DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py && \
