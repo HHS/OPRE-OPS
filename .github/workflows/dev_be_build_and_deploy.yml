@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - cml/add-alembic-dev
     paths:
       - backend/models/**
       - backend/ops_api/**
