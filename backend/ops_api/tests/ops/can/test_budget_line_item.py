@@ -791,6 +791,14 @@ def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli):
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json={"date_needed": None})
+    assert response.status_code == 200
+    assert response.json["date_needed"] is None
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_valid_services_component(auth_client, app, test_bli):
     session = app.db_session
     sc = ServicesComponent(contract_agreement_id=6, number=1, optional=False)

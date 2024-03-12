@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from datetime import date
 from functools import partial
 from typing import Optional
 
@@ -262,6 +261,7 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
     bli_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
     existing_bli = current_app.db_session.scalar(bli_stmt)
     data = get_change_data(request.json, existing_bli, schema, ["id", "status", "agreement_id"], partial=False)
+    data = convert_date_strings_to_dates(data)
 
     with suppress(AttributeError):
         try:
@@ -272,8 +272,5 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
         if len(data) > 0 and status == BudgetLineItemStatus.PLANNED:
             status = BudgetLineItemStatus.DRAFT
         data["status"] = status
-
-    with suppress(KeyError):
-        data["date_needed"] = date.fromisoformat(data["date_needed"])
 
     return data
