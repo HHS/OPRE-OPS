@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+
 from models.cans import CLIN, AgreementType, ContractAgreement, ContractType, ServiceRequirementType, ServicesComponent
 
 # Assuming that your testing setup includes a fixture for the database and an authenticated client

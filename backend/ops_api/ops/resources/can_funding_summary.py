@@ -1,10 +1,11 @@
 from flask import Response, request
+from typing_extensions import override
+
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.cans import get_can_funding_summary
 from ops_api.ops.utils.response import make_response_with_headers
-from typing_extensions import override
 
 
 class CANFundingSummaryItemAPI(BaseItemAPI):

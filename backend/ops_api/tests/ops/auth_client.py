@@ -1,5 +1,6 @@
 from flask.testing import FlaskClient
 from flask_jwt_extended import create_access_token
+
 from models.users import User
 
 

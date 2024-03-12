@@ -1,9 +1,10 @@
 from typing import Optional, TypedDict
 
 from flask import current_app
-from models.users import Role, User
 from sqlalchemy import select
 from sqlalchemy.orm import load_only
+
+from models.users import Role, User
 
 
 class UserInfoDict(TypedDict):

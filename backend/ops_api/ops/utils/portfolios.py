@@ -2,10 +2,11 @@ from decimal import Decimal
 from typing import Any, Optional, TypedDict
 
 from flask import current_app
-from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
-from models.portfolios import Portfolio
 from sqlalchemy import Select, select, sql
 from sqlalchemy.sql.functions import coalesce
+
+from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
+from models.portfolios import Portfolio
 
 
 class FundingLineItem(TypedDict):
