@@ -75,10 +75,12 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     const { data: newAgreement, isSuccess } = useGetAgreementByIdQuery(selectedAgreement?.id);
+
     let groupedBudgetLinesByServicesComponent = [];
     if (isSuccess) {
-        console.log({ newAgreement });
-        budgetLines = newAgreement.budget_line_items;
+        if (budgetLines.length === 0) {
+            budgetLines = newAgreement.budget_line_items;
+        }
         groupedBudgetLinesByServicesComponent = budgetLines
             .reduce((acc, budgetLine) => {
                 const servicesComponentId = budgetLine.services_component_id;
