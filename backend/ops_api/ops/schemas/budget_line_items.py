@@ -8,7 +8,7 @@ from flask import current_app
 from marshmallow import ValidationError, validates_schema
 from marshmallow_enum import EnumField
 from models import AgreementReason, BudgetLineItemStatus
-from models.cans import BudgetLineItem
+from models.cans import BudgetLineItem, ServicesComponent
 
 ENDPOINT_STRING = "/budget-line-items"
 
@@ -197,6 +197,21 @@ class RequestBody:
                 or (bli_amount is not None and bli_amount <= 0 and data_amount is not None and data_amount <= 0)
             ):
                 raise ValidationError(msg)
+
+    @validates_schema(skip_on_field_errors=False)
+    def validate_services_component_id(self, data: dict, **kwargs):
+        services_component_id = data.get("services_component_id")
+        if services_component_id is not None:
+            sc: ServicesComponent = current_app.db_session.get(ServicesComponent, services_component_id)
+            if sc:
+                sc_contract_agreement_id = sc.contract_agreement_id
+                if self.context.get("method") in ["POST"]:
+                    bli_agreement_id = data.get("agreement_id")
+                else:
+                    bli: BudgetLineItem = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+                    bli_agreement_id = bli.agreement_id if bli else None
+                if sc_contract_agreement_id != bli_agreement_id:
+                    raise ValidationError("The Services Component must belong to the same Agreement as the BLI")
 
 
 @dataclass(kw_only=True)
