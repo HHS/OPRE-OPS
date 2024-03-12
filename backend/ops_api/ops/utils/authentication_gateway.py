@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import Any
 
 from flask import current_app, request
 from models import UserStatus
@@ -15,13 +16,13 @@ def is_user_active(f):
     def decorated(*args, **kwargs):
         token = f(*args, **kwargs)
 
-        print(f"is_user_active token: {token}")
-
         auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
+
         provider = request.json.get("provider")
         user_info = auth_gateway.get_user_info(provider, token.get("access_token"))
         if not user_info:
-            raise NotActiveUserError(f"User with token={token} is not active")
+            raise NotActiveUserError(f"Unable to get user_info for token={token}")
+
         user = get_user_from_token(user_info)
         if not user or user.status != UserStatus.ACTIVE:
             raise NotActiveUserError(f"User with token={token} is not active")
@@ -43,7 +44,7 @@ class AuthenticationGateway:
     def authenticate(self, provider_name, auth_code) -> str:
         return self.providers[provider_name].authenticate(auth_code)
 
-    def get_user_info(self, provider: str, token: str):
+    def get_user_info(self, provider: str, token: str) -> dict[str, Any]:
         return self.providers[provider].get_user_info(token)
 
     def validate_token(self, provider: str, token: str):

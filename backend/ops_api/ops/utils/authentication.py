@@ -157,7 +157,7 @@ class LoginGovProvider(AuthenticationProvider):
                 self.config["user_info_url"],
                 headers=header,
             ).content.decode("utf-8")
-            return user_jwt
+            return json.loads(user_jwt)
         except Exception as e:
             current_app.logger.exception(e)
             return None
@@ -235,7 +235,7 @@ class HhsAmsProvider(AuthenticationProvider):
         }
         try:
             user_jwt = requests.get(
-                self.user_info_url,
+                self.config["user_info_url"],
                 headers=header,
             ).content.decode("utf-8")
             user_data = self.decode_user(payload=user_jwt)
