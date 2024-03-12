@@ -45,7 +45,7 @@ module "data-tools" {
 
     {
       name  = "pgpassword"
-      value = module.ops_schema.key_vault_secret.raw_pw
+      value = data.azurerm_key_vault_secret.ops-pw.value
     },
   ]
   tags = {}
@@ -67,11 +67,10 @@ data "azurerm_key_vault" "vault" {
   resource_group_name = var.resourceGroupName
 }
 
-# data "azurerm_key_vault_secret" "ops-pw" {
-#   name         = "ops-role-password"
-#   key_vault_id = data.azurerm_key_vault.vault.id
-#   depends_on = [module.ops_schema]
-# }
+data "azurerm_key_vault_secret" "ops-pw" {
+  name         = "ops-role-password"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
 
 # data "azurerm_key_vault_secret" "ops-jwt-private-key" {
 #   name         = "ops-jwt-private-key"
