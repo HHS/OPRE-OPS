@@ -791,6 +791,14 @@ def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli):
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli):
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json={"date_needed": None})
+    assert response.status_code == 200
+    assert response.json["date_needed"] is None
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_valid_services_component(auth_client, app, test_bli):
     session = app.db_session
     sc = ServicesComponent(contract_agreement_id=6, number=1, optional=False)
@@ -817,3 +825,26 @@ def test_valid_services_component(auth_client, app, test_bli):
 
     session.delete(sc)
     session.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_delete_budget_line_items(auth_client, loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    assert bli.id is not None
+    new_bli_id = bli.id
+
+    response = auth_client.delete(f"/api/v1/budget-line-items/{new_bli_id}")
+    assert response.status_code == 200
+
+    sc: BudgetLineItem = loaded_db.get(BudgetLineItem, new_bli_id)
+    assert not sc
