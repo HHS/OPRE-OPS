@@ -18,7 +18,7 @@ from models.workflows import (
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
-from ops_api.ops.schemas.budget_line_item import PATCHRequestBody
+from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
