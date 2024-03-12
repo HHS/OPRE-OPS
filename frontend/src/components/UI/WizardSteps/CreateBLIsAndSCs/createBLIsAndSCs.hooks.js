@@ -74,6 +74,28 @@ const useCreateBLIsAndSCs = (
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
+    const { data: newAgreement, isSuccess } = useGetAgreementByIdQuery(selectedAgreement?.id);
+    let groupedBudgetLinesByServicesComponent = [];
+    if (isSuccess) {
+        console.log({ newAgreement });
+        budgetLines = newAgreement.budget_line_items;
+        groupedBudgetLinesByServicesComponent = budgetLines
+            .reduce((acc, budgetLine) => {
+                const servicesComponentId = budgetLine.services_component_id;
+                const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+                if (index === -1) {
+                    acc.push({ servicesComponentId, budgetLines: [budgetLine] });
+                } else {
+                    acc[index].budgetLines.push(budgetLine);
+                }
+                return acc;
+            }, [])
+            .sort((a, b) => {
+                if (a.servicesComponentId === null) return 1;
+                if (b.servicesComponentId === null) return -1;
+                return a.servicesComponentId - b.servicesComponentId;
+            });
+    }
 
     const handleAddBLI = (e) => {
         e.preventDefault();
@@ -314,23 +336,6 @@ const useCreateBLIsAndSCs = (
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [budgetLineIdFromUrl, budgetLines]);
-
-    const groupedBudgetLinesByServicesComponent = budgetLines
-        .reduce((acc, budgetLine) => {
-            const servicesComponentId = budgetLine.services_component_id;
-            const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
-            if (index === -1) {
-                acc.push({ servicesComponentId, budgetLines: [budgetLine] });
-            } else {
-                acc[index].budgetLines.push(budgetLine);
-            }
-            return acc;
-        }, [])
-        .sort((a, b) => {
-            if (a.servicesComponentId === null) return 1;
-            if (b.servicesComponentId === null) return -1;
-            return a.servicesComponentId - b.servicesComponentId;
-        });
 
     return {
         handleAddBLI,
