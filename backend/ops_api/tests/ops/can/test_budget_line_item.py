@@ -817,3 +817,26 @@ def test_valid_services_component(auth_client, app, test_bli):
 
     session.delete(sc)
     session.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_delete_budget_line_items(auth_client, loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    assert bli.id is not None
+    new_bli_id = bli.id
+
+    response = auth_client.delete(f"/api/v1/budget-line-items/{new_bli_id}")
+    assert response.status_code == 200
+
+    sc: BudgetLineItem = loaded_db.get(BudgetLineItem, new_bli_id)
+    assert not sc
