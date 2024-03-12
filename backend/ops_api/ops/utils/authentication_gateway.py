@@ -8,10 +8,18 @@ from ops_api.ops.utils.user import get_user_from_token
 
 
 class NotActiveUserError(Exception):
+    """
+    Exception to raise when the user is not active.
+    """
+
     pass
 
 
 def is_user_active(f):
+    """
+    Decorator to check if the user is active.
+    """
+
     @wraps(f)
     def decorated(*args, **kwargs):
         token = f(*args, **kwargs)
