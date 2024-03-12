@@ -1,9 +1,11 @@
 import os
 from logging.config import fileConfig
-
 from alembic import context
 from sqlalchemy import create_engine, engine_from_config, pool
 from sqlalchemy.orm import configure_mappers, declarative_base
+
+# Import config picker
+from utils.config_picker import get_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -64,6 +66,9 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    # Get the appropriate config based on environment
+    config_instance = get_config()
+
     url = os.getenv("SQLALCHEMY_DATABASE_URI")
 
     if not url:
