@@ -32,6 +32,9 @@ target_metadata = BaseModel.metadata  # noqa: F405
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+# Add debugging statements
+print("Current directory:", os.getcwd())
+print("Environment variables:", os.environ)
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
