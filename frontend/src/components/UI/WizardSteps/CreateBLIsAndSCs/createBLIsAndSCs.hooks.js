@@ -362,7 +362,7 @@ const useCreateBLIsAndSCs = (
             setIsEditMode(true);
             const budgetLineFromUrl = budgetLines.find((budgetLine) => budgetLine.id === +budgetLineIdFromUrl);
             if (budgetLineFromUrl) {
-                handleSetBudgetLineForEditingById(budgetLineFromUrl);
+                handleSetBudgetLineForEditingById(budgetLineFromUrl?.id);
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
