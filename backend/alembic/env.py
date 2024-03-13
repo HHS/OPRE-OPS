@@ -4,8 +4,13 @@ from alembic import context
 from sqlalchemy import create_engine, engine_from_config, pool
 from sqlalchemy.orm import configure_mappers, declarative_base
 
-# Import config picker
-from utils.config_picker import get_config
+# Add debug statement to check if config_picker is loaded
+print("Checking if config_picker is loaded correctly...")
+try:
+    from utils.config_picker import get_config
+    print("config_picker loaded successfully.")
+except ImportError as e:
+    print("Error loading config_picker module:", e)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
