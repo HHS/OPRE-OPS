@@ -964,15 +964,37 @@ paths:
           description: Internal Server Error
 
     patch:
-      summary: Update a new Budget Line Item (Merge)
+      summary: Update a Budget Line Item (Merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/BudgetLineItemRequest'
+      delete:
+        summary: Delete a Budget Line Item
+        parameters:
+          - $ref: '#/components/parameters/simulatedError'
+          - in: path
+            name: id
+            description: Id
+            required: true
+            schema:
+              type: integer
+              format: int32
+              minimum: 1
+              default: 1
 
       responses:
         '200':
