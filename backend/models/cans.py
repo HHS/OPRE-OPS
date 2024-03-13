@@ -17,6 +17,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    and_,
     case,
     select,
 )
@@ -26,7 +27,20 @@ from sqlalchemy.orm import Mapped, column_property, mapped_column, object_sessio
 from models.base import BaseModel
 from models.portfolios import Portfolio
 from models.users import User
-from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStepInstance, WorkflowStepStatus
+from models.workflows import (
+    Package,
+    PackageSnapshot,
+    WorkflowAction,
+    WorkflowInstance,
+    WorkflowStepInstance,
+    WorkflowStepStatus,
+    WorkflowTemplate,
+    WorkflowTriggerType,
+)
+
+# from ops_api.ops.utils.procurement_workflow_helper import (
+#     PROCUREMENT_WORKFLOW_TEMPLATE_NAME,
+# )
 
 
 class BudgetLineItemStatus(Enum):
@@ -205,6 +219,22 @@ class Agreement(BaseModel):
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
     }
+
+    @property
+    def procurement_tracker_workflow_id(self):
+        if object_session(self) is None:
+            return False
+        workflow_id = object_session(self).scalar(
+            select(WorkflowInstance.id).where(
+                and_(
+                    WorkflowInstance.workflow_action
+                    == WorkflowAction.PROCUREMENT_TRACKING,
+                    WorkflowInstance.associated_type == WorkflowTriggerType.AGREEMENT,
+                    WorkflowInstance.associated_id == self.id,
+                )
+            )
+        )
+        return workflow_id
 
 
 contract_support_contacts = Table(

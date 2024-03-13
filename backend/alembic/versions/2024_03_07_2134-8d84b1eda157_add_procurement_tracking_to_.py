@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
+
 from models import WorkflowAction
 
 # revision identifiers, used by Alembic.
