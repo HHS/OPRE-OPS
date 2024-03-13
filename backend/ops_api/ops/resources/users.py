@@ -3,12 +3,13 @@ from typing import Any
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from marshmallow import Schema
+from typing_extensions import override
+
 from models import BaseModel, User
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.users_schemas import PATCHRequestBody, POSTRequestBody, QueryParameters, UserResponse
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
-from typing_extensions import override
 
 
 class UsersItemAPI(BaseItemAPI):

@@ -1,8 +1,9 @@
 from typing import List
 
-from models.base import BaseModel
 from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from models.base import BaseModel
 
 
 class VendorContacts(BaseModel):

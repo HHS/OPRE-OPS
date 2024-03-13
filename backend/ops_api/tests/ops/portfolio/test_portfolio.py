@@ -1,6 +1,8 @@
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import select
+
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
 from models.portfolios import Portfolio, PortfolioStatus
 from ops_api.ops.utils.portfolios import (
@@ -8,7 +10,6 @@ from ops_api.ops.utils.portfolios import (
     _get_carry_forward_total,
     _get_total_fiscal_year_funding,
 )
-from sqlalchemy import select
 
 
 @pytest.mark.usefixtures("app_ctx")

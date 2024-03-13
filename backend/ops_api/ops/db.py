@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-from models import *  # noqa: F403, F401
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, mapper, scoped_session, sessionmaker
+
+from models import *  # noqa: F403, F401
 
 
 def init_db(

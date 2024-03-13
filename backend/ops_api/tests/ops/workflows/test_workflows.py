@@ -1,4 +1,5 @@
 import pytest
+
 from models.workflows import (
     WorkflowAction,
     WorkflowInstance,

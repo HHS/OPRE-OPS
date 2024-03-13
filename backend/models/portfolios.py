@@ -3,9 +3,10 @@ from enum import Enum
 from typing import List
 
 import sqlalchemy as sa
-from models.base import BaseModel
 from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
+
+from models.base import BaseModel
 
 
 class PortfolioStatus(Enum):
