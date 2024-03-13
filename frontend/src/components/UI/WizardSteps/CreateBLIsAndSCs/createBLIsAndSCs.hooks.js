@@ -1,15 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
+import suite from "./suite";
 import useAlert from "../../../../hooks/use-alert.hooks";
 import {
     useUpdateBudgetLineItemMutation,
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
-    useGetAgreementByIdQuery
+    useGetAgreementByIdQuery,
+    useDeleteBudgetLineItemMutation
 } from "../../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
-import suite from "./suite";
 import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
 
@@ -17,7 +18,7 @@ import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helper
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
- * @param {Array<Object>} budgetLines - Array of budget lines.
+ * @param {Array<any>} budgetLines - Array of budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
@@ -53,12 +54,13 @@ const useCreateBLIsAndSCs = (
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
     );
-    const [deleteAgreement] = useDeleteAgreementMutation();
     const navigate = useNavigate();
+    const { setAlert } = useAlert();
+    const [deleteAgreement] = useDeleteAgreementMutation();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
+    const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const { setAlert } = useAlert();
     const feesForCards = getProcurementShopSubTotal(selectedAgreement, budgetLines);
     const subTotalForCards = budgetLinesTotal(budgetLines);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLines);
@@ -179,9 +181,36 @@ const useCreateBLIsAndSCs = (
         });
     };
 
-    // TODO: Refactor to use new api call not yet implemented
-    const handleDeleteBudgetLine = () => {
-        alert("Not yet implemented");
+    const handleDeleteBudgetLine = (budgetLineId) => {
+        const budgetLine = budgetLines.find((bl) => bl.id === budgetLineId);
+        const budgetLineName = budgetLine?.display_name;
+        setShowModal(true);
+        setModalProps({
+            heading: `Are you sure you want to delete the budget line ${budgetLineName}?`,
+            actionButtonText: "Delete",
+            handleConfirm: () => {
+                deleteBudgetLineItem(budgetLineId)
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log("Deleted BLI:", fulfilled);
+                        setAlert({
+                            type: "success",
+                            heading: "Budget Line Deleted",
+                            message: `The budget line ${budgetLineName} has been successfully deleted.`
+                        });
+                    })
+                    .catch((rejected) => {
+                        console.error("Error Deleting Budget Line");
+                        console.error({ rejected });
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred. Please try again.",
+                            navigateUrl: "/error"
+                        });
+                    });
+            }
+        });
     };
 
     const cleanBudgetLineItemForApi = (data) => {
