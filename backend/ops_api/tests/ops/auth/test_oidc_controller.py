@@ -59,6 +59,14 @@ def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
 
 
 def test_login_succeeds_with_active_status(client, loaded_db, mocker):
+    # setup mocks
+    m1 = mocker.patch("ops_api.ops.utils.auth_views._get_token_and_user_data_from_oauth_provider")
+    m1.return_value = ({"access_token": "admin_user"}, {})
+    m2 = mocker.patch("ops_api.ops.utils.auth_views._get_token_and_user_data_from_internal_auth")
+    user = mocker.MagicMock()
+    user.to_dict.return_value = {}
+    m2.return_value = ("blah", "blah", user, False)
+
     res = client.post("/api/v1/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
     assert res.status_code == 200
 
