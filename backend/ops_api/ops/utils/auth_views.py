@@ -12,6 +12,7 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+
 from models.events import OpsEventType
 from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
 from ops_api.ops.utils.authentication import AuthenticationGateway

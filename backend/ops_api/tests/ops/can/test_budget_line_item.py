@@ -1,10 +1,11 @@
 import datetime
 
 import pytest
+from sqlalchemy_continuum import parent_class, version_class
+
 from models import CAN
 from models.cans import BudgetLineItem, BudgetLineItemStatus, ServicesComponent
 from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
-from sqlalchemy_continuum import parent_class, version_class
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -788,6 +789,14 @@ def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli):
     }
     response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
     assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli):
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json={"date_needed": None})
+    assert response.status_code == 200
+    assert response.json["date_needed"] is None
 
 
 @pytest.mark.usefixtures("app_ctx")

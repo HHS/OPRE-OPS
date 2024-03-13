@@ -2,6 +2,7 @@ from datetime import date
 
 import marshmallow_dataclass as mmdc
 import pytest
+
 from models import User
 from models.notifications import Notification
 from ops_api.ops.resources.notifications import Recipient, UpdateSchema
