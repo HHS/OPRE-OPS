@@ -115,7 +115,6 @@ def create_procurement_workflow(agreement_id):
     return workflow_instance
 
 
-# TODO: delete entire procurement workflow (mostly for testing cleanup)
 def delete_procurement_workflow(agreement_id):
     session = current_app.db_session
     agreement = session.get(Agreement, agreement_id)
