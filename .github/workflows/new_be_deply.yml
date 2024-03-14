@@ -9,15 +9,63 @@ on:
       - backend/**
       
 env:
-  # TERRAFORM_VERSION: "1.6.6"
-  # TF_IN_AUTOMATION: "True"
-  ENVIRONMENT: "dev"
   WORKING_DIR: "backend"
-  DOCKER_FILE: "Dockerfile.data-tools-import"
+  DT_DOCKER_FILE: "Dockerfile.data-tools-import"
+  BE_DOCKER_FILE: "Dockerfile.ops-api"
+  AZ_RESOURCE_GROUP: opre-ops-dev-app-rg
 
 jobs:
-  deploy: 
-    # needs: build
+  build-data-tools:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: Build and publish the Docker image for ${{ github.repository }}
+        uses: ./.github/actions/build-and-push
+        with:
+          image_name: ${{ github.repository }}/ops-${{ env.WORKING_DIR }} # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DT_DOCKER_FILE }}
+          image_tags: "unstable,${{ github.sha }}"
+  
+  build-backend:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: Build and publish the Docker image for ${{ github.repository }}
+        uses: ./.github/actions/build-and-push
+        with:
+          image_name: ${{ github.repository }}/ops-${{ env.WORKING_DIR }} # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
+          image_tags: "unstable,${{ github.sha }}"
+
+  deploy-data-tools: 
+    needs: build-data-tools
+
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+    
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          azureCredentials: ${{ secrets.AZURE_CREDS }}
+          containerAppName: opre-ops-data-tools
+          resourceGroup: ${{ env.AZ_RESOURCE_GROUP }}
+          imageToDeploy: ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+        
+  deploy-backend: 
+    needs: build-backend
 
     runs-on: ubuntu-latest
     steps: 
@@ -28,5 +76,5 @@ jobs:
         with:
           azureCredentials: ${{ secrets.AZURE_CREDS }}
           containerAppName: opre-ops-dev-backend
-          resourceGroup: opre-ops-dev-app-rg
-          imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:unstable
+          resourceGroup: ${{ env.AZ_RESOURCE_GROUP }}
+          imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ github.sha }}
