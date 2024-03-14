@@ -44,4 +44,4 @@ jobs:
             azureCredentials: ${{ secrets.AZURE_CREDS }}
             containerAppName: opre-ops-dev-${{ env.WORKING_DIR }}
             resourceGroup: ${{ env.AZ_RESOURCE_GROUP }}
-            imageToDeploy: ${{ github.repository }}/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
