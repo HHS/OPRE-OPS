@@ -49,13 +49,22 @@ def get_procurement_workflow_template() -> WorkflowTemplate:
     return procurement_workflow_template
 
 
-def create_procurement_workflow(agreement_id):
+def create_procurement_workflow(agreement_id) -> WorkflowInstance:
+    session = current_app.db_session
+    agreement = session.get(Agreement, agreement_id)
+    if not agreement:
+        raise ValueError("Invalid Agreement ID")
+
+    # if it already exists, just return it
+    if agreement.procurement_tracker_workflow_id:
+        return session.get(WorkflowInstance, agreement.procurement_tracker_workflow_id)
+
     user_id = None
     # TODO: How to get user when there might not be a request (in testing, etc)
     # token = verify_jwt_in_request()
     # user = get_user_from_token(token[1])
+
     workflow_template = get_procurement_workflow_template()
-    session = current_app.db_session
 
     workflow_instance = WorkflowInstance()
     workflow_instance.workflow_template_id = workflow_template.id

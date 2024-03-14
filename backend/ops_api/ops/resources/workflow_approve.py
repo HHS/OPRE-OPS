@@ -19,6 +19,7 @@ from models.workflows import (
 )
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.utils.procurement_workflow_helper import create_procurement_workflow
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 
@@ -77,7 +78,15 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
             create_approval_notification_for_submitter(workflow_step_instance)
 
-            update_blis(workflow_step_instance)
+            blis = update_blis(workflow_step_instance)
+            agreement_id = blis[0]["agreement_id"] if blis else None
+
+            if (
+                agreement_id is not None
+                and workflow_step_instance.workflow_instance.workflow_status == WorkflowStepStatus.APPROVED
+                and workflow_step_instance.workflow_instance.workflow_action == WorkflowAction.PLANNED_TO_EXECUTING
+            ):
+                create_procurement_workflow(agreement_id)
 
             return make_response_with_headers(
                 {
@@ -134,6 +143,7 @@ def update_blis(workflow_step_instance: WorkflowStepInstance):
             raise ValueError(f"Invalid WorkflowAction: {workflow_step_instance.workflow_instance.workflow_action}")
         current_app.db_session.add_all(blis)
         current_app.db_session.commit()
+        return blis
 
 
 def create_approval_notification_for_submitter(workflow_step_instance):
