@@ -20,7 +20,8 @@ import ContractTypeSelect from "../../../pages/servicesComponents/ContractTypeSe
 import {
     useAddAgreementMutation,
     useGetProductServiceCodesQuery,
-    useUpdateAgreementMutation
+    useUpdateAgreementMutation,
+    useDeleteAgreementMutation
 } from "../../../api/opsAPI";
 import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
 import GoBackButton from "../../UI/Button/GoBackButton";
@@ -39,6 +40,7 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
+ * @param {number} props.selectedAgreementId - The ID of the selected agreement. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementEditForm = ({
@@ -47,7 +49,8 @@ export const AgreementEditForm = ({
     goToNext,
     isReviewMode,
     isEditMode,
-    setIsEditMode
+    setIsEditMode,
+    selectedAgreementId
 }) => {
     // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
@@ -79,6 +82,7 @@ export const AgreementEditForm = ({
 
     const [updateAgreement] = useUpdateAgreementMutation();
     const [addAgreement] = useAddAgreementMutation();
+    const [deleteAgreement] = useDeleteAgreementMutation();
 
     const {
         agreement,
@@ -242,12 +246,38 @@ export const AgreementEditForm = ({
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
-            actionButtonText: "Cancel",
+            heading: "Are you sure you want to cancel creating a new agreement? Your progress will not be saved.",
+            actionButtonText: "Cancel Agreement",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                if (isWizardMode) {
-                    navigate("/agreements");
+                if (selectedAgreementId && !isEditMode && !isReviewMode) {
+                    deleteAgreement(selectedAgreementId)
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                            setAlert({
+                                type: "success",
+                                heading: "Create New Agreement Cancelled",
+                                message: "Your agreement has been cancelled.",
+                                redirectUrl: "/agreements"
+                            });
+                        })
+                        .catch((rejected) => {
+                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred while deleting the agreement.",
+                                redirectUrl: "/error"
+                            });
+                        });
+                } else if (isWizardMode) {
+                    setAlert({
+                        type: "success",
+                        heading: "Create New Agreement Cancelled",
+                        message: "Your agreement has been cancelled.",
+                        redirectUrl: "/agreements"
+                    });
                 } else {
                     if (isEditMode && setIsEditMode) setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
@@ -484,7 +514,8 @@ AgreementEditForm.propTypes = {
     goToNext: PropTypes.func,
     isReviewMode: PropTypes.bool,
     isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func
+    setIsEditMode: PropTypes.func,
+    selectedAgreementId: PropTypes.number
 };
 
 export default AgreementEditForm;
