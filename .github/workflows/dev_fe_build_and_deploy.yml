@@ -4,18 +4,17 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - cml/add-alembic-dev
+      - main
     paths:
       - 'frontend/**'
-
+      
 env:
-  TF_IN_AUTOMATION: "True"
-  ENVIRONMENT: "dev"
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
+  AZ_RESOURCE_GROUP: opre-ops-dev-app-rg
 
 jobs:
-  build:
+  build-frontend:
     permissions:
       contents: read
       packages: write
@@ -32,32 +31,17 @@ jobs:
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "unstable,${{ github.sha }}"
 
-  frontend-deploy:
-    needs: build
-    permissions:
-      pull-requests: write
+  deploy-frontend: 
+    needs: build-frontend
 
     runs-on: ubuntu-latest
-    steps:
+    steps: 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-      
-      - name: Terraform Apply
-        uses: ./.github/actions/tf-apply
+   
+      - name: Deploy Container App
+        uses: azure/container-apps-deploy-action@02d045129c058b13312276b50a552834cf74e2af #v2
         with:
-          terraform_directory: "terraform/eastus/ops/${{ env.ENVIRONMENT }}/stacks/${{ env.WORKING_DIR }}"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "containerImageTag": "${{ github.sha }}",
-              "dnsZoneName": "opre-ops.flexion.us",
-              "frontendName": "opre-ops-dev-frontend",
-              "containerAppEnvName": "opre-ops-dev-app-cae",
-              "resourceGroupName": "opre-ops-dev-app-rg"
-            }
-
-  
+            azureCredentials: ${{ secrets.AZURE_CREDS }}
+            containerAppName: opre-ops-dev-${{ env.WORKING_DIR }}
+            resourceGroup: ${{ env.AZ_RESOURCE_GROUP }}
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
