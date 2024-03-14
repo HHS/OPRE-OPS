@@ -27,8 +27,8 @@ import AllServicesComponentSelect from "../../../../pages/servicesComponents/All
  * @param {function} props.setEnteredDay - A function to set the entered budget line desired award day.
  * @param {function} props.setEnteredYear - A function to set the entered budget line desired award year.
  * @param {function} props.setEnteredComments - A function to set the entered budget line comments.
- * @param {function} props.handleEditForm - A function to handle editing the budget line form.
- * @param {function} props.handleSubmitForm - A function to handle submitting the budget line form.
+ * @param {function} props.handleEditBLI - A function to handle editing the budget line form.
+ * @param {function} props.handleAddBLI - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {number} props.agreementId - The agreement ID.
@@ -50,8 +50,8 @@ export const CreateBudgetLinesForm = ({
     setEnteredDay,
     setEnteredYear,
     setEnteredComments,
-    handleEditForm = () => {},
-    handleSubmitForm = () => {},
+    handleEditBLI = () => {},
+    handleAddBLI = () => {},
     handleResetForm = () => {},
     isReviewMode,
     agreementId
@@ -93,7 +93,7 @@ export const CreateBudgetLinesForm = ({
     };
 
     return (
-        <form className="grid-row grid-gap">
+        <form className="grid-row grid-gap margin-y-3">
             <div className="grid-col-4">
                 <div className="usa-form-group">
                     <AllServicesComponentSelect
@@ -162,7 +162,8 @@ export const CreateBudgetLinesForm = ({
                     <div className="display-flex flex-justify-end">
                         <button
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.preventDefault();
                                 handleResetForm();
                                 if (isReviewMode) {
                                     suite.reset();
@@ -175,7 +176,7 @@ export const CreateBudgetLinesForm = ({
                             className="usa-button usa-button--outline margin-top-2 margin-right-0"
                             data-cy="update-budget-line"
                             disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
-                            onClick={handleEditForm}
+                            onClick={handleEditBLI}
                         >
                             Update Budget Line
                         </button>
@@ -185,7 +186,7 @@ export const CreateBudgetLinesForm = ({
                         id="add-budget-line"
                         className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
                         disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
-                        onClick={handleSubmitForm}
+                        onClick={handleAddBLI}
                     >
                         <FontAwesomeIcon
                             icon={faAdd}
@@ -215,8 +216,8 @@ CreateBudgetLinesForm.propTypes = {
     setEnteredDay: PropTypes.func,
     setEnteredYear: PropTypes.func,
     setEnteredComments: PropTypes.func,
-    handleEditForm: PropTypes.func,
-    handleSubmitForm: PropTypes.func,
+    handleAddBLI: PropTypes.func,
+    handleEditBLI: PropTypes.func,
     handleResetForm: PropTypes.func,
     isReviewMode: PropTypes.bool,
     agreementId: PropTypes.number

@@ -14,6 +14,7 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
     };
 
     const goToNext = (stepData) => {
+        window.scrollTo(0, 0);
         const nextIndex = currentIndex + 1;
         const updatedData = {
             ...formData,
