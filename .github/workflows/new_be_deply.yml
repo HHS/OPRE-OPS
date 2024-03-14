@@ -28,9 +28,14 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDS }}
 
-      - name: Run Azure CLI commands
-        uses: azure/CLI@v1
+      # - name: Run Azure CLI commands
+      #   uses: azure/CLI@v1
+      #   with:
+      #     azcliversion: 2.30.0
+      #     inlineScript: |
+      #       az group list
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v1
         with:
-          azcliversion: 2.30.0
-          inlineScript: |
-            az group list
+          containerAppName: opre-ops-dev-backend
+          imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:unstable
