@@ -1,10 +1,11 @@
 import datetime
 
 import pytest
+from sqlalchemy_continuum import parent_class, version_class
+
 from models import CAN
 from models.cans import BudgetLineItem, BudgetLineItemStatus, ServicesComponent
 from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
-from sqlalchemy_continuum import parent_class, version_class
 
 
 @pytest.mark.usefixtures("app_ctx")

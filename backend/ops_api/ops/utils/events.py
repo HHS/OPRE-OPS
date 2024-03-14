@@ -4,11 +4,12 @@ from typing import Optional, Type
 from flask import current_app, request
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from sqlalchemy.orm import Session
+from werkzeug.exceptions import UnsupportedMediaType
+
 from models import User
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.orm import Session
-from werkzeug.exceptions import UnsupportedMediaType
 
 
 class OpsEventHandler:

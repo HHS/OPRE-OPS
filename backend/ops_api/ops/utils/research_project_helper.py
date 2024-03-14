@@ -3,10 +3,11 @@ from dataclasses import dataclass
 import desert
 import marshmallow
 from flask import current_app
-from models import CAN, BudgetLineItem
-from models.cans import CANFiscalYear
 from sqlalchemy import distinct, select
 from sqlalchemy.sql.functions import coalesce, sum
+
+from models import CAN, BudgetLineItem
+from models.cans import CANFiscalYear
 
 
 @dataclass

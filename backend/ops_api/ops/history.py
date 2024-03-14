@@ -9,12 +9,13 @@ from types import NoneType
 from flask import current_app
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
-from ops_api.ops.utils.user import get_user_from_token
 from sqlalchemy import inspect
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
+
+from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
+from ops_api.ops.utils.user import get_user_from_token
 
 DbRecordAudit = namedtuple("DbRecordAudit", "row_key changes")
 

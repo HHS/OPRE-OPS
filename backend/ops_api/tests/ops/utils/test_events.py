@@ -1,6 +1,7 @@
 import traceback
 
 import pytest
+
 from models.events import OpsEventStatus, OpsEventType
 from ops_api.ops.utils.events import OpsEventHandler
 

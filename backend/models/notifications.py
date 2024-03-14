@@ -1,6 +1,7 @@
-from models.base import BaseModel
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+
+from models.base import BaseModel
 
 
 class Notification(BaseModel):

@@ -3,6 +3,7 @@ import urllib.parse
 
 from data_tools.environment.common import DataToolsConfig
 
+
 class AzureConfig(DataToolsConfig):
     @property
     def db_connection_string(self) -> str:

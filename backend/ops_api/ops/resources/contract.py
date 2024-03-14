@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from flask import Response, current_app, request
 from marshmallow import fields
+from typing_extensions import override
+
 from models import ContractType
 from models.cans import ContractAgreement
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
@@ -9,7 +11,6 @@ from ops_api.ops.schemas.agreements import AgreementData
 from ops_api.ops.schemas.team_members import TeamMembers
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
-from typing_extensions import override
 
 
 class ContractAgreementResponse(AgreementData):
