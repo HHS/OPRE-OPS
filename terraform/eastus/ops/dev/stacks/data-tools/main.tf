@@ -22,11 +22,19 @@ module "data-tools" {
     },
     {
       name  = "PGUSER"
+      value = "ops"
+    },
+    {
+      name  = "ADMIN_PGUSER"
       value = "psqladmin"
     },
     {
       name        = "PGPASSWORD"
       secret_name = "pgpassword"
+    },
+    {
+      name        = "ADMIN_PGPASSWORD"
+      secret_name = "admin-pgpassword"
     },
     {
       name  = "PGHOST"
@@ -42,9 +50,12 @@ module "data-tools" {
     },
   ]
   secrets = [
-
     {
       name  = "pgpassword"
+      value = data.azurerm_key_vault_secret.ops-pw.value
+    },
+    {
+      name  = "admin-pgpassword"
       value = data.azurerm_key_vault_secret.admin-pw.value
     },
   ]
@@ -74,6 +85,11 @@ data "azurerm_key_vault" "vault" {
 
 data "azurerm_key_vault_secret" "admin-pw" {
   name         = "opre-ops-dev-db-psql-admin-password"
+  key_vault_id = data.azurerm_key_vault.vault.id
+}
+
+data "azurerm_key_vault_secret" "ops-pw" {
+  name         = "ops-role-password"
   key_vault_id = data.azurerm_key_vault.vault.id
 }
 
