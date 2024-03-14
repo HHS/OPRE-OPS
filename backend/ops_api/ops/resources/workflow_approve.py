@@ -79,7 +79,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
             create_approval_notification_for_submitter(workflow_step_instance)
 
             blis = update_blis(workflow_step_instance)
-            agreement_id = blis[0]["agreement_id"] if blis else None
+            agreement_id = blis[0].agreement_id if blis else None
 
             if (
                 agreement_id is not None
