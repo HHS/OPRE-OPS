@@ -10,6 +10,7 @@ html {
 // COLORS
 
 :root {
+    --white: #ffffff;
     --primary-light: #bcd9ed;
     --primary: #336a90;
     --primary-dark: #264a64;
@@ -55,6 +56,7 @@ html {
 }
 
 $themeColors: (
+    "white": var(--white),
     "primary-light": var(--primary-light),
     "primary": var(--primary),
     "primary-dark": var(--primary-dark),
@@ -96,7 +98,7 @@ $themeColors: (
     "data-viz-secondary-20": var(--data-viz-secondary-20),
     "data-viz-secondary-23": var(--data-viz-secondary-23),
     "data-viz-secondary-26": var(--data-viz-secondary-26),
-    "data-viz-secondary-58": var(--data-viz-secondary-58),
+    "data-viz-secondary-58": var(--data-viz-secondary-58)
 );
 
 @each $name, $color in $themeColors {
@@ -135,24 +137,28 @@ $themeColors: (
 // but without the JS for hover/transition effects
 // There is simpler global option here: https://simurai.com/blog/2011/07/26/webkit-scrollbar
 .force-show-scrollbars::-webkit-scrollbar-track:vertical {
-    border-left: 1px solid #E7E7E7;
-    box-shadow: 1px 0 1px 0 #F6F6F6 inset, -1px 0 1px 0 #F6F6F6 inset;
+    border-left: 1px solid #e7e7e7;
+    box-shadow:
+        1px 0 1px 0 #f6f6f6 inset,
+        -1px 0 1px 0 #f6f6f6 inset;
 }
 
 .force-show-scrollbars::-webkit-scrollbar-track:horizontal {
-    border-top: 1px solid #E7E7E7;
-    box-shadow: 0 1px 1px 0 #F6F6F6 inset, 0 -1px 1px 0 #F6F6F6 inset;
+    border-top: 1px solid #e7e7e7;
+    box-shadow:
+        0 1px 1px 0 #f6f6f6 inset,
+        0 -1px 1px 0 #f6f6f6 inset;
 }
 
 .force-show-scrollbars::-webkit-scrollbar {
     -webkit-appearance: none;
-    background-color: #FAFAFA;
+    background-color: #fafafa;
     width: 16px;
 }
 
 .force-show-scrollbars::-webkit-scrollbar-thumb {
     background-clip: padding-box;
-    background-color: #C1C1C1;
+    background-color: #c1c1c1;
     border-color: transparent;
     border-radius: 9px 8px 8px 9px;
     border-style: solid;
