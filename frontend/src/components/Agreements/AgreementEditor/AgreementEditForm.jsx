@@ -335,6 +335,7 @@ export const AgreementEditForm = ({
                 name="name"
                 label="Agreement Title"
                 messages={res.getErrors("name")}
+                maxLength={200}
                 className={cn("name")}
                 isRequired={true}
                 value={agreementTitle}
@@ -467,7 +468,7 @@ export const AgreementEditForm = ({
             <TextArea
                 name="agreementNotes"
                 label="Notes (optional)"
-                maxLength={1000}
+                maxLength={500}
                 messages={res.getErrors("agreementNotes")}
                 className={cn("agreementNotes")}
                 value={agreementNotes || ""}
