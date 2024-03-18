@@ -1,12 +1,12 @@
 import { screen, render } from "@testing-library/react";
+import { vi } from "vitest";
 import { ProcurementShopSelectWithFee } from "./ProcurementShopSelectWithFee";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
-import { vi } from "vitest";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
-vi.mock("../../../../api/opsAPI");
+vi.mock("../../../api/opsAPI");
 
 const sampleShops = [
     { id: 1, name: "Shop1", abbr: "S1", fee: 0.1 },

@@ -1,12 +1,12 @@
 import { render, fireEvent, screen } from "@testing-library/react";
+import { vi } from "vitest";
 import PortfoliosComboBox from "./PortfoliosComboBox";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
-import { vi } from "vitest";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
-vi.mock("../../../../api/opsAPI");
+vi.mock("../../../api/opsAPI");
 
 const samplePortfolios = [
     { id: 1, name: "Portfolio1" },

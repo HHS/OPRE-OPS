@@ -1,12 +1,12 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
+import { vi } from "vitest";
 import AgreementSelect from "./AgreementSelect";
 import { useGetUserByIdQuery } from "../../../api/opsAPI";
-import { vi } from "vitest";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
-vi.mock("../../../../api/opsAPI");
+vi.mock("../../../api/opsAPI");
 
 describe("AgreementSelect", () => {
     const agreementsMock = [
