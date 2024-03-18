@@ -61,6 +61,7 @@ def test_workflow_planned_to_executing(auth_client, loaded_db):
     loaded_db.commit()
     assert agreement.id is not None
     agreement_id = agreement.id
+    assert agreement.procurement_tracker_workflow_id is None
 
     bli = BudgetLineItem(
         agreement_id=agreement_id,
