@@ -8,9 +8,7 @@ html {
 }
 
 // COLORS
-
 :root {
-    --white: #ffffff;
     --primary-light: #bcd9ed;
     --primary: #336a90;
     --primary-dark: #264a64;
@@ -56,7 +54,6 @@ html {
 }
 
 $themeColors: (
-    "white": var(--white),
     "primary-light": var(--primary-light),
     "primary": var(--primary),
     "primary-dark": var(--primary-dark),
