@@ -125,7 +125,7 @@ paths:
         '500':
           description: Internal Server Error
     delete:
-      summary: Delete am Agreement
+      summary: Delete an Agreement
       parameters:
         - $ref: '#/components/parameters/simulatedError'
         - in: path
@@ -1233,7 +1233,7 @@ paths:
           description: Internal Server Error
 
     delete:
-      summary: Delete am Agreement
+      summary: Delete a Service Component
       parameters:
         - $ref: '#/components/parameters/simulatedError'
         - in: path
