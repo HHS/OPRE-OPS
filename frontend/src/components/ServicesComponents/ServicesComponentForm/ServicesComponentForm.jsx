@@ -63,6 +63,7 @@ function ServicesComponentForm({
                             value={formData?.number || ""}
                             options={optionsWithSelected}
                             isRequired={true}
+                            className="width-card-lg"
                         />
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (
                             <div className="usa-checkbox margin-left-5 margin-top-3">

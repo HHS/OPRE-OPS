@@ -64,7 +64,7 @@ const Select = ({
             <div className="display-flex flex-align-center margin-top-1">
                 <select
                     id={name}
-                    className={`usa-select margin-top-0 width-card-lg ${messages.length ? "usa-input--error" : ""}`}
+                    className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
                     name={name}
                     onChange={handleChange}
                     value={value}

@@ -456,7 +456,7 @@ export const AgreementEditForm = ({
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedTeamMembers={setSelectedTeamMembers}
-                    overrideStyles={{ width: "12.8em" }}
+                    overrideStyles={{ width: "14.375rem" }}
                 />
             </div>
 

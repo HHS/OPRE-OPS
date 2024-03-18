@@ -67,7 +67,7 @@ export const ProcurementShopSelect = ({
             </label>
             <div className="display-flex flex-align-center">
                 <select
-                    className="usa-select margin-top-0 width-fit-content"
+                    className="usa-select margin-top-0"
                     name="procurement-shop-select"
                     id="procurement-shop-select"
                     onChange={handleChange}
