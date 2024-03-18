@@ -77,7 +77,7 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     jwtMgr.init_app(app)
     oauth.init_app(app)
 
-    db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"), is_unit_test)
+    db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"))
     app.db_session = db_session
     app.engine = engine
 
