@@ -1,8 +1,8 @@
 import { useGetResearchProjectsQuery, useGetAgreementsByResearchProjectFilterQuery } from "../../api/opsAPI";
 import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator";
-import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelectWithSummaryCard";
-import AgreementSelect from "../../components/UI/Form/AgreementSelect";
+import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelectWithSummaryCard";
+import AgreementSelect from "../../components/Agreements/AgreementSelect";
 import { useBudgetLines, useSetState } from "./budgetLineContext";
 
 export const StepSelectProjectAndAgreement = ({ goToNext }) => {

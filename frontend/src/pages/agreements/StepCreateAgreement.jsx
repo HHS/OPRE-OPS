@@ -2,7 +2,7 @@ import AgreementEditForm from "../../components/Agreements/AgreementEditor/Agree
 import PropTypes from "prop-types";
 import EditModeTitle from "./EditModeTitle";
 import StepIndicator from "../../components/UI/StepIndicator";
-import ProjectSummaryCard from "../../components/ResearchProjects/ProjectSummaryCard/ProjectSummaryCard";
+import ProjectSummaryCard from "../../components/Projects/ProjectSummaryCard/ProjectSummaryCard";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 
 /**
