@@ -29,7 +29,7 @@ function ServicesComponentListItem({ id, title, periodStart, periodEnd, setFormD
 
     return (
         <div
-            className="width-full flex-column padding-2 margin-top-4 bg-brand-white border-base-light hover:bg-base-lightest hover:border-base-lighter border-2px radius-lg"
+            className="width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter border-2px radius-lg"
             style={{ minHeight: "8.375rem" }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
