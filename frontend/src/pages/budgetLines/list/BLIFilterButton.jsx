@@ -3,8 +3,8 @@ import Modal from "react-modal";
 import customStyles from "./BLIFilterButton.module.css";
 import FilterButton from "../../../components/UI/FilterButton/FilterButton";
 import FiscalYearComboBox from "../../../components/UI/Form/FiscalYearComboBox";
-import PortfoliosComboBox from "../../../components/UI/Form/PortfoliosComboBox";
-import BLIStatusComboBox from "../../../components/UI/Form/BLIStatusComboBox";
+import PortfoliosComboBox from "../../../components/Portfolios/PortfoliosComboBox";
+import BLIStatusComboBox from "../../../components/BudgetLineItems/BLIStatusComboBox";
 
 /**
  * A filter for agreements.

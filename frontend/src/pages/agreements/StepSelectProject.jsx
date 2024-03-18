@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelectWithSummaryCard";
+import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelectWithSummaryCard";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
 import { useGetResearchProjectsQuery, useDeleteAgreementMutation } from "../../api/opsAPI";
 import {

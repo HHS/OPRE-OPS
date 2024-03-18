@@ -3,30 +3,30 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 
-import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWithFee";
-import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
-import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
-import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
-import TeamMemberComboBox from "../../UI/Form/TeamMemberComboBox";
-import TeamMemberList from "../../UI/Form/TeamMemberList";
+import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
+import AgreementReasonSelect from "../AgreementReasonSelect";
+import AgreementTypeSelect from "../AgreementTypeSelect";
+import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
+import TeamMemberComboBox from "../TeamMemberComboBox";
+import TeamMemberList from "../TeamMemberList";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { formatTeamMember } from "../../../api/postAgreements";
-import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
+import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
 import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
-import ContractTypeSelect from "../../../pages/servicesComponents/ContractTypeSelect";
+import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import {
     useAddAgreementMutation,
     useGetProductServiceCodesQuery,
     useUpdateAgreementMutation,
     useDeleteAgreementMutation
 } from "../../../api/opsAPI";
-import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
+import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import GoBackButton from "../../UI/Button/GoBackButton";
 import useAlert from "../../../hooks/use-alert.hooks";
-import ServiceReqTypeSelect from "../../../pages/servicesComponents/ServiceReqTypeSelect";
+import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**

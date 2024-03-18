@@ -1,6 +1,6 @@
 import Accordion from "../../UI/Accordion";
-import ResearchTypeComboBox from "../../UI/Form/ResearchTypeComboBox";
-import SpecialTopicComboBox from "../../UI/Form/SpecialTopicComboBox";
+import ResearchTypeComboBox from "../ResearchTypeComboBox";
+import SpecialTopicComboBox from "../SpecialTopicComboBox";
 
 const AgreementAddInfoAccordion = () => {
     return (

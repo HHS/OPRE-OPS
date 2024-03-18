@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer } from "react";
-import { SERVICE_REQ_TYPES } from "../../../pages/servicesComponents/servicesComponents.constants";
+import { SERVICE_REQ_TYPES } from "../../ServicesComponents/servicesComponents.constants";
 
 export const AgreementEditorContext = createContext(null);
 export const EditAgreementDispatchContext = createContext(null);
