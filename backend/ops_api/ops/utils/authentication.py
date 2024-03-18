@@ -9,6 +9,7 @@ from authlib.integrations.requests_client import OAuth2Session
 from authlib.jose import JsonWebToken, JWTClaims
 from authlib.jose import jwt as jose_jwt
 from flask import current_app
+
 from ops_api.ops.utils.auth import get_jwks
 
 

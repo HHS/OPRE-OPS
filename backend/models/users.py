@@ -2,10 +2,11 @@
 from enum import Enum, auto
 from typing import List, Optional
 
-from models import BaseModel
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import ENUM, UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
+
+from models import BaseModel
 
 
 class UserRole(BaseModel):

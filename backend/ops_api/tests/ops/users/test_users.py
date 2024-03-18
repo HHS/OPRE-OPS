@@ -1,5 +1,6 @@
 import pytest
 from flask_jwt_extended import create_access_token
+
 from models import UserStatus
 from models.users import User
 

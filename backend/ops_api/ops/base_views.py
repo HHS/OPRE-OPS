@@ -7,15 +7,16 @@ from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from marshmallow import EXCLUDE, Schema, ValidationError
+from sqlalchemy import select
+from sqlalchemy.exc import PendingRollbackError
+from typing_extensions import override
+
 from models.base import BaseModel
 from ops_api.ops.utils.auth import auth_gateway
 from ops_api.ops.utils.authentication_gateway import NotActiveUserError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
-from sqlalchemy import select
-from sqlalchemy.exc import PendingRollbackError
-from typing_extensions import override
 
 
 def generate_validator(model: BaseModel) -> BaseModel.Validator:

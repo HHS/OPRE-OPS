@@ -1,4 +1,5 @@
 import pytest
+
 from models.cans import CANFiscalYear
 
 

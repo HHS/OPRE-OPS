@@ -1,4 +1,6 @@
 import pytest
+from sqlalchemy import select
+
 from models import (
     AcquisitionPlanning,
     Award,
@@ -13,7 +15,6 @@ from models import (
     WorkflowTemplate,
 )
 from ops_api.ops.utils.procurement_workflow_helper import create_procurement_workflow, get_procurement_workflow_template
-from sqlalchemy import select
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
