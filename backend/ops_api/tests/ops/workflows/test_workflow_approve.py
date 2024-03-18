@@ -103,8 +103,13 @@ def test_workflow_planned_to_executing(auth_client, loaded_db):
     agreement: Agreement = loaded_db.get(Agreement, agreement_id)
     assert agreement.procurement_tracker_workflow_id
 
+    response = auth_client.get(f"/api/v1/agreements/{agreement_id}")
+    assert response.status_code == 200
+    resp_json = response.json
+    assert resp_json["procurement_tracker_workflow_id"] is not None
+
     delete_procurement_workflow(agreement_id)
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
     loaded_db.commit()
-    # more cleanup? approval workflows, etc
+    # more cleanup? delete approval and procurement workflows, etc?
