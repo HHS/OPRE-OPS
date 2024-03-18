@@ -56,6 +56,8 @@ class WorkflowApprovalListApi(BaseItemAPI):
         user = get_user_from_token(token[1])
 
         workflow_step_instance = current_app.db_session.get(WorkflowStepInstance, workflow_step_id)
+        if not workflow_step_instance:
+            return make_response_with_headers({"message": f"No workflow step instance for {workflow_step_id=}"}, 400)
         if user.id not in workflow_step_instance.approvers["users"]:
             return make_response_with_headers({"message": "User is not an approver for this step"}, 401)
         # TODO: Create a better principal check for users/groups/roles
@@ -74,6 +76,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
                 else None
             )
             current_app.db_session.add(workflow_step_instance)
+            current_app.db_session.add(workflow_step_instance.workflow_instance)
             current_app.db_session.commit()
 
             create_approval_notification_for_submitter(workflow_step_instance)
@@ -110,6 +113,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
                 else None
             )
             current_app.db_session.add(workflow_step_instance)
+            current_app.db_session.add(workflow_step_instance.workflow_instance)
             current_app.db_session.commit()
 
             create_rejection_notification_for_submitter(workflow_step_instance)

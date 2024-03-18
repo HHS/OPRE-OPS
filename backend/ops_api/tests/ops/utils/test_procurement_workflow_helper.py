@@ -12,6 +12,7 @@ from models import (
     PreSolicitation,
     ProcurementStep,
     Solicitation,
+    WorkflowAction,
     WorkflowInstance,
     WorkflowTemplate,
 )
@@ -70,6 +71,8 @@ def test_create_procurement_workflow(loaded_db):
 
     agreement = loaded_db.get(Agreement, test_agreement_id)
     assert agreement.procurement_tracker_workflow_id == workflow_instance.id
+    workflow_instance = loaded_db.get(WorkflowInstance, workflow_instance.id)
+    assert workflow_instance.workflow_action == WorkflowAction.PROCUREMENT_TRACKING
 
     # procurement steps tied to this agreement and workflow steps
     stmt = select(ProcurementStep).where(ProcurementStep.agreement_id == test_agreement_id)

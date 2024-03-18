@@ -220,7 +220,7 @@ class WorkflowStepInstance(BaseModel):
                     WorkflowStepInstance,
                     WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
                 )
-                .where(WorkflowInstance.id == self.id)
+                .where(WorkflowStepInstance.id == self.id)
             )
             .all()
         )

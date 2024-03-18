@@ -13,6 +13,7 @@ from models import (
     ContractType,
     ServiceRequirementType,
     WorkflowAction,
+    WorkflowInstance,
     WorkflowStepInstance,
     WorkflowStepStatus,
 )
@@ -81,12 +82,23 @@ def test_workflow_planned_to_executing(auth_client, loaded_db):
         "workflow_action": "PLANNED_TO_EXECUTING",
     }
 
+    bli: BudgetLineItem = loaded_db.get(BudgetLineItem, bli_id)
+    assert not bli.has_active_workflow
+    assert not bli.active_workflow_current_step_id
+
     response = auth_client.post("/api/v1/workflow-submit/", json=data)
     assert response.status_code == 201
 
     bli: BudgetLineItem = loaded_db.get(BudgetLineItem, bli_id)
     assert bli.has_active_workflow
     assert bli.active_workflow_current_step_id
+
+    workflow_step_instance: WorkflowStepInstance = loaded_db.get(
+        WorkflowStepInstance, bli.active_workflow_current_step_id
+    )
+    package_entities = workflow_step_instance.package_entities
+    assert "budget_line_item_ids" in package_entities
+    assert package_entities["budget_line_item_ids"] == [bli.id]
 
     data = {
         "workflow_step_action": "APPROVE",
@@ -104,6 +116,9 @@ def test_workflow_planned_to_executing(auth_client, loaded_db):
     agreement: Agreement = loaded_db.get(Agreement, agreement_id)
     assert agreement.procurement_tracker_workflow_id
 
+    workflow_instance = loaded_db.get(WorkflowInstance, agreement.procurement_tracker_workflow_id)
+    assert workflow_instance.workflow_action == WorkflowAction.PROCUREMENT_TRACKING
+
     response = auth_client.get(f"/api/v1/agreements/{agreement_id}")
     assert response.status_code == 200
     resp_json = response.json
@@ -113,4 +128,4 @@ def test_workflow_planned_to_executing(auth_client, loaded_db):
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
     loaded_db.commit()
-    # more cleanup? delete approval and procurement workflows, etc?
+    # more cleanup? delete approval workflows, etc?

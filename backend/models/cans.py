@@ -570,7 +570,7 @@ class BudgetLineItem(BaseModel):
         if object_session(self) is None:
             return None
         current_workflow_step_instance_id = object_session(self).scalar(
-            select(WorkflowInstance.id)
+            select(WorkflowInstance.current_workflow_step_instance_id)
             .join(
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
@@ -578,7 +578,6 @@ class BudgetLineItem(BaseModel):
             .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return current_workflow_step_instance_id
 
