@@ -14,8 +14,9 @@ from flask_jwt_extended import (
 )
 
 from models.events import OpsEventType
+from ops_api.ops.base_views import handle_api_error
 from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
-from ops_api.ops.utils.authentication import AuthenticationGateway
+from ops_api.ops.utils.authentication_gateway import AuthenticationGateway
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -23,94 +24,85 @@ from ops_api.ops.utils.user import register_user
 
 
 @error_simulator
+@handle_api_error
 def login() -> Union[Response, tuple[str, int]]:
-    try:
-        auth_code = request.json.get("code")
-        provider = request.json.get("provider")
-        current_app.logger.debug(f"login - auth_code: {auth_code}")
-        current_app.logger.debug(f"login - provider: {provider}")
+    auth_code = request.json.get("code")
+    provider = request.json.get("provider")
+    current_app.logger.debug(f"login - auth_code: {auth_code}")
+    current_app.logger.debug(f"login - provider: {provider}")
 
-        with current_app.app_context():
-            auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
+    with current_app.app_context():
+        auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
 
-        with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
-            if auth_code is None:
-                return "Invalid Auth Code", 400
+    with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
+        if auth_code is None:
+            return "Invalid Auth Code", 400
 
-            if provider not in auth_gateway.providers.keys():
-                return "Invalid provider name", 400
+        if provider not in auth_gateway.providers.keys():
+            return "Invalid provider name", 400
 
-            token = auth_gateway.authenticate(provider, auth_code)
+        token = auth_gateway.authenticate(provider, auth_code)
 
-            if not token:
-                current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {auth_code}")
-                return "Invalid Provider Auth Token", 400
+        if not token:
+            current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {auth_code}")
+            return "Invalid Provider Auth Token", 400
 
-            user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
-            # Issues where user_data is sometimes just a string, and sometimes a dict.
-            if isinstance(user_data, str):
-                user_data = json.loads(user_data)  # pragma: allowlist
-            else:
-                user_data = user_data
-            current_app.logger.debug(f"Provider Returned user_data: {user_data}")
+        user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
+        # Issues where user_data is sometimes just a string, and sometimes a dict.
+        if isinstance(user_data, str):
+            user_data = json.loads(user_data)  # pragma: allowlist
+        else:
+            user_data = user_data
+        current_app.logger.debug(f"Provider Returned user_data: {user_data}")
 
-            (
-                access_token,
-                refresh_token,
-                user,
-                is_new_user,
-            ) = _get_token_and_user_data_from_internal_auth(user_data)
-
-        la.metadata.update(
-            {
-                "user": user.to_dict(),
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "oidc_access_token": token,
-            }
-        )
-
-        response = make_response_with_headers(
-            {
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "is_new_user": is_new_user,
-                "user": user.to_dict(),
-            }
-        )
-        # TODO: For now, setting the cookie 'secure' flag based on our DEBUG,
-        # but should create a dedicated setting.
-        secure = not current_app.config["DEBUG"]
-
-        access_expires = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES").total_seconds()
-        refresh_expires = current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES").total_seconds()
-
-        response.set_cookie(
-            "access_token_cookie",
+        (
             access_token,
-            httponly=False,  # TODO: Update this once refactored
-            secure=secure,
-            samesite="Strict",
-            expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=access_expires),
-        )
-        response.set_cookie(
-            "refresh_token_cookie",
             refresh_token,
-            httponly=True,
-            secure=secure,
-            samesite="Strict",
-            expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=refresh_expires),
-        )
-        return response
+            user,
+            is_new_user,
+        ) = _get_token_and_user_data_from_internal_auth(user_data)
 
-    except Exception as e:
-        current_app.logger.exception(e)
-        la.metadata.update(
-            {
-                "exception": e,
-            }
-        )
-        return make_response_with_headers({"message": str(e)}, 500)
+    la.metadata.update(
+        {
+            "user": user.to_dict(),
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "oidc_access_token": token,
+        }
+    )
+
+    response = make_response_with_headers(
+        {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "is_new_user": is_new_user,
+            "user": user.to_dict(),
+        }
+    )
+    # TODO: For now, setting the cookie 'secure' flag based on our DEBUG,
+    # but should create a dedicated setting.
+    secure = not current_app.config["DEBUG"]
+
+    access_expires = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES").total_seconds()
+    refresh_expires = current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES").total_seconds()
+
+    response.set_cookie(
+        "access_token_cookie",
+        access_token,
+        httponly=False,  # TODO: Update this once refactored
+        secure=secure,
+        samesite="Strict",
+        expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=access_expires),
+    )
+    response.set_cookie(
+        "refresh_token_cookie",
+        refresh_token,
+        httponly=True,
+        secure=secure,
+        samesite="Strict",
+        expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=refresh_expires),
+    )
+    return response
 
 
 @jwt_required(True)
