@@ -106,12 +106,37 @@ paths:
       summary: Update an Agreement (Merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Agreement'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+    delete:
+      summary: Delete an Agreement
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       responses:
         '200':
           description: OK
@@ -964,16 +989,46 @@ paths:
           description: Internal Server Error
 
     patch:
-      summary: Update a new Budget Line Item (Merge)
+      summary: Update a Budget Line Item (Merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/BudgetLineItemRequest'
-
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+    delete:
+      summary: Delete a Budget Line Item
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       responses:
         '200':
           description: OK
@@ -1147,7 +1202,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ServicesComponentRequest'
-
       responses:
         '200':
           description: OK
@@ -1168,7 +1222,29 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ServicesComponentRequest'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
 
+    delete:
+      summary: Delete a Service Component
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       responses:
         '200':
           description: OK
