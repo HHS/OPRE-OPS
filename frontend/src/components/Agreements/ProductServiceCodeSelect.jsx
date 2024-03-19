@@ -35,19 +35,17 @@ export const ProductServiceCodeSelect = ({
             >
                 {label}
             </label>
-            {messages.length ? (
+            {messages.length && (
                 <span
                     className="usa-error-message"
                     role="alert"
                 >
                     {messages[0]}
                 </span>
-            ) : null}
+            )}
             <div className="display-flex flex-align-center margin-top-1">
                 <select
-                    className={`usa-select margin-top-0 width-fit-content ${
-                        messages.length ? "usa-input--error" : null
-                    }`}
+                    className={`usa-select margin-top-0 ${messages.length ? "usa-input--error" : ""}`}
                     name={name}
                     id={name}
                     onChange={handleChange}
