@@ -569,15 +569,28 @@ class BudgetLineItem(BaseModel):
     def active_workflow_current_step_id(self):
         if object_session(self) is None:
             return None
+        # This doesn't work with the bootstrap test data since current_workflow_step_instance_id isn't set
+        # current_workflow_step_instance_id = object_session(self).scalar(
+        #     select(WorkflowInstance.current_workflow_step_instance_id)
+        #     .join(
+        #         WorkflowStepInstance,
+        #         WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+        #     )
+        #     .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
+        #     .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
+        #     .join(self.__class__, self.id == PackageSnapshot.bli_id)
+        # )
+        # not as good as the above, but works with the bootstrap test data
         current_workflow_step_instance_id = object_session(self).scalar(
-            select(WorkflowInstance.current_workflow_step_instance_id)
+            select(WorkflowStepInstance.id)
             .join(
-                WorkflowStepInstance,
+                WorkflowInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
             )
             .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
+            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return current_workflow_step_instance_id
 
