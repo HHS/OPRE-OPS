@@ -49,65 +49,65 @@ function ServicesComponentForm({
                 Create the structure of the agreement using Services Components to describe the work being done. After
                 you outline the Services Components, you will add Budget Lines to fund that work.
             </p>
-            <div className="display-flex margin-top-3">
-                <section>
-                    <fieldset className="usa-fieldset display-flex flex-align-center">
-                        <ServicesComponentSelect
-                            onChange={(name, value) => {
-                                setFormData({
-                                    ...formData,
-                                    number: +value,
-                                    optional: false
-                                });
-                            }}
-                            value={formData?.number || ""}
-                            options={optionsWithSelected}
-                            isRequired={true}
-                            className="width-card-lg"
-                        />
-                        {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (
-                            <div className="usa-checkbox margin-left-5 margin-top-3">
-                                <input
-                                    className="usa-checkbox__input"
-                                    id="optional-services-component"
-                                    type="checkbox"
-                                    name="optional-services-checkbox"
-                                    value={formData?.optional || ""}
-                                    checked={formData?.optional}
-                                    onChange={() => {
-                                        setFormData({
-                                            ...formData,
-                                            optional: !formData?.optional
-                                        });
-                                    }}
-                                    disabled={
-                                        formData?.number === 0 || formData?.number === 1 || formData?.number === ""
-                                    }
-                                />
-                                <label
-                                    className="usa-checkbox__label"
-                                    htmlFor="optional-services-component"
-                                >
-                                    Optional Services Component
-                                </label>
-                            </div>
-                        )}
-                    </fieldset>
-                    <div className="display-flex flex-align-center margin-top-3">
+            <div className="grid-row grid-gap margin-top-3">
+                <div className="grid-col-4">
+                    <ServicesComponentSelect
+                        onChange={(name, value) => {
+                            setFormData({
+                                ...formData,
+                                number: +value,
+                                optional: false
+                            });
+                        }}
+                        value={formData?.number || ""}
+                        options={optionsWithSelected}
+                        isRequired={true}
+                        // className="width-barBox"
+                    />
+                    <div className="margin-top-3">
                         <PoPStartDate
                             serviceComponent={formData}
                             setServiceComponent={setFormData}
                         />
+                    </div>
+                </div>
+                <div className="grid-col-4">
+                    {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (
+                        <div
+                            className="usa-checkbox"
+                            style={{ marginTop: "3.95rem" }}
+                        >
+                            <input
+                                className="usa-checkbox__input"
+                                id="optional-services-component"
+                                type="checkbox"
+                                name="optional-services-checkbox"
+                                value={formData?.optional || ""}
+                                checked={formData?.optional}
+                                onChange={() => {
+                                    setFormData({
+                                        ...formData,
+                                        optional: !formData?.optional
+                                    });
+                                }}
+                                disabled={formData?.number === 0 || formData?.number === 1 || formData?.number === ""}
+                            />
+                            <label
+                                className="usa-checkbox__label"
+                                htmlFor="optional-services-component"
+                            >
+                                Optional Services Component
+                            </label>
+                        </div>
+                    )}
+                    <div className="margin-top-4">
                         <PoPEndDate
                             serviceComponent={formData}
                             setServiceComponent={setFormData}
                         />
                     </div>
-                </section>
-                <section
-                    className="usa-fieldset margin-top-neg-2 margin-left-auto"
-                    style={{ width: "20.8125rem" }}
-                >
+                </div>
+                <div className="grid-col-4">
                     <TextArea
                         name="description"
                         label="Description"
@@ -115,7 +115,7 @@ function ServicesComponentForm({
                         value={formData?.description || ""}
                         onChange={(name, value) => setFormData({ ...formData, description: value })}
                     />
-                </section>
+                </div>
             </div>
             <div className="display-flex flex-justify-end margin-top-2">
                 {formData.mode === "edit" ? (
