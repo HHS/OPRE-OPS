@@ -351,7 +351,7 @@ it("should handle cancelling out of workflow on step 1", () => {
     cy.get("h1").should("exist");
 });
 
-it.only("should handle cancelling out of workflow on step 2", () => {
+it("should handle cancelling out of workflow on step 2", () => {
     // Step One - Select a Project
     cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
