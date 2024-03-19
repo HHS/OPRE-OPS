@@ -11,7 +11,7 @@ on:
 env:
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
-  AZ_RESOURCE_GROUP: opre-ops-dev-app-rg
+  ENVIRONMENT: dev
 
 jobs:
   build-frontend:
@@ -42,6 +42,6 @@ jobs:
         uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
         with:
             azureCredentials: ${{ secrets.AZURE_CREDS }}
-            containerAppName: opre-ops-dev-${{ env.WORKING_DIR }}
-            resourceGroup: ${{ env.AZ_RESOURCE_GROUP }}
+            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
+            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}

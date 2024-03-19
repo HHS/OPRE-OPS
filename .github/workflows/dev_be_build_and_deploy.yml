@@ -12,7 +12,7 @@ env:
   WORKING_DIR: "backend"
   DT_DOCKER_FILE: "Dockerfile.data-tools-import"
   BE_DOCKER_FILE: "Dockerfile.ops-api"
-  AZ_RESOURCE_GROUP: opre-ops-dev-app-rg
+  ENVIRONMENT: dev
 
 jobs:
   build-data-tools:
@@ -60,8 +60,8 @@ jobs:
         uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
         with:
           azureCredentials: ${{ secrets.AZURE_CREDS }}
-          containerAppName: opre-ops-data-tools
-          resourceGroup: ${{ env.AZ_RESOURCE_GROUP }}
+          containerAppName: opre-ops-${{ env.ENVIRONMENT }}-data-tools
+          resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
           imageToDeploy: ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
         
   deploy-backend: 
@@ -75,6 +75,6 @@ jobs:
         uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
         with:
             azureCredentials: ${{ secrets.AZURE_CREDS }}
-            containerAppName: opre-ops-dev-backend
-            resourceGroup: ${{ env.AZ_RESOURCE_GROUP }}
+            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-backend
+            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ github.sha }}
