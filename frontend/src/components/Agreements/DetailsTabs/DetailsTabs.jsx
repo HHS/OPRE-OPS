@@ -32,7 +32,7 @@ const DetailsTabs = ({ hasAgreementChanged, setHasAgreementChanged, agreementId,
         },
         {
             name: "/budget-lines",
-            label: "Budget Lines"
+            label: "SCs & Budget Lines"
         }
     ];
 
