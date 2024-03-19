@@ -62,7 +62,6 @@ function ServicesComponentForm({
                         value={formData?.number || ""}
                         options={optionsWithSelected}
                         isRequired={true}
-                        // className="width-barBox"
                     />
                     <div className="margin-top-3">
                         <PoPStartDate
