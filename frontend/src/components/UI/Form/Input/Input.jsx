@@ -14,6 +14,7 @@ import IsRequiredHelper from "../IsRequiredHelper";
  * @param {string} [props.value] - The value of the input field.(optional)
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
+ * @param {number} [props.maxLength] - The maximum number of characters allow (optional).
  * @returns {JSX.Element} - The rendered input component.
  */
 const Input = ({
@@ -24,7 +25,8 @@ const Input = ({
     messages = [],
     value,
     className,
-    isRequired = false
+    isRequired = false,
+    maxLength
 }) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
@@ -52,6 +54,7 @@ const Input = ({
                 autoComplete="off"
                 autoCorrect="off"
                 value={value}
+                maxLength={maxLength}
             />
         </div>
     );
@@ -69,7 +72,8 @@ Input.propTypes = {
     messages: PropTypes.array,
     value: PropTypes.string,
     className: PropTypes.string,
-    isRequired: PropTypes.bool
+    isRequired: PropTypes.bool,
+    maxLength: PropTypes.number
 };
 
 export default Input;
