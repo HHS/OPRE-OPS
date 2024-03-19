@@ -87,6 +87,7 @@ export const CreateBLIsAndSCs = ({
         handleCancel,
         handleGoBack
     } = useCreateBLIsAndSCs(
+        isEditMode,
         isReviewMode,
         budgetLines,
         goToNext,
