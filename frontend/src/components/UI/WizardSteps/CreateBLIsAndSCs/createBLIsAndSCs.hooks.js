@@ -29,6 +29,7 @@ import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helper
  *
  */
 const useCreateBLIsAndSCs = (
+    isEditMode,
     isReviewMode,
     budgetLines,
     goToNext,
@@ -300,32 +301,43 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
+        const heading = `${isEditMode ? "Are you sure you want to cancel editing? Your changes will not be saved." : "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."}`;
+        const actionButtonText = `${isEditMode ? "Cancel Edits" : "Cancel Agreement"}`;
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel creating a new agreement? Your progress will not be saved.",
-            actionButtonText: "Cancel Agreement",
+            heading,
+            actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                deleteAgreement(selectedAgreement?.id)
-                    .unwrap()
-                    .then((fulfilled) => {
-                        console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                        setAlert({
-                            type: "success",
-                            heading: "Create New Agreement Cancelled",
-                            message: "Your agreement has been cancelled.",
-                            redirectUrl: "/agreements"
+                if (isEditMode) {
+                    setIsEditMode(false);
+                    resetForm();
+                    if (budgetLineIdFromUrl) {
+                        resetQueryParams();
+                    }
+                    navigate(`/agreements/${selectedAgreement?.id}`);
+                } else {
+                    deleteAgreement(selectedAgreement?.id)
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                            setAlert({
+                                type: "success",
+                                heading: "Create New Agreement Cancelled",
+                                message: "Your agreement has been cancelled.",
+                                redirectUrl: "/agreements"
+                            });
+                        })
+                        .catch((rejected) => {
+                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred while deleting the agreement.",
+                                redirectUrl: "/error"
+                            });
                         });
-                    })
-                    .catch((rejected) => {
-                        console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred while deleting the agreement.",
-                            redirectUrl: "/error"
-                        });
-                    });
+                }
             }
         });
     };

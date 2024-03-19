@@ -244,13 +244,15 @@ export const AgreementEditForm = ({
     };
 
     const handleCancel = () => {
+        const heading = `${isWizardMode ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved." : "Are you sure you want to cancel editing? Your changes will not be saved."}`;
+        const actionButtonText = `${isWizardMode ? "Cancel Agreement" : "Cancel Edits"}`;
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel creating a new agreement? Your progress will not be saved.",
-            actionButtonText: "Cancel Agreement",
+            heading,
+            actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                if (selectedAgreementId && !isEditMode && !isReviewMode) {
+                if (selectedAgreementId && isWizardMode) {
                     deleteAgreement(selectedAgreementId)
                         .unwrap()
                         .then((fulfilled) => {
@@ -278,8 +280,8 @@ export const AgreementEditForm = ({
                         message: "Your agreement has been cancelled.",
                         redirectUrl: "/agreements"
                     });
-                } else {
-                    if (isEditMode && setIsEditMode) setIsEditMode(false);
+                } else if (isEditMode) {
+                    setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
                 setHasAgreementChanged(false);

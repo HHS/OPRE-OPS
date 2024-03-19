@@ -24,7 +24,7 @@ it("agreement loads with details", () => {
 });
 
 it("agreement loads with budget lines", () => {
-    cy.get('[data-cy="details-tab-Budget Lines"]').click();
+    cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
     cy.get('[data-cy="currency-summary-card"]').contains("Agreement Total");
     cy.get('[data-cy="currency-summary-card"]').contains("$ 0");
     cy.get('[data-cy="blis-by-fy-card"]').should("exist");
@@ -38,7 +38,7 @@ it("agreement loads with budget lines", () => {
 
 it("should not warn when not making changes to agreement and tabbing to BLI tab", () => {
     cy.get("#edit").click();
-    cy.get('[data-cy="details-tab-Budget Lines"]').click();
+    cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
     cy.get("#ops-modal").should("not.exist");
 });
 
@@ -47,4 +47,19 @@ it("should warn when making changes to agreement and tabbing out", () => {
     cy.get("#contractType").select("Firm Fixed Price (FFP)");
     cy.get('[data-cy="details-tab-Agreement Details"]').click();
     cy.get("#ops-modal").should("exist");
+});
+
+it("should handle cancel edits", () => {
+    // Agreement Details Tab
+    cy.get("#edit").click();
+    cy.get("#contractType").select("Firm Fixed Price (FFP)");
+    cy.get('[data-cy="cancel-button"]').click();
+    cy.get("#ops-modal-heading").contains("Are you sure you want to cancel editing? Your changes will not be saved.");
+    cy.get('[data-cy="confirm-action"]').click();
+    //test Agreement BLI Tab
+    cy.get('[data-cy="details-tab-SCs & Budget Lines"]').click();
+    cy.get("#edit").click();
+    cy.get('[data-cy="cancel-button"]').click();
+    cy.get("#ops-modal-heading").contains("Are you sure you want to cancel editing? Your changes will not be saved.");
+    cy.get('[data-cy="confirm-action"]').click();
 });

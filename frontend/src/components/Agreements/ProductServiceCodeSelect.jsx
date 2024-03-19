@@ -35,7 +35,7 @@ export const ProductServiceCodeSelect = ({
             >
                 {label}
             </label>
-            {messages.length && (
+            {messages.length > 0 && (
                 <span
                     className="usa-error-message"
                     role="alert"
