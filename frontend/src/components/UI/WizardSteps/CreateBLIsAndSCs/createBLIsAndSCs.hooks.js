@@ -315,7 +315,7 @@ const useCreateBLIsAndSCs = (
                     if (budgetLineIdFromUrl) {
                         resetQueryParams();
                     }
-                    navigate(`/agreements/${agreement.id}`);
+                    navigate(`/agreements/${selectedAgreement?.id}`);
                 } else {
                     deleteAgreement(selectedAgreement?.id)
                         .unwrap()
