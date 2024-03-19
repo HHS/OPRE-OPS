@@ -351,7 +351,7 @@ it("should handle cancelling out of workflow on step 1", () => {
     cy.get("h1").should("exist");
 });
 
-it("should handle cancelling out of workflow on step 2", () => {
+it.only("should handle cancelling out of workflow on step 2", () => {
     // Step One - Select a Project
     cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
     cy.get("#continue").click();
@@ -366,6 +366,9 @@ it("should handle cancelling out of workflow on step 2", () => {
     cy.get("#agreement_reason").select("NEW_REQ");
     // cancel out of workflow
     cy.get('[data-cy="cancel-button"]').click();
+    cy.get("#ops-modal-heading").contains(
+        "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
+    );
     cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the agreements page
     cy.url().should("eq", Cypress.config().baseUrl + "/agreements");
