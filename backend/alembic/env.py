@@ -33,13 +33,16 @@ target_metadata = BaseModel.metadata  # noqa: F405
 
 def get_connection_uri() -> str:
     """Builds the SQLAlchemy database URI using environment variables."""
-    host = os.getenv("PGHOST", "localhost")
-    port = os.getenv("PGPORT", "5432")
-    user = os.getenv("PGUSER", "postgres")
-    password = os.getenv("PGPASSWORD", "")
-    database = os.getenv("PGDATABASE", "postgres")
-    
-    return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
+    host = os.getenv("PGHOST")
+    port = os.getenv("PGPORT")
+    user = os.getenv("PGUSER")
+    password = os.getenv("PGPASSWORD")
+    database = os.getenv("PGDATABASE")
+
+    if host and port and user and password and database:
+        return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
+    else:
+        return None
 
 
 def run_migrations_offline() -> None:
@@ -62,7 +65,14 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     url = os.getenv("SQLALCHEMY_DATABASE_URI") or get_connection_uri()
 
-    connectable = create_engine(url, poolclass=pool.NullPool)
+    if not url:
+        connectable = engine_from_config(
+            config.get_section(config.config_ini_section, {}),
+            prefix="sqlalchemy.",
+            poolclass=pool.NullPool,
+        )
+    else:
+        connectable = create_engine(url, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
