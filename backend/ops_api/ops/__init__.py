@@ -4,13 +4,14 @@ from typing import Any, Optional
 
 from flask import Blueprint, Flask
 from flask_cors import CORS
+from sqlalchemy import event
+from sqlalchemy.orm import Session
+
 from ops_api.ops.db import init_db
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.auth import jwtMgr, oauth
-from sqlalchemy import event
-from sqlalchemy.orm import Session
 
 
 def configure_logging(log_level: str = "INFO") -> None:
@@ -76,7 +77,7 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     jwtMgr.init_app(app)
     oauth.init_app(app)
 
-    db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"), is_unit_test)
+    db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"))
     app.db_session = db_session
     app.engine = engine
 

@@ -31,6 +31,20 @@ target_metadata = BaseModel.metadata  # noqa: F405
 # ... etc.
 
 
+def get_connection_uri() -> str:
+    """Builds the SQLAlchemy database URI using environment variables."""
+    host = os.getenv("PGHOST")
+    port = os.getenv("PGPORT")
+    user = os.getenv("PGUSER")
+    password = os.getenv("PGPASSWORD")
+    database = os.getenv("PGDATABASE")
+
+    if host and port and user and password and database:
+        return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
+    else:
+        return None
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -64,7 +78,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    url = os.getenv("SQLALCHEMY_DATABASE_URI")
+    url = os.getenv("SQLALCHEMY_DATABASE_URI") or get_connection_uri()
 
     if not url:
         connectable = engine_from_config(

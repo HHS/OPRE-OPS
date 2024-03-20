@@ -1,9 +1,10 @@
 from flask import Response, jsonify
+from typing_extensions import override
+
 from models.base import BaseModel
 from models.portfolios import PortfolioStatus
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
-from typing_extensions import override
 
 
 class PortfolioStatusItemAPI(BaseItemAPI):

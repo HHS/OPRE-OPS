@@ -47,7 +47,6 @@ it("should handle cancelling out of workflow", () => {
     completeStepOne();
     completeStepTwo();
     cy.get("[data-cy='back-button']").click();
-    cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the create budget lines page
     cy.url().should("include", "/budget-lines/create");
     cy.get("h1").should("exist");

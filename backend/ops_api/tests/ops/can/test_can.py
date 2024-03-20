@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+
 from models.cans import CAN, CANArrangementType
 
 

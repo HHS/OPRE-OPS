@@ -3,6 +3,10 @@ from functools import partial
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from typing_extensions import override
+
 from models import Agreement, OpsEventType
 from models.base import BaseModel
 from models.workflows import (
@@ -41,9 +45,6 @@ from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, 
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from typing_extensions import override
 
 
 def get_current_user_id():

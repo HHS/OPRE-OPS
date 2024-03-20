@@ -1,8 +1,9 @@
 """Module containing the Procurement Shop model."""
 
-from models.base import BaseModel
 from sqlalchemy import Column, Float, String
 from sqlalchemy.orm import relationship
+
+from models.base import BaseModel
 
 
 class ProcurementShop(BaseModel):

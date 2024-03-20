@@ -5,10 +5,6 @@ from enum import Enum, auto
 from typing import List, Optional
 
 import sqlalchemy as sa
-from models.base import BaseModel
-from models.portfolios import Portfolio
-from models.users import User
-from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStepInstance, WorkflowStepStatus
 from sqlalchemy import (
     Boolean,
     Column,
@@ -26,6 +22,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
+
+from models.base import BaseModel
+from models.portfolios import Portfolio
+from models.users import User
+from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStepInstance, WorkflowStepStatus
 
 
 class BudgetLineItemStatus(Enum):

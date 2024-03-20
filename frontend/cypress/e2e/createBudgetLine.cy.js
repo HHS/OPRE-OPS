@@ -51,7 +51,6 @@ it("complete steps one and two and then cancel", () => {
     completeStepOne();
     completeStepTwo();
     cy.get("[data-cy='back-button']").click();
-    cy.get('[data-cy="confirm-action"]').click();
     // check that we are back on the create budget lines page
     cy.get(".usa-step-indicator__segment--current").should("contain", "Project & Agreement");
 });

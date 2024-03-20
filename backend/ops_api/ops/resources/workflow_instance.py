@@ -7,6 +7,8 @@ from flask import Response
 from flask.views import MethodView
 from marshmallow import fields
 from marshmallow_enum import EnumField
+from typing_extensions import override
+
 from models.base import BaseModel
 from models.workflows import (
     WorkflowAction,
@@ -18,7 +20,6 @@ from models.workflows import (
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.workflow_step_instance import WorkflowStepInstanceResponse
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
-from typing_extensions import override
 
 ENDPOINT_STRING = "/workflow-instance"
 

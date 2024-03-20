@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from datetime import date
 from functools import partial
 from typing import Optional
 
@@ -9,11 +8,15 @@ import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import Schema
+from sqlalchemy import inspect, select
+from sqlalchemy.exc import SQLAlchemyError
+from typing_extensions import Any, override
+
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.schemas.budget_line_item import (
+from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponse,
     PATCHRequestBody,
     POSTRequestBody,
@@ -25,9 +28,6 @@ from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy import inspect, select
-from sqlalchemy.exc import SQLAlchemyError
-from typing_extensions import Any, override
 
 ENDPOINT_STRING = "/budget-line-items"
 
@@ -139,6 +139,30 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         current_app.db_session.commit()
         return budget_line_item
 
+    @override
+    @is_authorized(
+        PermissionType.DELETE,
+        Permission.BUDGET_LINE_ITEM,
+        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.DELETE),
+        groups=["Budget Team", "Admins"],
+    )
+    @handle_api_error
+    def delete(self, id: int) -> Response:
+        with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
+            bli: BudgetLineItem = self._get_item(id)
+
+            if not bli:
+                raise RuntimeError(f"Invalid BudgetLineItem id: {id}.")
+
+            # TODO when can we not delete?
+
+            current_app.db_session.delete(bli)
+            current_app.db_session.commit()
+
+            meta.metadata.update({"Deleted BudgetLineItem": id})
+
+            return make_response_with_headers({"message": "BudgetLineItem deleted", "id": bli.id}, 200)
+
 
 class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
@@ -238,6 +262,7 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
     bli_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
     existing_bli = current_app.db_session.scalar(bli_stmt)
     data = get_change_data(request.json, existing_bli, schema, ["id", "status", "agreement_id"], partial=False)
+    data = convert_date_strings_to_dates(data)
 
     with suppress(AttributeError):
         try:
@@ -248,8 +273,5 @@ def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
         if len(data) > 0 and status == BudgetLineItemStatus.PLANNED:
             status = BudgetLineItemStatus.DRAFT
         data["status"] = status
-
-    with suppress(KeyError):
-        data["date_needed"] = date.fromisoformat(data["date_needed"])
 
     return data

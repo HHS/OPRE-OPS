@@ -65,14 +65,14 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         deleteAgreement: builder.mutation({
             query: (id) => ({
                 url: `/agreements/${id}`,
                 method: "DELETE"
             }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ServicesComponents"]
         }),
         getBudgetLineItems: builder.query({
             query: () => `/budget-line-items/`,
@@ -98,6 +98,13 @@ export const opsApi = createApi({
                     body: data
                 };
             },
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        deleteBudgetLineItem: builder.mutation({
+            query: (id) => ({
+                url: `/budget-line-items/${id}`,
+                method: "DELETE"
+            }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getAgreementsByResearchProjectFilter: builder.query({
@@ -288,6 +295,7 @@ export const {
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsQuery,
     useUpdateBudgetLineItemMutation,
+    useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,

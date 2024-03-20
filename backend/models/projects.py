@@ -3,11 +3,12 @@ from typing import Optional
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from models.base import BaseModel
 from sqlalchemy import Column, Date, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing_extensions import List
+
+from models.base import BaseModel
 
 
 # These are example methodologies derived from:
