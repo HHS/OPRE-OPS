@@ -78,7 +78,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
         <>
             <AgreementBudgetLinesHeader
                 heading="Budget Lines Summary"
-                details="The summary below shows a breakdown of all budget lines within this agreement."
+                details="The summary below shows a breakdown of the agreement total."
                 includeDrafts={includeDrafts}
                 setIncludeDrafts={setIncludeDrafts}
             />
@@ -94,7 +94,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
             </div>
             <AgreementDetailHeader
                 heading="Budget Lines"
-                details="This is a list of all budget lines within this agreement."
+                details="This is a list of all services components and budget lines within this agreement."
                 isEditMode={isEditMode}
                 setIsEditMode={setIsEditMode}
                 isEditable={canUserEditAgreement}
