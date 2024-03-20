@@ -71,7 +71,7 @@ function ServicesComponentForm({
                     </div>
                 </div>
                 <div className="grid-col-4">
-                    {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE && (
+                    {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
                         <div
                             className="usa-checkbox"
                             style={{ marginTop: "3.95rem" }}
@@ -98,6 +98,8 @@ function ServicesComponentForm({
                                 Optional Services Component
                             </label>
                         </div>
+                    ) : (
+                        <div style={{ height: "5.375rem" }} />
                     )}
                     <div className="margin-top-4">
                         <PoPEndDate
