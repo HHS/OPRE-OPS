@@ -74,9 +74,14 @@ from sqlalchemy_continuum import make_versioned
 make_versioned(user_cls=None)
 
 
-class BaseModel(Base):  # type: ignore [misc, valid-type]
+class BaseModel(Base):
     __versioned__ = {}
     __abstract__ = True
+
+    created_by = Column(Integer, ForeignKey("user.id"), default=None)
+    updated_by = Column(Integer, ForeignKey("user.id"), default=None)
+    created_on = Column(DateTime, default=func.now())
+    updated_on = Column(DateTime, default=func.now(), onupdate=func.now())
 
     @classmethod
     def model_lookup_by_table_name(cls, table_name):
@@ -108,15 +113,8 @@ class BaseModel(Base):  # type: ignore [misc, valid-type]
         return data
 
     @declared_attr
-    def created_by(cls):
-        return Column("created_by", ForeignKey("user.id"))
-
-    @declared_attr
     def created_by_user(cls):
         return relationship("User", foreign_keys=[cls.created_by])
-
-    created_on = Column(DateTime, default=func.now())
-    updated_on = Column(DateTime, default=func.now(), onupdate=func.now())
 
     @property
     def display_name(self):
