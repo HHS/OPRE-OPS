@@ -31,7 +31,7 @@ export const AgreementBudgetLinesHeader = ({
                 <div>
                     <button
                         id="toggleDraftBLIs"
-                        className="hover:text-underline cursor-pointer margin-right-2"
+                        className="hover:text-underline cursor-pointer margin-right-205"
                         onClick={() => setIncludeDrafts(!includeDrafts)}
                     >
                         <FontAwesomeIcon
