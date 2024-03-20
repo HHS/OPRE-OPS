@@ -34,6 +34,7 @@ from ops_api.ops.resources.agreements import (
     AgreementTypeListAPI,
 )
 from ops_api.ops.resources.auth import AuthLoginAPI, AuthLogoutAPI, AuthRefreshAPI
+from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
@@ -209,3 +210,6 @@ WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC = WorkflowApprovalListApi.as_view("workflow
 # ServicesComponent ENDPOINTS
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)
 SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
+
+# Azure SAS Token ENDPOINTS
+AZURE_SAS_TOKEN_VIEW_FUNC = SasToken.as_view("azure-sas-token")

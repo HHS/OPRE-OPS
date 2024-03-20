@@ -10,6 +10,7 @@ from ops_api.ops.views import (
     AUTH_LOGIN_API_VIEW_FUNC,
     AUTH_LOGOUT_API_VIEW_FUNC,
     AUTH_REFRESH_API_VIEW_FUNC,
+    AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
     CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC,
@@ -83,7 +84,10 @@ def register_api(api_bp: Blueprint) -> None:
         "/health/",
         view_func=HEALTH_CHECK_VIEW_FUNC,
     )
-
+    api_bp.add_url_rule(
+        "/azure/sas-token/",
+        view_func=AZURE_SAS_TOKEN_VIEW_FUNC,
+    )
     api_bp.add_url_rule(
         "/portfolios/<int:id>/calcFunding/",
         view_func=PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,

@@ -237,6 +237,9 @@ export const opsApi = createApi({
         getWorkflowStepInstance: builder.query({
             query: (id) => `/workflow-step-instance/${id}`,
             providesTags: ["WorkflowStepInstance"]
+        }),
+        getAzureSasToken: builder.query({
+            query: () => `/azure/sas-token`
         })
     })
 });
@@ -274,5 +277,6 @@ export const {
     useAddApprovalRequestMutation,
     useAddWorkflowApproveMutation,
     useGetWorkflowInstanceQuery,
-    useGetWorkflowStepInstanceQuery
+    useGetWorkflowStepInstanceQuery,
+    useGetAzureSasTokenQuery
 } = opsApi;

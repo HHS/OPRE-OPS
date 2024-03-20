@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BlobServiceClient } from "@azure/storage-blob";
+import { getAzureSasToken } from "../../../api/getAzureToken";
 
 const FileUpload = () => {
     const [file, setFile] = useState(null);
@@ -15,12 +16,21 @@ const FileUpload = () => {
         }
 
         try {
-            const sasToken = ""; // Replace with your SAS token from API
-            const blobServiceSasUrl = `https://timstoragetesting.blob.core.windows.net/uploads${sasToken}`;
+            const sasToken = await getAzureSasToken(); // Replace with your SAS token from API
+            console.log(`Azure SAS Token: ${sasToken}`);
+            if (!sasToken) {
+                return;
+            }
+
+            // TODO: Update with your Azure Storage Account URL or from runtime config
+            const testUrl = "https://your_storage_account.blob.core.windows.net/";
+            const blobServiceSasUrl = `${testUrl}?${sasToken}`;
+            //console.log(`Azure Storage Acct: ${blobServiceSasUrl}`);
             const blobServiceClient = new BlobServiceClient(blobServiceSasUrl);
 
             // Replace "your_container_name" with your Azure Blob Storage container name
             const containerName = "uploads";
+            //console.log(`Azure Container: ${containerName}`);
             const containerClient = blobServiceClient.getContainerClient(containerName);
 
             // Use the file name as the blob name
