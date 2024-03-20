@@ -1,9 +1,10 @@
 import datetime
 
 import pytest
+from pytest_bdd import given, scenario, then, when
+
 from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
 from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
-from pytest_bdd import given, scenario, then, when
 
 AGREEMENT_ID = 1
 

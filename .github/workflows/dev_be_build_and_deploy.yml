@@ -6,19 +6,16 @@ on:
     branches:
       - main
     paths:
-      - backend/models/**
-      - backend/ops_api/**
-      - backend/Dockerfile.ops-api
-      - '!backend/tests/**'
-
+      - backend/**
+      
 env:
-  TF_IN_AUTOMATION: "True"
-  ENVIRONMENT: "dev"
   WORKING_DIR: "backend"
-  DOCKER_FILE: "Dockerfile.ops-api"
+  DT_DOCKER_FILE: "Dockerfile.data-tools-import"
+  BE_DOCKER_FILE: "Dockerfile.ops-api"
+  ENVIRONMENT: dev
 
 jobs:
-  build:
+  build-data-tools:
     permissions:
       contents: read
       packages: write
@@ -27,58 +24,57 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
       - name: Build and publish the Docker image for ${{ github.repository }}
-        uses: macbre/push-to-ghcr@0f6c180522d02d9e608096c4dcf3b691193b4d44 #v13
+        uses: ./.github/actions/build-and-push
         with:
-          image_name: ${{ github.repository }}/ops-${{ env.WORKING_DIR }} # it will be lowercased internally
+          image_name: ${{ github.repository }}/ops-data-tools # it will be lowercased internally
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
-          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tag: ${{ github.sha }}
-
-  backend-deploy:
-    needs: build
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DT_DOCKER_FILE }}
+          image_tags: "unstable,${{ github.sha }}"
+  
+  build-backend:
     permissions:
-      pull-requests: write
-
+      contents: read
+      packages: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
-      - name: Terraform Apply
-        uses: ./.github/actions/tf-apply
+      - name: Build and publish the Docker image for ${{ github.repository }}
+        uses: ./.github/actions/build-and-push
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+          image_name: ${{ github.repository }}/ops-backend # it will be lowercased internally
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "container_tag": "${{ github.sha }}"
-            }
+          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
+          image_tags: "unstable,${{ github.sha }}"
 
-  backend-asa-deploy:
-    needs: build
-    permissions:
-      pull-requests: write
+  deploy-data-tools: 
+    needs: build-data-tools
 
     runs-on: ubuntu-latest
-    steps:
+    steps: 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-
-      - name: Terraform Apply
-        uses: ./.github/actions/tf-apply
+    
+      - name: Deploy Container App
+        uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "container_tag": "${{ github.sha }}"
-            }
+          azureCredentials: ${{ secrets.AZURE_CREDS }}
+          containerAppName: opre-ops-${{ env.ENVIRONMENT }}-data-tools
+          resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+          imageToDeploy: ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+        
+  deploy-backend: 
+    needs: build-backend
+
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+   
+      - name: Deploy Container App
+        uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
+        with:
+            azureCredentials: ${{ secrets.AZURE_CREDS }}
+            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-backend
+            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ github.sha }}

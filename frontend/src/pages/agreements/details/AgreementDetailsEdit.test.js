@@ -103,7 +103,7 @@ describe("AgreementDetailsEdit", () => {
         ],
         budget_line_items: [
             { amount: 100, date_needed: "2024-05-02T11:00:00", status: "DRAFT" },
-            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "UNDER_REVIEW" }
+            { amount: 200, date_needed: "2023-03-02T11:00:00", status: "DRAFT" }
         ],
         created_by: "user1",
         notes: "Test notes",

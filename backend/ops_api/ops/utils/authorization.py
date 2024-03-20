@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 
 from flask import current_app
-from models.users import User
 from sqlalchemy import select
+
+from models.users import User
 
 
 class AuthorizationProvider(ABC):

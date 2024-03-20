@@ -1,8 +1,9 @@
 from typing import List
 
-from models.base import BaseModel
-from sqlalchemy import Boolean, Column, ForeignKey, Identity, String, Table
+from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from models.base import BaseModel
 
 
 class VendorContacts(BaseModel):
@@ -19,7 +20,7 @@ class VendorContacts(BaseModel):
 class Contact(BaseModel):
     __tablename__ = "contact"
 
-    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
+    id: Mapped[int] = BaseModel.get_pk_column()
     first_name: Mapped[str] = mapped_column(String(), nullable=True)
     last_name: Mapped[str] = mapped_column(String(), nullable=True)
     middle_name: Mapped[str] = mapped_column(String(), nullable=True)
@@ -46,7 +47,7 @@ class Contact(BaseModel):
 class Vendor(BaseModel):
     __tablename__ = "vendor"
 
-    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
+    id: Mapped[int] = BaseModel.get_pk_column()
     name: Mapped[str]
     duns: Mapped[str]
     active: Mapped[bool] = mapped_column(Boolean(), default=True, nullable=False)

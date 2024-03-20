@@ -1,9 +1,11 @@
+from datetime import date
 from typing import Any
 
 from flask import current_app
 from marshmallow import EXCLUDE, Schema
-from models import BaseModel
 from sqlalchemy import inspect
+
+from models import BaseModel
 
 
 def get_change_data(
@@ -40,3 +42,12 @@ def update_and_commit_model_instance(model_instance: BaseModel, data: dict[str, 
     current_app.db_session.add(model_instance)
     current_app.db_session.commit()
     return model_instance
+
+
+def convert_date_strings_to_dates(data: dict[str, Any], date_keys: list[str] | None = None) -> dict[str, Any]:
+    if not date_keys:
+        date_keys = ["period_start", "period_end", "actual_date", "target_date", "date_needed"]
+    for k in date_keys:
+        if k in data:
+            data[k] = date.fromisoformat(data[k]) if data[k] else None
+    return data

@@ -3,6 +3,7 @@ from functools import wraps
 from typing import Callable
 
 from flask import Response, request
+
 from ops_api.ops.utils.response import make_response_with_headers
 
 

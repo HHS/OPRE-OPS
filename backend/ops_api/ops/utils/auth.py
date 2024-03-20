@@ -11,12 +11,13 @@ from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import Response, current_app
 from flask_jwt_extended import JWTManager, get_current_user, get_jwt_identity, jwt_required
+from sqlalchemy import select
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
+
 from models.users import User
 from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
-from sqlalchemy import select
-from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 jwtMgr = JWTManager()
 oauth = OAuth()

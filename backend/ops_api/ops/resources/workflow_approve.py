@@ -4,6 +4,8 @@ import sqlalchemy as sa
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
 from marshmallow import Schema, fields
+from typing_extensions import override
+
 from models.base import BaseModel
 from models.cans import Agreement, BudgetLineItem, BudgetLineItemStatus
 from models.notifications import Notification
@@ -12,14 +14,13 @@ from models.workflows import (
     PackageSnapshot,
     WorkflowAction,
     WorkflowInstance,
-    WorkflowStatus,
     WorkflowStepInstance,
+    WorkflowStepStatus,
 )
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from typing_extensions import override
 
 ENDPOINT_STRING = "/workflow-approve"
 
@@ -60,7 +61,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
         if workflow_step_action == "APPROVE":
             # Update WorkflowStepInstance
-            workflow_step_instance.status = WorkflowStatus.APPROVED
+            workflow_step_instance.status = WorkflowStepStatus.APPROVED
             workflow_step_instance.time_completed = datetime.now()
             workflow_step_instance.notes = workflow_notes
             workflow_step_instance.updated_by = user.id
@@ -88,7 +89,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
         elif workflow_step_action == "REJECT":
             # Update WorkflowStepInstance
-            workflow_step_instance.status = WorkflowStatus.REJECTED
+            workflow_step_instance.status = WorkflowStepStatus.REJECTED
             workflow_step_instance.time_completed = datetime.now()
             workflow_step_instance.notes = workflow_notes
             workflow_step_instance.updated_by = user.id
@@ -119,7 +120,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
 
 def update_blis(workflow_step_instance: WorkflowStepInstance):
-    if workflow_step_instance.workflow_instance.workflow_status == WorkflowStatus.APPROVED:
+    if workflow_step_instance.workflow_instance.workflow_status == WorkflowStepStatus.APPROVED:
         # BLI
         package_blis = workflow_step_instance.package_entities["budget_line_item_ids"]
         blis = current_app.db_session.query(BudgetLineItem).filter(BudgetLineItem.id.in_(package_blis)).all()
@@ -205,7 +206,7 @@ def create_rejection_notification_for_project_officer(workflow_step_instance: Wo
         .join(BudgetLineItem, BudgetLineItem.agreement_id == Agreement.id)
         .join(PackageSnapshot, PackageSnapshot.bli_id == BudgetLineItem.id)
         .join(Package, Package.id == PackageSnapshot.package_id)
-        .join(WorkflowInstance, WorkflowInstance.id == Package.workflow_id)
+        .join(WorkflowInstance, WorkflowInstance.id == Package.workflow_instance_id)
         .join(WorkflowStepInstance, WorkflowStepInstance.workflow_instance_id == WorkflowInstance.id)
         .where(WorkflowStepInstance.id == workflow_step_instance.id)
     ).first()

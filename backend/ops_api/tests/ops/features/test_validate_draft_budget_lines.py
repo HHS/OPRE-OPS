@@ -1,6 +1,8 @@
 import datetime
 
 import pytest
+from pytest_bdd import given, scenario, then, when
+
 from models import (
     AgreementReason,
     AgreementType,
@@ -10,7 +12,6 @@ from models import (
     ContractType,
     User,
 )
-from pytest_bdd import given, scenario, then, when
 
 
 @pytest.fixture(scope="function")
@@ -90,30 +91,6 @@ def test_valid_agreement_reason_incumbent_required(loaded_db, context):
     "Valid Project Officer",
 )
 def test_valid_project_officer(loaded_db, context):
-    ...
-
-
-@scenario(
-    "validate_draft_budget_lines.feature",
-    "Valid BLI Description: Both NULL",
-)
-def test_valid_description_both_null(loaded_db, context):
-    ...
-
-
-@scenario(
-    "validate_draft_budget_lines.feature",
-    "Valid BLI Description: Request Empty",
-)
-def test_valid_description_request_empty(loaded_db, context):
-    ...
-
-
-@scenario(
-    "validate_draft_budget_lines.feature",
-    "Valid BLI Description: Both Empty",
-)
-def test_valid_description_both_empty(loaded_db, context):
     ...
 
 
@@ -461,36 +438,6 @@ def bli(loaded_db, context):
     context["initial_bli_for_patch"] = initial_bli_for_patch
 
 
-@when("I have a BLI in DRAFT status without a Description")
-def bli_without_description(loaded_db, context):
-    initial_bli_for_put = BudgetLineItem(
-        agreement_id=context["agreement"].id,
-        comments="blah blah",
-        amount=100.12,
-        can_id=1,
-        date_needed=datetime.date(2023, 1, 1),
-        status=BudgetLineItemStatus.DRAFT,
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
-    initial_bli_for_patch = BudgetLineItem(
-        agreement_id=context["agreement"].id,
-        comments="blah blah",
-        amount=100.12,
-        can_id=1,
-        date_needed=datetime.date(2043, 1, 1),
-        status=BudgetLineItemStatus.DRAFT,
-        proc_shop_fee_percentage=1.23,
-        created_by=1,
-    )
-    loaded_db.add(initial_bli_for_put)
-    loaded_db.add(initial_bli_for_patch)
-    loaded_db.commit()
-
-    context["initial_bli_for_put"] = initial_bli_for_put
-    context["initial_bli_for_patch"] = initial_bli_for_patch
-
-
 @when("I have a BLI in DRAFT status without a Need By Date")
 def bli_without_need_by_date(loaded_db, context):
     initial_bli_for_put = BudgetLineItem(
@@ -683,7 +630,7 @@ def submit(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -693,52 +640,7 @@ def submit(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
-        },
-    )
-
-
-@when("I submit a BLI to move to IN_REVIEW status (without Description)")
-def submit_without_description(client, context):
-    data = {
-        "agreement_id": context["agreement"].id,
-        "comments": "hah hah",
-        "can_id": 2,
-        "amount": 200.24,
-        "status": "UNDER_REVIEW",
-        "date_needed": "2044-01-01",
-        "proc_shop_fee_percentage": 2.34,
-    }
-
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
-
-    context["response_patch"] = client.patch(
-        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
-        json={
-            "status": "UNDER_REVIEW",
-        },
-    )
-
-
-@when("I submit a BLI to move to IN_REVIEW status with an empty string Description")
-def submit_empty_description(client, context):
-    data = {
-        "agreement_id": context["agreement"].id,
-        "line_description": "  ",
-        "comments": "hah hah",
-        "can_id": 2,
-        "amount": 200.24,
-        "status": "UNDER_REVIEW",
-        "date_needed": "2044-01-01",
-        "proc_shop_fee_percentage": 2.34,
-    }
-
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
-
-    context["response_patch"] = client.patch(
-        f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
-        json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -750,7 +652,7 @@ def submit_without_agreement(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -760,7 +662,7 @@ def submit_without_agreement(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -773,7 +675,7 @@ def submit_without_need_by_date(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "proc_shop_fee_percentage": 2.34,
     }
 
@@ -782,7 +684,7 @@ def submit_without_need_by_date(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -795,7 +697,7 @@ def submit_empty_need_by_date(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "  ",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -805,7 +707,7 @@ def submit_empty_need_by_date(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -817,7 +719,7 @@ def submit_without_can(client, context):
         "line_description": "Updated LI 1",
         "comments": "hah hah",
         "amount": 200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -827,7 +729,7 @@ def submit_without_can(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -839,7 +741,7 @@ def submit_without_amount(client, context):
         "line_description": "Updated LI 1",
         "comments": "hah hah",
         "can_id": 2,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -849,7 +751,7 @@ def submit_without_amount(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -862,7 +764,7 @@ def submit_amount_less_than_zero(client, context):
         "comments": "hah hah",
         "can_id": 2,
         "amount": -200.24,
-        "status": "UNDER_REVIEW",
+        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -872,7 +774,7 @@ def submit_amount_less_than_zero(client, context):
     context["response_patch"] = client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
-            "status": "UNDER_REVIEW",
+            "status": "PLANNED",
         },
     )
 
@@ -991,27 +893,6 @@ def error_message_valid_project_officer(context, setup_and_teardown):
     assert context["response_patch"].json == {
         "_schema": ["BLI's Agreement must have a ProjectOfficer when status is not DRAFT"]
     }
-
-
-@then("I should get an error message that the BLI must have a Description")
-def error_message_valid_description(context, setup_and_teardown):
-    assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {
-        "_schema": [
-            "BLI must valid a valid Description when status is not DRAFT",
-        ]
-    }
-    assert context["response_patch"].status_code == 400
-    assert context["response_patch"].json == {
-        "_schema": ["BLI must valid a valid Description when status is not DRAFT"]
-    }
-
-
-@then("I should get an error message that the BLI must have a Description (for PUT only)")
-def error_message_valid_description_put_only(context, setup_and_teardown):
-    assert context["response_put"].status_code == 400
-    assert context["response_put"].json == {"_schema": ["BLI must valid a valid Description when status is not DRAFT"]}
-    assert context["response_patch"].status_code == 200
 
 
 @then("I should get an error message that the BLI must have a Need By Date")

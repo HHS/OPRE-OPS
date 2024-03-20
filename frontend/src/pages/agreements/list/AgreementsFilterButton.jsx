@@ -2,10 +2,10 @@ import React, { useEffect } from "react";
 import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
-import AgreementTypeSelect from "../../../components/UI/Form/AgreementTypeSelect";
-import ProcurementShopSelect from "../../../components/UI/Form/ProcurementShopSelect";
-import ProjectComboBox from "../../../components/UI/Form/ProjectComboBox";
-import ProjectOfficerComboBox from "../../../components/UI/Form/ProjectOfficerComboBox";
+import AgreementTypeSelect from "../../../components/Agreements/AgreementTypeSelect";
+import ProcurementShopSelect from "../../../components/Agreements/ProcurementShopSelect";
+import ProjectComboBox from "../../../components/Projects/ProjectComboBox";
+import ProjectOfficerComboBox from "../../../components/Agreements/ProjectOfficerComboBox";
 import FilterButton from "../../../components/UI/FilterButton/FilterButton";
 import setFilterList from "../../../components/UI/FilterButton/utils";
 

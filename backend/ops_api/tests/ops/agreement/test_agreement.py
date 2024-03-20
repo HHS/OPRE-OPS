@@ -1,9 +1,10 @@
 import numpy
 import pytest
 from flask import url_for
+from sqlalchemy import func, select, update
+
 from models import AgreementType, ContractAgreement, ContractType, GrantAgreement
 from models.cans import Agreement, ServiceRequirementType
-from sqlalchemy import func, select, update
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -508,6 +509,33 @@ def test_agreements_post(auth_client):
         json={
             "agreement_type": "CONTRACT",
             "name": "Test Contract (for post)",
+        },
+    )
+    assert response.status_code == 201
+    contract_id = response.json["id"]
+
+    response = auth_client.get(url_for("api.agreements-item", id=contract_id))
+    assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_post_contract_with_service_requirement_type(auth_client):
+    response = auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "FRANK TEST",
+            "description": "test description",
+            "product_service_code_id": 1,
+            "incumbent": None,
+            "project_officer_id": 1,
+            "team_members": [{"id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com"}],
+            "notes": "test notes",
+            "project_id": 1,
+            "procurement_shop_id": 2,
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "SEVERABLE",
         },
     )
     assert response.status_code == 201

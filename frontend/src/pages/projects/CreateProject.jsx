@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import App from "../../App";
-import ProjectTypeSelect from "../../components/UI/Form/ProjectTypeSelect/ProjectTypeSelect";
+import ProjectTypeSelect from "../../components/Projects/ProjectTypeSelect/ProjectTypeSelect";
 import { useAddResearchProjectsMutation } from "../../api/opsAPI";
 import Input from "../../components/UI/Form/Input";
 import TextArea from "../../components/UI/Form/TextArea";

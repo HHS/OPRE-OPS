@@ -6,6 +6,9 @@ from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import EXCLUDE, Schema
+from sqlalchemy.future import select
+from typing_extensions import Any, override
+
 from models import (
     CAN,
     ContractType,
@@ -36,8 +39,6 @@ from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.future import select
-from typing_extensions import Any, override
 
 
 @dataclass
@@ -242,6 +243,11 @@ class AgreementListAPI(BaseListAPI):
 
         if agreement_cls == ContractAgreement:
             data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
+            data["service_requirement_type"] = (
+                ServiceRequirementType[data["service_requirement_type"]]
+                if data.get("service_requirement_type")
+                else None
+            )
 
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []

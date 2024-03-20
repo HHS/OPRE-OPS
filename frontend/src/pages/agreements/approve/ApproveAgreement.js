@@ -24,9 +24,8 @@ const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepInstance }) =
     return (
         <BudgetLinesTable
             readOnly={true}
-            budgetLinesAdded={agreement?.budget_line_items}
+            budgetLines={agreement?.budget_line_items}
             isReviewMode={false}
-            showTotalSummaryCard={false}
             workflowBudgetLineItemIds={workflowBudgetLineItemIds}
         />
     );

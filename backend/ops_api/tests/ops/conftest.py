@@ -7,18 +7,18 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import Flask
 from flask.testing import FlaskClient
-from models import OpsDBHistory, OpsEvent
-from ops_api.ops import create_app
 from pytest_docker.plugin import Services
 from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
+
+from models import OpsDBHistory, OpsEvent
+from ops_api.ops import create_app
 from tests.ops.auth_client import AuthClient
 
 
-@pytest.mark.usefixtures("db_service")
 @pytest.fixture()
-def app(db_service: Engine) -> Generator[Flask, None, None]:
+def app(db_service) -> Generator[Flask, None, None]:
     """Make and return the flask app."""
     app = create_app({"TESTING": True})
     yield app

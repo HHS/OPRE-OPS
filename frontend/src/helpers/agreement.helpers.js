@@ -9,13 +9,13 @@ const handleAgreementProp = (agreement) => {
     }
 };
 
-// TODO: filter out DRAFT BLIs and UNDER_REVIEW BLIs?
+// TODO: filter out DRAFT BLIs?
 export const getAgreementSubTotal = (agreement) => {
     handleAgreementProp(agreement);
     return agreement.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
 };
 
-// TODO: filter out DRAFT BLIs and UNDER_REVIEW BLIs?
+// TODO: filter out DRAFT BLIs?
 
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item.

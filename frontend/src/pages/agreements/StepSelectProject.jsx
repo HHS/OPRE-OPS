@@ -1,8 +1,9 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import ProjectSelectWithSummaryCard from "../../components/UI/Form/ProjectSelectWithSummaryCard";
+import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelectWithSummaryCard";
 import StepIndicator from "../../components/UI/StepIndicator/StepIndicator";
-import { useGetResearchProjectsQuery } from "../../api/opsAPI";
+import { useGetResearchProjectsQuery, useDeleteAgreementMutation } from "../../api/opsAPI";
 import {
     useEditAgreement,
     useSetState,
@@ -10,17 +11,30 @@ import {
 } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import EditModeTitle from "./EditModeTitle";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
+import useAlert from "../../hooks/use-alert.hooks";
 
 /**
  * Renders a step in the Create Agreement wizard for selecting a research project.
  *
+ * @component
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to go to the next step in the wizard. - optional
  * @param {boolean} [props.isEditMode] - Whether the form is in edit mode. - optional
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
+ * @param {Array.<string>} [props.wizardSteps] - The steps of the wizard. - optional
+ * @param {number} [props.selectedAgreementId] - The ID of the selected agreement. - optional
+ * @param {number} [props.currentStep] - The current step of the wizard. - optional
+ *
  * @returns {JSX.Element} - The rendered component.
  */
-export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSteps, currentStep }) => {
+export const StepSelectProject = ({
+    goToNext,
+    isEditMode,
+    isReviewMode,
+    wizardSteps,
+    currentStep,
+    selectedAgreementId
+}) => {
     const navigate = useNavigate();
     const { selected_project: selectedResearchProject } = useEditAgreement();
     // setters
@@ -29,7 +43,9 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSt
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const { setAlert } = useAlert();
     const { data: projects, error: errorProjects, isLoading: isLoadingProjects } = useGetResearchProjectsQuery();
+    const [deleteAgreement] = useDeleteAgreementMutation();
 
     if (isLoadingProjects) {
         return <div>Loading...</div>;
@@ -46,12 +62,40 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSt
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
-            actionButtonText: "Cancel",
+            heading: "Are you sure you want to cancel creating a new agreement? Your progress will not be saved.",
+            actionButtonText: "Cancel Agreement",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 setModalProps({});
-                navigate("/");
+                if (selectedAgreementId && !isEditMode && !isReviewMode) {
+                    deleteAgreement(selectedAgreementId)
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                            setAlert({
+                                type: "success",
+                                heading: "Create New Agreement Cancelled",
+                                message: "Your agreement has been cancelled.",
+                                redirectUrl: "/agreements"
+                            });
+                        })
+                        .catch((rejected) => {
+                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred while deleting the agreement.",
+                                redirectUrl: "/error"
+                            });
+                        });
+                } else {
+                    setAlert({
+                        type: "success",
+                        heading: "Create New Agreement Cancelled",
+                        message: "Your agreement has been cancelled.",
+                        redirectUrl: "/agreements"
+                    });
+                }
             }
         });
     };
@@ -121,4 +165,12 @@ export const StepSelectProject = ({ goToNext, isEditMode, isReviewMode, wizardSt
     );
 };
 
+StepSelectProject.propTypes = {
+    goToNext: PropTypes.func,
+    isEditMode: PropTypes.bool,
+    isReviewMode: PropTypes.bool,
+    wizardSteps: PropTypes.arrayOf(PropTypes.string),
+    currentStep: PropTypes.number,
+    selectedAgreementId: PropTypes.number
+};
 export default StepSelectProject;

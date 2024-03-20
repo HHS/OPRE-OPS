@@ -80,11 +80,11 @@ it("edit an agreement", () => {
             .then(cy.log);
 
         cy.get("[data-cy='page-heading']").should("have.text", "Edit Agreement");
-        cy.get("h2").first().should("have.text", "Budget Line Details");
+        cy.get("h2").first().should("have.text", "Create Services Components");
 
         cy.get('[data-cy="continue-btn"]').click();
         // get Alert role status
-        cy.get("[data-cy='alert']").find("h1").should("have.text", "Agreement draft saved");
+        cy.get("[data-cy='alert']").find("h1").should("have.text", "Agreement Created");
         cy.get("h1").should("exist");
 
         cy.request({
@@ -171,7 +171,7 @@ it("can not edit a budget line if it is in EXECUTING", () => {
     cy.get('[data-icon="clone"]').should("exist");
 });
 
-it("can edit a budget line if it is in DRAFT or in REVIEW", () => {
+it("can edit a budget line if it is in DRAFT", () => {
     cy.visit(`/agreements/1/budget-lines`);
     cy.get("h1").should("have.text", "Contract #1: African American Child and Family Research Center");
     cy.get("#edit").should("exist");
@@ -182,4 +182,13 @@ it("can edit a budget line if it is in DRAFT or in REVIEW", () => {
     cy.get(".padding-right-9").find('[data-cy="edit-row"]').should("exist");
     cy.get('[data-cy="continue-btn"]').should("exist");
     cy.get('[data-cy="continue-btn"]').click();
+});
+
+it("should not PATCH an agreement when no changes are made", () => {
+    cy.visit(`/agreements/edit/1`);
+    // step one
+    cy.get("#continue").click();
+    // step two and make NO change
+    cy.get("#continue").click();
+    cy.get("[data-cy='alert']").should("not.exist");
 });

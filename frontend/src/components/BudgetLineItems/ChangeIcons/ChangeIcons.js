@@ -38,18 +38,6 @@ const ChangeIcons = ({
     goToApproveIcon = false,
     handleGoToApprove = () => {}
 }) => {
-    // if (!isItemEditable) {
-    //     return (
-    //         <DisabledChangeIcons
-    //             lockedMessage={lockedMessage}
-    //             duplicateIcon={duplicateIcon}
-    //             sendToReviewIcon={sendToReviewIcon}
-    //             handleDuplicateItem={() => handleDuplicateItem(item)}
-    //             goToApproveIcon={goToApproveIcon}
-    //         />
-    //     );
-    // }
-
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
     return (
@@ -66,7 +54,7 @@ const ChangeIcons = ({
                                 title="Edit"
                                 aria-label="Edit"
                                 data-cy="edit-row"
-                                onClick={() => handleSetItemForEditing(item)}
+                                onClick={() => handleSetItemForEditing(item?.id)}
                             >
                                 <FontAwesomeIcon
                                     title="Edit"
@@ -150,7 +138,7 @@ const ChangeIcons = ({
                             title="Duplicate"
                             aria-label="Duplicate"
                             data-cy="duplicate-row"
-                            onClick={() => handleDuplicateItem(item)}
+                            onClick={() => handleDuplicateItem(item?.id)}
                         >
                             <FontAwesomeIcon
                                 icon={faClone}

@@ -70,7 +70,7 @@ const EditAgreement = () => {
                 agreement={agreement}
                 projectOfficer={projectOfficer}
             >
-                <CreateEditAgreement existingBudgetLines={agreement.budget_line_items} />
+                <CreateEditAgreement budgetLines={agreement.budget_line_items} />
             </EditAgreementProvider>
         </App>
     );

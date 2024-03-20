@@ -1,26 +1,30 @@
-from datetime import date
 from functools import partial
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from typing_extensions import override
+
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.resources.services_component_schemas import (
+from ops_api.ops.schemas.services_component import (
     PATCHRequestBody,
     POSTRequestBody,
     QueryParameters,
     ServicesComponentItemResponse,
 )
-from ops_api.ops.utils.api_helpers import get_change_data, update_and_commit_model_instance
+from ops_api.ops.utils.api_helpers import (
+    convert_date_strings_to_dates,
+    get_change_data,
+    update_and_commit_model_instance,
+)
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from typing_extensions import override
 
 ENDPOINT_STRING = "/services-components"
 
@@ -95,9 +99,7 @@ class ServicesComponentItemAPI(BaseItemAPI):
             schema.context["method"] = method
 
             data = get_change_data(request.json, old_services_component, schema, ["id", "contract_agreement_id"])
-            for k in ["period_start", "period_end"]:
-                if k in data:
-                    data[k] = date.fromisoformat(data[k])
+            data = convert_date_strings_to_dates(data)
             services_component = update_and_commit_model_instance(old_services_component, data)
 
             sc_dict = self._response_schema.dump(services_component)
@@ -192,8 +194,7 @@ class ServicesComponentListAPI(BaseListAPI):
             self._post_schema.context["method"] = "POST"
 
             data = self._post_schema.dump(self._post_schema.load(request.json))
-            data["period_start"] = date.fromisoformat(data["period_start"]) if data.get("period_start") else None
-            data["period_end"] = date.fromisoformat(data["period_end"]) if data.get("period_end") else None
+            data = convert_date_strings_to_dates(data)
 
             new_sc = ServicesComponent(**data)
 

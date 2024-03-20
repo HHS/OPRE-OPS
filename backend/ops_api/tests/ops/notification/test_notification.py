@@ -2,6 +2,7 @@ from datetime import date
 
 import marshmallow_dataclass as mmdc
 import pytest
+
 from models import User
 from models.notifications import Notification
 from ops_api.ops.resources.notifications import Recipient, UpdateSchema
@@ -45,6 +46,7 @@ def notification_for_another_user(loaded_db):
     john = User(
         oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
         email="john@example.com",
+        division=1,
     )
 
     loaded_db.add(john)
@@ -73,6 +75,7 @@ def notification_is_read_is_true(loaded_db):
     john = User(
         oidc_id="41b88469-b7e8-4dbc-83d1-7e9a61d596b3",
         email="john@example.com",
+        division=1,
     )
 
     loaded_db.add(john)
