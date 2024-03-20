@@ -25,13 +25,13 @@ import useAlert from "../../../hooks/use-alert.hooks";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
-    // TODO: Create a hook for this business logix
+    // TODO: Create a custom hook for this business logix (./agreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = useState(false);
     const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveActiveWorkflow;
     const { setAlert } = useAlert();
-    const { data: servicesComponents, isSuccess, error } = useGetServicesComponentsListQuery(agreement?.id);
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     // details for AgreementTotalBudgetLinesCard
@@ -72,10 +72,6 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
         totals["Agreement"]["total"] += total;
     });
 
-    // if there are no BLIS than the user can edit
-    if (agreement?.budget_line_items?.length === 0) {
-        setIsEditMode(true);
-    }
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
 
     return (

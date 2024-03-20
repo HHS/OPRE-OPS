@@ -1,8 +1,7 @@
 import PropTypes from "prop-types";
 import Accordion from "../../UI/Accordion";
-import Tag from "../../UI/Tag";
+import ServicesComponentMetadata from "../ServicesComponentMetadata";
 import { useGetServicesComponentDisplayTitle } from "../../../hooks/useServicesComponents.hooks";
-import { dateToYearMonthDay } from "../servicesComponents.helpers";
 
 /**
  * ServicesComponentAccordion is a component that wraps its children in an Accordion UI component.
@@ -30,8 +29,6 @@ function ServicesComponentAccordion({
     if (servicesComponentDisplayTitle === "TBD") {
         servicesComponentDisplayTitle = "BLs not associated with a Services Component";
     }
-    const { year: popStartYear, month: popStartMonth, day: popStartDay } = dateToYearMonthDay(periodStart);
-    const { year: popEndYear, month: popEndMonth, day: popEndDay } = dateToYearMonthDay(periodEnd);
 
     return (
         <Accordion
@@ -39,37 +36,11 @@ function ServicesComponentAccordion({
             level={3}
         >
             {withMetadata && (
-                <section className="margin-top-0">
-                    <dl className="display-flex font-12px">
-                        <div>
-                            <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - Start</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag tagStyle="primaryDarkTextLightBackground">
-                                    {popStartYear && popStartMonth && popStartDay
-                                        ? `${popStartMonth}/${popStartDay}/${popStartYear}`
-                                        : "TBD"}
-                                </Tag>
-                            </dd>
-                        </div>
-                        <div className="margin-left-4">
-                            <dt className="margin-0 text-base-dark margin-top-1px">Period of Performance - End</dt>
-                            <dd className="margin-0 margin-top-1">
-                                <Tag tagStyle="primaryDarkTextLightBackground">
-                                    {popEndYear && popEndMonth && popEndDay
-                                        ? `${popEndMonth}/${popEndDay}/${popEndYear}`
-                                        : "TBD"}
-                                </Tag>
-                            </dd>
-                        </div>
-                        <div
-                            className="margin-left-8"
-                            style={{ width: "25rem" }}
-                        >
-                            <dt className="margin-0 text-base-dark margin-top-1px">Description</dt>
-                            <dd className="margin-0 margin-top-05 text-semibold">{description}</dd>
-                        </div>
-                    </dl>
-                </section>
+                <ServicesComponentMetadata
+                    periodStart={periodStart}
+                    periodEnd={periodEnd}
+                    description={description}
+                />
             )}
             {children}
         </Accordion>

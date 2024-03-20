@@ -1,4 +1,5 @@
 const findServicesComponentById = (servicesComponents, id) => {
+    if (!servicesComponents) return;
     return servicesComponents.find((component) => component.id === id);
 };
 export const findPeriodStart = (servicesComponents, servicesComponentId) => {
@@ -13,5 +14,5 @@ export const findPeriodEnd = (servicesComponents, servicesComponentId) => {
 
 export const findDescription = (servicesComponents, servicesComponentId) => {
     const servicesComponent = findServicesComponentById(servicesComponents, servicesComponentId);
-    return servicesComponent?.description ?? "TBD";
+    return servicesComponent?.description;
 };
