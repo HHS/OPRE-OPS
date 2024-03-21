@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from itertools import chain
+
+from flask_jwt_extended import get_current_user
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, mapper, scoped_session, sessionmaker
 
@@ -19,3 +22,17 @@ def init_db(
     event.listen(mapper, "after_configured", setup_schema(BaseModel))  # noqa: F405
 
     return db_session, engine
+
+
+def handle_create_update_by_attrs(session: Session) -> None:
+    try:
+        user = get_current_user()
+        user_id = getattr(user, "id", None)
+    except Exception:
+        user_id = None
+
+    for obj in chain(session.new, session.dirty, session.deleted):
+        if hasattr(obj, "created_by") and not getattr(obj, "created_by"):
+            setattr(obj, "created_by", user_id)
+        if hasattr(obj, "updated_by"):
+            setattr(obj, "updated_by", user_id)
