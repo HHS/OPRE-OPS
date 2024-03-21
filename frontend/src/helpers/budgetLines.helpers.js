@@ -52,3 +52,23 @@ export const hasActiveWorkflow = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.some((bli) => bli.has_active_workflow);
 };
+
+export const groupByServicesComponent = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines
+        .reduce((acc, budgetLine) => {
+            const servicesComponentId = budgetLine.services_component_id;
+            const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+            if (index === -1) {
+                acc.push({ servicesComponentId, budgetLines: [budgetLine] });
+            } else {
+                acc[index].budgetLines.push(budgetLine);
+            }
+            return acc;
+        }, [])
+        .sort((a, b) => {
+            if (a.servicesComponentId === null) return 1;
+            if (b.servicesComponentId === null) return -1;
+            return a.servicesComponentId - b.servicesComponentId;
+        });
+};
