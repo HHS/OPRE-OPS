@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity
 from marshmallow import EXCLUDE, Schema
 from sqlalchemy.future import select
 from typing_extensions import Any, override
@@ -38,7 +38,6 @@ from ops_api.ops.resources.agreements_constants import (
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 
 @dataclass
@@ -220,10 +219,6 @@ class AgreementListAPI(BaseListAPI):
             data = schema.dump(schema.load(request.json, unknown=EXCLUDE))
 
             new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
-
-            token = verify_jwt_in_request()
-            user = get_user_from_token(token[1])
-            new_agreement.created_by = user.id
 
             current_app.db_session.add(new_agreement)
             current_app.db_session.commit()
