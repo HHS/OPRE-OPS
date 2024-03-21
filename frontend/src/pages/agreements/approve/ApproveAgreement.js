@@ -155,8 +155,8 @@ const ApproveAgreement = () => {
                 console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
                 setAlert({
                     type: "success",
-                    heading: "Approval Saved",
-                    message: `The approval to change Budget Lines has been saved.`
+                    heading: `Budget Lines Approved for ${goToText} Status`,
+                    message: `Budget lines for ${agreement.name} have been successfully approved for ${goToText} Status.`
                 });
             })
             .catch((rejected) => {
