@@ -18,6 +18,7 @@ class AgreementData(Schema):
     project_id = fields.Integer(allow_none=True)
     procurement_shop_id = fields.Integer(allow_none=True)
     notes = fields.String(allow_none=True)
+    procurement_tracker_workflow_id = fields.Integer(allow_none=True)
 
 
 class ContractAgreementData(AgreementData):
