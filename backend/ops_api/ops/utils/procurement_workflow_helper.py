@@ -1,10 +1,12 @@
 from datetime import datetime
 
 from flask import current_app
+from sqlalchemy import select
 
 # from flask_jwt_extended import verify_jwt_in_request
 from models import (
     AcquisitionPlanning,
+    Agreement,
     Award,
     Evaluation,
     Package,
@@ -21,6 +23,8 @@ from models import (
     WorkflowTemplate,
     WorkflowTriggerType,
 )
+
+# from sqlalchemy import select
 
 # from ops_api.ops.utils.user import get_user_from_token
 
@@ -45,19 +49,28 @@ def get_procurement_workflow_template() -> WorkflowTemplate:
     return procurement_workflow_template
 
 
-def create_procurement_workflow(agreement_id):
+def create_procurement_workflow(agreement_id) -> WorkflowInstance:
+    session = current_app.db_session
+    agreement = session.get(Agreement, agreement_id)
+    if not agreement:
+        raise ValueError("Invalid Agreement ID")
+
+    # if it already exists, just return it
+    if agreement.procurement_tracker_workflow_id:
+        return session.get(WorkflowInstance, agreement.procurement_tracker_workflow_id)
+
     user_id = None
     # TODO: How to get user when there might not be a request (in testing, etc)
     # token = verify_jwt_in_request()
     # user = get_user_from_token(token[1])
+
     workflow_template = get_procurement_workflow_template()
-    session = current_app.db_session
 
     workflow_instance = WorkflowInstance()
     workflow_instance.workflow_template_id = workflow_template.id
     workflow_instance.associated_id = agreement_id
     workflow_instance.associated_type = WorkflowTriggerType.AGREEMENT
-    workflow_instance.workflow_action = WorkflowAction.GENERIC
+    workflow_instance.workflow_action = WorkflowAction.PROCUREMENT_TRACKING
     workflow_instance.created_by = user_id
 
     session.add(workflow_instance)
@@ -109,3 +122,36 @@ def create_procurement_workflow(agreement_id):
             assert proc_step.id
 
     return workflow_instance
+
+
+def delete_procurement_workflow(agreement_id):
+    session = current_app.db_session
+    agreement = session.get(Agreement, agreement_id)
+
+    # remove procurement steps
+    stmt = select(ProcurementStep).where(ProcurementStep.agreement_id == agreement_id)
+    procurement_step_results = session.execute(stmt).all()
+    procurement_steps = [p[0] for p in procurement_step_results]
+    procurement_step: ProcurementStep
+    for procurement_step in procurement_steps:
+        session.delete(procurement_step)
+
+    # remove workflow, it's steps, packages, and package snapshots (Should there be more cascading for this?)
+    workflow_id = agreement.procurement_tracker_workflow_id
+    if workflow_id is not None:
+        workflow_instance = session.get(WorkflowInstance, workflow_id)
+        for workflow_step in workflow_instance.steps:
+            session.delete(workflow_step)
+        stmt = select(Package).where(Package.workflow_instance_id == workflow_instance.id)
+        package_results = session.execute(stmt).all()
+        packages = [p[0] for p in package_results]
+        for package in packages:
+            stmt = select(PackageSnapshot).where(PackageSnapshot.package_id == package.id)
+            snapshot_results = session.execute(stmt).all()
+            package_snapshots = [p[0] for p in snapshot_results]
+            for package_snapshot in package_snapshots:
+                session.delete(package_snapshot)
+            session.delete(package)
+        session.delete(workflow_instance)
+
+    session.commit()

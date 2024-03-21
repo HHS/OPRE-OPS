@@ -458,6 +458,7 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
         "display_name": agreement.display_name,
         "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
         "incumbent": agreement.incumbent.name if hasattr(agreement, "incumbent") and agreement.incumbent else None,
+        "procurement_tracker_workflow_id": agreement.procurement_tracker_workflow_id,
     }
 
 
