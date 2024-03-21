@@ -13,6 +13,7 @@ import {
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
 import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
+import { groupByServicesComponent } from "../../../../helpers/budgetLines.helpers";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -84,22 +85,7 @@ const useCreateBLIsAndSCs = (
         if (budgetLines.length === 0) {
             budgetLines = newAgreement.budget_line_items;
         }
-        groupedBudgetLinesByServicesComponent = budgetLines
-            .reduce((acc, budgetLine) => {
-                const servicesComponentId = budgetLine.services_component_id;
-                const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
-                if (index === -1) {
-                    acc.push({ servicesComponentId, budgetLines: [budgetLine] });
-                } else {
-                    acc[index].budgetLines.push(budgetLine);
-                }
-                return acc;
-            }, [])
-            .sort((a, b) => {
-                if (a.servicesComponentId === null) return 1;
-                if (b.servicesComponentId === null) return -1;
-                return a.servicesComponentId - b.servicesComponentId;
-            });
+        groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
     }
 
     const handleAddBLI = (e) => {
