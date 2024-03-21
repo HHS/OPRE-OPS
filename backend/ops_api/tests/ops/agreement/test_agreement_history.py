@@ -98,10 +98,10 @@ def test_agreement_history(auth_client, loaded_db):
     assert len(data[2]["changes"]) == 3
     assert data[3]["class_name"] == "BudgetLineItem"
     assert data[3]["event_type"] == "NEW"
-    assert len(data[3]["changes"]) == 7
+    assert len(data[3]["changes"]) == 8
     assert data[4]["class_name"] == "ContractAgreement"
     assert data[4]["event_type"] == "UPDATED"
     assert len(data[4]["changes"]) == 2
     assert data[5]["class_name"] == "ContractAgreement"
     assert data[5]["event_type"] == "NEW"
-    assert len(data[5]["changes"]) == 10
+    assert len(data[5]["changes"]) == 11

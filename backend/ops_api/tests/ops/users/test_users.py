@@ -5,6 +5,22 @@ from models import UserStatus
 from models.users import User
 
 
+@pytest.fixture
+def new_user(loaded_db):
+    user = User(
+        email="blah@example.com",
+        first_name="blah",
+        last_name="blah",
+        division=1,
+    )
+    loaded_db.add(user)
+    loaded_db.commit()
+    yield user
+
+    loaded_db.delete(user)
+    loaded_db.commit()
+
+
 @pytest.mark.skip("Need to rework this endpoint.")
 @pytest.mark.usefixtures("app_ctx")
 def test_get_users_by_id_without_auth(client):
@@ -88,10 +104,10 @@ def test_put_user_unauthorized(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user(auth_client):
+def test_put_user(auth_client, new_user):
     # Send a PUT request to update the user
     response = auth_client.put(
-        "/api/v1/users/4",
+        f"/api/v1/users/{new_user.id}",
         json={"first_name": "New First Name"},
     )
 
@@ -99,15 +115,8 @@ def test_put_user(auth_client):
     assert response.status_code == 200
 
     # Check that the response data matches the updated user data
-    print(response.json)
     assert response.json["first_name"] == "New First Name"
 
     # Check that the user was updated in the database
-    updated_user = User.query.get(4)
+    updated_user = User.query.get(new_user.id)
     assert updated_user.first_name == "New First Name"
-
-    # Revert changes back to original values
-    response = auth_client.put(
-        "/api/users/4",
-        json={"first_name": "Amelia"},
-    )

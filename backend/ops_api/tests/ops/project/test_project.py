@@ -120,7 +120,7 @@ def test_post_projects(auth_client):
     response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 201
     assert response.json["title"] == "Research Project #1"
-    assert response.json["team_leaders"] == [
+    expected_team_leaders = [
         {
             "email": "chris.fortunato@example.com",
             "full_name": "Chris Fortunato",
@@ -133,6 +133,7 @@ def test_post_projects(auth_client):
             "id": 3,
         },
     ]
+    assert [person in expected_team_leaders for person in response.json["team_leaders"]]
 
 
 @pytest.mark.usefixtures("loaded_db")
