@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 from models import (
     AcquisitionPlanning,
+    Agreement,
     Award,
     Evaluation,
     Package,
@@ -11,10 +12,15 @@ from models import (
     PreSolicitation,
     ProcurementStep,
     Solicitation,
+    WorkflowAction,
     WorkflowInstance,
     WorkflowTemplate,
 )
-from ops_api.ops.utils.procurement_workflow_helper import create_procurement_workflow, get_procurement_workflow_template
+from ops_api.ops.utils.procurement_workflow_helper import (
+    create_procurement_workflow,
+    delete_procurement_workflow,
+    get_procurement_workflow_template,
+)
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
@@ -27,6 +33,8 @@ def test_get_procurement_workflow_template(loaded_db):
 def test_create_procurement_workflow(loaded_db):
     test_agreement_id = 1
     workflow_instance: WorkflowInstance = create_procurement_workflow(test_agreement_id)
+    assert workflow_instance.id is not None
+    workflow_instance_id = workflow_instance.id
 
     assert len(workflow_instance.steps) == 7
     assert workflow_instance.steps[0].workflow_step_template.name == "Acquisition Planning"
@@ -61,7 +69,10 @@ def test_create_procurement_workflow(loaded_db):
     assert package_snapshot.object_type == "AGREEMENT"
     assert package_snapshot.object_id == test_agreement_id
 
-    # TODO: find this workflow by agreement_id
+    agreement = loaded_db.get(Agreement, test_agreement_id)
+    assert agreement.procurement_tracker_workflow_id == workflow_instance.id
+    workflow_instance = loaded_db.get(WorkflowInstance, workflow_instance.id)
+    assert workflow_instance.workflow_action == WorkflowAction.PROCUREMENT_TRACKING
 
     # procurement steps tied to this agreement and workflow steps
     stmt = select(ProcurementStep).where(ProcurementStep.agreement_id == test_agreement_id)
@@ -83,12 +94,15 @@ def test_create_procurement_workflow(loaded_db):
         elif isinstance(procurement_step, Award):
             assert procurement_step.workflow_step_id == award_workflow_step.id
 
-    # cleanup  (is there, or should there be, cascading for more of this)
-    for procurement_step in procurement_steps:
-        loaded_db.delete(procurement_step)
-    loaded_db.delete(package_snapshot)
-    loaded_db.delete(package)
-    for workflow_step in workflow_instance.steps:
-        loaded_db.delete(workflow_step)
-    loaded_db.delete(workflow_instance)
-    loaded_db.commit()
+    # delete workflow
+    delete_procurement_workflow(test_agreement_id)
+
+    # verify removal
+    agreement = loaded_db.get(Agreement, test_agreement_id)
+    assert agreement.procurement_tracker_workflow_id is None
+    stmt = select(Package).where(Package.workflow_instance_id == workflow_instance_id)
+    package_results = loaded_db.execute(stmt).all()
+    assert len(package_results) == 0
+    stmt = select(PackageSnapshot).where(PackageSnapshot.package_id == package.id)
+    snapshot_results = loaded_db.execute(stmt).all()
+    assert len(snapshot_results) == 0

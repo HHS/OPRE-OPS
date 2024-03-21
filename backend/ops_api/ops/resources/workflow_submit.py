@@ -122,6 +122,9 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         # WIP: commit our new workflow instance
         current_app.db_session.add(workflow_instance)
         current_app.db_session.commit()
+        workflow_instance.current_workflow_step_instance_id = workflow_step_instance.id
+        current_app.db_session.add(workflow_instance)
+        current_app.db_session.commit()
 
         # updated the current step in the bli package to the first step in the workflow
         new_package.workflow_instance_id = workflow_instance.id

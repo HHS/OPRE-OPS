@@ -13,6 +13,7 @@ class WorkflowAction(Enum):
     DRAFT_TO_PLANNED = 1
     PLANNED_TO_EXECUTING = 2
     GENERIC = 3
+    PROCUREMENT_TRACKING = 4
 
 
 class WorkflowStepType(Enum):
@@ -219,7 +220,7 @@ class WorkflowStepInstance(BaseModel):
                     WorkflowStepInstance,
                     WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
                 )
-                .where(WorkflowInstance.id == self.id)
+                .where(WorkflowStepInstance.id == self.id)
             )
             .all()
         )
