@@ -1,20 +1,21 @@
 from datetime import datetime, timedelta
 
-from azure.identity import DefaultAzureCredential
+# from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobSasPermissions, generate_blob_sas
 from flask import Response, current_app
 from flask.views import MethodView
+
 from ops_api.ops.base_views import handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 
 # Replace these with your Azure Storage Account details
-STORAGE_ACCOUNT_NAME = current_app.config["STORAGE_ACCOUNT_NAME"]
-STORAGE_ACCOUNT_KEY = current_app.config["STORAGE_ACCOUNT_KEY"]
+# STORAGE_ACCOUNT_NAME = current_app.config.get("STORAGE_ACCOUNT_NAME")
+# STORAGE_ACCOUNT_KEY = current_app.config.get("STORAGE_ACCOUNT_KEY")
 CONTAINER_NAME = "uploads"  # Temp directory for storing uploads during testing.
 
-ACCOUNT_URL = f"https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net"
-default_credentials = DefaultAzureCredential()
+# Testing using local default azure creds
+# default_credentials = DefaultAzureCredential()
 
 
 def generate_sas_token(container_name, blob_name, account_name, account_key, permission, expiry_hours=1):
@@ -40,7 +41,11 @@ class SasToken(MethodView):
         blob_name = "uploads"
         # Generate the SAS token
         sas_token = generate_sas_token(
-            CONTAINER_NAME, blob_name, STORAGE_ACCOUNT_NAME, STORAGE_ACCOUNT_KEY, BlobSasPermissions(write=True)
+            CONTAINER_NAME,
+            blob_name,
+            current_app.config.get("STORAGE_ACCOUNT_NAME"),
+            current_app.config.get("STORAGE_ACCOUNT_KEY"),
+            BlobSasPermissions(write=True),
         )
         response = make_response_with_headers({"sas_token": sas_token})
 
