@@ -17,7 +17,7 @@ import useAlert from "../../hooks/use-alert.hooks";
  *
  * @returns {JSX.Element} - The rendered component.
  */
-export const CreateEditAgreement = ({ budgetLines, setAgreementId }) => {
+export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
     const createAgreementContext = useEditAgreement();
