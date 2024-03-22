@@ -116,6 +116,10 @@ class BaseModel(Base):
     def created_by_user(cls):
         return relationship("User", foreign_keys=[cls.created_by])
 
+    @declared_attr
+    def updated_by_user(cls):
+        return relationship("User", foreign_keys=[cls.updated_by])
+
     @property
     def display_name(self):
         """A property that can be used to provide a name for display purposes of any instance
