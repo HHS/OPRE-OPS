@@ -75,31 +75,35 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
 
     return (
         <>
-            <AgreementBudgetLinesHeader
-                heading="Budget Lines Summary"
-                details="The summary below shows a breakdown of the agreement total."
-                includeDrafts={includeDrafts}
-                setIncludeDrafts={setIncludeDrafts}
-                isEditMode={isEditMode}
-                setIsEditMode={setIsEditMode}
-                isEditable={canUserEditAgreement}
-            />
-            <div className="display-flex flex-justify">
-                <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
-                <AgreementTotalCard
-                    total={totals["Agreement"]["total"]}
-                    subtotal={totals["Agreement"]["subtotal"]}
-                    fees={totals["Agreement"]["fees"]}
-                    procurementShopAbbr={agreement.procurement_shop?.abbr}
-                    procurementShopFee={agreement.procurement_shop?.fee}
-                />
-            </div>
-            <div className="margin-y-3">
-                <h2 className="font-sans-lg">Budget Lines</h2>
-                <p className="font-sans-sm">
-                    This is a list of all services components and budget lines within this agreement.
-                </p>
-            </div>
+            {!isEditMode && (
+                <>
+                    <AgreementBudgetLinesHeader
+                        heading="Budget Lines Summary"
+                        details="The summary below shows a breakdown of the agreement total."
+                        includeDrafts={includeDrafts}
+                        setIncludeDrafts={setIncludeDrafts}
+                        isEditMode={isEditMode}
+                        setIsEditMode={setIsEditMode}
+                        isEditable={canUserEditAgreement}
+                    />
+                    <div className="display-flex flex-justify">
+                        <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
+                        <AgreementTotalCard
+                            total={totals["Agreement"]["total"]}
+                            subtotal={totals["Agreement"]["subtotal"]}
+                            fees={totals["Agreement"]["fees"]}
+                            procurementShopAbbr={agreement.procurement_shop?.abbr}
+                            procurementShopFee={agreement.procurement_shop?.fee}
+                        />
+                    </div>
+                    <div className="margin-y-3">
+                        <h2 className="font-sans-lg">Budget Lines</h2>
+                        <p className="font-sans-sm">
+                            This is a list of all services components and budget lines within this agreement.
+                        </p>
+                    </div>
+                </>
+            )}
 
             {isEditMode && (
                 <CreateBLIsAndSCs
