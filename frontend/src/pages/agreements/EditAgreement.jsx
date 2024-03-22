@@ -3,9 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import App from "../../App";
 import { EditAgreementProvider } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateEditAgreement from "./CreateEditAgreement";
+import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery } from "../../api/opsAPI";
 import { getUser } from "../../api/getUser";
-import SimpleAlert from "../../components/UI/Alert/SimpleAlert";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../hooks/agreement.hooks";
 
 const EditAgreement = () => {

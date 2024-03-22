@@ -20,7 +20,7 @@ import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeam
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
 import CreateBudgetLines from "./pages/budgetLines";
-import CreateAgreements from "./pages/agreements";
+import CreateAgreement from "./pages/agreements/CreateAgreement";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import CreateProject from "./pages/projects/CreateProject";
 import { AgreementsList } from "./pages/agreements/list/AgreementsList";
@@ -195,7 +195,7 @@ const router = createBrowserRouter(
                 />
                 <Route
                     path="/agreements/create"
-                    element={<CreateAgreements />}
+                    element={<CreateAgreement />}
                 />
                 <Route
                     path="/agreements/edit/:id/*"

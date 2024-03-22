@@ -7,7 +7,6 @@ import {
     useUpdateBudgetLineItemMutation,
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
-    useGetAgreementByIdQuery,
     useDeleteBudgetLineItemMutation
 } from "../../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
@@ -78,15 +77,7 @@ const useCreateBLIsAndSCs = (
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
-    const { data: newAgreement, isSuccess } = useGetAgreementByIdQuery(selectedAgreement?.id);
-
-    let groupedBudgetLinesByServicesComponent = [];
-    if (isSuccess) {
-        if (budgetLines.length === 0) {
-            budgetLines = newAgreement.budget_line_items;
-        }
-        groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
-    }
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
 
     const handleAddBLI = (e) => {
         e.preventDefault();
@@ -128,7 +119,6 @@ const useCreateBLIsAndSCs = (
 
     const handleEditBLI = (e) => {
         e.preventDefault();
-
         const payload = {
             id: budgetLines[budgetLineBeingEdited].id,
             services_component_id: servicesComponentId,
