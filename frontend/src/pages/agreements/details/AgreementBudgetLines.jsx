@@ -134,7 +134,8 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 />
             )}
 
-            {!isEditMode && groupedBudgetLinesByServicesComponent.length > 0 ? (
+            {!isEditMode &&
+                groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
                         key={group.servicesComponentId}
@@ -149,8 +150,9 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                             readOnly={true}
                         />
                     </ServicesComponentAccordion>
-                ))
-            ) : (
+                ))}
+
+            {!isEditMode && groupedBudgetLinesByServicesComponent.length === 0 && (
                 <p className="text-center">You have not added any Budget Lines yet.</p>
             )}
 

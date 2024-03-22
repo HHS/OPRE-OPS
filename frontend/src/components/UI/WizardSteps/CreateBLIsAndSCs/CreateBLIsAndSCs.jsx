@@ -145,6 +145,17 @@ export const CreateBLIsAndSCs = ({
                     <p>Add Budget lines to each Services Component to outline how the work will be funded.</p>
                 </>
             )}
+
+            {workflow === "none" && (
+                <>
+                    <ServicesComponents
+                        serviceRequirementType={selectedAgreement.service_requirement_type}
+                        agreementId={selectedAgreement.id}
+                    />
+                    <h2 className="font-sans-lg margin-top-3">Edit Budget Lines</h2>
+                </>
+            )}
+
             {workflow === "budgetLines" && (
                 <>
                     <h2 className="font-sans-lg">Budget Lines</h2>
