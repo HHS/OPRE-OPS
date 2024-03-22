@@ -120,6 +120,11 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
 
+    // add check for BLI Summary card
+    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2024");
+    cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
+    cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
+
     // Duplicate budget line item
     cy.get("[id^=expand-]").click();
     cy.get("[id^=duplicate-]").click();
@@ -276,6 +281,12 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
+
+    // add check for BLI Summary card
+    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2024");
+    cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
+    cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
+
     cy.get("#allServicesComponentSelect").select("SC1");
     cy.get("#enteredMonth").select("01 - Jan");
     cy.get("#enteredDay").type("1");
@@ -284,6 +295,14 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#enteredAmount").type("2000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
+
+    // add check for BLI Summary card
+    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2024");
+    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2025");
+    cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
+    cy.get("[data-cy='blis-by-fy-card']").contains("$2,000,000.00");
+    cy.get("[data-cy='currency-summary-card']").contains("$3,000,000.00");
+
     // Services Component 1 Accordion should contain 2 budget lines
     cy.get("h3").should("contain", "Services Component 1").as("sc1");
     cy.get("@sc1").next().find(".usa-table").should("exist");
