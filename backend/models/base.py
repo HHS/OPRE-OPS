@@ -112,7 +112,7 @@ class BaseModel(Base):
         data = schema.dump(self)
         data["display_name"] = self.display_name
 
-        user_schema = marshmallow.class_registry.get_class("UserSchema")()
+        user_schema = marshmallow.class_registry.get_class("SafeUserSchema")()
         data["created_by_user"] = (
             user_schema.dump(self.created_by_user) if self.created_by_user else None
         )

@@ -6,12 +6,27 @@ from models.users import User
 
 
 @pytest.fixture
-def new_user(loaded_db):
+def new_user(app, loaded_db):
+    # Needed to set the new user's created_by and updated_by fields
+    app.config["SKIP_SETTING_CREATED_BY"] = True
+
+    system_user = User(
+        email="system@example.com",
+        first_name="automated",
+        last_name="system",
+        division=1,
+    )
+
+    loaded_db.add(system_user)
+    loaded_db.commit()
+
     user = User(
         email="blah@example.com",
         first_name="blah",
         last_name="blah",
         division=1,
+        created_by=system_user.id,
+        updated_by=system_user.id,
     )
     loaded_db.add(user)
     loaded_db.commit()
@@ -120,3 +135,18 @@ def test_put_user(auth_client, new_user):
     # Check that the user was updated in the database
     updated_user = User.query.get(new_user.id)
     assert updated_user.first_name == "New First Name"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_safe_user(auth_client, loaded_db, new_user):
+    system_user = loaded_db.get(User, new_user.created_by)
+    response = auth_client.get(f"/api/v1/users/{new_user.id}")
+    assert response.status_code == 200
+    user = response.json
+    assert user["id"] == new_user.id
+    assert len(user["created_by_user"]) == 2
+    assert len(user["updated_by_user"]) == 2
+    assert user["created_by_user"]["id"] == system_user.id
+    assert user["created_by_user"]["full_name"] == system_user.full_name
+    assert user["updated_by_user"]["id"] == system_user.id
+    assert user["updated_by_user"]["full_name"] == system_user.full_name
