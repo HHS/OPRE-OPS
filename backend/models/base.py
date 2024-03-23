@@ -2,12 +2,13 @@
 import enum
 from typing import cast
 
+import marshmallow
 import sqlalchemy
 from marshmallow import fields
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
-from sqlalchemy.orm import declarative_base, declared_attr, mapped_column, registry, relationship
+from sqlalchemy.orm import declarative_base, mapped_column, object_session, registry
 from typing_extensions import Any
 
 Base = declarative_base()
@@ -110,15 +111,36 @@ class BaseModel(Base):
         schema = self.__marshmallow__()
         data = schema.dump(self)
         data["display_name"] = self.display_name
+
+        user_schema = marshmallow.class_registry.get_class("UserSchema")()
+        data["created_by_user"] = (
+            user_schema.dump(self.created_by_user) if self.created_by_user else None
+        )
+        data["updated_by_user"] = (
+            user_schema.dump(self.updated_by_user) if self.updated_by_user else None
+        )
+
         return data
 
-    @declared_attr
-    def created_by_user(cls):
-        return relationship("User", foreign_keys=[cls.created_by])
+    @property
+    def created_by_user(self):
+        from models import User
 
-    @declared_attr
-    def updated_by_user(cls):
-        return relationship("User", foreign_keys=[cls.updated_by])
+        return (
+            object_session(self).get(User, self.created_by)
+            if object_session(self) and self.created_by
+            else None
+        )
+
+    @property
+    def updated_by_user(self):
+        from models import User
+
+        return (
+            object_session(self).get(User, self.updated_by)
+            if object_session(self) and self.updated_by
+            else None
+        )
 
     @property
     def display_name(self):
