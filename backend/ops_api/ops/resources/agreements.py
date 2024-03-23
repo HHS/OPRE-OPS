@@ -310,6 +310,7 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             "agreement_type",
             "versions",
             "created_by_user",  # handled by created_by
+            "updated_by_user",  # handled by updated_by
             "project_officer",  # handled by project_officer_id
         ]:
             continue
@@ -365,7 +366,6 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     changed = True
 
     if changed:
-        agreement.budget_line_items
         for bli in agreement.budget_line_items:
             with suppress(AttributeError):
                 if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
@@ -399,8 +399,7 @@ def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = Tr
         for key, value in change_data.items()
         if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
     }  # only keep the attributes from the request body
-    data |= change_data
-    return data
+    return change_data
 
 
 def add_vendor(data: dict, field_name: str = "vendor") -> None:
