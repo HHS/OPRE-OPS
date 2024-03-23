@@ -1768,6 +1768,9 @@ components:
         project_officer_id:
           type: integer
           example: 1
+        procurement_tracker_workflow_id:
+          type: integer
+          example: 1
       required:
         - name
         - agreement_type

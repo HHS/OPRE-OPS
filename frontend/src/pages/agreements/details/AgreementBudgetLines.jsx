@@ -1,16 +1,18 @@
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
-import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import CreateBLIsAndSCs from "../../../components/UI/WizardSteps/CreateBLIsAndSCs/CreateBLIsAndSCs";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import useAlert from "../../../hooks/use-alert.hooks";
-import { useState } from "react";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
-import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
-import { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
+import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
+import useAlert from "../../../hooks/use-alert.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
+import { hasActiveWorkflow, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { findPeriodStart, findPeriodEnd, findDescription } from "../../../helpers/servicesComponent.helpers";
 
 /**
  * Renders Agreement budget lines view
@@ -22,12 +24,13 @@ import { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
+    // TODO: Create a custom hook for this business logix (./agreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = useState(false);
     const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveActiveWorkflow;
     const { setAlert } = useAlert();
-
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     // details for AgreementTotalBudgetLinesCard
@@ -68,18 +71,18 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
         totals["Agreement"]["total"] += total;
     });
 
-    // if there are no BLIS than the user can edit
-    if (agreement?.budget_line_items?.length === 0) {
-        setIsEditMode(true);
-    }
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
 
     return (
         <>
             <AgreementBudgetLinesHeader
                 heading="Budget Lines Summary"
-                details="The summary below shows a breakdown of all budget lines within this agreement."
+                details="The summary below shows a breakdown of the agreement total."
                 includeDrafts={includeDrafts}
                 setIncludeDrafts={setIncludeDrafts}
+                isEditMode={isEditMode}
+                setIsEditMode={setIsEditMode}
+                isEditable={canUserEditAgreement}
             />
             <div className="display-flex flex-justify">
                 <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
@@ -91,14 +94,14 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     procurementShopFee={agreement.procurement_shop?.fee}
                 />
             </div>
-            <AgreementDetailHeader
-                heading="Budget Lines"
-                details="This is a list of all budget lines within this agreement."
-                isEditMode={isEditMode}
-                setIsEditMode={setIsEditMode}
-                isEditable={canUserEditAgreement}
-            />
-            {isEditMode ? (
+            <div className="margin-y-3">
+                <h2 className="font-sans-lg">Budget Lines</h2>
+                <p className="font-sans-sm">
+                    This is a list of all services components and budget lines within this agreement.
+                </p>
+            </div>
+
+            {isEditMode && (
                 <CreateBLIsAndSCs
                     selectedAgreement={agreement}
                     budgetLines={agreement?.budget_line_items}
@@ -125,13 +128,26 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                         });
                     }}
                 />
-            ) : agreement?.budget_line_items.length > 0 ? (
-                <BudgetLinesTable
-                    budgetLines={agreement?.budget_line_items}
-                    readOnly={!isEditMode}
-                />
+            )}
+
+            {!isEditMode && groupedBudgetLinesByServicesComponent.length > 0 ? (
+                groupedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                    >
+                        <BudgetLinesTable
+                            budgetLines={group.budgetLines}
+                            readOnly={true}
+                        />
+                    </ServicesComponentAccordion>
+                ))
             ) : (
-                <p>No budget lines.</p>
+                <p className="text-center">You have not added any Budget Lines yet.</p>
             )}
 
             {!isEditMode && (
