@@ -1522,6 +1522,32 @@ paths:
 
 components:
   parameters:
+    created_by:
+      description: The user id of the user who created the object
+      name: created_by
+      in: query
+      schema:
+          type: integer
+    updated_by:
+      description: The user id of the user who last updated the object
+      name: updated_by
+      in: query
+      schema:
+        type: integer
+    created_on:
+      description: The timestamp of when the object was created
+      name: created_on
+      in: query
+      schema:
+        type: string
+        format: date-time
+    updated_on:
+      description: The timestamp of when the object was last updated
+      name: updated_on
+      in: query
+      schema:
+        type: string
+        format: date-time
     simulatedError:
       name: simulatedError
       in: query
@@ -1563,6 +1589,14 @@ components:
         expiration_date:
           type: string
         managing_project_id: { }
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
 
     Portfolio:
       description: Portfolio Object
