@@ -246,6 +246,9 @@ export const opsApi = createApi({
             query: (id) => `/workflow-step-instance/${id}`,
             providesTags: ["WorkflowStepInstance"]
         }),
+        getAzureSasToken: builder.query({
+            query: () => `/azure/sas-token`
+        }),
         addServicesComponent: builder.mutation({
             query: (data) => {
                 return {
@@ -321,6 +324,7 @@ export const {
     useAddWorkflowApproveMutation,
     useGetWorkflowInstanceQuery,
     useGetWorkflowStepInstanceQuery,
+    useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,
     useUpdateServicesComponentMutation,
     useGetServicesComponentByIdQuery,
