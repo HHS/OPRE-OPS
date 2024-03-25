@@ -1,6 +1,7 @@
 """Base model and other useful tools for project models."""
 import enum
-from typing import cast
+from datetime import datetime
+from typing import Optional, cast
 
 import marshmallow
 import sqlalchemy
@@ -8,7 +9,7 @@ from marshmallow import fields
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
-from sqlalchemy.orm import declarative_base, mapped_column, object_session, registry
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, object_session, registry
 from typing_extensions import Any
 
 Base = declarative_base()
@@ -79,10 +80,16 @@ class BaseModel(Base):
     __versioned__ = {}
     __abstract__ = True
 
-    created_by = Column(Integer, ForeignKey("user.id"), default=None)
-    updated_by = Column(Integer, ForeignKey("user.id"), default=None)
-    created_on = Column(DateTime, default=func.now())
-    updated_on = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_by: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("user.id"), default=None
+    )
+    updated_by: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("user.id"), default=None
+    )
+    created_on: Mapped[Optional[datetime]] = mapped_column(default=func.now())
+    updated_on: Mapped[Optional[datetime]] = mapped_column(
+        default=func.now(), onupdate=func.now()
+    )
 
     @classmethod
     def model_lookup_by_table_name(cls, table_name):
