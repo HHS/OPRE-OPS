@@ -37,8 +37,10 @@ def handle_create_update_by_attrs(session: Session) -> None:
     except Exception:
         user_id = None
 
-    for obj in chain(session.new, session.dirty, session.deleted):
-        if hasattr(obj, "created_by") and not getattr(obj, "created_by"):
+    for obj in session.new:
+        if hasattr(obj, "created_by"):
             setattr(obj, "created_by", user_id)
+
+    for obj in chain(session.new, session.dirty, session.deleted):
         if hasattr(obj, "updated_by"):
             setattr(obj, "updated_by", user_id)
