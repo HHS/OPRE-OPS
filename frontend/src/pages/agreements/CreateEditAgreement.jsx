@@ -10,12 +10,14 @@ import useAlert from "../../hooks/use-alert.hooks";
 
 /**
  * Renders the Create Agreement flow, which consists of several steps.
+ * @component
  * @param {Object} props - The component props.
  * @param {Array<any>} props.budgetLines - An array of existing budget lines.
+ * @param {function} [props.setAgreementId] - A function to set the agreement ID.
  *
  * @returns {JSX.Element} - The rendered component.
  */
-export const CreateAgreement = ({ budgetLines }) => {
+export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
     const createAgreementContext = useEditAgreement();
@@ -42,6 +44,12 @@ export const CreateAgreement = ({ budgetLines }) => {
         agreement: selectedAgreement,
         selected_procurement_shop: selectedProcurementShop
     } = createAgreementContext;
+
+    React.useEffect(() => {
+        if (selectedAgreement) {
+            setAgreementId(selectedAgreement.id);
+        }
+    }, [selectedAgreement, setAgreementId]);
 
     return (
         <CreateAgreementFlow>
@@ -77,7 +85,8 @@ export const CreateAgreement = ({ budgetLines }) => {
     );
 };
 
-CreateAgreement.propTypes = {
-    budgetLines: PropTypes.arrayOf(PropTypes.any)
+CreateEditAgreement.propTypes = {
+    budgetLines: PropTypes.arrayOf(PropTypes.any),
+    setAgreementId: PropTypes.func
 };
-export default CreateAgreement;
+export default CreateEditAgreement;
