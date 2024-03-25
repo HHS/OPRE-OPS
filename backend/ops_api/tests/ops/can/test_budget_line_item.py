@@ -353,7 +353,7 @@ def test_put_budget_line_items(auth_client, test_bli):
     assert response.json["agreement_id"] == 1  # not allowed to change
     assert response.json["can_id"] == 2
     assert response.json["amount"] == 200.24
-    assert response.json["status"] == "DRAFT"
+    assert response.json["status"] == "DRAFT"  # what should happen here?
     assert response.json["date_needed"] == "2044-01-01"
     assert response.json["proc_shop_fee_percentage"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
@@ -460,7 +460,7 @@ def test_put_budget_line_items_bad_date(auth_client, loaded_db):
 @pytest.mark.usefixtures("loaded_db")
 def test_put_budget_line_items_bad_can(auth_client, test_bli):
     data = {"can_id": 1000000, "agreement_id": 1}
-    response = auth_client.put("/api/v1/budget-line-items/1000", json=data)
+    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
     assert response.status_code == 400
 
 
@@ -473,8 +473,8 @@ def test_put_budget_line_items_auth(client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_put_budget_line_items_empty_request(auth_client, loaded_db):
-    response = auth_client.put("/api/v1/budget-line-items/1000", json={})
+def test_put_budget_line_items_empty_request(auth_client, loaded_db, test_bli):
+    response = auth_client.put(f"/api/v1/budget-line-items/{test_bli.id}", json={})
     assert response.status_code == 400
 
 
@@ -635,6 +635,7 @@ def test_patch_budget_line_items_invalid_can(auth_client):
     assert response.status_code == 400
 
 
+@pytest.mark.skip("Status change (from DRAFT to PLANNED) is not allowed as direct edit. Replace/rework this test.")
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_update_status(auth_client, loaded_db):
@@ -699,7 +700,7 @@ def test_patch_budget_line_items_history(loaded_db):
         # SQL pulls back latest version (1 in this case)
         updated_bli = loaded_db.get(BudgetLineItem, bli.id)
         assert updated_bli.line_description == "Updated LI 1"
-        assert updated_bli.display_name == "BL 33"
+        assert updated_bli.display_name == f"BL {bli.id}"
 
     finally:
         # cleanup

@@ -240,6 +240,12 @@ class BLITeamMembers:
 
 
 @dataclass
+class ChangeRequest:
+    id: int
+    requested_changes: dict
+
+
+@dataclass
 class BudgetLineItemResponse:
     id: int
     agreement_id: int
@@ -258,3 +264,5 @@ class BudgetLineItemResponse:
     team_members: Optional[list[BLITeamMembers]] = field(default_factory=lambda: [])
     has_active_workflow: bool = False
     services_component_id: Optional[int] = None
+    # change_requests_in_review: Optional[list[ChangeRequest]] = field(default_factory=lambda: [])
+    change_requests_in_review: Optional[list[dict]] = field(default_factory=lambda: [])
