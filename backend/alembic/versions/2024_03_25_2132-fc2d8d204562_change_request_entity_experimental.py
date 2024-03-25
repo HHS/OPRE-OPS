@@ -1,8 +1,8 @@
 """Change Request entity - experimental
 
-Revision ID: ac6fd14799a9
+Revision ID: fc2d8d204562
 Revises: 6c85c1668a9f
-Create Date: 2024-03-25 17:12:14.294107+00:00
+Create Date: 2024-03-25 21:32:48.932899+00:00
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'ac6fd14799a9'
+revision: str = 'fc2d8d204562'
 down_revision: Union[str, None] = '6c85c1668a9f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,6 +31,7 @@ def upgrade() -> None:
     sa.Column('updated_on', sa.DateTime(), autoincrement=False, nullable=True),
     sa.Column('created_by', sa.Integer(), autoincrement=False, nullable=True),
     sa.Column('agreement_id', sa.Integer(), autoincrement=False, nullable=True),
+    sa.Column('budget_line_item_id', sa.Integer(), autoincrement=False, nullable=True),
     sa.Column('transaction_id', sa.BigInteger(), autoincrement=False, nullable=False),
     sa.Column('end_transaction_id', sa.BigInteger(), nullable=True),
     sa.Column('operation_type', sa.SmallInteger(), nullable=False),
@@ -50,8 +51,10 @@ def upgrade() -> None:
     sa.Column('updated_on', sa.DateTime(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
     sa.Column('agreement_id', sa.Integer(), nullable=True),
+    sa.Column('budget_line_item_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['agreement_id'], ['agreement.id'], ),
     sa.ForeignKeyConstraint(['approved_by_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['budget_line_item_id'], ['budget_line_item.id'], ),
     sa.ForeignKeyConstraint(['created_by'], ['user.id'], ),
     sa.ForeignKeyConstraint(['requested_by_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')

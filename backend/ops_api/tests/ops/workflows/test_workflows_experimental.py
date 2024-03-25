@@ -1,6 +1,6 @@
 import pytest
 
-from models import AgreementChangeRequest, ChangeRequest
+from models import AgreementChangeRequest, BudgetLineItemChangeRequest, ChangeRequest
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -32,3 +32,19 @@ def test_agreement_change_request(auth_client, app):
     new_change_request_id = change_request.id
     change_request = session.get(ChangeRequest, new_change_request_id)
     assert change_request.type == "agreement_change_request"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_change_request(auth_client, app):
+    session = app.db_session
+    change_request = BudgetLineItemChangeRequest()
+    change_request.budget_line_item_id = 1
+    change_request.created_by = 1
+    change_request.requested_changes = {"foo": "bar"}
+    session.add(change_request)
+    session.commit()
+
+    assert change_request.id is not None
+    new_change_request_id = change_request.id
+    change_request = session.get(ChangeRequest, new_change_request_id)
+    assert change_request.type == "budget_line_item_change_request"

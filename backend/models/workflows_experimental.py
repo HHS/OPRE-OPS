@@ -37,3 +37,23 @@ class AgreementChangeRequest(ChangeRequest):
 def check_agreement_id(mapper, connection, target):
     if target.agreement_id is None:
         raise ValueError("agreement_id is required for AgreementChangeRequest")
+
+
+class BudgetLineItemChangeRequest(ChangeRequest):
+    # if this isn't optional here, SQL will make the column non-nullable
+    budget_line_item_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("budget_line_item.id")
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": "budget_line_item_change_request",
+    }
+
+
+@event.listens_for(BudgetLineItemChangeRequest, "before_insert")
+@event.listens_for(BudgetLineItemChangeRequest, "before_update")
+def check_agreement_id(mapper, connection, target):
+    if target.budget_line_item_id is None:
+        raise ValueError(
+            "budget_line_item_id is required for BudgetLineItemChangeRequest"
+        )
