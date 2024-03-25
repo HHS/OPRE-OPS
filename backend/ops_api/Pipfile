@@ -19,8 +19,11 @@ marshmallow-enum = "==1.5.1"
 marshmallow-dataclass = "==8.6.0"
 sqlalchemy-continuum = "==1.4.0"
 marshmallow-sqlalchemy = "==0.30.0"
+azure-storage-blob = "==12.19.0"
+azure-identity = "==1.15.0"
 alembic = "==1.13.1"
 alembic-postgresql-enum = "==1.1.2"
+
 
 [dev-packages]
 flake8 = "==7.0.0"
