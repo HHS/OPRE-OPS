@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading text.
- * @param {string} props.details - The details text.
+ * @param {string}[ props.details] - The details text.
  * @returns {JSX.Element} The rendered component.
  */
 function FormHeader({ heading, details }) {

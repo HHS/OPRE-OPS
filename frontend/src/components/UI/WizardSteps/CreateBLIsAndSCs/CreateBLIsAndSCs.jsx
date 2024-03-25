@@ -13,6 +13,7 @@ import ServicesComponentAccordion from "../../../ServicesComponents/ServicesComp
 import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../../../Agreements/AgreementDetailsCards/AgreementTotalCard";
 import GoBackButton from "../../Button/GoBackButton";
+import FormHeader from "../../../ServicesComponents/FormHeader";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -118,10 +119,10 @@ export const CreateBLIsAndSCs = ({
                     workflow === "agreement" ? (
                         <EditModeTitle isEditMode={isEditMode || isReviewMode} />
                     ) : (
-                        <>
-                            <h2 className="font-sans-lg">Create New Budget Line</h2>
-                            <p>Step Two: Text explaining this page</p>
-                        </>
+                        <FormHeader
+                            heading="Create New Budget Line"
+                            details="Step Two: Text explaining this page"
+                        />
                     )
                 ) : null
             }
@@ -141,8 +142,12 @@ export const CreateBLIsAndSCs = ({
                         serviceRequirementType={selectedAgreement.service_requirement_type}
                         agreementId={selectedAgreement.id}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Add Budget Lines</h2>
-                    <p>Add Budget lines to each Services Component to outline how the work will be funded.</p>
+                    <div className="margin-top-3">
+                        <FormHeader
+                            heading="Add Budget Lines"
+                            details="Add Budget lines to each Services Component to outline how the work will be funded."
+                        />
+                    </div>
                 </>
             )}
 
@@ -153,19 +158,17 @@ export const CreateBLIsAndSCs = ({
                         agreementId={selectedAgreement.id}
                         isEditMode={isEditMode}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Edit Budget Lines</h2>
+                    <FormHeader heading="Edit Budget Lines" />
                 </>
             )}
 
             {workflow === "budgetLines" && (
-                <>
-                    <h2 className="font-sans-lg">Budget Lines</h2>
-                    <p>
-                        This is a list of all budget lines for the selected project and agreement. The budget lines you
+                <FormHeader
+                    heading="Budget Lines"
+                    details="This is a list of all budget lines for the selected project and agreement. The budget lines you
                         add will display in draft status. The Fiscal Year (FY) will populate based on the election date
-                        you provide.
-                    </p>
-                </>
+                        you provide."
+                />
             )}
             <div className="display-flex flex-justify margin-y-2">
                 <BLIsByFYSummaryCard budgetLineItems={budgetLines} />

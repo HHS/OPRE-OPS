@@ -11,7 +11,7 @@ import useServicesComponents from "./servicesComponents.hooks";
  * @param {object} props
  * @param {string} props.serviceRequirementType - The type of service requirement.
  * @param {number} props.agreementId - The ID of the agreement.
- * @param {boolean} props.isEditMode - Whether the component is in edit mode.
+ * @param {boolean} [props.isEditMode] - Whether the component is in edit mode.
  * @returns {JSX.Element}
  *
  * @example
