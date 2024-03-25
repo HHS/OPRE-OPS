@@ -17,6 +17,7 @@ from models.users import User
 from models.workflows import (
     AcquisitionPlanning,
     Award,
+    ChangeRequest,
     Evaluation,
     Package,
     PackageSnapshot,
@@ -46,6 +47,7 @@ from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, Budg
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
+from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
 from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
@@ -78,7 +80,6 @@ from ops_api.ops.resources.workflow_instance import WorkflowInstanceItemAPI, Wor
 from ops_api.ops.resources.workflow_step_template import WorkflowStepTemplateItemAPI, WorkflowStepTemplateListAPI
 from ops_api.ops.resources.workflow_submit import WorkflowSubmisionListApi
 from ops_api.ops.resources.workflow_template import WorkflowTemplateItemAPI, WorkflowTemplateListAPI
-
 from ops_api.ops.utils.version import VersionAPI
 
 # AGREEMENT ENDPOINTS
@@ -259,3 +260,7 @@ PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC = AwardItemAPI.as_view("procurement-award-i
 
 # Version Endpoint View
 VERSION_API_VIEW_FUNC = VersionAPI.as_view("version_api")
+
+# Change Request ENDPOINTs
+CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-request-list", ChangeRequest)
+CHANGE_REQUEST_REVIEW_API_VIEW_FUNC = ChangeRequestReviewAPI.as_view("change-request-review-list", ChangeRequest)

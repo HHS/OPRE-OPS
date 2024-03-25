@@ -20,6 +20,8 @@ from ops_api.ops.views import (
     CAN_ITEM_API_VIEW_FUNC,
     CAN_LIST_API_VIEW_FUNC,
     CANS_BY_PORTFOLIO_API_VIEW_FUNC,
+    CHANGE_REQUEST_LIST_API_VIEW_FUNC,
+    CHANGE_REQUEST_REVIEW_API_VIEW_FUNC,
     CONTRACT_ITEM_API_VIEW_FUNC,
     CONTRACT_LIST_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
@@ -60,6 +62,7 @@ from ops_api.ops.views import (
     SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
+    VERSION_API_VIEW_FUNC,
     WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC,
     WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC,
     WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC,
@@ -70,7 +73,6 @@ from ops_api.ops.views import (
     WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC,
     WORKFLOW_TEMPLATE_ITEM_API_VIEW_FUNC,
     WORKFLOW_TEMPLATE_LIST_API_VIEW_FUNC,
-    VERSION_API_VIEW_FUNC,
 )
 
 # Ideas from Flask docs: https://flask.palletsprojects.com/en/2.2.x/views/#method-dispatching-and-apis
@@ -372,4 +374,12 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/version/",
         view_func=VERSION_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/change-requests/",
+        view_func=CHANGE_REQUEST_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/change-request-reviews/",
+        view_func=CHANGE_REQUEST_REVIEW_API_VIEW_FUNC,
     )
