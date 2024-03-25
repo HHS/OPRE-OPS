@@ -151,6 +151,7 @@ export const CreateBLIsAndSCs = ({
                     <ServicesComponents
                         serviceRequirementType={selectedAgreement.service_requirement_type}
                         agreementId={selectedAgreement.id}
+                        isEditMode={isEditMode}
                     />
                     <h2 className="font-sans-lg margin-top-3">Edit Budget Lines</h2>
                 </>
