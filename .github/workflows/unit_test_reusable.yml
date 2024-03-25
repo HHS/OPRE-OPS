@@ -38,9 +38,31 @@ jobs:
         working-directory: ./frontend
         run: bun run test
 
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - id: set-matrix
+        run: |
+          FILE_LIST=$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')
+          echo "matrix=${FILE_LIST}" >> $GITHUB_ENV
+
+      - name: Test Matrix Output
+        run: |
+          echo "${{ steps.set-matrix.outputs.matrix }}"
+
   e2e:
     name: End-to-End Testing
+    needs: prepare-matrix
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
 
     steps:
       - name: Checkout
@@ -60,10 +82,14 @@ jobs:
       - name: Install Cypress globally
         run: bun install -g cypress
 
+      - name: Test-Matrix
+        run: |
+          echo "${{ matrix.file }}"
+
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
-        run: bun run cypress install && bun run test:e2e
+        run: bun run cypress install && bun run cypress run --config-file ./cypress.config.js --headless --spec ${{ matrix.file }}
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
