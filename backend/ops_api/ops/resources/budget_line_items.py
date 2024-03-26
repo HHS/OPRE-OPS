@@ -12,7 +12,7 @@ from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any, override
 
-from models import BudgetLineItemStatus, OpsEventType
+from models import BudgetLineItemChangeRequest, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
@@ -102,8 +102,44 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
             schema.context["id"] = id
+            # TODO eliminate PUT to simplify change requests, etc?
             schema.context["method"] = method
+
+            # determine if the BLI is in an editable state or one that supports change requests (requires approval)
+            budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+            changeable = budget_line_item.status in [
+                BudgetLineItemStatus.DRAFT,
+                BudgetLineItemStatus.PLANNED,
+                BudgetLineItemStatus.IN_EXECUTION,
+            ]
+            # determine if the current user has permissions to edit this BLI (or request change)? 403?
+            # what about extra_check
+            # can_edit or can_request_change vs can_edit and edit_requires_approval
+            # should we error if not changeable?
+            if not changeable:
+                return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
+
+            changes_require_approval = budget_line_item.status in [
+                BudgetLineItemStatus.PLANNED,
+                BudgetLineItemStatus.IN_EXECUTION,
+            ]
+
+            # validate and normalize the request data
+            # if a direct edit, update and return 200
+            # if a change request, create a change request and return 202
+
             data = validate_and_normalize_request_data(schema)
+            if changes_require_approval:
+                # create change request
+                change_request = BudgetLineItemChangeRequest()
+                change_request.budget_line_item_id = id
+                change_request.created_by = 1  # TODO: remove after merging the new code to set this
+                change_request.requested_changes = schema.dump(data)
+                current_app.db_session.add(change_request)
+                current_app.db_session.commit()
+                # return 202
+                return make_response_with_headers({"message": "Change request created", "id": change_request.id}, 202)
+
             budget_line_item = self.update_and_commit_budget_line_item(data, id)
             bli_dict = self._response_schema.dump(budget_line_item)
             meta.metadata.update({"bli": bli_dict})
