@@ -107,7 +107,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/simulatedError'
         - in: path
-          name: id
+          name: agreement_id
           description: Id
           required: true
           schema:
@@ -129,7 +129,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/simulatedError'
         - in: path
-          name: id
+          name: agreement_id
           description: Id
           required: true
           schema:
@@ -1522,13 +1522,50 @@ paths:
 
 components:
   parameters:
+    created_by:
+      description: The user id of the user who created the object
+      name: created_by
+      in: query
+      schema:
+          type: integer
+    updated_by:
+      description: The user id of the user who last updated the object
+      name: updated_by
+      in: query
+      schema:
+        type: integer
+    created_on:
+      description: The timestamp of when the object was created
+      name: created_on
+      in: query
+      schema:
+        type: string
+        format: date-time
+    updated_on:
+      description: The timestamp of when the object was last updated
+      name: updated_on
+      in: query
+      schema:
+        type: string
+        format: date-time
+    created_by_user:
+      description: A minimal representation of the user who created the object
+      name: created_by_user
+      in: query
+      schema:
+        $ref: '#/components/schemas/SafeUser'
+    updated_by_user:
+      description: A minimal representation of the user who last updated the object
+      name: updated_by_user
+      in: query
+      schema:
+        $ref: '#/components/schemas/SafeUser'
     simulatedError:
       name: simulatedError
       in: query
       schema:
         type: integer
       example: ""
-      default: ""
       description: "Simulate an error response, set the value to either `true` to get a 500 status code, or to a specific status code number (e.g.: `400`)."
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -1563,6 +1600,18 @@ components:
         expiration_date:
           type: string
         managing_project_id: { }
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     Portfolio:
       description: Portfolio Object
@@ -1581,16 +1630,32 @@ components:
           type: string
         last_name:
           type: string
-        date_joined:
-          type: string
-          pattern: ^example-[0-9a-z]+$
-          maxLength: 32
         id:
           type: integer
         first_name:
           type: string
-        updated: { }
         email:
+          type: string
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
+
+    SafeUser:
+      description: A minimal OPRE User Object
+      type: object
+      properties:
+        id:
+          type: integer
+        full_name:
           type: string
 
     ResearchProjectFundingSummary:
@@ -1603,12 +1668,6 @@ components:
     TeamLeader:
       type: object
       properties:
-        created_by:
-          type: integer
-        created_on:
-          type: string
-        date_joined:
-          type: string
         division:
           type: integer
         email:
@@ -1625,8 +1684,18 @@ components:
           type: string
         role:
           type: string
+        created_on:
+          $ref: '#/components/parameters/created_on'
         updated_on:
-          type: string
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     ResearchProject:
       type: object
@@ -1634,15 +1703,6 @@ components:
         id:
           type: integer
           example: 1
-        created_by:
-          type: integer
-          example: 10
-        created_on:
-          type: string
-          example: '2023-04-06T20:33:38.292475'
-        updated_on:
-          type: string
-          example: '2023-04-06T20:33:38.292475'
         description:
           type: string
         methodologies:
@@ -1671,8 +1731,8 @@ components:
               "last_name": "Fortunato",
               "oidc_id": "00000000-0000-1111-a111-000000000001",
               "updated": null,
-              "updated_on": "2023-04-17T14:43:15.216759"
-            } ]
+              "updated_on": "2023-04-17T14:43:15.216759",
+              } ]
         origination_date:
           type: string
           example: '2022-01-01'
@@ -1684,6 +1744,18 @@ components:
         url:
           type: string
           example: 'https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center'
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     ResearchProjects:
       description: OPS List of Research Projects
@@ -1713,6 +1785,18 @@ components:
           type: object
         budget_line_items:
           type: array
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     Agreement:
       type: object
@@ -1752,16 +1836,7 @@ components:
               { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
               { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
               { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
-            ]
-        created_by:
-          type: integer
-          example: 1
-        created_on:
-          type: string
-          example: "2023-04-06T20:33:38.292475"
-        updated_on:
-          type: string
-          example: "2023-04-06T20:33:38.292475"
+              ]
         project_id:
           type: integer
           example: 1
@@ -1771,6 +1846,18 @@ components:
         procurement_tracker_workflow_id:
           type: integer
           example: 1
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
       required:
         - name
         - agreement_type
@@ -1801,21 +1888,24 @@ components:
         row_key:
           type: string
           example: "21"
-        created_by:
-          type: integer
-          example: 1
-        created_on:
-          type: string
-          example: "2023-04-06T20:33:38.292475"
-        updated_on:
-          type: string
-          example: "2023-04-06T20:33:38.292475"
         event_details:
           description: JSON copy of the relevant object after editing or some JSON message
           type: object
         changes:
           description: JSON for the changeset
           type: object
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     BudgetLineItems:
       description: OPS List of Budget Line Items
@@ -1833,14 +1923,6 @@ components:
         agreement_id:
           type: integer
           example: 1
-        created_by:
-          type: string
-        created_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
-        updated_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
         amount:
           type: number
           example: 1000000.0
@@ -1874,7 +1956,19 @@ components:
               { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
               { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
               { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
-            ]
+              ]
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     BudgetLineItemRequest:
       type: object
@@ -1971,16 +2065,18 @@ components:
         expires:
           type: string
           example: '2023-04-06'
-        created_by:
-          type: string
-        updated_by:
-          type: string
         created_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
+          $ref: '#/components/parameters/created_on'
         updated_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     NotificationRequest:
       type: object
@@ -2029,20 +2125,24 @@ components:
         clin_id:
           type: integer
           example: 1
-        created_by:
-          type: string
-        created_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
-        updated_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
         period_start:
           type: string
           example: '2023-05-06'
         period_end:
           type: string
           example: '2023-06-30'
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     ServicesComponentRequest:
       type: object
@@ -2065,14 +2165,6 @@ components:
         clin_id:
           type: integer
           example: 1
-        created_by:
-          type: string
-        created_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
-        updated_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
         period_start:
           type: string
           example: '2023-05-06'
@@ -2120,14 +2212,18 @@ components:
           example: 1
         display_name:
           type: string
-        created_by:
-          type: integer
         created_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
+          $ref: '#/components/parameters/created_on'
         updated_on:
-          type: string
-          example: '2023-04-06T19:02:38.409254'
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
 
     Attestation:
       type: object
@@ -2217,7 +2313,11 @@ components:
                   "managing_project_id": null,
                   "nickname": "IAA-Incoming",
                   "number": "G99IA14",
-                  "purpose": ""
+                  "purpose": "",
+                  "created_on": "2023-04-06T20:33:38.292475",
+                  "updated_on": "2023-04-06T20:33:38.292475",
+                  "created_by": 1,
+                  "updated_by": 1
               },
               {
                   "appropriation_date": "2023-09-01T00:00:00.000000Z",
@@ -2231,7 +2331,11 @@ components:
                   "managing_project_id": 1,
                   "nickname": "ASPE SRCD-IDDA",
                   "number": "G990136",
-                  "purpose": ""
+                  "purpose": "",
+                  "created_on": "2023-04-06T20:33:38.292475",
+                  "updated_on": "2023-04-06T20:33:38.292475",
+                  "created_by": 1,
+                  "updated_by": 1
               }
           ],
           "description": "The promotion of childrens safety, ... to the attention of child welfare.",
@@ -2265,12 +2369,15 @@ components:
                   "portfolio_id": 1,
                   "url": "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
               }
-          ]
+          ],
+          "created_on": "2023-04-06T20:33:38.292475",
+          "updated_on": "2023-04-06T20:33:38.292475",
+          "created_by": 1,
+          "updated_by": 1
         }
     User:
       value: |
         {
-          "date_joined": "2023-04-06T20:33:38.292475",
           "division": 3,
           "email": "user@email.com",
           "first_name": "Jon",
@@ -2279,14 +2386,19 @@ components:
           "last_name": "Doe",
           "oidc_id": "00000000-aaaa-bbbb-0000-000000000001",
           "role": "Administrator",
-          "updated": null
+          "created_on": "2023-04-06T20:33:38.292475",
+          "updated_on": "2023-04-06T20:33:38.292475",
+          "created_by": 1,
+          "updated_by": 1
         }
     ResearchProjects:
       value: |
         [
           {
-            "created_by": null,
-            "created_on": "2023-04-17T14:43:13.928419",
+            "created_on": "2023-04-06T20:33:38.292475",
+            "updated_on": "2023-04-06T20:33:38.292475",
+            "created_by": 1,
+            "updated_by": 1
             "description": "        The National African American Child and Family Research Center, supported by a five-year OPRE        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,        and experiences of the diverse population of African American families and children served (or potentially        served) by ACF programs, as well as promising approaches to address economic and social inequities and,        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.        \n\n1. Advance Research        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.        The Center’s program of research will build on the existing literature related to African American children        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.        \n\n2. Build Research Capacity        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and        policy goals that is culturally rigorous and informed by an understanding of current and historical        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the        development and expansion of the pool of researchers reflective of the communities being studied by the Center.        \n\n3. Communicate Research        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates        findings from research conducted within and outside of the Center and increases the use of research, data, and        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,        program administrators, and communities participating in the research.        \n\nThe Center is led by the Morehouse School of Medicine.        \n\nThe OPRE point of contact is Megan Reid.        ",
             "id": 1,
             "methodologies": [
@@ -2320,7 +2432,6 @@ components:
                 }
             ],
             "title": "African American Child and Family Research Center",
-            "updated_on": "2023-04-17T14:43:13.928419",
             "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
           }
         ]
@@ -2329,9 +2440,10 @@ components:
         [
            {
                "id": 1,
-               "created_by": null,
-               "created_on": "Fri, 17 Mar 2023 15:01:09 GMT",
-               "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
+               "created_on": "2023-04-06T20:33:38.292475",
+               "updated_on": "2023-04-06T20:33:38.292475",
+               "created_by": 1,
+               "updated_by": 1
                "name": "Using Innovative Data to Explore Racial and Ethnic Disparities in Human Services",
                "project_id": 1,
                "description":
@@ -2399,12 +2511,13 @@ components:
       value: |
         [{
           "agreement_type": "CONTRACT",
-          "created_by": null,
           "created_on": "2023-04-06T20:33:38.292475",
+          "updated_on": "2023-04-06T20:33:38.292475",
+          "created_by": 1,
+          "updated_by": 1
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "project_id": 1,
-          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
            cans: [],
            budget_line_items: [
             {
@@ -2444,12 +2557,13 @@ components:
       value: |
         {
           "agreement_type": "CONTRACT",
-          "created_by": null,
           "created_on": "2023-04-06T20:33:38.292475",
+          "updated_on": "2023-04-06T20:33:38.292475",
+          "created_by": 1,
+          "updated_by": 1
           "id": 2,
           "name": "Contract #2: African American Child and Family Research Center",
           "project_id": 1,
-          "updated_on": "Fri, 17 Mar 2023 15:01:09 GMT",
           cans: [],
           budget_line_items: [
             {
@@ -2493,42 +2607,45 @@ components:
               "amount": 1000000.0,
               "can_id": 5,
               "comments": "",
-              "created_by": null,
-              "created_on": "2023-04-06T19:02:38.409254",
               "date_needed": "2023-05-06",
               "id": 1,
               "line_description": "LI 1",
               "proc_shop_fee_percentage": null,
               "status": "PLANNED",
-              "updated_on": "2023-04-06T19:02:38.409254"
+              "created_on": "2023-04-06T20:33:38.292475",
+              "updated_on": "2023-04-06T20:33:38.292475",
+              "created_by": 1,
+              "updated_by": 1
           },
           {
               "agreement_id": 1,
               "amount": 1000000.0,
               "can_id": 5,
               "comments": "",
-              "created_by": null,
-              "created_on": "2023-04-06T19:02:38.409254",
               "date_needed": "2023-05-06",
               "id": 2,
               "line_description": "LI 2",
               "proc_shop_fee_percentage": null,
               "status": "PLANNED",
-              "updated_on": "2023-04-06T19:02:38.409254"
+              "created_on": "2023-04-06T20:33:38.292475",
+              "updated_on": "2023-04-06T20:33:38.292475",
+              "created_by": 1,
+              "updated_by": 1
           },
           {
               "agreement_id": 2,
               "amount": 1000000.0,
               "can_id": 8,
               "comments": "",
-              "created_by": null,
-              "created_on": "2023-04-06T19:02:38.409254",
               "date_needed": "2023-05-06",
               "id": 3,
               "line_description": "Line Item 1",
               "proc_shop_fee_percentage": null,
               "status": "PLANNED",
-              "updated_on": "2023-04-06T19:02:38.409254"
+              "created_on": "2023-04-06T20:33:38.292475",
+              "updated_on": "2023-04-06T20:33:38.292475",
+              "created_by": 1,
+              "updated_by": 1
           }
         ]
 

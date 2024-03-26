@@ -26,7 +26,7 @@ class AgreementHistoryListAPI(BaseListAPI):
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
         class_names = [cls.__name__ for cls in Agreement.__subclasses__()] + [Agreement.__class__.__name__]
-        stmt = select(OpsDBHistory).join(OpsDBHistory.created_by_user, isouter=True).add_columns(User)
+        stmt = select(OpsDBHistory, User).join(User, OpsDBHistory.created_by == User.id, isouter=True)
         stmt = stmt.where(
             and_(
                 or_(

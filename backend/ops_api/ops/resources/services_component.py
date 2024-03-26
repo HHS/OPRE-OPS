@@ -2,7 +2,7 @@ from functools import partial
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import override
@@ -24,7 +24,6 @@ from ops_api.ops.utils.api_helpers import (
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 ENDPOINT_STRING = "/services-components"
 
@@ -98,7 +97,12 @@ class ServicesComponentItemAPI(BaseItemAPI):
             schema.context["id"] = id
             schema.context["method"] = method
 
-            data = get_change_data(request.json, old_services_component, schema, ["id", "contract_agreement_id"])
+            data = get_change_data(
+                request.json,
+                old_services_component,
+                schema,
+                ["id", "contract_agreement_id"],
+            )
             data = convert_date_strings_to_dates(data)
             services_component = update_and_commit_model_instance(old_services_component, data)
 
@@ -197,10 +201,6 @@ class ServicesComponentListAPI(BaseListAPI):
             data = convert_date_strings_to_dates(data)
 
             new_sc = ServicesComponent(**data)
-
-            token = verify_jwt_in_request()
-            user = get_user_from_token(token[1])
-            new_sc.created_by = user.id
 
             current_app.db_session.add(new_sc)
             current_app.db_session.commit()
