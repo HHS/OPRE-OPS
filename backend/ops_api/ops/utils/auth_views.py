@@ -140,7 +140,7 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
             additional_claims["roles"] = [role.name for role in user.roles]
         access_token = create_access_token(
             identity=user,
-            expires_delta=None,
+            expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
             additional_claims=additional_claims,
             fresh=True,
         )
