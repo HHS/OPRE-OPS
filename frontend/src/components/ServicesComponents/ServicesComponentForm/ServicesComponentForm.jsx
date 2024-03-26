@@ -45,7 +45,7 @@ function ServicesComponentForm({
         return option;
     });
 
-    const heading = isEditMode ? "Edit Services Component" : "Create Services Component";
+    const heading = isEditMode ? "Edit Services Components" : "Create Services Components";
     const details = isEditMode
         ? ""
         : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work.";
