@@ -132,7 +132,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 # create change request
                 change_request = BudgetLineItemChangeRequest()
                 change_request.budget_line_item_id = id
-                change_request.created_by = 1  # TODO: remove after merging the new code to set this
                 change_request.requested_changes = schema.dump(data)
                 current_app.db_session.add(change_request)
                 current_app.db_session.commit()
