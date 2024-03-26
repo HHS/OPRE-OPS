@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity
 from marshmallow import EXCLUDE, Schema
 from sqlalchemy.future import select
 from typing_extensions import Any, override
@@ -38,7 +38,6 @@ from ops_api.ops.resources.agreements_constants import (
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 
 @dataclass
@@ -221,10 +220,6 @@ class AgreementListAPI(BaseListAPI):
 
             new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
 
-            token = verify_jwt_in_request()
-            user = get_user_from_token(token[1])
-            new_agreement.created_by = user.id
-
             current_app.db_session.add(new_agreement)
             current_app.db_session.commit()
 
@@ -315,6 +310,7 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             "agreement_type",
             "versions",
             "created_by_user",  # handled by created_by
+            "updated_by_user",  # handled by updated_by
             "project_officer",  # handled by project_officer_id
         ]:
             continue
@@ -370,7 +366,6 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     changed = True
 
     if changed:
-        agreement.budget_line_items
         for bli in agreement.budget_line_items:
             with suppress(AttributeError):
                 if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
@@ -404,8 +399,7 @@ def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = Tr
         for key, value in change_data.items()
         if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
     }  # only keep the attributes from the request body
-    data |= change_data
-    return data
+    return change_data
 
 
 def add_vendor(data: dict, field_name: str = "vendor") -> None:

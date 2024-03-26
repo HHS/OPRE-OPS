@@ -533,7 +533,13 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client):
             "product_service_code_id": 1,
             "incumbent": None,
             "project_officer_id": 1,
-            "team_members": [{"id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com"}],
+            "team_members": [
+                {
+                    "id": 2,
+                    "full_name": "Amy Madigan",
+                    "email": "Amy.Madigan@example.com",
+                }
+            ],
             "notes": "test notes",
             "project_id": 1,
             "procurement_shop_id": 2,
@@ -607,7 +613,7 @@ def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name
     assert data["project_id"] == 1
-    assert data["created_by"] == 4
+    assert data["created_by"] is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -629,4 +635,4 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name
     assert data["project_id"] == 1
-    assert data["created_by"] == 4
+    assert data["created_by"] is None
