@@ -106,6 +106,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
             # determine if the BLI is in an editable state or one that supports change requests (requires approval)
             budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+            if not budget_line_item:
+                raise ValueError("Invalid BLI ID.")
             changeable = budget_line_item.status in [
                 BudgetLineItemStatus.DRAFT,
                 BudgetLineItemStatus.PLANNED,
@@ -126,19 +128,37 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             # validate and normalize the request data
             # if a direct edit, update and return 200
             # if a change request, create a change request and return 202
+            # save the request data or serialize an uncommitted version of the BLI
 
             data = validate_and_normalize_request_data(schema)
+            # if changes_require_approval:
+            #     # create change request
+            #     change_request = BudgetLineItemChangeRequest()
+            #     change_request.budget_line_item_id = id
+            #     change_request.requested_changes = schema.dump(data)
+            #     current_app.db_session.add(change_request)
+            #     current_app.db_session.commit()
+            #     # return 202
+            #     return make_response_with_headers({"message": "Change request created", "id": change_request.id}, 202)
+
+            # update_data(budget_line_item, data)
             if changes_require_approval:
-                # create change request
+                # do not add/commit the budget_line_item
+                # create a change request with a dump of the data
                 change_request = BudgetLineItemChangeRequest()
                 change_request.budget_line_item_id = id
-                change_request.requested_changes = schema.dump(data)
+                # schema = budget_line_item.__marshmallow__()
+                # change_request.requested_changes = schema.dump(budget_line_item)
+                # change_request.requested_changes = budget_line_item.to_dict()
+                change_request.requested_changes = {"amount": request.json["amount"]}
                 current_app.db_session.add(change_request)
                 current_app.db_session.commit()
                 # return 202
                 return make_response_with_headers({"message": "Change request created", "id": change_request.id}, 202)
 
-            budget_line_item = self.update_and_commit_budget_line_item(data, id)
+            update_data(budget_line_item, data)
+            current_app.db_session.add(budget_line_item)
+            current_app.db_session.commit()
             bli_dict = self._response_schema.dump(budget_line_item)
             meta.metadata.update({"bli": bli_dict})
             current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
