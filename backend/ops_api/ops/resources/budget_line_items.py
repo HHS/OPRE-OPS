@@ -134,6 +134,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             )
 
             # if there are financial changes and the BLI can't be edited directly, create a financial change request
+            # TODO: if there are also non-financial changes, these should be handled separately
+            # How do we handle cases where there are both financial and non-financial changes and maybe status changes?
             if changed_financial_props and not directly_editable:
                 # create a change request with a dump of the data
                 change_request = BudgetLineItemFinancialChangeRequest()
