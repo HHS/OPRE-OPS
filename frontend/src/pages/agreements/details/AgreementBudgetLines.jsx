@@ -137,6 +137,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                         navigate(`/agreements/${agreement.id}/budget-lines`);
                     }}
                     continueOverRide={() => {
+                        setIsEditMode(false);
                         setAlert({
                             type: "success",
                             heading: "Budget Lines Saved",
