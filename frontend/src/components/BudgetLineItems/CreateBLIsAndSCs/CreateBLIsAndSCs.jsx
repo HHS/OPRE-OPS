@@ -13,7 +13,7 @@ import ServicesComponentAccordion from "../../ServicesComponents/ServicesCompone
 import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
 import GoBackButton from "../../UI/Button/GoBackButton";
-import FormHeader from "../../ServicesComponents/FormHeader";
+import FormHeader from "../../UI/Form/FormHeader";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 
 /**
