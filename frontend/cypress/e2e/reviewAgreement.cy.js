@@ -436,7 +436,6 @@ describe("agreement review workflow", () => {
             cy.visit(`/agreements/${agreementId}/budget-lines`);
             // table should have 2 rows
             cy.get("tbody").children().as("table-rows").should("have.length", 2);
-            cy.pause();
 
             // get table rows and should have text In Review
             cy.get("@table-rows").eq(0).should("contain", "In Review");
