@@ -47,8 +47,8 @@ function ServicesComponentForm({
 
     const heading = isEditMode ? "Edit Services Components" : "Create Services Components";
     const details = isEditMode
-        ? ""
-        : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work.";
+        ? "When adding a new SC, a Services Component must be selected from the dropdown."
+        : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
 
     return (
         <form onSubmit={handleSubmit}>
@@ -79,10 +79,7 @@ function ServicesComponentForm({
                 </div>
                 <div className="grid-col-4">
                     {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
-                        <div
-                            className="usa-checkbox"
-                            style={{ marginTop: "3.95rem" }}
-                        >
+                        <div className="usa-checkbox margin-top-5">
                             <input
                                 className="usa-checkbox__input"
                                 id="optional-services-component"
@@ -106,7 +103,7 @@ function ServicesComponentForm({
                             </label>
                         </div>
                     ) : (
-                        <div style={{ height: "5.375rem" }} />
+                        <div style={{ height: "3.90rem" }} />
                     )}
                     <div className="margin-top-4">
                         <PoPEndDate
@@ -119,6 +116,7 @@ function ServicesComponentForm({
                     <TextArea
                         name="description"
                         label="Description"
+                        className="margin-top-0"
                         maxLength={150}
                         value={formData?.description || ""}
                         onChange={(name, value) => setFormData({ ...formData, description: value })}

@@ -25,6 +25,7 @@ function ServicesComponentSelect({ value, onChange, options, isRequired, ...rest
             defaultOption=""
             options={options}
             isRequired={isRequired}
+            isRequiredNoShow={true}
             {...rest}
         />
     );
