@@ -71,6 +71,18 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
         totals["Agreement"]["total"] += total;
     });
 
+    const agreementTotal = totals.Agreement.total;
+    const agreementSubtotal = totals.Agreement.subtotal;
+    const agreementFees = totals.Agreement.fees;
+    const cardData = {
+        agreementTotal,
+        agreementSubtotal,
+        agreementFees,
+        includeDrafts,
+        setIncludeDrafts,
+        filteredBlis
+    };
+
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
 
     return (
@@ -89,9 +101,9 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     <div className="display-flex flex-justify">
                         <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
                         <AgreementTotalCard
-                            total={totals["Agreement"]["total"]}
-                            subtotal={totals["Agreement"]["subtotal"]}
-                            fees={totals["Agreement"]["fees"]}
+                            total={agreementTotal}
+                            subtotal={agreementSubtotal}
+                            fees={agreementFees}
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
                             procurementShopFee={agreement.procurement_shop?.fee}
                         />
@@ -119,6 +131,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     continueBtnText="Save Changes"
                     currentStep={0}
                     workflow="none"
+                    cardData={cardData}
                     goBack={() => {
                         setIsEditMode(false);
                         navigate(`/agreements/${agreement.id}/budget-lines`);
