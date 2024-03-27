@@ -1,20 +1,20 @@
 import React from "react";
 import PropTypes from "prop-types";
-import StepIndicator from "../../StepIndicator/StepIndicator";
-import ProjectAgreementSummaryCard from "../../../Projects/ProjectAgreementSummaryCard";
-import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
-import CreateBudgetLinesForm from "../../../BudgetLineItems/BudgetLinesForm";
-import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
-import ConfirmationModal from "../../Modals/ConfirmationModal";
-import ServicesComponents from "../../../ServicesComponents";
+import StepIndicator from "../../UI/StepIndicator/StepIndicator";
+import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
+import BudgetLinesTable from "../BudgetLinesTable";
+import CreateBudgetLinesForm from "../BudgetLinesForm";
+import EditModeTitle from "../../../pages/agreements/EditModeTitle";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import ServicesComponents from "../../ServicesComponents";
 import useCreateBLIsAndSCs from "./createBLIsAndSCs.hooks";
-import { convertCodeForDisplay } from "../../../../helpers/utils";
-import ServicesComponentAccordion from "../../../ServicesComponents/ServicesComponentAccordion";
-import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
-import AgreementTotalCard from "../../../Agreements/AgreementDetailsCards/AgreementTotalCard";
-import GoBackButton from "../../Button/GoBackButton";
-import FormHeader from "../../../ServicesComponents/FormHeader";
-import AgreementBudgetLinesHeader from "../../../Agreements/AgreementBudgetLinesHeader";
+import { convertCodeForDisplay } from "../../../helpers/utils";
+import ServicesComponentAccordion from "../../ServicesComponents/ServicesComponentAccordion";
+import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
+import GoBackButton from "../../UI/Button/GoBackButton";
+import FormHeader from "../../ServicesComponents/FormHeader";
+import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.

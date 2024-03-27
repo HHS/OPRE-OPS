@@ -2,7 +2,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
-import CreateBLIsAndSCs from "../../../components/UI/WizardSteps/CreateBLIsAndSCs/CreateBLIsAndSCs";
+import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
