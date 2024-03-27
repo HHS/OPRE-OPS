@@ -12,10 +12,11 @@ from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any, override
 
-from models import BudgetLineItemChangeRequest, BudgetLineItemStatus, OpsEventType
+from models import BudgetLineItemChangeRequest, BudgetLineItemStatus, OpsDBHistoryType, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.history import build_audit
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponse,
     PATCHRequestBody,
@@ -141,18 +142,25 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             #     # return 202
             #     return make_response_with_headers({"message": "Change request created", "id": change_request.id}, 202)
 
-            # update_data(budget_line_item, data)
-            if changes_require_approval:
+            financial_props = ["amount", "can_id", "date_needed"]
+            update_data(budget_line_item, data)
+            db_audit = build_audit(budget_line_item, OpsDBHistoryType.UPDATED)
+            print(db_audit.changes)
+            changed_financial_props = list(set(db_audit.changes.keys()) & set(financial_props))
+            if changed_financial_props and changes_require_approval:
                 # do not add/commit the budget_line_item
                 # create a change request with a dump of the data
                 change_request = BudgetLineItemChangeRequest()
                 change_request.budget_line_item_id = id
-                # schema = budget_line_item.__marshmallow__()
-                # change_request.requested_changes = schema.dump(budget_line_item)
+                schema = budget_line_item.__marshmallow__(only=changed_financial_props)
+                change_request.requested_changes = schema.dump(budget_line_item)
                 # change_request.requested_changes = budget_line_item.to_dict()
-                change_request.requested_changes = {"amount": request.json["amount"]}
+                # change_request.requested_changes = {"amount": request.json["amount"]}
+
+                current_app.db_session.refresh(budget_line_item)
                 current_app.db_session.add(change_request)
                 current_app.db_session.commit()
+
                 # return 202
                 return make_response_with_headers({"message": "Change request created", "id": change_request.id}, 202)
 

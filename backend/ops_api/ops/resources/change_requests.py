@@ -15,6 +15,10 @@ def approve_change_request(change_request_id: int, user_id: int) -> ChangeReques
     if isinstance(change_request, BudgetLineItemChangeRequest):
         print("~~~BudgetLineItemChangeRequest~~~")
         budget_line_item = session.get(BudgetLineItem, change_request.budget_line_item_id)
+        # schema = budget_line_item.__marshmallow__(only=["amount", "can_id", "date_needed"])
+        # ValueError: Deserialization requires a session
+        # data = schema.load(change_request.requested_changes)
+        # budget_line_items.update_data(budget_line_item, data)
         budget_line_items.update_data(budget_line_item, change_request.requested_changes)
         session.add(budget_line_item)
 
@@ -24,3 +28,6 @@ def approve_change_request(change_request_id: int, user_id: int) -> ChangeReques
     session.add(change_request)
     session.commit()
     return change_request
+
+
+# TODO: approval endpoint
