@@ -43,17 +43,17 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <section>
-                <ServicesComponentForm
-                    serviceTypeReq={serviceRequirementType}
-                    formData={formData}
-                    setFormData={setFormData}
-                    handleSubmit={handleSubmit}
-                    handleCancel={handleCancel}
-                    servicesComponentsNumbers={servicesComponentsNumbers}
-                    isEditMode={isEditMode}
-                />
-            </section>
+
+            <ServicesComponentForm
+                serviceTypeReq={serviceRequirementType}
+                formData={formData}
+                setFormData={setFormData}
+                handleSubmit={handleSubmit}
+                handleCancel={handleCancel}
+                servicesComponentsNumbers={servicesComponentsNumbers}
+                isEditMode={isEditMode}
+            />
+
             <ServicesComponentsList
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
