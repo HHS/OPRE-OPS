@@ -17,13 +17,15 @@ import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
  */
 function AllServicesComponentSelect({ value, onChange, agreementId }) {
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId);
+    const selectOptions = [...servicesComponents]
+        ?.sort((a, b) => a.number - b.number)
+        .map((serviceComponent) => {
+            return {
+                value: serviceComponent.id,
+                label: serviceComponent.display_name
+            };
+        });
 
-    const selectOptions = servicesComponents?.map((serviceComponent) => {
-        return {
-            value: serviceComponent.id,
-            label: serviceComponent.display_name
-        };
-    });
     return (
         <Select
             name="allServicesComponentSelect"
