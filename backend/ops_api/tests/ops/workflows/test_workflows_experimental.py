@@ -7,6 +7,7 @@ from models import (
     AgreementChangeRequest,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
+    BudgetLineItemFinancialChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
 )
@@ -61,7 +62,7 @@ def test_budget_line_item_change_request(auth_client, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_to_change_request(auth_client, app):
+def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     session = app.db_session
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
@@ -88,11 +89,11 @@ def test_budget_line_item_patch_to_change_request(auth_client, app):
 
     assert "id" in resp_json
     change_request_id = resp_json["id"]
-    change_request = session.get(BudgetLineItemChangeRequest, change_request_id)
+    change_request = session.get(BudgetLineItemFinancialChangeRequest, change_request_id)
     assert change_request is not None
     print("~~~change_request~~~", json.dumps(change_request.to_dict(), indent=2))
     print("~~~requested_changes~~~", json.dumps(change_request.requested_changes, indent=2))
-    assert change_request.type == "budget_line_item_change_request"
+    assert change_request.type == "budget_line_item_financial_change_request"
     assert change_request.budget_line_item_id == bli_id
 
     bli = session.get(BudgetLineItem, bli_id)
