@@ -6,22 +6,21 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
+import Tooltip from "../../UI/USWDS/Tooltip";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import Tooltip from "../../UI/USWDS/Tooltip";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -47,7 +46,6 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const servicesComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? "TBD");
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
@@ -78,7 +76,7 @@ const BLIRow = ({
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(budgetLine?.display_name, isReviewMode)} ${borderExpandedStyles}`}
+                className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {isApprovePageAndBLIIsNotInPacket ? (
@@ -86,10 +84,10 @@ const BLIRow = ({
                         label="This budget line was not sent for approval"
                         position="right"
                     >
-                        <span>{servicesComponentName}</span>
+                        <span>{budgetLine?.id}</span>
                     </Tooltip>
                 ) : (
-                    servicesComponentName
+                    budgetLine?.id
                 )}
             </th>
             <td
