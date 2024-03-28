@@ -113,3 +113,11 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     assert bli.amount == Decimal("222.22")
     assert bli.can_id == 2
     assert bli.date_needed == datetime.date(2032, 2, 2)
+
+    # verify delete cascade
+    session.delete(bli)
+    session.commit()
+    change_request = session.get(BudgetLineItemFinancialChangeRequest, change_request_id)
+    assert change_request is None
+    bli = session.get(BudgetLineItem, bli_id)
+    assert bli is None

@@ -1,8 +1,8 @@
 """Change Request entity - experimental
 
-Revision ID: d1170316464c
+Revision ID: 5201c6cfc223
 Revises: 95e0429b780a
-Create Date: 2024-03-26 18:27:17.558219+00:00
+Create Date: 2024-03-28 19:56:55.650252+00:00
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'd1170316464c'
+revision: str = '5201c6cfc223'
 down_revision: Union[str, None] = '95e0429b780a'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -54,9 +54,9 @@ def upgrade() -> None:
     sa.Column('updated_on', sa.DateTime(), nullable=True),
     sa.Column('agreement_id', sa.Integer(), nullable=True),
     sa.Column('budget_line_item_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['agreement_id'], ['agreement.id'], ),
+    sa.ForeignKeyConstraint(['agreement_id'], ['agreement.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['approved_by_id'], ['user.id'], ),
-    sa.ForeignKeyConstraint(['budget_line_item_id'], ['budget_line_item.id'], ),
+    sa.ForeignKeyConstraint(['budget_line_item_id'], ['budget_line_item.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['created_by'], ['user.id'], ),
     sa.ForeignKeyConstraint(['requested_by_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['updated_by'], ['user.id'], ),

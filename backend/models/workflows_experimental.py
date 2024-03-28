@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, event
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
 from models.base import BaseModel
 
@@ -25,7 +25,13 @@ class ChangeRequest(BaseModel):
 
 class AgreementChangeRequest(ChangeRequest):
     # if this isn't optional here, SQL will make the column non-nullable
-    agreement_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agreement.id"))
+    agreement_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("agreement.id", ondelete="CASCADE")
+    )
+    agreement = relationship(
+        "Agreement",
+        passive_deletes=True,
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "agreement_change_request",
@@ -44,7 +50,11 @@ def check_agreement_id(mapper, connection, target):
 # Should there be separate types of changes request for financial and status changes?
 class BudgetLineItemChangeRequest(ChangeRequest):
     budget_line_item_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("budget_line_item.id")
+        ForeignKey("budget_line_item.id", ondelete="CASCADE")
+    )
+    budget_line_item = relationship(
+        "BudgetLineItem",
+        passive_deletes=True,
     )
 
     __mapper_args__ = {
