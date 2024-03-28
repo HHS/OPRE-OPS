@@ -12,10 +12,11 @@ from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any, override
 
-from models import BudgetLineItemStatus, OpsEventType
+from models import BudgetLineItemFinancialChangeRequest, BudgetLineItemStatus, OpsDBHistoryType, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.history import build_audit
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponse,
     PATCHRequestBody,
@@ -101,13 +102,65 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
             schema.context["id"] = id
+            # TODO: eliminate PUT to simplify change requests, etc?
             schema.context["method"] = method
+
+            # determine if the BLI is in an editable state or one that supports change requests (requires approval)
+            budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+            if not budget_line_item:
+                raise ValueError("Invalid BLI ID.")
+            changeable = budget_line_item.status in [
+                BudgetLineItemStatus.DRAFT,
+                BudgetLineItemStatus.PLANNED,
+                BudgetLineItemStatus.IN_EXECUTION,
+            ]
+
+            # should we error if not changeable?
+            if not changeable:
+                return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
+
+            # determine if it can be edited directly or if a change request is required
+            directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
+
+            # validate and normalize the request data, TODO: stop reverting to DRAFT
             data = validate_and_normalize_request_data(schema)
-            budget_line_item = self.update_and_commit_budget_line_item(data, id)
+
+            # update the BLI and see what has changed and if there are financial changes
+            # the BLI will be reverted if it can't be edited directly
+            update_data(budget_line_item, data)
+            db_audit = build_audit(budget_line_item, OpsDBHistoryType.UPDATED)
+            changed_financial_props = list(
+                set(db_audit.changes.keys()) & set(BudgetLineItemFinancialChangeRequest.financial_field_names)
+            )
+            status_change = db_audit.changes.pop("status", None)
+            other_changed_props = list(set(db_audit.changes.keys()) - set(changed_financial_props))
+            print(f"~~~changed_financial_props: {changed_financial_props}")
+            print(f"~~~status_change: {status_change}")
+            print(f"~~~other_changed_props: {other_changed_props}")
+
+            # if there are financial changes and the BLI can't be edited directly, create a financial change request
+            # TODO: if there are also non-financial changes, these should be handled separately
+            # How do we handle cases where there are both financial and non-financial changes and maybe status changes?
+            if changed_financial_props and not directly_editable:
+                # create a change request with a dump of the data
+                change_request = BudgetLineItemFinancialChangeRequest()
+                change_request.budget_line_item_id = id
+                # what schema should be used here, PATCH schema or __marshmallow__
+                schema = budget_line_item.__marshmallow__(only=changed_financial_props)
+                change_request.requested_changes = schema.dump(budget_line_item)
+                # revert the budget_line_item and save the new change request
+                current_app.db_session.refresh(budget_line_item)
+                current_app.db_session.add(change_request)
+                current_app.db_session.commit()
+                # return 202
+                return make_response_with_headers({"message": "Change request created", "id": change_request.id}, 202)
+
+            # update the BLI directly and return 200
+            current_app.db_session.add(budget_line_item)
+            current_app.db_session.commit()
             bli_dict = self._response_schema.dump(budget_line_item)
             meta.metadata.update({"bli": bli_dict})
             current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
-
             return make_response_with_headers(bli_dict, 200)
 
     @override
