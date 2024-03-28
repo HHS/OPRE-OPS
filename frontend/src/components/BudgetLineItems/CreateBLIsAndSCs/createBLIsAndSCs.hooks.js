@@ -2,17 +2,17 @@ import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import suite from "./suite";
-import useAlert from "../../../../hooks/use-alert.hooks";
+import useAlert from "../../../hooks/use-alert.hooks";
 import {
     useUpdateBudgetLineItemMutation,
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation
-} from "../../../../api/opsAPI";
-import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
-import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
-import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
-import { groupByServicesComponent } from "../../../../helpers/budgetLines.helpers";
+} from "../../../api/opsAPI";
+import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
+import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.

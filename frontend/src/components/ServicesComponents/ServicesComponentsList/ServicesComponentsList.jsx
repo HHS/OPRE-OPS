@@ -24,6 +24,7 @@ function ServicesComponentsList({ servicesComponents, setFormDataById, handleDel
                     <ServicesComponentListItem
                         key={item.id}
                         id={item.id}
+                        number={item.number}
                         title={item.display_title}
                         periodStart={item.period_start}
                         periodEnd={item.period_end}

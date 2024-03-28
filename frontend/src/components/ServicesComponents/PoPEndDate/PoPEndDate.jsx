@@ -5,7 +5,7 @@ import YearInput from "../../UI/Form/DesiredAwardDate/YearInput";
 function PoPEndDate({ serviceComponent, setServiceComponent }) {
     return (
         <fieldset className="usa-fieldset display-flex">
-            <legend className={`usa-legend margin-top-0 }`}>Period of Performance-End</legend>
+            <legend className="usa-legend margin-top-0">Period of Performance-End</legend>
             <MonthSelect
                 name="popEndMonth"
                 label="Month"
