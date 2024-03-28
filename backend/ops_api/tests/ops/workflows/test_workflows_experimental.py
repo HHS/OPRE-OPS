@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 
 import pytest
@@ -64,6 +65,7 @@ def test_budget_line_item_change_request(auth_client, app):
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     session = app.db_session
+    #  create PLANNED BLI
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=1,
@@ -76,10 +78,8 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     assert bli.id is not None
     bli_id = bli.id
 
-    bli = session.get(BudgetLineItem, bli_id)
-    assert bli.amount == Decimal("111.11")
-
-    data = {"amount": 222.22}
+    #  submit PATCH BLI which triggers a financial change request
+    data = {"amount": 222.22, "date_needed": "2032-02-02"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
@@ -89,17 +89,25 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
 
     assert "id" in resp_json
     change_request_id = resp_json["id"]
+
+    # verify the change request was created
     change_request = session.get(BudgetLineItemFinancialChangeRequest, change_request_id)
     assert change_request is not None
-    print("~~~change_request~~~", json.dumps(change_request.to_dict(), indent=2))
-    print("~~~requested_changes~~~", json.dumps(change_request.requested_changes, indent=2))
+    print("~~~change_request~~~\n", json.dumps(change_request.to_dict(), indent=2))
+    print("~~~requested_changes~~~\n", json.dumps(change_request.requested_changes, indent=2))
     assert change_request.type == "budget_line_item_financial_change_request"
     assert change_request.budget_line_item_id == bli_id
 
+    # verify the BLI was not updated yet
     bli = session.get(BudgetLineItem, bli_id)
     assert str(bli.amount) == "111.11"
     assert bli.amount == Decimal("111.11")
+    assert bli.date_needed is None
 
+    # approve the change request
     approve_change_request(change_request_id, 1)
+
+    # verify the BLI was updated
     bli = session.get(BudgetLineItem, bli_id)
     assert bli.amount == Decimal("222.22")
+    assert bli.date_needed == datetime.date(2032, 2, 2)

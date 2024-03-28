@@ -132,6 +132,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             changed_financial_props = list(
                 set(db_audit.changes.keys()) & set(BudgetLineItemFinancialChangeRequest.financial_field_names)
             )
+            status_change = db_audit.changes.pop("status", None)
+            other_changed_props = list(set(db_audit.changes.keys()) - set(changed_financial_props))
+            print(f"~~~changed_financial_props: {changed_financial_props}")
+            print(f"~~~status_change: {status_change}")
+            print(f"~~~other_changed_props: {other_changed_props}")
 
             # if there are financial changes and the BLI can't be edited directly, create a financial change request
             # TODO: if there are also non-financial changes, these should be handled separately
