@@ -4,14 +4,15 @@ import PropTypes from "prop-types";
 import _ from "lodash";
 import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
-import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
+import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
 
 /**
  * TableRow component that represents a single row in the budget lines table.
+ * @component
  * @param {Object} props - The props for the TableRow component.
  * @param {Object[]} props.budgetLines - The budget line data for the row.
- * @returns {React.JSX.Element} The TableRow component.
+ * @returns {JSX.Element} The TableRow component.
  */
 const AllBudgetLinesTable = ({ budgetLines }) => {
     const navigate = useNavigate();

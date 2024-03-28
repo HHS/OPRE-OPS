@@ -5,25 +5,26 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import TextClip from "../../UI/Text/TextClip";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
+import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import TextClip from "../../UI/Text/TextClip";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
+ * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
- * @returns {React.JSX.Element} The BLIRow component.
+ * @returns {JSX.Element} The BLIRow component.
  **/
 const AllBLIRow = ({
     budgetLine,
@@ -67,7 +68,7 @@ const AllBLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                <TextClip text={budgetLine.line_description} />
+                {budgetLine.id}
             </th>
             <td
                 className={borderExpandedStyles}
