@@ -79,7 +79,7 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     bli_id = bli.id
 
     #  submit PATCH BLI which triggers a financial change request
-    data = {"amount": 222.22, "date_needed": "2032-02-02"}
+    data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
@@ -102,6 +102,7 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     bli = session.get(BudgetLineItem, bli_id)
     assert str(bli.amount) == "111.11"
     assert bli.amount == Decimal("111.11")
+    assert bli.can_id == 1
     assert bli.date_needed is None
 
     # approve the change request
@@ -110,4 +111,5 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     # verify the BLI was updated
     bli = session.get(BudgetLineItem, bli_id)
     assert bli.amount == Decimal("222.22")
+    assert bli.can_id == 2
     assert bli.date_needed == datetime.date(2032, 2, 2)
