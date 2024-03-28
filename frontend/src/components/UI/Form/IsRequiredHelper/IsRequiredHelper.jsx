@@ -9,10 +9,14 @@ import PropTypes from "prop-types";
  * @returns {JSX.Element | null} - The rendered component.
  */
 const IsRequiredHelper = ({ isRequired = false, isRequiredNoShow = false }) => {
-    if (isRequired && !isRequiredNoShow) {
-        return <div className="usa-hint">Required Information*</div>;
+    if (isRequiredNoShow) {
+        return null;
     }
-    return null;
+    if (isRequired) {
+        return <div className="usa-hint">Required Information*</div>;
+    } else {
+        return null;
+    }
 };
 
 IsRequiredHelper.propTypes = {
