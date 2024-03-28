@@ -16,6 +16,7 @@ import IsRequiredHelper from "../Form/IsRequiredHelper";
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {string} [props.defaultOption] - The default option to display (optional).
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
+ * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show (optional).
  * @returns {JSX.Element} - The rendered component.
  */
 const Select = ({
@@ -37,7 +38,8 @@ const Select = ({
     ],
     className,
     defaultOption = "-Select an option-",
-    isRequired = false
+    isRequired = false,
+    isRequiredNoShow = false
 }) => {
     function handleChange(e) {
         onChange(name, e.target.value);
@@ -59,7 +61,10 @@ const Select = ({
                     {messages[0]}
                 </span>
             ) : (
-                <IsRequiredHelper isRequired={isRequired} />
+                <IsRequiredHelper
+                    isRequired={isRequired}
+                    isRequiredNoShow={isRequiredNoShow}
+                />
             )}
             <div className="display-flex flex-align-center margin-top-1">
                 <select
@@ -105,6 +110,7 @@ Select.propTypes = {
     valueOverride: PropTypes.bool,
     className: PropTypes.string,
     defaultOption: PropTypes.string,
-    isRequired: PropTypes.bool
+    isRequired: PropTypes.bool,
+    isRequiredNoShow: PropTypes.bool
 };
 export default Select;

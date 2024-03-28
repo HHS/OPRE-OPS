@@ -2,7 +2,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
-import CreateBLIsAndSCs from "../../../components/UI/WizardSteps/CreateBLIsAndSCs/CreateBLIsAndSCs";
+import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
 import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -71,35 +71,51 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
         totals["Agreement"]["total"] += total;
     });
 
+    const agreementTotal = totals.Agreement.total;
+    const agreementSubtotal = totals.Agreement.subtotal;
+    const agreementFees = totals.Agreement.fees;
+    const cardData = {
+        agreementTotal,
+        agreementSubtotal,
+        agreementFees,
+        includeDrafts,
+        setIncludeDrafts,
+        filteredBlis
+    };
+
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
 
     return (
         <>
-            <AgreementBudgetLinesHeader
-                heading="Budget Lines Summary"
-                details="The summary below shows a breakdown of the agreement total."
-                includeDrafts={includeDrafts}
-                setIncludeDrafts={setIncludeDrafts}
-                isEditMode={isEditMode}
-                setIsEditMode={setIsEditMode}
-                isEditable={canUserEditAgreement}
-            />
-            <div className="display-flex flex-justify">
-                <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
-                <AgreementTotalCard
-                    total={totals["Agreement"]["total"]}
-                    subtotal={totals["Agreement"]["subtotal"]}
-                    fees={totals["Agreement"]["fees"]}
-                    procurementShopAbbr={agreement.procurement_shop?.abbr}
-                    procurementShopFee={agreement.procurement_shop?.fee}
-                />
-            </div>
-            <div className="margin-y-3">
-                <h2 className="font-sans-lg">Budget Lines</h2>
-                <p className="font-sans-sm">
-                    This is a list of all services components and budget lines within this agreement.
-                </p>
-            </div>
+            {!isEditMode && (
+                <>
+                    <AgreementBudgetLinesHeader
+                        heading="Budget Lines Summary"
+                        details="The summary below shows a breakdown of the agreement total."
+                        includeDrafts={includeDrafts}
+                        setIncludeDrafts={setIncludeDrafts}
+                        isEditMode={isEditMode}
+                        setIsEditMode={setIsEditMode}
+                        isEditable={canUserEditAgreement}
+                    />
+                    <div className="display-flex flex-justify">
+                        <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
+                        <AgreementTotalCard
+                            total={agreementTotal}
+                            subtotal={agreementSubtotal}
+                            fees={agreementFees}
+                            procurementShopAbbr={agreement.procurement_shop?.abbr}
+                            procurementShopFee={agreement.procurement_shop?.fee}
+                        />
+                    </div>
+                    <div className="margin-y-3">
+                        <h2 className="font-sans-lg">Budget Lines</h2>
+                        <p className="font-sans-sm">
+                            This is a list of all services components and budget lines within this agreement.
+                        </p>
+                    </div>
+                </>
+            )}
 
             {isEditMode && (
                 <CreateBLIsAndSCs
@@ -115,11 +131,13 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     continueBtnText="Save Changes"
                     currentStep={0}
                     workflow="none"
+                    cardData={cardData}
                     goBack={() => {
                         setIsEditMode(false);
                         navigate(`/agreements/${agreement.id}/budget-lines`);
                     }}
                     continueOverRide={() => {
+                        setIsEditMode(false);
                         setAlert({
                             type: "success",
                             heading: "Budget Lines Saved",
@@ -130,7 +148,8 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 />
             )}
 
-            {!isEditMode && groupedBudgetLinesByServicesComponent.length > 0 ? (
+            {!isEditMode &&
+                groupedBudgetLinesByServicesComponent.length > 0 &&
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion
                         key={group.servicesComponentId}
@@ -145,8 +164,9 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                             readOnly={true}
                         />
                     </ServicesComponentAccordion>
-                ))
-            ) : (
+                ))}
+
+            {!isEditMode && groupedBudgetLinesByServicesComponent.length === 0 && (
                 <p className="text-center">You have not added any Budget Lines yet.</p>
             )}
 

@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
-import StepCreateBudgetLinesAndSCs from "../../components/UI/WizardSteps/CreateBLIsAndSCs";
+import StepCreateBudgetLinesAndSCs from "../../components/BudgetLineItems/CreateBLIsAndSCs";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import useAlert from "../../hooks/use-alert.hooks";
 

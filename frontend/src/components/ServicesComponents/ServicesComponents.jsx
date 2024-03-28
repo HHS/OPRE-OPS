@@ -11,12 +11,13 @@ import useServicesComponents from "./servicesComponents.hooks";
  * @param {object} props
  * @param {string} props.serviceRequirementType - The type of service requirement.
  * @param {number} props.agreementId - The ID of the agreement.
+ * @param {boolean} [props.isEditMode] - Whether the component is in edit mode.
  * @returns {JSX.Element}
  *
  * @example
  *  <ServicesComponents serviceRequirementType="SEVERABLE" agreementId={123} />
  */
-const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
+const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = false }) => {
     const {
         formData,
         modalProps,
@@ -42,16 +43,17 @@ const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <section>
-                <ServicesComponentForm
-                    serviceTypeReq={serviceRequirementType}
-                    formData={formData}
-                    setFormData={setFormData}
-                    handleSubmit={handleSubmit}
-                    handleCancel={handleCancel}
-                    servicesComponentsNumbers={servicesComponentsNumbers}
-                />
-            </section>
+
+            <ServicesComponentForm
+                serviceTypeReq={serviceRequirementType}
+                formData={formData}
+                setFormData={setFormData}
+                handleSubmit={handleSubmit}
+                handleCancel={handleCancel}
+                servicesComponentsNumbers={servicesComponentsNumbers}
+                isEditMode={isEditMode}
+            />
+
             <ServicesComponentsList
                 servicesComponents={servicesComponents}
                 setFormDataById={setFormDataById}
@@ -64,6 +66,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId }) => {
 
 ServicesComponents.propTypes = {
     serviceRequirementType: PropTypes.string.isRequired,
-    agreementId: PropTypes.string.isRequired
+    agreementId: PropTypes.string.isRequired,
+    isEditMode: PropTypes.bool
 };
 export default ServicesComponents;
