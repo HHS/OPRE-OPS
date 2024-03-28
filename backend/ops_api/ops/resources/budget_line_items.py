@@ -107,8 +107,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
             # determine if the BLI is in an editable state or one that supports change requests (requires approval)
             budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+            # should this return 404, tests currently expect 400
             if not budget_line_item:
-                raise ValueError("Invalid BLI ID.")
+                return make_response_with_headers({}, 400)
             changeable = budget_line_item.status in [
                 BudgetLineItemStatus.DRAFT,
                 BudgetLineItemStatus.PLANNED,
