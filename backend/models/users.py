@@ -51,7 +51,7 @@ class User(BaseModel):
     first_name: Mapped[Optional[str]] = mapped_column(nullable=True)
     last_name: Mapped[Optional[str]] = mapped_column(nullable=True)
     full_name: Mapped[str] = column_property(first_name + " " + last_name)
-    division: Mapped[int] = mapped_column(
+    division: Mapped[Optional[int]] = mapped_column(
         ForeignKey("division.id", name="fk_user_division")
     )
     status: Mapped[UserStatus] = mapped_column(
