@@ -4,8 +4,8 @@ import PropTypes from "prop-types";
  *
  * @component
  * @param {Object} props - The component props.
- * @param {boolean} props.isRequired - Indicates if the information is required.
- * @param {boolean} props.isRequiredNoShow - Indicates if the information is required but should not show.
+ * @param {boolean} [props.isRequired] - Indicates if the information is required.
+ * @param {boolean} [props.isRequiredNoShow] - Indicates if the information is required but should not show.
  * @returns {JSX.Element | null} - The rendered component.
  */
 const IsRequiredHelper = ({ isRequired = false, isRequiredNoShow = false }) => {
