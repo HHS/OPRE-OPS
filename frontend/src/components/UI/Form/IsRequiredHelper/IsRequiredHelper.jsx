@@ -14,9 +14,9 @@ const IsRequiredHelper = ({ isRequired = false, isRequiredNoShow = false }) => {
     }
     if (isRequired) {
         return <div className="usa-hint">Required Information*</div>;
-    } else {
-        return null;
     }
+
+    return null;
 };
 
 IsRequiredHelper.propTypes = {
