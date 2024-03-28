@@ -59,7 +59,7 @@ const AgreementBLIReviewTable = ({
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
             >
-                SC
+                BL ID #
             </label>
         </th>
     );

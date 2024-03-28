@@ -5,20 +5,19 @@ import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { futureDateErrorClass, addErrorClassIfNotFound } from "../BudgetLinesTable/BLIRow.helpers";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
-import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
-import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
-import { futureDateErrorClass, addErrorClassIfNotFound } from "../BudgetLinesTable/BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
 /**
@@ -44,7 +43,6 @@ const BLIReviewRow = ({
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    const servicesComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? "TBD");
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
@@ -75,7 +73,7 @@ const BLIReviewRow = ({
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(budgetLine?.display_name, isReviewMode)} ${borderExpandedStyles}`}
+                className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <input
@@ -96,7 +94,7 @@ const BLIReviewRow = ({
                     data-position="top"
                     title={toolTipMsg}
                 >
-                    {servicesComponentName}
+                    {budgetLine?.id}
                 </label>
             </th>
             <td
