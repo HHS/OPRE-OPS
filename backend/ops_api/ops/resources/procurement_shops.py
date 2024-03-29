@@ -1,4 +1,5 @@
 """Module containing views for Procurement Shops."""
+
 from flask import Response
 from typing_extensions import override
 
