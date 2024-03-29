@@ -1,8 +1,6 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-const randomString = Math.floor(Math.random() * Date.now()).toString(36);
-
 // eslint-disable-next-line no-unused-vars
 const testAgreements = [
     {
@@ -80,7 +78,7 @@ const testAgreements = [
 ];
 const testAgreement = {
     agreement_type: "CONTRACT",
-    name: "Test Contract" + randomString
+    name: "Test Contract"
 };
 
 beforeEach(() => {
@@ -93,35 +91,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-const deleteLastAgreement = () => {
-    cy.get("tbody").children().as("table-rows").should("exist");
-    // get the created agreement
-    cy.get("@table-rows").last().as("last-row");
-    // expand the row
-    cy.get("@last-row").find('[data-cy="expand-row"]').click();
-    // adding a little wait, trying to increase odds of success
-    cy.wait(2000);
-    // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
-    // get the modal
-    cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete this agreement?");
-    // find the delete button and click
-    cy.get('[data-cy="confirm-action"]').click();
-};
-
-const deleteAgreementByRow = (row) => {
-    cy.get("tbody").children().as("table-rows").should("exist");
-    // get the created agreement
-    cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
-    // get the first delete button and click
-    cy.get(".padding-right-9").find('[data-cy="delete-row"]').click();
-    // get the modal and cancel
-    cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete this agreement?");
-    cy.get('[data-cy="cancel-action"]').click();
-    // close the row
-    cy.get("@table-rows").eq(row).find('[data-cy="expand-row"]').click();
-};
-
 const deleteAgreementByName = (name) => {
     // get the created agreement
     cy.contains("tbody tr", name).as("agreement-row");
@@ -129,7 +98,7 @@ const deleteAgreementByName = (name) => {
     // get the first delete button and click
     cy.get(".padding-right-9").find('[data-cy="delete-row"]').click().wait(1);
     // get the modal and cancel
-    cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete this agreement?");
+    cy.get("#ops-modal-heading").should("have.text", "Are you sure you want to delete Agreement Test Agreement?");
     cy.get('[data-cy="confirm-action"]').click();
     // close the row
     cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
