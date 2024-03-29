@@ -46,7 +46,7 @@ export const useHandleDeleteAgreement = () => {
     const handleDeleteAgreement = (id, agreementName) => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to delete this agreement?",
+            heading: `Are you sure you want to delete Agreement ${agreementName}?`,
             actionButtonText: "Delete",
             handleConfirm: () => {
                 deleteAgreement(id)
