@@ -1,4 +1,3 @@
-// FILEPATH: /Users/fpigeon/Code/OPRE-OPS/frontend/src/helpers/agreement.helpers.test.js
 import { getProcurementShopSubTotal } from "./agreement.helpers";
 
 describe("getProcurementShopSubTotal", () => {
