@@ -2,9 +2,9 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
+import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 import icons from "../../../uswds/img/sprite.svg";
-import { Tooltip } from "../../UI/USWDS/Tooltip";
 
 /**
  * This component displays the edit, delete, and duplicate icons for a budget line.
@@ -99,6 +99,7 @@ const ChangeIcons = ({
                                 title="Edit"
                                 aria-label="Edit"
                                 data-cy="edit-row"
+                                disabled={true}
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}
@@ -160,11 +161,11 @@ const ChangeIcons = ({
                             aria-label="Disabled"
                             data-cy="duplicate-row"
                             disabled={true}
+                            onClick={() => {}}
                         >
                             <FontAwesomeIcon
                                 icon={faClone}
                                 className={disabledClasses}
-                                onClick={handleDuplicateItem}
                             />
                         </button>
                     </Tooltip>
@@ -202,6 +203,7 @@ const ChangeIcons = ({
                             title="Submit for Approval"
                             aria-label="Submit for Approval"
                             data-cy="submit-row"
+                            disabled={true}
                         >
                             <svg
                                 className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
