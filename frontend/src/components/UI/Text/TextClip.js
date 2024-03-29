@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
-import styles from "./TextClip.module.scss";
-import React, { useEffect } from "react";
+import React from "react";
 import USWDS from "@uswds/uswds/js";
+import styles from "./TextClip.module.scss";
 
 const { tooltip } = USWDS;
 
@@ -10,14 +10,14 @@ const { tooltip } = USWDS;
  * @param {object} props - The component props.
  * @param {string} [props.text] - The text
  * @param {string} [props.maxLines] - optional (default 2), the number of lines to display, default is 2
- * @param {string} [props.tooltipThreshold] - optional (default 50), minimum character length to add the enhanced tooltip
+ * @param {number} [props.tooltipThreshold] - optional (default 50), minimum character length to add the enhanced tooltip
  * @returns {React.JSX.Element} - The rendered component
  **/
 const TextClip = ({ text, maxLines = 2, tooltipThreshold = 40 }) => {
     const tooltipEnabled = text?.length > tooltipThreshold;
     const tooltipRef = React.useRef();
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (tooltipEnabled) {
             // initialize
             tooltip.on(tooltipRef.current);
