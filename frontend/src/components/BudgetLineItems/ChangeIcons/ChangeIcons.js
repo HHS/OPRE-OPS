@@ -147,21 +147,23 @@ const ChangeIcons = ({
                         </button>
                     </Tooltip>
                 )}
+                {/* NOTE: Do we ever want to not allow duplicating BLIs? */}
                 {!isItemEditable && duplicateIcon && (
                     <Tooltip
                         position="top"
-                        label="Duplicate"
+                        label="Disabled"
                         className="line-height-body-1"
                     >
                         <button
                             id={`duplicate-${item?.id}`}
-                            title="Duplicate"
-                            aria-label="Duplicate"
+                            title="Disabled"
+                            aria-label="Disabled"
                             data-cy="duplicate-row"
+                            disabled={true}
                         >
                             <FontAwesomeIcon
                                 icon={faClone}
-                                className="text-primary height-2 width-2 cursor-pointer margin-left-0"
+                                className={disabledClasses}
                                 onClick={handleDuplicateItem}
                             />
                         </button>
