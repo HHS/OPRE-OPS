@@ -10,11 +10,11 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @component
@@ -49,7 +49,7 @@ const AllBLIRow = ({
     const { isExpanded, setIsRowActive, isRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-
+    const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -75,6 +75,12 @@ const AllBLIRow = ({
                 style={bgExpandedStyles}
             >
                 <TextClip text={budgetLine.agreement_name} />
+            </td>
+            <td
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
+            >
+                {serviceComponentName}
             </td>
             <td
                 className={borderExpandedStyles}

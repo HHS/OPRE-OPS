@@ -1,3 +1,12 @@
-export const All_BUDGET_LINES_TABLE_HEADINGS = ["BL ID #", "Agreement", "Need By", "FY", "CAN", "Total", "Status"];
+export const All_BUDGET_LINES_TABLE_HEADINGS = [
+    "BL ID #",
+    "Agreement",
+    "SC",
+    "Need By",
+    "FY",
+    "CAN",
+    "Total",
+    "Status"
+];
 
 export const BLIS_PER_PAGE = 10;
