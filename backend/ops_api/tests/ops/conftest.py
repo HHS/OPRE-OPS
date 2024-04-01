@@ -1,4 +1,5 @@
 """Configuration for pytest tests."""
+
 import subprocess
 from collections.abc import Generator
 
