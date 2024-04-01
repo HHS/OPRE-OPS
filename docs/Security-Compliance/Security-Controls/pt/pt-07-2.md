@@ -1,0 +1,11 @@
+# Personally Identifiable Information Processing and Transparency
+## PT-7 (2) - Specific Categories of Personally Identifiable Information | First Amendment Information
+
+Prohibit the processing of information describing how any individual exercises rights guaranteed by the First Amendment unless expressly authorized by statute or by the individual or unless pertinent to and within the scope of an authorized law enforcement activity.
+
+## OPS Implementation
+
+### Control Origination
+
+
+### Related Content

@@ -52,3 +52,6 @@ AUTHLIB_OAUTH_CLIENTS = {
         "redirect_uri": "http://localhost:3000/login",
     },
 }
+
+STORAGE_ACCOUNT_NAME = "timstoragetesting"
+STORAGE_ACCOUNT_KEY = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")

@@ -14,10 +14,11 @@ import {
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "../BudgetLinesTable/BLIRow.helpers";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
 /**
@@ -43,6 +44,7 @@ const BLIReviewRow = ({
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
+    const servicesComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? "TBD");
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
@@ -73,10 +75,7 @@ const BLIReviewRow = ({
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(
-                    budgetLine?.line_description,
-                    isReviewMode
-                )} ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(budgetLine?.display_name, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <input
@@ -97,7 +96,7 @@ const BLIReviewRow = ({
                     data-position="top"
                     title={toolTipMsg}
                 >
-                    {budgetLine?.line_description}
+                    {servicesComponentName}
                 </label>
             </th>
             <td

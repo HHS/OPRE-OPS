@@ -2,6 +2,7 @@ from decimal import Decimal
 
 import pytest
 from flask.testing import FlaskClient
+
 from models.cans import CAN
 from ops_api.ops.utils.cans import get_can_funding_summary
 
@@ -39,6 +40,8 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db) -> None:
             "purpose": "",
             "projects": [],
             "shared_portfolios": [],
+            "updated_by": None,
+            "updated_by_user": None,
         },
         "carry_forward_funding": 0,
         "carry_forward_label": "Carry-Forward",
@@ -86,6 +89,8 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db) -> None:
             "purpose": "",
             "projects": [],
             "shared_portfolios": [],
+            "updated_by": None,
+            "updated_by_user": None,
         },
         "carry_forward_funding": 0,
         "carry_forward_label": "Carry-Forward",

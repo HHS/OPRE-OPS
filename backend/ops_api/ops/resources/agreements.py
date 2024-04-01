@@ -4,8 +4,11 @@ from typing import List, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity
 from marshmallow import EXCLUDE, Schema
+from sqlalchemy.future import select
+from typing_extensions import Any, override
+
 from models import (
     CAN,
     ContractType,
@@ -18,7 +21,14 @@ from models import (
     Vendor,
 )
 from models.base import BaseModel
-from models.cans import Agreement, AgreementReason, AgreementType, BudgetLineItemStatus, ContractAgreement
+from models.cans import (
+    Agreement,
+    AgreementReason,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ServiceRequirementType,
+)
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
@@ -28,9 +38,6 @@ from ops_api.ops.resources.agreements_constants import (
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
-from sqlalchemy.future import select
-from typing_extensions import Any, override
 
 
 @dataclass
@@ -213,10 +220,6 @@ class AgreementListAPI(BaseListAPI):
 
             new_agreement = self._create_agreement(data, AGREEMENT_TYPE_TO_CLASS_MAPPING.get(agreement_type))
 
-            token = verify_jwt_in_request()
-            user = get_user_from_token(token[1])
-            new_agreement.created_by = user.id
-
             current_app.db_session.add(new_agreement)
             current_app.db_session.commit()
 
@@ -235,6 +238,11 @@ class AgreementListAPI(BaseListAPI):
 
         if agreement_cls == ContractAgreement:
             data["contract_type"] = ContractType[data["contract_type"]] if data.get("contract_type") else None
+            data["service_requirement_type"] = (
+                ServiceRequirementType[data["service_requirement_type"]]
+                if data.get("service_requirement_type")
+                else None
+            )
 
             tmp_support_contacts = data.get("support_contacts") or []
             data["support_contacts"] = []
@@ -302,6 +310,7 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             "agreement_type",
             "versions",
             "created_by_user",  # handled by created_by
+            "updated_by_user",  # handled by updated_by
             "project_officer",  # handled by project_officer_id
         ]:
             continue
@@ -346,13 +355,17 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     setattr(agreement, item, ContractType[data[item]])
                     changed = True
 
+            case "service_requirement_type":
+                if isinstance(data[item], str):
+                    setattr(agreement, item, ServiceRequirementType[data[item]])
+                    changed = True
+
             case _:
                 if getattr(agreement, item) != data[item]:
                     setattr(agreement, item, data[item])
                     changed = True
 
     if changed:
-        agreement.budget_line_items
         for bli in agreement.budget_line_items:
             with suppress(AttributeError):
                 if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
@@ -386,8 +399,7 @@ def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = Tr
         for key, value in change_data.items()
         if key not in {"status", "id"} and key in request.json and value != data.get(key, None)
     }  # only keep the attributes from the request body
-    data |= change_data
-    return data
+    return change_data
 
 
 def add_vendor(data: dict, field_name: str = "vendor") -> None:
@@ -445,6 +457,7 @@ def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[st
         "display_name": agreement.display_name,
         "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
         "incumbent": agreement.incumbent.name if hasattr(agreement, "incumbent") and agreement.incumbent else None,
+        "procurement_tracker_workflow_id": agreement.procurement_tracker_workflow_id,
     }
 
 

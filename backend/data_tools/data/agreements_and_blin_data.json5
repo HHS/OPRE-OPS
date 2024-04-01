@@ -1,4 +1,5 @@
 {
+
   direct_agreement: [
     {
       name: "DIRECT ALLOCATION #2: African American Child and Family Research Center",
@@ -84,7 +85,7 @@
       incumbent_id: null,
       vendor_id: 1,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "FIRM_FIXED_PRICE",
       support_contacts: [],
     },
     {
@@ -101,7 +102,7 @@
       incumbent_id: null,
       vendor_id: 2,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "TIME_AND_MATERIALS",
       support_contacts: [],
     },
     {
@@ -118,7 +119,7 @@
       incumbent_id: null,
       vendor_id: 2,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
     },
     {
@@ -135,7 +136,7 @@
       incumbent_id: null,
       vendor_id: 3,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
       team_members: [
         {
@@ -162,7 +163,7 @@
       incumbent_id: 1,
       vendor_id: 1,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
       team_members: [
         {
@@ -197,7 +198,7 @@
       incumbent_id: null,
       vendor_id: 3,
       delivered_status: false,
-      contract_type: "RESEARCH",
+      contract_type: "LABOR_HOUR",
       support_contacts: [],
       team_members: [
         {
@@ -211,6 +212,55 @@
       ]
     }
   ],
+  clin: [
+    {
+      id: 1,
+      name: "CLIN 1",
+      source_id: 49932,
+    },
+    {
+      id: 2,
+      name: "CLIN 2",
+      source_id: 49933,
+    },
+    {
+      id: 3,
+      name: "CLIN 3",
+      source_id: 49934,
+    }
+  ],
+  services_component: [
+    {
+      id: 1,
+      number: 1,
+      optional: false,
+      description: "Perform Research",
+      period_start: "2043-06-13T14:00:00",
+      period_end: "2044-06-13T14:00:00",
+      contract_agreement_id: 1,
+      clin_id: 1,
+    },
+    {
+      id: 2,
+      number: 2,
+      optional: false,
+      description: "Report on Research",
+      period_start: "2043-06-13T14:00:00",
+      period_end: "2044-06-13T14:00:00",
+      contract_agreement_id: 1,
+      clin_id: 2,
+    },
+    {
+      id: 3,
+      number: 3,
+      optional: true,
+      description: "Write a book based on the Research",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      contract_agreement_id: 1,
+      clin_id: 3,
+    }
+  ],
   budget_line_item: [
     {
       line_description: "LI 1",
@@ -221,6 +271,7 @@
       status: "DRAFT",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0,
+      services_component_id: 1,
     },
     {
       line_description: "LI 2",

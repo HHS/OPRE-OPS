@@ -1,11 +1,12 @@
 from flask import Response, current_app, request
+from sqlalchemy import Integer, and_, or_, select
+from typing_extensions import override
+
 from models import Agreement, OpsDBHistory, OpsDBHistoryType, User
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
-from sqlalchemy import Integer, and_, or_, select
-from typing_extensions import override
 
 
 def build_agreement_history_dict(ops_db_hist: OpsDBHistory, user: User):
@@ -25,7 +26,7 @@ class AgreementHistoryListAPI(BaseListAPI):
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
         class_names = [cls.__name__ for cls in Agreement.__subclasses__()] + [Agreement.__class__.__name__]
-        stmt = select(OpsDBHistory).join(OpsDBHistory.created_by_user, isouter=True).add_columns(User)
+        stmt = select(OpsDBHistory, User).join(User, OpsDBHistory.created_by == User.id, isouter=True)
         stmt = stmt.where(
             and_(
                 or_(

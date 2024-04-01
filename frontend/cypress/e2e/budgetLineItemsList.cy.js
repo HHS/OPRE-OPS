@@ -161,7 +161,7 @@ it("click on edit bli and check to see if the form is populated", () => {
     cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
     cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
-    cy.get("#enteredDescription").should("have.value", "LI 1");
+    cy.get("#allServicesComponentSelect").should("have.value", "1");
     cy.get("#selectedCan").should("have.value", "G994426");
     cy.get("#enteredMonth").should("have.value", "6");
     cy.get("#enteredDay").should("have.value", "13");
@@ -180,13 +180,6 @@ it("Total BLI Summary Card should calculate the total amount of the budget line 
     cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
     filterByStatus("Draft");
     cy.get("@total-bli-card").contains(DRAFT_BLI_TOTAL);
-});
-
-// TODO: This filter (on the BLI page) needs to change now that In Review (UNDER_REVIEW) is no longer used
-it.skip("Total BLI Summary Card should calculate the total amount of the budget line items in review status", () => {
-    cy.get('[data-cy="bl-total-summary-card"]').as("total-bli-card").should("exist");
-    filterByStatus("In Review");
-    cy.get("@total-bli-card").contains(IN_REVIEW_BLI_TOTAL);
 });
 
 it("Total BLI Summary Card should calculate the total amount of the budget line items in executing status", () => {

@@ -1,29 +1,34 @@
-from enum import Enum
-from typing import Any
+from enum import Enum, auto
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
-from typing_extensions import override
 
 from .base import BaseModel
 
 
 class OpsEventType(Enum):
-    LOGIN_ATTEMPT = 1
-    CREATE_BLI = 2
-    UPDATE_BLI = 3
-    CREATE_PROJECT = 4
-    CREATE_NEW_AGREEMENT = 5
-    UPDATE_AGREEMENT = 6
-    SEND_BLI_FOR_APPROVAL = 7
-    DELETE_AGREEMENT = 8
-    ACKNOWLEDGE_NOTIFICATION = 9
-    LOGOUT = 10
-    CREATE_USER = 11
-    UPDATE_USER = 12
-    DEACTIVATE_USER = 13
-    CREATE_BLI_PACKAGE = 14
-    UPDATE_BLI_PACKAGE = 15
+    LOGIN_ATTEMPT = auto()
+    CREATE_BLI = auto()
+    UPDATE_BLI = auto()
+    DELETE_BLI = auto()
+    CREATE_PROJECT = auto()
+    CREATE_NEW_AGREEMENT = auto()
+    UPDATE_AGREEMENT = auto()
+    SEND_BLI_FOR_APPROVAL = auto()
+    DELETE_AGREEMENT = auto()
+    ACKNOWLEDGE_NOTIFICATION = auto()
+    LOGOUT = auto()
+    CREATE_USER = auto()
+    UPDATE_USER = auto()
+    DEACTIVATE_USER = auto()
+    CREATE_BLI_PACKAGE = auto()
+    UPDATE_BLI_PACKAGE = auto()
+    CREATE_SERVICES_COMPONENT = auto()
+    UPDATE_SERVICES_COMPONENT = auto()
+    DELETE_SERVICES_COMPONENT = auto()
+    CREATE_PROCUREMENT_ACQUISITION_PLANNING = auto()
+    UPDATE_PROCUREMENT_ACQUISITION_PLANNING = auto()
+    DELETE_PROCUREMENT_ACQUISITION_PLANNING = auto()
 
 
 class OpsEventStatus(Enum):
@@ -35,7 +40,7 @@ class OpsEventStatus(Enum):
 class OpsEvent(BaseModel):
     __tablename__ = "ops_event"
 
-    id = sa.Column(sa.Integer, sa.Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     event_type = sa.Column(sa.Enum(OpsEventType))
     event_status = sa.Column(sa.Enum(OpsEventStatus))
     event_details = sa.Column(JSONB)

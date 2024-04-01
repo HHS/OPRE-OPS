@@ -36,7 +36,7 @@ Feature: Edit Planned Budget Line Item
     Then I should get a message that it was successful
 
   Scenario: Unsuccessful Edit
-    Given I am logged in as an OPS user
+    Given I am logged in as an OPS user with the correct authorization but no perms
     And I have a Contract Agreement as an unauthorized user
     And I have a budget line item in Planned status
     And I edit the budget line item to change a value

@@ -5,16 +5,25 @@ import CANFundingCard from "../../CANs/CANFundingCard";
 import ToggleButton from "../../UI/ToggleButton";
 import Tag from "../../UI/Tag";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
+import { workflowActions } from "../../../pages/agreements/review/ReviewAgreement.constants";
 
 /**
  * Renders an accordion component for reviewing CANs.
  * @param {Object} props - The component props.
+ * @param {string} props.instructions - The instructions for the accordion.
  * @param {Array<any>} props.selectedBudgetLines - The selected budget lines.
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
+ * @param {string} props.action - The action to perform.
  * @returns {React.JSX.Element} The AgreementCANReviewAccordion component.
  */
-const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAfterApproval }) => {
+const AgreementCANReviewAccordion = ({
+    instructions,
+    selectedBudgetLines,
+    afterApproval,
+    setAfterApproval,
+    action
+}) => {
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
     if (isLoading) {
         return <div>Loading...</div>;
@@ -45,21 +54,36 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
         if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
 
+    // TODO: Replace with actual data
+    let cansOutsideDivision = [
+        {
+            id: 1,
+            name: "Not"
+        },
+        {
+            id: 2,
+            name: "Yet"
+        },
+        {
+            id: 3,
+            name: "Implemented"
+        }
+    ];
+
     return (
         <Accordion
             heading="Review CANs"
             level={2}
         >
-            <p>
-                The selected budget lines have allocated funds from the CANs displayed below. Use the toggle to see how
-                your approval would change the remaining budget of those CANs.
-            </p>
+            <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                <ToggleButton
-                    btnText="After Approval"
-                    handleToggle={() => setAfterApproval(!afterApproval)}
-                    isToggleOn={afterApproval}
-                />
+                {action === workflowActions.DRAFT_TO_PLANNED && (
+                    <ToggleButton
+                        btnText="After Approval"
+                        handleToggle={() => setAfterApproval(!afterApproval)}
+                        isToggleOn={afterApproval}
+                    />
+                )}
             </div>
             <div
                 className="display-flex flex-wrap margin-bottom-0"
@@ -88,13 +112,27 @@ const AgreementCANReviewAccordion = ({ selectedBudgetLines, afterApproval, setAf
                     />
                 ))}
             </div>
+            <div className="margin-top-1">
+                <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
+                {cansOutsideDivision.length > 0 &&
+                    cansOutsideDivision.map((portfolio) => (
+                        <Tag
+                            key={portfolio.id}
+                            className="margin-left-1"
+                            text={portfolio.name}
+                            tagStyle="primaryDarkTextLightBackground"
+                        />
+                    ))}
+            </div>
         </Accordion>
     );
 };
 
 AgreementCANReviewAccordion.propTypes = {
+    instructions: PropTypes.string.isRequired,
     selectedBudgetLines: PropTypes.arrayOf(PropTypes.object),
     afterApproval: PropTypes.bool,
-    setAfterApproval: PropTypes.func
+    setAfterApproval: PropTypes.func,
+    action: PropTypes.string
 };
 export default AgreementCANReviewAccordion;

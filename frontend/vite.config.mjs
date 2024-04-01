@@ -16,7 +16,9 @@ export default defineConfig(({ mode }) => {
             outDir: "build"
         },
         server: {
+            host: true,
             port: 3000,
+            strictPort: true,
             cors: {
                 origin: function (origin, callback) {
                     if (origin === JSON.stringify(VITE_BACKEND_DOMAIN)) {
@@ -25,6 +27,9 @@ export default defineConfig(({ mode }) => {
                         callback(null, true); // enable CORS for other origins
                     }
                 }
+            },
+            watch: {
+                usePolling: true
             }
         },
         plugins: [
@@ -34,10 +39,23 @@ export default defineConfig(({ mode }) => {
                 }
             }),
             viteJsconfigPaths(),
-            eslint(),
             svgr({
                 include: "**/*.svg?react"
-            })
+            }),
+            {
+                // default settings on build (i.e. fail on error)
+                ...eslint(),
+                apply: "build"
+            },
+            {
+                // do not fail on serve (i.e. local development)
+                ...eslint({
+                    failOnWarning: false,
+                    failOnError: false
+                }),
+                apply: "serve",
+                enforce: "post"
+            }
         ],
         test: {
             globals: true,

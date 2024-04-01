@@ -1,4 +1,5 @@
 from flask import Blueprint
+
 from ops_api.ops.views import (
     ADMINISTRATIVE_AND_SUPPORT_PROJECT_ITEM_API_VIEW_FUNC,
     ADMINISTRATIVE_AND_SUPPORT_PROJECT_LIST_API_VIEW_FUNC,
@@ -10,6 +11,7 @@ from ops_api.ops.views import (
     AUTH_LOGIN_API_VIEW_FUNC,
     AUTH_LOGOUT_API_VIEW_FUNC,
     AUTH_REFRESH_API_VIEW_FUNC,
+    AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
     CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC,
@@ -37,8 +39,15 @@ from ops_api.ops.views import (
     PORTFOLIO_LIST_API_VIEW_FUNC,
     PORTFOLIO_STATUS_ITEM_API_VIEW_FUNC,
     PORTFOLIO_STATUS_LIST_API_VIEW_FUNC,
+    PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_PRE_SOLICITATION_ITEM_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_ITEM_API_VIEW_FUNC,
     PROCUREMENT_SHOPS_LIST_API_VIEW_FUNC,
+    PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC,
+    PROCUREMENT_STEP_LIST_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC,
     PRODUCT_SERVICE_CODE_LIST_API_VIEW_FUNC,
     PROJECT_ITEM_API_VIEW_FUNC,
@@ -47,6 +56,8 @@ from ops_api.ops.views import (
     RESEARCH_PROJECT_ITEM_API_VIEW_FUNC,
     RESEARCH_PROJECT_LIST_API_VIEW_FUNC,
     RESEARCH_TYPE_LIST_API_VIEW_FUNC,
+    SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
+    SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
     WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC,
@@ -81,7 +92,10 @@ def register_api(api_bp: Blueprint) -> None:
         "/health/",
         view_func=HEALTH_CHECK_VIEW_FUNC,
     )
-
+    api_bp.add_url_rule(
+        "/azure/sas-token/",
+        view_func=AZURE_SAS_TOKEN_VIEW_FUNC,
+    )
     api_bp.add_url_rule(
         "/portfolios/<int:id>/calcFunding/",
         view_func=PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
@@ -316,4 +330,40 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/workflow-step-template/<int:id>",
         view_func=WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/services-components/<int:id>",
+        view_func=SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/services-components/",
+        view_func=SERVICES_COMPONENT_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-steps/",
+        view_func=PROCUREMENT_STEP_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-acquisition-plannings/<int:id>",
+        view_func=PROCUREMENT_ACQUISITION_PLANNING_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-pre-solicitations/<int:id>",
+        view_func=PROCUREMENT_PRE_SOLICITATION_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-solicitations/<int:id>",
+        view_func=PROCUREMENT_SOLICITATION_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-evaluations/<int:id>",
+        view_func=PROCUREMENT_EVALUATION_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-pre-awards/<int:id>",
+        view_func=PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/procurement-awards/<int:id>",
+        view_func=PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
     )

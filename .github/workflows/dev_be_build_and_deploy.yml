@@ -1,0 +1,80 @@
+name: Dev Backend Build and Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      
+env:
+  WORKING_DIR: "backend"
+  DT_DOCKER_FILE: "Dockerfile.data-tools-import"
+  BE_DOCKER_FILE: "Dockerfile.ops-api"
+  ENVIRONMENT: dev
+
+jobs:
+  build-data-tools:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: Build and publish the Docker image for ${{ github.repository }}
+        uses: ./.github/actions/build-and-push
+        with:
+          image_name: ${{ github.repository }}/ops-data-tools # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DT_DOCKER_FILE }}
+          image_tags: "unstable,${{ github.sha }}"
+  
+  build-backend:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+
+      - name: Build and publish the Docker image for ${{ github.repository }}
+        uses: ./.github/actions/build-and-push
+        with:
+          image_name: ${{ github.repository }}/ops-backend # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
+          image_tags: "unstable,${{ github.sha }}"
+
+  deploy-data-tools: 
+    needs: build-data-tools
+
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+    
+      - name: Deploy Container App
+        uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
+        with:
+          azureCredentials: ${{ secrets.AZURE_CREDS }}
+          containerAppName: opre-ops-${{ env.ENVIRONMENT }}-data-tools
+          resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+          imageToDeploy: ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+        
+  deploy-backend: 
+    needs: build-backend
+
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+   
+      - name: Deploy Container App
+        uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
+        with:
+            azureCredentials: ${{ secrets.AZURE_CREDS }}
+            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-backend
+            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ github.sha }}

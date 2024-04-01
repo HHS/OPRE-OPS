@@ -1,24 +1,18 @@
-// Temporary server for Azure Dev
-const BASE_PATH = "./";
+const express = require('express');
+const path = require('path');
 
-Bun.serve({
-    port: 3000,
-    async fetch(req) {
-        const url = new URL(req.url);
-        let filePath = BASE_PATH + url.pathname;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-        // If the request is for "/", serve the "index.html" file
-        if (url.pathname === "/") {
-            filePath = BASE_PATH + "/index.html";
-        }
+// Serve static files from the root directory
+app.use(express.static(path.join(__dirname, '/')));
 
-        const file = Bun.file(filePath);
-        return new Response(file);
-    },
-    error() {
-        // If error, route to index.html
-        let filePath = BASE_PATH + "/index.html";
-        const file = Bun.file(filePath);
-        return new Response(file);
-    }
+// Route all requests to index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
 });

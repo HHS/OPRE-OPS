@@ -1,9 +1,10 @@
 import pytest
+
 from models.workflows import (
     WorkflowAction,
     WorkflowInstance,
-    WorkflowStatus,
     WorkflowStepInstance,
+    WorkflowStepStatus,
     WorkflowStepTemplate,
     WorkflowStepType,
     WorkflowTemplate,
@@ -20,7 +21,7 @@ def test_workflow_instance_retrieve(auth_client, loaded_db):
     assert workflow_instance.associated_id == 1
     assert workflow_instance.workflow_template_id == 1
     assert workflow_instance.workflow_action == WorkflowAction.DRAFT_TO_PLANNED
-    assert workflow_instance.workflow_status == WorkflowStatus.APPROVED
+    assert workflow_instance.workflow_status == WorkflowStepStatus.APPROVED
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -30,7 +31,7 @@ def test_workflow_step_instance_retrieve(auth_client, loaded_db):
     assert workflow_step_instance is not None
     assert workflow_step_instance.workflow_instance_id == 1
     assert workflow_step_instance.workflow_step_template_id == 1
-    assert workflow_step_instance.status == WorkflowStatus.APPROVED
+    assert workflow_step_instance.status == WorkflowStepStatus.APPROVED
     assert workflow_step_instance.notes == "Need approved ASAP!"
     assert workflow_step_instance.time_started is not None
     assert workflow_step_instance.time_completed is not None

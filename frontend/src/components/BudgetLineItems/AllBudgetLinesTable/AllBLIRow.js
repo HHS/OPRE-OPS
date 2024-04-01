@@ -48,7 +48,6 @@ const AllBLIRow = ({
     const { isExpanded, setIsRowActive, isRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    console.log({ lockedMessage });
 
     const changeIcons = (
         <ChangeIcons

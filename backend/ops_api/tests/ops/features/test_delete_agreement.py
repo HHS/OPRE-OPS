@@ -2,6 +2,9 @@ import datetime
 from contextlib import suppress
 
 import pytest
+from pytest_bdd import given, scenario, then, when
+from sqlalchemy.orm.exc import StaleDataError
+
 from models import (
     AgreementType,
     BudgetLineItem,
@@ -9,45 +12,25 @@ from models import (
     ContractAgreement,
     ContractType,
     DirectAgreement,
-    Role,
     User,
 )
-from pytest_bdd import given, scenario, then, when
-from sqlalchemy.orm.exc import StaleDataError
 
 
-@pytest.fixture
-def not_admin_user(loaded_db):
-    user = loaded_db.get(User, 4)
-    user_role = loaded_db.get(Role, 2)
-    roles = user.roles
-    user.roles = [user_role]
-    loaded_db.add(user)
-    loaded_db.commit()
-    yield user
-
-    user.roles = roles
-    loaded_db.add(user)
-    loaded_db.commit()
+@given(
+    "I am logged in as an OPS user with the correct authorization",
+    target_fixture="client",
+)
+def client(auth_client):
+    # TODO: Authorization stuff
+    yield auth_client
 
 
-@pytest.fixture()
-def contract_agreement(loaded_db):
-    contract_agreement = ContractAgreement(
-        name="Feature Test Contract",
-        contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
-        agreement_type=AgreementType.CONTRACT,
-        project_id=1,
-        created_by=4,
-    )
-    loaded_db.add(contract_agreement)
-    loaded_db.commit()
-
-    yield contract_agreement
-
-    loaded_db.delete(contract_agreement)
-    loaded_db.commit()
+@given(
+    "I am logged in as an OPS user with the correct authorization but no perms",
+    target_fixture="client",
+)
+def no_perm_client(no_perms_auth_client):
+    yield no_perms_auth_client
 
 
 @pytest.fixture()
@@ -55,7 +38,7 @@ def contract_agreement_project_officer(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         created_by=1,
@@ -76,7 +59,7 @@ def contract_agreement_team_member(loaded_db):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         created_by=1,
@@ -96,13 +79,22 @@ def contract_agreement_team_member(loaded_db):
 
 @pytest.fixture()
 def contract_agreement_not_associated(loaded_db):
+    user = User(
+        email="blah@example.com",
+        first_name="blah",
+        last_name="blah",
+        division=1,
+    )
+    loaded_db.add(user)
+    loaded_db.commit()
+
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
-        created_by=1,
+        created_by=user.id,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -110,11 +102,23 @@ def contract_agreement_not_associated(loaded_db):
     yield contract_agreement
 
     loaded_db.delete(contract_agreement)
+    loaded_db.delete(user)
     loaded_db.commit()
 
 
 @pytest.fixture()
-def contract_with_draft_bli(loaded_db, contract_agreement):
+def contract_with_draft_bli(loaded_db):
+    contract_agreement = ContractAgreement(
+        name="Feature Test Contract",
+        contract_number="CT0999",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=1,
+        created_by=4,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
     draft_bli = BudgetLineItem(
         agreement_id=contract_agreement.id,
         comments="blah bleh bleh blah",
@@ -132,11 +136,23 @@ def contract_with_draft_bli(loaded_db, contract_agreement):
     yield contract_agreement
 
     loaded_db.delete(draft_bli)
+    loaded_db.delete(contract_agreement)
     loaded_db.commit()
 
 
 @pytest.fixture()
-def contract_with_planned_bli(loaded_db, contract_agreement):
+def contract_with_planned_bli(loaded_db):
+    contract_agreement = ContractAgreement(
+        name="Feature Test Contract",
+        contract_number="CT0999",
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        agreement_type=AgreementType.CONTRACT,
+        project_id=1,
+        created_by=4,
+    )
+    loaded_db.add(contract_agreement)
+    loaded_db.commit()
+
     planned_bli = BudgetLineItem(
         agreement_id=contract_agreement.id,
         comments="blah blah bleh blah",
@@ -154,6 +170,7 @@ def contract_with_planned_bli(loaded_db, contract_agreement):
     yield contract_agreement
 
     loaded_db.delete(planned_bli)
+    loaded_db.delete(contract_agreement)
     loaded_db.commit()
 
 
@@ -188,15 +205,6 @@ def test_contract_non_draft_bli():
 @scenario("delete_agreement.feature", "Non-Contract Agreement")
 def test_non_contract():
     pass
-
-
-@given(
-    "I am logged in as an OPS user with the correct authorization",
-    target_fixture="client",
-)
-def client(auth_client):
-    # TODO: Authorization stuff
-    yield auth_client
 
 
 @scenario("delete_agreement.feature", "Contract Agreement as Project Officer")
@@ -245,33 +253,30 @@ def not_associated(contract_agreement_not_associated):
 
 
 @when("I delete the agreement", target_fixture="submit_response")
-def delete_agreement(client, agreement, not_admin_user):
+def delete_agreement(client, agreement):
+    resp = client.delete(f"/api/v1/agreements/{agreement.id}")
+    return resp
+
+
+@when(
+    "I delete the agreement with a user that has no perms",
+    target_fixture="submit_response",
+)
+def delete_agreement_no_perms(client, agreement):
     resp = client.delete(f"/api/v1/agreements/{agreement.id}")
     return resp
 
 
 @then("I should get a message that it was successful")
 def delete_success(submit_response):
-    if submit_response.status_code != 200:
-        print("-" * 20)
-        print(submit_response.data)
-        print("-" * 20)
     assert submit_response.status_code == 200
 
 
 @then("I should get an error message that it's invalid")
 def delete_failure(submit_response):
-    if submit_response.status_code != 400:
-        print("-" * 20)
-        print(submit_response.data)
-        print("-" * 20)
     assert submit_response.status_code == 400
 
 
 @then("I should get an error message that I'm not authorized")
 def delete_failure_not_authorized(submit_response):
-    if submit_response.status_code != 401:
-        print("-" * 20)
-        print(submit_response.data)
-        print("-" * 20)
     assert submit_response.status_code == 401

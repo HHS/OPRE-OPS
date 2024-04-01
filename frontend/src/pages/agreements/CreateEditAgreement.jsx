@@ -1,20 +1,23 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useLocation } from "react-router-dom";
 import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
-import StepCreateBudgetLines from "../../components/UI/WizardSteps/StepCreateBudgetLines";
+import StepCreateBudgetLinesAndSCs from "../../components/BudgetLineItems/CreateBLIsAndSCs";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import useAlert from "../../hooks/use-alert.hooks";
 
 /**
  * Renders the Create Agreement flow, which consists of several steps.
+ * @component
  * @param {Object} props - The component props.
- * @param {Array<any>} props.existingBudgetLines - An array of existing budget lines.
+ * @param {Array<any>} props.budgetLines - An array of existing budget lines.
+ * @param {function} [props.setAgreementId] - A function to set the agreement ID.
  *
  * @returns {JSX.Element} - The rendered component.
  */
-export const CreateAgreement = ({ existingBudgetLines }) => {
+export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) => {
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
     const createAgreementContext = useEditAgreement();
@@ -42,30 +45,38 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
         selected_procurement_shop: selectedProcurementShop
     } = createAgreementContext;
 
+    React.useEffect(() => {
+        if (selectedAgreement) {
+            setAgreementId(selectedAgreement.id);
+        }
+    }, [selectedAgreement, setAgreementId]);
+
     return (
         <CreateAgreementFlow>
             <StepSelectProject
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
+                selectedAgreementId={selectedAgreement?.id}
             />
             <StepCreateAgreement
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
+                selectedAgreementId={selectedAgreement?.id}
             />
-            <StepCreateBudgetLines
+            <StepCreateBudgetLinesAndSCs
                 selectedResearchProject={selectedResearchProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
-                continueBtnText="Save Draft"
+                continueBtnText="Create Agreement"
                 continueOverRide={() =>
                     setAlert({
                         type: "success",
-                        heading: "Agreement draft saved",
-                        message: "The agreement has been successfully saved.",
+                        heading: "Agreement Created",
+                        message: `The agreement ${selectedAgreement?.name} has been successfully created.`,
                         redirectUrl: "/agreements"
                     })
                 }
-                existingBudgetLines={existingBudgetLines}
+                budgetLines={budgetLines}
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
                 workflow="agreement"
@@ -74,4 +85,8 @@ export const CreateAgreement = ({ existingBudgetLines }) => {
     );
 };
 
-export default CreateAgreement;
+CreateEditAgreement.propTypes = {
+    budgetLines: PropTypes.arrayOf(PropTypes.any),
+    setAgreementId: PropTypes.func
+};
+export default CreateEditAgreement;

@@ -1,0 +1,12 @@
+# Access Control
+## AC-02(10) - ACCOUNT MANAGEMENT | SHARED / GROUP ACCOUNT CREDENTIAL TERMINATION
+
+The information system terminates shared/group account credentials when members leave the group.
+
+AC-2 (10) Additional FedRAMP Requirements and Guidance: Required if shared/group accounts are deployed.
+
+### OPS Implementation
+
+Not applicable - there are no shared/group account credentials used in the OPS application.
+
+#### Related Files

@@ -1,0 +1,14 @@
+# Supply Chain Risk Management
+## SR-11 (1) - Component Authenticity | Anti-counterfeit Training
+
+Train [all System Engineers, ISSOs, System Owners and other System POCs as well as ACF defined roles ] to detect counterfeit system components (including hardware, software, and firmware).
+
+## OPS Implementation
+
+TODO: seek inherited text
+
+### Control Origination
+
+Inherited from OPRE
+
+### Related Content

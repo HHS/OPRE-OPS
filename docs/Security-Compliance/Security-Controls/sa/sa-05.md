@@ -1,0 +1,26 @@
+# System and Services Acquisition
+## SA-5 - System Documentation
+
+a. Obtain or develop administrator documentation for the system, system component, or system service that describes:<br />
+1. Secure configuration, installation, and operation of the system, component, or service; <br />
+2. Effective use and maintenance of security and privacy functions and mechanisms; and<br />
+3. Known vulnerabilities regarding configuration and use of administrative or privileged functions;
+
+b. Obtain or develop user documentation for the system, system component, or system service that describes:<br />
+1. User-accessible security and privacy functions and mechanisms and how to effectively use those functions and mechanisms;
+2. Methods for user interaction, which enables individuals to use the system, component, or service in a more secure manner and protect individual privacy; and<br />
+3. User responsibilities in maintaining the security of the system, component, or service and privacy of individuals;
+
+c. Document attempts to obtain system, system component, or system service documentation when such documentation is either unavailable or nonexistent and take [recreates selected information system documentation if such documentation is essential to the effective implementation and/or operation of security controls] in response; and
+
+d. Distribute documentation to [system/network administrators, end users (if appropriate), and other appropriate personnel as designated by the SO].
+
+## OPS Implementation
+
+TODO: Reference architecture and boundary diagram and where they're stored (GH)
+
+### Control Origination
+
+Hybrid with IaaS provider and OPS
+
+### Related Content

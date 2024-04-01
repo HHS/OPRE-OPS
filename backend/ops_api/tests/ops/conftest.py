@@ -1,4 +1,5 @@
 """Configuration for pytest tests."""
+
 import subprocess
 from collections.abc import Generator
 
@@ -7,18 +8,18 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import Flask
 from flask.testing import FlaskClient
-from models import OpsDBHistory, OpsEvent
-from ops_api.ops import create_app
 from pytest_docker.plugin import Services
 from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
-from tests.ops.auth_client import AuthClient
+
+from models import OpsDBHistory, OpsEvent
+from ops_api.ops import create_app
+from tests.ops.auth_client import AuthClient, NoPermsAuthClient
 
 
-@pytest.mark.usefixtures("db_service")
 @pytest.fixture()
-def app(db_service: Engine) -> Generator[Flask, None, None]:
+def app(db_service) -> Generator[Flask, None, None]:
     """Make and return the flask app."""
     app = create_app({"TESTING": True})
     yield app
@@ -41,6 +42,20 @@ def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = AuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def no_perms_auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
+    """Get the authenticated test client for flask."""
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    public_key = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
+    app.testing = True
+    app.test_client_class = NoPermsAuthClient
     return app.test_client()
 
 

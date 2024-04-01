@@ -1,10 +1,11 @@
 import datetime
 
 import pytest
-from models import CAN
-from models.cans import BudgetLineItem, BudgetLineItemStatus
-from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
 from sqlalchemy_continuum import parent_class, version_class
+
+from models import CAN
+from models.cans import BudgetLineItem, BudgetLineItemStatus, ServicesComponent
+from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -33,7 +34,7 @@ def test_budget_line_item_has_active_workflow(loaded_db):
 
 def test_budget_line_item_creation():
     bli = BudgetLineItem(
-        line_description="Grant Expendeture GA999",
+        line_description="Grant Expenditure GA999",
         agreement_id=1,
         can_id=1,
         amount=850450.00,
@@ -116,12 +117,14 @@ def test_post_budget_line_items(auth_client):
         status="DRAFT",
         date_needed="2043-01-01",
         proc_shop_fee_percentage=1.23,
+        services_component_id=1,
     )
     response = auth_client.post("/api/v1/budget-line-items/", json=data.__dict__)
     assert response.status_code == 201
     assert response.json["line_description"] == "LI 1"
     assert response.json["amount"] == 100.12
     assert response.json["status"] == "DRAFT"
+    assert response.json["services_component_id"] == 1
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -147,7 +150,6 @@ def test_post_budget_line_items_missing_agreement(auth_client):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
-        # agreement_id=1, # missing agreement number
         "can_id": 1,
         "amount": 100.12,
         "status": "DRAFT",
@@ -348,7 +350,7 @@ def test_put_budget_line_items(auth_client, test_bli):
     assert response.json["line_description"] == "Updated LI 1"
     assert response.json["id"] == test_bli.id
     assert response.json["comments"] == "hah hah"
-    assert response.json["agreement_id"] == 2
+    assert response.json["agreement_id"] == 1  # not allowed to change
     assert response.json["can_id"] == 2
     assert response.json["amount"] == 200.24
     assert response.json["status"] == "DRAFT"
@@ -496,6 +498,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items(auth_client, loaded_db):
+    # TODO: setting the services_component_id is not working on create
     bli = BudgetLineItem(
         id=1000,
         line_description="LI 1",
@@ -521,19 +524,21 @@ def test_patch_budget_line_items(auth_client, loaded_db):
             status="PLANNED",
             date_needed="2044-01-01",
             proc_shop_fee_percentage=2.34,
+            services_component_id=2,
         )
         response = auth_client.patch("/api/v1/budget-line-items/1000", json=data.__dict__)
         assert response.status_code == 200
         assert response.json["line_description"] == "Updated LI 1"
         assert response.json["id"] == 1000
         assert response.json["comments"] == "hah hah"
-        assert response.json["agreement_id"] == 2
+        assert response.json["agreement_id"] == 1  # not allowed to change
         assert response.json["can_id"] == 2
         assert response.json["amount"] == 200.24
         assert response.json["status"] == "DRAFT"
         assert response.json["date_needed"] == "2044-01-01"
         assert response.json["proc_shop_fee_percentage"] == 2.34
         assert response.json["created_on"] != response.json["updated_on"]
+        assert response.json["services_component_id"] == 2
 
     finally:
         # cleanup
@@ -649,10 +654,10 @@ def test_patch_budget_line_items_update_status(auth_client, loaded_db):
         loaded_db.add(bli)
         loaded_db.commit()
 
-        data = {"status": "UNDER_REVIEW"}
+        data = {"status": "PLANNED"}
         response = auth_client.patch("/api/v1/budget-line-items/1000", json=data)
         assert response.status_code == 200
-        assert response.json["status"] == "UNDER_REVIEW"
+        assert response.json["status"] == "PLANNED"
 
     finally:
         # cleanup
@@ -784,3 +789,63 @@ def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli):
     }
     response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
     assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_budget_line_items_with_null_date_needed(auth_client, test_bli):
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json={"date_needed": None})
+    assert response.status_code == 200
+    assert response.json["date_needed"] is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_valid_services_component(auth_client, app, test_bli):
+    session = app.db_session
+    sc = ServicesComponent(contract_agreement_id=6, number=1, optional=False)
+    session.add(sc)
+    session.commit()
+
+    assert sc.id is not None
+    new_sc_id = sc.id
+    assert sc.contract_agreement_id == 6
+
+    data = {"services_component_id": new_sc_id}
+
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
+    assert response.status_code == 400
+    assert response.json
+    assert response.json == {"_schema": ["The Services Component must belong to the same Agreement as the BLI"]}
+
+    sc.contract_agreement_id = 1
+    session.add(sc)
+    session.commit()
+
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
+    assert response.status_code == 200
+
+    session.delete(sc)
+    session.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_delete_budget_line_items(auth_client, loaded_db):
+    bli = BudgetLineItem(
+        line_description="LI 1",
+        agreement_id=1,
+        can_id=1,
+        amount=100.12,
+        status=BudgetLineItemStatus.DRAFT,
+        created_by=1,
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    assert bli.id is not None
+    new_bli_id = bli.id
+
+    response = auth_client.delete(f"/api/v1/budget-line-items/{new_bli_id}")
+    assert response.status_code == 200
+
+    sc: BudgetLineItem = loaded_db.get(BudgetLineItem, new_bli_id)
+    assert not sc

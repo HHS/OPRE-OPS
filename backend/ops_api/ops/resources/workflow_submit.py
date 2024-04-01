@@ -1,26 +1,29 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 
+import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
-from marshmallow import Schema, fields
+from marshmallow import EXCLUDE, Schema, fields
+from typing_extensions import override
+
 from models.base import BaseModel
-from models.cans import BudgetLineItem
+from models.cans import BudgetLineItem, BudgetLineItemStatus
 from models.notifications import Notification
 from models.workflows import (
     Package,
     PackageSnapshot,
     WorkflowAction,
     WorkflowInstance,
-    WorkflowStatus,
     WorkflowStepInstance,
+    WorkflowStepStatus,
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
+from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
-from typing_extensions import override
 
 ENDPOINT_STRING = "/workflow-submit"
 
@@ -51,7 +54,13 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         budget_line_item_ids = request.json.get("budget_line_item_ids", [])
         submission_notes = request.json.get("notes")
         # Capture the use-case for this package (DRAFT_TO_PLANNED or PLANNED_TO_EXECUTED)
-        workflow_action = request.json.get("workflow_action")
+        requested_workflow_action = request.json.get("workflow_action")
+        workflow_action = WorkflowAction[requested_workflow_action]
+        target_bli_status = (
+            BudgetLineItemStatus.PLANNED
+            if workflow_action == WorkflowAction.DRAFT_TO_PLANNED
+            else BudgetLineItemStatus.IN_EXECUTION if workflow_action == WorkflowAction.PLANNED_TO_EXECUTING else None
+        )
         # Create new Package
         new_package = Package()
 
@@ -60,7 +69,6 @@ class WorkflowSubmisionListApi(BaseItemAPI):
 
         token = verify_jwt_in_request()
         user = get_user_from_token(token[1])
-        new_package.created_by = user.id
         new_package.submitter_id = user.id
         new_package.notes = submission_notes
         agreement_id = None
@@ -70,6 +78,8 @@ class WorkflowSubmisionListApi(BaseItemAPI):
             bli = current_app.db_session.get(BudgetLineItem, bli_id)
 
             if bli:
+                pending_changes = {"status": target_bli_status.name}
+                validate_bli(bli, pending_changes)
                 agreement_id = bli.agreement_id
                 new_package.package_snapshots.append(
                     PackageSnapshot(
@@ -83,8 +93,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         # WIP: Create WorkflowInstance and WorkflowStepInstance
         workflow_instance = WorkflowInstance()
         workflow_instance.workflow_template_id = 1  # We know this is a basic approval template
-        workflow_instance.created_by = user.id
-        workflow_instance.workflow_action = WorkflowAction[workflow_action]
+        workflow_instance.workflow_action = workflow_action
 
         #  In order to know which workflow to follow, ie: who to send the approval request to,
         #  we need to know which CAN the BLIs are associated with. This is the associated_id,
@@ -96,9 +105,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
 
         workflow_step_instance = WorkflowStepInstance(
             workflow_step_template_id=2,
-            status=WorkflowStatus.REVIEW,
-            notes=submission_notes,
-            created_by=user.id,
+            status=WorkflowStepStatus.REVIEW,
             time_started=datetime.now(),
             successor_dependencies=[],
             predecessor_dependencies=[],
@@ -110,9 +117,12 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         # WIP: commit our new workflow instance
         current_app.db_session.add(workflow_instance)
         current_app.db_session.commit()
+        workflow_instance.current_workflow_step_instance_id = workflow_step_instance.id
+        current_app.db_session.add(workflow_instance)
+        current_app.db_session.commit()
 
         # updated the current step in the bli package to the first step in the workflow
-        new_package.workflow_id = workflow_instance.id
+        new_package.workflow_instance_id = workflow_instance.id
 
         # commit our new bli package
         current_app.db_session.add(new_package)
@@ -121,16 +131,56 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         new_package_dict = new_package.to_dict()
         current_app.logger.info(f"POST to {ENDPOINT_STRING}: New Bli Package created: {new_package_dict}")
 
-        # Create a notification for the approvers
+        create_notification_for_division_directors(agreement_id, workflow_step_instance, budget_line_item_ids)
+
+        return make_response_with_headers({"message": "Bli Package created", "id": new_package.id}, 201)
+
+
+def validate_bli(bli: BudgetLineItem, pending_changes: dict):
+    if bli is None:
+        raise ValueError("bli is a required argument")
+    schema = mmdc.class_schema(PATCHRequestBody)()
+    schema.context["id"] = bli.id
+    schema.context["method"] = "PATCH"
+    # validate
+    schema.dump(schema.load(pending_changes, unknown=EXCLUDE))
+    return
+
+
+def create_notification_for_division_directors(agreement_id, workflow_step_instance, budget_line_item_ids):
+    # TODO: get division director IDs
+    # There's currently no data in division.division_director_id
+    #
+    # SQL test query
+    # select distinct division.division_director_id
+    # from ops.budget_line_item
+    # join ops.can on budget_line_item.can_id = can.id
+    # join ops.portfolio on can.managing_portfolio_id = portfolio.id
+    # join ops.division on portfolio.division_id = division.id
+    # where budget_line_item.id in (1,2)
+    #
+    # import sqlalchemy as sa
+    # from models import Division, Portfolio
+    # from models.cans import CAN
+    # results = current_app.db_session.execute(
+    #     sa.select(Division.division_director_id)
+    #     .join(Portfolio, Division.id == Portfolio.division_id)
+    #     .join(CAN, Portfolio.can_id == CAN.id)
+    #     .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
+    #     .where(BudgetLineItem.in_(budget_line_item_ids))
+    # ).all()
+    division_director_ids = [21, 23]
+    fe_url = current_app.config.get("OPS_FRONTEND_URL")
+    approve_url = f"{fe_url}/agreements/approve/{agreement_id}?stepId={workflow_step_instance.id}"
+    for division_director_id in division_director_ids:
         notification = Notification(
             title="Approval Request",
-            message=f"""An Agreement Approval Request has been submitted.
-Please review and approve. LINK to Agreement: {agreement_id}""",
+            # NOTE: approve_url only renders as plain text in default react-markdown
+            message=f"An Agreement Approval Request has been submitted. "
+            f"Please review and approve. \n\\\n\\[Link]({approve_url})",
             is_read=False,
-            recipient_id=23,
+            recipient_id=division_director_id,
             expires=date(2031, 12, 31),
         )
         current_app.db_session.add(notification)
-        current_app.db_session.commit()
-
-        return make_response_with_headers({"message": "Bli Package created", "id": new_package.id}, 201)
+    current_app.db_session.commit()

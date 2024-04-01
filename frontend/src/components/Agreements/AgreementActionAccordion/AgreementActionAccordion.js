@@ -19,7 +19,7 @@ const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, option
         >
             <fieldset className="usa-fieldset">
                 <legend className="usa-legend maxw-full margin-bottom-2 margin-top-0">
-                    Choose which action you’d like to initiate and then select the budget lines below.
+                    Choose which action you&apos;d like to initiate and then select the budget lines below.
                 </legend>
                 <div className="grid-row grid-gap">
                     <div className="grid-col">

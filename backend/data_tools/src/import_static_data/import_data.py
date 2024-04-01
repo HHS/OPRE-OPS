@@ -65,6 +65,14 @@ ALLOWED_TABLES = [
     "vendor",
     "contact",
     "vendor_contacts",
+    "clin",
+    "services_component",
+    "procurement_step",
+    "procurement_acquisition_planning",
+    "procurement_pre_solicitation",
+    "procurement_solicitation",
+    "procurement_award"
+
 ]
 
 data = os.getenv("DATA")
@@ -118,6 +126,7 @@ def load_new_data(
         logging.debug(f"Loading {name}...")
         model = BaseModel.model_lookup_by_table_name(name)
         if model:
+            seq_needs_reset = False
             for datum in data_items:
                 # values of type list[dict] are associations
                 data_without_associations = {
@@ -133,10 +142,17 @@ def load_new_data(
                     and all([isinstance(obj, dict) for obj in value])
                 }
                 with Session(conn) as session:
+                    if "id" in data_without_associations:
+                        seq_needs_reset = True
                     obj = model(**data_without_associations)
                     session.add(obj)
                     session.commit()
                     insert_associated_data(data_with_associations, obj, session)
+            if seq_needs_reset:
+                print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
+                stmt = (f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), coalesce(max(id),0) + 1, false) "
+                        f"FROM ops.services_component;")
+                session.execute(text(stmt))
 
 
 def insert_associated_data(data_with_associations, obj, session):

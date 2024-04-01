@@ -1,10 +1,11 @@
 from flask import Response, current_app, request
+from sqlalchemy import select
+from typing_extensions import override
+
 from models.base import BaseModel
 from ops_api.ops.base_views import BaseListAPI, handle_api_error
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
-from sqlalchemy import select
-from typing_extensions import override
 
 
 class OpsDBHistoryListAPI(BaseListAPI):

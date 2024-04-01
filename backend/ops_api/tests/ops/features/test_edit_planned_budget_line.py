@@ -2,6 +2,8 @@ import datetime
 from dataclasses import fields
 
 import pytest
+from pytest_bdd import given, scenario, then, when
+
 from models import (
     AgreementReason,
     AgreementType,
@@ -9,12 +11,9 @@ from models import (
     BudgetLineItemStatus,
     ContractAgreement,
     ContractType,
-    Group,
-    Role,
     User,
 )
-from ops_api.ops.resources.budget_line_item_schemas import RequestBody
-from pytest_bdd import given, scenario, then, when
+from ops_api.ops.schemas.budget_line_items import RequestBody
 
 
 @pytest.fixture
@@ -22,7 +21,7 @@ def original_agreement():
     return {
         "name": "CTXX12399",
         "contract_number": "CT0002",
-        "contract_type": ContractType.RESEARCH,
+        "contract_type": ContractType.FIRM_FIXED_PRICE,
         "agreement_type": AgreementType.CONTRACT,
         "project_id": 1,
         "product_service_code_id": 2,
@@ -34,86 +33,44 @@ def original_agreement():
     }
 
 
-@pytest.fixture
-def not_admin_user(loaded_db):
-    user = loaded_db.get(User, 4)
-    user_role = loaded_db.get(Role, 2)
-    roles = user.roles
-    user.roles = [user_role]
-    loaded_db.add(user)
-    loaded_db.commit()
-    yield user
-
-    user.roles = roles
-    loaded_db.add(user)
-    loaded_db.commit()
-
-
-@pytest.fixture
-def not_budget_team(loaded_db, not_admin_user):
-    user = not_admin_user
-    groups = user.groups
-    user.groups = []
-    loaded_db.add(user)
-    loaded_db.commit()
-    yield user
-
-    user.groups = groups
-    loaded_db.add(user)
-    loaded_db.commit()
-
-
-@pytest.fixture
-def in_budget_team(loaded_db, not_admin_user):
-    user = not_admin_user
-    budget_team = loaded_db.get(Group, 1)
-    groups = user.groups
-    user.groups = [budget_team]
-    loaded_db.add(user)
-    loaded_db.commit()
-
-    yield user
-
-    user.groups = groups
-    loaded_db.add(user)
-    loaded_db.commit()
-
-
-@scenario("edit_planned_budget_line.feature", "Successful Edit as Owner")
-def test_edit_planned_budget_line_owner():
-    ...
-
-
-@scenario("edit_planned_budget_line.feature", "Successful Edit as Project Officer")
-def test_edit_planned_budget_line_project_officer():
-    ...
-
-
-@scenario("edit_planned_budget_line.feature", "Successful Edit as a Team Member")
-def test_edit_planned_budget_line_team_member():
-    ...
-
-
-@scenario("edit_planned_budget_line.feature", "Successful Edit as a member of the Budget Team")
-def test_edit_planned_budget_line_budget_team():
-    ...
-
-
-@scenario("edit_planned_budget_line.feature", "Unsuccessful Edit")
-def test_edit_planned_budget_line_unauthorized():
-    ...
-
-
 @given("I am logged in as an OPS user")
 def client(auth_client):
     yield auth_client
 
 
 @given(
+    "I am logged in as an OPS user with the correct authorization but no perms",
+    target_fixture="client",
+)
+def no_perms_client(no_perms_auth_client):
+    yield no_perms_auth_client
+
+
+@scenario("edit_planned_budget_line.feature", "Successful Edit as Owner")
+def test_edit_planned_budget_line_owner(): ...
+
+
+@scenario("edit_planned_budget_line.feature", "Successful Edit as Project Officer")
+def test_edit_planned_budget_line_project_officer(): ...
+
+
+@scenario("edit_planned_budget_line.feature", "Successful Edit as a Team Member")
+def test_edit_planned_budget_line_team_member(): ...
+
+
+@scenario("edit_planned_budget_line.feature", "Successful Edit as a member of the Budget Team")
+def test_edit_planned_budget_line_budget_team(): ...
+
+
+@scenario("edit_planned_budget_line.feature", "Unsuccessful Edit")
+def test_edit_planned_budget_line_unauthorized(): ...
+
+
+@given(
     "I have a Contract Agreement as the original Agreement owner",
     target_fixture="agreement",
 )
-def agreement_owner(loaded_db, original_agreement, not_budget_team):
+def agreement_owner(loaded_db, original_agreement):
     original_agreement["created_by"] = 4
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
@@ -126,7 +83,7 @@ def agreement_owner(loaded_db, original_agreement, not_budget_team):
 
 
 @given("I have a Contract Agreement as the Project Officer", target_fixture="agreement")
-def agreement_project_officer(loaded_db, original_agreement, not_budget_team):
+def agreement_project_officer(loaded_db, original_agreement):
     original_agreement["project_officer_id"] = 4
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
@@ -139,7 +96,7 @@ def agreement_project_officer(loaded_db, original_agreement, not_budget_team):
 
 
 @given("I have a Contract Agreement as a Team Member", target_fixture="agreement")
-def agreement_team_member(loaded_db, original_agreement, not_budget_team):
+def agreement_team_member(loaded_db, original_agreement):
     user = loaded_db.get(User, 4)
     contract_agreement = ContractAgreement(**original_agreement)
     contract_agreement.team_members = [user]
@@ -156,7 +113,7 @@ def agreement_team_member(loaded_db, original_agreement, not_budget_team):
     "I have a Contract Agreement as a member of the Budget Team",
     target_fixture="agreement",
 )
-def agreement_budget_team(loaded_db, original_agreement, in_budget_team):
+def agreement_budget_team(loaded_db, original_agreement):
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -168,7 +125,7 @@ def agreement_budget_team(loaded_db, original_agreement, in_budget_team):
 
 
 @given("I have a Contract Agreement as an unauthorized user", target_fixture="agreement")
-def agreement_unauthorized(loaded_db, original_agreement, not_budget_team):
+def agreement_unauthorized(loaded_db, original_agreement):
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -217,17 +174,9 @@ def submit(client, edited_bli):
 
 @then("I should get an error that I am not authorized")
 def invalid(submit_response):
-    if submit_response.status_code != 401:
-        print("-" * 20)
-        print(submit_response.data)
-        print("-" * 20)
     assert submit_response.status_code == 401
 
 
 @then("I should get a message that it was successful")
 def success(submit_response):
-    if submit_response.status_code != 200:
-        print("-" * 20)
-        print(submit_response.data)
-        print("-" * 20)
     assert submit_response.status_code == 200

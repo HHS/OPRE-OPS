@@ -10,10 +10,11 @@ from data_tools.environment.local import LocalConfig
 from data_tools.environment.local_migration import LocalMigrationConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.test import TestConfig
-from models import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import configure_mappers
+
+from models import BaseModel
 
 configure_mappers()
 
