@@ -7,7 +7,7 @@ import CreateBudgetLinesForm from "../BudgetLinesForm";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import ServicesComponents from "../../ServicesComponents";
-import useCreateBLIsAndSCs from "./createBLIsAndSCs.hooks";
+import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import ServicesComponentAccordion from "../../ServicesComponents/ServicesComponentAccordion";
 import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";

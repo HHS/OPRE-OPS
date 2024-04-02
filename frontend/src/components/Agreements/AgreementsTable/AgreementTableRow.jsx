@@ -3,16 +3,13 @@ import { Link, useSearchParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import {
-    convertCodeForDisplay,
-    statusToClassName,
-    totalBudgetLineAmountPlusFees,
-    totalBudgetLineFeeAmount
-} from "../../../helpers/utils";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
+import Tag from "../../UI/Tag";
+import TextClip from "../../UI/Text/TextClip";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsUserAllowedToEditAgreement, useIsAgreementEditable } from "../../../hooks/agreement.hooks";
 import {
@@ -21,6 +18,12 @@ import {
     useHandleEditAgreement,
     useHandleDeleteAgreement
 } from "./agreements-table.hooks";
+import {
+    convertCodeForDisplay,
+    statusToClassName,
+    totalBudgetLineAmountPlusFees,
+    totalBudgetLineFeeAmount
+} from "../../../helpers/utils";
 import {
     getAgreementName,
     getResearchProjectName,
@@ -36,9 +39,6 @@ import {
     hasActiveWorkflow
 } from "./AgreementsTable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import TextClip from "../../UI/Text/TextClip";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import Tag from "../../UI/Tag";
 
 /**
  * Renders a row in the agreements table.
@@ -179,10 +179,11 @@ export const AgreementTableRow = ({ agreement }) => {
     /**
      * A component that displays the status with its counts
      *
+     * @component
      * @param {object} props - The props object containing the following properties:
      * @param {string} props.status - The BLI status.
      * @param {number} props.count - The count of BLI with the status.
-     * @returns {React.JSX.Element} A React component that displays a legend item.
+     * @returns {JSX.Element} A React component that displays a legend item.
      */
     const StatusCountItem = ({ status, count }) => {
         const label = convertCodeForDisplay("budgetLineStatus", status);

@@ -16,7 +16,8 @@ import {
 
 /**
  * Page for the Budget Line Item List.
- * @returns {React.JSX.Element} - The component JSX.
+ * @component
+ * @returns {JSX.Element} - The component JSX.
  */
 export const BudgetLineItemList = () => {
     const {

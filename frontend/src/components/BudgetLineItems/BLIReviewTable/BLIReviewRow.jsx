@@ -1,30 +1,28 @@
 import PropTypes from "prop-types";
-import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { futureDateErrorClass, addErrorClassIfNotFound } from "../BudgetLinesTable/BLIRow.helpers";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
-import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
-import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import Tooltip from "../../UI/USWDS/Tooltip";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
+ * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
@@ -32,29 +30,28 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
  * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
- * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
- * @returns {React.JSX.Element} The BLIRow component.
+ * @param {Function} [props.setSelectedBLIs] - The function to set the selected budget line items.
+ * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIRow = ({
+const BLIReviewRow = ({
     budgetLine,
     isReviewMode = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
-    isBLIInCurrentWorkflow = false
+    setSelectedBLIs
 }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const servicesComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id ?? "TBD");
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
-    const location = useLocation();
+
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -68,29 +65,38 @@ const BLIRow = ({
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    // are you on the approve page?
-    const isApprovePage = location.pathname.includes("approve");
-    const isBLIInAnyActiveWorkflow = budgetLine?.has_active_workflow || false;
-    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const inReview = isBLIInAnyActiveWorkflow;
+    let toolTipMsg = "";
+    if (!budgetLine?.actionable) {
+        toolTipMsg = "This budget line is not selectable";
+    }
 
     const TableRowData = (
         <>
             <th
                 scope="row"
-                className={`${addErrorClassIfNotFound(budgetLine?.display_name, isReviewMode)} ${borderExpandedStyles}`}
+                className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {isApprovePageAndBLIIsNotInPacket ? (
-                    <Tooltip
-                        label="This budget line was not sent for approval"
-                        position="right"
-                    >
-                        <span>{servicesComponentName}</span>
-                    </Tooltip>
-                ) : (
-                    servicesComponentName
-                )}
+                <input
+                    className="usa-checkbox__input"
+                    id={budgetLine?.id}
+                    type="checkbox"
+                    name="budget-line-checkbox"
+                    value={budgetLine?.id}
+                    onChange={(e) => {
+                        setSelectedBLIs(e.target.value);
+                    }}
+                    disabled={!budgetLine.actionable}
+                    checked={budgetLine?.selected}
+                />
+                <label
+                    className="usa-checkbox__label usa-tool-tip"
+                    htmlFor={budgetLine?.id}
+                    data-position="top"
+                    title={toolTipMsg}
+                >
+                    {budgetLine?.id}
+                </label>
             </th>
             <td
                 className={`${futureDateErrorClass(
@@ -168,8 +174,8 @@ const BLIRow = ({
                     <div>{changeIcons}</div>
                 ) : (
                     <TableTag
-                        inReview={inReview}
                         status={budgetLine?.status}
+                        inReview={budgetLine?.has_active_workflow}
                     />
                 )}
             </td>
@@ -223,20 +229,20 @@ const BLIRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
+            className={`${!budgetLine.actionable ? "text-gray-50" : ""}`}
         />
     );
 };
 
-BLIRow.propTypes = {
+BLIReviewRow.propTypes = {
     budgetLine: PropTypes.object.isRequired,
     canUserEditBudgetLines: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
-    isBLIInCurrentWorkflow: PropTypes.bool
+    setSelectedBLIs: PropTypes.func,
+    readOnly: PropTypes.bool
 };
 
-export default BLIRow;
+export default BLIReviewRow;
