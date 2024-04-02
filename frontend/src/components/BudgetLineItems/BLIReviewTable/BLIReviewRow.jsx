@@ -22,6 +22,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
+ * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
@@ -30,7 +31,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
  * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
  * @param {Function} [props.setSelectedBLIs] - The function to set the selected budget line items.
- * @returns {React.JSX.Element} The BLIRow component.
+ * @returns {JSX.Element} The BLIRow component.
  **/
 const BLIReviewRow = ({
     budgetLine,

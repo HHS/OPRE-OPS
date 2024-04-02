@@ -8,6 +8,7 @@ import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * This component displays the edit, delete, and duplicate icons for a budget line.
+ * @component
  * @param {object} props - The component props.
  * @param {Object} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
@@ -21,7 +22,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {function} [props.handleSubmitItemForApproval] - The function to submit the item for approval.
  * @param {boolean} [props.goToApproveIcon] - Whether to show the go-to-approve icon.
  * @param {function} [props.handleGoToApprove] - The function to navigate to approve the item
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  **/
 
 const ChangeIcons = ({

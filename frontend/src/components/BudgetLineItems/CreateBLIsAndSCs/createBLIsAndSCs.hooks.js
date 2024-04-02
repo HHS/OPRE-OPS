@@ -163,7 +163,7 @@ const useCreateBLIsAndSCs = (
         const budgetLineDisplayName = budgetLine?.id;
         setShowModal(true);
         setModalProps({
-            heading: `Are you sure you want to delete the budget line ${budgetLineDisplayName}?`,
+            heading: `Are you sure you want to delete budget line ${budgetLineDisplayName}?`,
             actionButtonText: "Delete",
             handleConfirm: () => {
                 deleteBudgetLineItem(budgetLineId)
@@ -173,7 +173,7 @@ const useCreateBLIsAndSCs = (
                         setAlert({
                             type: "success",
                             heading: "Budget Line Deleted",
-                            message: `The budget line ${budgetLineDisplayName} has been successfully deleted.`
+                            message: `Budget line ${budgetLineDisplayName} has been successfully deleted.`
                         });
                     })
                     .catch((rejected) => {

@@ -6,6 +6,8 @@ import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
 import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
+import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 
 /**
  * TableRow component that represents a single row in the budget lines table.
@@ -19,17 +21,25 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
     const [currentPage, setCurrentPage] = useState(1);
     let budgetLinesPage = _.cloneDeep(budgetLines);
     budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
+    const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(budgetLines);
 
     return (
         <>
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
                 {budgetLinesPage.map((budgetLine) => (
                     <AllBLIRow
                         key={budgetLine?.id}
                         budgetLine={budgetLine}
-                        handleDeleteBudgetLine={() => {
-                            alert("not implemented");
-                        }}
+                        handleDeleteBudgetLine={handleDeleteBudgetLine}
                         handleSetBudgetLineForEditing={() => {
                             navigate(
                                 `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}`
