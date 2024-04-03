@@ -8,7 +8,7 @@ import suite from "./suite";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
-import DatePicker from "../../UI/USWDS/DatePicker";
+import { DatePicker } from "@metrostar/comet-uswds";
 
 /**
  * A form for creating or editing a budget line.
@@ -122,7 +122,26 @@ export const CreateBudgetLinesForm = ({
                 </div>
             </div>
             <div className="grid-col-4">
-                <DatePicker />
+                <div className="usa-form-group">
+                    <label
+                        className="usa-label"
+                        htmlFor="date-picker-1"
+                        id="appointment-date-label"
+                    >
+                        Appointment date
+                    </label>
+                    <div
+                        className="usa-hint"
+                        id="appointment-date-hint"
+                    >
+                        mm/dd/yyyy
+                    </div>
+                    <DatePicker
+                        aria-describedby="appointment-date-label appointment-date-hint"
+                        id="date-picker-1"
+                        name="date-picker-1"
+                    />
+                </div>
                 {/* <DesiredAwardDate
                     enteredMonth={enteredMonth}
                     setEnteredMonth={setEnteredMonth}
