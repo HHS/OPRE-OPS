@@ -39,7 +39,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
    
       - name: Deploy Container App
-        uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
+        uses: azure/container-apps-deploy-action@02d045129c058b13312276b50a552834cf74e2af # v2
         with:
             azureCredentials: ${{ secrets.AZURE_CREDS }}
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
