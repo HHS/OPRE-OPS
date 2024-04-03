@@ -9,7 +9,10 @@ TEST_CREATED_BY = 3
 
 
 @pytest.fixture()
-def test_acquisition_planning(loaded_db):
+def test_acquisition_planning(app, loaded_db):
+    # Needed to set the new user's created_by and updated_by fields
+    app.config["SKIP_SETTING_CREATED_BY"] = True
+
     acquisition_planning = AcquisitionPlanning()
     acquisition_planning.agreement_id = TEST_AGREEMENT_ID
     acquisition_planning.created_by = TEST_CREATED_BY
@@ -23,7 +26,10 @@ def test_acquisition_planning(loaded_db):
 
 
 @pytest.fixture()
-def test_pre_solicitation(loaded_db):
+def test_pre_solicitation(app, loaded_db):
+    # Needed to set the new user's created_by and updated_by fields
+    app.config["SKIP_SETTING_CREATED_BY"] = True
+
     pre_solicitation = PreSolicitation()
     pre_solicitation.agreement_id = TEST_AGREEMENT_ID
     pre_solicitation.created_by = TEST_CREATED_BY
@@ -37,7 +43,10 @@ def test_pre_solicitation(loaded_db):
 
 
 @pytest.fixture()
-def test_solicitation(loaded_db):
+def test_solicitation(app, loaded_db):
+    # Needed to set the new user's created_by and updated_by fields
+    app.config["SKIP_SETTING_CREATED_BY"] = True
+
     solicitation = Solicitation()
     solicitation.agreement_id = TEST_AGREEMENT_ID
     solicitation.created_by = TEST_CREATED_BY
@@ -52,7 +61,10 @@ def test_solicitation(loaded_db):
 
 
 @pytest.fixture()
-def test_evaluation(loaded_db):
+def test_evaluation(app, loaded_db):
+    # Needed to set the new user's created_by and updated_by fields
+    app.config["SKIP_SETTING_CREATED_BY"] = True
+
     evaluation = Evaluation()
     evaluation.agreement_id = TEST_AGREEMENT_ID
     evaluation.created_by = TEST_CREATED_BY
@@ -67,7 +79,10 @@ def test_evaluation(loaded_db):
 
 
 @pytest.fixture()
-def test_pre_award(loaded_db):
+def test_pre_award(app, loaded_db):
+    # Needed to set the new user's created_by and updated_by fields
+    app.config["SKIP_SETTING_CREATED_BY"] = True
+
     pre_award = PreAward()
     pre_award.agreement_id = TEST_AGREEMENT_ID
     pre_award.created_by = TEST_CREATED_BY
@@ -82,7 +97,10 @@ def test_pre_award(loaded_db):
 
 
 @pytest.fixture()
-def test_award(loaded_db):
+def test_award(app, loaded_db):
+    # Needed to set the new user's created_by and updated_by fields
+    app.config["SKIP_SETTING_CREATED_BY"] = True
+
     award = Award()
     award.agreement_id = TEST_AGREEMENT_ID
     award.created_by = TEST_CREATED_BY
@@ -144,7 +162,15 @@ def test_acquisition_planning_get_by_id(auth_client, loaded_db, test_acquisition
     ]
     for key in keys:
         assert key in resp_json
-        if key in ["id", "agreement_id", "created_by", "created_on", "display_name", "type", "updated_on"]:
+        if key in [
+            "id",
+            "agreement_id",
+            "created_by",
+            "created_on",
+            "display_name",
+            "type",
+            "updated_on",
+        ]:
             assert resp_json[key]
         else:
             assert not resp_json[key]
@@ -157,7 +183,8 @@ def test_acquisition_planning_patch_by_id(auth_client, loaded_db, test_acquisiti
 
     patch_data = {"actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
     response = auth_client.patch(
-        url_for("api.procurement-acquisition-planning-item", id=test_acquisition_planning.id), json=patch_data
+        url_for("api.procurement-acquisition-planning-item", id=test_acquisition_planning.id),
+        json=patch_data,
     )
     assert response.status_code == 200
     resp_json = response.json
@@ -195,7 +222,14 @@ def test_pre_solicitation_get_by_id(auth_client, loaded_db, test_pre_solicitatio
     ]
     for key in keys:
         assert key in resp_json
-        if key in ["id", "agreement_id", "created_by", "display_name", "type", "updated_on"]:
+        if key in [
+            "id",
+            "agreement_id",
+            "created_by",
+            "display_name",
+            "type",
+            "updated_on",
+        ]:
             assert resp_json[key]
         else:
             assert not resp_json[key]
@@ -207,9 +241,15 @@ def test_pre_solicitation_get_by_id(auth_client, loaded_db, test_pre_solicitatio
 def test_pre_solicitation_patch_by_id(auth_client, loaded_db, test_pre_solicitation):
     assert test_pre_solicitation.id is not None
 
-    patch_data = {"target_date": "2024-10-01", "actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
+    patch_data = {
+        "target_date": "2024-10-01",
+        "actual_date": "2024-10-15",
+        "is_complete": True,
+        "completed_by": 5,
+    }
     response = auth_client.patch(
-        url_for("api.procurement-pre-solicitation-item", id=test_pre_solicitation.id), json=patch_data
+        url_for("api.procurement-pre-solicitation-item", id=test_pre_solicitation.id),
+        json=patch_data,
     )
     assert response.status_code == 200
     resp_json = response.json
@@ -248,7 +288,14 @@ def test_solicitation_get_by_id(auth_client, loaded_db, test_solicitation):
     ]
     for key in keys:
         assert key in resp_json
-        if key in ["id", "agreement_id", "created_by", "display_name", "type", "updated_on"]:
+        if key in [
+            "id",
+            "agreement_id",
+            "created_by",
+            "display_name",
+            "type",
+            "updated_on",
+        ]:
             assert resp_json[key]
         else:
             assert not resp_json[key]
@@ -260,8 +307,16 @@ def test_solicitation_get_by_id(auth_client, loaded_db, test_solicitation):
 def test_solicitation_patch_by_id(auth_client, loaded_db, test_solicitation):
     assert test_solicitation.id is not None
 
-    patch_data = {"target_date": "2024-10-01", "actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
-    response = auth_client.patch(url_for("api.procurement-solicitation-item", id=test_solicitation.id), json=patch_data)
+    patch_data = {
+        "target_date": "2024-10-01",
+        "actual_date": "2024-10-15",
+        "is_complete": True,
+        "completed_by": 5,
+    }
+    response = auth_client.patch(
+        url_for("api.procurement-solicitation-item", id=test_solicitation.id),
+        json=patch_data,
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert "id" in resp_json
@@ -299,7 +354,14 @@ def test_evaluation_get_by_id(auth_client, loaded_db, test_evaluation):
     ]
     for key in keys:
         assert key in resp_json
-        if key in ["id", "agreement_id", "created_by", "display_name", "type", "updated_on"]:
+        if key in [
+            "id",
+            "agreement_id",
+            "created_by",
+            "display_name",
+            "type",
+            "updated_on",
+        ]:
             assert resp_json[key]
         else:
             assert not resp_json[key]
@@ -311,8 +373,16 @@ def test_evaluation_get_by_id(auth_client, loaded_db, test_evaluation):
 def test_evaluation_patch_by_id(auth_client, loaded_db, test_evaluation):
     assert test_evaluation.id is not None
 
-    patch_data = {"target_date": "2024-10-01", "actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
-    response = auth_client.patch(url_for("api.procurement-evaluation-item", id=test_evaluation.id), json=patch_data)
+    patch_data = {
+        "target_date": "2024-10-01",
+        "actual_date": "2024-10-15",
+        "is_complete": True,
+        "completed_by": 5,
+    }
+    response = auth_client.patch(
+        url_for("api.procurement-evaluation-item", id=test_evaluation.id),
+        json=patch_data,
+    )
     assert response.status_code == 200
     resp_json = response.json
     assert "id" in resp_json
@@ -350,7 +420,14 @@ def test_pre_award_get_by_id(auth_client, loaded_db, test_pre_award):
     ]
     for key in keys:
         assert key in resp_json
-        if key in ["id", "agreement_id", "created_by", "display_name", "type", "updated_on"]:
+        if key in [
+            "id",
+            "agreement_id",
+            "created_by",
+            "display_name",
+            "type",
+            "updated_on",
+        ]:
             assert resp_json[key]
         else:
             assert not resp_json[key]
@@ -360,7 +437,12 @@ def test_pre_award_get_by_id(auth_client, loaded_db, test_pre_award):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_pre_award_patch_by_id(auth_client, loaded_db, test_pre_award):
-    patch_data = {"target_date": "2024-10-01", "actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
+    patch_data = {
+        "target_date": "2024-10-01",
+        "actual_date": "2024-10-15",
+        "is_complete": True,
+        "completed_by": 5,
+    }
     response = auth_client.patch(url_for("api.procurement-pre-award-item", id=test_pre_award.id), json=patch_data)
     assert response.status_code == 200
     resp_json = response.json
@@ -401,7 +483,14 @@ def test_award_get_by_id(auth_client, loaded_db, test_award):
     ]
     for key in keys:
         assert key in resp_json
-        if key in ["id", "agreement_id", "created_by", "display_name", "type", "updated_on"]:
+        if key in [
+            "id",
+            "agreement_id",
+            "created_by",
+            "display_name",
+            "type",
+            "updated_on",
+        ]:
             assert resp_json[key]
         else:
             assert not resp_json[key]

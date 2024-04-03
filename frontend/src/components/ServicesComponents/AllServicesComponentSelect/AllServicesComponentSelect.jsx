@@ -16,14 +16,23 @@ import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
  * @returns {JSX.Element} - The rendered component
  */
 function AllServicesComponentSelect({ value, onChange, agreementId }) {
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreementId);
+    const { data: servicesComponents, isSuccess } = useGetServicesComponentsListQuery(agreementId);
+    if (isSuccess && !servicesComponents) {
+        return null;
+    }
+    if (!isSuccess) {
+        return null;
+    }
 
-    const selectOptions = servicesComponents?.map((serviceComponent) => {
-        return {
-            value: serviceComponent.id,
-            label: serviceComponent.display_name
-        };
-    });
+    const selectOptions = [...servicesComponents]
+        ?.sort((a, b) => a.number - b.number)
+        .map((serviceComponent) => {
+            return {
+                value: serviceComponent.id,
+                label: serviceComponent.display_name
+            };
+        });
+
     return (
         <Select
             name="allServicesComponentSelect"

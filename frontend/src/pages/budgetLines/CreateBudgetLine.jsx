@@ -1,6 +1,6 @@
 import CreateBudgetLineFlow from "./CreateBudgetLineFlow";
 import StepSelectProjectAndAgreement from "./StepSelectProjectAndAgreement";
-import StepCreateBudgetLines from "../../components/UI/WizardSteps/CreateBLIsAndSCs";
+import StepCreateBudgetLines from "../../components/BudgetLineItems/CreateBLIsAndSCs";
 import StepSuccess from "./StepSuccess";
 import { useBudgetLines } from "./budgetLineContext";
 

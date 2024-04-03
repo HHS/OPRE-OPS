@@ -6,6 +6,7 @@ import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 
 /**
  * A table component that displays budget lines.
+ * @component
  * @param {Object} props - The component props.
  * @param {Array<any>} [props.budgetLines] - An array of budget lines to display. - optional
  * @param {Function} [props.handleSetBudgetLineForEditing ]- A function to handle editing a budget line. - optional
@@ -59,7 +60,7 @@ const AgreementBLIReviewTable = ({
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
             >
-                SC
+                BL ID #
             </label>
         </th>
     );

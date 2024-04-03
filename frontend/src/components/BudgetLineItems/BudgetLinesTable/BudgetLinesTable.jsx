@@ -31,24 +31,22 @@ const BudgetLinesTable = ({
         .reverse();
 
     return (
-        <>
-            <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
-                {sortedBudgetLines.map((budgetLine) => (
-                    <BLIRow
-                        key={budgetLine.id}
-                        budgetLine={budgetLine}
-                        handleDeleteBudgetLine={handleDeleteBudgetLine}
-                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                        isReviewMode={isReviewMode}
-                        readOnly={readOnly}
-                        isBLIInCurrentWorkflow={
-                            workflowBudgetLineItemIds && workflowBudgetLineItemIds.includes(budgetLine.id)
-                        }
-                    />
-                ))}
-            </Table>
-        </>
+        <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
+            {sortedBudgetLines.map((budgetLine) => (
+                <BLIRow
+                    key={budgetLine.id}
+                    budgetLine={budgetLine}
+                    handleDeleteBudgetLine={handleDeleteBudgetLine}
+                    handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                    handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                    isReviewMode={isReviewMode}
+                    readOnly={readOnly}
+                    isBLIInCurrentWorkflow={
+                        workflowBudgetLineItemIds && workflowBudgetLineItemIds.includes(budgetLine.id)
+                    }
+                />
+            ))}
+        </Table>
     );
 };
 

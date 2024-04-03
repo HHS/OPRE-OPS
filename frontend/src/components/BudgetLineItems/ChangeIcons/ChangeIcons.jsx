@@ -2,12 +2,13 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
+import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
 import icons from "../../../uswds/img/sprite.svg";
-import { Tooltip } from "../../UI/USWDS/Tooltip";
 
 /**
  * This component displays the edit, delete, and duplicate icons for a budget line.
+ * @component
  * @param {object} props - The component props.
  * @param {Object} props.item - The item or data for the row.
  * @param {boolean} props.isItemEditable - Whether the item is editable.
@@ -21,7 +22,7 @@ import { Tooltip } from "../../UI/USWDS/Tooltip";
  * @param {function} [props.handleSubmitItemForApproval] - The function to submit the item for approval.
  * @param {boolean} [props.goToApproveIcon] - Whether to show the go-to-approve icon.
  * @param {function} [props.handleGoToApprove] - The function to navigate to approve the item
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  **/
 
 const ChangeIcons = ({
@@ -99,6 +100,7 @@ const ChangeIcons = ({
                                 title="Edit"
                                 aria-label="Edit"
                                 data-cy="edit-row"
+                                disabled={true}
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}
@@ -147,22 +149,24 @@ const ChangeIcons = ({
                         </button>
                     </Tooltip>
                 )}
+                {/* NOTE: Do we ever want to not allow duplicating BLIs? */}
                 {!isItemEditable && duplicateIcon && (
                     <Tooltip
                         position="top"
-                        label="Duplicate"
+                        label="Disabled"
                         className="line-height-body-1"
                     >
                         <button
                             id={`duplicate-${item?.id}`}
-                            title="Duplicate"
-                            aria-label="Duplicate"
+                            title="Disabled"
+                            aria-label="Disabled"
                             data-cy="duplicate-row"
+                            disabled={true}
+                            onClick={() => {}}
                         >
                             <FontAwesomeIcon
                                 icon={faClone}
-                                className="text-primary height-2 width-2 cursor-pointer margin-left-0"
-                                onClick={handleDuplicateItem}
+                                className={disabledClasses}
                             />
                         </button>
                     </Tooltip>
@@ -200,6 +204,7 @@ const ChangeIcons = ({
                             title="Submit for Approval"
                             aria-label="Submit for Approval"
                             data-cy="submit-row"
+                            disabled={true}
                         >
                             <svg
                                 className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}

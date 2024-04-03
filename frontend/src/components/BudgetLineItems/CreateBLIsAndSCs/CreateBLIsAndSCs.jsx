@@ -1,18 +1,20 @@
 import React from "react";
 import PropTypes from "prop-types";
-import StepIndicator from "../../StepIndicator/StepIndicator";
-import ProjectAgreementSummaryCard from "../../../Projects/ProjectAgreementSummaryCard";
-import BudgetLinesTable from "../../../BudgetLineItems/BudgetLinesTable";
-import CreateBudgetLinesForm from "../../../BudgetLineItems/BudgetLinesForm";
-import EditModeTitle from "../../../../pages/agreements/EditModeTitle";
-import ConfirmationModal from "../../Modals/ConfirmationModal";
-import ServicesComponents from "../../../ServicesComponents";
-import useCreateBLIsAndSCs from "./createBLIsAndSCs.hooks";
-import { convertCodeForDisplay } from "../../../../helpers/utils";
-import ServicesComponentAccordion from "../../../ServicesComponents/ServicesComponentAccordion";
-import BLIsByFYSummaryCard from "../../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
-import AgreementTotalCard from "../../../Agreements/AgreementDetailsCards/AgreementTotalCard";
-import GoBackButton from "../../Button/GoBackButton";
+import StepIndicator from "../../UI/StepIndicator/StepIndicator";
+import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
+import BudgetLinesTable from "../BudgetLinesTable";
+import CreateBudgetLinesForm from "../BudgetLinesForm";
+import EditModeTitle from "../../../pages/agreements/EditModeTitle";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import ServicesComponents from "../../ServicesComponents";
+import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import { convertCodeForDisplay } from "../../../helpers/utils";
+import ServicesComponentAccordion from "../../ServicesComponents/ServicesComponentAccordion";
+import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
+import GoBackButton from "../../UI/Button/GoBackButton";
+import FormHeader from "../../UI/Form/FormHeader";
+import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -33,6 +35,7 @@ import GoBackButton from "../../Button/GoBackButton";
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines" | "none"} props.workflow - The workflow type.
+ * @param {Object} [props.cardData] - The card data. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBLIsAndSCs = ({
@@ -50,7 +53,8 @@ export const CreateBLIsAndSCs = ({
     canUserEditBudgetLines = false,
     setIsEditMode = () => {},
     isReviewMode,
-    workflow
+    workflow,
+    cardData = {}
 }) => {
     const {
         budgetLinePageErrorsExist,
@@ -118,10 +122,10 @@ export const CreateBLIsAndSCs = ({
                     workflow === "agreement" ? (
                         <EditModeTitle isEditMode={isEditMode || isReviewMode} />
                     ) : (
-                        <>
-                            <h2 className="font-sans-lg">Create New Budget Line</h2>
-                            <p>Step Two: Text explaining this page</p>
-                        </>
+                        <FormHeader
+                            heading="Create New Budget Line"
+                            details="Step Two: Text explaining this page"
+                        />
                     )
                 ) : null
             }
@@ -141,30 +145,60 @@ export const CreateBLIsAndSCs = ({
                         serviceRequirementType={selectedAgreement.service_requirement_type}
                         agreementId={selectedAgreement.id}
                     />
-                    <h2 className="font-sans-lg margin-top-3">Add Budget Lines</h2>
-                    <p>Add Budget lines to each Services Component to outline how the work will be funded.</p>
+                    <div className="margin-top-3">
+                        <FormHeader
+                            heading="Add Budget Lines"
+                            details="Add Budget lines to each Services Component to outline how the work will be funded."
+                        />
+                    </div>
+                    <div className="display-flex flex-justify margin-y-2">
+                        <BLIsByFYSummaryCard budgetLineItems={budgetLines} />
+                        <AgreementTotalCard
+                            total={totalsForCards}
+                            subtotal={subTotalForCards}
+                            fees={feesForCards}
+                            procurementShopAbbr={selectedProcurementShop?.abbr}
+                            procurementShopFee={selectedProcurementShop?.fee}
+                        />
+                    </div>
                 </>
             )}
+
+            {workflow === "none" && (
+                <>
+                    <ServicesComponents
+                        serviceRequirementType={selectedAgreement.service_requirement_type}
+                        agreementId={selectedAgreement.id}
+                        isEditMode={isEditMode}
+                    />
+                    <AgreementBudgetLinesHeader
+                        heading="Edit Budget Lines"
+                        includeDrafts={cardData.includeDrafts}
+                        setIncludeDrafts={cardData.setIncludeDrafts}
+                    />
+                    <div className="display-flex flex-justify margin-y-2">
+                        <BLIsByFYSummaryCard budgetLineItems={cardData.filteredBlis} />
+                        <AgreementTotalCard
+                            total={cardData.agreementTotal}
+                            subtotal={cardData.agreementSubtotal}
+                            fees={cardData.agreementFees}
+                            procurementShopAbbr={selectedProcurementShop?.abbr}
+                            procurementShopFee={selectedProcurementShop?.fee}
+                        />
+                    </div>
+                </>
+            )}
+
             {workflow === "budgetLines" && (
                 <>
-                    <h2 className="font-sans-lg">Budget Lines</h2>
-                    <p>
-                        This is a list of all budget lines for the selected project and agreement. The budget lines you
+                    <FormHeader
+                        heading="Budget Lines"
+                        details="This is a list of all budget lines for the selected project and agreement. The budget lines you
                         add will display in draft status. The Fiscal Year (FY) will populate based on the election date
-                        you provide.
-                    </p>
+                        you provide."
+                    />
                 </>
             )}
-            <div className="display-flex flex-justify margin-y-2">
-                <BLIsByFYSummaryCard budgetLineItems={budgetLines} />
-                <AgreementTotalCard
-                    total={totalsForCards}
-                    subtotal={subTotalForCards}
-                    fees={feesForCards}
-                    procurementShopAbbr={selectedProcurementShop?.abbr}
-                    procurementShopFee={selectedProcurementShop?.fee}
-                />
-            </div>
             <CreateBudgetLinesForm
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
@@ -271,7 +305,8 @@ CreateBLIsAndSCs.propTypes = {
     canUserEditBudgetLines: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     continueOverRide: PropTypes.func,
-    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired
+    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
+    cardData: PropTypes.object
 };
 
 export default CreateBLIsAndSCs;

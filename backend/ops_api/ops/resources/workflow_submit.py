@@ -59,9 +59,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         target_bli_status = (
             BudgetLineItemStatus.PLANNED
             if workflow_action == WorkflowAction.DRAFT_TO_PLANNED
-            else BudgetLineItemStatus.IN_EXECUTION
-            if workflow_action == WorkflowAction.PLANNED_TO_EXECUTING
-            else None
+            else BudgetLineItemStatus.IN_EXECUTION if workflow_action == WorkflowAction.PLANNED_TO_EXECUTING else None
         )
         # Create new Package
         new_package = Package()
@@ -71,7 +69,6 @@ class WorkflowSubmisionListApi(BaseItemAPI):
 
         token = verify_jwt_in_request()
         user = get_user_from_token(token[1])
-        new_package.created_by = user.id
         new_package.submitter_id = user.id
         new_package.notes = submission_notes
         agreement_id = None
@@ -96,7 +93,6 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         # WIP: Create WorkflowInstance and WorkflowStepInstance
         workflow_instance = WorkflowInstance()
         workflow_instance.workflow_template_id = 1  # We know this is a basic approval template
-        workflow_instance.created_by = user.id
         workflow_instance.workflow_action = workflow_action
 
         #  In order to know which workflow to follow, ie: who to send the approval request to,
@@ -110,7 +106,6 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         workflow_step_instance = WorkflowStepInstance(
             workflow_step_template_id=2,
             status=WorkflowStepStatus.REVIEW,
-            created_by=user.id,
             time_started=datetime.now(),
             successor_dependencies=[],
             predecessor_dependencies=[],

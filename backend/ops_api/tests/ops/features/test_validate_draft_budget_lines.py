@@ -41,129 +41,111 @@ def cleanup(loaded_db, context):
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Project")
-def test_valid_project(loaded_db, context):
-    ...
+def test_valid_project(loaded_db, context): ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement")
-def test_valid_agreement(loaded_db, context):
-    ...
+def test_valid_agreement(loaded_db, context): ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement Description")
-def test_valid_agreement_description(loaded_db, context):
-    ...
+def test_valid_agreement_description(loaded_db, context): ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Product Service Code")
-def test_valid_product_service_code(loaded_db, context):
-    ...
+def test_valid_product_service_code(loaded_db, context): ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Procurement Shop")
-def test_valid_procurement_shop(loaded_db, context):
-    ...
+def test_valid_procurement_shop(loaded_db, context): ...
 
 
 @scenario("validate_draft_budget_lines.feature", "Valid Agreement Reason")
-def test_valid_agreement_reason(loaded_db, context):
-    ...
+def test_valid_agreement_reason(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Agreement Reason - NEW_REQ does not have an Incumbent",
 )
-def test_valid_agreement_reason_no_incumbent(loaded_db, context):
-    ...
+def test_valid_agreement_reason_no_incumbent(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Agreement Reason - RECOMPETE and LOGICAL_FOLLOW_ON requires an Incumbent",
 )
-def test_valid_agreement_reason_incumbent_required(loaded_db, context):
-    ...
+def test_valid_agreement_reason_incumbent_required(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Project Officer",
 )
-def test_valid_project_officer(loaded_db, context):
-    ...
+def test_valid_project_officer(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Need By Date: Both NULL",
 )
-def test_valid_need_by_date_both_null(loaded_db, context):
-    ...
+def test_valid_need_by_date_both_null(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Need By Date: Request Empty",
 )
-def test_valid_need_by_date_request_empty(loaded_db, context):
-    ...
+def test_valid_need_by_date_request_empty(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Need By Date: Both Empty",
 )
-def test_valid_need_by_date_both_empty(loaded_db, context):
-    ...
+def test_valid_need_by_date_both_empty(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Need By Date: Future Date",
 )
-def test_valid_need_by_date_exists_future_date(loaded_db, context):
-    ...
+def test_valid_need_by_date_exists_future_date(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid CAN: Both NULL",
 )
-def test_valid_can_both_null(loaded_db, context):
-    ...
+def test_valid_can_both_null(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid CAN: Request Empty",
 )
-def test_valid_can_request_empty(loaded_db, context):
-    ...
+def test_valid_can_request_empty(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Amount: Both NULL",
 )
-def test_valid_amount_both_null(loaded_db, context):
-    ...
+def test_valid_amount_both_null(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Amount: Request Empty",
 )
-def test_valid_amount_request_empty(loaded_db, context):
-    ...
+def test_valid_amount_request_empty(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
     "Valid Amount: Greater than 0",
 )
-def test_valid_amount_greater_than_zero(loaded_db, context):
-    ...
+def test_valid_amount_greater_than_zero(loaded_db, context): ...
 
 
 @pytest.fixture()

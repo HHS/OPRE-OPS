@@ -5,9 +5,14 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-# from marshmallow import validates_schema
+from marshmallow import Schema, fields
 
 ENDPOINT_STRING = "/users"
+
+
+class SafeUserSchema(Schema):
+    id = fields.Integer()
+    full_name = fields.String()
 
 
 @dataclass(kw_only=True)

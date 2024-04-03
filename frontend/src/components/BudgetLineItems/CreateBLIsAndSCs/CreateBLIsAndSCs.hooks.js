@@ -2,17 +2,17 @@ import React from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import suite from "./suite";
-import useAlert from "../../../../hooks/use-alert.hooks";
+import useAlert from "../../../hooks/use-alert.hooks";
 import {
     useUpdateBudgetLineItemMutation,
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation
-} from "../../../../api/opsAPI";
-import { useGetLoggedInUserFullName } from "../../../../hooks/user.hooks";
-import { budgetLinesTotal } from "../../../../helpers/budgetLines.helpers";
-import { getProcurementShopSubTotal } from "../../../../helpers/agreement.helpers";
-import { groupByServicesComponent } from "../../../../helpers/budgetLines.helpers";
+} from "../../../api/opsAPI";
+import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
+import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -160,10 +160,10 @@ const useCreateBLIsAndSCs = (
 
     const handleDeleteBudgetLine = (budgetLineId) => {
         const budgetLine = budgetLines.find((bl) => bl.id === budgetLineId);
-        const budgetLineName = budgetLine?.display_name;
+        const budgetLineDisplayName = budgetLine?.id;
         setShowModal(true);
         setModalProps({
-            heading: `Are you sure you want to delete the budget line ${budgetLineName}?`,
+            heading: `Are you sure you want to delete budget line ${budgetLineDisplayName}?`,
             actionButtonText: "Delete",
             handleConfirm: () => {
                 deleteBudgetLineItem(budgetLineId)
@@ -173,7 +173,7 @@ const useCreateBLIsAndSCs = (
                         setAlert({
                             type: "success",
                             heading: "Budget Line Deleted",
-                            message: `The budget line ${budgetLineName} has been successfully deleted.`
+                            message: `Budget line ${budgetLineDisplayName} has been successfully deleted.`
                         });
                     })
                     .catch((rejected) => {

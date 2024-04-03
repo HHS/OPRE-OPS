@@ -5,6 +5,7 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
 import PoPStartDate from "../PoPStartDate";
 import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../UI/Form/TextArea";
+import FormHeader from "../../UI/Form/FormHeader";
 import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../servicesComponents.constants";
 
 /**
@@ -18,6 +19,7 @@ import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../
  * @param {Function} props.handleSubmit - Function to handle form submission.
  * @param {Function} props.handleCancel - Function to handle form cancellation.
  * @param {Array<number>} props.servicesComponentsNumbers - The service component numbers.
+ * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @returns {JSX.Element} The rendered ServicesComponentForm component.
  *
  * @example
@@ -29,7 +31,8 @@ function ServicesComponentForm({
     setFormData,
     handleSubmit,
     handleCancel,
-    servicesComponentsNumbers = []
+    servicesComponentsNumbers = [],
+    isEditMode
 }) {
     const options = serviceTypeReq === SERVICE_REQ_TYPES.SEVERABLE ? SEVERABLE_OPTIONS : NON_SEVERABLE_OPTIONS;
     const optionsWithSelected = options.map((option) => {
@@ -42,13 +45,17 @@ function ServicesComponentForm({
         return option;
     });
 
+    const heading = isEditMode ? "Edit Services Components" : "Create Services Components";
+    const details = isEditMode
+        ? "When adding a new SC, a Services Component must be selected from the dropdown."
+        : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
+
     return (
         <form onSubmit={handleSubmit}>
-            <h2 className="font-sans-lg">Create Services Components</h2>
-            <p>
-                Create the structure of the agreement using Services Components to describe the work being done. After
-                you outline the Services Components, you will add Budget Lines to fund that work.
-            </p>
+            <FormHeader
+                heading={heading}
+                details={details}
+            />
             <div className="grid-row grid-gap margin-top-3">
                 <div className="grid-col-4">
                     <ServicesComponentSelect
@@ -72,10 +79,7 @@ function ServicesComponentForm({
                 </div>
                 <div className="grid-col-4">
                     {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
-                        <div
-                            className="usa-checkbox"
-                            style={{ marginTop: "3.95rem" }}
-                        >
+                        <div className="usa-checkbox margin-top-5">
                             <input
                                 className="usa-checkbox__input"
                                 id="optional-services-component"
@@ -99,7 +103,7 @@ function ServicesComponentForm({
                             </label>
                         </div>
                     ) : (
-                        <div style={{ height: "5.375rem" }} />
+                        <div style={{ height: "3.90rem" }} />
                     )}
                     <div className="margin-top-4">
                         <PoPEndDate
@@ -112,6 +116,7 @@ function ServicesComponentForm({
                     <TextArea
                         name="description"
                         label="Description"
+                        className="margin-top-0"
                         maxLength={150}
                         value={formData?.description || ""}
                         onChange={(name, value) => setFormData({ ...formData, description: value })}
@@ -154,7 +159,8 @@ ServicesComponentForm.propTypes = {
     setFormData: PropTypes.func.isRequired,
     handleSubmit: PropTypes.func.isRequired,
     handleCancel: PropTypes.func.isRequired,
-    servicesComponentsNumbers: PropTypes.array
+    servicesComponentsNumbers: PropTypes.array,
+    isEditMode: PropTypes.bool
 };
 
 export default ServicesComponentForm;
