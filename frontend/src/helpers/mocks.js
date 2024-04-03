@@ -1,4 +1,4 @@
-import { rest } from "msw";
+import { http } from "msw";
 import { setupServer } from "msw/node";
 
 // const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
@@ -6,7 +6,7 @@ import { setupServer } from "msw/node";
 const BACKEND_DOMAIN = window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN || import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const handlers = [
-    rest.get(`${BACKEND_DOMAIN}/api/v1/agreements/`, (req, res, ctx) => {
+    http.get(`${BACKEND_DOMAIN}/api/v1/agreements/`, (req, res, ctx) => {
         return res(
             ctx.status(200),
             ctx.json([
@@ -17,13 +17,13 @@ export const handlers = [
         );
     }),
 
-    rest.get(`${BACKEND_DOMAIN}/api/v1/agreements/:id`, (req, res, ctx) => {
+    http.get(`${BACKEND_DOMAIN}/api/v1/agreements/:id`, (req, res, ctx) => {
         const { id } = req.params;
 
         return res(ctx.status(200), ctx.json({ id, name: `Agreement ${id}` }));
     }),
 
-    rest.get(`${BACKEND_DOMAIN}/api/v1/research-projects/`, (req, res, ctx) => {
+    http.get(`${BACKEND_DOMAIN}/api/v1/research-projects/`, (req, res, ctx) => {
         return res(
             ctx.status(200),
             ctx.json([
@@ -34,7 +34,7 @@ export const handlers = [
         );
     }),
 
-    rest.post(`${BACKEND_DOMAIN}/api/v1/research-projects/`, (req, res, ctx) => {
+    http.post(`${BACKEND_DOMAIN}/api/v1/research-projects/`, (req, res, ctx) => {
         const { body } = req;
 
         return res(ctx.status(201), ctx.json({ id: 3, name: body.name }), ctx.delay(150));
