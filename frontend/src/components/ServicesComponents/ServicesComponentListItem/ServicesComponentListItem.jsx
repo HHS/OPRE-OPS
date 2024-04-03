@@ -78,7 +78,9 @@ function ServicesComponentListItem({
                                 <FontAwesomeIcon
                                     icon={faTrash}
                                     size="2x"
-                                    className={`${isFirstServiceComponent ? "text-gray-30" : "text-primary"} height-2 width-2 cursor-pointer`}
+                                    className={`${
+                                        isFirstServiceComponent ? "text-gray-30" : "text-primary"
+                                    } height-2 width-2 cursor-pointer`}
                                 />
                             </button>
                         </Tooltip>
