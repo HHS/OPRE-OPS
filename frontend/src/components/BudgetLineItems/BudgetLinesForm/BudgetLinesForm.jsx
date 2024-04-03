@@ -8,6 +8,7 @@ import suite from "./suite";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
+import DatePicker from "../../UI/USWDS/DatePicker";
 
 /**
  * A form for creating or editing a budget line.
@@ -121,7 +122,8 @@ export const CreateBudgetLinesForm = ({
                 </div>
             </div>
             <div className="grid-col-4">
-                <DesiredAwardDate
+                <DatePicker />
+                {/* <DesiredAwardDate
                     enteredMonth={enteredMonth}
                     setEnteredMonth={setEnteredMonth}
                     enteredDay={enteredDay}
@@ -132,7 +134,7 @@ export const CreateBudgetLinesForm = ({
                     runValidate={runValidate}
                     res={res}
                     cn={cn}
-                />
+                /> */}
                 <CurrencyInput
                     name="enteredAmount"
                     label="Amount"
