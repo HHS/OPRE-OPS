@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "be9255d092616f7c74838c5da58a561ea724117aa349f6f7c435675cdae7bc8f"
+            "sha256": "375e4b229077f63425d9f507b40c6ecbe3894be34c80de1bf1393d833d590089"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1390,11 +1390,11 @@
                 "docker-compose-v2"
             ],
             "hashes": [
-                "sha256:8ee9c9742d58ac079c81c03635bb830881f7f4d529f0f53f4ba2c89ffc9c7137",
-                "sha256:b083fd2ae69212369390033c22228d3263555a5f3b4bef87b74160e07218f377"
+                "sha256:2371524804a752aaa766c79b9eee8e634534afddb82597f3b573da7c5d6ffb5f",
+                "sha256:fd0d48d6feac41f62acbc758319215ec9bb805c2309622afb07c27fa5c5ae362"
             ],
-            "markers": "python_version >= '3.6'",
-            "version": "==2.2.0"
+            "markers": "python_version >= '3.8'",
+            "version": "==3.1.1"
         },
         "pytest-mock": {
             "hashes": [
