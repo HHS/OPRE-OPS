@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "50e949f553c111641e63f07a386018be66dda049129c7339c74a75802c4e2845"
+            "sha256": "be9255d092616f7c74838c5da58a561ea724117aa349f6f7c435675cdae7bc8f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1055,12 +1055,12 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:39c6f9efc079fb19bfb0f17eee903978fe9a290b1b82d68196c641cecb76ea22",
-                "sha256:869335e8cded62ffb6fac8928e5287a05433d6462e3ebaac25f4216474dd6bc4"
+                "sha256:07232af52a5ba146dc3372c7bf52a0f890a23edf38d77caef8d53f9cdc2584c1",
+                "sha256:7468edaf4f6de3e1b912e57f66c241e6fd3c7099f2ec2136e239e142e800274d"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==8.22.1"
+            "version": "==8.23.0"
         },
         "jedi": {
             "hashes": [
@@ -1519,11 +1519,11 @@
         },
         "types-aiofiles": {
             "hashes": [
-                "sha256:40c18c68956aaf1af6a37f997ae26ff6af124e52e16ec4f2473d51c720f79cd7",
-                "sha256:8dd2a90cdcf16f9cfc9b07d77cd8eb989977c6bab2eba5b65e5929632ac77f53"
+                "sha256:1ffcf8f5f72b81f71139f754ea2610ab0017f27ba4fd771e187b07840ee49c0f",
+                "sha256:adeeb4b999f19fda2dfe91c07857ff54701b6ee9b227b523a5a7be92125a2c5f"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==23.2.0.20240331"
+            "version": "==23.2.0.20240403"
         },
         "types-all": {
             "hashes": [
@@ -2055,11 +2055,11 @@
         },
         "types-requests": {
             "hashes": [
-                "sha256:bd7eb7102168d4b5b489f15cdd9842b63ab7fe56aa82a0589fa595b94195acf4",
-                "sha256:e5c09a202f8ae79cd6ffbbba2203b6c3775a83126283bb2a6abbc129abc02a12"
+                "sha256:06abf6a68f5c4f2a62f6bb006672dfb26ed50ccbfddb281e1ee6f09a65707d5d",
+                "sha256:e1e0cd0b655334f39d9f872b68a1310f0e343647688bf2cee932ec4c2b04de59"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2.31.0.20240402"
+            "version": "==2.31.0.20240403"
         },
         "types-retry": {
             "hashes": [
