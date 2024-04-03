@@ -27,10 +27,10 @@ export const TextArea = ({
 }) => {
     if (!hintMsg && maxLength) hintMsg = `Maximum ${maxLength} characters`;
     return (
-        <div className="usa-character-count margin-top-3">
+        <div className="usa-character-count">
             <div className={cx("usa-form-group", pending && "pending", className)}>
                 <label
-                    className={`usa-label ${messages.length ? "usa-label--error" : null} `}
+                    className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
                     htmlFor={name}
                 >
                     {label}
@@ -53,7 +53,7 @@ export const TextArea = ({
                     </span>
                 )}
                 <textarea
-                    className={`usa-textarea ${messages.length ? "usa-input--error" : null} `}
+                    className={`usa-textarea ${messages.length ? "usa-input--error" : ""} `}
                     id={name}
                     name={name}
                     rows={5}

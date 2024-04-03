@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import Table from "../../UI/Table";
-import TotalSummaryCard from "../TotalSummaryCard";
 import BLIRow from "./BLIRow";
 import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
 import "./BudgetLinesTable.scss";
@@ -8,55 +7,51 @@ import "./BudgetLinesTable.scss";
 /**
  * A table component that displays budget lines.
  * @param {Object} props - The component props.
- * @param {Array<any>} [props.budgetLinesAdded] - An array of budget lines to display. - optional
+ * @param {Array<any>} [props.budgetLines] - An array of budget lines to display. - optional
  * @param {Function} [props.handleSetBudgetLineForEditing ]- A function to handle editing a budget line. - optional
  * @param {Function} [props.handleDeleteBudgetLine] - A function to handle deleting a budget line. - optional
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
- * @param {Boolean} [props.showTotalSummaryCard] - A flag to indicate if the total summary card should be displayed.
+ * @param {Array<number>} [props.workflowBudgetLineItemIds] - An array of budget line item ids that are in the current workflow. - optional
  * @returns {JSX.Element} - The rendered table component.
  */
 const BudgetLinesTable = ({
-    budgetLinesAdded = [],
+    budgetLines = [],
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
-    showTotalSummaryCard = true,
     workflowBudgetLineItemIds = []
 }) => {
-    const sortedBudgetLines = budgetLinesAdded
+    const sortedBudgetLines = budgetLines
         .slice()
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
         .reverse();
 
     return (
-        <>
-            <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
-                {sortedBudgetLines.map((budgetLine) => (
-                    <BLIRow
-                        key={budgetLine.id}
-                        budgetLine={budgetLine}
-                        handleDeleteBudgetLine={handleDeleteBudgetLine}
-                        handleDuplicateBudgetLine={handleDuplicateBudgetLine}
-                        handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
-                        isReviewMode={isReviewMode}
-                        readOnly={readOnly}
-                        isBLIInCurrentWorkflow={
-                            workflowBudgetLineItemIds && workflowBudgetLineItemIds.includes(budgetLine.id)
-                        }
-                    />
-                ))}
-            </Table>
-            {showTotalSummaryCard && <TotalSummaryCard budgetLines={sortedBudgetLines}></TotalSummaryCard>}
-        </>
+        <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
+            {sortedBudgetLines.map((budgetLine) => (
+                <BLIRow
+                    key={budgetLine.id}
+                    budgetLine={budgetLine}
+                    handleDeleteBudgetLine={handleDeleteBudgetLine}
+                    handleDuplicateBudgetLine={handleDuplicateBudgetLine}
+                    handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
+                    isReviewMode={isReviewMode}
+                    readOnly={readOnly}
+                    isBLIInCurrentWorkflow={
+                        workflowBudgetLineItemIds && workflowBudgetLineItemIds.includes(budgetLine.id)
+                    }
+                />
+            ))}
+        </Table>
     );
 };
 
 BudgetLinesTable.propTypes = {
-    budgetLinesAdded: PropTypes.arrayOf(PropTypes.object),
+    budgetLines: PropTypes.arrayOf(PropTypes.object),
     canUserEditBudgetLines: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
@@ -64,7 +59,6 @@ BudgetLinesTable.propTypes = {
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
     isReviewMode: PropTypes.bool,
-    showTotalSummaryCard: PropTypes.bool,
     workflowBudgetLineItemIds: PropTypes.arrayOf(PropTypes.number)
 };
 

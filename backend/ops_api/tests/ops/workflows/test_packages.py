@@ -1,4 +1,5 @@
 import pytest
+
 from models.workflows import Package, PackageSnapshot
 
 
@@ -9,7 +10,7 @@ def test_package_retrieve(auth_client, loaded_db):
     assert package is not None
     assert package.notes == "Urgent approval needed"
     assert package.submitter_id == 21
-    assert package.workflow_id == 1
+    assert package.workflow_instance_id == 1
     assert package.package_snapshots is not None
 
 

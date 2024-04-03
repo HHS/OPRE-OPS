@@ -33,7 +33,7 @@ Scenario: Contract Agreement as Team Member
     Then I should get a message that it was successful
 
 Scenario: Contract Agreement I am not an authorized user for
-    Given I am logged in as an OPS user with the correct authorization
+    Given I am logged in as an OPS user with the correct authorization but no perms
     And I have a contract agreement I am not allowed to delete
-    When I delete the agreement
+    When I delete the agreement with a user that has no perms
     Then I should get an error message that I'm not authorized

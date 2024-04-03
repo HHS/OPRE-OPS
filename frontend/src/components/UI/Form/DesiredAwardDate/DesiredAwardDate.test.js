@@ -59,7 +59,7 @@ describe("DesiredAwardDate", () => {
         fireEvent.change(monthInput, { target: { value: "2" } });
         fireEvent.change(dayInput, { target: { value: "15" } });
         fireEvent.change(yearInput, { target: { value: "2023" } });
-        expect(mockSetEnteredMonth).toHaveBeenCalledWith(2);
+        expect(mockSetEnteredMonth).toHaveBeenCalledWith("2");
         expect(mockSetEnteredDay).toHaveBeenCalledWith("15");
         expect(mockSetEnteredYear).toHaveBeenCalledWith("2023");
     });

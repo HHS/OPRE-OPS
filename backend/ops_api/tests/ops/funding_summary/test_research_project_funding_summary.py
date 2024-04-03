@@ -1,4 +1,5 @@
 import pytest
+
 from models import ContractAgreement, GrantAgreement
 from models.cans import CAN, AgreementType, BudgetLineItem, CANFiscalYear
 from models.projects import ResearchProject

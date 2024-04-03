@@ -7,18 +7,19 @@ from flask import Response
 from flask.views import MethodView
 from marshmallow import fields
 from marshmallow_enum import EnumField
+from typing_extensions import override
+
 from models.base import BaseModel
 from models.workflows import (
     WorkflowAction,
     WorkflowInstance,
-    WorkflowStatus,
     WorkflowStepDependency,
+    WorkflowStepStatus,
     WorkflowTriggerType,
 )
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.workflow_step_instance import WorkflowStepInstanceResponse
 from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
-from typing_extensions import override
 
 ENDPOINT_STRING = "/workflow-instance"
 
@@ -34,7 +35,7 @@ class WorkflowInstanceResponse:
     )
     workflow_action: Optional[WorkflowAction] = EnumField(WorkflowAction)
     current_workflow_step_instance_id: Optional[int] = None
-    workflow_status: Optional[WorkflowStatus] = EnumField(WorkflowStatus)
+    workflow_status: Optional[WorkflowStepStatus] = EnumField(WorkflowStepStatus)
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     created_by: Optional[int] = None
@@ -65,7 +66,7 @@ class WorkflowStatusListAPI(MethodView):
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     @handle_api_error
     def get(self) -> Response:
-        reasons = [item.name for item in WorkflowStatus]
+        reasons = [item.name for item in WorkflowStepStatus]
         return reasons
 
 

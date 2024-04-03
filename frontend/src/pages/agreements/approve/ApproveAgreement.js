@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation, useGetWorkflowStepQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation } from "../../../api/opsAPI";
 import PageHeader from "../../../components/UI/PageHeader";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -16,28 +16,16 @@ import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import { useSearchParams } from "react-router-dom";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import RadioButtonTile from "../../../components/UI/RadioButtonTile";
-import { actionOptions } from "../review/ReviewAgreement.constants";
+import { workflowActions } from "../review/ReviewAgreement.constants";
+import { useGetWorkflowInstanceFromId, useGetWorkflowStepInstanceFromId } from "../../../hooks/workflow.hooks.js";
 
-const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepId }) => {
-    const { data, error, isLoading } = useGetWorkflowStepQuery(workflowStepId, {
-        refetchOnMountOrArgChange: true
-    });
-    if (isLoading) {
-        return <h1>Loading...</h1>;
-    }
-    if (error) {
-        console.log(error);
-        return <h1>Oops, an error occurred</h1>;
-    }
-    console.log({ data });
-    const workflowBudgetLineItemIds = data?.package_entities?.budget_line_item_ids;
+const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepInstance }) => {
+    const workflowBudgetLineItemIds = workflowStepInstance?.package_entities?.budget_line_item_ids;
     return (
         <BudgetLinesTable
             readOnly={true}
-            budgetLinesAdded={agreement?.budget_line_items}
+            budgetLines={agreement?.budget_line_items}
             isReviewMode={false}
-            showTotalSummaryCard={false}
             workflowBudgetLineItemIds={workflowBudgetLineItemIds}
         />
     );
@@ -61,7 +49,15 @@ const ApproveAgreement = () => {
     const [searchParams] = useSearchParams();
     const [workflowApprove] = useAddWorkflowApproveMutation();
     const stepId = searchParams.get("stepId");
-    // TODO: Get Workflow data and use BLI IDs to determine what's being approved (changes BLIRow.js)
+    const workflowStepInstance = useGetWorkflowStepInstanceFromId(stepId);
+    const { workflow_instance_id: workflowInstanceId, package_entities: packageEntities } = workflowStepInstance;
+    const workflowBudgetLineItemIds = packageEntities?.budget_line_item_ids;
+    const submittersNotes = packageEntities?.notes;
+    console.log("workflowBudgetLineItemIds", workflowBudgetLineItemIds);
+    console.log("workflowStepInstance", workflowStepInstance);
+    console.log("submittersNotes", submittersNotes);
+    const workflowInstance = useGetWorkflowInstanceFromId(workflowInstanceId);
+    const { workflow_action: action } = workflowInstance;
 
     const navigate = useNavigate();
     const {
@@ -73,15 +69,14 @@ const ApproveAgreement = () => {
     });
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const [afterApproval, setAfterApproval] = useToggle(true);
-    const [action, setAction] = React.useState(actionOptions.CHANGE_DRAFT_TO_PLANNED);
-    const goToText = action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? "Planned" : "Executing";
-    const fromToText = action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? "Draft to Planned" : "Planned to Executing";
+    const goToText = action === workflowActions.DRAFT_TO_PLANNED ? "Planned" : "Executing";
+    const fromToText = action === workflowActions.DRAFT_TO_PLANNED ? "Draft to Planned" : "Planned to Executing";
     const checkBoxText =
-        action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+        action === workflowActions.DRAFT_TO_PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
             : "I understand that approving these budget lines will start the Procurement Process";
     const approveModalHeading =
-        action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+        action === workflowActions.DRAFT_TO_PLANNED
             ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
             : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
 
@@ -95,10 +90,6 @@ const ApproveAgreement = () => {
     const budgetLinesWithActiveWorkflow = agreement?.budget_line_items.filter((bli) => bli.has_active_workflow);
     const changeInCans = getTotalByCans(budgetLinesWithActiveWorkflow);
 
-    // TODO: Replace with real submitters notes from workflow
-    const submittersNotes =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eget egestas justo. Praesent consequat sem at sapien lacinia cursus. Mauris accumsan vehicula pharetra. Donec non elit mi. Ut faucibus tincidunt vulputate. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nam at magna et purus sodales tristique id ac quam. Vivamus in felis ipsum. Nam venenatis malesuada odio, at dignissim justo hendrerit nec. Nunc eget nibh justo. In malesuada maximus elit, at luctus justo euismod vitae. Proin sit amet sem pharetra, scelerisque enim at, tristique purus. Etiam purus diam, tristique sit amet odio rhoncus, venenatis bibendum ante.";
-
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
@@ -111,19 +102,46 @@ const ApproveAgreement = () => {
         });
     };
 
-    const handleDecline = () => {
+    const rejectStep = async () => {
+        const data = {
+            workflow_step_action: "REJECT",
+            workflow_step_id: stepId,
+            notes: notes
+        };
+
+        await workflowApprove(data)
+            .unwrap()
+            .then((fulfilled) => {
+                console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
+                setAlert({
+                    type: "success",
+                    heading: "Rejection Saved",
+                    message: `The rejection to change Budget Lines has been saved.`
+                });
+            })
+            .catch((rejected) => {
+                console.error(`ERROR with workflow-approve: ${JSON.stringify(rejected, null, 2)}`);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while saving the approval.",
+                    redirectUrl: "/error"
+                });
+            });
+    };
+
+    const handleDecline = async () => {
         setShowModal(true);
         setModalProps({
             heading: `Are you sure you want to decline these budget lines for ${goToText} Status?`,
             actionButtonText: "Decline",
             secondaryButtonText: "Cancel",
-            handleConfirm: () => {
-                alert("Not implemented yet");
+            handleConfirm: async () => {
+                await rejectStep();
                 navigate("/agreements");
             }
         });
     };
-
     const approveStep = async () => {
         const data = {
             workflow_step_action: "APPROVE",
@@ -137,8 +155,8 @@ const ApproveAgreement = () => {
                 console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
                 setAlert({
                     type: "success",
-                    heading: "Approval Saved",
-                    message: `The approval to change Budget Lines has been saved.`
+                    heading: `Budget Lines Approved for ${goToText} Status`,
+                    message: `Budget lines for ${agreement.name} have been successfully approved for ${goToText} Status.`
                 });
             })
             .catch((rejected) => {
@@ -176,30 +194,6 @@ const ApproveAgreement = () => {
                     secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
-            <section className="border-error border-dashed padding-1 margin-bottom-2">
-                <p className="text-error">TODO: Replace with workflow action</p>
-                <div className="grid-row grid-gap">
-                    <div className="grid-col">
-                        <RadioButtonTile
-                            label={actionOptions.CHANGE_DRAFT_TO_PLANNED}
-                            description=""
-                            setValue={setAction}
-                            disabled={false}
-                            checked={true}
-                            data-cy="change-draft-to-planned"
-                        />
-                    </div>
-                    <div className="grid-col">
-                        <RadioButtonTile
-                            label={actionOptions.CHANGE_PLANNED_TO_EXECUTING}
-                            description=""
-                            setValue={setAction}
-                            disabled={false}
-                            data-cy="change-planned-to-executing"
-                        />
-                    </div>
-                </div>
-            </section>
             <PageHeader
                 title={`Approval for ${goToText} Status`}
                 subTitle={agreement.name}
@@ -221,7 +215,7 @@ const ApproveAgreement = () => {
             >
                 <BudgetLinesTableWithWorkflowStep
                     agreement={agreement}
-                    workflowStepId={stepId}
+                    workflowStepInstance={workflowStepInstance}
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
@@ -231,7 +225,7 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={action}
             />
-            {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
+            {action === workflowActions.DRAFT_TO_PLANNED && (
                 <AgreementChangesAccordion
                     changeInBudgetLines={budgetLinesWithActiveWorkflow.reduce((acc, { amount }) => acc + amount, 0)}
                     changeInCans={changeInCans}
@@ -277,7 +271,7 @@ const ApproveAgreement = () => {
                 <button
                     name="cancel"
                     className={`usa-button usa-button--unstyled margin-right-2`}
-                    data-cy="edit-agreement-btn"
+                    data-cy="cancel-approval-btn"
                     onClick={handleCancel}
                 >
                     Cancel
@@ -285,7 +279,7 @@ const ApproveAgreement = () => {
 
                 <button
                     className={`usa-button usa-button--outline margin-right-2`}
-                    data-cy="edit-agreement-btn"
+                    data-cy="decline-approval-btn"
                     onClick={handleDecline}
                 >
                     Decline

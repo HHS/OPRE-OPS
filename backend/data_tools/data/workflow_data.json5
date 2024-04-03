@@ -1,16 +1,26 @@
 {
   workflow_template: [
     {
+      id: 1,
       name: "Basic Approval",
       created_on: "2023-11-07T10:00:00Z",
       updated_on: "2023-11-07T10:00:00Z",
       created_by: 21,
     },
+    {
+      id: 2,
+      name: "Procurement Tracker",
+      created_on: "2023-11-07T10:00:00Z",
+      updated_on: "2023-11-07T10:00:00Z",
+      created_by: 21,
+    }
   ],
 
   workflow_step_template: [
     {
+      id: 1,
       name: "Initial Review",
+      workflow_template_id: 1,
       workflow_type: "APPROVAL",
       index: 0,
       updated_on: "2023-11-07T10:00:00Z",
@@ -18,14 +28,87 @@
       created_by: 21,
     },
     {
+      id: 2,
       name: "Final Approval",
+      workflow_template_id: 1,
       workflow_type: "APPROVAL",
       index: 1,
       updated_on: "2023-11-07T10:00:00Z",
       created_on: "2023-11-07T10:00:00Z",
       created_by: 21,
     },
+    {
+      id: 3,
+      name: "Acquisition Planning",
+      workflow_template_id: 2,
+      workflow_type: "ATTESTATION",
+      index: 0,
+      updated_on: "2023-11-07T10:00:00Z",
+      created_on: "2023-11-07T10:00:00Z",
+      created_by: 21,
+    },
+    {
+      id: 4,
+      name: "Pre-Solicitation",
+      workflow_template_id: 2,
+      workflow_type: "ATTESTATION",
+      index: 1,
+      updated_on: "2023-11-07T10:00:00Z",
+      created_on: "2023-11-07T10:00:00Z",
+      created_by: 21,
+    },
+    {
+      id: 5,
+      name: "Solicitation",
+      workflow_template_id: 2,
+      workflow_type: "ATTESTATION",
+      index: 2,
+      updated_on: "2023-11-07T10:00:00Z",
+      created_on: "2023-11-07T10:00:00Z",
+      created_by: 21,
+    },
+    {
+      id: 6,
+      name: "Evaluation Approval",
+      workflow_template_id: 2,
+      workflow_type: "APPROVAL",
+      index: 3,
+      updated_on: "2023-11-07T10:00:00Z",
+      created_on: "2023-11-07T10:00:00Z",
+      created_by: 21,
+    },
+    {
+      id: 7,
+      name: "Evaluation Attestation",
+      workflow_template_id: 2,
+      workflow_type: "ATTESTATION",
+      index: 4,
+      updated_on: "2023-11-07T10:00:00Z",
+      created_on: "2023-11-07T10:00:00Z",
+      created_by: 21,
+    },
+    {
+      id: 8,
+      name: "Pre-Award",
+      workflow_template_id: 2,
+      workflow_type: "ATTESTATION",
+      index: 5,
+      updated_on: "2023-11-07T10:00:00Z",
+      created_on: "2023-11-07T10:00:00Z",
+      created_by: 21,
+    },
+    {
+      id: 9,
+      name: "Award",
+      workflow_template_id: 2,
+      workflow_type: "APPROVAL",
+      index: 6,
+      updated_on: "2023-11-07T10:00:00Z",
+      created_on: "2023-11-07T10:00:00Z",
+      created_by: 21,
+    }
   ],
+
 
   workflow_instance: [
     {
@@ -75,16 +158,17 @@
     { workflow_step_template_id: 1, user_id: 23, role_id: 1, group_id: 1 },
     { workflow_step_template_id: 2, user_id: 21, role_id: 2, group_id: 3 },
     { workflow_step_template_id: 2, user_id: 23, role_id: 2, group_id: 3 },
+    { workflow_step_template_id: 2, user_id: 4, role_id: 2, group_id: 3 },
   ],
 
   package: [
     {
-      workflow_id: 1,
+      workflow_instance_id: 1,
       submitter_id: 21,
       notes: "Urgent approval needed",
     },
     {
-      workflow_id: 2,
+      workflow_instance_id: 2,
       submitter_id: 21,
       notes: "Urgent approval needed",
     }

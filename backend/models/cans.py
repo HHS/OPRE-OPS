@@ -1,12 +1,10 @@
 """CAN models."""
-from enum import Enum
-from typing import Any, List, Optional
+
+import enum
+from enum import Enum, auto
+from typing import List, Optional
 
 import sqlalchemy as sa
-from models.base import BaseModel
-from models.portfolios import Portfolio
-from models.users import User
-from models.workflows import Package, PackageSnapshot, WorkflowInstance, WorkflowStatus, WorkflowStepInstance
 from sqlalchemy import (
     Boolean,
     Column,
@@ -19,20 +17,37 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    and_,
     case,
     select,
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
-from typing_extensions import override
+
+from models.base import BaseModel
+from models.portfolios import Portfolio
+from models.users import User
+from models.workflows import (
+    Package,
+    PackageSnapshot,
+    WorkflowAction,
+    WorkflowInstance,
+    WorkflowStepInstance,
+    WorkflowStepStatus,
+    WorkflowTemplate,
+    WorkflowTriggerType,
+)
+
+# from ops_api.ops.utils.procurement_workflow_helper import (
+#     PROCUREMENT_WORKFLOW_TEMPLATE_NAME,
+# )
 
 
 class BudgetLineItemStatus(Enum):
     DRAFT = 1
-    UNDER_REVIEW = 2
-    PLANNED = 3
-    IN_EXECUTION = 4
-    OBLIGATED = 5
+    PLANNED = 2
+    IN_EXECUTION = 3
+    OBLIGATED = 4
 
 
 class CANArrangementType(Enum):
@@ -67,7 +82,7 @@ class FundingSource(BaseModel):
 
     __tablename__ = "funding_source"
 
-    id = Column(Integer, primary_key=True)
+    id = BaseModel.get_pk_column()
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
 
@@ -87,7 +102,7 @@ class FundingPartner(BaseModel):
     """
 
     __tablename__ = "funding_partner"
-    id = Column(Integer, primary_key=True)
+    id = BaseModel.get_pk_column()
     name = Column(String(100), nullable=False)
     nickname = Column(String(100))
 
@@ -131,7 +146,7 @@ class ProductServiceCode(BaseModel):
 
     __tablename__ = "product_service_code"
 
-    id = Column(Integer, primary_key=True)
+    id = BaseModel.get_pk_column()
     name = Column(String, nullable=False)
     naics = Column(Integer, nullable=True)
     support_code = Column(String, nullable=True)
@@ -148,7 +163,7 @@ class Agreement(BaseModel):
 
     __tablename__ = "agreement"
 
-    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
+    id: Mapped[int] = BaseModel.get_pk_column()
     agreement_type = mapped_column(ENUM(AgreementType), nullable=False)
     name: Mapped[str] = mapped_column(
         String, nullable=False, comment="In MAPS this was PROJECT.PROJECT_TITLE"
@@ -182,21 +197,19 @@ class Agreement(BaseModel):
     project: Mapped[Optional["Project"]] = relationship(
         "Project", back_populates="agreements"
     )
+
     budget_line_items: Mapped[list["BudgetLineItem"]] = relationship(
         "BudgetLineItem",
         back_populates="agreement",
         lazy=True,
         cascade="all, delete",
     )
+
     procurement_shop_id: Mapped[int] = mapped_column(
         ForeignKey("procurement_shop.id"), nullable=True
     )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
-
-    # @property
-    # def has_bli_in_workflow(self):
-    #     return any(bli.workflow_instance_id for bli in self.budget_line_items)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -206,6 +219,22 @@ class Agreement(BaseModel):
         "polymorphic_identity": "agreement",
         "polymorphic_on": "agreement_type",
     }
+
+    @property
+    def procurement_tracker_workflow_id(self):
+        if object_session(self) is None:
+            return False
+        workflow_id = object_session(self).scalar(
+            select(WorkflowInstance.id).where(
+                and_(
+                    WorkflowInstance.workflow_action
+                    == WorkflowAction.PROCUREMENT_TRACKING,
+                    WorkflowInstance.associated_type == WorkflowTriggerType.AGREEMENT,
+                    WorkflowInstance.associated_id == self.id,
+                )
+            )
+        )
+        return workflow_id
 
 
 contract_support_contacts = Table(
@@ -229,8 +258,17 @@ class AcquisitionType(Enum):
 
 
 class ContractType(Enum):
-    RESEARCH = 0
-    SERVICE = 1
+    FIRM_FIXED_PRICE = auto()
+    TIME_AND_MATERIALS = auto()
+    LABOR_HOUR = auto()
+    COST_PLUS_FIXED_FEE = auto()
+    COST_PLUS_AWARD_FEE = auto()
+    HYBRID = auto()
+
+
+class ServiceRequirementType(Enum):
+    SEVERABLE = enum.auto()
+    NON_SEVERABLE = enum.auto()
 
 
 class ContractAgreement(Agreement):
@@ -260,6 +298,7 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
+    service_requirement_type = mapped_column(ENUM(ServiceRequirementType))
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
@@ -349,7 +388,7 @@ class CANFiscalYearCarryForward(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN carried over from a previous fiscal year."""
 
     __tablename__ = "can_fiscal_year_carry_forward"
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", lazy="joined")
     from_fiscal_year = Column(Integer)
@@ -360,10 +399,99 @@ class CANFiscalYearCarryForward(BaseModel):
     total_amount = column_property(received_amount + expected_amount)
 
 
+class ServicesComponent(BaseModel):
+    """
+    A Services Component (SC) is the "what" when referring to an Agreement.
+    It outlines what work is occuring under a given Agreement.
+
+    This model contains all the relevant
+    descriptive information about a given Services Component
+
+    number - The index number of the Services Component
+    optional - Whether the Services Component is optional or not (OSC or 'Option Period')
+    clin - The Contract Line Item Number (CLIN) associated with the Services Component
+    description - The description of the Services Component (not sure if needed)
+    period_start - The start date of the Services Component
+    period_end - The end date of the Services Component
+    budget_line_items - The Budget Line Items associated with the Services Component
+    period_duration - The duration of the Services Component (derived from period_start and period_end)
+    display_title - The long name of the Services Component (e.g. "Optional Services Component 1")
+    display_name - The short name of the Services Component (e.g. "OSC1")
+    """
+
+    __tablename__ = "services_component"
+
+    # start Identity at 4 to allow for the records load with IDs
+    # in agreements_and_blin_data.json5
+    id = BaseModel.get_pk_column()
+    number = Column(Integer)
+    optional = Column(Boolean, default=False)
+
+    description = Column(String)
+    period_start = Column(Date)
+    period_end = Column(Date)
+
+    contract_agreement_id = Column(
+        Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE"), nullable=False
+    )
+    contract_agreement = relationship(
+        "ContractAgreement",
+        passive_deletes=True,
+    )
+
+    clin_id = Column(Integer, ForeignKey("clin.id"), nullable=True)
+    clin = relationship("CLIN", back_populates="services_component", uselist=False)
+
+    def severable(self):
+        return (
+            self.contract_agreement
+            and self.contract_agreement.service_requirement_type
+            == ServiceRequirementType.SEVERABLE
+        )
+
+    @property
+    def display_title(self):
+        if self.severable():
+            pre = "Base" if self.number == 1 else "Optional"
+            return f"{pre} Period {self.number}"
+        optional = "Optional " if self.optional else ""
+        return f"{optional}Services Component {self.number}"
+
+    @property
+    def period_duration(self):
+        if self.period_start and self.period_end:
+            return abs(self.period_end - self.period_start)
+        return None
+
+    @BaseModel.display_name.getter
+    def display_name(self):
+        if self.severable():
+            pre = "Base" if self.number == 1 else "Optional"
+            return f"{pre} Period {self.number}"
+        optional = "O" if self.optional else ""
+        return f"{optional}SC{self.number}"
+
+
+class CLIN(BaseModel):
+    """
+    Contract Line Item Number (CLIN) is a unique identifier for a contract line item,
+    """
+
+    __tablename__ = "clin"
+
+    id = BaseModel.get_pk_column()
+    name = Column(String(256), nullable=False)
+    source_id = Column(Integer)  # purely an example
+
+    services_component = relationship(
+        "ServicesComponent", back_populates="clin", uselist=False
+    )
+
+
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     line_description = Column(String)
     comments = Column(Text)
 
@@ -372,6 +500,12 @@ class BudgetLineItem(BaseModel):
 
     can_id = Column(Integer, ForeignKey("can.id"))
     can = relationship("CAN", back_populates="budget_line_items")
+
+    services_component_id = Column(Integer, ForeignKey("services_component.id"))
+    services_component = relationship(ServicesComponent, backref="budget_line_items")
+
+    clin_id = Column(Integer, ForeignKey("clin.id"))
+    clin = relationship("CLIN", backref="budget_line_items")
 
     amount = Column(Numeric(12, 2))
 
@@ -384,7 +518,7 @@ class BudgetLineItem(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return self.line_description if self.line_description else super().display_name
+        return f"BL {self.id}"
 
     @property
     def portfolio_id(self):
@@ -422,12 +556,12 @@ class BudgetLineItem(BaseModel):
             select(Package)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .join(WorkflowInstance, Package.workflow_id == WorkflowInstance.id)
+            .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
             .join(
                 WorkflowStepInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
             )
-            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return package is not None
 
@@ -435,16 +569,28 @@ class BudgetLineItem(BaseModel):
     def active_workflow_current_step_id(self):
         if object_session(self) is None:
             return None
+        # This doesn't work with the bootstrap test data since current_workflow_step_instance_id isn't set
+        # current_workflow_step_instance_id = object_session(self).scalar(
+        #     select(WorkflowInstance.current_workflow_step_instance_id)
+        #     .join(
+        #         WorkflowStepInstance,
+        #         WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
+        #     )
+        #     .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
+        #     .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
+        #     .join(self.__class__, self.id == PackageSnapshot.bli_id)
+        # )
+        # not as good as the above, but works with the bootstrap test data
         current_workflow_step_instance_id = object_session(self).scalar(
-            select(WorkflowInstance.id)
+            select(WorkflowStepInstance.id)
             .join(
-                WorkflowStepInstance,
+                WorkflowInstance,
                 WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
             )
-            .join(Package, WorkflowInstance.id == Package.workflow_id)
+            .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
             .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
             .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .where(WorkflowStepInstance.status == WorkflowStatus.REVIEW)
+            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return current_workflow_step_instance_id
 
@@ -460,7 +606,7 @@ class CAN(BaseModel):
 
     __tablename__ = "can"
 
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     number = Column(String(30), nullable=False)
     description = Column(String)
     purpose = Column(String, default="")

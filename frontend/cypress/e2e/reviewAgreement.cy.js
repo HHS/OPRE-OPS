@@ -9,7 +9,7 @@ const randomNumber2 = Math.floor(Math.random() * 1000000);
 
 const blData = [
     {
-        descr: "SC1",
+        services_component: "Base Period 1",
         can: "G99HRF2",
         month: "09 - Sep",
         day: "01",
@@ -78,17 +78,27 @@ describe("agreement review workflow", () => {
             cy.get(".usa-form-group--error").should("have.length", 4);
             cy.get("#description").type("Test Description");
             cy.get("#product_service_code_id").select(1);
+            cy.get("#serviceReqType").select("Severable");
             cy.get("#agreement_reason").select("NEW_REQ");
             cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
             cy.get("#team-member-combobox-input").type("Admin Demo{enter}");
             cy.get("#agreementNotes").type("This is a note.");
             cy.get("[data-cy='continue-btn']").click();
+            //  Add Services Component
+            cy.get("p").should("contain", "You have not added any Services Component yet.");
+            cy.get("#servicesComponentSelect").select("1");
+            cy.get("#popStartMonth").select("01 - Jan");
+            cy.get("#popStartDay").type("1");
+            cy.get("#popStartYear").type("2024");
+            cy.get("#popEndMonth").select("01 - Jan");
+            cy.get("#popEndDay").type("1");
+            cy.get("#popEndYear").type("2025");
+            cy.get("#description").type("This is a description.");
+            cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get("h2").should("contain", "Base Period 1");
             //create a budget line with errors
             cy.get("#add-budget-line").should("be.disabled");
-            cy.get("#enteredDescription").type(`${blData[0].descr}`);
-            cy.get("#enteredDescription").clear();
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredDescription").type(`${blData[0].descr}`);
+            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             // add a CAN and clear it
             cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
             cy.get(".usa-combo-box__clear-input").click();
@@ -174,7 +184,7 @@ describe("agreement review workflow", () => {
             cy.get(".usa-form-group--error").should("not.exist");
             cy.get('[data-cy="continue-btn"]').click();
             // add incomplete budget line
-            cy.get("#enteredDescription").type(`${blData[0].descr}`);
+            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             cy.get("#add-budget-line").should("not.be.disabled");
             cy.get("#add-budget-line").click();
             // patch agreement
@@ -271,16 +281,26 @@ describe("agreement review workflow", () => {
             cy.get("#description").type("Test Description");
             cy.get("#product_service_code_id").select(1);
             cy.get("#agreement_reason").select("NEW_REQ");
+            cy.get("#serviceReqType").select("Severable");
             cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
             cy.get("#team-member-combobox-input").type("Admin Demo{enter}");
             cy.get("#agreementNotes").type("This is a note.");
             cy.get("[data-cy='continue-btn']").click();
+            //  Add Services Component
+            cy.get("p").should("contain", "You have not added any Services Component yet.");
+            cy.get("#servicesComponentSelect").select("1");
+            cy.get("#popStartMonth").select("01 - Jan");
+            cy.get("#popStartDay").type("1");
+            cy.get("#popStartYear").type("2024");
+            cy.get("#popEndMonth").select("01 - Jan");
+            cy.get("#popEndDay").type("1");
+            cy.get("#popEndYear").type("2025");
+            cy.get("#description").type("This is a description.");
+            cy.get("[data-cy='add-services-component-btn']").click();
+            cy.get("h2").should("contain", "Base Period 1");
             //create a budget line with errors
             cy.get("#add-budget-line").should("be.disabled");
-            cy.get("#enteredDescription").type(`${blData[0].descr}`);
-            cy.get("#enteredDescription").clear();
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredDescription").type(`${blData[0].descr}`);
+            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             // add a CAN and clear it
             cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
             cy.get(".usa-combo-box__clear-input").click();
@@ -365,7 +385,7 @@ describe("agreement review workflow", () => {
             cy.get(".usa-form-group--error").should("not.exist");
             cy.get('[data-cy="continue-btn"]').click();
             // add incomplete budget line
-            cy.get("#enteredDescription").type(`${blData[0].descr}`);
+            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             cy.get("#add-budget-line").should("not.be.disabled");
             cy.get("#add-budget-line").click();
             // patch agreement

@@ -5,7 +5,7 @@ import CANFundingCard from "../../CANs/CANFundingCard";
 import ToggleButton from "../../UI/ToggleButton";
 import Tag from "../../UI/Tag";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
-import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.constants";
+import { workflowActions } from "../../../pages/agreements/review/ReviewAgreement.constants";
 
 /**
  * Renders an accordion component for reviewing CANs.
@@ -54,6 +54,22 @@ const AgreementCANReviewAccordion = ({
         if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
 
+    // TODO: Replace with actual data
+    let cansOutsideDivision = [
+        {
+            id: 1,
+            name: "Not"
+        },
+        {
+            id: 2,
+            name: "Yet"
+        },
+        {
+            id: 3,
+            name: "Implemented"
+        }
+    ];
+
     return (
         <Accordion
             heading="Review CANs"
@@ -61,7 +77,7 @@ const AgreementCANReviewAccordion = ({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
+                {action === workflowActions.DRAFT_TO_PLANNED && (
                     <ToggleButton
                         btnText="After Approval"
                         handleToggle={() => setAfterApproval(!afterApproval)}
@@ -95,6 +111,18 @@ const AgreementCANReviewAccordion = ({
                         tagStyle="primaryDarkTextLightBackground"
                     />
                 ))}
+            </div>
+            <div className="margin-top-1">
+                <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>
+                {cansOutsideDivision.length > 0 &&
+                    cansOutsideDivision.map((portfolio) => (
+                        <Tag
+                            key={portfolio.id}
+                            className="margin-left-1"
+                            text={portfolio.name}
+                            tagStyle="primaryDarkTextLightBackground"
+                        />
+                    ))}
             </div>
         </Accordion>
     );

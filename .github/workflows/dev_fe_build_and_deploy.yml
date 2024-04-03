@@ -7,15 +7,14 @@ on:
       - main
     paths:
       - 'frontend/**'
-
+      
 env:
-  TF_IN_AUTOMATION: "True"
-  ENVIRONMENT: "dev"
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
+  ENVIRONMENT: dev
 
 jobs:
-  build:
+  build-frontend:
     permissions:
       contents: read
       packages: write
@@ -24,102 +23,25 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
       - name: Build and publish the Docker image for ${{ github.repository }}
-        uses: macbre/push-to-ghcr@0f6c180522d02d9e608096c4dcf3b691193b4d44 #v13
+        uses: ./.github/actions/build-and-push
         with:
           image_name: ${{ github.repository }}/ops-${{ env.WORKING_DIR }} # it will be lowercased internally
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tag: ${{ github.sha }}
+          image_tags: "unstable,${{ github.sha }}"
 
-  build-asa:
-    permissions:
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@9b21598af8d4dfc302e5a30250007de0fda92acc #v1.1.1
-        with:
-          bun-version: 1.0.15
-
-      - name: Install dependencies
-        working-directory: ${{ env.WORKING_DIR }}
-        run: bun install
-
-      - name: Build Bun
-        uses: ./.github/actions/tf-apply
-        with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}_asa/build_bun"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "commit_hash": "${{ github.sha }}",
-              "frontend_dir": "../../../../../frontend"
-            }
-
-      - name: Archive Artifacts
-        uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
-        with:
-          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
-          path: ${{ env.WORKING_DIR }}/build
-
-  frontend-deploy:
-    needs: build
-    permissions:
-      pull-requests: write
+  deploy-frontend: 
+    needs: build-frontend
 
     runs-on: ubuntu-latest
-    steps:
+    steps: 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-
-      - name: Terraform Apply
-        uses: ./.github/actions/tf-apply
+   
+      - name: Deploy Container App
+        uses: azure/container-apps-deploy-action@29ee19866ec987ededd70b8412d9ee241a9102d1 #v1
         with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "container_tag": "${{ github.sha }}"
-            }
-
-  frontend-asa-deploy:
-    needs: build-asa
-    permissions:
-      pull-requests: write
-
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
-
-      - name: Download Frontend Artifacts
-        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 #v4.1
-        with:
-          name: ${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-build-${{ github.sha }}
-          path: ${{ env.WORKING_DIR }}/build
-
-      - name: Terraform Apply
-        uses: ./.github/actions/tf-apply
-        with:
-          terraform_directory: "terraform/eus/${{ env.ENVIRONMENT }}/frontend_asa"
-          azure_client_id: ${{ secrets.ARM_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.ARM_TENANT_ID }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tf_vars: |
-            {
-              "environment": "${{ env.ENVIRONMENT }}",
-              "commit_hash": "${{ github.sha }}}"
-            }
+            azureCredentials: ${{ secrets.AZURE_CREDS }}
+            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
+            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}

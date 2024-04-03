@@ -1,13 +1,12 @@
-from models import User
-from models.base import BaseModel
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Identity, Integer, String
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from typing_extensions import override
+
+from models.base import BaseModel
 
 
 class Notification(BaseModel):
     __tablename__ = "notification"
-    id = Column(Integer, Identity(), primary_key=True)
+    id = BaseModel.get_pk_column()
     title = Column(String)
     message = Column(String)
     is_read = Column(Boolean, default=False)

@@ -1,0 +1,10 @@
+# Configuration Management
+## CM-2-7 - Baseline Configuration | Configure Systems and Components for High-risk Areas
+
+(a) Issue [government-owned laptops (and other mobile devices)] with [FIPS 140-2 compliant encryption] to individuals traveling to locations that the organization deems to be of significant risk; and
+
+(b) Apply the following controls to the systems or components when the individuals return from travel: [security safeguards (at a minimum, examining the device for physical tampering, purging, or reimaging the hard disk drive)].
+
+## OPS Implementation
+
+TODO: Seek inheritance from ACF OCIO

@@ -9,13 +9,13 @@ const handleAgreementProp = (agreement) => {
     }
 };
 
-// TODO: filter out DRAFT BLIs and UNDER_REVIEW BLIs?
+// TODO: filter out DRAFT BLIs?
 export const getAgreementSubTotal = (agreement) => {
     handleAgreementProp(agreement);
     return agreement.budget_line_items?.reduce((n, { amount }) => n + amount, 0);
 };
 
-// TODO: filter out DRAFT BLIs and UNDER_REVIEW BLIs?
+// TODO: filter out DRAFT BLIs?
 
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item.
@@ -30,10 +30,10 @@ const calculateTotal = (items, fee) => {
 /**
  * Calculates the procurement shop subtotal based on the agreement and budget lines.
  * @param {Object} agreement - The agreement object.
- * @param {Array} budgetLines - The array of budget line items.
+ * @param {Array<any>} [budgetLines] - The array of budget line items.
  * @returns {number} - The procurement shop subtotal.
  */
-export const getProcurementShopSubTotal = (agreement, budgetLines) => {
+export const getProcurementShopSubTotal = (agreement, budgetLines = []) => {
     handleAgreementProp(agreement);
     if (!agreement.procurement_shop) {
         return 0;
@@ -41,7 +41,7 @@ export const getProcurementShopSubTotal = (agreement, budgetLines) => {
 
     const fee = agreement.procurement_shop.fee;
 
-    if (budgetLines) {
+    if (budgetLines.length > 0) {
         return calculateTotal(budgetLines, fee);
     }
 

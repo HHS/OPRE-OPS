@@ -24,8 +24,8 @@ export const useNavigateAgreementApprove = () => {
 export const useHandleEditAgreement = () => {
     const navigate = useNavigate();
 
-    const handleEditAgreement = (agreement) => {
-        navigate(`/agreements/${agreement.id}?mode=edit`);
+    const handleEditAgreement = (agreementId) => {
+        navigate(`/agreements/${agreementId}?mode=edit`);
     };
 
     return handleEditAgreement;
@@ -46,7 +46,7 @@ export const useHandleDeleteAgreement = () => {
     const handleDeleteAgreement = (id, agreementName) => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to delete this agreement?",
+            heading: `Are you sure you want to delete Agreement ${agreementName}?`,
             actionButtonText: "Delete",
             handleConfirm: () => {
                 deleteAgreement(id)

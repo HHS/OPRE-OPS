@@ -4,10 +4,24 @@ import { Router } from "react-router-dom";
 import BudgetLinesTable from "./BudgetLinesTable";
 import store from "../../../store";
 
+const mockBudgetLinesOne = [
+    {
+        id: 1,
+        display_name: "BudgetLineItem#1",
+        created_on: "2021-08-20",
+        date_needed: "2021-09-15",
+        can: { number: "001" },
+        amount: 1200,
+        proc_shop_fee_percentage: 0.05,
+        status: "DRAFT",
+        created_by: "1",
+        comments: "Note 1"
+    }
+];
 const mockBudgetLines = [
     {
         id: 1,
-        line_description: "Description 1",
+        display_name: "BudgetLineItem#1",
         created_on: "2021-08-20",
         date_needed: "2021-09-15",
         can: { number: "001" },
@@ -19,7 +33,7 @@ const mockBudgetLines = [
     },
     {
         id: 2,
-        line_description: "Description 2",
+        display_name: "BudgetLineItem#2",
         created_on: "2021-09-01",
         date_needed: "2021-10-30",
         can: { number: "002" },
@@ -44,7 +58,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLinesAdded={mockBudgetLines}
+                budgetLines={mockBudgetLinesOne}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}
@@ -53,8 +67,8 @@ describe("PreviewTable", () => {
             />,
             store
         );
-        mockBudgetLines.forEach((bl) => {
-            expect(screen.getByText(bl.line_description)).toBeInTheDocument();
+        mockBudgetLinesOne.forEach((bl) => {
+            expect(screen.getByText(bl.id)).toBeInTheDocument();
         });
     });
 
@@ -62,7 +76,7 @@ describe("PreviewTable", () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
-                budgetLinesAdded={mockBudgetLines}
+                budgetLines={mockBudgetLines}
                 handleSetBudgetLineForEditing={() => {}}
                 handleDeleteBudgetLine={() => {}}
                 handleDuplicateBudgetLine={() => {}}

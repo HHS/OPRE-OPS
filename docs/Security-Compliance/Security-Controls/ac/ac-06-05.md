@@ -1,0 +1,18 @@
+# Access Control
+## AC-06 (05) - Privileged Accounts
+
+Restrict privileged accounts on the system to [personnel or roles with a legitimate business need or system security function. Privileged accounts must be restricted on the IT system to a limited number of authorized individuals with a need to perform administrative duties. Privileged accounts, including super user accounts, are typically described as system administrator for various types of systems].
+
+### OPS Implementation
+
+Users possessing the OPS System Admin role are responsible for granting that access to individuals who require the same access.
+
+This is also partially inherited from cloud.gov and ACF OCIO.
+
+### Related Content
+
+[AC-2](ac-02/index.md)
+
+[AC-6](ac-06/index.md)
+
+[AC-6-1](ac-06-01/index.md)

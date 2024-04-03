@@ -1,0 +1,19 @@
+# Boundary Protection
+## SC-07 - Boundary Protection
+
+a. Monitor and control communications at the external managed interfaces to the system and at key internal managed interfaces within the system;
+
+b. Implement subnetworks for publicly accessible system components that are  [Low and Moderate - physically or logically, or both High - both physically and logically] separated from internal organizational networks; and
+
+c. Connect to external networks or systems only through managed interfaces consisting of boundary protection devices arranged in accordance with an organizational security and privacy architecture.
+
+## OPS Implementation
+
+TODO: Come up with text based on how we implement our Azure virtual network
+
+### Control Origination
+
+Hybrid with IaaS provider and OPS
+
+### Related Content
+Managed interfaces include gateways, routers, firewalls, guards, network-based malicious code analysis, virtualization systems, or encrypted tunnels implemented within a security architecture. Subnetworks that are physically or logically separated from internal networks are referred to as demilitarized zones or DMZs. Restricting or prohibiting interfaces within organizational systems includes restricting external web traffic to designated web servers within managed interfaces, prohibiting external traffic that appears to be spoofing internal addresses, and prohibiting internal traffic that appears to be spoofing external addresses. SP 800-189 provides additional information on source address validation techniques to prevent ingress and egress of traffic with spoofed addresses. Commercial telecommunications services are provided by network components and consolidated management systems shared by customers. These services may also include third party-provided access lines and other service elements. Such services may represent sources of increased risk despite contract security provisions. Boundary protection may be implemented as a common control for all or part of an organizational network such that the boundary to be protected is greater than a system-specific boundary (i.e., an authorization boundary).

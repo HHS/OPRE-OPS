@@ -3,39 +3,56 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 
-import ProcurementShopSelectWithFee from "../../UI/Form/ProcurementShopSelectWithFee";
-import AgreementReasonSelect from "../../UI/Form/AgreementReasonSelect";
-import AgreementTypeSelect from "../../UI/Form/AgreementTypeSelect";
-import ProductServiceCodeSelect from "../../UI/Form/ProductServiceCodeSelect";
-import TeamMemberComboBox from "../../UI/Form/TeamMemberComboBox";
-import TeamMemberList from "../../UI/Form/TeamMemberList";
+import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
+import AgreementReasonSelect from "../AgreementReasonSelect";
+import AgreementTypeSelect from "../AgreementTypeSelect";
+import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
+import TeamMemberComboBox from "../TeamMemberComboBox";
+import TeamMemberList from "../TeamMemberList";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { formatTeamMember } from "../../../api/postAgreements";
-import ProductServiceCodeSummaryBox from "../../UI/Form/ProductServiceCodeSummaryBox";
+import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
 import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
+import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
 import {
     useAddAgreementMutation,
     useGetProductServiceCodesQuery,
-    useUpdateAgreementMutation
+    useUpdateAgreementMutation,
+    useDeleteAgreementMutation
 } from "../../../api/opsAPI";
-import ProjectOfficerComboBox from "../../UI/Form/ProjectOfficerComboBox";
+import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
+import GoBackButton from "../../UI/Button/GoBackButton";
 import useAlert from "../../../hooks/use-alert.hooks";
+import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
+import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
  *
+ * @component
  * @param {Object} props - The component props.
+ * @param {Function} [props.setHasAgreementChanged] - A function to set the agreement changed state. - optional
  * @param {Function} [props.goBack] - A function to go back to the previous step. - optional
  * @param {Function} [props.goToNext] - A function to go to the next step. - optional
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
- * @returns {React.JSX.Element} - The component JSX.
+ * @param {number} props.selectedAgreementId - The ID of the selected agreement. - optional
+ * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, setIsEditMode }) => {
+export const AgreementEditForm = ({
+    setHasAgreementChanged = () => {},
+    goBack,
+    goToNext,
+    isReviewMode,
+    isEditMode,
+    setIsEditMode,
+    selectedAgreementId
+}) => {
+    // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
     const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
@@ -53,6 +70,8 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
     const setAgreementIncumbent = useUpdateAgreement("incumbent");
     const setAgreementNotes = useUpdateAgreement("notes");
+    const setContractType = useUpdateAgreement("contract_type");
+    const setServiceReqType = useUpdateAgreement("service_requirement_type");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -63,6 +82,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const [updateAgreement] = useUpdateAgreementMutation();
     const [addAgreement] = useAddAgreementMutation();
+    const [deleteAgreement] = useDeleteAgreementMutation();
 
     const {
         agreement,
@@ -77,7 +97,9 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         name: agreementTitle,
         description: agreementDescription,
         agreement_reason: agreementReason,
-        team_members: selectedTeamMembers
+        team_members: selectedTeamMembers,
+        contract_type: contractType,
+        service_requirement_type: serviceReqType
     } = agreement;
 
     const {
@@ -85,6 +107,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
         error: errorProductServiceCodes,
         isLoading: isLoadingProductServiceCodes
     } = useGetProductServiceCodesQuery();
+
+    // make a copy of the agreement object
+    const hasAgreementChanged = useHasStateChanged(agreement);
+    setHasAgreementChanged(hasAgreementChanged);
 
     if (isReviewMode) {
         suite({
@@ -138,7 +164,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const cleanAgreementForApi = (data) => {
         // eslint-disable-next-line no-unused-vars
-        const { id, budget_line_items, created_by, created_on, updated_on, ...cleanData } = data;
+        const { id, budget_line_items, services_components, created_by, created_on, updated_on, ...cleanData } = data;
         return { id: id, cleanData: cleanData };
     };
 
@@ -150,6 +176,10 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             })
         };
         const { id, cleanData } = cleanAgreementForApi(data);
+
+        if (!hasAgreementChanged) {
+            return;
+        }
 
         if (id) {
             await updateAgreement({ id: id, data: cleanData })
@@ -180,11 +210,13 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                 })
                 .then((fulfilled) => {
                     console.log(`CREATE: agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Draft Saved",
-                        message: `The agreement ${agreement.name} has been successfully created.`
-                    });
+                    if (!isWizardMode) {
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Draft Saved",
+                            message: `The agreement ${agreement.name} has been successfully created.`
+                        });
+                    }
                 })
                 .catch((rejected) => {
                     console.error(`CREATE: agreement failed: ${JSON.stringify(rejected, null, 2)}`);
@@ -200,28 +232,59 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 
     const handleContinue = async () => {
         await saveAgreement();
+        setHasAgreementChanged(false);
         if (isEditMode && setIsEditMode) setIsEditMode(false);
         await goToNext();
     };
 
     const handleDraft = async () => {
         await saveAgreement();
+        setHasAgreementChanged(false);
         await navigate("/agreements");
     };
 
     const handleCancel = () => {
+        const heading = `${isWizardMode ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved." : "Are you sure you want to cancel editing? Your changes will not be saved."}`;
+        const actionButtonText = `${isWizardMode ? "Cancel Agreement" : "Cancel Edits"}`;
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? Your agreement will not be saved.",
-            actionButtonText: "Cancel",
+            heading,
+            actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                if (isWizardMode) {
-                    navigate("/agreements");
-                } else {
-                    if (isEditMode && setIsEditMode) setIsEditMode(false);
+                if (selectedAgreementId && isWizardMode) {
+                    deleteAgreement(selectedAgreementId)
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
+                            setAlert({
+                                type: "success",
+                                heading: "Create New Agreement Cancelled",
+                                message: "Your agreement has been cancelled.",
+                                redirectUrl: "/agreements"
+                            });
+                        })
+                        .catch((rejected) => {
+                            console.error(`DELETE agreement rejected: ${JSON.stringify(rejected, null, 2)}`);
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred while deleting the agreement.",
+                                redirectUrl: "/error"
+                            });
+                        });
+                } else if (isWizardMode) {
+                    setAlert({
+                        type: "success",
+                        heading: "Create New Agreement Cancelled",
+                        message: "Your agreement has been cancelled.",
+                        redirectUrl: "/agreements"
+                    });
+                } else if (isEditMode) {
+                    setIsEditMode(false);
                     navigate(`/agreements/${agreement.id}`);
                 }
+                setHasAgreementChanged(false);
             }
         });
     };
@@ -252,31 +315,38 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-
+            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Agreement Type</h2>
+            <p className="margin-top-1">Select the agreement type to get started.</p>
             <AgreementTypeSelect
-                name="agreement_type"
-                label="Agreement Type"
                 messages={res.getErrors("agreement_type")}
                 className={cn("agreement_type")}
                 selectedAgreementType={agreementType || ""}
+                isRequired={true}
                 onChange={(name, value) => {
                     setAgreementType(value);
                     runValidate(name, value);
                 }}
             />
-
+            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
+            <p className="margin-top-1">
+                Tell us a little more about this agreement. Make sure you complete the required information in order to
+                proceed. For everything else you can skip the parts you do not know or come back to edit the information
+                later.
+            </p>
             <Input
                 name="name"
                 label="Agreement Title"
                 messages={res.getErrors("name")}
+                maxLength={200}
                 className={cn("name")}
+                isRequired={true}
                 value={agreementTitle}
                 onChange={(name, value) => {
                     setAgreementTitle(value);
                     runValidate(name, value);
                 }}
             />
-
+            {/* TODO: Add Agreement Nickname/Acronym */}
             <TextArea
                 name="description"
                 label="Description"
@@ -291,7 +361,23 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     }
                 }}
             />
-
+            <ContractTypeSelect
+                className="margin-top-3"
+                value={contractType}
+                onChange={(name, value) => {
+                    setContractType(value);
+                }}
+            />
+            <ServiceReqTypeSelect
+                messages={res.getErrors("serviceReqType")}
+                className={`margin-top-3 ${cn("serviceReqType")}`}
+                isRequired={true}
+                value={serviceReqType}
+                onChange={(name, value) => {
+                    setServiceReqType(value);
+                    runValidate(name, value);
+                }}
+            />
             <ProductServiceCodeSelect
                 name="product_service_code_id"
                 label="Product Service Code"
@@ -372,7 +458,7 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedTeamMembers={setSelectedTeamMembers}
-                    overrideStyles={{ width: "12.8em" }}
+                    overrideStyles={{ width: "14.375rem" }}
                 />
             </div>
 
@@ -384,23 +470,14 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
             <TextArea
                 name="agreementNotes"
                 label="Notes (optional)"
-                maxLength={1000}
+                maxLength={500}
                 messages={res.getErrors("agreementNotes")}
                 className={cn("agreementNotes")}
                 value={agreementNotes || ""}
                 onChange={(name, value) => setAgreementNotes(value)}
             />
             <div className="grid-row flex-justify margin-top-8">
-                {isWizardMode ? (
-                    <button
-                        className="usa-button usa-button--unstyled margin-right-2"
-                        onClick={() => goBack()}
-                    >
-                        Go Back
-                    </button>
-                ) : (
-                    <div />
-                )}
+                {isWizardMode ? <GoBackButton handleGoBack={goBack} /> : <div />}
                 <div>
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"
@@ -435,11 +512,13 @@ export const AgreementEditForm = ({ goBack, goToNext, isReviewMode, isEditMode, 
 };
 
 AgreementEditForm.propTypes = {
+    setHasAgreementChanged: PropTypes.func,
     goBack: PropTypes.func,
     goToNext: PropTypes.func,
     isReviewMode: PropTypes.bool,
     isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func
+    setIsEditMode: PropTypes.func,
+    selectedAgreementId: PropTypes.number
 };
 
 export default AgreementEditForm;

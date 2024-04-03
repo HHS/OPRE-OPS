@@ -16,11 +16,9 @@ import { useSelector } from "react-redux";
  */
 export const useIsBudgetLineEditableByStatus = (/** @type {BudgetLine} */ budgetLine) => {
     const isBudgetLineDraft = budgetLine?.status === "DRAFT";
-    const isBudgetLineInReview = budgetLine?.status === "UNDER_REVIEW";
     const isBudgetLinePlanned = budgetLine?.status === "PLANNED";
     const isBudgetLineInActiveWorkflow = budgetLine?.has_active_workflow;
-    const isBudgetLineInEditableStatus =
-        (isBudgetLineDraft || isBudgetLineInReview || isBudgetLinePlanned) && !isBudgetLineInActiveWorkflow;
+    const isBudgetLineInEditableStatus = (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInActiveWorkflow;
 
     return isBudgetLineInEditableStatus;
 };

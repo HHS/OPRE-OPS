@@ -1,9 +1,10 @@
 import numpy
 import pytest
 from flask import url_for
-from models import AgreementType, ContractAgreement, ContractType, GrantAgreement
-from models.cans import Agreement
 from sqlalchemy import func, select, update
+
+from models import AgreementType, ContractAgreement, ContractType, GrantAgreement
+from models.cans import Agreement, ServiceRequirementType
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -16,6 +17,7 @@ def test_agreement_retrieve(loaded_db):
     assert agreement.display_name == agreement.name
     assert agreement.id == 1
     assert agreement.agreement_type.name == "CONTRACT"
+    assert agreement.procurement_tracker_workflow_id is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -42,6 +44,8 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
+    assert "procurement_tracker_workflow_id" in response.json
+    assert response.json["procurement_tracker_workflow_id"] is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -115,7 +119,7 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
     (
         ("agreement_reason", "NEW_REQ"),
         ("contract_number", "XXXX000000001"),
-        ("contract_type", "RESEARCH"),
+        ("contract_type", "LABOR_HOUR"),
         ("agreement_type", "CONTRACT"),
         ("delivered_status", False),
         ("procurement_shop_id", 1),
@@ -194,7 +198,8 @@ def test_agreement_create_contract_agreement(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
     )
@@ -205,7 +210,8 @@ def test_agreement_create_contract_agreement(loaded_db):
     agreement = loaded_db.scalar(stmt)
 
     assert agreement.contract_number == "XXXX000000002"
-    assert agreement.contract_type == ContractType.RESEARCH
+    assert agreement.contract_type == ContractType.FIRM_FIXED_PRICE
+    assert agreement.service_requirement_type == ServiceRequirementType.SEVERABLE
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -229,7 +235,8 @@ def test_contract(loaded_db):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
-        contract_type=ContractType.RESEARCH,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
@@ -515,6 +522,39 @@ def test_agreements_post(auth_client):
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_agreements_post_contract_with_service_requirement_type(auth_client):
+    response = auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "FRANK TEST",
+            "description": "test description",
+            "product_service_code_id": 1,
+            "incumbent": None,
+            "project_officer_id": 1,
+            "team_members": [
+                {
+                    "id": 2,
+                    "full_name": "Amy Madigan",
+                    "email": "Amy.Madigan@example.com",
+                }
+            ],
+            "notes": "test notes",
+            "project_id": 1,
+            "procurement_shop_id": 2,
+            "contract_type": "FIRM_FIXED_PRICE",
+            "service_requirement_type": "SEVERABLE",
+        },
+    )
+    assert response.status_code == 201
+    contract_id = response.json["id"]
+
+    response = auth_client.get(url_for("api.agreements-item", id=contract_id))
+    assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
     """PATCH with mimicking the e2e test"""
     response = auth_client.patch(
@@ -557,3 +597,42 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
     assert response.status_code == 200
     assert test_contract.name == "Test Edit Title"
     assert test_contract.notes == "Test Notes test edit notes"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
+    response = auth_client.get(
+        url_for("api.agreements-item", id=test_contract.id),
+    )
+    assert response.status_code == 200
+    data = response.json
+    assert data["name"] == "CTXX12399"
+    assert data["contract_number"] == "XXXX000000002"
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert data["service_requirement_type"] == ServiceRequirementType.NON_SEVERABLE.name
+    assert data["product_service_code_id"] == 2
+    assert data["agreement_type"] == AgreementType.CONTRACT.name
+    assert data["project_id"] == 1
+    assert data["created_by"] is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={"service_requirement_type": "SEVERABLE"},
+    )
+    assert response.status_code == 200
+
+    response = auth_client.get(
+        url_for("api.agreements-item", id=test_contract.id),
+    )
+    data = response.json
+    assert data["name"] == "CTXX12399"
+    assert data["contract_number"] == "XXXX000000002"
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert data["service_requirement_type"] == ServiceRequirementType.SEVERABLE.name
+    assert data["product_service_code_id"] == 2
+    assert data["agreement_type"] == AgreementType.CONTRACT.name
+    assert data["project_id"] == 1
+    assert data["created_by"] is None

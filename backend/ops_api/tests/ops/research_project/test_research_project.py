@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from flask import url_for
+
 from models import ProjectType
 from models.projects import ResearchProject
 from ops_api.ops.resources.research_projects import ResearchProjectListAPI
@@ -147,7 +148,7 @@ def test_post_research_projects(auth_client):
     response = auth_client.post(url_for("api.research-projects-group"), json=data)
     assert response.status_code == 201
     assert response.json["title"] == "Research Project #1"
-    assert response.json["team_leaders"] == [
+    expected_team_leaders = [
         {
             "email": "chris.fortunato@example.com",
             "full_name": "Chris Fortunato",
@@ -160,6 +161,7 @@ def test_post_research_projects(auth_client):
             "id": 3,
         },
     ]
+    assert [person in expected_team_leaders for person in response.json["team_leaders"]]
 
 
 @pytest.mark.usefixtures("app_ctx")

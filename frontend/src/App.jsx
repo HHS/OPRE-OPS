@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import DefaultLayout from "./components/UI/Layouts/DefaultLayout";
+import DefaultLayout from "./components/Layouts/DefaultLayout";
 
 /**
  * DefaultLayout component

@@ -1,13 +1,15 @@
 """Base model and other useful tools for project models."""
 import enum
-from typing import cast
+from datetime import datetime
+from typing import Optional, cast
 
+import marshmallow
 import sqlalchemy
 from marshmallow import fields
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
-from sqlalchemy import Column, DateTime, ForeignKey, func
-from sqlalchemy.orm import declarative_base, declared_attr, registry, relationship
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, object_session, registry
 from typing_extensions import Any
 
 Base = declarative_base()
@@ -74,9 +76,20 @@ from sqlalchemy_continuum import make_versioned
 make_versioned(user_cls=None)
 
 
-class BaseModel(Base):  # type: ignore [misc, valid-type]
+class BaseModel(Base):
     __versioned__ = {}
     __abstract__ = True
+
+    created_by: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("user.id"), default=None
+    )
+    updated_by: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("user.id"), default=None
+    )
+    created_on: Mapped[Optional[datetime]] = mapped_column(default=func.now())
+    updated_on: Mapped[Optional[datetime]] = mapped_column(
+        default=func.now(), onupdate=func.now()
+    )
 
     @classmethod
     def model_lookup_by_table_name(cls, table_name):
@@ -87,6 +100,16 @@ class BaseModel(Base):  # type: ignore [misc, valid-type]
             if model_class_name == table_name:
                 return model
 
+    @classmethod
+    def get_pk_column(cls, column_name: str = "id"):
+        return mapped_column(
+            column_name,
+            Integer(),
+            primary_key=True,
+            nullable=False,
+            autoincrement=True,
+        )
+
     def to_dict(self):
         if not hasattr(self, "__marshmallow__"):
             raise MarshmallowError(
@@ -95,18 +118,36 @@ class BaseModel(Base):  # type: ignore [misc, valid-type]
         schema = self.__marshmallow__()
         data = schema.dump(self)
         data["display_name"] = self.display_name
+
+        user_schema = marshmallow.class_registry.get_class("SafeUserSchema")()
+        data["created_by_user"] = (
+            user_schema.dump(self.created_by_user) if self.created_by_user else None
+        )
+        data["updated_by_user"] = (
+            user_schema.dump(self.updated_by_user) if self.updated_by_user else None
+        )
+
         return data
 
-    @declared_attr
-    def created_by(cls):
-        return Column("created_by", ForeignKey("user.id"))
+    @property
+    def created_by_user(self):
+        from models import User
 
-    @declared_attr
-    def created_by_user(cls):
-        return relationship("User", foreign_keys=[cls.created_by])
+        return (
+            object_session(self).get(User, self.created_by)
+            if object_session(self) and self.created_by
+            else None
+        )
 
-    created_on = Column(DateTime, default=func.now())
-    updated_on = Column(DateTime, default=func.now(), onupdate=func.now())
+    @property
+    def updated_by_user(self):
+        from models import User
+
+        return (
+            object_session(self).get(User, self.updated_by)
+            if object_session(self) and self.updated_by
+            else None
+        )
 
     @property
     def display_name(self):
