@@ -6,7 +6,7 @@ import store from "./store";
 
 //  USWDS
 import "./uswds/css/styles.css";
-// NOTE: breaks comet js components
+// NOTE: uncommenting breaks comet js components
 // import "./uswds/js/uswds.min.js";
 
 import Home from "./pages/Home";
@@ -32,6 +32,7 @@ import ErrorPage from "./pages/ErrorPage";
 import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import ApproveAgreement from "./pages/agreements/approve";
+import DatePickerPage from "./pages/DatePickerPage";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -257,6 +258,11 @@ const router = createBrowserRouter(
             <Route
                 path="*"
                 element={<Navigate to="/error" />}
+            />
+            {/* TODO: Delete route */}
+            <Route
+                path="/datepicker"
+                element={<DatePickerPage />}
             />
         </>
     )
