@@ -6,7 +6,7 @@ import store from "./store";
 
 //  USWDS
 import "./uswds/css/styles.css";
-// NOTE: uncommenting breaks comet js components
+// NOTE: uncommenting breaks comet/trussworks js components
 // import "./uswds/js/uswds.min.js";
 
 import Home from "./pages/Home";

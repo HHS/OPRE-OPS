@@ -3,12 +3,12 @@ import classnames from "vest/classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import CanSelect from "../../CANs/CanSelect";
-import DesiredAwardDate from "../../UI/Form/DesiredAwardDate";
+// import DesiredAwardDate from "../../UI/Form/DesiredAwardDate";
 import suite from "./suite";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
-import { DatePicker } from "@metrostar/comet-uswds";
+import { DatePicker } from "@trussworks/react-uswds";
 
 /**
  * A form for creating or editing a budget line.
@@ -125,21 +125,26 @@ export const CreateBudgetLinesForm = ({
                 <div className="usa-form-group">
                     <label
                         className="usa-label"
-                        htmlFor="date-picker-1"
-                        id="appointment-date-label"
+                        htmlFor="need-by-date"
+                        id="need-by-date-label"
                     >
-                        Appointment date
+                        Need By Date
                     </label>
                     <div
                         className="usa-hint"
-                        id="appointment-date-hint"
+                        id="need-by-date-hint"
                     >
                         mm/dd/yyyy
                     </div>
                     <DatePicker
-                        aria-describedby="appointment-date-label appointment-date-hint"
-                        id="date-picker-1"
-                        name="date-picker-1"
+                        aria-describedby="need-by-date-label need-by-date-hint"
+                        id="need-by-date"
+                        name="need-by-date"
+                        onChange={(date) => {
+                            setEnteredMonth(date.getMonth() + 1);
+                            setEnteredDay(date.getDate());
+                            setEnteredYear(date.getFullYear());
+                        }}
                     />
                 </div>
                 {/* <DesiredAwardDate

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import cx from "clsx";
 import { useGetCansQuery } from "../../../api/opsAPI";
 
+// TODO: Will need to refactor this to use react-select
+
 /**
  *  A comboBox for choosing a CAN
  * @param {Object} props - The component props.
