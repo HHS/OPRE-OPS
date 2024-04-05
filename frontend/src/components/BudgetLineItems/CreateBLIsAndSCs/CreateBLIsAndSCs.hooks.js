@@ -13,7 +13,6 @@ import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
-import { set } from "lodash";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -217,9 +216,18 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
+        const formatDateForScreen = (date) => {
+            if (date) {
+                alert("date: ", date);
+                const [year, month, day] = date.split("-");
+                return `${month}/${day}/${year}`;
+            }
+            return null;
+        };
         const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];
+            // const dateForScreen = formatDateForScreen(date_needed);
             // let entered_year = "";
             // let entered_month = "";
             // let entered_day = "";
@@ -228,6 +236,7 @@ const useCreateBLIsAndSCs = (
             //     [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
             // }
 
+            setBudgetLineBeingEdited(index);
             setServicesComponentId(services_component_id);
             setSelectedCan(can);
             setEnteredAmount(amount);
@@ -237,7 +246,7 @@ const useCreateBLIsAndSCs = (
             setNeedByDate(date_needed);
             setEnteredComments(comments);
             setIsEditing(true);
-            setBudgetLineBeingEdited(index);
+            console.log({ dateForScreen });
         }
     };
 
