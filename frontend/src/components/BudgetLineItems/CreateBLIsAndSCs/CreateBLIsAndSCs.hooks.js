@@ -13,6 +13,7 @@ import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { set } from "lodash";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -45,9 +46,10 @@ const useCreateBLIsAndSCs = (
     const [servicesComponentId, setServicesComponentId] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
-    const [enteredMonth, setEnteredMonth] = React.useState(null);
-    const [enteredDay, setEnteredDay] = React.useState(null);
-    const [enteredYear, setEnteredYear] = React.useState(null);
+    // const [enteredMonth, setEnteredMonth] = React.useState(null);
+    // const [enteredDay, setEnteredDay] = React.useState(null);
+    // const [enteredYear, setEnteredYear] = React.useState(null);
+    const [needByDate, setNeedByDate] = React.useState(null);
     const [enteredComments, setEnteredComments] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
@@ -81,6 +83,15 @@ const useCreateBLIsAndSCs = (
 
     const handleAddBLI = (e) => {
         e.preventDefault();
+
+        const formatDateForApi = (date) => {
+            if (date) {
+                const [month, day, year] = date.split("/");
+                return `${year}-${month}-${day}`;
+            }
+            return null;
+        };
+
         const payload = {
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
@@ -89,8 +100,7 @@ const useCreateBLIsAndSCs = (
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
             status: "DRAFT",
-            date_needed:
-                enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
+            date_needed: formatDateForApi(needByDate) || null,
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
         const { data } = cleanBudgetLineItemForApi(payload);
@@ -210,20 +220,21 @@ const useCreateBLIsAndSCs = (
         const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];
-            let entered_year = "";
-            let entered_month = "";
-            let entered_day = "";
+            // let entered_year = "";
+            // let entered_month = "";
+            // let entered_day = "";
 
-            if (date_needed) {
-                [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
-            }
+            // if (date_needed) {
+            //     [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
+            // }
 
             setServicesComponentId(services_component_id);
             setSelectedCan(can);
             setEnteredAmount(amount);
-            setEnteredMonth(entered_month);
-            setEnteredDay(entered_day);
-            setEnteredYear(entered_year);
+            // setEnteredMonth(entered_month);
+            // setEnteredDay(entered_day);
+            // setEnteredYear(entered_year);
+            setNeedByDate(date_needed);
             setEnteredComments(comments);
             setIsEditing(true);
             setBudgetLineBeingEdited(index);
@@ -339,9 +350,10 @@ const useCreateBLIsAndSCs = (
         setServicesComponentId(null);
         setSelectedCan(null);
         setEnteredAmount(null);
-        setEnteredMonth(null);
-        setEnteredDay(null);
-        setEnteredYear(null);
+        // setEnteredMonth(null);
+        // setEnteredDay(null);
+        // setEnteredYear(null);
+        setNeedByDate(null);
         setEnteredComments(null);
     };
 
@@ -374,16 +386,18 @@ const useCreateBLIsAndSCs = (
         setServicesComponentId,
         setSelectedCan,
         setEnteredAmount,
-        setEnteredMonth,
-        setEnteredDay,
-        setEnteredYear,
+        // setEnteredMonth,
+        // setEnteredDay,
+        // setEnteredYear,
         setEnteredComments,
         resetQueryParams,
         selectedCan,
         enteredAmount,
-        enteredMonth,
-        enteredDay,
-        enteredYear,
+        // enteredMonth,
+        // enteredDay,
+        // enteredYear,
+        needByDate,
+        setNeedByDate,
         enteredComments,
         servicesComponentId,
         budgetLines,

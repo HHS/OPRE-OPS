@@ -9,9 +9,11 @@ import TextArea from "../../UI/Form/TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import { DatePicker } from "@trussworks/react-uswds";
+import DebugCode from "../../DebugCode";
 
 /**
  * A form for creating or editing a budget line.
+ * @component
  * @param {Object} props - The component props.
  * @param {Object} props.selectedCan - The currently selected CAN.
  * @param {number} props.servicesComponentId - The selected services component ID.
@@ -33,23 +35,25 @@ import { DatePicker } from "@trussworks/react-uswds";
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {number} props.agreementId - The agreement ID.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
     selectedCan,
     servicesComponentId,
     enteredAmount,
-    enteredMonth,
-    enteredDay,
-    enteredYear,
+    // enteredMonth,
+    // enteredDay,
+    // enteredYear,
     enteredComments,
     isEditing,
     setServicesComponentId,
     setSelectedCan,
     setEnteredAmount,
-    setEnteredMonth,
-    setEnteredDay,
-    setEnteredYear,
+    // setEnteredMonth,
+    // setEnteredDay,
+    // setEnteredYear,
+    needByDate,
+    setNeedByDate,
     setEnteredComments,
     handleEditBLI = () => {},
     handleAddBLI = () => {},
@@ -64,18 +68,17 @@ export const CreateBudgetLinesForm = ({
         valid: "success",
         warning: "warning"
     });
-    const isFormComplete =
-        selectedCan && servicesComponentId && enteredAmount && enteredMonth && enteredDay && enteredYear;
+    const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
 
     // validate all budgetline fields if in review mode and is editing
     //TODO: update suite for Services Components
     if (isReviewMode && isEditing) {
         suite({
             selectedCan,
-            enteredAmount,
-            enteredMonth,
-            enteredDay,
-            enteredYear
+            enteredAmount
+            // enteredMonth,
+            // enteredDay,
+            // enteredYear
         });
     }
 
@@ -84,9 +87,9 @@ export const CreateBudgetLinesForm = ({
             {
                 selectedCan,
                 enteredAmount,
-                enteredMonth,
-                enteredDay,
-                enteredYear,
+                // enteredMonth,
+                // enteredDay,
+                // enteredYear,
                 ...{ [name]: value }
             },
             name
@@ -94,60 +97,69 @@ export const CreateBudgetLinesForm = ({
     };
 
     return (
-        <form className="grid-row grid-gap margin-y-3">
-            <div className="grid-col-4">
-                <div className="usa-form-group">
-                    <AllServicesComponentSelect
-                        agreementId={agreementId}
-                        value={servicesComponentId || ""}
-                        onChange={(name, value) => {
-                            setServicesComponentId(+value);
-                        }}
-                    />
-                </div>
-                <div className="usa-form-group">
-                    <CanSelect
-                        name="selectedCan"
-                        label="CAN"
-                        messages={res.getErrors("selectedCan")}
-                        className={cn("selectedCan")}
-                        selectedCan={selectedCan}
-                        setSelectedCan={setSelectedCan}
-                        onChange={(name, value) => {
-                            if (isReviewMode) {
-                                runValidate(name, value);
-                            }
-                        }}
-                    />
-                </div>
-            </div>
-            <div className="grid-col-4">
-                <div className="usa-form-group">
-                    <label
-                        className="usa-label"
-                        htmlFor="need-by-date"
-                        id="need-by-date-label"
-                    >
-                        Need By Date
-                    </label>
-                    <div
-                        className="usa-hint"
-                        id="need-by-date-hint"
-                    >
-                        mm/dd/yyyy
+        <>
+            <DebugCode
+                data={{
+                    servicesComponentId,
+                    selectedCan,
+                    enteredAmount,
+                    enteredComments,
+                    needByDate
+                }}
+            />
+            <form className="grid-row grid-gap margin-y-3">
+                <div className="grid-col-4">
+                    <div className="usa-form-group">
+                        <AllServicesComponentSelect
+                            agreementId={agreementId}
+                            value={servicesComponentId || ""}
+                            onChange={(name, value) => {
+                                setServicesComponentId(+value);
+                            }}
+                        />
                     </div>
-                    <DatePicker
-                        aria-describedby="need-by-date-label need-by-date-hint"
-                        id="need-by-date"
-                        name="need-by-date"
-                        onChange={(date) => {
-                            setEnteredMonth(date.getMonth() + 1);
-                            setEnteredDay(date.getDate());
-                            setEnteredYear(date.getFullYear());
-                        }}
-                    />
+                    <div className="usa-form-group">
+                        <CanSelect
+                            name="selectedCan"
+                            label="CAN"
+                            messages={res.getErrors("selectedCan")}
+                            className={cn("selectedCan")}
+                            selectedCan={selectedCan}
+                            setSelectedCan={setSelectedCan}
+                            onChange={(name, value) => {
+                                if (isReviewMode) {
+                                    runValidate(name, value);
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
-                {/* <DesiredAwardDate
+                <div className="grid-col-4">
+                    <div className="usa-form-group">
+                        <label
+                            className="usa-label"
+                            htmlFor="need-by-date"
+                            id="need-by-date-label"
+                        >
+                            Need By Date
+                        </label>
+                        <div
+                            className="usa-hint"
+                            id="need-by-date-hint"
+                        >
+                            mm/dd/yyyy
+                        </div>
+                        <DatePicker
+                            aria-describedby="need-by-date-label need-by-date-hint"
+                            id="need-by-date"
+                            name="need-by-date"
+                            value={needByDate}
+                            onChange={(date) => {
+                                setNeedByDate(date);
+                            }}
+                        />
+                    </div>
+                    {/* <DesiredAwardDate
                     enteredMonth={enteredMonth}
                     setEnteredMonth={setEnteredMonth}
                     enteredDay={enteredDay}
@@ -159,70 +171,71 @@ export const CreateBudgetLinesForm = ({
                     res={res}
                     cn={cn}
                 /> */}
-                <CurrencyInput
-                    name="enteredAmount"
-                    label="Amount"
-                    messages={res.getErrors("enteredAmount")}
-                    className={cn("enteredAmount")}
-                    value={enteredAmount ?? ""}
-                    setEnteredAmount={setEnteredAmount}
-                    onChange={(name, value) => {
-                        if (isReviewMode) {
-                            runValidate(name, value);
-                        }
-                    }}
-                />
-            </div>
-            <div className="grid-col-4">
-                <TextArea
-                    name="enteredComments"
-                    label="Notes (optional)"
-                    value={enteredComments || ""}
-                    maxLength={150}
-                    onChange={(name, value) => {
-                        setEnteredComments(value);
-                    }}
-                />
+                    <CurrencyInput
+                        name="enteredAmount"
+                        label="Amount"
+                        messages={res.getErrors("enteredAmount")}
+                        className={cn("enteredAmount")}
+                        value={enteredAmount ?? ""}
+                        setEnteredAmount={setEnteredAmount}
+                        onChange={(name, value) => {
+                            if (isReviewMode) {
+                                runValidate(name, value);
+                            }
+                        }}
+                    />
+                </div>
+                <div className="grid-col-4">
+                    <TextArea
+                        name="enteredComments"
+                        label="Notes (optional)"
+                        value={enteredComments || ""}
+                        maxLength={150}
+                        onChange={(name, value) => {
+                            setEnteredComments(value);
+                        }}
+                    />
 
-                {isEditing ? (
-                    <div className="display-flex flex-justify-end">
+                    {isEditing ? (
+                        <div className="display-flex flex-justify-end">
+                            <button
+                                className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleResetForm();
+                                    if (isReviewMode) {
+                                        suite.reset();
+                                    }
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="usa-button usa-button--outline margin-top-2 margin-right-0"
+                                data-cy="update-budget-line"
+                                disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
+                                onClick={handleEditBLI}
+                            >
+                                Update Budget Line
+                            </button>
+                        </div>
+                    ) : (
                         <button
-                            className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleResetForm();
-                                if (isReviewMode) {
-                                    suite.reset();
-                                }
-                            }}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className="usa-button usa-button--outline margin-top-2 margin-right-0"
-                            data-cy="update-budget-line"
+                            id="add-budget-line"
+                            className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
                             disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
-                            onClick={handleEditBLI}
+                            onClick={handleAddBLI}
                         >
-                            Update Budget Line
+                            <FontAwesomeIcon
+                                icon={faAdd}
+                                className="height-2 width-2"
+                            />
+                            Add Budget Line
                         </button>
-                    </div>
-                ) : (
-                    <button
-                        id="add-budget-line"
-                        className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
-                        disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
-                        onClick={handleAddBLI}
-                    >
-                        <FontAwesomeIcon
-                            icon={faAdd}
-                            className="height-2 width-2"
-                        />
-                        Add Budget Line
-                    </button>
-                )}
-            </div>
-        </form>
+                    )}
+                </div>
+            </form>
+        </>
     );
 };
 

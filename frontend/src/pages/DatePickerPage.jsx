@@ -1,7 +1,9 @@
 import App from "../App";
 import RoundedBox from "../components/UI/RoundedBox";
+import DatePicker from "../components/UI/USWDS/DatePicker";
 import { DatePicker as CometDatePicker } from "@metrostar/comet-uswds";
 import { DatePicker as TSDatePicker } from "@trussworks/react-uswds";
+import "./DatePickerPage.css";
 
 const Home = () => {
     return (
@@ -12,6 +14,7 @@ const Home = () => {
                     <p>⚠️ Play with caution</p>
                 </RoundedBox>
             </div>
+            <DatePicker label="Vanilla USWDS" />
             <div className="usa-form-group">
                 <label
                     className="usa-label"
@@ -51,6 +54,20 @@ const Home = () => {
                     aria-labelledby="appointment-date-label"
                     id="appointment-date"
                     name="appointment-date"
+                />
+            </div>
+            <div className="usa-form-group">
+                <label
+                    className="usa-label"
+                    htmlFor="html-native"
+                    id="html-native-label"
+                >
+                    HTML Native
+                </label>
+                <input
+                    type="date"
+                    name="html-native"
+                    id="html-native"
                 />
             </div>
         </App>

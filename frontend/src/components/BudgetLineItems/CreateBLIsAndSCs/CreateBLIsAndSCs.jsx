@@ -69,18 +69,20 @@ export const CreateBLIsAndSCs = ({
         pageErrors,
         setEnteredAmount,
         setEnteredComments,
-        setEnteredDay,
-        setEnteredMonth,
-        setEnteredYear,
+        // setEnteredDay,
+        // setEnteredMonth,
+        // setEnteredYear,
         setSelectedCan,
         setServicesComponentId,
         setShowModal,
         showModal,
         selectedCan,
         enteredAmount,
-        enteredMonth,
-        enteredDay,
-        enteredYear,
+        // enteredMonth,
+        // enteredDay,
+        // enteredYear,
+        needByDate,
+        setNeedByDate,
         enteredComments,
         servicesComponentId,
         groupedBudgetLinesByServicesComponent,
@@ -203,17 +205,19 @@ export const CreateBLIsAndSCs = ({
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
                 enteredAmount={enteredAmount}
-                enteredMonth={enteredMonth}
-                enteredDay={enteredDay}
-                enteredYear={enteredYear}
+                // enteredMonth={enteredMonth}
+                // enteredDay={enteredDay}
+                // enteredYear={enteredYear}
                 enteredComments={enteredComments}
                 isEditing={isEditing}
                 setServicesComponentId={setServicesComponentId}
                 setSelectedCan={setSelectedCan}
                 setEnteredAmount={setEnteredAmount}
-                setEnteredMonth={setEnteredMonth}
-                setEnteredDay={setEnteredDay}
-                setEnteredYear={setEnteredYear}
+                // setEnteredMonth={setEnteredMonth}
+                // setEnteredDay={setEnteredDay}
+                // setEnteredYear={setEnteredYear}
+                needByDate={needByDate}
+                setNeedByDate={setNeedByDate}
                 setEnteredComments={setEnteredComments}
                 handleEditBLI={handleEditBLI}
                 handleResetForm={handleResetForm}
