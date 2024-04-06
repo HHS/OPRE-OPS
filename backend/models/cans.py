@@ -355,7 +355,7 @@ class DirectAgreement(Agreement):
     __tablename__ = "direct_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
-    payee: Mapped[str] = mapped_column(String, nullable=False)
+    direct_receiving_partner: Mapped[str] = mapped_column(String, nullable=False)
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
