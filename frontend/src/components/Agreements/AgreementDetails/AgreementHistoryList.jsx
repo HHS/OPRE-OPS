@@ -63,7 +63,12 @@ const eventMessage = (historyItem) => {
         case "UPDATED":
             return `${titleName} updated by ${createdByName}`;
         case "DELETED":
-            return `${titleName} deleted by ${createdByName}`;
+            if (historyItem.class_name === "BudgetLineItem") {
+                return `${findObjectTitle(historyItem)} deleted by ${createdByName}`;
+            } else {
+                return `${titleName} deleted by ${createdByName}`;
+            }
+
         default:
             return `${className} ${historyItem.event_type} by ${createdByName}`;
     }

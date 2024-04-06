@@ -1,18 +1,20 @@
+import ReactMarkdown from "react-markdown";
+import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import PropTypes from "prop-types";
 import { timeAgo } from "../../../helpers/utils.js";
 import styles from "./LogItem.module.css";
-import ReactMarkdown from "react-markdown";
 
 /**
  * Renders a Log item
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.title - The Log item title.
  * @param {string} props.message - The Log item message.
  * @param {string} props.createdOn - The Log item creation date.
- * @param {string} [props.variant] - The Log item variant.
- * @param {boolean} [props.withSeparator] - The Log item separator.
+ * @param {string} [props.variant] - The Log item variant. optional
+ * @param {boolean} [props.withSeparator] - The Log item separator. optional
+ * @param {React.ReactNode} [props.children] - The Log item children. optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const LogItem = ({ title, message, createdOn, variant, withSeparator = false, children }) => {
@@ -22,7 +24,7 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
         <li className={`${isLarge ? "font-body-sm" : "font-12px"} ${styles.notificationListItem}`}>
             <div className="display-flex flex-justify margin-bottom-1">
                 <span
-                    className={`text-bold ${isLarge ? "font-body-sm" : undefined}`}
+                    className={`text-bold ${isLarge ? "font-body-sm" : ""}`}
                     data-cy="log-item-title"
                 >
                     {title}
@@ -36,13 +38,12 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
                 </span>
             </div>
             {message && (
-                <p
-                    className={`margin-0 line-height-sans-2 margin-y-1 ${isLarge ? "font-body-sm" : undefined}`}
+                <div
+                    className={`margin-0 line-height-sans-0 margin-y-1 ${isLarge ? "font-body-sm" : ""}`}
                     data-cy="log-item-message"
                 >
-                    {/*{message}*/}
-                    <ReactMarkdown>{message}</ReactMarkdown>
-                </p>
+                    <ReactMarkdown className="margin-top-neg-1 margin-bottom-neg-1">{message}</ReactMarkdown>
+                </div>
             )}
             <div
                 className="margin-bottom-1"
@@ -51,7 +52,7 @@ export const LogItem = ({ title, message, createdOn, variant, withSeparator = fa
                 {children}
             </div>
 
-            {withSeparator ? <hr className="height-1px bg-brand-neutral-lighter margin-bottom-1" /> : null}
+            {withSeparator && <hr className="height-1px bg-brand-neutral-lighter margin-bottom-1" />}
         </li>
     );
 };
