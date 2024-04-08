@@ -699,7 +699,7 @@ def test_patch_budget_line_items_history(loaded_db):
         # SQL pulls back latest version (1 in this case)
         updated_bli = loaded_db.get(BudgetLineItem, bli.id)
         assert updated_bli.line_description == "Updated LI 1"
-        assert updated_bli.display_name == "BL 33"
+        assert updated_bli.display_name == f"BL {bli.id}"
 
     finally:
         # cleanup
