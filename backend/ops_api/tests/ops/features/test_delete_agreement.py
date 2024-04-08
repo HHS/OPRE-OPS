@@ -178,7 +178,7 @@ def contract_with_planned_bli(loaded_db):
 def direct_agreement(loaded_db):
     direct_agreement = DirectAgreement(
         name="Feature Test Direct",
-        payee="Somebody who needs money",
+        direct_receiving_partner="Somebody who needs money",
         agreement_type=AgreementType.DIRECT_ALLOCATION,
         project_id=1,
         created_by=4,

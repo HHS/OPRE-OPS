@@ -11,7 +11,7 @@
       project_id: 1,
       procurement_shop_id: 3,
       created_by: 4,
-      payee: "The Foundation of People Who Get Paid",
+      direct_receiving_partner: "The Foundation of People Who Get Paid",
       team_members: [
         {
           "tablename": "user",
