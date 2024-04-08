@@ -1,5 +1,5 @@
 import { server } from "../helpers/mocks";
-import { rest } from "msw";
+import { http } from "msw";
 import { waitFor } from "@testing-library/react";
 import { useGetAgreementsQuery } from "./opsAPI";
 import { renderWithProviders } from "../test-utils";
@@ -25,7 +25,7 @@ describe("opsApi", () => {
         // This will override any API qury performed, for all endpoints,
         // and return our mocked response.
         server.use(
-            rest.get(`*`, (req, res, ctx) => {
+            http.get(`*`, (req, res, ctx) => {
                 return res(ctx.status(200), ctx.json(mockData));
             })
         );

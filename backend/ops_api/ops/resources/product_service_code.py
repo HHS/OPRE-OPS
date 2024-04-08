@@ -1,4 +1,5 @@
 """Module containing views for Product Service Codes."""
+
 from flask import Response
 from typing_extensions import override
 

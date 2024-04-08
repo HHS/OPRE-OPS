@@ -14,7 +14,7 @@ def test_budget_line_item_lookup(loaded_db):
     assert bli is not None
     assert bli.id == 1
     assert bli.line_description == "LI 1"
-    assert bli.display_name == bli.line_description
+    assert bli.display_name == "BL 1"
     assert bli.agreement_id == 1
     assert bli.can_id == 5
     assert bli.amount == 1000000.00
@@ -699,7 +699,7 @@ def test_patch_budget_line_items_history(loaded_db):
         # SQL pulls back latest version (1 in this case)
         updated_bli = loaded_db.get(BudgetLineItem, bli.id)
         assert updated_bli.line_description == "Updated LI 1"
-        assert updated_bli.display_name == updated_bli.line_description
+        assert updated_bli.display_name == "BL 33"
 
     finally:
         # cleanup

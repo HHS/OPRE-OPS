@@ -518,7 +518,7 @@ class BudgetLineItem(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return self.line_description if self.line_description else super().display_name
+        return f"BL {self.id}"
 
     @property
     def portfolio_id(self):

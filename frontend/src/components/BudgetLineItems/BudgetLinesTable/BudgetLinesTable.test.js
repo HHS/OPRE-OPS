@@ -7,7 +7,7 @@ import store from "../../../store";
 const mockBudgetLinesOne = [
     {
         id: 1,
-        display_name: "TBD",
+        display_name: "BudgetLineItem#1",
         created_on: "2021-08-20",
         date_needed: "2021-09-15",
         can: { number: "001" },
@@ -21,7 +21,7 @@ const mockBudgetLinesOne = [
 const mockBudgetLines = [
     {
         id: 1,
-        display_name: "SC 1",
+        display_name: "BudgetLineItem#1",
         created_on: "2021-08-20",
         date_needed: "2021-09-15",
         can: { number: "001" },
@@ -33,7 +33,7 @@ const mockBudgetLines = [
     },
     {
         id: 2,
-        display_name: "SC 2",
+        display_name: "BudgetLineItem#2",
         created_on: "2021-09-01",
         date_needed: "2021-10-30",
         can: { number: "002" },
@@ -68,7 +68,7 @@ describe("PreviewTable", () => {
             store
         );
         mockBudgetLinesOne.forEach((bl) => {
-            expect(screen.getByText(bl.display_name)).toBeInTheDocument();
+            expect(screen.getByText(bl.id)).toBeInTheDocument();
         });
     });
 

@@ -160,10 +160,10 @@ const useCreateBLIsAndSCs = (
 
     const handleDeleteBudgetLine = (budgetLineId) => {
         const budgetLine = budgetLines.find((bl) => bl.id === budgetLineId);
-        const budgetLineName = budgetLine?.display_name;
+        const budgetLineDisplayName = budgetLine?.id;
         setShowModal(true);
         setModalProps({
-            heading: `Are you sure you want to delete the budget line ${budgetLineName}?`,
+            heading: `Are you sure you want to delete budget line ${budgetLineDisplayName}?`,
             actionButtonText: "Delete",
             handleConfirm: () => {
                 deleteBudgetLineItem(budgetLineId)
@@ -173,7 +173,7 @@ const useCreateBLIsAndSCs = (
                         setAlert({
                             type: "success",
                             heading: "Budget Line Deleted",
-                            message: `The budget line ${budgetLineName} has been successfully deleted.`
+                            message: `Budget line ${budgetLineDisplayName} has been successfully deleted.`
                         });
                     })
                     .catch((rejected) => {
@@ -277,7 +277,11 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
-        const heading = `${isEditMode ? "Are you sure you want to cancel editing? Your changes will not be saved." : "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."}`;
+        const heading = `${
+            isEditMode
+                ? "Are you sure you want to cancel editing? Your changes will not be saved."
+                : "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
+        }`;
         const actionButtonText = `${isEditMode ? "Cancel Edits" : "Cancel Agreement"}`;
         setShowModal(true);
         setModalProps({

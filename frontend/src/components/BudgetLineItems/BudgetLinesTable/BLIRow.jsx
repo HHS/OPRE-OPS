@@ -1,97 +1,148 @@
 import PropTypes from "prop-types";
+import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
-import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import Tooltip from "../../UI/USWDS/Tooltip";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import {
+    fiscalYearFromDate,
+    formatDateNeeded,
+    totalBudgetLineFeeAmount,
+    totalBudgetLineAmountPlusFees
+} from "../../../helpers/utils";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
-import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import TextClip from "../../UI/Text/TextClip";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
- * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
+ * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
+ * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
+ * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @returns {React.JSX.Element} The BLIRow component.
  **/
-const AllBLIRow = ({
+const BLIRow = ({
     budgetLine,
+    isReviewMode = false,
     handleSetBudgetLineForEditing = () => {},
     handleDeleteBudgetLine = () => {},
-    readOnly = false
+    handleDuplicateBudgetLine = () => {},
+    readOnly = false,
+    isBLIInCurrentWorkflow = false
 }) => {
+    const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
-    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
-    const doesBudgetLineHaveActiveWorkflow = budgetLine?.has_active_workflow;
-    const lockedMessage = doesBudgetLineHaveActiveWorkflow
-        ? "This budget line cannot be edited because it is currently In Review for a status change"
-        : "";
-    const isBudgetLineEditable =
-        (canUserEditAgreement || isUserBudgetLineCreator) &&
-        isBudgetLineEditableFromStatus &&
-        !doesBudgetLineHaveActiveWorkflow;
+    const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
-    const { isExpanded, setIsRowActive, isRowActive, setIsExpanded } = useTableRow();
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-
+    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
+    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
+    const location = useLocation();
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
             handleDeleteItem={handleDeleteBudgetLine}
+            handleDuplicateItem={handleDuplicateBudgetLine}
             handleSetItemForEditing={handleSetBudgetLineForEditing}
             isItemEditable={isBudgetLineEditable}
-            lockedMessage={lockedMessage}
-            duplicateIcon={false}
+            duplicateIcon={true}
         />
     );
+    // styles for the table row
+    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
+    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    // are you on the approve page?
+    const isApprovePage = location.pathname.includes("approve");
+    const isBLIInAnyActiveWorkflow = budgetLine?.has_active_workflow || false;
+    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    const inReview = isBLIInAnyActiveWorkflow;
 
     const TableRowData = (
         <>
             <th
                 scope="row"
-                className={borderExpandedStyles}
+                className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <TextClip text={budgetLine.line_description} />
+                {isApprovePageAndBLIIsNotInPacket ? (
+                    <Tooltip
+                        label="This budget line was not sent for approval"
+                        position="right"
+                    >
+                        <span>{budgetLine?.id}</span>
+                    </Tooltip>
+                ) : (
+                    budgetLine?.id
+                )}
             </th>
             <td
-                className={borderExpandedStyles}
+                className={`${futureDateErrorClass(
+                    formatDateNeeded(budgetLine?.date_needed),
+                    isReviewMode
+                )} ${addErrorClassIfNotFound(
+                    formatDateNeeded(budgetLine?.date_needed),
+                    isReviewMode
+                )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <TextClip text={budgetLine.agreement_name} />
+                {formatDateNeeded(budgetLine?.date_needed)}
+            </td>
+            <td
+                className={`${
+                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed)), isReviewMode)
+                } ${borderExpandedStyles}`}
+                style={bgExpandedStyles}
+            >
+                {fiscalYearFromDate(budgetLine?.date_needed)}
+            </td>
+            <td
+                className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
+                style={bgExpandedStyles}
+            >
+                {budgetLine?.can?.number}
+            </td>
+            <td
+                className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
+                style={bgExpandedStyles}
+            >
+                <CurrencyFormat
+                    value={budgetLine?.amount || 0}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={getDecimalScale(budgetLine?.amount)}
+                    fixedDecimalScale={true}
+                    renderText={(value) => value}
+                />
             </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine.date_needed)}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {budgetLine.fiscal_year}
-            </td>
-            <td
-                className={borderExpandedStyles}
-                style={bgExpandedStyles}
-            >
-                {budgetLine.can_number}
+                <CurrencyFormat
+                    value={feeTotal}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={getDecimalScale(feeTotal)}
+                    fixedDecimalScale={true}
+                    renderText={(value) => value}
+                />
             </td>
             <td
                 className={borderExpandedStyles}
@@ -115,8 +166,8 @@ const AllBLIRow = ({
                     <div>{changeIcons}</div>
                 ) : (
                     <TableTag
+                        inReview={inReview}
                         status={budgetLine?.status}
-                        inReview={budgetLine?.has_active_workflow}
                     />
                 )}
             </td>
@@ -136,7 +187,8 @@ const AllBLIRow = ({
                         id={`created-by-name-${budgetLine?.id}`}
                         className="margin-0"
                     >
-                        {budgetLineCreatorName}
+                        {/* NOTE: Show logged in user name when creating BLIs */}
+                        {budgetLine?.created_by ? budgetLineCreatorName : loggedInUserFullName}
                     </dd>
                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                         <FontAwesomeIcon
@@ -153,55 +205,11 @@ const AllBLIRow = ({
                     <dt className="margin-0 text-base-dark">Notes</dt>
                     <dd
                         className="margin-0"
-                        style={{ maxWidth: "25rem" }}
+                        style={{ maxWidth: "400px" }}
                     >
                         {budgetLine?.comments ? budgetLine.comments : "No notes added."}
                     </dd>
                 </dl>
-                <div
-                    className="font-12px"
-                    style={{ marginLeft: "15rem" }}
-                >
-                    <dl className="margin-bottom-0">
-                        <dt className="margin-0 text-base-dark">Procurement Shop</dt>
-                        <dd
-                            className="margin-0"
-                            style={{ maxWidth: "25rem" }}
-                        >
-                            {`${budgetLine?.procShopCode}-Fee Rate: ${budgetLine?.proc_shop_fee_percentage * 100}%`}
-                        </dd>
-                    </dl>
-                    <div className="font-12px display-flex margin-top-1">
-                        <dl className="margin-0">
-                            <dt className="margin-0 text-base-dark">SubTotal</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={budgetLine?.amount}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={getDecimalScale(budgetLine?.amount)}
-                                    fixedDecimalScale={true}
-                                    renderText={(value) => value}
-                                />
-                            </dd>
-                        </dl>
-                        <dl className=" margin-0 margin-left-2">
-                            <dt className="margin-0 text-base-dark">Fees</dt>
-                            <dd className="margin-0">
-                                <CurrencyFormat
-                                    value={feeTotal}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={getDecimalScale(feeTotal)}
-                                    fixedDecimalScale={true}
-                                    renderText={(value) => value}
-                                />
-                            </dd>
-                        </dl>
-                    </div>
-                </div>
                 <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>
         </td>
@@ -213,18 +221,20 @@ const AllBLIRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
+            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
         />
     );
 };
 
-AllBLIRow.propTypes = {
+BLIRow.propTypes = {
     budgetLine: PropTypes.object.isRequired,
     canUserEditBudgetLines: PropTypes.bool,
     isReviewMode: PropTypes.bool,
     handleSetBudgetLineForEditing: PropTypes.func,
     handleDeleteBudgetLine: PropTypes.func,
     handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
+    isBLIInCurrentWorkflow: PropTypes.bool
 };
 
-export default AllBLIRow;
+export default BLIRow;

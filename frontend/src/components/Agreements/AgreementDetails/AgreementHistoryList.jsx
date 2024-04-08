@@ -41,9 +41,9 @@ const changeMessageBeginning = (historyItem, change) => {
     let msg = `${change.propertyLabel} changed`;
     if (historyItem.class_name === "BudgetLineItem") {
         if (change.key !== "line_description") {
-            msg = `Budget Line ${findObjectTitle(historyItem)} ${change.propertyLabel} changed`;
+            msg = `${findObjectTitle(historyItem)} ${change.propertyLabel} changed`;
         } else {
-            msg = `Budget Line ${change.propertyLabel} changed`;
+            msg = `${change.propertyLabel} changed`;
         }
     }
     return msg;
@@ -53,15 +53,25 @@ const eventMessage = (historyItem) => {
     const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
     const createdByName = historyItem.created_by_user_full_name;
     let titleName = className;
-    if (historyItem.class_name === "BudgetLineItem") titleName += ` ${findObjectTitle(historyItem)}`;
-    if (historyItem.event_type === "NEW") {
-        return `${titleName} created by ${createdByName}`;
-    } else if (historyItem.event_type === "UPDATED") {
-        return `${titleName} updated by ${createdByName}`;
-    } else if (historyItem.event_type === "DELETED") {
-        return `${titleName} deleted by ${createdByName}`;
+    switch (historyItem.event_type) {
+        case "NEW":
+            if (historyItem.class_name === "BudgetLineItem") {
+                return `${findObjectTitle(historyItem)} created by ${createdByName}`;
+            } else {
+                return `${titleName} created by ${createdByName}`;
+            }
+        case "UPDATED":
+            return `${titleName} updated by ${createdByName}`;
+        case "DELETED":
+            if (historyItem.class_name === "BudgetLineItem") {
+                return `${findObjectTitle(historyItem)} deleted by ${createdByName}`;
+            } else {
+                return `${titleName} deleted by ${createdByName}`;
+            }
+
+        default:
+            return `${className} ${historyItem.event_type} by ${createdByName}`;
     }
-    return `${className} ${historyItem.event_type} by ${createdByName}`;
 };
 
 const getPropertyLabel = (className, fieldName) => {

@@ -59,9 +59,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         target_bli_status = (
             BudgetLineItemStatus.PLANNED
             if workflow_action == WorkflowAction.DRAFT_TO_PLANNED
-            else BudgetLineItemStatus.IN_EXECUTION
-            if workflow_action == WorkflowAction.PLANNED_TO_EXECUTING
-            else None
+            else BudgetLineItemStatus.IN_EXECUTION if workflow_action == WorkflowAction.PLANNED_TO_EXECUTING else None
         )
         # Create new Package
         new_package = Package()

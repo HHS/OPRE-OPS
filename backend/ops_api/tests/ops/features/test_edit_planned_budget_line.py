@@ -47,28 +47,23 @@ def no_perms_client(no_perms_auth_client):
 
 
 @scenario("edit_planned_budget_line.feature", "Successful Edit as Owner")
-def test_edit_planned_budget_line_owner():
-    ...
+def test_edit_planned_budget_line_owner(): ...
 
 
 @scenario("edit_planned_budget_line.feature", "Successful Edit as Project Officer")
-def test_edit_planned_budget_line_project_officer():
-    ...
+def test_edit_planned_budget_line_project_officer(): ...
 
 
 @scenario("edit_planned_budget_line.feature", "Successful Edit as a Team Member")
-def test_edit_planned_budget_line_team_member():
-    ...
+def test_edit_planned_budget_line_team_member(): ...
 
 
 @scenario("edit_planned_budget_line.feature", "Successful Edit as a member of the Budget Team")
-def test_edit_planned_budget_line_budget_team():
-    ...
+def test_edit_planned_budget_line_budget_team(): ...
 
 
 @scenario("edit_planned_budget_line.feature", "Unsuccessful Edit")
-def test_edit_planned_budget_line_unauthorized():
-    ...
+def test_edit_planned_budget_line_unauthorized(): ...
 
 
 @given(
