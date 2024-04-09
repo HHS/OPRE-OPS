@@ -26,9 +26,8 @@ import DebugCode from "../../DebugCode";
  * @param {function} props.setServicesComponentId - A function to set the selected services component ID.
  * @param {function} props.setSelectedCan - A function to set the selected CAN.
  * @param {function} props.setEnteredAmount - A function to set the entered budget line amount.
- * @param {function} props.setEnteredMonth - A function to set the entered budget line desired award month.
- * @param {function} props.setEnteredDay - A function to set the entered budget line desired award day.
- * @param {function} props.setEnteredYear - A function to set the entered budget line desired award year.
+ * @param {string} props.needByDate - The entered budget line need by date.
+ * @param {function} props.setNeedByDate - A function to set the entered budget line need by date.
  * @param {function} props.setEnteredComments - A function to set the entered budget line comments.
  * @param {function} props.handleEditBLI - A function to handle editing the budget line form.
  * @param {function} props.handleAddBLI - A function to handle submitting the budget line form.
@@ -251,9 +250,8 @@ CreateBudgetLinesForm.propTypes = {
     setServicesComponentId: PropTypes.func,
     setSelectedCan: PropTypes.func,
     setEnteredAmount: PropTypes.func,
-    setEnteredMonth: PropTypes.func,
-    setEnteredDay: PropTypes.func,
-    setEnteredYear: PropTypes.func,
+    needByDate: PropTypes.string,
+    setNeedByDate: PropTypes.func,
     setEnteredComments: PropTypes.func,
     handleAddBLI: PropTypes.func,
     handleEditBLI: PropTypes.func,

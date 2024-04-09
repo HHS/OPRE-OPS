@@ -226,9 +226,9 @@ const useCreateBLIsAndSCs = (
         const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];
-            console.log({ date_needed });
+            // console.log({ date_needed });
             const dateForScreen = formatDateForScreen(date_needed);
-            console.log({ dateForScreen });
+            // console.log({ dateForScreen });
             // let entered_year = "";
             // let entered_month = "";
             // let entered_day = "";
