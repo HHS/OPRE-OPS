@@ -135,7 +135,7 @@ export const CreateBudgetLinesForm = ({
                 </div>
                 <div className="grid-col-4">
                     <div className="usa-form-group">
-                        <label
+                        {/* <label
                             className="usa-label"
                             htmlFor="need-by-date"
                             id="need-by-date-label"
@@ -147,7 +147,7 @@ export const CreateBudgetLinesForm = ({
                             id="need-by-date-hint"
                         >
                             mm/dd/yyyy
-                        </div>
+                        </div> */}
                         <DatePicker
                             id="need-by-date"
                             name="need-by-date"

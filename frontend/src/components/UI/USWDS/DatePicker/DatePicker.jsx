@@ -1,7 +1,8 @@
-import datePicker from "@uswds/uswds/js/usa-date-picker";
 import React, { useLayoutEffect, useRef } from "react";
+import datePicker from "@uswds/uswds/js/usa-date-picker";
 
-function DatePicker({ label = "Appointment date", hint = "mm/dd/yyyy", onChange, minDate, value }) {
+function DatePicker({ id, name, label = "Appointment date", hint = "mm/dd/yyyy", onChange, minDate, value }) {
+    const datePickerRef = useRef(null);
     useLayoutEffect(() => {
         const datePickerElement = datePickerRef.current;
         datePicker.on(datePickerElement);
@@ -9,19 +10,22 @@ function DatePicker({ label = "Appointment date", hint = "mm/dd/yyyy", onChange,
         if (onChange) {
             externalInput.addEventListener("change", onChange);
         }
+        // Set the value of the input field directly
+        if (value) {
+            externalInput.value = value;
+        }
         return () => {
             if (onChange) {
                 externalInput.removeEventListener("change", onChange);
             }
             datePicker.off(datePickerElement);
         };
-    });
-    const datePickerRef = useRef(null);
+    }, [onChange, id, value]); // Added value to the dependency array
     return (
         <div className="usa-form-group">
             <label
+                id={id}
                 className="usa-label"
-                id="uswds-date-label"
                 htmlFor="uswds-date"
             >
                 {label}
@@ -38,8 +42,8 @@ function DatePicker({ label = "Appointment date", hint = "mm/dd/yyyy", onChange,
             >
                 <input
                     className="usa-input"
-                    id="uswds-date"
-                    name="uswds-date"
+                    id={id}
+                    name={name}
                     aria-labelledby="uswds-date-label"
                     aria-describedby="uswds-date-hint"
                     onChange={onChange}
