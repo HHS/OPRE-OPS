@@ -8,7 +8,7 @@ import suite from "./suite";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
-import { DatePicker } from "@trussworks/react-uswds";
+import DatePicker from "../../UI/USWDS/DatePicker";
 import DebugCode from "../../DebugCode";
 
 /**
@@ -149,13 +149,18 @@ export const CreateBudgetLinesForm = ({
                             mm/dd/yyyy
                         </div>
                         <DatePicker
-                            aria-describedby="need-by-date-label need-by-date-hint"
                             id="need-by-date"
                             name="need-by-date"
+                            aria-describedby="need-by-date-hint"
+                            aria-labelledby="need-by-date-label"
                             value={needByDate}
-                            onChange={(date) => {
-                                setNeedByDate(date);
+                            // value={needByDate}
+                            onChange={(e) => {
+                                setNeedByDate(e.target.value);
                             }}
+                            // onBlur={(date) => {
+                            //     setNeedByDate(date);
+                            // }}
                         />
                     </div>
                     {/* <DesiredAwardDate
