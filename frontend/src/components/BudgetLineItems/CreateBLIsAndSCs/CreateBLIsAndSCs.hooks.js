@@ -218,7 +218,6 @@ const useCreateBLIsAndSCs = (
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
         const formatDateForScreen = (date) => {
             if (date) {
-                alert("date: ", date);
                 const [year, month, day] = date.split("-");
                 return `${month}/${day}/${year}`;
             }
@@ -227,7 +226,9 @@ const useCreateBLIsAndSCs = (
         const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];
-            // const dateForScreen = formatDateForScreen(date_needed);
+            console.log({ date_needed });
+            const dateForScreen = formatDateForScreen(date_needed);
+            console.log({ dateForScreen });
             // let entered_year = "";
             // let entered_month = "";
             // let entered_day = "";
@@ -243,10 +244,9 @@ const useCreateBLIsAndSCs = (
             // setEnteredMonth(entered_month);
             // setEnteredDay(entered_day);
             // setEnteredYear(entered_year);
-            setNeedByDate(date_needed);
+            setNeedByDate(dateForScreen);
             setEnteredComments(comments);
             setIsEditing(true);
-            console.log({ dateForScreen });
         }
     };
 
