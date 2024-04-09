@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "react-modal";
 import { useDismissNotificationMutation, useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
-import { jwtDecode } from "jwt-decode";
+import jwt_decode from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
@@ -13,7 +13,7 @@ const NotificationCenter = () => {
     let userId = "";
 
     if (currentJWT) {
-        const decodedJwt = jwtDecode(currentJWT);
+        const decodedJwt = jwt_decode(currentJWT);
         userId = decodedJwt["sub"];
     }
 
