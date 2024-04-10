@@ -18,8 +18,12 @@ const suite = create((data) => {
     test("needByDate", "This is required information", () => {
         enforce(data.needByDate).isNotBlank();
     });
+    test("needByDate", "Date must be in the future", () => {
+        const today = new Date();
+        const enteredDate = new Date(data.needByDate);
+        enforce(enteredDate.getTime()).greaterThan(today.getTime());
+    });
     // group("allDates", () => {
-    //     const today = new Date();
     //     const enteredDate = new Date(Date.UTC(data.enteredYear, data.enteredMonth - 1, data.enteredDay));
 
     //     test("enteredMonth", "This is required information", () => {
