@@ -1,8 +1,28 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 import datePicker from "@uswds/uswds/js/usa-date-picker";
 
-function DatePicker({ id, name, label = "Appointment date", hint = "mm/dd/yyyy", onChange, minDate, value }) {
-    const datePickerRef = useRef(null);
+/**
+ * DatePicker component based on Comet's USWDS DatePicker.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {string} props.id - The ID for the date picker.
+ * @param {string} props.name - The name for the date picker.
+ * @param {string} props.label - The label for the date picker.
+ * @param {string} [props.hint] - The hint for the date picker.
+ * @param {function} [props.onChange] - The function to call when the date changes.
+ * @param {Date|string} [props.minDate] - The minimum date that can be selected.
+ * @param {Date|string} [props.maxDate] - The maximum date that can be selected.
+ * @param {string} [props.value] - The current value of the date picker.
+ * @returns {JSX.Element} The rendered DatePicker component.
+ */
+
+function DatePicker({ id, name, label, hint, onChange, minDate, maxDate, value }) {
+    const datePickerRef = React.useRef(null);
+    const datePickerId = `uswds-date-${id}`;
+    const labelId = `uswds-date-label-${id}`;
+    const hintId = `uswds-date-hint-${id}`;
 
     React.useEffect(() => {
         const datePickerElement = datePickerRef.current;
@@ -17,7 +37,7 @@ function DatePicker({ id, name, label = "Appointment date", hint = "mm/dd/yyyy",
             }
             datePicker.off(datePickerElement);
         };
-    }, []); // Removed value from the dependency array
+    }, []);
 
     React.useEffect(() => {
         const datePickerElement = datePickerRef.current;
@@ -30,33 +50,39 @@ function DatePicker({ id, name, label = "Appointment date", hint = "mm/dd/yyyy",
         }
     }, [value]); // Added a separate useEffect hook for handling value changes
 
+    const datePickerAttributes = {};
+    if (minDate) datePickerAttributes["data-min-date"] = getDateString(minDate);
+    if (maxDate) datePickerAttributes["data-max-date"] = getDateString(maxDate);
+
     return (
         <div className="usa-form-group">
             <label
-                id={id}
+                id={labelId}
                 className="usa-label"
-                htmlFor="uswds-date"
+                htmlFor={datePickerId}
             >
                 {label}
             </label>
-            <div
-                className="usa-hint"
-                id="uswds-date-hint"
-            >
-                {hint}
-            </div>
+            {hint && (
+                <div
+                    className="usa-hint"
+                    id={hintId}
+                >
+                    {hint}
+                </div>
+            )}
             <div
                 ref={datePickerRef}
                 className="usa-date-picker"
             >
                 <input
                     className="usa-input"
-                    id={id}
+                    id={datePickerId}
                     name={name}
-                    aria-labelledby="uswds-date-label"
-                    aria-describedby="uswds-date-hint"
-                    onChange={onChange}
+                    aria-labelledby={labelId}
+                    aria-describedby={hintId}
                     value={value}
+                    onChange={onChange}
                 />
             </div>
         </div>
@@ -64,6 +90,17 @@ function DatePicker({ id, name, label = "Appointment date", hint = "mm/dd/yyyy",
 }
 
 export default DatePicker;
+
+DatePicker.propTypes = {
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string.isRequired,
+    hint: PropTypes.string,
+    onChange: PropTypes.func,
+    minDate: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]),
+    maxDate: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]),
+    value: PropTypes.string
+};
 
 function getDateString(minDate) {
     if (typeof minDate === "string") {

@@ -135,32 +135,17 @@ export const CreateBudgetLinesForm = ({
                 </div>
                 <div className="grid-col-4">
                     <div className="usa-form-group">
-                        {/* <label
-                            className="usa-label"
-                            htmlFor="need-by-date"
-                            id="need-by-date-label"
-                        >
-                            Need By Date
-                        </label>
-                        <div
-                            className="usa-hint"
-                            id="need-by-date-hint"
-                        >
-                            mm/dd/yyyy
-                        </div> */}
                         <DatePicker
                             id="need-by-date"
                             name="need-by-date"
+                            label="Need by Date"
+                            hint="MM/DD/YYYY"
                             aria-describedby="need-by-date-hint"
                             aria-labelledby="need-by-date-label"
                             value={needByDate}
-                            // value={needByDate}
                             onChange={(e) => {
                                 setNeedByDate(e.target.value);
                             }}
-                            // onBlur={(date) => {
-                            //     setNeedByDate(date);
-                            // }}
                         />
                     </div>
                     {/* <DesiredAwardDate
