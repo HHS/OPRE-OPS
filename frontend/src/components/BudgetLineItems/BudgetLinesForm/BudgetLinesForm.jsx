@@ -62,9 +62,9 @@ export const CreateBudgetLinesForm = ({
     const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
 
     // validate all budgetline fields if in review mode and is editing
-    //TODO: update suite for Services Components
     if (isReviewMode && isEditing) {
         suite({
+            servicesComponentId,
             selectedCan,
             enteredAmount,
             needByDate
@@ -74,6 +74,7 @@ export const CreateBudgetLinesForm = ({
     const runValidate = (name, value) => {
         suite(
             {
+                servicesComponentId,
                 selectedCan,
                 enteredAmount,
                 needByDate,
@@ -90,8 +91,13 @@ export const CreateBudgetLinesForm = ({
                     <div className="usa-form-group">
                         <AllServicesComponentSelect
                             agreementId={agreementId}
+                            messages={res.getErrors("allServicesComponentSelect")}
+                            className={cn("allServicesComponentSelect")}
                             value={servicesComponentId || ""}
                             onChange={(name, value) => {
+                                if (isReviewMode) {
+                                    runValidate("allServicesComponentSelect", value);
+                                }
                                 setServicesComponentId(+value);
                             }}
                         />
