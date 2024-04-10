@@ -168,7 +168,7 @@ export const ReviewAgreement = () => {
                                 key={key}
                                 data-cy="error-item"
                             >
-                                <strong>{convertCodeForDisplay("validation", key)}: </strong>
+                                <strong>{convertCodeForDisplay("validation", key)} </strong>
                                 {
                                     <span>
                                         {value.map((message, index) => (
@@ -214,7 +214,7 @@ export const ReviewAgreement = () => {
             >
                 <div className={`font-12px usa-form-group ${areThereBudgetLineErrors ? "usa-form-group--error" : ""}`}>
                     {areThereBudgetLineErrors && (
-                        <ul className="usa-error-message padding-left-2 border-left-05">
+                        <ul className="usa-error-message padding-left-2 5">
                             {budgetLineErrorsExist && (
                                 <li>
                                     {budgetLineErrors.map((error, index) => (
@@ -228,7 +228,7 @@ export const ReviewAgreement = () => {
                             {budgetLinePageErrorsExist &&
                                 budgetLinePageErrors.map(([budgetLineItem, errors]) => (
                                     <li key={budgetLineItem}>
-                                        {budgetLineItem}: {errors.join(", ")}
+                                        {budgetLineItem} {errors.join(", ")}
                                     </li>
                                 ))}
                         </ul>
