@@ -74,10 +74,8 @@ export const CreateBudgetLinesForm = ({
     if (isReviewMode && isEditing) {
         suite({
             selectedCan,
-            enteredAmount
-            // enteredMonth,
-            // enteredDay,
-            // enteredYear
+            enteredAmount,
+            needByDate
         });
     }
 
@@ -86,9 +84,7 @@ export const CreateBudgetLinesForm = ({
             {
                 selectedCan,
                 enteredAmount,
-                // enteredMonth,
-                // enteredDay,
-                // enteredYear,
+                needByDate,
                 ...{ [name]: value }
             },
             name
@@ -99,10 +95,7 @@ export const CreateBudgetLinesForm = ({
         <>
             <DebugCode
                 data={{
-                    servicesComponentId,
-                    selectedCan,
-                    enteredAmount,
-                    enteredComments,
+                    res,
                     needByDate
                 }}
             />
@@ -137,29 +130,22 @@ export const CreateBudgetLinesForm = ({
                     <div className="usa-form-group">
                         <DatePicker
                             id="need-by-date"
-                            name="need-by-date"
                             label="Need by Date"
+                            name="needByDate"
                             hint="MM/DD/YYYY"
                             aria-describedby="need-by-date-hint"
                             aria-labelledby="need-by-date-label"
+                            messages={res.getErrors("needByDate")}
+                            className={cn("needByDate")}
                             value={needByDate}
                             onChange={(e) => {
+                                if (isReviewMode) {
+                                    runValidate("needByDate", e.target.value);
+                                }
                                 setNeedByDate(e.target.value);
                             }}
                         />
                     </div>
-                    {/* <DesiredAwardDate
-                    enteredMonth={enteredMonth}
-                    setEnteredMonth={setEnteredMonth}
-                    enteredDay={enteredDay}
-                    setEnteredDay={setEnteredDay}
-                    enteredYear={enteredYear}
-                    setEnteredYear={setEnteredYear}
-                    isReviewMode={isReviewMode}
-                    runValidate={runValidate}
-                    res={res}
-                    cn={cn}
-                /> */}
                     <CurrencyInput
                         name="enteredAmount"
                         label="Amount"
