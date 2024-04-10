@@ -74,6 +74,7 @@ function DatePicker({ id, name, label, hint, onChange, minDate, maxDate, value }
             <div
                 ref={datePickerRef}
                 className="usa-date-picker"
+                {...datePickerAttributes}
             >
                 <input
                     className="usa-input"
