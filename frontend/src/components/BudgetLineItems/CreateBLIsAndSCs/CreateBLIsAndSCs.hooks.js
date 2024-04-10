@@ -45,9 +45,6 @@ const useCreateBLIsAndSCs = (
     const [servicesComponentId, setServicesComponentId] = React.useState(null);
     const [selectedCan, setSelectedCan] = React.useState(null);
     const [enteredAmount, setEnteredAmount] = React.useState(null);
-    // const [enteredMonth, setEnteredMonth] = React.useState(null);
-    // const [enteredDay, setEnteredDay] = React.useState(null);
-    // const [enteredYear, setEnteredYear] = React.useState(null);
     const [needByDate, setNeedByDate] = React.useState(null);
     const [enteredComments, setEnteredComments] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
@@ -79,17 +76,16 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
+    const formatDateForApi = (date) => {
+        if (date) {
+            const [month, day, year] = date.split("/");
+            return `${year}-${month}-${day}`;
+        }
+        return null;
+    };
 
     const handleAddBLI = (e) => {
         e.preventDefault();
-
-        const formatDateForApi = (date) => {
-            if (date) {
-                const [month, day, year] = date.split("/");
-                return `${year}-${month}-${day}`;
-            }
-            return null;
-        };
 
         const payload = {
             services_component_id: servicesComponentId,
@@ -99,7 +95,7 @@ const useCreateBLIsAndSCs = (
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
             status: "DRAFT",
-            date_needed: formatDateForApi(needByDate) || null,
+            date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
         const { data } = cleanBudgetLineItemForApi(payload);
@@ -131,14 +127,13 @@ const useCreateBLIsAndSCs = (
         const payload = {
             id: budgetLines[budgetLineBeingEdited].id,
             services_component_id: servicesComponentId,
-            comments: enteredComments,
-            can_id: selectedCan?.id,
-            can: selectedCan,
-            agreement_id: selectedAgreement?.id,
-            amount: enteredAmount,
-            date_needed:
-                enteredYear && enteredMonth && enteredDay ? `${enteredYear}-${enteredMonth}-${enteredDay}` : null,
-            proc_shop_fee_percentage: selectedProcurementShop?.fee
+            comments: enteredComments || "",
+            can_id: selectedCan?.id || null,
+            can: selectedCan || null,
+            agreement_id: selectedAgreement?.id || null,
+            amount: enteredAmount || 0,
+            date_needed: formatDateForApi(needByDate),
+            proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
         const { id, data } = cleanBudgetLineItemForApi(payload);
         updateBudgetLineItem({ id, data })
@@ -201,6 +196,9 @@ const useCreateBLIsAndSCs = (
 
     const cleanBudgetLineItemForApi = (data) => {
         const cleanData = { ...data };
+        if (data.services_component_id === 0) {
+            cleanData.services_component_id = null;
+        }
         if (cleanData.date_needed === "--") {
             cleanData.date_needed = null;
         }
@@ -226,24 +224,13 @@ const useCreateBLIsAndSCs = (
         const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];
-            // console.log({ date_needed });
-            const dateForScreen = formatDateForScreen(date_needed);
-            // console.log({ dateForScreen });
-            // let entered_year = "";
-            // let entered_month = "";
-            // let entered_day = "";
 
-            // if (date_needed) {
-            //     [entered_year, entered_month, entered_day] = date_needed.split("-").map((d) => parseInt(d, 10));
-            // }
+            const dateForScreen = formatDateForScreen(date_needed);
 
             setBudgetLineBeingEdited(index);
             setServicesComponentId(services_component_id);
             setSelectedCan(can);
             setEnteredAmount(amount);
-            // setEnteredMonth(entered_month);
-            // setEnteredDay(entered_day);
-            // setEnteredYear(entered_year);
             setNeedByDate(dateForScreen);
             setEnteredComments(comments);
             setIsEditing(true);
@@ -359,9 +346,6 @@ const useCreateBLIsAndSCs = (
         setServicesComponentId(null);
         setSelectedCan(null);
         setEnteredAmount(null);
-        // setEnteredMonth(null);
-        // setEnteredDay(null);
-        // setEnteredYear(null);
         setNeedByDate(null);
         setEnteredComments(null);
     };
@@ -395,16 +379,10 @@ const useCreateBLIsAndSCs = (
         setServicesComponentId,
         setSelectedCan,
         setEnteredAmount,
-        // setEnteredMonth,
-        // setEnteredDay,
-        // setEnteredYear,
         setEnteredComments,
         resetQueryParams,
         selectedCan,
         enteredAmount,
-        // enteredMonth,
-        // enteredDay,
-        // enteredYear,
         needByDate,
         setNeedByDate,
         enteredComments,
