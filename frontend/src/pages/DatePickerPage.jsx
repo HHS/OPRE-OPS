@@ -24,6 +24,8 @@ const Home = () => {
                 hint="mm/dd/yyyy"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                isRequired={true}
+                isRequiredNoShow={true}
             />
             <div className="usa-form-group">
                 <label
