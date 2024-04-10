@@ -3,13 +3,11 @@ import classnames from "vest/classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import CanSelect from "../../CANs/CanSelect";
-// import DesiredAwardDate from "../../UI/Form/DesiredAwardDate";
-import suite from "./suite";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import DatePicker from "../../UI/USWDS/DatePicker";
-import DebugCode from "../../DebugCode";
+import suite from "./suite";
 
 /**
  * A form for creating or editing a budget line.
@@ -40,17 +38,11 @@ export const CreateBudgetLinesForm = ({
     selectedCan,
     servicesComponentId,
     enteredAmount,
-    // enteredMonth,
-    // enteredDay,
-    // enteredYear,
     enteredComments,
     isEditing,
     setServicesComponentId,
     setSelectedCan,
     setEnteredAmount,
-    // setEnteredMonth,
-    // setEnteredDay,
-    // setEnteredYear,
     needByDate,
     setNeedByDate,
     setEnteredComments,
@@ -93,12 +85,6 @@ export const CreateBudgetLinesForm = ({
 
     return (
         <>
-            <DebugCode
-                data={{
-                    res,
-                    needByDate
-                }}
-            />
             <form className="grid-row grid-gap margin-y-3">
                 <div className="grid-col-4">
                     <div className="usa-form-group">
