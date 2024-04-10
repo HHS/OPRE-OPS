@@ -7,7 +7,7 @@ import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
  * @component
  * @param {Object} props - Component props
  * @param {string} props.value - The current value of the select
- * @param {Function} props.onChange - Handler to be called when the select value changes
+ * @param {function} props.onChange - Handler to be called when the select value changes
  * @param {number} props.agreementId - The ID of the agreement
  *
  * @example

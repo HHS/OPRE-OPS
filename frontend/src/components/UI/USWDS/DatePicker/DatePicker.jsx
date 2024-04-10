@@ -13,7 +13,7 @@ import IsRequiredHelper from "../../Form/IsRequiredHelper";
  * @param {string} props.label - The label for the date picker.
  * @param {string} [props.hint] - The hint for the date picker.
  * @param {string} [props.className] - Additional CSS classes to apply to the component.
- * @param {Function} [props.onChange] - The function to call when the date changes.
+ * @param {function} [props.onChange] - The function to call when the date changes.
  * @param {Date|string} [props.minDate] - The minimum date that can be selected.
  * @param {Date|string} [props.maxDate] - The maximum date that can be selected.
  * @param {string} [props.value] - The current value of the date picker. optional
