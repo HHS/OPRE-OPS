@@ -1,4 +1,5 @@
 import App from "../App";
+import React from "react";
 import RoundedBox from "../components/UI/RoundedBox";
 import DatePicker from "../components/UI/USWDS/DatePicker";
 import { DatePicker as CometDatePicker } from "@metrostar/comet-uswds";
@@ -6,6 +7,8 @@ import { DatePicker as TSDatePicker } from "@trussworks/react-uswds";
 import "./DatePickerPage.css";
 
 const Home = () => {
+    const [date, setDate] = React.useState(null);
+
     return (
         <App>
             <div className="display-flex flex-justify-center">
@@ -14,7 +17,14 @@ const Home = () => {
                     <p>⚠️ Play with caution</p>
                 </RoundedBox>
             </div>
-            <DatePicker label="Vanilla USWDS" />
+            <DatePicker
+                id="vanilla"
+                label="Vanilla USWDS"
+                name="vanilla"
+                hint="mm/dd/yyyy"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+            />
             <div className="usa-form-group">
                 <label
                     className="usa-label"
