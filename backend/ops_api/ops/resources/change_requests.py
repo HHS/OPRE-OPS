@@ -3,7 +3,7 @@ from datetime import datetime
 
 from flask import current_app
 
-from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest
+from models import BudgetLineItem, BudgetLineItemChangeRequest, BudgetLineItemStatus, ChangeRequest
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates
 
@@ -22,6 +22,10 @@ def approve_change_request(change_request_id: int, user_id: int) -> ChangeReques
         # why do we load then dump, then convert strings back to dates? could we not just load?
         # for now, we need to convert date strings to dates before updating the data
         data = convert_date_strings_to_dates(data)
+        data["status"] = BudgetLineItemStatus[data["status"]]
+        data.pop("created_on", None)
+        data.pop("updated_on", None)
+        print(f"~~~data~~~\n{data}")
         budget_line_items.update_data(budget_line_item, data)
         session.add(budget_line_item)
 

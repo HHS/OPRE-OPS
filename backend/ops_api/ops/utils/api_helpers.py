@@ -21,15 +21,23 @@ def get_change_data(
         }  # only keep the attributes from the request body and omit protected ones
     except AttributeError:
         data = {}
+    print("~~~data (to_dict)~~~\n", data)
 
     # looking into the loaded data before dumping
     # hoping to find a solution to avoid the
     # date-string -> date-object -> date-string -> date-object (from load->dump->re-convert)
     # https://flexion.slack.com/archives/C055PQWCCJ2/p1711644119625839
-    # loaded_data = schema.load(request_json, unknown=EXCLUDE, partial=partial)
-    # loaded_data_dict = vars(loaded_data)
-    # print("~~~loaded_data~~~\n", loaded_data)
-    # print("~~~loaded_data_dict~~~\n", loaded_data_dict)
+    loaded_data = schema.load(request_json, unknown=EXCLUDE, partial=partial)
+    loaded_data_vars_dict = vars(loaded_data)
+    print("~~~loaded_data~~~\n", loaded_data)
+    print("~~~loaded_data_vars_dict~~~\n", loaded_data_vars_dict)
+
+    change_data_from_vars_dict = {
+        key: value
+        for key, value in loaded_data_vars_dict.items()
+        if key not in protected and key in request_json and value != data.get(key, None)
+    }  # only keep the attributes from the request body and omit protected ones
+    print("~~~change_data_from_vars_dict~~~\n", change_data_from_vars_dict)
 
     change_data = schema.dump(schema.load(request_json, unknown=EXCLUDE, partial=partial))
     change_data = {
@@ -38,6 +46,8 @@ def get_change_data(
         if key not in protected and key in request_json and value != data.get(key, None)
     }  # only keep the attributes from the request body and omit protected ones
     data |= change_data
+
+    print("~~~data (final)~~~\n", data)
     return data
 
 
