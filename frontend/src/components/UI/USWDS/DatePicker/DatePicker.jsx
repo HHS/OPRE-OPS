@@ -3,16 +3,13 @@ import datePicker from "@uswds/uswds/js/usa-date-picker";
 
 function DatePicker({ id, name, label = "Appointment date", hint = "mm/dd/yyyy", onChange, minDate, value }) {
     const datePickerRef = useRef(null);
-    useLayoutEffect(() => {
+
+    React.useEffect(() => {
         const datePickerElement = datePickerRef.current;
         datePicker.on(datePickerElement);
         const externalInput = datePicker.getDatePickerContext(datePickerElement).externalInputEl;
         if (onChange) {
             externalInput.addEventListener("change", onChange);
-        }
-        // Set the value of the input field directly
-        if (value) {
-            externalInput.value = value;
         }
         return () => {
             if (onChange) {
@@ -20,7 +17,19 @@ function DatePicker({ id, name, label = "Appointment date", hint = "mm/dd/yyyy",
             }
             datePicker.off(datePickerElement);
         };
-    }, [onChange, id, value]); // Added value to the dependency array
+    }, []); // Removed value from the dependency array
+
+    React.useEffect(() => {
+        const datePickerElement = datePickerRef.current;
+        const externalInput = datePicker.getDatePickerContext(datePickerElement).externalInputEl;
+        if (value !== null) {
+            externalInput.value = value;
+        } else {
+            // Clear the input field if the value prop is null
+            externalInput.value = "";
+        }
+    }, [value]); // Added a separate useEffect hook for handling value changes
+
     return (
         <div className="usa-form-group">
             <label
