@@ -1,6 +1,6 @@
 import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
 import { logout, setUserDetails } from "../Auth/authSlice";
 import { callBackend } from "../../helpers/backend";
@@ -99,7 +99,7 @@ export const CheckAuth = () => {
 export async function setActiveUser(token, dispatch) {
     // TODO: Vefiry the Token!
     //const isValidToken = validateTooken(token);
-    const decodedJwt = jwt_decode(token);
+    const decodedJwt = jwtDecode(token);
     const userId = decodedJwt["sub"];
     const userDetails = await getUserByOidc(userId);
 
@@ -156,7 +156,7 @@ export const isValidToken = (token) => {
         return new TokenValidationStatus(false, "NOT_FOUND");
     }
 
-    const decodedJwt = jwt_decode(token);
+    const decodedJwt = jwtDecode(token);
 
     // Check expiration time
     const exp = decodedJwt["exp"];

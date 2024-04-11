@@ -277,7 +277,11 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
-        const heading = `${isEditMode ? "Are you sure you want to cancel editing? Your changes will not be saved." : "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."}`;
+        const heading = `${
+            isEditMode
+                ? "Are you sure you want to cancel editing? Your changes will not be saved."
+                : "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
+        }`;
         const actionButtonText = `${isEditMode ? "Cancel Edits" : "Cancel Agreement"}`;
         setShowModal(true);
         setModalProps({
