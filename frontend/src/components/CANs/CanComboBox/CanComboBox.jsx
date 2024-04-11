@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import cx from "clsx";
 import ComboBox from "../../UI/Form/ComboBox";
 import { useGetCansQuery } from "../../../api/opsAPI";
@@ -10,6 +11,9 @@ import { useGetCansQuery } from "../../../api/opsAPI";
  * @param {string} [props.label] - The label to display for the input field (optional).
  * @param {number} props.selectedCan - The currently selected agreement type.
  * @param {Function} props.setSelectedCan - A function to call when the selected agreement type changes.
+ * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
+ * @param {string} [props.defaultString] - Initial text to display in select (optional).
+ * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
  * @param {Function} props.onChange - A function to call when the input value changes.
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
@@ -61,7 +65,7 @@ export const CanComboBox = ({
                 htmlFor="can-combobox-input"
                 id="can-label"
             >
-                CAN
+                {label}
             </label>
             {messages.length > 0 && (
                 <span
@@ -88,4 +92,17 @@ export const CanComboBox = ({
     );
 };
 
+CanComboBox.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    selectedCan: PropTypes.object,
+    setSelectedCan: PropTypes.func.isRequired,
+    onChange: PropTypes.func,
+    messages: PropTypes.array,
+    className: PropTypes.string,
+    pending: PropTypes.bool,
+    legendClassname: PropTypes.string,
+    defaultString: PropTypes.string,
+    overrideStyles: PropTypes.object
+};
 export default CanComboBox;
