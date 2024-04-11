@@ -23,7 +23,7 @@ export const ComboBox = ({
     data,
     selectedData,
     setSelectedData,
-    optionText = (data) => data.display_name,
+    optionText = (data) => data.display_name ?? data.title,
     defaultString = "",
     messages = [],
     overrideStyles = {},
