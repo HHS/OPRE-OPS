@@ -7,8 +7,8 @@ from flask import url_for
 from models import (
     AgreementChangeRequest,
     BudgetLineItem,
+    BudgetLineItemBudgetChangeRequest,
     BudgetLineItemChangeRequest,
-    BudgetLineItemFinancialChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
 )
@@ -93,11 +93,11 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     change_request_id = resp_json["id"]
 
     # verify the change request was created
-    change_request = session.get(BudgetLineItemFinancialChangeRequest, change_request_id)
+    change_request = session.get(BudgetLineItemBudgetChangeRequest, change_request_id)
     assert change_request is not None
     print("~~~change_request~~~\n", json.dumps(change_request.to_dict(), indent=2))
     print("~~~requested_changes~~~\n", json.dumps(change_request.requested_changes, indent=2))
-    assert change_request.type == "budget_line_item_financial_change_request"
+    assert change_request.type == "budget_line_item_budget_change_request"
     assert change_request.budget_line_item_id == bli_id
 
     # verify the BLI was not updated yet
@@ -119,7 +119,7 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     # verify delete cascade
     session.delete(bli)
     session.commit()
-    change_request = session.get(BudgetLineItemFinancialChangeRequest, change_request_id)
+    change_request = session.get(BudgetLineItemBudgetChangeRequest, change_request_id)
     assert change_request is None
     bli = session.get(BudgetLineItem, bli_id)
     assert bli is None

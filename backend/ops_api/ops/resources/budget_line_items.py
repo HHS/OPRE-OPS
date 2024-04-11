@@ -7,23 +7,26 @@ from typing import Optional
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity
-from marshmallow import EXCLUDE, Schema
+from marshmallow import Schema
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any, override
 
-from models import BudgetLineItemFinancialChangeRequest, BudgetLineItemStatus, OpsDBHistoryType, OpsEventType
+from models import BudgetLineItemBudgetChangeRequest, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.history import build_audit
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponse,
     PATCHRequestBody,
     POSTRequestBody,
     QueryParameters,
 )
-from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, get_change_data
+from ops_api.ops.utils.api_helpers import (
+    convert_date_strings_to_dates,
+    get_change_data,
+    validate_and_prepare_change_data,
+)
 from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -120,38 +123,56 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             if not changeable:
                 return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
 
+            # validate and normalize the request data
+            change_data = validate_and_prepare_change_data(
+                request.json,
+                budget_line_item,
+                schema,
+                ["id", "agreement_id"],
+                partial=False,
+            )
+            print(f"~~~{change_data=}~~~")
+
             # determine if it can be edited directly or if a change request is required
             directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
 
-            # validate and normalize the request data, TODO: stop reverting to DRAFT
-            # data = validate_and_normalize_request_data(schema)
-            data = validate_and_normalize_request_data_WIP(schema)
-
-            # update the BLI and see what has changed and if there are financial changes
-            # the BLI will be reverted if it can't be edited directly
-            update_data(budget_line_item, data)
-            db_audit = build_audit(budget_line_item, OpsDBHistoryType.UPDATED)
             changed_financial_props = list(
-                set(db_audit.changes.keys()) & set(BudgetLineItemFinancialChangeRequest.financial_field_names)
+                set(change_data.keys()) & set(BudgetLineItemBudgetChangeRequest.budget_field_names)
             )
-            print(f"~~~date_needed_change: {changed_financial_props}")
-            status_change = db_audit.changes.pop("status", None)
-            other_changed_props = list(set(db_audit.changes.keys()) - set(changed_financial_props))
-            print(f"~~~changed_financial_props: {changed_financial_props}")
-            print(f"~~~status_change: {status_change}")
-            print(f"~~~other_changed_props: {other_changed_props}")
+            # if not directly_editable and changed_financial_props:
+            #     for k in changed_financial_props:
+            #         print(f"~~~{k=} {change_data[k]=}")
+            #         print(f"~~~{change_data.pop(k)=}")
+
+            print(f"~~~{changed_financial_props=}")
+            status_change = change_data.pop("status", None)
+            # status_change = change_data.get("status", None)
+            print(f"~~~{status_change=}")
+            other_changed_props = list(set(change_data.keys()) - set(changed_financial_props))
+            print(f"~~~{other_changed_props=}")
+
+            direct_change_data = {
+                key: value for key, value in change_data.items() if directly_editable or key in other_changed_props
+            }  # only keep the attributes from the request body and omit protected ones
+
+            if not directly_editable and changed_financial_props:
+                pass
+
+            # # update the BLI and see what has changed and if there are financial changes
+            # # the BLI will be reverted if it can't be edited directly
+            # update_data(budget_line_item, change_data)
 
             # if there are financial changes and the BLI can't be edited directly, create a financial change request
             # TODO: if there are also non-financial changes, these should be handled separately
             # How do we handle cases where there are both financial and non-financial changes and maybe status changes?
             if changed_financial_props and not directly_editable:
                 # create a change request with a dump of the data
-                change_request = BudgetLineItemFinancialChangeRequest()
+                change_request = BudgetLineItemBudgetChangeRequest()
                 change_request.budget_line_item_id = id
                 # what schema should be used here, PATCH schema or __marshmallow__
-                # schema = budget_line_item.__marshmallow__(only=changed_financial_props)
-                schema = budget_line_item.__marshmallow__()
-                change_request.requested_changes = schema.dump(budget_line_item)
+                schema = budget_line_item.__marshmallow__(only=changed_financial_props)
+                # schema = budget_line_item.__marshmallow__()
+                change_request.requested_changes = schema.dump(change_data)
                 # revert the budget_line_item and save the new change request
                 current_app.db_session.refresh(budget_line_item)
                 current_app.db_session.add(change_request)
@@ -160,6 +181,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 return make_response_with_headers({"message": "Change request created", "id": change_request.id}, 202)
 
             # update the BLI directly and return 200
+            update_data(budget_line_item, direct_change_data)
             current_app.db_session.add(budget_line_item)
             current_app.db_session.commit()
             bli_dict = self._response_schema.dump(budget_line_item)
@@ -339,67 +361,11 @@ def validate_and_normalize_request_data_WIP(schema: Schema) -> dict[str, Any]:
     id = schema.context["id"]
     bli_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
     existing_bli = current_app.db_session.scalar(bli_stmt)
-    data = get_change_data_WIP(
+    data = validate_and_prepare_change_data(
         request.json,
         existing_bli,
         schema,
-        ["id", "status", "agreement_id"],
+        ["id", "agreement_id"],
         partial=False,
     )
-    # data = convert_date_strings_to_dates(data)
-
-    with suppress(AttributeError):
-        try:
-            status = BudgetLineItemStatus[request.json["status"]]
-        except KeyError:
-            status = existing_bli.status
-
-        if len(data) > 0 and status == BudgetLineItemStatus.PLANNED:
-            status = BudgetLineItemStatus.DRAFT
-        data["status"] = status
-
     return data
-
-
-def get_change_data_WIP(
-    request_json, model_instance: BaseModel, schema: Schema, protected=None, partial: bool = False
-) -> dict[str, Any]:
-    print(f"~~~get_change_data_WIP~~~\n{request_json=}\n{protected=}\n{partial=}")
-    if protected is None:
-        protected = ["id"]
-    try:
-        old_data = {
-            key: value for key, value in vars(model_instance).items() if key in request_json and key not in protected
-        }  # only keep the attributes from the request body and omit protected ones
-    except AttributeError:
-        old_data = {}
-    print("~~~old_data (filtered vars)~~~\n", old_data)
-
-    # looking into the loaded data before dumping
-    loaded_data = schema.load(request_json, unknown=EXCLUDE, partial=partial)
-    loaded_data_vars_dict = vars(loaded_data)
-    print("~~~loaded_data~~~\n", loaded_data)
-    print("~~~loaded_data_vars_dict~~~\n", loaded_data_vars_dict)
-
-    change_data_from_vars_dict1 = {
-        key: value for key, value in vars(loaded_data).items() if key not in protected and key in request_json
-    }  # only keep the attributes from the request body and omit protected ones
-    print("~~~change_data_from_vars_dict1~~~\n", change_data_from_vars_dict1)
-
-    change_data_from_vars_dict = {
-        key: value
-        for key, value in vars(loaded_data).items()
-        if key not in protected and key in request_json and value != old_data.get(key, None)
-    }  # only keep the attributes from the request body and omit protected ones
-    print("~~~change_data_from_vars_dict~~~\n", change_data_from_vars_dict)
-
-    change_data = schema.dump(schema.load(request_json, unknown=EXCLUDE, partial=partial))
-    change_data = {
-        key: value
-        for key, value in change_data.items()
-        if key not in protected and key in request_json and value != old_data.get(key, None)
-    }  # only keep the attributes from the request body and omit protected ones
-    old_data |= change_data
-
-    print("~~~data (final)~~~\n", old_data)
-    return change_data_from_vars_dict

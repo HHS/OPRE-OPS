@@ -353,7 +353,7 @@ def test_put_budget_line_items(auth_client, test_bli):
     assert response.json["agreement_id"] == 1  # not allowed to change
     assert response.json["can_id"] == 2
     assert response.json["amount"] == 200.24
-    assert response.json["status"] == "DRAFT"
+    assert response.json["status"] == "DRAFT"  # what should happen here?
     assert response.json["date_needed"] == "2044-01-01"
     assert response.json["proc_shop_fee_percentage"] == 2.34
     assert response.json["created_on"] != response.json["updated_on"]
@@ -635,6 +635,7 @@ def test_patch_budget_line_items_invalid_can(auth_client):
     assert response.status_code == 400
 
 
+@pytest.mark.skip("Status change (from DRAFT to PLANNED) is not allowed as direct edit. Replace/rework this test.")
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_update_status(auth_client, loaded_db):
