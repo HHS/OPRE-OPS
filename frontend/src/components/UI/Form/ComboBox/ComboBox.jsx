@@ -92,8 +92,18 @@ export const ComboBox = ({
     };
 
     useEffect(() => {
-        selectedData === undefined && setSelectedOption(null);
-    }, [selectedData]);
+        if (Array.isArray(selectedData)) {
+            const newSelectedOptions = selectedData.map((item) =>
+                options.find((option) => option.value === Number(item.id))
+            );
+            setSelectedOption(newSelectedOptions);
+        } else {
+            const newSelectedOption = selectedData
+                ? options.find((option) => option.value === Number(selectedData.id))
+                : null;
+            setSelectedOption(newSelectedOption);
+        }
+    }, [selectedData, options]);
 
     const clear = () => {
         setSelectedData({});
@@ -156,7 +166,7 @@ export const ComboBox = ({
             classNamePrefix={namespace}
             name={namespace}
             tabIndex={0}
-            value={defaultOption ?? selectedOption}
+            value={defaultOption ?? selectedOption ?? ""}
             onChange={handleChange}
             options={options}
             placeholder={defaultString}

@@ -85,7 +85,6 @@ const useCreateBLIsAndSCs = (
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
-            can: selectedCan || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
             status: "DRAFT",
@@ -123,8 +122,7 @@ const useCreateBLIsAndSCs = (
             id: budgetLines[budgetLineBeingEdited].id,
             services_component_id: servicesComponentId,
             comments: enteredComments,
-            can_id: selectedCan?.id,
-            can: selectedCan,
+            can_id: selectedCan?.id || null,
             agreement_id: selectedAgreement?.id,
             amount: enteredAmount,
             date_needed:
@@ -236,21 +234,12 @@ const useCreateBLIsAndSCs = (
         if (!budgetLine) {
             return;
         }
-        const {
-            services_component_id,
-            comments,
-            can_id,
-            can,
-            agreement_id,
-            amount,
-            date_needed,
-            proc_shop_fee_percentage
-        } = budgetLine;
+        const { services_component_id, comments, can_id, agreement_id, amount, date_needed, proc_shop_fee_percentage } =
+            budgetLine;
         const payload = {
             services_component_id,
             comments,
             can_id,
-            can,
             agreement_id,
             amount,
             date_needed,
