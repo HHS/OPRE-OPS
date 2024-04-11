@@ -30,7 +30,7 @@ export const ComboBox = ({
     clearWhenSet = false,
     isMulti = false
 }) => {
-    const [selectedOption, setSelectedOption] = useState(null);
+    const [selectedOption, setSelectedOption] = useState(null || { value: "", label: "" });
 
     const options = data.map((item) => {
         return { value: item.id, label: optionText(item) };
@@ -92,28 +92,22 @@ export const ComboBox = ({
     };
 
     useEffect(() => {
-        if (Array.isArray(selectedData)) {
-            const newSelectedOptions = selectedData.map((item) =>
-                options.find((option) => option.value === Number(item.id))
-            );
-            setSelectedOption(newSelectedOptions);
-        } else {
-            const newSelectedOption = selectedData
-                ? options.find((option) => option.value === Number(selectedData.id))
-                : null;
-            setSelectedOption(newSelectedOption);
+        if (!selectedData || Object.keys(selectedData).length === 0) {
+            setSelectedOption(null);
         }
-    }, [selectedData, options]);
+    }, [selectedData]);
 
     const clear = () => {
-        setSelectedData({});
+        setSelectedData(null);
         setSelectedOption(null);
     };
 
     const clearWhenSetFunc = (optionId) => {
         const optionObj = data.find((item) => item.id === Number(optionId));
-        setSelectedData(optionObj);
-        setSelectedOption(null);
+        setSelectedData(optionObj); // Ensure this sets appropriately and resets where needed
+        if (clearWhenSet) {
+            setSelectedOption(null);
+        }
     };
 
     const handleChangeDefault = (event) => {
@@ -150,14 +144,11 @@ export const ComboBox = ({
         }
     };
 
-    let defaultOption = [];
-    if (Array.isArray(selectedData)) {
-        for (let item of selectedData) {
-            defaultOption.push(options.find((option) => option.value === Number(item.id)));
-        }
-    } else {
-        defaultOption = selectedData ? options.find((option) => option.value === Number(selectedData?.id)) : null;
-    }
+    let defaultOption = selectedData
+        ? Array.isArray(selectedData)
+            ? selectedData.map((item) => options.find((option) => option.value === Number(item.id)))
+            : options.find((option) => option.value === Number(selectedData?.id))
+        : null;
 
     return (
         <Select
