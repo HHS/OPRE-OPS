@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 /**
  *  A comboBox.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.namespace - A unique name to use as a prefix for id, name, class, etc.
  * @param {Array<any>} props.data - The data to choose from.
@@ -13,17 +14,16 @@ import { useEffect, useState } from "react";
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
  * @param {Object} [props.overrideStyles] - Some CSS styles to override the default (optional).
- * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected.
+ * @param {boolean} [props.clearWhenSet] - Whether to clear the box when an option is selected. Used for TeamMemberComboBox. (optional).
  * @param {boolean} [props.isMulti] - Whether to allow multiple selections.
- * Used for TeamMemberComboBox. (optional).
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 export const ComboBox = ({
     namespace,
     data,
     selectedData,
     setSelectedData,
-    optionText = (data) => data.title,
+    optionText = (data) => data.display_name,
     defaultString = "",
     messages = [],
     overrideStyles = {},
@@ -41,9 +41,9 @@ export const ComboBox = ({
             ...provided,
             background: "#fff",
             borderColor: "#565c65",
-            minHeight: "40px",
-            boxShadow: state.isFocused ? null : null,
-            outline: state.isFocused ? "0.25rem solid #2491ff" : null,
+            minHeight: "2.5rem",
+            boxShadow: state.isFocused ? "" : "",
+            outline: state.isFocused ? "0.25rem solid #2491ff" : "",
             borderRadius: 0,
             "&:hover": {
                 borderColor: "#565c65"
@@ -152,7 +152,7 @@ export const ComboBox = ({
     return (
         <Select
             inputId={`${namespace}-input`}
-            className={`padding-0 ${messages.length ? "usa-input--error" : null}`}
+            className={`padding-0 ${messages.length ? "usa-input--error" : ""}`}
             classNamePrefix={namespace}
             name={namespace}
             tabIndex={0}

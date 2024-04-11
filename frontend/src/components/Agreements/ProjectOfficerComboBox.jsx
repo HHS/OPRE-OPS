@@ -51,7 +51,7 @@ export const ProjectOfficerComboBox = ({
             )}
         >
             <label
-                className={` ${legendClassname} ${messages.length ? "usa-label--error" : null}`}
+                className={` ${legendClassname} ${messages.length ? "usa-label--error" : ''}`}
                 htmlFor="project-officer-combobox-input"
                 id="project-officer-label"
             >

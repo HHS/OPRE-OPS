@@ -85,7 +85,7 @@ const useCreateBLIsAndSCs = (
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
-            can: selectedCan || null,
+            can: selectedCan,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
             status: "DRAFT",
@@ -109,12 +109,12 @@ const useCreateBLIsAndSCs = (
                     navigateUrl: "/error"
                 });
             });
-        resetForm();
         setAlert({
             type: "success",
             heading: "Budget Line Added",
             message: "The budget line has been successfully added."
         });
+        resetForm();
     };
 
     const handleEditBLI = (e) => {
@@ -147,7 +147,6 @@ const useCreateBLIsAndSCs = (
                     navigateUrl: "/error"
                 });
             });
-        resetForm();
         if (budgetLineIdFromUrl) {
             resetQueryParams();
         }
@@ -156,6 +155,7 @@ const useCreateBLIsAndSCs = (
             heading: "Budget Line Updated",
             message: "The budget line has been successfully edited."
         });
+        resetForm();
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
@@ -186,6 +186,7 @@ const useCreateBLIsAndSCs = (
                             navigateUrl: "/error"
                         });
                     });
+                resetForm();
             }
         });
     };
