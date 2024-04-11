@@ -85,7 +85,7 @@ const useCreateBLIsAndSCs = (
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
-            can: selectedCan,
+            can: selectedCan || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
             status: "DRAFT",
