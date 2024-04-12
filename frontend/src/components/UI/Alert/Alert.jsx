@@ -4,17 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { setIsActive, clearState } from "./alertSlice";
-
+import { set } from "lodash";
 /**
  * A component that displays an alert and optionally navigates after a delay.
  * @component
- * @param {React.ReactNode} children - The children to render inside the alert.
+ * @param {Object} props - The component props.
+ * @param {JSX.Element} [props.children] - The child elements to render. - optionally
  * @returns {JSX.Element} The JSX element to render.
  */
 export const Alert = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { heading, message, type, redirectUrl } = useSelector((state) => state.alert);
+    const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     let waitTime = redirectUrl ? 3000 : 2000;
 
@@ -27,12 +29,16 @@ export const Alert = ({ children }) => {
     useEffect(() => {
         let timeout;
         if (redirectUrl) {
+            setIsFromRedirect(true);
             timeout = setTimeout(() => {
                 navigate(redirectUrl);
             }, waitTime);
         }
 
-        return () => clearTimeout(timeout);
+        return () => {
+            clearTimeout(timeout);
+            setIsFromRedirect(false);
+        };
     }, [navigate, redirectUrl, waitTime]);
 
     // Manage alert visibility and auto-dismiss without affecting navigation
@@ -54,29 +60,44 @@ export const Alert = ({ children }) => {
         }[type] || "";
 
     return isAlertVisible ? (
-        <div
-            className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x z-top`}
-            role="status"
-            data-cy="alert"
-        >
-            <div className="usa-alert__body display-flex flex-justify">
-                <div>
-                    <h1 className="usa-alert__heading">{heading}</h1>
-                    <p className="usa-alert__text">{message}</p>
-                    {children}
-                </div>
-                <FontAwesomeIcon
-                    icon={faClose}
-                    className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                    title="close"
-                    data-position="top"
-                    onClick={() => {
-                        dispatch(setIsActive(false));
-                        setIsAlertVisible(false);
+        <>
+            {isFromRedirect && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(255, 255, 255, 0.6)",
+                        zIndex: 999
                     }}
                 />
+            )}
+            <div
+                className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x z-top`}
+                role="status"
+                data-cy="alert"
+            >
+                <div className="usa-alert__body display-flex flex-justify">
+                    <div>
+                        <h1 className="usa-alert__heading">{heading}</h1>
+                        <p className="usa-alert__text">{message}</p>
+                        {children}
+                    </div>
+                    <FontAwesomeIcon
+                        icon={faClose}
+                        className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                        title="close"
+                        data-position="top"
+                        onClick={() => {
+                            dispatch(setIsActive(false));
+                            setIsAlertVisible(false);
+                        }}
+                    />
+                </div>
             </div>
-        </div>
+        </>
     ) : null;
 };
 
