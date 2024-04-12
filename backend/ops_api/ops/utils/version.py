@@ -3,8 +3,8 @@ import yaml
 from flask.views import MethodView
 from flask import jsonify
 
-class VersionAPI(MethodView):
 
+class VersionAPI(MethodView):
 
     @staticmethod
     def get_api_version():
