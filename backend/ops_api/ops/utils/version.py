@@ -5,6 +5,7 @@ from flask import jsonify
 
 class VersionAPI(MethodView):
 
+
     @staticmethod
     def get_api_version():
         # Use the absolute path of the current working directory
