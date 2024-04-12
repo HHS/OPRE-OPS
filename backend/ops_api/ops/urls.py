@@ -70,6 +70,7 @@ from ops_api.ops.views import (
     WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC,
     WORKFLOW_TEMPLATE_ITEM_API_VIEW_FUNC,
     WORKFLOW_TEMPLATE_LIST_API_VIEW_FUNC,
+    VERSION_API_VIEW_FUNC,
 )
 
 # Ideas from Flask docs: https://flask.palletsprojects.com/en/2.2.x/views/#method-dispatching-and-apis
@@ -366,4 +367,9 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/procurement-awards/<int:id>",
         view_func=PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC,
+    )
+    # Add a new URL rule for the version endpoint
+    api_bp.add_url_rule(
+        "/version/",
+        view_func=VERSION_API_VIEW_FUNC,
     )
