@@ -14,7 +14,8 @@ import AgreementsFilterTags from "./AgreementsFilterTags";
 
 /**
  * Page for the Agreements List.
- * @returns {React.JSX.Element} - The component JSX.
+ * @component
+ * @returns {JSX.Element} - The component JSX.
  */
 export const AgreementsList = () => {
     const [searchParams] = useSearchParams();
@@ -31,7 +32,7 @@ export const AgreementsList = () => {
             obligated: true
         }
     });
-
+    // TODO: Move logic to a custom hook './useAgreementsList.hooks.js'
     const {
         data: agreements,
         error: errorAgreement,

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,51 +6,54 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { setIsActive, clearState } from "./alertSlice";
 
 /**
- * A component that displays an alert.
- * @param {Object} props - The component props.
- * @param {React.ReactNode} [props.children] - The children to render.
- * @returns {React.JSX.Element} The JSX element to render.
- * @see {@link https://designsystem.digital.gov/components/alerts/}
+ * A component that displays an alert and optionally navigates after a delay.
+ * @component
+ * @param {React.ReactNode} children - The children to render inside the alert.
+ * @returns {JSX.Element} The JSX element to render.
  */
 export const Alert = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const heading = useSelector((state) => state.alert.heading);
-    const message = useSelector((state) => state.alert.message);
-    const type = useSelector((state) => state.alert.type);
-    const redirectUrl = useSelector((state) => state.alert.redirectUrl);
+    const { heading, message, type, redirectUrl } = useSelector((state) => state.alert);
+    const [isAlertVisible, setIsAlertVisible] = useState(true);
+    let waitTime = redirectUrl ? 3000 : 2000;
 
-    React.useEffect(() => {
+    // Scroll to top only when the alert is first displayed
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    // Handle navigation without blocking user interactions
+    useEffect(() => {
+        let timeout;
         if (redirectUrl) {
-            navigate(redirectUrl);
+            timeout = setTimeout(() => {
+                navigate(redirectUrl);
+            }, waitTime);
         }
 
-        const showAlert = async () => {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            window.scrollTo(0, 0);
+        return () => clearTimeout(timeout);
+    }, [navigate, redirectUrl]);
 
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+    // Manage alert visibility and auto-dismiss without affecting navigation
+    useEffect(() => {
+        const timer = setTimeout(() => {
             dispatch(clearState());
-        };
+            setIsAlertVisible(false);
+        }, waitTime);
 
-        showAlert();
-    }, [navigate, dispatch, redirectUrl]);
+        return () => clearTimeout(timer);
+    }, [dispatch, waitTime]);
 
-    let typeClass = null;
-    switch (type) {
-        case "success":
-            typeClass = "usa-alert--success";
-            break;
-        case "warning":
-            typeClass = "usa-alert--warning";
-            break;
-        case "error":
-            typeClass = "usa-alert--error";
-            break;
-        default:
-    }
+    // Alert type CSS class mapping
+    const typeClass =
+        {
+            success: "usa-alert--success",
+            warning: "usa-alert--warning",
+            error: "usa-alert--error"
+        }[type] || "";
 
-    return (
+    return isAlertVisible ? (
         <div
             className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x z-top`}
             role="status"
@@ -62,17 +65,19 @@ export const Alert = ({ children }) => {
                     <p className="usa-alert__text">{message}</p>
                     {children}
                 </div>
-
                 <FontAwesomeIcon
                     icon={faClose}
                     className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                     title="close"
                     data-position="top"
-                    onClick={() => dispatch(setIsActive(false))}
+                    onClick={() => {
+                        dispatch(setIsActive(false));
+                        setIsAlertVisible(false);
+                    }}
                 />
             </div>
         </div>
-    );
+    ) : null;
 };
 
 export default Alert;
