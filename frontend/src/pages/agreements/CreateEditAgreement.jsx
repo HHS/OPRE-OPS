@@ -6,7 +6,7 @@ import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLinesAndSCs from "../../components/BudgetLineItems/CreateBLIsAndSCs";
 import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
-import useAlert from "../../hooks/use-alert.hooks";
+import StepSuccessAlert from "../../components/UI/Alert/StepSuccessAlert";
 
 /**
  * Renders the Create Agreement flow, which consists of several steps.
@@ -24,7 +24,7 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
-    const { setAlert } = useAlert();
+
     // check mode on mount
     React.useEffect(() => {
         switch (mode) {
@@ -68,18 +68,16 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 continueBtnText="Create Agreement"
-                continueOverRide={() =>
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Created",
-                        message: `The agreement ${selectedAgreement?.name} has been successfully created.`,
-                        redirectUrl: "/agreements"
-                    })
-                }
                 budgetLines={budgetLines}
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
                 workflow="agreement"
+            />
+            <StepSuccessAlert
+                heading="Agreement Created"
+                message={`The agreement ${selectedAgreement?.name} has been successfully created. You will be redirected to the Agreements page.`}
+                link="/agreements"
+                delay={2000}
             />
         </CreateAgreementFlow>
     );
