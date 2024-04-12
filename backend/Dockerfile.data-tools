@@ -1,17 +1,25 @@
 FROM python:3.10-slim
-RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client=15+248 && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.7.24 && useradd -ms /bin/bash app
+
+# Install PostgreSQL client
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-client && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install pipenv
+RUN pip install --no-cache-dir --upgrade pip pipenv && \
+    useradd -ms /bin/bash app
+
 USER app
 WORKDIR /home/app
 
+# Set environment variables
 ENV PYTHONPATH=/home/app
 ENV PYTHONUNBUFFERED=1
 
-# Copy the Pipfile(s) only, so that we can cache dependencies
-# in the next step
+# Copy the Pipfile(s) and install dependencies
 COPY ./data_tools/Pipfile ./data_tools/Pipfile.lock /home/app/
 RUN pipenv install --dev --system --deploy
 
-# Now copy the rest of the app files, again to better support caching
-# of prior steps.
+# Copy the rest of the app files
 COPY ./ /home/app
