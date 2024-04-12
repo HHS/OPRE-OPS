@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -33,7 +33,7 @@ export const Alert = ({ children }) => {
         }
 
         return () => clearTimeout(timeout);
-    }, [navigate, redirectUrl]);
+    }, [navigate, redirectUrl, waitTime]);
 
     // Manage alert visibility and auto-dismiss without affecting navigation
     useEffect(() => {
