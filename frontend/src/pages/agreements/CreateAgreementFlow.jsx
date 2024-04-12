@@ -7,6 +7,7 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
     const wizardSteps = ["Project", "Agreement", "Services Components & Budget Lines"];
 
     const goBack = () => {
+        window.scrollTo(0, 0);
         const previousIndex = currentIndex - 1;
         if (previousIndex >= 0) {
             setCurrentIndex(previousIndex);
