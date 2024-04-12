@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { setIsActive, clearState } from "./alertSlice";
-import { set } from "lodash";
 /**
  * A component that displays an alert and optionally navigates after a delay.
  * @component
