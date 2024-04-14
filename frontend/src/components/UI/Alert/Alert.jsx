@@ -8,7 +8,7 @@ import { setIsActive, clearState } from "./alertSlice";
  * A component that displays an alert and optionally navigates after a delay.
  * @component
  * @param {Object} props - The component props.
- * @param {JSX.Element} [props.children] - The child elements to render. - optionally
+ * @param {React.ReactNode} props.children - The alert content.
  * @returns {JSX.Element} The JSX element to render.
  */
 export const Alert = ({ children }) => {
@@ -18,11 +18,6 @@ export const Alert = ({ children }) => {
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     let waitTime = redirectUrl ? 3000 : 2000;
-
-    // Scroll to top only when the alert is first displayed
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
 
     // Handle navigation without blocking user interactions
     useEffect(() => {
@@ -74,7 +69,7 @@ export const Alert = ({ children }) => {
                 />
             )}
             <div
-                className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x z-top`}
+                className={`grid-container usa-alert ${typeClass} margin-top-0 position-fixed pin-x z-top`}
                 role="status"
                 data-cy="alert"
             >
