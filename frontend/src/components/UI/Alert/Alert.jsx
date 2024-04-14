@@ -89,6 +89,7 @@ export const Alert = ({ children }) => {
                         className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
                         title="close"
                         data-position="top"
+                        data-cy="close-alert"
                         onClick={() => {
                             dispatch(setIsActive(false));
                             setIsAlertVisible(false);
