@@ -4,10 +4,13 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
     const [formData, setFormData] = React.useState({});
     const [currentIndex, setCurrentIndex] = React.useState(0);
 
+    React.useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [currentIndex]);
+
     const wizardSteps = ["Project", "Agreement", "Services Components & Budget Lines"];
 
     const goBack = () => {
-        window.scrollTo(0, 0);
         const previousIndex = currentIndex - 1;
         if (previousIndex >= 0) {
             setCurrentIndex(previousIndex);
@@ -15,7 +18,6 @@ export const CreateAgreementFlow = ({ children, onFinish }) => {
     };
 
     const goToNext = (stepData) => {
-        window.scrollTo(0, 0);
         const nextIndex = currentIndex + 1;
         const updatedData = {
             ...formData,
