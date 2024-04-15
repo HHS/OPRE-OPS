@@ -79,6 +79,8 @@ from ops_api.ops.resources.workflow_step_template import WorkflowStepTemplateIte
 from ops_api.ops.resources.workflow_submit import WorkflowSubmisionListApi
 from ops_api.ops.resources.workflow_template import WorkflowTemplateItemAPI, WorkflowTemplateListAPI
 
+from ops_api.ops.utils.version import VersionAPI
+
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
 AGREEMENT_LIST_API_VIEW_FUNC = AgreementListAPI.as_view("agreements-group", Agreement)
@@ -254,3 +256,6 @@ PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procuremen
 
 # Procurement: Award ENDPOINT
 PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC = AwardItemAPI.as_view("procurement-award-item", Award)
+
+# Version Endpoint View
+VERSION_API_VIEW_FUNC = VersionAPI.as_view("version_api")
