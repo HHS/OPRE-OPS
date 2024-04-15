@@ -48,18 +48,18 @@ def validate_and_prepare_change_data(
     # load and validate the request data
     # schema.load will run the validator and throw a ValidationError if it fails
     loaded_data = schema.load(request_json, unknown=EXCLUDE, partial=partial)
-    loaded_data_vars_dict = vars(loaded_data)
-    print("~~~loaded_data~~~\n", loaded_data)
-    print("~~~loaded_data_vars_dict~~~\n", loaded_data_vars_dict)
 
-    change_data_from_vars_dict = {
+    # build dict of requested changes, omitting protected fields and unchanged fields
+    change_data_dict = {
         key: value
         for key, value in vars(loaded_data).items()
         if key not in protected and key in request_json and value != old_data.get(key, None)
-    }  # only keep the attributes from the request body and omit protected ones
-    print("~~~change_data_from_vars_dict~~~\n", change_data_from_vars_dict)
+    }
+    print("~~~change_data_dict~~~\n", change_data_dict)
+    filtered_old_data = {key: value for key, value in old_data.items() if key in change_data_dict}
+    print("~~~filtered_old_data~~~\n", filtered_old_data)
 
-    return change_data_from_vars_dict
+    return change_data_dict, filtered_old_data
 
 
 def update_model_instance_data(model_instance: BaseModel, data: dict[str, Any]) -> None:

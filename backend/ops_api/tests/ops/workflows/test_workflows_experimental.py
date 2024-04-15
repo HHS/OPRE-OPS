@@ -63,7 +63,7 @@ def test_budget_line_item_change_request(auth_client, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
+def test_budget_line_item_patch_with_budgets_change_request(auth_client, app):
     session = app.db_session
     #  create PLANNED BLI
     bli = BudgetLineItem(
@@ -89,16 +89,17 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
 
     print(json.dumps(resp_json, indent=2))
 
-    assert "id" in resp_json
-    change_request_id = resp_json["id"]
+    assert "change_request_ids" in resp_json
+    change_request_ids = resp_json["change_request_ids"]
 
-    # verify the change request was created
-    change_request = session.get(BudgetLineItemBudgetChangeRequest, change_request_id)
-    assert change_request is not None
-    print("~~~change_request~~~\n", json.dumps(change_request.to_dict(), indent=2))
-    print("~~~requested_changes~~~\n", json.dumps(change_request.requested_changes, indent=2))
-    assert change_request.type == "budget_line_item_budget_change_request"
-    assert change_request.budget_line_item_id == bli_id
+    # verify each change request was created
+    for change_request_id in change_request_ids:
+        change_request = session.get(ChangeRequest, change_request_id)
+        assert change_request is not None
+        print("~~~change_request~~~\n", json.dumps(change_request.to_dict(), indent=2))
+        print("~~~requested_changes~~~\n", json.dumps(change_request.requested_changes, indent=2))
+        assert change_request.type == "budget_line_item_budget_change_request"
+        assert change_request.budget_line_item_id == bli_id
 
     # verify the BLI was not updated yet
     bli = session.get(BudgetLineItem, bli_id)
@@ -108,7 +109,8 @@ def test_budget_line_item_patch_to_financial_change_request(auth_client, app):
     assert bli.date_needed is None
 
     # approve the change request
-    approve_change_request(change_request_id, 1)
+    for change_request_id in change_request_ids:
+        approve_change_request(change_request_id, 1)
 
     # verify the BLI was updated
     bli = session.get(BudgetLineItem, bli_id)

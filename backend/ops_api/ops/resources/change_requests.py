@@ -4,7 +4,7 @@ from datetime import datetime
 import marshmallow_dataclass as mmdc
 from flask import current_app
 
-from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest
+from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
@@ -15,6 +15,7 @@ def approve_change_request(change_request_id: int, user_id: int) -> ChangeReques
     change_request = session.get(ChangeRequest, change_request_id)
     change_request.reviewed_by_id = user_id
     change_request.reviewed_on = datetime.now()
+    change_request.status = ChangeRequestStatus.APPROVED
 
     if isinstance(change_request, BudgetLineItemChangeRequest):
         print("~~~BudgetLineItemChangeRequest~~~")
@@ -26,7 +27,7 @@ def approve_change_request(change_request_id: int, user_id: int) -> ChangeReques
         schema.context["id"] = change_request.budget_line_item_id
         schema.context["method"] = "PATCH"
 
-        change_data = validate_and_prepare_change_data(
+        change_data, changing_from_data = validate_and_prepare_change_data(
             data,
             budget_line_item,
             schema,
