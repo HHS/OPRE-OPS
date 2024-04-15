@@ -21,19 +21,15 @@ export const Alert = ({ children }) => {
 
     // Handle navigation without blocking user interactions
     useEffect(() => {
-        let timeout;
         if (redirectUrl) {
             setIsFromRedirect(true);
-            timeout = setTimeout(() => {
-                navigate(redirectUrl);
-            }, waitTime);
+            navigate(redirectUrl);
         }
 
         return () => {
-            clearTimeout(timeout);
             setIsFromRedirect(false);
         };
-    }, [navigate, redirectUrl, waitTime]);
+    }, [navigate, redirectUrl]);
 
     // Manage alert visibility and auto-dismiss without affecting navigation
     useEffect(() => {
