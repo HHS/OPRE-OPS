@@ -169,8 +169,8 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
     bli_id = bli.id
 
     #  submit PATCH BLI which triggers a financial change request
-    # data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02"}
-    data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02", "status": "OBLIGATED"}
+    data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02"}
+    # data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02", "status": "OBLIGATED"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
@@ -196,6 +196,8 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
     assert bli.amount == Decimal("111.11")
     assert bli.can_id == 1
     assert bli.date_needed is None
+    print(f"~~~{bli.change_request_ids_in_review=}~~~")
+    assert set(bli.change_request_ids_in_review) == set(change_request_ids)
 
     # approve the change requests
     for change_request_id in change_request_ids:
@@ -206,6 +208,7 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
     assert bli.amount == Decimal("222.22")
     assert bli.can_id == 2
     assert bli.date_needed == datetime.date(2032, 2, 2)
+    assert bli.change_request_ids_in_review is None
 
     # verify delete cascade
     session.delete(bli)
@@ -262,16 +265,18 @@ def test_budget_line_item_patch_with_budgets_change_request_denied(auth_client, 
     assert bli.amount == Decimal("111.11")
     assert bli.can_id == 1
     assert bli.date_needed is None
+    assert set(bli.change_request_ids_in_review) == set(change_request_ids)
 
     # reject the change requests
     for change_request_id in change_request_ids:
         review_change_request(change_request_id, ChangeRequestStatus.REJECTED, 1)
 
-    # verify the BLI was NOT updated
+    # verify the BLI was NOT updated but change requests are done
     bli = session.get(BudgetLineItem, bli_id)
     assert bli.amount == Decimal("111.11")
     assert bli.can_id == 1
     assert bli.date_needed is None
+    assert bli.change_request_ids_in_review is None
 
     # verify delete cascade
     session.delete(bli)
