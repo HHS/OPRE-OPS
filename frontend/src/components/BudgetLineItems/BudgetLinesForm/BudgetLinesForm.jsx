@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import classnames from "vest/classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
-import CanSelect from "../../CANs/CanSelect";
+import CanComboBox from "../../CANs/CanComboBox";
 import DesiredAwardDate from "../../UI/Form/DesiredAwardDate";
 import suite from "./suite";
 import TextArea from "../../UI/Form/TextArea/TextArea";
@@ -105,7 +105,7 @@ export const CreateBudgetLinesForm = ({
                     />
                 </div>
                 <div className="usa-form-group">
-                    <CanSelect
+                    <CanComboBox
                         name="selectedCan"
                         label="CAN"
                         messages={res.getErrors("selectedCan")}
