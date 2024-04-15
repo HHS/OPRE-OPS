@@ -3,14 +3,14 @@ import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import _ from "lodash";
 import App from "../../../App";
-import { useGetAgreementsQuery } from "../../../api/opsAPI";
-import sortAgreements from "./utils";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import AgreementTabs from "./AgreementsTabs";
-import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
+import sortAgreements from "./utils";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 
 /**
  * Page for the Agreements List.
