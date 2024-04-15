@@ -23,6 +23,7 @@ azure-storage-blob = "==12.19.0"
 azure-identity = "==1.16.0"
 alembic = "==1.13.1"
 alembic-postgresql-enum = "==1.1.2"
+PyYAML = "==6.0.1"
 
 
 [dev-packages]
