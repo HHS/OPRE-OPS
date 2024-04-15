@@ -115,7 +115,7 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("#enteredMonth").select("01 - Jan");
     cy.get("#enteredDay").type("1");
     cy.get("#enteredYear").type("2024");
-    cy.get("#selectedCan").type("G99MVT3{enter}");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
@@ -277,7 +277,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#enteredMonth").select("01 - Jan");
     cy.get("#enteredDay").type("1");
     cy.get("#enteredYear").type("2024");
-    cy.get("#selectedCan").type("G99MVT3{enter}");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
@@ -291,7 +291,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#enteredMonth").select("01 - Jan");
     cy.get("#enteredDay").type("1");
     cy.get("#enteredYear").type("2025");
-    cy.get("#selectedCan").type("G99MVT3{enter}");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("2000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
@@ -312,7 +312,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#enteredMonth").select("01 - Jan");
     cy.get("#enteredDay").type("1");
     cy.get("#enteredYear").type("2026");
-    cy.get("#selectedCan").type("G99MVT3{enter}");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("3000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
