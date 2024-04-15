@@ -61,12 +61,12 @@
         },
         "azure-identity": {
             "hashes": [
-                "sha256:4c28fc246b7f9265610eb5261d65931183d019a23d4b0e99357facb2e6c227c8",
-                "sha256:a14b1f01c7036f11f148f22cd8c16e05035293d714458d6b44ddf534d93eb912"
+                "sha256:6ff1d667cdcd81da1ceab42f80a0be63ca846629f518a922f7317a7e3c844e1b",
+                "sha256:722fdb60b8fdd55fa44dc378b8072f4b419b56a5e54c0de391f644949f3a826f"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.7'",
-            "version": "==1.15.0"
+            "markers": "python_version >= '3.8'",
+            "version": "==1.16.0"
         },
         "azure-storage-blob": {
             "hashes": [
@@ -810,7 +810,7 @@
                 "sha256:83f085bd5ca59c80295fc2a82ab5dac679cbe02b9f33f7d83af68e241bea51b0",
                 "sha256:c1f94d72897edaf4ce775bb7558d5b79d8126906a14ea5ed1635921406c0387a"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "python_version < '3.11' and python_version >= '3.7'",
             "version": "==4.11.0"
         },
         "typing-inspect": {
@@ -929,11 +929,11 @@
         },
         "argcomplete": {
             "hashes": [
-                "sha256:bf7900329262e481be5a15f56f19736b376df6f82ed27576fa893652c5de6c23",
-                "sha256:c12355e0494c76a2a7b73e3a59b09024ca0ba1e279fb9ed6c1b82d5b74b6a70c"
+                "sha256:c168c3723482c031df3c207d4ba8fa702717ccb9fc0bfe4117166c1f537b4a54",
+                "sha256:fd03ff4a5b9e6580569d34b273f741e85cd9e072f3feeeee3eba4891c70eda62"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==3.2.3"
+            "version": "==3.3.0"
         },
         "asttokens": {
             "hashes": [
@@ -2503,7 +2503,7 @@
                 "sha256:83f085bd5ca59c80295fc2a82ab5dac679cbe02b9f33f7d83af68e241bea51b0",
                 "sha256:c1f94d72897edaf4ce775bb7558d5b79d8126906a14ea5ed1635921406c0387a"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "python_version < '3.11' and python_version >= '3.7'",
             "version": "==4.11.0"
         },
         "urllib3": {
