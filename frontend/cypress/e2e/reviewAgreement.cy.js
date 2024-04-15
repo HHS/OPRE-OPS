@@ -100,10 +100,10 @@ describe("agreement review workflow", () => {
             cy.get("#add-budget-line").should("be.disabled");
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             // add a CAN and clear it
-            cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
-            cy.get(".usa-combo-box__clear-input").click();
+            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
+            cy.get(".can-combobox__clear-indicator").click();
             cy.get(".usa-error-message").should("exist");
-            cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
+            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             // add entered month and clear it
             cy.get("#enteredMonth").select(blData[0].month);
             cy.get("#enteredMonth").select("0");
@@ -211,7 +211,7 @@ describe("agreement review workflow", () => {
             cy.get(".usa-form-group--error").should("have.length", 3);
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors
-            cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
+            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             cy.get("#enteredMonth").select(blData[0].month);
             cy.get("#enteredDay").type(`${blData[0].day}`);
             cy.get("#enteredYear").type(`${blData[0].year}`);
@@ -302,10 +302,10 @@ describe("agreement review workflow", () => {
             cy.get("#add-budget-line").should("be.disabled");
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
             // add a CAN and clear it
-            cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
-            cy.get(".usa-combo-box__clear-input").click();
+            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
+            cy.get(".can-combobox__clear-indicator").click();
             cy.get(".usa-error-message").should("exist");
-            cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
+            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             // add entered month and clear it
             cy.get("#enteredMonth").select(blData[0].month);
             cy.get("#enteredMonth").select("0");
@@ -412,7 +412,7 @@ describe("agreement review workflow", () => {
             cy.get(".usa-form-group--error").should("have.length", 3);
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors
-            cy.get("#selectedCan").type(`${blData[0].can}{enter}`);
+            cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             cy.get("#enteredMonth").select(blData[0].month);
             cy.get("#enteredDay").type(`${blData[0].day}`);
             cy.get("#enteredYear").type(`${blData[0].year}`);
