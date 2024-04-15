@@ -85,7 +85,6 @@ const useCreateBLIsAndSCs = (
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
-            can: selectedCan || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
             status: "DRAFT",
@@ -109,12 +108,12 @@ const useCreateBLIsAndSCs = (
                     navigateUrl: "/error"
                 });
             });
-        resetForm();
         setAlert({
             type: "success",
             heading: "Budget Line Added",
             message: "The budget line has been successfully added."
         });
+        resetForm();
     };
 
     const handleEditBLI = (e) => {
@@ -123,8 +122,7 @@ const useCreateBLIsAndSCs = (
             id: budgetLines[budgetLineBeingEdited].id,
             services_component_id: servicesComponentId,
             comments: enteredComments,
-            can_id: selectedCan?.id,
-            can: selectedCan,
+            can_id: selectedCan?.id || null,
             agreement_id: selectedAgreement?.id,
             amount: enteredAmount,
             date_needed:
@@ -147,7 +145,6 @@ const useCreateBLIsAndSCs = (
                     navigateUrl: "/error"
                 });
             });
-        resetForm();
         if (budgetLineIdFromUrl) {
             resetQueryParams();
         }
@@ -156,6 +153,7 @@ const useCreateBLIsAndSCs = (
             heading: "Budget Line Updated",
             message: "The budget line has been successfully edited."
         });
+        resetForm();
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
@@ -186,6 +184,7 @@ const useCreateBLIsAndSCs = (
                             navigateUrl: "/error"
                         });
                     });
+                resetForm();
             }
         });
     };
@@ -235,21 +234,12 @@ const useCreateBLIsAndSCs = (
         if (!budgetLine) {
             return;
         }
-        const {
-            services_component_id,
-            comments,
-            can_id,
-            can,
-            agreement_id,
-            amount,
-            date_needed,
-            proc_shop_fee_percentage
-        } = budgetLine;
+        const { services_component_id, comments, can_id, agreement_id, amount, date_needed, proc_shop_fee_percentage } =
+            budgetLine;
         const payload = {
             services_component_id,
             comments,
             can_id,
-            can,
             agreement_id,
             amount,
             date_needed,

@@ -28,8 +28,8 @@
         "react-redux": "9.1.0",
         "react-router-dom": "6.22.3",
         "react-select": "5.8.0",
-        "sass": "1.74.1",
-        "sass-loader": "14.1.1",
+        "sass": "1.75.0",
+        "sass-loader": "14.2.0",
         "vest": "5.2.9"
     },
     "devDependencies": {
@@ -62,7 +62,7 @@
         "vite-plugin-babel-macros": "1.0.6",
         "vite-plugin-eslint": "1.8.1",
         "vite-plugin-svgr": "4.2.0",
-        "vitest": "1.4.0"
+        "vitest": "1.5.0"
     },
     "scripts": {
         "start": "vite",
