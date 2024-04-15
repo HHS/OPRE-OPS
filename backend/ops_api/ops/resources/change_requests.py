@@ -10,15 +10,17 @@ from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
 
 
-def review_change_request(change_request_id: int, change_to_status: ChangeRequestStatus, user_id: int) -> ChangeRequest:
+def review_change_request(
+    change_request_id: int, status_after_review: ChangeRequestStatus, reviewed_by_user_id: int
+) -> ChangeRequest:
     session = current_app.db_session
     change_request = session.get(ChangeRequest, change_request_id)
-    change_request.reviewed_by_id = user_id
+    change_request.reviewed_by_id = reviewed_by_user_id
     change_request.reviewed_on = datetime.now()
-    change_request.status = change_to_status
+    change_request.status = status_after_review
 
     # If approved, then apply the changes
-    if change_to_status == ChangeRequestStatus.APPROVED:
+    if status_after_review == ChangeRequestStatus.APPROVED:
         if isinstance(change_request, BudgetLineItemChangeRequest):
             print("~~~BudgetLineItemChangeRequest~~~")
             budget_line_item = session.get(BudgetLineItem, change_request.budget_line_item_id)
