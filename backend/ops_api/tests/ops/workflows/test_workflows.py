@@ -11,7 +11,6 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
-    ChangeRequestStatus,
     WorkflowAction,
     WorkflowInstance,
     WorkflowStepInstance,
@@ -21,7 +20,6 @@ from models import (
     WorkflowTemplate,
     WorkflowTriggerType,
 )
-from ops_api.ops.resources.change_requests import review_change_request
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -161,7 +159,6 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
         can_id=1,
         amount=111.11,
         status=BudgetLineItemStatus.PLANNED,
-        # date_needed=datetime.date(2043, 1, 1),
     )
     session.add(bli)
     session.commit()
@@ -201,7 +198,10 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
 
     # approve the change requests
     for change_request_id in change_request_ids:
-        review_change_request(change_request_id, ChangeRequestStatus.APPROVED, 1)
+        # review_change_request(change_request_id, ChangeRequestStatus.APPROVED, 1)
+        data = {"change_request_id": change_request_id, "action": "APPROVE"}
+        response = auth_client.post(url_for("api.change-request-review-list"), json=data)
+        assert response.status_code == 200
 
     # verify the BLI was updated
     bli = session.get(BudgetLineItem, bli_id)
@@ -269,7 +269,10 @@ def test_budget_line_item_patch_with_budgets_change_request_denied(auth_client, 
 
     # reject the change requests
     for change_request_id in change_request_ids:
-        review_change_request(change_request_id, ChangeRequestStatus.REJECTED, 1)
+        # review_change_request(change_request_id, ChangeRequestStatus.REJECTED, 1)
+        data = {"change_request_id": change_request_id, "action": "REJECT"}
+        response = auth_client.post(url_for("api.change-request-review-list"), json=data)
+        assert response.status_code == 200
 
     # verify the BLI was NOT updated but change requests are done
     bli = session.get(BudgetLineItem, bli_id)
