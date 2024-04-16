@@ -25,6 +25,7 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
     const { setAlert } = useAlert();
+
     // check mode on mount
     React.useEffect(() => {
         switch (mode) {
@@ -68,6 +69,10 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
                 continueBtnText="Create Agreement"
+                budgetLines={budgetLines}
+                isEditMode={isEditMode}
+                isReviewMode={isReviewMode}
+                workflow="agreement"
                 continueOverRide={() =>
                     setAlert({
                         type: "success",
@@ -76,10 +81,6 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
                         redirectUrl: "/agreements"
                     })
                 }
-                budgetLines={budgetLines}
-                isEditMode={isEditMode}
-                isReviewMode={isReviewMode}
-                workflow="agreement"
             />
         </CreateAgreementFlow>
     );
