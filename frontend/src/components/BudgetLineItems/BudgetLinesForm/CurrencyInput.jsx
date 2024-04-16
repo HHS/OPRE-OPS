@@ -2,7 +2,7 @@ import cx from "clsx";
 import CurrencyFormat from "react-currency-format";
 
 /**
- * A form input component.
+ * A form input component for currency values.
  *
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
@@ -13,7 +13,7 @@ import CurrencyFormat from "react-currency-format";
  * @param {string} [props.value] - The value of the input field.(optional)
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {Function} [props.setEnteredAmount] - A function to call when the input value changes.
- * @returns {JSX.Element} - The rendered input component.
+ * @returns {JSX.Element} - The rendered component.
  */
 const CurrencyInput = ({
     name,
@@ -33,19 +33,19 @@ const CurrencyInput = ({
             >
                 {label}
             </label>
-            {messages.length ? (
+            {messages.length > 0 && (
                 <span
                     className="usa-error-message"
                     role="alert"
                 >
                     {messages[0]}
                 </span>
-            ) : null}
+            )}
             <CurrencyFormat
                 id={name}
                 name={name}
                 value={value}
-                className={`usa-input ${messages.length ? "usa-input--error" : null} `}
+                className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                 thousandSeparator={true}
                 decimalScale={2}
                 renderText={(value) => value}

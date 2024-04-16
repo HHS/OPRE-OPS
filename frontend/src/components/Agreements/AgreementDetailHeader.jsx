@@ -4,13 +4,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * Agreement detail header.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading to display.
  * @param {string} props.details - The details to display.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @param {boolean} props.isEditable - Whether the agreement is editable.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementDetailHeader = ({ heading, details, isEditMode, setIsEditMode, isEditable }) => {
     return (
