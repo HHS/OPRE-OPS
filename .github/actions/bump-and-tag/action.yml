@@ -1,56 +1,108 @@
 name: 'Bump and Tag'
-description: 'Automatically bumps version in package.json or openapi.yml'
+description: 'Automatically bumps version for npm packages or OpenAPI specs based on commit messages.'
+runs:
+  using: 'node20'
+  main: 'index.js'
+branding:
+  icon: 'chevron-up'
+  color: 'blue'
+
 inputs:
   config_type:
-    description: 'Type of config file to bump version for ("package.json" or "openapi.yml")'
-    required: false
+    description: 'Type of configuration file ("package.json" or "openapi.yml").'
     default: 'package.json'
+    required: false
+
   config_dir:
-    description: 'Directory where the config file is located, relative to the GitHub workspace'
+    description: 'Custom directory for the configuration file.'
+    default: ''
     required: false
-  major_wording:
-    description: 'Comma-separated keywords that trigger a major version bump'
+
+  tag-prefix:
+    description: 'Prefix that is used for the git tag.'
+    default: ''
     required: false
-  minor_wording:
-    description: 'Comma-separated keywords that trigger a minor version bump'
+
+  tag-suffix:
+    description: 'Suffix that is used for the git tag.'
+    default: ''
     required: false
-  patch_wording:
-    description: 'Comma-separated keywords that trigger a patch version bump'
+
+  version-type:
+    description: 'Overrides version type from commit message.'
+    default: ''
     required: false
-  rc_wording:
-    description: 'Comma-separated keywords that trigger a release candidate or pre-release version bump'
+
+  major-wording:
+    description: 'Comma-separated list of keywords that trigger a major version bump.'
+    default: 'BREAKING CHANGE,major'
     required: false
-  version_type:
-    description: 'Specify the type of version bump explicitly (major, minor, patch, premajor, preminor, prepatch, prerelease)'
+
+  minor-wording:
+    description: 'Comma-separated list of keywords that trigger a minor version bump.'
+    default: 'feat,minor'
     required: false
-  tag_prefix:
-    description: 'Prefix to prepend to the version tag'
+
+  patch-wording:
+    description: 'Comma-separated list of keywords that trigger a patch version bump.'
+    default: ''
     required: false
-  tag_suffix:
-    description: 'Suffix to append to the version tag'
+
+  rc-wording:
+    description: 'Comma-separated list of keywords that trigger a release candidate version bump.'
+    default: 'pre-alpha,pre-beta,pre-rc'
     required: false
-  commit_message:
-    description: 'Custom commit message template for version bumps'
+
+  default:
+    description: 'Set a default version bump to use.'
+    default: 'patch'
     required: false
-  push:
-    description: 'If set to false, skip pushing the new tag and changes'
+
+  preid:
+    description: 'Set a custom preid for prerelease builds.'
+    default: 'rc'
     required: false
-    default: 'true'
-  skip_commit:
-    description: 'If set to true, skip the commit step'
+
+  skip-tag:
+    description: 'If true, no tag is added to the git repository.'
+    default: 'false'
     required: false
-  skip_tag:
-    description: 'If set to true, skip the tagging step'
+
+  skip-commit:
+    description: 'If true, no commit is made after the version is bumped.'
+    default: 'false'
     required: false
-  skip_push:
-    description: 'If set to true, skip the push step'
+
+  skip-push:
+    description: 'If true, skip pushing any commits or tags created after the version bump.'
+    default: 'false'
     required: false
-  target_branch:
-    description: 'The branch to which commits and tags should be pushed'
+
+  target-branch:
+    description: 'The branch to perform the version bump on.'
+    default: ''
     required: false
-  custom_git_domain:
-    description: 'If using a custom domain for Git operations, specify it here'
+
+  commit-message:
+    description: 'Custom commit message for the version bump commit.'
+    default: 'ci: version bump to {{version}}'
     required: false
-runs:
-  using: 'node12'
-  main: 'index.js'
+
+  bump-policy:
+    description: 'Set version bump ignore policy ("all", "ignore", "last-commit").'
+    default: 'all'
+    required: false
+
+  check-last-commit-only:
+    description: 'Check only the last commit message to determine version bump.'
+    default: 'false'
+    required: false
+
+  custom-git-domain:
+    description: 'Set a custom domain of the git instance, useful for self-hosted instances.'
+    default: 'github.com'
+    required: false
+
+outputs:
+  newTag:
+    description: 'The newly created tag after version bump.'
