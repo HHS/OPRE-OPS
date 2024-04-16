@@ -17,9 +17,10 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
       - name:  'Automated Version Bump'
-        uses:  'phips28/gh-action-bump-version@master'
+        uses: ./.github/actions/bump-and-tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag-prefix:  'frontend-v'
-          PACKAGEJSON_DIR:  'frontend'
+          config_dir:  'frontend'
+          config_type: 'package.json'
