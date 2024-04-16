@@ -17,9 +17,9 @@ from models.workflows import (
     WorkflowStepStatus,
     WorkflowTriggerType,
 )
+from ops_api.ops.auth.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.workflow_step_instance import WorkflowStepInstanceResponse
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 
 ENDPOINT_STRING = "/workflow-instance"
 

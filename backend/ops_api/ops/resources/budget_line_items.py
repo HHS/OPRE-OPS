@@ -15,6 +15,7 @@ from typing_extensions import Any, override
 from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
+from ops_api.ops.auth.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponse,
@@ -23,7 +24,6 @@ from ops_api.ops.schemas.budget_line_items import (
     QueryParameters,
 )
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, get_change_data
-from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers

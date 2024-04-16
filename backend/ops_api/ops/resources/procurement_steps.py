@@ -18,6 +18,7 @@ from models.workflows import (
     ProcurementStep,
     Solicitation,
 )
+from ops_api.ops.auth.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.procurement_steps import (
     AcquisitionPlanningRequest,
@@ -41,7 +42,6 @@ from ops_api.ops.utils.api_helpers import (
     get_change_data,
     update_and_commit_model_instance,
 )
-from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token

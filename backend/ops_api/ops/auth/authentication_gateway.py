@@ -2,8 +2,9 @@ from functools import wraps
 from typing import Any
 
 from flask import current_app, request
+
 from models import UserStatus
-from ops_api.ops.utils.authentication import FakeAuthProvider, HhsAmsProvider, LoginGovProvider
+from ops_api.ops.auth.authentication import FakeAuthProvider, HhsAmsProvider, LoginGovProvider
 from ops_api.ops.utils.user import get_user_from_token
 
 

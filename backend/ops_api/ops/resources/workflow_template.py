@@ -2,8 +2,8 @@ from flask import Response
 from typing_extensions import override
 
 from models.base import BaseModel
+from ops_api.ops.auth.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 
 ENDPOINT_STRING = "/workflow-template"
 

@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from models.users import User
-from ops_api.ops.utils.authorization import AuthorizationGateway, BasicAuthorizationPrivider
+from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 

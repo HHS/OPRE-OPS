@@ -5,8 +5,8 @@ from azure.storage.blob import BlobSasPermissions, generate_blob_sas
 from flask import Response, current_app
 from flask.views import MethodView
 
+from ops_api.ops.auth.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.base_views import handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 
 # Replace these with your Azure Storage Account details

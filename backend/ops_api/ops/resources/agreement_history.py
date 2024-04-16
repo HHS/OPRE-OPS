@@ -4,8 +4,8 @@ from typing_extensions import override
 
 from models import Agreement, OpsDBHistory, OpsDBHistoryType, User
 from models.base import BaseModel
+from ops_api.ops.auth.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.base_views import BaseListAPI, handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 
 

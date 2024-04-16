@@ -40,7 +40,6 @@ from ops_api.ops.resources.agreements import (
     AgreementReasonListAPI,
     AgreementTypeListAPI,
 )
-from ops_api.ops.resources.auth import AuthLoginAPI, AuthLogoutAPI, AuthRefreshAPI
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
@@ -78,7 +77,6 @@ from ops_api.ops.resources.workflow_instance import WorkflowInstanceItemAPI, Wor
 from ops_api.ops.resources.workflow_step_template import WorkflowStepTemplateItemAPI, WorkflowStepTemplateListAPI
 from ops_api.ops.resources.workflow_submit import WorkflowSubmisionListApi
 from ops_api.ops.resources.workflow_template import WorkflowTemplateItemAPI, WorkflowTemplateListAPI
-
 from ops_api.ops.utils.version import VersionAPI
 
 # AGREEMENT ENDPOINTS
@@ -94,11 +92,6 @@ AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type
 # CONTRACT ENDPOINTS
 CONTRACT_ITEM_API_VIEW_FUNC = ContractItemAPI.as_view("contract-item", ContractAgreement)
 CONTRACT_LIST_API_VIEW_FUNC = ContractListAPI.as_view("contract-list", ContractListAPI)
-
-# Auth endpoints
-AUTH_LOGIN_API_VIEW_FUNC = AuthLoginAPI.as_view("auth-login", BaseModel)
-AUTH_LOGOUT_API_VIEW_FUNC = AuthLogoutAPI.as_view("auth-logout", BaseModel)
-AUTH_REFRESH_API_VIEW_FUNC = AuthRefreshAPI.as_view("auth-refresh", BaseModel)
 
 # Portfolio endpoints
 PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC = PortfolioCalculateFundingAPI.as_view(
