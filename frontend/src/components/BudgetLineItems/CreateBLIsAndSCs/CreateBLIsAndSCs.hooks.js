@@ -279,7 +279,7 @@ const useCreateBLIsAndSCs = (
             actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                if (isEditMode) {
+                if (isEditMode && isReviewMode) {
                     setIsEditMode(false);
                     resetForm();
                     if (budgetLineIdFromUrl) {
