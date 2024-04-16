@@ -259,11 +259,6 @@ const router = createBrowserRouter(
                 path="*"
                 element={<Navigate to="/error" />}
             />
-            {/* TODO: Delete route */}
-            <Route
-                path="/datepicker"
-                element={<DatePickerPage />}
-            />
         </>
     )
 );
