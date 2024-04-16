@@ -15,7 +15,7 @@ sqlalchemy-continuum = "==1.4.0"
 marshmallow-sqlalchemy = "==1.0.0"
 marshmallow-enum = "==1.5.1"
 alembic = "==1.13.1"
-alembic-postgresql-enum = "==1.1.2"
+alembic-postgresql-enum = "==1.2.0"
 
 [dev-packages]
 nox = "==2024.3.2"
