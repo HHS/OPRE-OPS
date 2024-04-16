@@ -1,0 +1,22 @@
+name: Dev Test Tag and Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - cml/bump-push
+    paths:
+      - 'frontend/**'
+
+jobs:
+  publish:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name:  'Automated Version Bump'
+        uses:  'phips28/gh-action-bump-version@master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag-prefix:  'frontend-v'
