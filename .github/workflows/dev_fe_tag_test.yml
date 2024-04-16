@@ -20,3 +20,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag-prefix:  'frontend-v'
+          PACKAGEJSON_DIR:  'frontend'
