@@ -59,8 +59,8 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
 
     const cancelMessages = {
         isCreatedMode: "Are you sure you want to cancel creating a new agreement? Your progress will not be saved.",
-        isEditMode: "Are you sure you want to cancel editing this agreement?",
-        isReviewMode: "Are you sure you want to cancel editing this agreement?"
+        isEditMode: "Are you sure you want to cancel editing this agreement? Your changes will not be saved.",
+        isReviewMode: "Are you sure you want to cancel editing this agreement? Your changes will not be saved."
     };
     let cancelMsg;
 
@@ -75,6 +75,8 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
             cancelMsg = cancelMessages.isCreatedMode;
             break;
     }
+
+    // NOTE: Consider refactoring to elevate handleCancel to this parent component
 
     return (
         <CreateAgreementFlow>

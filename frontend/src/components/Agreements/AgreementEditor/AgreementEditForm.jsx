@@ -249,7 +249,7 @@ export const AgreementEditForm = ({
         const actionButtonText = `${isWizardMode ? "Cancel Agreement" : "Cancel Edits"}`;
         setShowModal(true);
         setModalProps({
-            heading: cancelHeading,
+            heading: cancelHeading ?? "Are you sure you want to cancel editing? Your changes will not be saved.",
             actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
