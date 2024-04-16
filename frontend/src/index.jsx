@@ -32,7 +32,6 @@ import ErrorPage from "./pages/ErrorPage";
 import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import ApproveAgreement from "./pages/agreements/approve";
-import DatePickerPage from "./pages/DatePickerPage";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
