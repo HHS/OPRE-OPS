@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client=15+248 && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.7.24 && useradd -ms /bin/bash app
 USER app
@@ -16,7 +16,7 @@ RUN pipenv install --dev --system --deploy
 # of prior steps.
 COPY ./ /home/app
 
-# Execute data load when run 
+# Execute data load when run
 CMD ["bash", "-c", "\
       psql postgresql://$ADMIN_PGUSER:$ADMIN_PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE -c 'DROP SCHEMA IF EXISTS ops CASCADE;CREATE SCHEMA ops;GRANT ALL ON SCHEMA ops TO ops;' && \
       .local/bin/alembic upgrade head && \

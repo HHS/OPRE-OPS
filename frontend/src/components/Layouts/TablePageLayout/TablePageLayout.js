@@ -1,3 +1,4 @@
+import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import icons from "../../../uswds/img/sprite.svg";
@@ -5,6 +6,7 @@ import icons from "../../../uswds/img/sprite.svg";
 /**
  * The TablePageLayout component is a layout component that displays a title and subtitle
  *
+ * @component
  * @param {object} props - The component props.
  * @param {React.ReactNode} [props.children] - The children to render - optional.
  * @param {string} props.title - The title to display.
@@ -17,7 +19,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {React.ReactNode} [props.SummaryCardsSection] - The summary cards to display.
  * @param {string} props.buttonText - The text to display on the button.
  * @param {string} props.buttonLink - The link to navigate to when the button is clicked.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 export const TablePageLayout = ({
     children,
@@ -32,6 +34,10 @@ export const TablePageLayout = ({
     buttonText,
     buttonLink
 }) => {
+    React.useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     return (
         <>
             <div className="display-flex flex-align-center flex-justify margin-bottom-205">
@@ -46,7 +52,7 @@ export const TablePageLayout = ({
                     >
                         <use xlinkHref={`${icons}#add`}></use>
                     </svg>
-                    <span className="">{buttonText}</span>
+                    <span>{buttonText}</span>
                 </Link>
             </div>
             {TabsSection}

@@ -94,8 +94,7 @@ it("edit an agreement", () => {
             })
             .then(cy.log);
         cy.get(".usa-alert__body").should("contain", "The agreement Test Edit Title has been successfully updated");
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(6000); // modal to disappear
+        cy.get("[data-cy='close-alert']").click();
         cy.get("h1").should("have.text", "Test Edit Title");
         cy.get("[data-cy='details-notes']").should("exist");
         cy.get("[data-cy='details-notes']").should("have.text", "Test Notes test edit notes");
