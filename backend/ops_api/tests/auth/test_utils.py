@@ -9,8 +9,8 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 
 from models.users import User
-from ops_api.ops.utils.auth import create_oauth_jwt
-from ops_api.ops.utils.authorization import AuthorizationGateway, AuthorizationProvider
+from ops_api.ops.auth.auth import create_oauth_jwt
+from ops_api.ops.auth.authorization import AuthorizationGateway, AuthorizationProvider
 
 key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
 

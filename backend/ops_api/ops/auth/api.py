@@ -7,7 +7,7 @@ from ops_api.ops.utils.response import make_response_with_headers
 
 
 @handle_api_error
-@bp.route("/login", methods=["POST"])
+@bp.route("/login/", methods=["POST"])
 def login_post() -> Response:
     # TODO: Implement validation
     # errors = self.validator.validate(self, request.json)
@@ -22,7 +22,7 @@ def login_post() -> Response:
 
 
 @handle_api_error
-@bp.route("/logout", methods=["POST"])
+@bp.route("/logout/", methods=["POST"])
 def logout_post() -> Response:
     # TODO: Implement validation
     # errors = self.validator.validate(self, request.json)
@@ -37,7 +37,7 @@ def logout_post() -> Response:
 
 
 @handle_api_error
-@bp.route("/refresh", methods=["POST"])
+@bp.route("/refresh/", methods=["POST"])
 def refresh_post() -> Response:
     # TODO: Implement validation
     # errors = self.validator.validate(self, request.json)
