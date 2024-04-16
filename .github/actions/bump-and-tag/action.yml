@@ -1,0 +1,56 @@
+name: 'Bump and Tag'
+description: 'Automatically bumps version in package.json or openapi.yml'
+inputs:
+  config_type:
+    description: 'Type of config file to bump version for ("package.json" or "openapi.yml")'
+    required: false
+    default: 'package.json'
+  config_dir:
+    description: 'Directory where the config file is located, relative to the GitHub workspace'
+    required: false
+  major_wording:
+    description: 'Comma-separated keywords that trigger a major version bump'
+    required: false
+  minor_wording:
+    description: 'Comma-separated keywords that trigger a minor version bump'
+    required: false
+  patch_wording:
+    description: 'Comma-separated keywords that trigger a patch version bump'
+    required: false
+  rc_wording:
+    description: 'Comma-separated keywords that trigger a release candidate or pre-release version bump'
+    required: false
+  version_type:
+    description: 'Specify the type of version bump explicitly (major, minor, patch, premajor, preminor, prepatch, prerelease)'
+    required: false
+  tag_prefix:
+    description: 'Prefix to prepend to the version tag'
+    required: false
+  tag_suffix:
+    description: 'Suffix to append to the version tag'
+    required: false
+  commit_message:
+    description: 'Custom commit message template for version bumps'
+    required: false
+  push:
+    description: 'If set to false, skip pushing the new tag and changes'
+    required: false
+    default: 'true'
+  skip_commit:
+    description: 'If set to true, skip the commit step'
+    required: false
+  skip_tag:
+    description: 'If set to true, skip the tagging step'
+    required: false
+  skip_push:
+    description: 'If set to true, skip the push step'
+    required: false
+  target_branch:
+    description: 'The branch to which commits and tags should be pushed'
+    required: false
+  custom_git_domain:
+    description: 'If using a custom domain for Git operations, specify it here'
+    required: false
+runs:
+  using: 'node12'
+  main: 'index.js'
