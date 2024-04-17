@@ -15,8 +15,6 @@ from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizat
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 
-auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
-
 
 def create_oauth_jwt(
     provider: str,
@@ -97,6 +95,7 @@ class ExtraCheckError(Exception):
 
 
 def _check_role(permission_type: PermissionType, permission: Permission) -> bool:
+    auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
     identity = get_jwt_identity()
     return auth_gateway.is_authorized(identity, f"{permission_type.name}_{permission.name}".upper())
 
