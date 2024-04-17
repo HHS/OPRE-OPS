@@ -272,9 +272,6 @@ it("can create an NON-SEVERABLE agreement", () => {
         cy.get("option").should("contain", "OSC2");
     });
     cy.get("#allServicesComponentSelect").select("SC1");
-    // cy.get("#enteredMonth").select("01 - Jan");
-    // cy.get("#enteredDay").type("1");
-    // cy.get("#enteredYear").type("2024");
     cy.get("#uswds-date-need-by-date").type("01/01/2024");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
@@ -287,9 +284,6 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
 
     cy.get("#allServicesComponentSelect").select("SC1");
-    // cy.get("#enteredMonth").select("01 - Jan");
-    // cy.get("#enteredDay").type("1");
-    // cy.get("#enteredYear").type("2025");
     cy.get("#uswds-date-need-by-date").type("01/01/2025");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("2000000");
@@ -309,9 +303,6 @@ it("can create an NON-SEVERABLE agreement", () => {
     // sc1 table should contain 2 rows
     cy.get("@sc1").next().find(".usa-table").find("tbody").find("tr").should("have.length", 2);
     cy.get("#allServicesComponentSelect").select("OSC2");
-    // cy.get("#enteredMonth").select("01 - Jan");
-    // cy.get("#enteredDay").type("1");
-    // cy.get("#enteredYear").type("2026");
     cy.get("#uswds-date-need-by-date").type("01/01/2026");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("3000000");
