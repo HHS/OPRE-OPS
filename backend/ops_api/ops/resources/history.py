@@ -4,7 +4,7 @@ from typing_extensions import override
 
 from models.base import BaseModel
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
-from ops_api.ops.auth.authorization import is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI, handle_api_error
 from ops_api.ops.utils.response import make_response_with_headers
 

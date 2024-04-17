@@ -12,7 +12,7 @@ from sqlalchemy.exc import PendingRollbackError
 from typing_extensions import override
 
 from models.base import BaseModel
-from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizationPrivider
+from ops_api.ops.auth.authorization_providers import AuthorizationGateway, BasicAuthorizationProvider
 from ops_api.ops.auth.exceptions import NotActiveUserError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -53,7 +53,7 @@ class OPSMethodView(MethodView):
     def __init__(self, model: BaseModel):
         self.model = model
         self.validator = generate_validator(model)
-        self.auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
+        self.auth_gateway = AuthorizationGateway(BasicAuthorizationProvider())
 
     def _get_item_by_oidc(self, oidc: str):
         stmt = select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)

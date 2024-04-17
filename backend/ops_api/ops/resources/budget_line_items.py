@@ -16,7 +16,7 @@ from models import BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
-from ops_api.ops.auth.authorization import is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.budget_line_items import (

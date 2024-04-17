@@ -11,7 +11,7 @@ from typing_extensions import override
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
-from ops_api.ops.auth.authorization import is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper

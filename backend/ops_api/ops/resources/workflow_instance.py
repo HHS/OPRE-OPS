@@ -18,7 +18,7 @@ from models.workflows import (
     WorkflowTriggerType,
 )
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
-from ops_api.ops.auth.authorization import is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.workflow_step_instance import WorkflowStepInstanceResponse
 

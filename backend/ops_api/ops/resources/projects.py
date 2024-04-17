@@ -5,7 +5,7 @@ from models import Project, ProjectType
 from models.base import BaseModel
 from models.projects import ResearchProject
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
-from ops_api.ops.auth.authorization import is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
