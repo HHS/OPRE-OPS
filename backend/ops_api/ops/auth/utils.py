@@ -1,14 +1,16 @@
+import json
 import time
 import uuid
 from functools import wraps
 from typing import Optional
 
+import requests
 from authlib.jose import jwt as jose_jwt
 from flask import current_app
 from marshmallow import ValidationError
 from sqlalchemy.exc import PendingRollbackError
 
-from ops_api.ops.auth.authentication_gateway import NotActiveUserError
+from ops_api.ops.auth.exceptions import NotActiveUserError
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -65,3 +67,16 @@ def create_oauth_jwt(
     _header = header or {"alg": "RS256"}
     jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
     return jws
+
+
+def get_jwks(provider_metadata_url: str):
+    provider_uris = json.loads(
+        requests.get(
+            provider_metadata_url,
+            headers={"Accept": "application/json"},
+        ).content.decode("utf-8")
+    )
+
+    jwks_uri = provider_uris["jwks_uri"]
+    jwks = requests.get(jwks_uri).content.decode("utf-8")
+    return jwks

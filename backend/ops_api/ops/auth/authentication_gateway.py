@@ -5,15 +5,8 @@ from flask import current_app, request
 
 from models import UserStatus
 from ops_api.ops.auth.authentication import FakeAuthProvider, HhsAmsProvider, LoginGovProvider
+from ops_api.ops.auth.exceptions import NotActiveUserError
 from ops_api.ops.utils.user import get_user_from_token
-
-
-class NotActiveUserError(Exception):
-    """
-    Exception to raise when the user is not active.
-    """
-
-    pass
 
 
 def is_user_active(f):

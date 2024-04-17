@@ -1,29 +1,15 @@
-import json
 from functools import wraps
 from typing import Callable, Optional
 
-import requests
 from authlib.jose import JsonWebToken
 from flask import Response
 from flask_jwt_extended import get_current_user, get_jwt_identity, jwt_required
 
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
 from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizationPrivider
+from ops_api.ops.auth.utils import get_jwks
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
-
-
-def get_jwks(provider_metadata_url: str):
-    provider_uris = json.loads(
-        requests.get(
-            provider_metadata_url,
-            headers={"Accept": "application/json"},
-        ).content.decode("utf-8")
-    )
-
-    jwks_uri = provider_uris["jwks_uri"]
-    jwks = requests.get(jwks_uri).content.decode("utf-8")
-    return jwks
 
 
 def decode_user(

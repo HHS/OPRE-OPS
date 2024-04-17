@@ -12,8 +12,8 @@ from sqlalchemy.exc import PendingRollbackError
 from typing_extensions import override
 
 from models.base import BaseModel
-from ops_api.ops.auth.authentication_gateway import NotActiveUserError
 from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizationPrivider
+from ops_api.ops.auth.exceptions import NotActiveUserError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers

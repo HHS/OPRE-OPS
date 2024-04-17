@@ -10,7 +10,7 @@ from authlib.jose import JsonWebToken, JWTClaims
 from authlib.jose import jwt as jose_jwt
 from flask import current_app
 
-from ops_api.ops.auth.auth import get_jwks
+from ops_api.ops.auth.utils import get_jwks
 
 
 class AuthenticationProvider(ABC):
@@ -192,17 +192,6 @@ class HhsAmsProvider(AuthenticationProvider):
         except Exception as e:
             current_app.logger.exception(e)
             raise e
-
-    def get_jwks(self):
-        provider_uris = json.loads(
-            requests.get(
-                self.config["server_metadata_url"],
-                headers={"Accept": "application/json"},
-            ).content.decode("utf-8")
-        )
-        jwks_uri = provider_uris["jwks_uri"]
-        jwks = requests.get(jwks_uri).content.decode("utf-8")
-        return jwks
 
     def authenticate(self, auth_code):
         client = OAuth2Session(
