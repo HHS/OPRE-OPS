@@ -5,6 +5,7 @@ from functools import wraps
 from typing import Optional
 
 import requests
+from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import current_app
 from marshmallow import ValidationError
@@ -80,3 +81,24 @@ def get_jwks(provider_metadata_url: str):
     jwks_uri = provider_uris["jwks_uri"]
     jwks = requests.get(jwks_uri).content.decode("utf-8")
     return jwks
+
+
+def decode_user(
+    payload: Optional[str] = None,
+    provider: Optional[str] = None,
+) -> dict[str, str]:
+    # TODO: Determine which claims we want to validate when decoding a user from the provider
+    #       beyond just the signature. Should these be universal for any claims (global)?
+    # ex: validate the JTI, validate the expiration, validate the si
+    # claims_options = {
+    #     "iss": {
+    #         "essential": True,
+    #         "values": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
+    #     },
+    #     "jti": {"validate": JWTClaims.validate_jti},
+    #     "exp": {"validate": JWTClaims.validate_exp},
+    # }
+    jwt = JsonWebToken(["RS256"])
+    # claims = jwt.decode(payload, get_jwks(provider), claims_options=claims_options)
+    claims = jwt.decode(payload, get_jwks(provider))
+    return claims

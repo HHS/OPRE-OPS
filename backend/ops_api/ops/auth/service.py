@@ -14,9 +14,8 @@ from flask_jwt_extended import (
 )
 
 from models.events import OpsEventType
-from ops_api.ops.auth.auth import decode_user
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
-from ops_api.ops.auth.utils import create_oauth_jwt, handle_api_error
+from ops_api.ops.auth.utils import create_oauth_jwt, decode_user, handle_api_error
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
