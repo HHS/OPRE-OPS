@@ -42,9 +42,9 @@ def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
     mock_session = mocker.MagicMock()
     mock_cm.return_value.__enter__.return_value = mock_session
 
-    m1 = mocker.patch("ops_api.ops.auth.auth_views._get_token_and_user_data_from_oauth_provider")
+    m1 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_oauth_provider")
     m1.return_value = ({"access_token": "admin_user"}, {})
-    m2 = mocker.patch("ops_api.ops.auth.auth_views._get_token_and_user_data_from_internal_auth")
+    m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
     user = mocker.MagicMock()
     user.to_dict.return_value = {}
     m2.return_value = ("blah", "blah", user, False)
@@ -61,9 +61,9 @@ def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
 
 def test_login_succeeds_with_active_status(client, loaded_db, mocker):
     # setup mocks
-    m1 = mocker.patch("ops_api.ops.auth.auth_views._get_token_and_user_data_from_oauth_provider")
+    m1 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_oauth_provider")
     m1.return_value = ({"access_token": "admin_user"}, {})
-    m2 = mocker.patch("ops_api.ops.auth.auth_views._get_token_and_user_data_from_internal_auth")
+    m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
     user = mocker.MagicMock()
     user.to_dict.return_value = {}
     m2.return_value = ("blah", "blah", user, False)

@@ -1,7 +1,7 @@
 from flask import Response
 
 from ops_api.ops.auth import bp
-from ops_api.ops.auth.auth_views import login, logout, refresh
+from ops_api.ops.auth.service import login, logout, refresh
 from ops_api.ops.auth.utils import handle_api_error
 from ops_api.ops.utils.response import make_response_with_headers
 

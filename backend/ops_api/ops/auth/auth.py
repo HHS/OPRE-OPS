@@ -1,7 +1,6 @@
 import json
 import time
 import uuid
-from enum import Enum, auto
 from functools import wraps
 from typing import Callable, Optional
 
@@ -15,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from models.users import User
+from ops_api.ops.auth.auth_enum import Permission, PermissionType
 from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
@@ -22,30 +22,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 jwtMgr = JWTManager()
 oauth = OAuth()
 auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
-
-
-class PermissionType(Enum):
-    DELETE = auto()
-    GET = auto()
-    PATCH = auto()
-    POST = auto()
-    PUT = auto()
-
-
-class Permission(Enum):
-    AGREEMENT = auto()
-    BUDGET_LINE_ITEM = auto()
-    BLI_PACKAGE = auto()
-    CAN = auto()
-    DIVISION = auto()
-    HISTORY = auto()
-    NOTIFICATION = auto()
-    PACKAGE = auto()
-    PORTFOLIO = auto()
-    RESEARCH_PROJECT = auto()
-    USER = auto()
-    WORKFLOW = auto()
-    SERVICES_COMPONENT = auto()
 
 
 @jwtMgr.user_identity_loader
