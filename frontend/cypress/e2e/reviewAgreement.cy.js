@@ -350,8 +350,8 @@ describe("agreement review workflow", () => {
             //approve agreement
             cy.visit("/agreements?filter=for-approval").wait(1000);
             cy.get("tbody").children().as("table-rows").should("exist");
-            // get the created agreement
-            cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
+            // get the created agreement which is last in the table
+            cy.get("@table-rows").last().find('[data-cy="expand-row"]').click();
             cy.get('[data-cy="go-to-approve-row"]').click();
             // check the checkbox for approval
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
@@ -388,7 +388,7 @@ describe("agreement review workflow", () => {
             cy.visit("/agreements?filter=for-approval").wait(1000);
             cy.get("tbody").children().as("table-rows").should("exist");
             // get the created agreement
-            cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
+            cy.get("@table-rows").last().find('[data-cy="expand-row"]').click();
             cy.get('[data-cy="go-to-approve-row"]').click();
             // check the checkbox for approval
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
