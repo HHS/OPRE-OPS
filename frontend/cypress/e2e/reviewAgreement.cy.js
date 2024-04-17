@@ -670,9 +670,9 @@ describe("agreement review CANS accordion", () => {
                 cy.wrap(checkbox).should("be.checked");
             });
         cy.get('[data-cy="can-funding-summary-card-5"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-5"]').contains("5,000,000");
+        cy.get('[data-cy="can-funding-summary-card-5"]').contains("6,000,000");
         cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
-        cy.get('[data-cy="can-funding-summary-card-5"]').contains("3,000,000");
+        cy.get('[data-cy="can-funding-summary-card-5"]').contains("4,000,000");
     });
 
     it("should handle over budget CANs", () => {
