@@ -4,6 +4,7 @@
   "description": "A GitHub Action to bump version in package.json or openapi.yml",
   "main": "index.js",
   "scripts": {
+    "start": "node ./index.js",
     "build": "tsc",
     "test": "jest"
   },
