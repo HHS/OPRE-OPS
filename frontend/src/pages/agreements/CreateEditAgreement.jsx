@@ -18,17 +18,23 @@ import useAlert from "../../hooks/use-alert.hooks";
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) => {
+    const WIZARD_MODES = {
+        CREATE: "create",
+        EDIT: "edit",
+        REVIEW: "review"
+    };
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [isReviewMode, setIsReviewMode] = React.useState(false);
     const createAgreementContext = useEditAgreement();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
-    const mode = searchParams.get("mode") || undefined;
+    const mode = searchParams.get("mode") ?? WIZARD_MODES.CREATE;
     const { setAlert } = useAlert();
 
     // check mode on mount
     React.useEffect(() => {
         switch (mode) {
+            // NOTE: Don't think we have a use case for EDIT mode
             case "edit":
                 setIsEditMode(true);
                 break;
@@ -52,17 +58,40 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
         }
     }, [selectedAgreement, setAgreementId]);
 
+    const cancelMessages = {
+        isCreatedMode: "Are you sure you want to cancel creating a new agreement? Your progress will not be saved.",
+        isEditMode: "Are you sure you want to cancel editing this agreement? Your changes will not be saved.",
+        isReviewMode: "Are you sure you want to cancel editing this agreement? Your changes will not be saved."
+    };
+    let cancelMsg;
+
+    switch (mode) {
+        case WIZARD_MODES.EDIT:
+            cancelMsg = cancelMessages.isEditMode;
+            break;
+        case WIZARD_MODES.REVIEW:
+            cancelMsg = cancelMessages.isReviewMode;
+            break;
+        default:
+            cancelMsg = cancelMessages.isCreatedMode;
+            break;
+    }
+
+    // NOTE: Consider refactoring to elevate handleCancel to this parent component
+
     return (
         <CreateAgreementFlow>
             <StepSelectProject
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
                 selectedAgreementId={selectedAgreement?.id}
+                cancelHeading={cancelMsg}
             />
             <StepCreateAgreement
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
                 selectedAgreementId={selectedAgreement?.id}
+                cancelHeading={cancelMsg}
             />
             <StepCreateBudgetLinesAndSCs
                 selectedResearchProject={selectedResearchProject}

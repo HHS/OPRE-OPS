@@ -268,7 +268,7 @@ const useCreateBLIsAndSCs = (
 
     const handleCancel = () => {
         const heading = `${
-            isEditMode
+            isEditMode || isReviewMode
                 ? "Are you sure you want to cancel editing? Your changes will not be saved."
                 : "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
         }`;
@@ -279,7 +279,7 @@ const useCreateBLIsAndSCs = (
             actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                if (isEditMode) {
+                if (isEditMode || isReviewMode) {
                     setIsEditMode(false);
                     resetForm();
                     if (budgetLineIdFromUrl) {
