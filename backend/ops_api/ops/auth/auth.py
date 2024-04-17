@@ -6,18 +6,9 @@ from flask_jwt_extended import get_current_user, get_jwt_identity, jwt_required
 
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
 from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizationPrivider
+from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
-
-
-class ExtraCheckError(Exception):
-    """Exception used to handle errors from the extra check function that can be passed
-    into @is_authorized().
-    """
-
-    def __init__(self, response_data):
-        super().__init__()
-        self.response_data = response_data
 
 
 def _check_role(permission_type: PermissionType, permission: Permission) -> bool:
