@@ -7,7 +7,8 @@ from flask_cors import CORS
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
-from ops_api.ops.auth.auth import jwtMgr, oauth
+from ops_api.ops.auth.auth import oauth
+from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home

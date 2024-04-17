@@ -9,35 +9,15 @@ from authlib.integrations.flask_client import OAuth
 from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import Response, current_app
-from flask_jwt_extended import JWTManager, get_current_user, get_jwt_identity, jwt_required
-from sqlalchemy import select
-from sqlalchemy.exc import MultipleResultsFound, NoResultFound
+from flask_jwt_extended import get_current_user, get_jwt_identity, jwt_required
 
-from models.users import User
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
 from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 
-jwtMgr = JWTManager()
 oauth = OAuth()
 auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
-
-
-@jwtMgr.user_identity_loader
-def user_identity_lookup(user: User) -> str:
-    return user.oidc_id
-
-
-@jwtMgr.user_lookup_loader
-def user_lookup_callback(_jwt_header: dict, jwt_data: dict) -> Optional[User]:
-    identity = jwt_data["sub"]
-    stmt = select(User).where(User.oidc_id == identity)
-    try:
-        return current_app.db_session.scalars(stmt).one()
-
-    except (NoResultFound, MultipleResultsFound):
-        return None
 
 
 def create_oauth_jwt(
