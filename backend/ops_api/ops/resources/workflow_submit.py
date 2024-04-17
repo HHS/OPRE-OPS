@@ -19,7 +19,8 @@ from models.workflows import (
     WorkflowStepStatus,
     WorkflowTriggerType,
 )
-from ops_api.ops.auth.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.authorization import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
 from ops_api.ops.utils.response import make_response_with_headers
