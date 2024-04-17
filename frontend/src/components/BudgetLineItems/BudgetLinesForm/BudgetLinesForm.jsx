@@ -3,14 +3,15 @@ import classnames from "vest/classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import CanComboBox from "../../CANs/CanComboBox";
-import DesiredAwardDate from "../../UI/Form/DesiredAwardDate";
-import suite from "./suite";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
+import DatePicker from "../../UI/USWDS/DatePicker";
+import suite from "./suite";
 
 /**
  * A form for creating or editing a budget line.
+ * @component
  * @param {Object} props - The component props.
  * @param {Object} props.selectedCan - The currently selected CAN.
  * @param {number} props.servicesComponentId - The selected services component ID.
@@ -23,32 +24,27 @@ import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComp
  * @param {function} props.setServicesComponentId - A function to set the selected services component ID.
  * @param {function} props.setSelectedCan - A function to set the selected CAN.
  * @param {function} props.setEnteredAmount - A function to set the entered budget line amount.
- * @param {function} props.setEnteredMonth - A function to set the entered budget line desired award month.
- * @param {function} props.setEnteredDay - A function to set the entered budget line desired award day.
- * @param {function} props.setEnteredYear - A function to set the entered budget line desired award year.
+ * @param {string} props.needByDate - The entered budget line need by date.
+ * @param {function} props.setNeedByDate - A function to set the entered budget line need by date.
  * @param {function} props.setEnteredComments - A function to set the entered budget line comments.
  * @param {function} props.handleEditBLI - A function to handle editing the budget line form.
  * @param {function} props.handleAddBLI - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {number} props.agreementId - The agreement ID.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
     selectedCan,
     servicesComponentId,
     enteredAmount,
-    enteredMonth,
-    enteredDay,
-    enteredYear,
     enteredComments,
     isEditing,
     setServicesComponentId,
     setSelectedCan,
     setEnteredAmount,
-    setEnteredMonth,
-    setEnteredDay,
-    setEnteredYear,
+    needByDate,
+    setNeedByDate,
     setEnteredComments,
     handleEditBLI = () => {},
     handleAddBLI = () => {},
@@ -63,29 +59,26 @@ export const CreateBudgetLinesForm = ({
         valid: "success",
         warning: "warning"
     });
-    const isFormComplete =
-        selectedCan && servicesComponentId && enteredAmount && enteredMonth && enteredDay && enteredYear;
+    const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
 
     // validate all budgetline fields if in review mode and is editing
     //TODO: update suite for Services Components
     if (isReviewMode && isEditing) {
         suite({
+            servicesComponentId,
             selectedCan,
             enteredAmount,
-            enteredMonth,
-            enteredDay,
-            enteredYear
+            needByDate
         });
     }
 
     const runValidate = (name, value) => {
         suite(
             {
+                servicesComponentId,
                 selectedCan,
                 enteredAmount,
-                enteredMonth,
-                enteredDay,
-                enteredYear,
+                needByDate,
                 ...{ [name]: value }
             },
             name
@@ -98,8 +91,13 @@ export const CreateBudgetLinesForm = ({
                 <div className="usa-form-group">
                     <AllServicesComponentSelect
                         agreementId={agreementId}
+                        messages={res.getErrors("allServicesComponentSelect")}
+                        className={cn("allServicesComponentSelect")}
                         value={servicesComponentId || ""}
                         onChange={(name, value) => {
+                            if (isReviewMode) {
+                                runValidate("allServicesComponentSelect", value);
+                            }
                             setServicesComponentId(+value);
                         }}
                     />
@@ -121,17 +119,22 @@ export const CreateBudgetLinesForm = ({
                 </div>
             </div>
             <div className="grid-col-4">
-                <DesiredAwardDate
-                    enteredMonth={enteredMonth}
-                    setEnteredMonth={setEnteredMonth}
-                    enteredDay={enteredDay}
-                    setEnteredDay={setEnteredDay}
-                    enteredYear={enteredYear}
-                    setEnteredYear={setEnteredYear}
-                    isReviewMode={isReviewMode}
-                    runValidate={runValidate}
-                    res={res}
-                    cn={cn}
+                <DatePicker
+                    id="need-by-date"
+                    label="Need by Date"
+                    name="needByDate"
+                    hint="MM/DD/YYYY"
+                    aria-describedby="need-by-date-hint"
+                    aria-labelledby="need-by-date-label"
+                    messages={res.getErrors("needByDate")}
+                    className={cn("needByDate")}
+                    value={needByDate}
+                    onChange={(e) => {
+                        if (isReviewMode) {
+                            runValidate("needByDate", e.target.value);
+                        }
+                        setNeedByDate(e.target.value);
+                    }}
                 />
                 <CurrencyInput
                     name="enteredAmount"
@@ -212,9 +215,8 @@ CreateBudgetLinesForm.propTypes = {
     setServicesComponentId: PropTypes.func,
     setSelectedCan: PropTypes.func,
     setEnteredAmount: PropTypes.func,
-    setEnteredMonth: PropTypes.func,
-    setEnteredDay: PropTypes.func,
-    setEnteredYear: PropTypes.func,
+    needByDate: PropTypes.string,
+    setNeedByDate: PropTypes.func,
     setEnteredComments: PropTypes.func,
     handleAddBLI: PropTypes.func,
     handleEditBLI: PropTypes.func,
