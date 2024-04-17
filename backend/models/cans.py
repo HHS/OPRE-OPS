@@ -614,6 +614,24 @@ class BudgetLineItem(BaseModel):
         ids = [row[0] for row in results] if results else None
         return ids
 
+    @property
+    def change_requests_in_review(self):
+        if object_session(self) is None:
+            return None
+        results = (
+            object_session(self)
+            .execute(
+                select(BudgetLineItemChangeRequest)
+                .where(BudgetLineItemChangeRequest.budget_line_item_id == self.id)
+                .where(
+                    BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW
+                )
+            )
+            .all()
+        )
+        ids = [row[0].to_dict() for row in results] if results else None
+        return ids
+
 
 class CAN(BaseModel):
     """

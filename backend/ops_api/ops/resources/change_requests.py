@@ -4,12 +4,15 @@ from datetime import datetime
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import verify_jwt_in_request
+from sqlalchemy import select
+from typing_extensions import override
 
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus
-from ops_api.ops.base_views import BaseListAPI
+from ops_api.ops.base_views import BaseListAPI, handle_api_error
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
+from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 
@@ -51,7 +54,40 @@ def review_change_request(
     return change_request
 
 
-# TODO: approval endpoint
+class ChangeRequestListAPI(BaseListAPI):
+    def __init__(self, model: ChangeRequest = ChangeRequest):
+        super().__init__(model)
+
+    @override
+    @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
+    @handle_api_error
+    def get(self) -> Response:
+        print("~~~GET ChangeRequestListAPI~~~")
+        limit = request.args.get("limit", 10, type=int)
+        offset = request.args.get("offset", 0, type=int)
+        # status = request.args.get("status", ChangeRequestStatus.IN_REVIEW, type=lambda x: ChangeRequestStatus[x])
+        # status = request.args.get("status", "IN_REVIEW", type=str)
+        # agreement_id = request.args.get("agreement_id", None, type=int)
+        # budget_line_item_id = request.args.get("budget_line_item_id", None, type=int)
+
+        stmt = select(ChangeRequest).where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
+        # if agreement_id:
+        #     stmt = stmt.where(ChangeRequest.agreement_id == agreement_id)
+        # if budget_line_item_id:
+        #     stmt = stmt.where(ChangeRequest.budget_line_item_id == budget_line_item_id)
+        # stmt = stmt.order_by(ChangeRequest.created_on.desc())
+        stmt = stmt.limit(limit)
+        if offset:
+            stmt = stmt.offset(int(offset))
+        print("~~~stmt~~~", str(stmt))
+        results = current_app.db_session.execute(stmt).all()
+        change_requests = [row[0] for row in results] if results else None
+        if change_requests:
+            response = make_response_with_headers([change_request.to_dict() for change_request in change_requests])
+        else:
+            # response = make_response_with_headers({}, 404)
+            response = make_response_with_headers([], 200)
+        return response
 
 
 class ChangeRequestReviewAPI(BaseListAPI):
@@ -60,9 +96,9 @@ class ChangeRequestReviewAPI(BaseListAPI):
         # self._response_schema = ContractAgreementResponse()
         # self._response_schema_collection = ContractAgreementResponse(many=True)
 
+    @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
     def post(self) -> Response:
         request_json = request.get_json()
-
         change_request_id = request_json.get("change_request_id")
         action = request_json.get("action", "").upper()
         if action == "APPROVE":

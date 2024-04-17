@@ -156,7 +156,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     change_request = BudgetLineItemBudgetChangeRequest()
                     change_request.budget_line_item_id = id
                     # what schema should be used here, PATCH schema or __marshmallow__ ?
-                    schema = budget_line_item.__marshmallow__(only=[changed_prop_key])
+                    # schema = budget_line_item.__marshmallow__(only=[changed_prop_key])
+                    schema = budget_line_item.__marshmallow__(only=changed_budget_props)
                     # schema = budget_line_item.__marshmallow__()
                     change_request.requested_changes = schema.dump(change_data)
                     # revert the budget_line_item and save the new change request
