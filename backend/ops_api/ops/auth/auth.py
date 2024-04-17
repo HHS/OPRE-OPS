@@ -5,7 +5,6 @@ from functools import wraps
 from typing import Callable, Optional
 
 import requests
-from authlib.integrations.flask_client import OAuth
 from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import Response, current_app
@@ -16,7 +15,6 @@ from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizat
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 
-oauth = OAuth()
 auth_gateway = AuthorizationGateway(BasicAuthorizationPrivider())
 
 
