@@ -1,53 +1,16 @@
 import json
-import time
-import uuid
 from functools import wraps
 from typing import Callable, Optional
 
 import requests
 from authlib.jose import JsonWebToken
-from authlib.jose import jwt as jose_jwt
-from flask import Response, current_app
+from flask import Response
 from flask_jwt_extended import get_current_user, get_jwt_identity, jwt_required
 
 from ops_api.ops.auth.auth_enum import Permission, PermissionType
 from ops_api.ops.auth.authorization import AuthorizationGateway, BasicAuthorizationPrivider
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
-
-
-def create_oauth_jwt(
-    provider: str,
-    key: Optional[str] = None,
-    header: Optional[str] = None,
-    payload: Optional[str] = None,
-) -> str:
-    """
-    Returns an Access Token JWS from the configured OAuth Client
-    :param key: OPTIONAL - Private Key used for encoding the JWS
-    :param header: OPTIONAL - JWS Header containing algorithm type
-    :param payload: OPTIONAL - Contains the JWS payload
-    :return: JsonWebSignature
-    """
-    jwt_private_key = key or current_app.config.get("JWT_PRIVATE_KEY")
-    if not jwt_private_key:
-        raise NotImplementedError
-
-    expire = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
-    current_app.logger.debug(f"expire={expire}")
-
-    _payload = payload or {
-        "iss": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
-        "sub": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
-        "aud": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["aud"],
-        "jti": str(uuid.uuid4()),
-        "exp": int(time.time()) + expire.seconds,
-        "sso": provider,
-    }
-    current_app.logger.debug(f"_payload={_payload}")
-    _header = header or {"alg": "RS256"}
-    jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
-    return jws
 
 
 def get_jwks(provider_metadata_url: str):

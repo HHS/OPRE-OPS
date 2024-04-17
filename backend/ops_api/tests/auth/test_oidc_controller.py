@@ -4,7 +4,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption,
 
 from models import User, UserStatus
 from models.events import OpsEventStatus, OpsEventType
-from ops_api.ops.auth.auth import create_oauth_jwt
+from ops_api.ops.auth.utils import create_oauth_jwt
 
 
 def test_auth_post_fails(client):
