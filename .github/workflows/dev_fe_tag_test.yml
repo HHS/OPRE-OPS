@@ -30,4 +30,5 @@ jobs:
         with:
           tag-prefix:  'frontend-v'
           config_dir:  'frontend'
-          config_type: 'package.json'
+          config-filename: 'package.json'
+          config-filetype: 'json'
