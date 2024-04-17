@@ -126,6 +126,7 @@ it("can create an SEVERABLE agreement", () => {
     // Duplicate budget line item
     cy.get("[id^=expand-]").click();
     cy.get("[id^=duplicate-]").click();
+    cy.get("[id^=expand-]").click();
 
     // expand budget line and check that the "created by" name is not empty.
     cy.get("[id^=expand-]").each((_, element) => {
@@ -139,6 +140,7 @@ it("can create an SEVERABLE agreement", () => {
                 .invoke("text")
                 .then((text) => {
                     expect(text.length).to.be.at.least(1);
+                    item.click();
                 });
         }
     });
@@ -327,6 +329,7 @@ it("can create an NON-SEVERABLE agreement", () => {
                 .invoke("text")
                 .then((text) => {
                     expect(text.length).to.be.at.least(1);
+                    item.click();
                 });
         }
     });
