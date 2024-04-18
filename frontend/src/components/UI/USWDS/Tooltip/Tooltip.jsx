@@ -16,15 +16,24 @@ import tooltip from "@uswds/uswds/js/usa-tooltip";
 export const Tooltip = ({ label, position = "top", children, className }) => {
     const tooltipRef = React.useRef(null);
     React.useLayoutEffect(() => {
+        // Ensure tooltipRef.current is not null and tooltip is defined
         const tooltipElement = tooltipRef.current?.firstChild;
-        if (tooltipElement) {
+        if (tooltipElement && tooltip) {
             tooltipElement.classList.add("usa-tooltip");
             tooltipElement.title = label;
             tooltipElement.setAttribute("data-position", position);
             tooltip.on(tooltipElement);
+
+            // Cleanup function now safely checks if tooltip is available
+            return () => {
+                if (tooltip) {
+                    tooltip.off(tooltipElement);
+                }
+            };
         }
-        return () => tooltip.off(tooltipElement);
-    });
+        // If tooltipElement or tooltip is not available, return a no-op cleanup function
+        return () => {};
+    }, [label, position, tooltip]); // Add dependencies to ensure effect runs only if these values change
     return (
         <span
             ref={tooltipRef}
