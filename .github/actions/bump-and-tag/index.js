@@ -14,6 +14,11 @@ console.log('process.env.GITHUB_WORKSPACE', process.env.GITHUB_WORKSPACE);
 const workspace = process.env.GITHUB_WORKSPACE;
 
 function getConfigFile() {
+  console.log("Environment Variables:");
+  console.log("INPUT_CONFIG_FILE_DIR:", process.env.INPUT_CONFIG_FILE_DIR);
+  console.log("INPUT_CONFIG_FILENAME:", process.env.INPUT_CONFIG_FILENAME);
+  console.log("INPUT_CONFIG_FILETYPE:", process.env.INPUT_CONFIG_FILETYPE);
+
   const directory = process.env.INPUT_CONFIG_FILE_DIR || '';
   const filename = process.env.INPUT_CONFIG_FILENAME || 'package.json';
   const filetype = process.env.INPUT_CONFIG_FILETYPE || 'json';
