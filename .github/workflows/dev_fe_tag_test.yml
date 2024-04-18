@@ -29,6 +29,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag-prefix:  'frontend-v'
-          config-file-dir:  'frontend'
+          config-file-dir::  'frontend'
           config-filename: 'package.json'
           config-filetype: 'json'

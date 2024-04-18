@@ -14,16 +14,18 @@ console.log('process.env.GITHUB_WORKSPACE', process.env.GITHUB_WORKSPACE);
 const workspace = process.env.GITHUB_WORKSPACE;
 
 function getConfigFile() {
+  const directory = process.env.INPUT_CONFIG_FILE_DIR || '';
   const filename = process.env.INPUT_CONFIG_FILENAME || 'package.json';
   const filetype = process.env.INPUT_CONFIG_FILETYPE || 'json';
-  const filePath = path.join(workspace, filename);
+  const filePath = path.join(workspace, directory, filename);
+  console.log(`Looking for ${filename} at ${filePath}`);  // Debugging output
   if (!fs.existsSync(filePath)) {
-    throw new Error(`${filename} could not be found in your project's root.`);
+    throw new Error(`${filename} could not be found at ${filePath}.`);
   }
-
   let fileContent = fs.readFileSync(filePath, 'utf8');
   return filetype === 'yaml' ? yaml.load(fileContent) : JSON.parse(fileContent);
 }
+
 
 function saveConfigFile(config, filename, filetype) {
   const filePath = path.join(workspace, filename);
