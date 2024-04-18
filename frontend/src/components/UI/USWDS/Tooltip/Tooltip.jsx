@@ -1,22 +1,21 @@
-import React, { Fragment, useLayoutEffect, useRef } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import USWDS from "@uswds/uswds/js";
-
-const { tooltip } = USWDS;
+import tooltip from "@uswds/uswds/js/usa-tooltip";
 
 /**
  * A tooltip is a short descriptive message that appears when a user hovers or focuses on an element.
+ * @component
  * @param {object} props - the component props
  * @param {string} props.label - the content of the tooltip
  * @param {("top" | "right" | "bottom" | "left")} [props.position] - where the tooltip should be placed (if possible), default is "top"
  * @param {string} [props.className] - the className for the span container, optional
  * @param {React.ReactNode} props.children
- * @returns {React.JSX.Element}
+ * @returns {JSX.Element}
  */
 
 export const Tooltip = ({ label, position = "top", children, className }) => {
-    const tooltipRef = useRef(null);
-    useLayoutEffect(() => {
+    const tooltipRef = React.useRef(null);
+    React.useLayoutEffect(() => {
         const tooltipElement = tooltipRef.current?.firstChild;
         if (tooltipElement) {
             tooltipElement.classList.add("usa-tooltip");
