@@ -175,6 +175,7 @@ export const CreateBudgetLinesForm = ({
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
                             onClick={(e) => {
                                 e.preventDefault();
+                                datePickerSuite.reset();
                                 handleResetForm();
                                 if (isReviewMode) {
                                     suite.reset();
