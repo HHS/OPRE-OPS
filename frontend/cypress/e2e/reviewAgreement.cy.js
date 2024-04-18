@@ -105,6 +105,11 @@ describe("agreement review workflow", () => {
             cy.get(".usa-error-message").should("exist");
             // fix by adding a valid date
             cy.get("#uswds-date-need-by-date").clear();
+            // test for invalid date
+            cy.get("#uswds-date-need-by-date").type("tacocat");
+            cy.get(".usa-error-message").should("exist");
+            // fix by adding a valid date
+            cy.get("#uswds-date-need-by-date").clear();
             cy.get("#uswds-date-need-by-date").type(blData[0].needByDate);
             // add entered amount and clear it
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
