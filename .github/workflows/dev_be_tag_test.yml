@@ -6,7 +6,7 @@ on:
     branches:
       - cml/bump-push
     paths:
-      - 'frontend/**'
+      - 'backend/**'
 
 jobs:
   publish:
@@ -16,11 +16,15 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./.github/actions/bump-and-tag 
+
       - name:  'Automated Version Bump'
-        uses:  'phips28/gh-action-bump-version@master'
+        uses: ./.github/actions/bump-and-tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag-prefix:  'ops-frontend-v'
-          PACKAGEJSON_DIR:  'frontend'
-  
+          tag-prefix:  'ops-backend-v'
+          OPENAPI_DIR:  'backend'
+          PACKAGE_FILENAME:  'openapi.yml'

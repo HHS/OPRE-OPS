@@ -1,4 +1,4 @@
-name: 'Bump and Tag'
+name: Automated Version Bump
 description: Automated version bump for npm packages.
 runs:
   using: node20
@@ -46,7 +46,7 @@ inputs:
     description: 'If true, skip pushing any commits or tags created after the version bump'
     default: 'false'
     required: false
-  config-file-dir:
+  OPENAPI_DIR:
     description: 'Custom dir to the package'
     default: ''
     required: false
@@ -81,14 +81,6 @@ inputs:
   push:
     description: '[DEPRECATED] Set to false to skip pushing the new tag'
     default: 'true'
-    required: false
-  config-filename:
-    description: 'Filename of the config file (package.json, openapi.yaml)'
-    default: 'package.json'
-    required: false
-  config-filetype:
-    description: 'Type of the config file (json, yaml)'
-    default: 'json'
     required: false
 outputs:
   newTag:
