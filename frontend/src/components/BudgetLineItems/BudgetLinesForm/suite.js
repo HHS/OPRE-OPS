@@ -1,8 +1,11 @@
-import { create, test, enforce, group } from "vest";
-// TODO: add tests for Services Components
+import { create, test, enforce } from "vest";
+
 const suite = create((data) => {
     // uncomment to test only one field at a time which breaks the group validation
     // only(fieldName);
+    test("allServicesComponentSelect", "This is required information", () => {
+        enforce(data.servicesComponentId).greaterThan(0);
+    });
     test("selectedCan", "This is required information", () => {
         enforce(data.selectedCan).isNotBlank();
     });
@@ -15,33 +18,16 @@ const suite = create((data) => {
     test("enteredAmount", "This is required information", () => {
         enforce(data.enteredAmount).isNotEmpty();
     });
-    group("allDates", () => {
+    test("needByDate", "This is required information", () => {
+        enforce(data.needByDate).isNotBlank();
+    });
+    test("needByDate", "Date must be MM/DD/YYYY", () => {
+        enforce(data.needByDate).matches(/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/);
+    });
+    test("needByDate", "Date must be in the future", () => {
         const today = new Date();
-        const enteredDate = new Date(Date.UTC(data.enteredYear, data.enteredMonth - 1, data.enteredDay));
-
-        test("enteredMonth", "This is required information", () => {
-            enforce(data.enteredMonth).greaterThan(0);
-        });
-        test("enteredDay", "This is required information", () => {
-            enforce(data.enteredDay).isNotBlank();
-        });
-        test("enteredDay", "Must be between 1 and 31", () => {
-            enforce(data.enteredDay).isBetween(1, 31);
-        });
-        test("enteredYear", "This is required information", () => {
-            enforce(data.enteredYear).isNotBlank();
-        });
-        test("enteredYear", "Must be 4 digits", () => {
-            enforce(data.enteredYear).matches(/^\d{4}$/);
-        });
-        test("enteredYear", "Must be the current year or in the future", () => {
-            const currentYear = new Date().getFullYear();
-            const enteredYear = data.enteredYear;
-            enforce(enteredYear).greaterThanOrEquals(currentYear);
-        });
-        test("enteredDate", "Date must be in the future", () => {
-            enforce(enteredDate.getTime()).greaterThan(today.getTime());
-        });
+        const enteredDate = new Date(data.needByDate);
+        enforce(enteredDate.getTime()).greaterThan(today.getTime());
     });
 });
 

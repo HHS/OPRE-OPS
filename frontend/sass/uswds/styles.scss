@@ -166,3 +166,8 @@ $themeColors: (
 .force-show-scrollbars::-webkit-scrollbar-thumb:hover {
     background-color: rgba(0, 0, 0, 0.5);
 }
+
+// DATE PICKER
+[class^="usa-date-picker__"]:not([disabled]) {
+    text-align: center;
+}
