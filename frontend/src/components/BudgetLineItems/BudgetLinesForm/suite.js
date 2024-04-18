@@ -18,11 +18,11 @@ const suite = create((data) => {
     test("enteredAmount", "This is required information", () => {
         enforce(data.enteredAmount).isNotEmpty();
     });
-    test("needByDate", "Date must be in this format MM/DD/YYYY", () => {
-        enforce(data.needByDate).matches(/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/);
-    });
     test("needByDate", "This is required information", () => {
         enforce(data.needByDate).isNotBlank();
+    });
+    test("needByDate", "Date must be MM/DD/YYYY", () => {
+        enforce(data.needByDate).matches(/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/);
     });
     test("needByDate", "Date must be in the future", () => {
         const today = new Date();
