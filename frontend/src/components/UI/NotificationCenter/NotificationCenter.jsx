@@ -1,20 +1,18 @@
 import React from "react";
 import Modal from "react-modal";
 import { useDismissNotificationMutation, useGetNotificationsByUserIdQuery } from "../../../api/opsAPI";
-import { jwtDecode } from "jwt-decode";
 import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
 import { getAccessToken } from "../../Auth/auth";
+import PropTypes from "prop-types";
 
-const NotificationCenter = () => {
+const NotificationCenter = ({ user }) => {
     const [showModal, setShowModal] = React.useState(false);
-    const currentJWT = getAccessToken();
-    let userId = "";
-
-    if (currentJWT) {
-        const decodedJwt = jwtDecode(currentJWT);
-        userId = decodedJwt["sub"];
+    const access_token = getAccessToken();
+    let auth_header = "";
+    if (access_token) {
+        auth_header = `Bearer ${access_token}`;
     }
 
     const [dismissNotification] = useDismissNotificationMutation();
@@ -23,7 +21,12 @@ const NotificationCenter = () => {
         data: notifications,
         error,
         isLoading
-    } = useGetNotificationsByUserIdQuery(userId, { pollingInterval: 60000 });
+    } = useGetNotificationsByUserIdQuery(
+        { id: user?.oidc_id, auth_header: auth_header },
+        {
+            pollingInterval: 60000
+        }
+    );
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -115,6 +118,10 @@ const NotificationCenter = () => {
             </Modal>
         </>
     );
+};
+
+NotificationCenter.propTypes = {
+    user: PropTypes.object.isRequired
 };
 
 export default NotificationCenter;
