@@ -25,6 +25,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag-prefix:  'ops-backend-v'
-          OPENAPI_DIR:  'backend'
-          PACKAGE_FILENAME:  'openapi.yml'
+          tag-prefix: 'ops-backend-v'
+          OPENAPI_DIR: 'backend'
+          minor-wording: 'feat,minor'
+          major-wording: 'BREAKING CHANGE,major'
+          rc-wording: 'pre-alpha,pre-beta,pre-rc'
+          skip-tag: false
+          skip-commit: false
+          skip-push: false
+          default: patch
+          preid: rc
+          bump-policy: all
+          check-last-commit-only: false
+          custom-git-domain: 'github.com'
+          push: true
