@@ -3,72 +3,61 @@ const { existsSync, readFileSync, writeFileSync } = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 
-// Change working directory if user defined OPENAPI_DIR
-if (process.env.OPENAPI_DIR) {
-  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.OPENAPI_DIR}`;
-  process.chdir(process.env.GITHUB_WORKSPACE);
-} else if (process.env.INPUT_OPENAPI_DIR) {
-  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.INPUT_OPENAPI_DIR}`;
-  process.chdir(process.env.GITHUB_WORKSPACE);
+// Change the working directory if specified in the environment variables
+const packageJsonDir = process.env.OPENAPI_DIR || process.env.INPUT_OPENAPI_DIR;
+if (packageJsonDir) {
+    process.chdir(path.join(process.env.GITHUB_WORKSPACE, packageJsonDir));
 }
+console.log('Current working directory:', process.cwd());
 
-console.log('process.env.GITHUB_WORKSPACE', process.env.GITHUB_WORKSPACE);
-const workspace = process.env.GITHUB_WORKSPACE;
-const openApiFilePath = path.join(workspace, 'openapi.yml');
+const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
 const openapi = getOpenApi(openApiFilePath);
 
-(async () => {
-  const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
-  const commitMessages = event.commits ? event.commits.map(commit => `${commit.message} ${commit.body}`).join(EOL) : "";
-  console.log('Commit messages:', commitMessages);
-
-  const versionType = process.env['INPUT_VERSION-TYPE'];
-  const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
-  const tagSuffix = process.env['INPUT_TAG-SUFFIX'] || '';
-  console.log('tagPrefix:', tagPrefix);
-  console.log('tagSuffix:', tagSuffix);
-
-  const commitMessage = process.env['INPUT_COMMIT-MESSAGE'] || 'ci: version bump to {{version}}';
-  
-  const newVersion = updateVersion(openapi.info.version);
-  openapi.info.version = newVersion;
-  writeOpenApi(openApiFilePath, openapi);
-
-  // Setting Git configuration in the workspace
-  execSync('git config user.name "Automated Version Bump"', { stdio: 'ignore' });
-  execSync('git config user.email "gh-action-bump-version@users.noreply.github.com"', { stdio: 'ignore' });
-
-  try {
-    execSync(`git add ${openApiFilePath}`);
-    execSync(`git commit -m "${commitMessage.replace('{{version}}', newVersion)}"`);
-    if (process.env['INPUT_SKIP_TAG'] !== 'true') {
-        const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
-        execSync(`git tag ${newTag}`);
-    }
-    if (process.env['INPUT_SKIP_PUSH'] !== 'true') {
-        execSync('git push --follow-tags');
-    }
-    console.log(`::set-output name=newVersion::${newVersion}`);
-    if (process.env['INPUT_SKIP_TAG'] !== 'true') {
-        console.log(`::set-output name=newTag::${newTag}`);
-    }
-  } catch (error) {
-    console.error('Failed to commit and push changes:', error);
-    process.exit(1);
-  }
-})();
-
 function getOpenApi(filePath) {
-  if (!existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
-  return yaml.load(readFileSync(filePath, 'utf8'));
+    if (!existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
+    return yaml.load(readFileSync(filePath, 'utf8'));
 }
 
 function writeOpenApi(filePath, content) {
-  writeFileSync(filePath, yaml.dump(content), 'utf8');
+    writeFileSync(filePath, yaml.dump(content), 'utf8');
 }
 
 function updateVersion(currentVersion) {
-  const parts = currentVersion.split('.');
-  parts[2] = parseInt(parts[2], 10) + 1; // Increment patch number
-  return parts.join('.');
+    const parts = currentVersion.split('.');
+    parts[2] = parseInt(parts[2], 10) + 1; // Increment patch version
+    return parts.join('.');
 }
+
+(async () => {
+    const currentVersion = openapi.info.version;
+    const newVersion = updateVersion(currentVersion);
+    openapi.info.version = newVersion;
+    writeOpenApi(openApiFilePath, openapi);
+
+    // Configure Git to avoid identity issues
+    execSync('git config user.name "Automated Version Bump"', { stdio: 'inherit' });
+    execSync('git config user.email "action@github.com"', { stdio: 'inherit' });
+
+    execSync(`git add ${openApiFilePath}`, { stdio: 'inherit' });
+    if (process.env.INPUT_SKIP_COMMIT !== 'true') {
+        execSync(`git commit -m "Bump OpenAPI version from ${currentVersion} to ${newVersion}"`, { stdio: 'inherit' });
+    }
+
+    if (process.env.INPUT_SKIP_TAG !== 'true') {
+        const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
+        const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
+        const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+        execSync(`git tag ${newTag}`, { stdio: 'inherit' });
+        console.log(`::set-output name=newTag::${newTag}`);
+    }
+
+    if (process.env.INPUT_SKIP_PUSH !== 'true') {
+        execSync('git push', { stdio: 'inherit' });
+        if (process.env.INPUT_SKIP_TAG !== 'true') {
+            execSync('git push --tags', { stdio: 'inherit' });
+        }
+    }
+
+    console.log(`::set-output name=newVersion::${newVersion}`);
+})();
+
