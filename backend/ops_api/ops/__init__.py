@@ -67,7 +67,11 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
         r"/api/*": {
             "origins": app.config.get("OPS_FRONTEND_URL"),
             "supports_credentials": True,
-        }
+        },
+        r"/auth/*": {
+            "origins": app.config.get("OPS_FRONTEND_URL"),
+            "supports_credentials": True,
+        },
     }
     CORS(app, resources=cors_resources)
 
