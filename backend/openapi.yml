@@ -1,8 +1,8 @@
-openapi: '3.0.2'
+openapi: 3.0.2
 info:
   title: OPRE OPS API
   description: OPRE OPS API Specification
-  version: '0.1'
+  version: 0.1.NaN
 servers:
   - url: https://localhost:8080
     description: Localhost
@@ -25,13 +25,16 @@ paths:
           in: query
           schema:
             type: string
-          example: 'contract'
+          example: contract
         - name: filter_params
           in: query
           schema:
             type: object
             additionalProperties: true
-          description: "Any property from agreements can be used to filter the agreements that are returned. For example `agreement_type=CONTRACT` would return only contracts."
+          description: >-
+            Any property from agreements can be used to filter the agreements
+            that are returned. For example `agreement_type=CONTRACT` would
+            return only contracts.
       responses:
         '200':
           description: OK
@@ -357,7 +360,7 @@ paths:
             application/json:
               schema:
                 type: array
-                properties: { }
+                properties: {}
                 items:
                   type: string
               examples:
@@ -530,7 +533,7 @@ paths:
                     type: integer
                   first_name:
                     type: string
-                  updated: { }
+                  updated: {}
                   email:
                     type: string
               examples:
@@ -679,7 +682,7 @@ paths:
           in: query
           schema:
             type: string
-          example: 'father'
+          example: father
       responses:
         '200':
           description: OK
@@ -694,7 +697,6 @@ paths:
           description: Bad Request
         '401':
           description: Unauthorized
-
     post:
       summary: Create a new Research Project
       parameters:
@@ -705,7 +707,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ResearchProjectRequest'
-
       responses:
         '201':
           description: Created
@@ -715,7 +716,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/research-projects/{id}:
     get:
       description: Get Research Projects by id
@@ -741,7 +741,6 @@ paths:
           description: Bad Request
         '401':
           description: Unauthorized
-
   /api/v1/research-project-funding-summary/:
     get:
       description: ''
@@ -764,7 +763,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResearchProjectFundingSummary'
-              example: { total_funding: 1000000.01 }
+              example:
+                total_funding: 1000000.01
         '400':
           description: Bad Request
           content:
@@ -776,12 +776,12 @@ paths:
                     type: array
                     items:
                       type: string
-                      example: 'Must be greater than or equal to 1.'
+                      example: Must be greater than or equal to 1.
                   fiscal_year:
                     type: array
                     items:
                       type: string
-                      example: 'Must be greater than or equal to 1900.'
+                      example: Must be greater than or equal to 1900.
   /api/v1/procurement-shops/:
     get:
       parameters:
@@ -895,7 +895,6 @@ paths:
                       "abbr": "IBC",
                       "fee": 4.8
                     }
-
   /api/v1/budget-line-items/:
     get:
       description: Get Budget Line Items
@@ -915,7 +914,7 @@ paths:
           in: query
           schema:
             type: string
-          example: 'DRAFT'
+          example: DRAFT
       responses:
         '200':
           description: OK
@@ -936,7 +935,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BudgetLineItemRequest'
-
       responses:
         '201':
           description: Created
@@ -944,7 +942,6 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
   /api/v1/budget-line-items/{id}:
     get:
       description: Get Budget Line Items by id
@@ -966,7 +963,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BudgetLineItem'
-
     put:
       summary: Update a new Budget Line Item (Over-write)
       parameters:
@@ -977,7 +973,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BudgetLineItemRequest'
-
       responses:
         '200':
           description: OK
@@ -987,7 +982,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
     patch:
       summary: Update a Budget Line Item (Merge)
       parameters:
@@ -1038,7 +1032,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/notifications/:
     get:
       description: Get Notifications
@@ -1053,12 +1046,12 @@ paths:
           in: query
           schema:
             type: string
-          example: '6dd69df5-b6ab-4f27-890a-e64dd1d7f1e6'
+          example: 6dd69df5-b6ab-4f27-890a-e64dd1d7f1e6
         - name: is_read
           in: query
           schema:
             type: boolean
-          example: True
+          example: true
       responses:
         '200':
           description: OK
@@ -1069,8 +1062,6 @@ paths:
               examples:
                 '0':
                   $ref: '#/components/examples/Notifications'
-
-
   /api/v1/notifications/{id}:
     get:
       description: Get Notifications By Id
@@ -1092,7 +1083,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Notification'
-
     put:
       summary: Update a Notification (Over-write)
       parameters:
@@ -1103,7 +1093,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/NotificationRequest'
-
       responses:
         '200':
           description: OK
@@ -1113,7 +1102,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
     patch:
       summary: Update a Notification (Merge)
       parameters:
@@ -1124,7 +1112,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/NotificationRequest'
-
       responses:
         '200':
           description: OK
@@ -1134,7 +1121,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/services-components/:
     get:
       description: Get Services Components
@@ -1169,7 +1155,6 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
   /api/v1/services-components/{id}:
     get:
       description: Get Services Component by id
@@ -1191,7 +1176,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServicesComponent'
-
     put:
       summary: Update a Services Component (Over-write)
       parameters:
@@ -1211,7 +1195,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
     patch:
       summary: Update a Services Component (Merge)
       parameters:
@@ -1231,7 +1214,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
     delete:
       summary: Delete a Service Component
       parameters:
@@ -1254,7 +1236,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/procurement-steps/:
     get:
       description: Get list of Procurement Steps
@@ -1272,8 +1253,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProcurementSteps'
-
-
   /api/v1/procurement-acquisition-plannings/{id}:
     get:
       description: Get an Acquisition Planning step by ID
@@ -1314,7 +1293,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/procurement-pre-solicitations/{id}:
     get:
       description: Get a Pre-Solicitation step by ID
@@ -1355,7 +1333,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/procurement-solicitations/{id}:
     get:
       description: Get a Pre-Solicitation step by ID
@@ -1396,7 +1373,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/procurement-evaluations/{id}:
     get:
       description: Get an Evaluation step by ID
@@ -1437,7 +1413,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/procurement-pre-awards/{id}:
     get:
       description: Get a Pre-Award step by ID
@@ -1478,7 +1453,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
   /api/v1/procurement-awards/{id}:
     get:
       description: Get an Award step by ID
@@ -1519,7 +1493,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
 components:
   parameters:
     created_by:
@@ -1527,7 +1500,7 @@ components:
       name: created_by
       in: query
       schema:
-          type: integer
+        type: integer
     updated_by:
       description: The user id of the user who last updated the object
       name: updated_by
@@ -1565,15 +1538,16 @@ components:
       in: query
       schema:
         type: integer
-      example: ""
-      description: "Simulate an error response, set the value to either `true` to get a 500 status code, or to a specific status code number (e.g.: `400`)."
+      example: ''
+      description: >-
+        Simulate an error response, set the value to either `true` to get a 500
+        status code, or to a specific status code number (e.g.: `400`).
   securitySchemes:
-    bearerAuth: # arbitrary name for the security scheme
+    bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
   schemas:
-
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -1592,14 +1566,14 @@ components:
           type: integer
         nickname:
           type: string
-        appropriation_date: { }
+        appropriation_date: {}
         description:
           type: string
         id:
           type: integer
         expiration_date:
           type: string
-        managing_project_id: { }
+        managing_project_id: {}
         created_on:
           $ref: '#/components/parameters/created_on'
         updated_on:
@@ -1612,10 +1586,8 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     Portfolio:
       description: Portfolio Object
-
     User:
       description: OPRE User Object
       type: object
@@ -1648,7 +1620,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     SafeUser:
       description: A minimal OPRE User Object
       type: object
@@ -1657,14 +1628,12 @@ components:
           type: integer
         full_name:
           type: string
-
     ResearchProjectFundingSummary:
       description: Research Project funding data for a Portfolio
       type: object
       properties:
         total_funding:
           type: number
-
     TeamLeader:
       type: object
       properties:
@@ -1696,7 +1665,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     ResearchProject:
       type: object
       properties:
@@ -1709,30 +1677,34 @@ components:
           type: array
           items:
             type: string
-            example: [ 'SURVEY', 'FIELD_RESEARCH', 'PARTICIPANT_OBSERVATION' ]
+            example:
+              - SURVEY
+              - FIELD_RESEARCH
+              - PARTICIPANT_OBSERVATION
         populations:
           type: array
           items:
             type: string
-            example: [ 'POPULATION_1', 'POPULATION_2' ]
+            example:
+              - POPULATION_1
+              - POPULATION_2
         team_leaders:
           type: array
           items:
             type: array
-            example: [ {
-              "created_by": null,
-              "created_on": "2023-04-17T14:43:15.216759",
-              "date_joined": "2023-04-17T14:43:15.216759",
-              "division": 1,
-              "email": "chris.fortunato@example.com",
-              "first_name": "Chris",
-              "full_name": "Chris Fortunato",
-              "id": 1,
-              "last_name": "Fortunato",
-              "oidc_id": "00000000-0000-1111-a111-000000000001",
-              "updated": null,
-              "updated_on": "2023-04-17T14:43:15.216759",
-              } ]
+            example:
+              - created_by: null
+                created_on: '2023-04-17T14:43:15.216759'
+                date_joined: '2023-04-17T14:43:15.216759'
+                division: 1
+                email: chris.fortunato@example.com
+                first_name: Chris
+                full_name: Chris Fortunato
+                id: 1
+                last_name: Fortunato
+                oidc_id: 00000000-0000-1111-a111-000000000001
+                updated: null
+                updated_on: '2023-04-17T14:43:15.216759'
         origination_date:
           type: string
           example: '2022-01-01'
@@ -1740,10 +1712,11 @@ components:
           type: string
         title:
           type: string
-          example: 'African American Child and Family Research Center'
+          example: African American Child and Family Research Center
         url:
           type: string
-          example: 'https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center'
+          example: >-
+            https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center
         created_on:
           $ref: '#/components/parameters/created_on'
         updated_on:
@@ -1756,14 +1729,12 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     ResearchProjects:
       description: OPS List of Research Projects
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/ResearchProject"
-
+          - $ref: '#/components/schemas/ResearchProject'
     AGREEMENTS:
       description: All Agreements
       type: array
@@ -1780,7 +1751,7 @@ components:
           type: string
         period_of_performance_start:
           type: string
-        period_of_performance_end:
+        period_of_performance_end: null
         procurement_shop:
           type: object
         budget_line_items:
@@ -1797,7 +1768,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     Agreement:
       type: object
       properties:
@@ -1806,37 +1776,42 @@ components:
           example: 2
         name:
           type: string
-          example: "Contract #2: African American Child and Family Research Center"
+          example: 'Contract #2: African American Child and Family Research Center'
         agreement_type:
           type: string
-          example: "CONTRACT"
+          example: CONTRACT
         description:
           type: string
-          example: "Test Agreement Description"
+          example: Test Agreement Description
         product_service_code_id:
           type: integer
           example: 1
         agreement_reason:
           type: string
-          example: "NEW_REQ"
+          example: NEW_REQ
         incumbent:
           type: string
-          example: "Previous Vendor"
+          example: Previous Vendor
         procurement_shop_id:
           type: integer
           example: 1
         notes:
           type: string
-          example: "Test Notes"
+          example: Test Notes
         team_members:
           type: array
           items:
             type: array
-            example: [
-              { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
-              { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
-              { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
-              ]
+            example:
+              - id: 1
+                full_name: Chris Fortunato
+                email: chris.fortunato@example.com
+              - id: 2
+                full_name: Amy Madigan
+                email: Amy.Madigan@example.com
+              - id: 3
+                full_name: Ivelisse Martinez-Beck
+                email: Ivelisse.Martinez-Beck@example.com
         project_id:
           type: integer
           example: 1
@@ -1861,21 +1836,18 @@ components:
       required:
         - name
         - agreement_type
-
     Agreements:
       description: OPS List of Agreements
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/Agreement"
-
+          - $ref: '#/components/schemas/Agreement'
     AgreementHistory:
       description: OPS List of Agreement History records
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/OpsDbHistoryItem"
-
+          - $ref: '#/components/schemas/OpsDbHistoryItem'
     OpsDbHistoryItem:
       type: object
       properties:
@@ -1884,10 +1856,10 @@ components:
           example: 2
         class_name:
           type: string
-          example: "ContractAgreement"
+          example: ContractAgreement
         row_key:
           type: string
-          example: "21"
+          example: '21'
         event_details:
           description: JSON copy of the relevant object after editing or some JSON message
           type: object
@@ -1906,14 +1878,12 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     BudgetLineItems:
       description: OPS List of Budget Line Items
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/BudgetLineItem"
-
+          - $ref: '#/components/schemas/BudgetLineItem'
     BudgetLineItem:
       type: object
       properties:
@@ -1925,7 +1895,7 @@ components:
           example: 1
         amount:
           type: number
-          example: 1000000.0
+          example: 1000000
         can_id:
           type: integer
           example: 1
@@ -1941,7 +1911,7 @@ components:
           example: 100.2
         status:
           type: string
-          example: 'PLANNED'
+          example: PLANNED
         portfolio_id:
           type: integer
           example: 1
@@ -1952,11 +1922,16 @@ components:
           type: array
           items:
             type: array
-            example: [
-              { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
-              { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
-              { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
-              ]
+            example:
+              - id: 1
+                full_name: Chris Fortunato
+                email: chris.fortunato@example.com
+              - id: 2
+                full_name: Amy Madigan
+                email: Amy.Madigan@example.com
+              - id: 3
+                full_name: Ivelisse Martinez-Beck
+                email: Ivelisse.Martinez-Beck@example.com
         created_on:
           $ref: '#/components/parameters/created_on'
         updated_on:
@@ -1969,7 +1944,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     BudgetLineItemRequest:
       type: object
       properties:
@@ -1978,7 +1952,7 @@ components:
           example: 1
         amount:
           type: number
-          example: 1000000.0
+          example: 1000000
         can_id:
           type: integer
           example: 1
@@ -1994,7 +1968,7 @@ components:
           example: 100.2
         status:
           type: string
-          example: 'PLANNED'
+          example: PLANNED
       required:
         - line_description
         - agreement_id
@@ -2002,7 +1976,6 @@ components:
         - amount
         - status
         - date_needed
-
     ResearchProjectRequest:
       type: object
       properties:
@@ -2011,13 +1984,13 @@ components:
           example: 'Research Project #1'
         short_title:
           type: string
-          example: 'RP#1'
+          example: RP#1
         description:
           type: string
           example: 'Description #1'
         url:
           type: string
-          example: 'https://example.com'
+          example: https://example.com
         origination_date:
           type: string
           example: '2023-05-06'
@@ -2025,28 +1998,33 @@ components:
           type: array
           items:
             type: string
-            example: [ 'SURVEY', 'FIELD_RESEARCH', 'PARTICIPANT_OBSERVATION' ]
+            example:
+              - SURVEY
+              - FIELD_RESEARCH
+              - PARTICIPANT_OBSERVATION
         populations:
           type: array
           items:
             type: string
-            example: [ 'POPULATION_1', 'POPULATION_2' ]
+            example:
+              - POPULATION_1
+              - POPULATION_2
         team_leaders:
           type: array
           items:
             type: array
-            example: [ { 'id': 1 }, { 'id': 2 }, { 'id': 3 } ]
-
+            example:
+              - id: 1
+              - id: 2
+              - id: 3
       required:
         - title
-
     Notifications:
       description: OPS List of Notifications
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/Notification"
-
+          - $ref: '#/components/schemas/Notification'
     Notification:
       type: object
       properties:
@@ -2058,7 +2036,7 @@ components:
           example: 'Notification #1'
         is_read:
           type: boolean
-          example: True
+          example: true
         message:
           type: string
           example: 'Message #1'
@@ -2077,13 +2055,12 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     NotificationRequest:
       type: object
       properties:
         is_read:
           type: boolean
-          example: True
+          example: true
         title:
           type: string
           example: 'Notification #1'
@@ -2093,14 +2070,12 @@ components:
         recipient_id:
           type: integer
           example: 1
-
     ServicesComponents:
       description: OPS List of Services Components
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/ServicesComponent"
-
+          - $ref: '#/components/schemas/ServicesComponent'
     ServicesComponent:
       type: object
       properties:
@@ -2143,7 +2118,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     ServicesComponentRequest:
       type: object
       properties:
@@ -2171,29 +2145,26 @@ components:
         period_end:
           type: string
           example: '2023-06-30'
-
     ServicesComponentRequestPost:
       allOf:
-        - $ref: "#/components/schemas/ServicesComponentRequest"
+        - $ref: '#/components/schemas/ServicesComponentRequest'
         - type: object
           required:
             - contract_agreement_id
             - number
             - optional
-
     ProcurementSteps:
       description: OPS List of Procurement Steps
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/ProcurementStep"
-          - $ref: "#/components/schemas/AcquisitionPlanning"
-          - $ref: "#/components/schemas/PreSolicitation"
-          - $ref: "#/components/schemas/Solicitation"
-          - $ref: "#/components/schemas/Evaluation"
-          - $ref: "#/components/schemas/PreAward"
-          - $ref: "#/components/schemas/Award"
-
+          - $ref: '#/components/schemas/ProcurementStep'
+          - $ref: '#/components/schemas/AcquisitionPlanning'
+          - $ref: '#/components/schemas/PreSolicitation'
+          - $ref: '#/components/schemas/Solicitation'
+          - $ref: '#/components/schemas/Evaluation'
+          - $ref: '#/components/schemas/PreAward'
+          - $ref: '#/components/schemas/Award'
     ProcurementStep:
       type: object
       properties:
@@ -2224,7 +2195,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     Attestation:
       type: object
       properties:
@@ -2238,65 +2208,55 @@ components:
           type: string
         notes:
           type: string
-
     TargetDate:
       type: object
       properties:
         target_date:
           type: string
           example: '2023-05-06'
-
     AcquisitionPlanning:
       allOf:
         - $ref: '#/components/schemas/ProcurementStep'
         - $ref: '#/components/schemas/Attestation'
-
     PreSolicitation:
       allOf:
         - $ref: '#/components/schemas/ProcurementStep'
         - $ref: '#/components/schemas/Attestation'
         - $ref: '#/components/schemas/TargetDate'
-
     Solicitation:
       allOf:
         - $ref: '#/components/schemas/ProcurementStep'
         - $ref: '#/components/schemas/Attestation'
         - $ref: '#/components/schemas/TargetDate'
-
     Evaluation:
       allOf:
         - $ref: '#/components/schemas/ProcurementStep'
         - $ref: '#/components/schemas/Attestation'
         - $ref: '#/components/schemas/TargetDate'
-
     PreAward:
       allOf:
         - $ref: '#/components/schemas/ProcurementStep'
         - $ref: '#/components/schemas/Attestation'
         - $ref: '#/components/schemas/TargetDate'
-
     Award:
       allOf:
         - $ref: '#/components/schemas/ProcurementStep'
         - $ref: '#/components/schemas/Attestation'
-
-
   examples:
-
     CAN:
       value:
-        - appropriation_date: "2023-09-01T00:00:00.000000Z"
+        - appropriation_date: '2023-09-01T00:00:00.000000Z'
         - appropriation_term: 1
         - arrangement_type_id: 2
         - authorizer_id: 23
-        - description: "Healthy Marriages Responsible Fatherhood - OFA"
-        - expiration_date: "2023-09-01T00:00:00.000000Z"
+        - description: Healthy Marriages Responsible Fatherhood - OFA
+        - expiration_date: '2023-09-01T00:00:00.000000Z'
         - id: 10
         - managing_portfolio_id: 6
         - managing_project_id: null
-        - nickname: "HMRF-OFA"
-        - number: "G99XXX3"
-        - purpose: ""
+        - nickname: HMRF-OFA
+        - number: G99XXX3
+        - purpose: ''
     Portfolio:
       value: |
         {
@@ -2552,7 +2512,6 @@ components:
             },
         ],
         }]
-
     Agreement:
       value: |
         {
@@ -2598,7 +2557,6 @@ components:
             },
         ],
         }
-
     BudgetLineItems:
       value: |
         [
@@ -2648,15 +2606,9 @@ components:
               "updated_by": 1
           }
         ]
-
     Notifications:
       value: |
         [
         ]
-
-
-
-
-
 security:
-  - bearerAuth: [ ]  # pragma: allowlist secret
+  - bearerAuth: []
