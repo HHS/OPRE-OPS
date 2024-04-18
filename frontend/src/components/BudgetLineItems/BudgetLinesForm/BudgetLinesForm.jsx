@@ -8,6 +8,7 @@ import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import DatePicker from "../../UI/USWDS/DatePicker";
 import suite from "./suite";
+import datePickerSuite from "./datePickerSuite";
 
 /**
  * A form for creating or editing a budget line.
@@ -53,6 +54,7 @@ export const CreateBudgetLinesForm = ({
     agreementId
 }) => {
     let res = suite.get();
+    let dateRes = datePickerSuite.get();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -82,6 +84,12 @@ export const CreateBudgetLinesForm = ({
             },
             name
         );
+    };
+
+    const validateDatePicker = (name, value) => {
+        datePickerSuite({
+            needByDate
+        });
     };
 
     return (
@@ -125,10 +133,11 @@ export const CreateBudgetLinesForm = ({
                     hint="MM/DD/YYYY"
                     aria-describedby="need-by-date-hint"
                     aria-labelledby="need-by-date-label"
-                    messages={res.getErrors("needByDate")}
+                    messages={[...(res.getErrors("needByDate") || []), ...(dateRes.getErrors("needByDate") || [])]}
                     className={cn("needByDate")}
                     value={needByDate}
                     onChange={(e) => {
+                        validateDatePicker("needByDate", e.target.value);
                         if (isReviewMode) {
                             runValidate("needByDate", e.target.value);
                         }
