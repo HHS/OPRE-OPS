@@ -4,12 +4,12 @@ const { EOL } = require('os');
 const path = require('path');
 const yaml = require('js-yaml');
 
-// Change working directory if user defined PACKAGEJSON_DIR
-if (process.env.PACKAGEJSON_DIR) {
-  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.PACKAGEJSON_DIR}`;
+// Change working directory if user defined OPENAPI_DIR
+if (process.env.OPENAPI_DIR) {
+  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.OPENAPI_DIR}`;
   process.chdir(process.env.GITHUB_WORKSPACE);
-} else if (process.env.INPUT_PACKAGEJSON_DIR) {
-  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.INPUT_PACKAGEJSON_DIR}`;
+} else if (process.env.INPUT_OPENAPI_DIR) {
+  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.INPUT_OPENAPI_DIR}`;
   process.chdir(process.env.GITHUB_WORKSPACE);
 }
 
