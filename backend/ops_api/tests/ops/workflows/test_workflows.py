@@ -7,7 +7,6 @@ from flask import url_for
 from models import (
     AgreementChangeRequest,
     BudgetLineItem,
-    BudgetLineItemBudgetChangeRequest,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
@@ -116,6 +115,9 @@ def test_change_request(auth_client, app):
     change_request = session.get(ChangeRequest, new_change_request_id)
     assert change_request.type == "change_request"
 
+    session.delete(change_request)
+    session.commit()
+
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_change_request(auth_client, app):
@@ -131,6 +133,9 @@ def test_agreement_change_request(auth_client, app):
     new_change_request_id = change_request.id
     change_request = session.get(ChangeRequest, new_change_request_id)
     assert change_request.type == "agreement_change_request"
+
+    session.delete(change_request)
+    session.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -148,9 +153,12 @@ def test_budget_line_item_change_request(auth_client, app):
     change_request = session.get(ChangeRequest, new_change_request_id)
     assert change_request.type == "budget_line_item_change_request"
 
+    session.delete(change_request)
+    session.commit()
+
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client, app):
+def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     session = app.db_session
     #  create PLANNED BLI
     bli = BudgetLineItem(
@@ -177,14 +185,23 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
     assert "change_request_ids" in resp_json
     change_request_ids = resp_json["change_request_ids"]
 
+    can_id_change_request_id = None
+
     # verify each change request was created
     for change_request_id in change_request_ids:
         change_request = session.get(ChangeRequest, change_request_id)
         assert change_request is not None
         print("~~~change_request~~~\n", json.dumps(change_request.to_dict(), indent=2))
         print("~~~requested_changes~~~\n", json.dumps(change_request.requested_changes, indent=2))
-        assert change_request.type == "budget_line_item_budget_change_request"
+        assert change_request.type == "budget_line_item_change_request"
         assert change_request.budget_line_item_id == bli_id
+        assert change_request.has_budget_change is True
+        assert change_request.has_status_change is False
+        if "can_id" in change_request.requested_changes:
+            assert can_id_change_request_id is None
+            can_id_change_request_id = change_request_id
+
+    assert can_id_change_request_id is not None
 
     # verify the BLI was not updated yet
     bli = session.get(BudgetLineItem, bli_id)
@@ -201,8 +218,8 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
     response = auth_client.get(f"{url_for('api.change-request-list')}?budget_line_item_id={bli_id}&status=IN_REVIEW")
     assert response.status_code == 200
     resp_json = response.json
-    assert len(resp_json) == len(change_request_ids)
     print("~~~change-request-list~~~", json.dumps(resp_json, indent=2))
+    assert len(resp_json) == len(change_request_ids)
 
     # verify the change requests are in the BLI
     response = auth_client.get(url_for("api.budget-line-items-item", id=bli_id))
@@ -211,17 +228,18 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
     print("~~~BLI GET response~~~", json.dumps(resp_json, indent=2))
     assert "change_requests_in_review" in resp_json
 
-    # approve the change requests
+    # review the change requests, reject the can_id change request and approve the others
     for change_request_id in change_request_ids:
-        # review_change_request(change_request_id, ChangeRequestStatus.APPROVED, 1)
-        data = {"change_request_id": change_request_id, "action": "APPROVE"}
+        action = "REJECT" if change_request_id == can_id_change_request_id else "APPROVE"
+        print(f"~~~review_change_request~~~\n{change_request_id=}\n{action=}")
+        data = {"change_request_id": change_request_id, "action": action}
         response = auth_client.post(url_for("api.change-request-review-list"), json=data)
         assert response.status_code == 200
 
     # verify the BLI was updated
     bli = session.get(BudgetLineItem, bli_id)
     assert bli.amount == Decimal("222.22")
-    assert bli.can_id == 2
+    assert bli.can_id == 1  # can_id change request was rejected
     assert bli.date_needed == datetime.date(2032, 2, 2)
     assert bli.change_request_ids_in_review is None
 
@@ -236,78 +254,7 @@ def test_budget_line_item_patch_with_budgets_change_request_approved(auth_client
     session.delete(bli)
     session.commit()
     for change_request_id in change_request_ids:
-        change_request = session.get(BudgetLineItemBudgetChangeRequest, change_request_id)
-        assert change_request is None
-    bli = session.get(BudgetLineItem, bli_id)
-    assert bli is None
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_with_budgets_change_request_denied(auth_client, app):
-    session = app.db_session
-    #  create PLANNED BLI
-    bli = BudgetLineItem(
-        line_description="Grant Expenditure GA999",
-        agreement_id=1,
-        can_id=1,
-        amount=111.11,
-        status=BudgetLineItemStatus.PLANNED,
-        # date_needed=datetime.date(2043, 1, 1),
-    )
-    session.add(bli)
-    session.commit()
-    assert bli.id is not None
-    bli_id = bli.id
-
-    #  submit PATCH BLI which triggers a financial change request
-    # data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02"}
-    data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02", "status": "OBLIGATED"}
-    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
-    assert response.status_code == 202
-    resp_json = response.json
-    import json
-
-    print(json.dumps(resp_json, indent=2))
-
-    assert "change_request_ids" in resp_json
-    change_request_ids = resp_json["change_request_ids"]
-
-    # verify each change request was created
-    for change_request_id in change_request_ids:
-        change_request = session.get(ChangeRequest, change_request_id)
-        assert change_request is not None
-        print("~~~change_request~~~\n", json.dumps(change_request.to_dict(), indent=2))
-        print("~~~requested_changes~~~\n", json.dumps(change_request.requested_changes, indent=2))
-        assert change_request.type == "budget_line_item_budget_change_request"
-        assert change_request.budget_line_item_id == bli_id
-
-    # verify the BLI was not updated yet
-    bli = session.get(BudgetLineItem, bli_id)
-    assert str(bli.amount) == "111.11"
-    assert bli.amount == Decimal("111.11")
-    assert bli.can_id == 1
-    assert bli.date_needed is None
-    assert set(bli.change_request_ids_in_review) == set(change_request_ids)
-
-    # reject the change requests
-    for change_request_id in change_request_ids:
-        # review_change_request(change_request_id, ChangeRequestStatus.REJECTED, 1)
-        data = {"change_request_id": change_request_id, "action": "REJECT"}
-        response = auth_client.post(url_for("api.change-request-review-list"), json=data)
-        assert response.status_code == 200
-
-    # verify the BLI was NOT updated but change requests are done
-    bli = session.get(BudgetLineItem, bli_id)
-    assert bli.amount == Decimal("111.11")
-    assert bli.can_id == 1
-    assert bli.date_needed is None
-    assert bli.change_request_ids_in_review is None
-
-    # verify delete cascade
-    session.delete(bli)
-    session.commit()
-    for change_request_id in change_request_ids:
-        change_request = session.get(BudgetLineItemBudgetChangeRequest, change_request_id)
+        change_request = session.get(BudgetLineItemChangeRequest, change_request_id)
         assert change_request is None
     bli = session.get(BudgetLineItem, bli_id)
     assert bli is None

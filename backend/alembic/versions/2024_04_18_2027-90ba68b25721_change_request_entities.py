@@ -1,8 +1,8 @@
 """Change Request entities
 
-Revision ID: 309234a8f343
+Revision ID: 90ba68b25721
 Revises: ff7132d9d0c0
-Create Date: 2024-04-11 18:54:56.844070+00:00
+Create Date: 2024-04-18 20:27:36.421458+00:00
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '309234a8f343'
+revision: str = '90ba68b25721'
 down_revision: Union[str, None] = 'ff7132d9d0c0'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,7 +26,6 @@ def upgrade() -> None:
     sa.Column('type', sa.String(), autoincrement=False, nullable=True),
     sa.Column('status', postgresql.ENUM('IN_REVIEW', 'APPROVED', 'REJECTED', name='changerequeststatus', create_type=False), autoincrement=False, nullable=True),
     sa.Column('requested_changes', postgresql.JSONB(astext_type=sa.Text()), autoincrement=False, nullable=True),
-    sa.Column('requested_by_id', sa.Integer(), autoincrement=False, nullable=True),
     sa.Column('reviewed_by_id', sa.Integer(), autoincrement=False, nullable=True),
     sa.Column('reviewed_on', sa.DateTime(), autoincrement=False, nullable=True),
     sa.Column('created_by', sa.Integer(), autoincrement=False, nullable=True),
@@ -48,7 +47,6 @@ def upgrade() -> None:
     sa.Column('type', sa.String(), nullable=False),
     sa.Column('status', postgresql.ENUM('IN_REVIEW', 'APPROVED', 'REJECTED', name='changerequeststatus', create_type=False), nullable=False),
     sa.Column('requested_changes', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-    sa.Column('requested_by_id', sa.Integer(), nullable=True),
     sa.Column('reviewed_by_id', sa.Integer(), nullable=True),
     sa.Column('reviewed_on', sa.DateTime(), nullable=True),
     sa.Column('created_by', sa.Integer(), nullable=True),
@@ -60,7 +58,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['agreement_id'], ['agreement.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['budget_line_item_id'], ['budget_line_item.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['created_by'], ['user.id'], ),
-    sa.ForeignKeyConstraint(['requested_by_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['reviewed_by_id'], ['user.id'], ),
     sa.ForeignKeyConstraint(['updated_by'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')

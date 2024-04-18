@@ -10,7 +10,7 @@ from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any, override
 
-from models import BudgetLineItemBudgetChangeRequest, BudgetLineItemStatus, OpsEventType
+from models import BudgetLineItemChangeRequest, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
@@ -133,9 +133,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             # determine if it can be edited directly or if a change request is required
             directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
 
-            changed_budget_props = list(
-                set(change_data.keys()) & set(BudgetLineItemBudgetChangeRequest.budget_field_names)
-            )
+            changed_budget_props = list(set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names))
             print(f"~~~{changed_budget_props=}")
             # punting on status changes for now, this may turn into a Status ChangeRequest later,
             # but not sure if it can contain other changes
@@ -153,11 +151,10 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             if not directly_editable and changed_budget_props:
                 # create a budget change request for each changed prop separately (for separate approvals)
                 for changed_prop_key in changed_budget_props:
-                    change_request = BudgetLineItemBudgetChangeRequest()
+                    change_request = BudgetLineItemChangeRequest()
                     change_request.budget_line_item_id = id
                     # what schema should be used here, PATCH schema or __marshmallow__ ?
-                    # schema = budget_line_item.__marshmallow__(only=[changed_prop_key])
-                    schema = budget_line_item.__marshmallow__(only=changed_budget_props)
+                    schema = budget_line_item.__marshmallow__(only=[changed_prop_key])
                     # schema = budget_line_item.__marshmallow__()
                     change_request.requested_changes = schema.dump(change_data)
                     # revert the budget_line_item and save the new change request

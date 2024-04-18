@@ -6,12 +6,12 @@ from typing import Optional
 import sqlalchemy as sa
 from sqlalchemy import DateTime, ForeignKey, Integer, event
 from sqlalchemy.dialects.postgresql import ENUM, JSONB
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import Any, override
 
 from models import BaseModel
-from models.base import BaseModel
 
 
 class WorkflowAction(Enum):
@@ -413,9 +413,10 @@ class ChangeRequest(BaseModel):
         ENUM(ChangeRequestStatus), nullable=False, default=ChangeRequestStatus.IN_REVIEW
     )
     requested_changes: Mapped[JSONB] = mapped_column(JSONB)
-    requested_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
+    # BaseModel.created_by is the requestor, so requested_by_id is not needed
     reviewed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
     reviewed_on: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    # should there be a fields to store pending reviewer and backup pending reviewer?
 
     __mapper_args__ = {
         "polymorphic_on": "type",
@@ -436,6 +437,16 @@ class AgreementChangeRequest(ChangeRequest):
     __mapper_args__ = {
         "polymorphic_identity": "agreement_change_request",
     }
+
+    budget_field_names = ["procurement_shop_id"]
+
+    @hybrid_property
+    def has_budget_change(self):
+        return any(key in self.requested_changes for key in self.budget_field_names)
+
+    @has_budget_change.expression
+    def has_budget_changes(cls):
+        return cls.requested_changes.has_any(cls.budget_field_names)
 
 
 # require agreement_id for Agreement changes.
@@ -460,30 +471,29 @@ class BudgetLineItemChangeRequest(ChangeRequest):
         "polymorphic_identity": "budget_line_item_change_request",
     }
 
-
-class BudgetLineItemBudgetChangeRequest(BudgetLineItemChangeRequest):
     budget_field_names = ["amount", "can_id", "date_needed"]
-    # should there be an event listener to make sure the requested changes are only financial changes?
 
-    __mapper_args__ = {
-        "polymorphic_identity": "budget_line_item_budget_change_request",
-    }
+    @hybrid_property
+    def has_budget_change(self):
+        return any(key in self.requested_changes for key in self.budget_field_names)
 
+    @has_budget_change.expression
+    def has_budget_changes(cls):
+        return cls.requested_changes.has_any(cls.budget_field_names)
 
-class BudgetLineItemStatusChangeRequest(BudgetLineItemChangeRequest):
-    # should this only allow a status change or could there be other changes included?
-    # status_field_names = ["status"]
-    __mapper_args__ = {
-        "polymorphic_identity": "budget_line_item_status_change_request",
-    }
+    @hybrid_property
+    def has_status_change(self):
+        return "status" in self.requested_changes
+
+    @has_status_change.expression
+    def has_status_change(cls):
+        return cls.requested_changes.has_key("status")
 
 
 # require budget_line_item_id for BLI changes.
 # (It has to be Optional in the model to keep the column nullable for other types)
 @event.listens_for(BudgetLineItemChangeRequest, "before_insert")
 @event.listens_for(BudgetLineItemChangeRequest, "before_update")
-@event.listens_for(BudgetLineItemBudgetChangeRequest, "before_insert")
-@event.listens_for(BudgetLineItemBudgetChangeRequest, "before_update")
 def check_budget_line_id(mapper, connection, target):
     if target.budget_line_item_id is None:
         raise ValueError(
