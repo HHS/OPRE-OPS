@@ -4,55 +4,49 @@ const { EOL } = require('os');
 const path = require('path');
 const yaml = require('js-yaml');
 
-// Change working directory if user defined OPENAPI_DIR
-if (process.env.OPENAPI_DIR) {
-  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.OPENAPI_DIR}`;
-  process.chdir(process.env.GITHUB_WORKSPACE);
-} else if (process.env.INPUT_OPENAPI_DIR) {
-  process.env.GITHUB_WORKSPACE = `${process.env.GITHUB_WORKSPACE}/${process.env.INPUT_OPENAPI_DIR}`;
-  process.chdir(process.env.GITHUB_WORKSPACE);
+// Adjusting directory based on user input
+const packageJsonDir = process.env.PACKAGEJSON_DIR || process.env.INPUT_PACKAGEJSON_DIR;
+if (packageJsonDir) {
+  process.chdir(path.join(process.env.GITHUB_WORKSPACE, packageJsonDir));
 }
+console.log('Working directory set to:', process.cwd());
 
-console.log('process.env.GITHUB_WORKSPACE', process.env.GITHUB_WORKSPACE);
-const workspace = process.env.GITHUB_WORKSPACE;
-const openApiFilePath = path.join(workspace, 'openapi.yml');
+// Getting and processing the OpenAPI file
+const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
 const openapi = getOpenApi(openApiFilePath);
 
 (async () => {
-  const event = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_EVENT_PATH) : {};
-  const commitMessages = event.commits ? event.commits.map(commit => `${commit.message} ${commit.body}`).join(EOL) : "";
-  console.log('Commit messages:', commitMessages);
+  // Determine if skipping certain steps based on input flags
+  const skipTag = process.env.INPUT_SKIP_TAG === 'true';
+  const skipCommit = process.env.INPUT_SKIP_COMMIT === 'true';
+  const skipPush = process.env.INPUT_SKIP_PUSH === 'true';
 
-  const versionType = process.env['INPUT_VERSION-TYPE'];
-  const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
-  const tagSuffix = process.env['INPUT_TAG-SUFFIX'] || '';
-  console.log('tagPrefix:', tagPrefix);
-  console.log('tagSuffix:', tagSuffix);
-
-  const commitMessage = process.env['INPUT_COMMIT-MESSAGE'] || 'ci: version bump to {{version}}';
-  
   const newVersion = updateVersion(openapi.info.version);
   openapi.info.version = newVersion;
   writeOpenApi(openApiFilePath, openapi);
-  
-  // Setting Git configuration in the workspace
-  execSync('git config user.name "Automated Version Bump"', { stdio: 'ignore' });
-  execSync('git config user.email "gh-action-bump-version@users.noreply.github.com"', { stdio: 'ignore' });
 
-  try {
-    execSync(`git add ${openApiFilePath}`);
-    execSync(`git commit -m "${commitMessage.replace('{{version}}', newVersion)}"`);
-    if (tagPrefix || tagSuffix) {
-      const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
-      execSync(`git tag ${newTag}`);
-    }
-    execSync('git push --follow-tags');
-  } catch (error) {
-    console.error('Failed to commit and push changes:', error);
-    process.exit(1);
+  // Setting Git configuration to handle identity issues
+  execSync('git config user.name "Automated Version Bump"', { stdio: 'inherit' });
+  execSync('git config user.email "gh-action-bump-version@users.noreply.github.com"', { stdio: 'inherit' });
+
+  execSync(`git add ${openApiFilePath}`, { stdio: 'inherit' });
+  if (!skipCommit) {
+    execSync(`git commit -m "Bump version to ${newVersion}"`, { stdio: 'inherit' });
   }
 
-  console.log('Version bumped successfully!');
+  if (!skipTag) {
+    const tagPrefix = process.env['INPUT_TAG_PREFIX'] || '';
+    const tagSuffix = process.env['INPUT_TAG_SUFFIX'] || '';
+    const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+    execSync(`git tag ${newTag}`, { stdio: 'inherit' });
+  }
+
+  if (!skipPush) {
+    execSync('git push', { stdio: 'inherit' });
+    if (!skipTag) {
+      execSync('git push --tags', { stdio: 'inherit' });
+    }
+  }
 })();
 
 function getOpenApi(filePath) {
@@ -65,8 +59,7 @@ function writeOpenApi(filePath, content) {
 }
 
 function updateVersion(currentVersion) {
-  // Example version updating logic: simply increments the patch version
-  let [major, minor, patch] = currentVersion.split('.').map(num => parseInt(num, 10));
-  patch++;
-  return `${major}.${minor}.${patch}`;
+  const parts = currentVersion.split('.');
+  parts[2] = parseInt(parts[2], 10) + 1; // Increment patch number
+  return parts.join('.');
 }
