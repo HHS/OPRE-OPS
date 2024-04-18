@@ -3,7 +3,7 @@ const { existsSync, readFileSync, writeFileSync } = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 
-// Change the working directory if specified in the environment variables
+// Set working directory if defined in environment variables
 const packageJsonDir = process.env.OPENAPI_DIR || process.env.INPUT_OPENAPI_DIR;
 if (packageJsonDir) {
     process.chdir(path.join(process.env.GITHUB_WORKSPACE, packageJsonDir));
@@ -34,7 +34,7 @@ function updateVersion(currentVersion) {
     openapi.info.version = newVersion;
     writeOpenApi(openApiFilePath, openapi);
 
-    // Configure Git to avoid identity issues
+    // Configure Git
     execSync('git config user.name "Automated Version Bump"', { stdio: 'inherit' });
     execSync('git config user.email "action@github.com"', { stdio: 'inherit' });
 
