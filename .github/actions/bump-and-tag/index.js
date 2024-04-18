@@ -42,25 +42,22 @@ function updateVersion(currentVersion) {
         execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`, { stdio: 'inherit' });
     }
 
+    let newTag;
     if (process.env.INPUT_SKIP_TAG !== 'true') {
         const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
         const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
-        const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+        newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
         execSync(`git tag ${newTag}`, { stdio: 'inherit' });
-        console.log(`::set-output name=newTag::${newTag}`);
+        fs.writeFileSync(`${process.env.GITHUB_ENV}`, `newTag=${newTag}\n`, { flag: 'a' });
     }
 
     if (process.env.INPUT_SKIP_PUSH !== 'true') {
         execSync('git push', { stdio: 'inherit' });
-        if (process.env.INPUT_SKIP_TAG !== 'true') {
+        if (newTag) {
             execSync('git push --tags', { stdio: 'inherit' });
         }
     }
 
-    // Update to using environment files if set-output is deprecated
     fs.writeFileSync(`${process.env.GITHUB_ENV}`, `newVersion=${newVersion}\n`, { flag: 'a' });
-    if (process.env.INPUT_SKIP_TAG !== 'true') {
-        fs.writeFileSync(`${process.env.GITHUB_ENV}`, `newTag=${newTag}\n`, { flag: 'a' });
-    }
 })();
 
