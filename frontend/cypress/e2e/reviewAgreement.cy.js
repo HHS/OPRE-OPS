@@ -1,9 +1,6 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
-// get current year
-const today = new Date();
-const year = today.getFullYear() + 1;
-const month = today.getMonth() + 1;
+
 const randomNumber = Math.floor(Math.random() * 1000000);
 const randomNumber2 = Math.floor(Math.random() * 1000000);
 
@@ -11,9 +8,7 @@ const blData = [
     {
         services_component: "Base Period 1",
         can: "G99HRF2",
-        month: "09 - Sep",
-        day: "01",
-        year: "2048",
+        needByDate: "09/01/2048",
         amount: "111111",
         note: "note one"
     }
@@ -104,55 +99,18 @@ describe("agreement review workflow", () => {
             cy.get(".can-combobox__clear-indicator").click();
             cy.get(".usa-error-message").should("exist");
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
-            // add entered month and clear it
-            cy.get("#enteredMonth").select(blData[0].month);
-            cy.get("#enteredMonth").select("0");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredMonth").select(blData[0].month);
-            // add entered day and clear it and tests for invalid days
-            cy.get("#enteredDay").type(`${blData[0].day}`);
-            cy.get("#enteredDay").clear();
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredDay").type("0");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredDay").clear();
-            cy.get("#enteredDay").type("32");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredDay").clear();
-            cy.get("#enteredDay").type(`${blData[0].day}`);
-            // add entered year and clear it and tests for invalid years
-            cy.get("#enteredYear").type(`${blData[0].year}`);
-            cy.get("#enteredYear").clear();
-            cy.get(".usa-error-message").should("exist");
-            // check for invalid years
-            cy.get("#enteredYear").type("0");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type("12");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type("123");
-            cy.get(".usa-error-message").should("exist");
-            // check to make sure the year is in the future
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type(`${year - 1}`);
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type(`${year}`);
-            // test for invalid dates
-            cy.get("#enteredMonth").select(month);
-            cy.get("#enteredDay").clear();
-            cy.get("#enteredDay").type(blData[0].day);
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type(`${year - 1}`);
+            // ensure date is in the future
+            cy.get("#uswds-date-need-by-date").type("09/01/1998");
             // check for date to be in the future  which should error
-            cy.get('[data-cy="date-group-errors"] .usa-error-message').should("exist");
+            cy.get(".usa-error-message").should("exist");
             // fix by adding a valid date
-            cy.get("#enteredDay").clear();
-            cy.get("#enteredDay").type(blData[0].day + 1);
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type(`${year + 1}`);
-            cy.get('[data-cy="date-group-errors"] .usa-error-message').should("not.exist");
+            cy.get("#uswds-date-need-by-date").clear();
+            // test for invalid date
+            cy.get("#uswds-date-need-by-date").type("tacocat");
+            cy.get(".usa-error-message").should("exist");
+            // fix by adding a valid date
+            cy.get("#uswds-date-need-by-date").clear();
+            cy.get("#uswds-date-need-by-date").type(blData[0].needByDate);
             // add entered amount and clear it
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredAmount").clear();
@@ -193,7 +151,7 @@ describe("agreement review workflow", () => {
             cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
             cy.get("h1").should("have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("exist");
-            cy.get('[data-cy="error-item"]').should("have.length", 1);
+            cy.get('[data-cy="error-item"]').should("have.length", 2);
             //send-to-approval button should be disabled
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
@@ -212,9 +170,8 @@ describe("agreement review workflow", () => {
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
-            cy.get("#enteredMonth").select(blData[0].month);
-            cy.get("#enteredDay").type(`${blData[0].day}`);
-            cy.get("#enteredYear").type(`${blData[0].year}`);
+            cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
+            cy.get("#uswds-date-need-by-date").type(`${blData[0].needByDate}`);
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredComments").type(`${blData[0].note}`);
             cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
@@ -306,55 +263,12 @@ describe("agreement review workflow", () => {
             cy.get(".can-combobox__clear-indicator").click();
             cy.get(".usa-error-message").should("exist");
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
-            // add entered month and clear it
-            cy.get("#enteredMonth").select(blData[0].month);
-            cy.get("#enteredMonth").select("0");
+            // ensure date is in the future
+            cy.get("#uswds-date-need-by-date").type("09/01/1998");
             cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredMonth").select(blData[0].month);
-            // add entered day and clear it and tests for invalid days
-            cy.get("#enteredDay").type(`${blData[0].day}`);
-            cy.get("#enteredDay").clear();
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredDay").type("0");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredDay").clear();
-            cy.get("#enteredDay").type("32");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredDay").clear();
-            cy.get("#enteredDay").type(`${blData[0].day}`);
-            // add entered year and clear it and tests for invalid years
-            cy.get("#enteredYear").type(`${blData[0].year}`);
-            cy.get("#enteredYear").clear();
-            cy.get(".usa-error-message").should("exist");
-            // check for invalid years
-            cy.get("#enteredYear").type("0");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type("12");
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type("123");
-            cy.get(".usa-error-message").should("exist");
-            // check to make sure the year is in the future
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type(`${year - 1}`);
-            cy.get(".usa-error-message").should("exist");
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type(`${year}`);
-            // test for invalid dates
-            cy.get("#enteredMonth").select(month);
-            cy.get("#enteredDay").clear();
-            cy.get("#enteredDay").type(blData[0].day);
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type(`${year - 1}`);
-            // check for date to be in the future  which should error
-            cy.get('[data-cy="date-group-errors"] .usa-error-message').should("exist");
-            // fix by adding a valid date
-            cy.get("#enteredDay").clear();
-            cy.get("#enteredDay").type(blData[0].day + 1);
-            cy.get("#enteredYear").clear();
-            cy.get("#enteredYear").type(`${year + 1}`);
-            cy.get('[data-cy="date-group-errors"] .usa-error-message').should("not.exist");
+            // fix
+            cy.get("#uswds-date-need-by-date").clear();
+            cy.get("#uswds-date-need-by-date").type(blData[0].needByDate);
             // add entered amount and clear it
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredAmount").clear();
@@ -378,7 +292,6 @@ describe("agreement review workflow", () => {
             cy.get('[type="radio"]').first().check({ force: true });
             cy.get("#check-all").check({ force: true }).wait(1);
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-
             // go back to edit mode and look for budget line errors
             cy.visit(`/agreements/edit/${agreementId}?mode=edit`);
             cy.get("#continue").click();
@@ -394,7 +307,7 @@ describe("agreement review workflow", () => {
             cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
             cy.get("h1").should("have.text", "Please resolve the errors outlined below");
             cy.get('[data-cy="error-list"]').should("exist");
-            cy.get('[data-cy="error-item"]').should("have.length", 1);
+            cy.get('[data-cy="error-item"]').should("have.length", 2);
             //send-to-approval button should be disabled
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
@@ -413,9 +326,7 @@ describe("agreement review workflow", () => {
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
-            cy.get("#enteredMonth").select(blData[0].month);
-            cy.get("#enteredDay").type(`${blData[0].day}`);
-            cy.get("#enteredYear").type(`${blData[0].year}`);
+            cy.get("#uswds-date-need-by-date").type(`${blData[0].needByDate}`);
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredComments").type(`${blData[0].note}`);
             cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
@@ -444,8 +355,8 @@ describe("agreement review workflow", () => {
             //approve agreement
             cy.visit("/agreements?filter=for-approval").wait(1000);
             cy.get("tbody").children().as("table-rows").should("exist");
-            // get the created agreement
-            cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
+            // get the created agreement which is last in the table
+            cy.get("@table-rows").last().find('[data-cy="expand-row"]').click();
             cy.get('[data-cy="go-to-approve-row"]').click();
             // check the checkbox for approval
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
@@ -482,7 +393,7 @@ describe("agreement review workflow", () => {
             cy.visit("/agreements?filter=for-approval").wait(1000);
             cy.get("tbody").children().as("table-rows").should("exist");
             // get the created agreement
-            cy.get("@table-rows").eq(0).find('[data-cy="expand-row"]').click();
+            cy.get("@table-rows").last().find('[data-cy="expand-row"]').click();
             cy.get('[data-cy="go-to-approve-row"]').click();
             // check the checkbox for approval
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");

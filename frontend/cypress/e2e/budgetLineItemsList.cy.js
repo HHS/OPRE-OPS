@@ -163,9 +163,7 @@ it("click on edit bli and check to see if the form is populated", () => {
     cy.url().should("include", "/agreements/1/budget-lines");
     cy.get("#allServicesComponentSelect").should("have.value", "1");
     cy.get(".can-combobox__single-value").should("have.text", "G994426");
-    cy.get("#enteredMonth").should("have.value", "6");
-    cy.get("#enteredDay").should("have.value", "13");
-    cy.get("#enteredYear").should("have.value", "2043");
+    cy.get("#uswds-date-need-by-date").should("have.value", "06/13/2043");
     cy.get("#enteredAmount").should("have.value", "1,000,000");
     cy.get('[data-cy="update-budget-line"]').should("exist");
 });

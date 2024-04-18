@@ -4,6 +4,10 @@ export const CreateBudgetLineFlow = ({ children, onFinish }) => {
     const [formData, setFormData] = React.useState({});
     const [currentIndex, setCurrentIndex] = React.useState(0);
 
+    React.useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [currentIndex]);
+
     const goBack = () => {
         const previousIndex = currentIndex - 1;
         if (previousIndex >= 0) {

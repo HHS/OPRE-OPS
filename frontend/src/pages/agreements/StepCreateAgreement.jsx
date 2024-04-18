@@ -16,9 +16,18 @@ import { useEditAgreement } from "../../components/Agreements/AgreementEditor/Ag
  * @param {boolean} props.isReviewMode - Indicates if the wizard is in review mode.
  * @param {Array.<string>} props.wizardSteps - The steps of the wizard.
  * @param {number} props.selectedAgreementId - The ID of the selected agreement.
+ * @param {string} props.cancelHeading - The heading for the cancel modal.
  * @returns {JSX.Element} The rendered StepCreateAgreement component.
  */
-const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizardSteps, selectedAgreementId }) => {
+const StepCreateAgreement = ({
+    goBack,
+    goToNext,
+    isEditMode,
+    isReviewMode,
+    wizardSteps,
+    selectedAgreementId,
+    cancelHeading
+}) => {
     const { selected_project: selectedResearchProject } = useEditAgreement();
 
     return (
@@ -34,6 +43,7 @@ const StepCreateAgreement = ({ goBack, goToNext, isEditMode, isReviewMode, wizar
                 goToNext={goToNext}
                 isReviewMode={isReviewMode}
                 selectedAgreementId={selectedAgreementId}
+                cancelHeading={cancelHeading}
             />
         </>
     );
@@ -46,7 +56,8 @@ StepCreateAgreement.propTypes = {
     isReviewMode: PropTypes.bool,
     wizardSteps: PropTypes.arrayOf(PropTypes.string),
     currentStep: PropTypes.number,
-    selectedAgreementId: PropTypes.number
+    selectedAgreementId: PropTypes.number,
+    cancelHeading: PropTypes.string
 };
 
 export default StepCreateAgreement;

@@ -42,7 +42,7 @@ export const ComboBox = ({
     return (
         <Select
             inputId={`${namespace}-input`}
-            className={`padding-0 ${messages.length ? "usa-input--error" : ""}`}
+            className={`padding-top-05 ${messages.length ? "usa-input--error" : ""}`}
             classNamePrefix={namespace}
             name={namespace}
             tabIndex={0}
