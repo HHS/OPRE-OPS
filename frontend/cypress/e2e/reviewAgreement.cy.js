@@ -546,7 +546,7 @@ describe("agreement review CANS accordion", () => {
         cy.get('[data-cy="can-funding-summary-card-5"]').contains("$40,000,000.00");
     });
 
-    it.only("should handle after approval toggle", () => {
+    it("should handle after approval toggle", () => {
         cy.visit("/agreements/review/1").wait(1000);
         // pre-change
         // select all BLIs to show CANS cards
