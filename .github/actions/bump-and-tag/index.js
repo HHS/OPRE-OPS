@@ -42,18 +42,18 @@ function updateVersion(currentVersion) {
         execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`, { stdio: 'inherit' });
     }
 
-    let newTag;
     if (process.env.INPUT_SKIP_TAG !== 'true') {
         const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
         const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
-        newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+        const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+        console.log(`Creating new tag: ${newTag}`);
         execSync(`git tag ${newTag}`, { stdio: 'inherit' });
         fs.writeFileSync(`${process.env.GITHUB_ENV}`, `newTag=${newTag}\n`, { flag: 'a' });
     }
 
     if (process.env.INPUT_SKIP_PUSH !== 'true') {
         execSync('git push', { stdio: 'inherit' });
-        if (newTag) {
+        if (process.env.INPUT_SKIP_TAG !== 'true') {
             execSync('git push --tags', { stdio: 'inherit' });
         }
     }
