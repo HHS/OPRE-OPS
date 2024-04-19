@@ -29,15 +29,13 @@ if (process.env.INPUT_SKIP_COMMIT !== 'true') {
     execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`, { stdio: 'inherit' });
 }
 
-console.log("Environment Variables:", JSON.stringify(process.env, null, 2));  // This will log all environment variables
-
-let newTag;
-const tagPrefix = process.env.INPUT_TAG_PREFIX || 'DEFAULT_PREFIX';
-console.log(`Tag Prefix: [${tagPrefix}]`);
+const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
 const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
+let newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+console.log(`Tag Prefix: [${tagPrefix}]`);
+console.log(`Creating new tag: ${newTag}`);
+
 if (process.env.INPUT_SKIP_TAG !== 'true') {
-    newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
-    console.log(`Creating new tag: ${newTag}`);
     execSync(`git tag ${newTag}`, { stdio: 'inherit' });
     fs.writeFileSync(`${process.env.GITHUB_ENV}`, `newTag=${newTag}\n`, { flag: 'a' });
 }
