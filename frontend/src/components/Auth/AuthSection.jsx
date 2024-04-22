@@ -22,6 +22,7 @@ const AuthSection = () => {
             const response = await apiLogin(authCode);
             if (response.access_token) {
                 localStorage.setItem("access_token", response.access_token);
+                localStorage.setItem("refresh_token", response.refresh_token);
                 dispatch(login());
                 if (!activeUser) await setActiveUser(response.access_token, dispatch);
                 if (response.is_new_user) {
@@ -107,7 +108,7 @@ const AuthSection = () => {
                             <User />
                         </div>
                         <div className="padding-right-205">
-                            <NotificationCenter />
+                            <NotificationCenter user={activeUser} />
                         </div>
                         <button
                             className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"

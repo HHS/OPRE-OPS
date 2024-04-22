@@ -195,7 +195,10 @@ export const opsApi = createApi({
             providesTags: ["CanFunding"]
         }),
         getNotificationsByUserId: builder.query({
-            query: (id) => `/notifications/?oidc_id=${id}`,
+            query: ({ id, auth_header }) => ({
+                url: `/notifications/?oidc_id=${id}`,
+                headers: { Authorization: auth_header }
+            }),
             providesTags: ["Notifications"]
         }),
         dismissNotification: builder.mutation({

@@ -9,8 +9,8 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 
 from models.users import User
-from ops_api.ops.utils.auth import create_oauth_jwt
-from ops_api.ops.utils.authorization import AuthorizationGateway, AuthorizationProvider
+from ops_api.ops.auth.authorization_providers import AuthorizationGateway
+from ops_api.ops.auth.utils import create_oauth_jwt
 
 key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
 
@@ -64,7 +64,7 @@ def test_create_access_token(loaded_db, app):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_authorization_gateway_authorize_successful(mocker):
-    class MockAuthorizationProvider(AuthorizationProvider):
+    class MockAuthorizationProvider:
         def is_authorized(self, user_id: str, permission: list[str]):
             return True
 

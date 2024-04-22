@@ -8,9 +8,6 @@ from ops_api.ops.views import (
     AGREEMENT_LIST_API_VIEW_FUNC,
     AGREEMENT_REASON_LIST_API_VIEW_FUNC,
     AGREEMENT_TYPE_LIST_API_VIEW_FUNC,
-    AUTH_LOGIN_API_VIEW_FUNC,
-    AUTH_LOGOUT_API_VIEW_FUNC,
-    AUTH_REFRESH_API_VIEW_FUNC,
     AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
@@ -79,18 +76,6 @@ from ops_api.ops.views import (
 
 
 def register_api(api_bp: Blueprint) -> None:
-    api_bp.add_url_rule(
-        "/auth/login/",
-        view_func=AUTH_LOGIN_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/auth/logout/",
-        view_func=AUTH_LOGOUT_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/auth/refresh/",
-        view_func=AUTH_REFRESH_API_VIEW_FUNC,
-    )
     api_bp.add_url_rule(
         "/health/",
         view_func=HEALTH_CHECK_VIEW_FUNC,
