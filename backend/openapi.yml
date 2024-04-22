@@ -1519,6 +1519,35 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
+  /api/v1/change-request-reviews/:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+      description: approve or reject a change request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                change_request_id:
+                  type: integer
+                action:
+                  type: string
+                  description: 'APROVE or REJECT'
+            examples:
+              '0':
+                value: >-
+                  {"change_request_id": 123, "action": "APPROVE"}
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
 
 components:
   parameters:
