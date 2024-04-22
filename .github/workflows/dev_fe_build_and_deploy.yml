@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - 'renovate/azure-container-apps-deploy-action-2.x'
     paths:
       - 'frontend/**'
       
