@@ -10,6 +10,7 @@ from marshmallow_enum import EnumField
 
 from models import AgreementReason, BudgetLineItemStatus
 from models.cans import BudgetLineItem, ServicesComponent
+from ops_api.ops.schemas.users import UserRef
 
 ENDPOINT_STRING = "/budget-line-items"
 
@@ -240,9 +241,15 @@ class BLITeamMembers:
 
 
 @dataclass
-class ChangeRequest:
+class BudgetLineItemChangeRequest:
     id: int
+    type: str
+    budget_line_item_id: int
+    has_budget_changes: bool
+    has_status_change: bool
     requested_changes: dict
+    created_by: int
+    created_by_user: Optional[UserRef] = None
 
 
 @dataclass
@@ -264,5 +271,5 @@ class BudgetLineItemResponse:
     team_members: Optional[list[BLITeamMembers]] = field(default_factory=lambda: [])
     has_active_workflow: bool = False
     services_component_id: Optional[int] = None
-    # change_requests_in_review: Optional[list[ChangeRequest]] = field(default_factory=lambda: [])
-    change_requests_in_review: Optional[list[dict]] = field(default_factory=lambda: [])
+    change_requests_in_review: Optional[list[BudgetLineItemChangeRequest]] = field(default_factory=lambda: [])
+    # change_requests_in_review: Optional[list[dict]] = field(default_factory=lambda: [])

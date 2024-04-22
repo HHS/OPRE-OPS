@@ -178,26 +178,22 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
-    import json
-
-    print("~~~BLI PATCH response~~~", json.dumps(resp_json, indent=2))
-
-    assert "change_request_ids" in resp_json
-    change_request_ids = resp_json["change_request_ids"]
+    assert "change_requests_in_review" in resp_json
+    change_requests_in_review = resp_json["change_requests_in_review"]
+    assert len(change_requests_in_review) == 3
 
     can_id_change_request_id = None
 
-    # verify each change request was created
-    for change_request_id in change_request_ids:
-        change_request = session.get(ChangeRequest, change_request_id)
-        assert change_request is not None
-        print("~~~change_request~~~\n", json.dumps(change_request.to_dict(), indent=2))
-        print("~~~requested_changes~~~\n", json.dumps(change_request.requested_changes, indent=2))
-        assert change_request.type == "budget_line_item_change_request"
-        assert change_request.budget_line_item_id == bli_id
-        assert change_request.has_budget_change is True
-        assert change_request.has_status_change is False
-        if "can_id" in change_request.requested_changes:
+    change_request_ids = []
+    for change_request in change_requests_in_review:
+        assert "id" in change_request
+        change_request_id = change_request["id"]
+        change_request_ids.append(change_request_id)
+        assert change_request["type"] == "budget_line_item_change_request"
+        assert change_request["budget_line_item_id"] == bli_id
+        assert change_request["has_budget_changes"] is True
+        assert change_request["has_status_change"] is False
+        if "can_id" in change_request["requested_changes"]:
             assert can_id_change_request_id is None
             can_id_change_request_id = change_request_id
 
@@ -209,29 +205,18 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     assert bli.amount == Decimal("111.11")
     assert bli.can_id == 1
     assert bli.date_needed is None
-    print(f"~~~{bli.change_request_ids_in_review=}~~~")
-    assert set(bli.change_request_ids_in_review) == set(change_request_ids)
-    print("~~~change_requests_in_review~~~", json.dumps(bli.change_request_ids_in_review, indent=2))
     assert len(bli.change_requests_in_review) == len(change_request_ids)
-
-    # verify the change requests exists in the list (IN_REVIEW)
-    response = auth_client.get(f"{url_for('api.change-request-list')}?budget_line_item_id={bli_id}&status=IN_REVIEW")
-    assert response.status_code == 200
-    resp_json = response.json
-    print("~~~change-request-list~~~", json.dumps(resp_json, indent=2))
-    assert len(resp_json) == len(change_request_ids)
+    assert bli.in_review is True
 
     # verify the change requests are in the BLI
     response = auth_client.get(url_for("api.budget-line-items-item", id=bli_id))
     assert response.status_code == 200
     resp_json = response.json
-    print("~~~BLI GET response~~~", json.dumps(resp_json, indent=2))
     assert "change_requests_in_review" in resp_json
 
     # review the change requests, reject the can_id change request and approve the others
     for change_request_id in change_request_ids:
         action = "REJECT" if change_request_id == can_id_change_request_id else "APPROVE"
-        print(f"~~~review_change_request~~~\n{change_request_id=}\n{action=}")
         data = {"change_request_id": change_request_id, "action": action}
         response = auth_client.post(url_for("api.change-request-review-list"), json=data)
         assert response.status_code == 200
@@ -241,14 +226,8 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     assert bli.amount == Decimal("222.22")
     assert bli.can_id == 1  # can_id change request was rejected
     assert bli.date_needed == datetime.date(2032, 2, 2)
-    assert bli.change_request_ids_in_review is None
-
-    # verify the change requests no longer are in the list (IN_REVIEW)
-    response = auth_client.get(f"{url_for('api.change-request-list')}?budget_line_item_id={bli_id}&status=IN_REVIEW")
-    assert response.status_code == 200
-    resp_json = response.json
-    print("~~~change-request-list~~~", json.dumps(resp_json, indent=2))
-    assert len(resp_json) == 0
+    assert bli.change_requests_in_review is None
+    assert bli.in_review is False
 
     # verify delete cascade
     session.delete(bli)

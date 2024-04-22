@@ -99,7 +99,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
             schema.context["id"] = id
-            # TODO: eliminate PUT to simplify change requests, etc?
             schema.context["method"] = method
 
             # determine if the BLI is in an editable state or one that supports change requests (requires approval)
@@ -107,17 +106,22 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             budget_line_item = current_app.db_session.get(BudgetLineItem, id)
             if not budget_line_item:
                 return make_response_with_headers({}, 400)  # should this return 404, tests currently expect 400
-            changeable = budget_line_item.status in [
+            editable = budget_line_item.status in [
                 BudgetLineItemStatus.DRAFT,
                 BudgetLineItemStatus.PLANNED,
                 BudgetLineItemStatus.IN_EXECUTION,
             ]
 
-            # TODO: check if pending change requests exist and if so, make this not changeable
+            # if the BLI is in review, it cannot be edited
+            if budget_line_item.in_review:
+                editable = False
 
-            # should we error if not changeable?
-            if not changeable:
+            # 403: forbidden to edit
+            if not editable:
                 return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
+
+            # determine if it can be edited directly or if a change request is required
+            directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
 
             # validate and normalize the request data
             change_data, changing_from_data = validate_and_prepare_change_data(
@@ -127,24 +131,25 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 ["id", "agreement_id"],
                 partial=False,
             )
-            print(f"~~~{change_data=}~~~")
-            print(f"~~~{changing_from_data=}~~~")
-
-            # determine if it can be edited directly or if a change request is required
-            directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
 
             changed_budget_props = list(set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names))
-            print(f"~~~{changed_budget_props=}")
-            # punting on status changes for now, this may turn into a Status ChangeRequest later,
-            # but not sure if it can contain other changes
-            status_change = change_data.pop("status", None)
-            print(f"~~~{status_change=}")
+            # TODO: convert legacy status change workflows to status change requests
+            #   until then, status changes are ignored here
+            change_data.pop("status", None)
             other_changed_props = list(set(change_data.keys()) - set(changed_budget_props))
-            print(f"~~~{other_changed_props=}")
 
             direct_change_data = {
                 key: value for key, value in change_data.items() if directly_editable or key in other_changed_props
             }
+
+            if direct_change_data:
+                update_data(budget_line_item, direct_change_data)
+                current_app.db_session.add(budget_line_item)
+                current_app.db_session.commit()
+                bli_dict = self._response_schema.dump(budget_line_item)
+                # TODO: what should this happen if there is not direct change data?
+                meta.metadata.update({"bli": bli_dict})
+                current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
             change_request_ids = []
 
@@ -153,38 +158,17 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 for changed_prop_key in changed_budget_props:
                     change_request = BudgetLineItemChangeRequest()
                     change_request.budget_line_item_id = id
-                    # what schema should be used here, PATCH schema or __marshmallow__ ?
                     schema = budget_line_item.__marshmallow__(only=[changed_prop_key])
-                    # schema = budget_line_item.__marshmallow__()
                     change_request.requested_changes = schema.dump(change_data)
-                    # revert the budget_line_item and save the new change request
-                    current_app.db_session.refresh(budget_line_item)
                     current_app.db_session.add(change_request)
                     current_app.db_session.commit()
                     change_request_ids.append(change_request.id)
 
-            if not directly_editable:
-                return make_response_with_headers(
-                    {"message": "Change requests created", "change_request_ids": change_request_ids}, 202
-                )
-
-            if directly_editable:
-                update_data(budget_line_item, direct_change_data)
-                current_app.db_session.add(budget_line_item)
-                current_app.db_session.commit()
-                bli_dict = self._response_schema.dump(budget_line_item)
-                meta.metadata.update({"bli": bli_dict})
-                current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
-                if change_request_ids:
-                    return make_response_with_headers(
-                        {
-                            "message": "Partial updates made and change requests created",
-                            "change_request_ids": change_request_ids,
-                        },
-                        202,
-                    )
-                else:
-                    return make_response_with_headers(bli_dict, 200)
+            bli_dict = self._response_schema.dump(budget_line_item)
+            if change_request_ids:
+                return make_response_with_headers(bli_dict, 202)
+            else:
+                return make_response_with_headers(bli_dict, 200)
 
     @override
     @is_authorized(

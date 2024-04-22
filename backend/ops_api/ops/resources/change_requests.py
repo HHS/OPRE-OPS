@@ -29,11 +29,9 @@ def review_change_request(
     # If approved, then apply the changes
     if status_after_review == ChangeRequestStatus.APPROVED:
         if isinstance(change_request, BudgetLineItemChangeRequest):
-            print("~~~BudgetLineItemChangeRequest~~~")
             budget_line_item = session.get(BudgetLineItem, change_request.budget_line_item_id)
             # need to copy to avoid changing the original data in the ChangeRequest and triggering an update
             data = copy.deepcopy(change_request.requested_changes)
-            print(f"~~~data~~~\n{data}")
             schema = mmdc.class_schema(PATCHRequestBody)()
             schema.context["id"] = change_request.budget_line_item_id
             schema.context["method"] = "PATCH"
@@ -54,6 +52,7 @@ def review_change_request(
     return change_request
 
 
+# TODO: Implement the queries needs for the For Approvals page, for now it's just a placeholder
 class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)

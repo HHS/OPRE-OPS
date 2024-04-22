@@ -597,24 +597,6 @@ class BudgetLineItem(BaseModel):
         return current_workflow_step_instance_id
 
     @property
-    def change_request_ids_in_review(self):
-        if object_session(self) is None:
-            return None
-        results = (
-            object_session(self)
-            .execute(
-                select(BudgetLineItemChangeRequest.id)
-                .where(BudgetLineItemChangeRequest.budget_line_item_id == self.id)
-                .where(
-                    BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW
-                )
-            )
-            .all()
-        )
-        ids = [row[0] for row in results] if results else None
-        return ids
-
-    @property
     def change_requests_in_review(self):
         if object_session(self) is None:
             return None
@@ -629,8 +611,12 @@ class BudgetLineItem(BaseModel):
             )
             .all()
         )
-        ids = [row[0].to_dict() for row in results] if results else None
-        return ids
+        change_requests = [row[0] for row in results] if results else None
+        return change_requests
+
+    @property
+    def in_review(self):
+        return self.change_requests_in_review is not None or self.has_active_workflow
 
 
 class CAN(BaseModel):

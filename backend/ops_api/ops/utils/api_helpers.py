@@ -34,7 +34,6 @@ def get_change_data(
 def validate_and_prepare_change_data(
     request_json, model_instance: BaseModel, schema: Schema, protected=None, partial: bool = False
 ) -> dict[str, Any]:
-    print(f"~~~validate_and_prepare_change_data~~~\n{request_json=}\n{protected=}\n{partial=}")
     if protected is None:
         protected = ["id"]
     try:
@@ -43,7 +42,6 @@ def validate_and_prepare_change_data(
         }  # only keep the attributes from the request body and omit protected ones
     except AttributeError:
         old_data = {}
-    print("~~~old_data (filtered vars)~~~\n", old_data)
 
     # load and validate the request data
     # schema.load will run the validator and throw a ValidationError if it fails
@@ -55,9 +53,7 @@ def validate_and_prepare_change_data(
         for key, value in vars(loaded_data).items()
         if key not in protected and key in request_json and value != old_data.get(key, None)
     }
-    print("~~~change_data_dict~~~\n", change_data_dict)
     filtered_old_data = {key: value for key, value in old_data.items() if key in change_data_dict}
-    print("~~~filtered_old_data~~~\n", filtered_old_data)
 
     return change_data_dict, filtered_old_data
 
