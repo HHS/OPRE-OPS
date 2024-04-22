@@ -1957,6 +1957,11 @@ components:
               { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
               { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
               ]
+        change_requests_in_review:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/BudgetLineItem"
         created_on:
           $ref: '#/components/parameters/created_on'
         updated_on:
@@ -2002,6 +2007,34 @@ components:
         - amount
         - status
         - date_needed
+
+    BudgetLineItemChangeRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: 'budget_line_item_change_request'
+        budget_line_item_id:
+          type: integer
+          example: 1
+        has_budget_changes:
+          type: boolean
+          example: True
+        has_status_changes:
+          type: boolean
+          example: False
+        requested_changes:
+          description: JSON for the request changes
+          type: object
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        created_on:
+          $ref: '#/components/parameters/created_on'
 
     ResearchProjectRequest:
       type: object

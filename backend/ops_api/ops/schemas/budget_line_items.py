@@ -10,7 +10,7 @@ from marshmallow_enum import EnumField
 
 from models import AgreementReason, BudgetLineItemStatus
 from models.cans import BudgetLineItem, ServicesComponent
-from ops_api.ops.schemas.users import UserRef
+from ops_api.ops.schemas.users import SafeUser
 
 ENDPOINT_STRING = "/budget-line-items"
 
@@ -249,7 +249,8 @@ class BudgetLineItemChangeRequest:
     has_status_change: bool
     requested_changes: dict
     created_by: int
-    created_by_user: Optional[UserRef] = None
+    created_by_user: Optional[SafeUser] = None
+    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
 
 
 @dataclass

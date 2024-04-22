@@ -19,7 +19,7 @@ class SafeUserSchema(Schema):
 # marshmallow.exceptions.RegistryError: Multiple classes with name 'SafeUserSchema' were found. Please use the full, module-qualified path.
 # so I'm using this instead:
 @dataclass
-class UserRef:
+class SafeUser:
     id: int
     full_name: Optional[str] = None
 
