@@ -1,12 +1,12 @@
 import App from "../App";
-import DateRangePicker from "../components/UI/USWDS/DateRangePicker";
+import DateRangePickerWrapper from "../components/UI/USWDS/DateRangePickerWrapper";
 import DatePicker from "../components/UI/USWDS/DatePicker";
 
 const DateRangePickerPage = () => {
     return (
         <App>
             <div className="display-flex flex-justify-center">
-                <DateRangePicker id="date-range-picker">
+                <DateRangePickerWrapper id="date-range-picker">
                     <DatePicker
                         id="event-date-start"
                         name="event-date-start"
@@ -20,7 +20,7 @@ const DateRangePickerPage = () => {
                         label="Event end date"
                         aria-describedby="event-date-end-label event-date-end-hint"
                     />
-                </DateRangePicker>
+                </DateRangePickerWrapper>
             </div>
         </App>
     );

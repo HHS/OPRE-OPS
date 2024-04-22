@@ -4,7 +4,7 @@ import dateRangePicker from "@uswds/uswds/js/usa-date-range-picker";
 /**
  * A date range picker helps users select a range between two dates.
  */
-function DateRangePicker({ id, children }) {
+function DateRangePickerWrapper({ id, children }) {
     const dateRangePickerRef = React.useRef(null);
     React.useLayoutEffect(() => {
         const dateRangePickerElement = dateRangePickerRef.current;
@@ -23,4 +23,4 @@ function DateRangePicker({ id, children }) {
     );
 }
 
-export default DateRangePicker;
+export default DateRangePickerWrapper;
