@@ -23,4 +23,9 @@ jobs:
         with:
           tag-prefix:  'ops-frontend-v'
           PACKAGEJSON_DIR:  'frontend'
-  
+      
+      - name: Use the New Tag
+        run: |
+          echo "The new tag is $NEW_TAG"
+          echo "The version is $NEW_VERSION"
+          # You can use $NEW_TAG in any command here
