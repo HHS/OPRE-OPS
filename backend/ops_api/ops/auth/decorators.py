@@ -8,7 +8,7 @@ from models import UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_extra, _check_groups, _check_role
 from ops_api.ops.auth.exceptions import ExtraCheckError, NotActiveUserError
-from ops_api.ops.auth.utils import get_user_from_token
+from ops_api.ops.auth.utils import get_user_from_sub
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -31,7 +31,7 @@ def is_user_active(f):
         if not user_info:
             raise NotActiveUserError(f"Unable to get user_info for token={token}")
 
-        user = get_user_from_token(user_info)
+        user = get_user_from_sub(user_info.get("sub"))
         if not user or user.status != UserStatus.ACTIVE:
             raise NotActiveUserError(f"User with token={token} is not active")
 

@@ -109,7 +109,7 @@ def decode_user(
 
 
 def register_user(userinfo: UserInfoDict) -> User:
-    user = get_user_from_token(userinfo)
+    user = get_user_from_sub(userinfo.get("sub"))
     if user:
         return user, False
     else:
@@ -134,14 +134,6 @@ def register_user(userinfo: UserInfoDict) -> User:
             return None, False
 
 
-def get_user_from_token(userinfo: UserInfoDict) -> Optional[User]:
-    if userinfo is None:
-        return None
-    try:
-        stmt = select(User).where((User.oidc_id == userinfo["sub"]))
-        users = current_app.db_session.execute(stmt).all()
-        if users and len(users) == 1:
-            return users[0][0]
-    except Exception as e:
-        current_app.logger.debug(f"User Lookup Error: {e}")
-        return None
+def get_user_from_sub(sub: str) -> Optional[User]:
+    stmt = select(User).where((User.oidc_id == sub))
+    return current_app.db_session.scalars(stmt).one_or_none()

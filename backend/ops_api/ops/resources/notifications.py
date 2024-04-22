@@ -7,7 +7,7 @@ from typing import Optional, cast
 import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import current_user
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
@@ -16,7 +16,6 @@ from typing_extensions import override
 from models import Notification, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.auth.utils import get_user_from_token
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -228,7 +227,5 @@ def is_acknowledging(notification: Notification | None):
 
 
 def check_can_acknowledge(notification):
-    token = verify_jwt_in_request()
-    user = get_user_from_token(token[1])
-    if notification and notification.recipient_id != user.id:
+    if notification and notification.recipient_id != current_user.id:
         raise RuntimeError("Cannot acknowledge a notification for another user")

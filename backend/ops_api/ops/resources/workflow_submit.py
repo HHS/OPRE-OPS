@@ -3,7 +3,7 @@ from datetime import date, datetime
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import current_user
 from marshmallow import EXCLUDE, Schema, fields
 from typing_extensions import override
 
@@ -21,7 +21,6 @@ from models.workflows import (
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.auth.utils import get_user_from_token
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
 from ops_api.ops.utils.response import make_response_with_headers
@@ -68,9 +67,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         if submitter_id := request.json.get("submitter_id"):
             new_package.submitter_id = submitter_id
 
-        token = verify_jwt_in_request()
-        user = get_user_from_token(token[1])
-        new_package.submitter_id = user.id
+        new_package.submitter_id = current_user.id
         new_package.notes = submission_notes
         agreement_id = None
         # Create PackageSnapshot
