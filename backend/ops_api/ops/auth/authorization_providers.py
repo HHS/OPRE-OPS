@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
 from flask import current_app
-from flask_jwt_extended import get_current_user, get_jwt_identity
+from flask_jwt_extended import current_user, get_jwt_identity
 from sqlalchemy import select
 
 from models.users import User
@@ -35,8 +35,7 @@ def _check_role(permission_type: PermissionType, permission: Permission) -> bool
 def _check_groups(groups: Optional[list[str]]) -> bool:
     auth_group = False
     if groups is not None:
-        user = get_current_user()
-        auth_group = len(set(groups) & {g.name for g in user.groups}) > 0
+        auth_group = len(set(groups) & {g.name for g in current_user.groups}) > 0
     return auth_group
 
 

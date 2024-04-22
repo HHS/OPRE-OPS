@@ -5,13 +5,7 @@ from typing import Union
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app, request
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    get_current_user,
-    get_jwt_identity,
-    jwt_required,
-)
+from flask_jwt_extended import create_access_token, create_refresh_token, current_user, get_jwt_identity, jwt_required
 
 from models.events import OpsEventType
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
@@ -204,18 +198,14 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 @jwt_required(refresh=True, verify_type=True)
 @error_simulator
 def refresh() -> Response:
-    user = get_current_user()
-    if user:
-        additional_claims = {"roles": []}
-        current_app.logger.debug(f"user {user}")
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-        access_token = create_access_token(
-            identity=user,
-            expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
-            additional_claims=additional_claims,
-            fresh=False,
-        )
-        return make_response_with_headers({"access_token": access_token})
-    else:
-        return make_response_with_headers({"message": "Invalid User"}, 401)
+    additional_claims = {"roles": []}
+    current_app.logger.debug(f"user {current_user}")
+    if current_user.roles:
+        additional_claims["roles"] = [role.name for role in current_user.roles]
+    access_token = create_access_token(
+        identity=current_user,
+        expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
+        additional_claims=additional_claims,
+        fresh=False,
+    )
+    return make_response_with_headers({"access_token": access_token})

@@ -7,15 +7,13 @@ from enum import Enum
 from types import NoneType
 
 from flask import current_app
-from flask_jwt_extended import verify_jwt_in_request
-from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_jwt_extended import current_user
 from sqlalchemy import inspect
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
 
-from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
-from ops_api.ops.auth.utils import get_user_from_token
+from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent
 
 DbRecordAudit = namedtuple("DbRecordAudit", "row_key changes")
 
@@ -140,18 +138,6 @@ def track_db_history_catch_errors(exception_context):
 def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
     result = []
 
-    # Get the current user for setting created_by.  This depends on there being a web request with a valid JWT.
-    # If a user cannot be obtained, it will still add the history record without the user.id
-    user: User | None = None
-    try:
-        token = verify_jwt_in_request()
-        user = get_user_from_token(token[1] if token else None)
-    except NoAuthorizationError:
-        current_app.logger.warning("JWT is invalid")
-    except Exception as e:
-        # Is there's not a request, then a RuntimeError occurs
-        current_app.logger.info(f"Failed trying to get the user from the request. {type(e)}: {e}")
-
     for obj in objs:
         if not isinstance(
             obj, (OpsEvent, OpsDBHistory)  # , WorkflowInstance, WorkflowStepInstance, PackageSnapshot, Package)
@@ -167,7 +153,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
             ops_db = OpsDBHistory(
                 event_type=event_type,
                 event_details=obj.to_dict(),
-                created_by=user.id if user else None,
+                created_by=current_user.id if current_user else None,
                 class_name=obj.__class__.__name__,
                 row_key=db_audit.row_key,
                 changes=db_audit.changes,
