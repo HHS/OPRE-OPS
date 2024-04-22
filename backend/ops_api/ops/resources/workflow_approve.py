@@ -17,12 +17,12 @@ from models.workflows import (
     WorkflowStepInstance,
     WorkflowStepStatus,
 )
-from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.auth.utils import get_user_from_token
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.utils.procurement_workflow_helper import create_procurement_workflow
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 ENDPOINT_STRING = "/workflow-approve"
 

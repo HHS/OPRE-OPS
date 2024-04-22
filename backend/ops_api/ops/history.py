@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
 
 from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
-from ops_api.ops.utils.user import get_user_from_token
+from ops_api.ops.auth.utils import get_user_from_token
 
 DbRecordAudit = namedtuple("DbRecordAudit", "row_key changes")
 

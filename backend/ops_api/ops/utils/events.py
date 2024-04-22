@@ -9,7 +9,7 @@ from werkzeug.exceptions import UnsupportedMediaType
 
 from models import User
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
-from ops_api.ops.utils.user import get_user_from_token
+from ops_api.ops.auth.utils import get_user_from_token
 
 
 class OpsEventHandler:

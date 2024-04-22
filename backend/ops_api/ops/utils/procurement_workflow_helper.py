@@ -26,7 +26,7 @@ from models import (
 
 # from sqlalchemy import select
 
-# from ops_api.ops.utils.user import get_user_from_token
+# from ops_api.ops.auth.utils import get_user_from_token
 
 PROCUREMENT_WORKFLOW_TEMPLATE_NAME = "Procurement Tracker"
 

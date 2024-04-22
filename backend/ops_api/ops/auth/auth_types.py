@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Optional, TypedDict
 
 
 class PermissionType(Enum):
@@ -23,3 +24,9 @@ class Permission(Enum):
     USER = auto()
     WORKFLOW = auto()
     SERVICES_COMPONENT = auto()
+
+
+class UserInfoDict(TypedDict):
+    sub: str
+    email: Optional[str]
+    given_name: Optional[str]

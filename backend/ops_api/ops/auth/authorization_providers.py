@@ -5,7 +5,7 @@ from flask_jwt_extended import get_current_user, get_jwt_identity
 from sqlalchemy import select
 
 from models.users import User
-from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_gateway import AuthorizationGateway
 
 

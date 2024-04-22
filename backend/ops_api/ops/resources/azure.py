@@ -5,7 +5,7 @@ from azure.storage.blob import BlobSasPermissions, generate_blob_sas
 from flask import Response, current_app
 from flask.views import MethodView
 
-from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import handle_api_error
 from ops_api.ops.utils.response import make_response_with_headers

@@ -5,12 +5,12 @@ from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 
 from models import UserStatus
-from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_extra, _check_groups, _check_role
 from ops_api.ops.auth.exceptions import ExtraCheckError, NotActiveUserError
+from ops_api.ops.auth.utils import get_user_from_token
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 
 def is_user_active(f):
