@@ -1941,7 +1941,7 @@ components:
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/BudgetLineItem"
+          - $ref: "#/components/schemas/BudgetLineItemChangeRequest"
 
     BudgetLineItem:
       type: object

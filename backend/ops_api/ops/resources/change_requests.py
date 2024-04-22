@@ -53,7 +53,7 @@ def review_change_request(
     return change_request
 
 
-# TODO: Implement the queries needs for the For Approvals page, for now it's just a placeholder
+# TODO: Implement the queries needed for the For Approvals page, for now it's just a placeholder
 class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
@@ -85,7 +85,6 @@ class ChangeRequestListAPI(BaseListAPI):
         if change_requests:
             response = make_response_with_headers([change_request.to_dict() for change_request in change_requests])
         else:
-            # response = make_response_with_headers({}, 404)
             response = make_response_with_headers([], 200)
         return response
 
@@ -93,8 +92,6 @@ class ChangeRequestListAPI(BaseListAPI):
 class ChangeRequestReviewAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
-        # self._response_schema = ContractAgreementResponse()
-        # self._response_schema_collection = ContractAgreementResponse(many=True)
 
     @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
     def post(self) -> Response:
@@ -108,12 +105,6 @@ class ChangeRequestReviewAPI(BaseListAPI):
         else:
             raise ValueError(f"Invalid action: {action}")
 
-        # schema = mmdc.class_schema(ChangeRequestReviewRequest)()
-        # schema.context["method"] = "POST"
-        # data = schema.load(request_json, unknown=EXCLUDE)
-        # change_request_id = data["change_request_id"]
-        # status_after_review = data["status"]
-
         token = verify_jwt_in_request()
         user = get_user_from_token(token[1])
         reviewed_by_user_id = user.id
@@ -121,26 +112,3 @@ class ChangeRequestReviewAPI(BaseListAPI):
         change_request = review_change_request(change_request_id, status_after_review, reviewed_by_user_id)
 
         return make_response_with_headers(change_request.to_dict(), 200)
-
-    # @override
-    # @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
-    # @handle_api_error
-    # def post(self) -> Response:
-    #     message_prefix = f"POST to {ENDPOINT_STRING}"
-    #     with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
-    #         self._post_schema.context["method"] = "POST"
-    #
-    #         data = self._post_schema.dump(self._post_schema.load(request.json))
-    #         data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
-    #         data = convert_date_strings_to_dates(data)
-    #
-    #         new_bli = BudgetLineItem(**data)
-    #
-    #         current_app.db_session.add(new_bli)
-    #         current_app.db_session.commit()
-    #
-    #         new_bli_dict = self._response_schema.dump(new_bli)
-    #         meta.metadata.update({"new_bli": new_bli_dict})
-    #         current_app.logger.info(f"{message_prefix}: New BLI created: {new_bli_dict}")
-    #
-    #         return make_response_with_headers(new_bli_dict, 201)
