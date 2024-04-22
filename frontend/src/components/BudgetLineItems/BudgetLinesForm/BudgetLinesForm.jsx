@@ -8,6 +8,7 @@ import CurrencyInput from "./CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import DatePicker from "../../UI/USWDS/DatePicker";
 import suite from "./suite";
+import datePickerSuite from "./datePickerSuite";
 
 /**
  * A form for creating or editing a budget line.
@@ -31,28 +32,31 @@ import suite from "./suite";
  * @param {function} props.handleAddBLI - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
+ * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @param {number} props.agreementId - The agreement ID.
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBudgetLinesForm = ({
+    agreementId,
     selectedCan,
-    servicesComponentId,
-    enteredAmount,
-    enteredComments,
-    isEditing,
-    setServicesComponentId,
     setSelectedCan,
+    servicesComponentId,
+    setServicesComponentId,
+    enteredAmount,
     setEnteredAmount,
+    enteredComments,
+    setEnteredComments,
     needByDate,
     setNeedByDate,
-    setEnteredComments,
     handleEditBLI = () => {},
     handleAddBLI = () => {},
     handleResetForm = () => {},
+    isEditing,
     isReviewMode,
-    agreementId
+    isEditMode
 }) => {
     let res = suite.get();
+    let dateRes = datePickerSuite.get();
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -83,6 +87,18 @@ export const CreateBudgetLinesForm = ({
             name
         );
     };
+
+    const validateDatePicker = (name, value) => {
+        datePickerSuite(
+            {
+                needByDate,
+                ...{ [name]: value }
+            },
+            name
+        );
+    };
+    const isFormNotValid =
+        (isEditMode && dateRes.hasErrors()) || (isReviewMode && (res.hasErrors() || !isFormComplete));
 
     return (
         <form className="grid-row grid-gap margin-y-3">
@@ -125,14 +141,17 @@ export const CreateBudgetLinesForm = ({
                     hint="MM/DD/YYYY"
                     aria-describedby="need-by-date-hint"
                     aria-labelledby="need-by-date-label"
-                    messages={res.getErrors("needByDate")}
+                    messages={[...(res.getErrors("needByDate") || []), ...(dateRes.getErrors("needByDate") || [])]}
                     className={cn("needByDate")}
                     value={needByDate}
                     onChange={(e) => {
+                        setNeedByDate(e.target.value);
+                        if (isEditMode) {
+                            validateDatePicker("needByDate", e.target.value);
+                        }
                         if (isReviewMode) {
                             runValidate("needByDate", e.target.value);
                         }
-                        setNeedByDate(e.target.value);
                     }}
                 />
                 <CurrencyInput
@@ -166,6 +185,7 @@ export const CreateBudgetLinesForm = ({
                             className="usa-button usa-button--unstyled margin-top-2 margin-right-2"
                             onClick={(e) => {
                                 e.preventDefault();
+                                datePickerSuite.reset();
                                 handleResetForm();
                                 if (isReviewMode) {
                                     suite.reset();
@@ -177,7 +197,7 @@ export const CreateBudgetLinesForm = ({
                         <button
                             className="usa-button usa-button--outline margin-top-2 margin-right-0"
                             data-cy="update-budget-line"
-                            disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
+                            disabled={isFormNotValid}
                             onClick={handleEditBLI}
                         >
                             Update Budget Line
@@ -187,7 +207,7 @@ export const CreateBudgetLinesForm = ({
                     <button
                         id="add-budget-line"
                         className="usa-button usa-button--outline margin-top-2 float-right margin-right-0"
-                        disabled={isReviewMode && (res.hasErrors() || !isFormComplete)}
+                        disabled={isFormNotValid}
                         onClick={handleAddBLI}
                     >
                         <FontAwesomeIcon
@@ -203,25 +223,23 @@ export const CreateBudgetLinesForm = ({
 };
 
 CreateBudgetLinesForm.propTypes = {
+    agreementId: PropTypes.number,
     selectedCan: PropTypes.object,
-    servicesComponentId: PropTypes.number,
-    enteredAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    enteredMonth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    enteredDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    enteredYear: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    enteredComments: PropTypes.string,
-    isEditing: PropTypes.bool,
-    setServicesComponentId: PropTypes.func,
     setSelectedCan: PropTypes.func,
+    servicesComponentId: PropTypes.number,
+    setServicesComponentId: PropTypes.func,
+    enteredAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     setEnteredAmount: PropTypes.func,
+    enteredComments: PropTypes.string,
+    setEnteredComments: PropTypes.func,
     needByDate: PropTypes.string,
     setNeedByDate: PropTypes.func,
-    setEnteredComments: PropTypes.func,
-    handleAddBLI: PropTypes.func,
     handleEditBLI: PropTypes.func,
+    handleAddBLI: PropTypes.func,
     handleResetForm: PropTypes.func,
+    isEditing: PropTypes.bool,
     isReviewMode: PropTypes.bool,
-    agreementId: PropTypes.number
+    isEditMode: PropTypes.bool
 };
 
 export default CreateBudgetLinesForm;

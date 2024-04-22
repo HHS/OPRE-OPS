@@ -12,7 +12,7 @@ jobs:
       image: returntocorp/semgrep@sha256:9a0d7eff0a5dcb63d718614b328d179f30c04c7a4b8d99c9744ab893e84522a3 # 1.47.0
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # v4
 
       # We've changed the behavior a little, instead of forcing a fail on `semgrep scan` step
       # we force the upload, and manage any results in the sencondary CodeQL Analysis of the

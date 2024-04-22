@@ -211,6 +211,7 @@ export const CreateBLIsAndSCs = ({
                 handleResetForm={handleResetForm}
                 handleAddBLI={handleAddBLI}
                 isReviewMode={isReviewMode}
+                isEditMode={isEditMode}
                 agreementId={selectedAgreement.id}
             />
             {budgetLinePageErrorsExist && (
