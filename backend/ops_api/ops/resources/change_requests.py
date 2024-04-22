@@ -8,11 +8,12 @@ from sqlalchemy import select
 from typing_extensions import override
 
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus
+from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI, handle_api_error
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.user import get_user_from_token
 
