@@ -15,7 +15,7 @@ from sqlalchemy.exc import OperationalError
 
 from models import OpsDBHistory, OpsEvent
 from ops_api.ops import create_app
-from tests.ops.auth_client import AuthClient, NoPermsAuthClient
+from tests.auth_client import AuthClient, NoPermsAuthClient
 
 
 @pytest.fixture()

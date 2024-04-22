@@ -121,7 +121,7 @@ export const getAccessToken = () => {
     } else if (validToken.msg == "EXPIRED") {
         // lets try to get a new token
         // is the refresh token still valid?
-        callBackend("/api/v1/auth/refresh/", "POST", {}, null, true)
+        callBackend("/auth/refresh/", "POST", {}, null, true)
             .then((response) => {
                 localStorage.setItem("access_token", response.access_token);
                 return response.access_token;

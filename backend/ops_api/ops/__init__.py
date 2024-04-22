@@ -2,16 +2,17 @@ import logging.config
 import os
 from typing import Any, Optional
 
+from authlib.integrations.flask_client import OAuth
 from flask import Blueprint, Flask
 from flask_cors import CORS
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
+from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
-from ops_api.ops.utils.auth import jwtMgr, oauth
 
 
 def configure_logging(log_level: str = "INFO") -> None:
@@ -60,21 +61,32 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     if config_overrides is not None:
         app.config.from_mapping(config_overrides)
 
+    api_version = app.config.get("API_VERSION", "v1")
+
     cors_resources = {
         r"/api/*": {
             "origins": app.config.get("OPS_FRONTEND_URL"),
             "supports_credentials": True,
-        }
+        },
+        r"/auth/*": {
+            "origins": app.config.get("OPS_FRONTEND_URL"),
+            "supports_credentials": True,
+        },
     }
     CORS(app, resources=cors_resources)
 
     app.register_blueprint(home)
 
-    api_bp = Blueprint("api", __name__, url_prefix=f"/api/{app.config.get('API_VERSION', 'v1')}")
+    from ops_api.ops.auth import bp as auth_bp
+
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+
+    api_bp = Blueprint("api", __name__, url_prefix=f"/api/{api_version}")
     register_api(api_bp)
     app.register_blueprint(api_bp)
 
     jwtMgr.init_app(app)
+    oauth = OAuth()
     oauth.init_app(app)
 
     db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"))
