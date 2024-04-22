@@ -146,10 +146,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 update_data(budget_line_item, direct_change_data)
                 current_app.db_session.add(budget_line_item)
                 current_app.db_session.commit()
-                bli_dict = self._response_schema.dump(budget_line_item)
-                # TODO: what should this happen if there is not direct change data?
-                meta.metadata.update({"bli": bli_dict})
-                current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
 
             change_request_ids = []
 
@@ -165,6 +161,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     change_request_ids.append(change_request.id)
 
             bli_dict = self._response_schema.dump(budget_line_item)
+            meta.metadata.update({"bli": bli_dict})
+            current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
             if change_request_ids:
                 return make_response_with_headers(bli_dict, 202)
             else:
