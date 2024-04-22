@@ -14,9 +14,8 @@ from flask_jwt_extended import (
 )
 
 from models.events import OpsEventType
-from ops_api.ops.base_views import handle_api_error
-from ops_api.ops.utils.auth import create_oauth_jwt, decode_user
-from ops_api.ops.utils.authentication_gateway import AuthenticationGateway
+from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
+from ops_api.ops.auth.utils import create_oauth_jwt, decode_user, handle_api_error
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -144,7 +143,11 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
             additional_claims=additional_claims,
             fresh=True,
         )
-        refresh_token = create_refresh_token(identity=user, expires_delta=None, additional_claims=additional_claims)
+        refresh_token = create_refresh_token(
+            identity=user,
+            expires_delta=current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES"),
+            additional_claims=additional_claims,
+        )
     except Exception as e:
         current_app.logger.exception(e)
         return None, None, None, None
@@ -199,11 +202,9 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
 
 # We are using the `refresh=True` options in jwt_required to only allow
 # refresh tokens to access this route.
-@jwt_required(refresh=True, verify_type=True, locations="cookies")
+@jwt_required(refresh=True, verify_type=True)
 @error_simulator
 def refresh() -> Response:
-    refresh_token = request.cookies.get("refresh_token_cookie")
-    current_app.logger.debug(f"refresh_token={refresh_token}")
     user = get_current_user()
     if user:
         additional_claims = {"roles": []}
@@ -212,7 +213,7 @@ def refresh() -> Response:
             additional_claims["roles"] = [role.name for role in user.roles]
         access_token = create_access_token(
             identity=user,
-            expires_delta=None,
+            expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
             additional_claims=additional_claims,
             fresh=False,
         )

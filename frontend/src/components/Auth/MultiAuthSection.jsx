@@ -25,6 +25,7 @@ const MultiAuthSection = () => {
 
             const response = await apiLogin(activeProvider, authCode);
             const access_token = response.access_token;
+            const refresh_token = response.refresh_token;
 
             if (access_token === null || access_token === undefined) {
                 console.error("API Login Failed!");
@@ -35,6 +36,7 @@ const MultiAuthSection = () => {
                 // the data within the cookie; instead will need to do additional API calls
                 // to get the data we need.
                 localStorage.setItem("access_token", access_token);
+                localStorage.setItem("refresh_token", refresh_token);
                 dispatch(login());
 
                 if (response.is_new_user) {
