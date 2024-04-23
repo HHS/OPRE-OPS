@@ -14,10 +14,9 @@ from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-def login(code: str, provider: str, callbackUrl: str = None) -> dict[str, Any]:
+def login(code: str, provider: str) -> dict[str, Any]:
     current_app.logger.debug(f"login - auth_code: {code}")
     current_app.logger.debug(f"login - provider: {provider}")
-    current_app.logger.debug(f"callbackUrl - : {callbackUrl}")
 
     with current_app.app_context():
         auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))

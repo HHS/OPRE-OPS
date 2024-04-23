@@ -1,5 +1,3 @@
-from typing import Optional
-
 from marshmallow import Schema, fields
 
 from ops_api.ops.auth.auth_types import ProviderTypes
@@ -8,7 +6,6 @@ from ops_api.ops.auth.auth_types import ProviderTypes
 class LoginRequestSchema(Schema):
     code: str = fields.String(required=True)
     provider: ProviderTypes = fields.Enum(ProviderTypes, required=True)
-    callbackUrl: Optional[str] = fields.String()
 
 
 class LoginResponseSchema(Schema):
