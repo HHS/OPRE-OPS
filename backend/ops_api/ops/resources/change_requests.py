@@ -62,24 +62,12 @@ class ChangeRequestListAPI(BaseListAPI):
     @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
     @handle_api_error
     def get(self) -> Response:
-        print("~~~GET ChangeRequestListAPI~~~")
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
-        # status = request.args.get("status", ChangeRequestStatus.IN_REVIEW, type=lambda x: ChangeRequestStatus[x])
-        # status = request.args.get("status", "IN_REVIEW", type=str)
-        # agreement_id = request.args.get("agreement_id", None, type=int)
-        # budget_line_item_id = request.args.get("budget_line_item_id", None, type=int)
-
         stmt = select(ChangeRequest).where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
-        # if agreement_id:
-        #     stmt = stmt.where(ChangeRequest.agreement_id == agreement_id)
-        # if budget_line_item_id:
-        #     stmt = stmt.where(ChangeRequest.budget_line_item_id == budget_line_item_id)
-        # stmt = stmt.order_by(ChangeRequest.created_on.desc())
         stmt = stmt.limit(limit)
         if offset:
             stmt = stmt.offset(int(offset))
-        print("~~~stmt~~~", str(stmt))
         results = current_app.db_session.execute(stmt).all()
         change_requests = [row[0] for row in results] if results else None
         if change_requests:
