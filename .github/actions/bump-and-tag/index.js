@@ -74,9 +74,10 @@ if (process.env.INPUT_SKIP_COMMIT !== 'true') {
 }
 
 // Tagging
-const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
-const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
-const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
+const tagSuffix = process.env['INPUT_TAG-SUFFIX'] || '';
+let newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+console.log(`Tag Prefix: [${tagPrefix}]`);
 console.log(`Creating new tag: ${newTag}`);
 
 if (process.env.INPUT_SKIP_TAG !== 'true') {
