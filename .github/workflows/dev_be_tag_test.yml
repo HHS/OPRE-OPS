@@ -21,6 +21,7 @@ jobs:
         working-directory: ./.github/actions/bump-and-tag 
 
       - name:  'Automated Version Bump'
+        id: version_bump
         uses: ./.github/actions/bump-and-tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -39,3 +40,9 @@ jobs:
           check-last-commit-only: false
           custom-git-domain: 'github.com'
           push: true
+      
+      - name: Use the New Tag and Version
+        run: |
+          echo "The new tag is ${{ steps.version_bump.outputs.newTag }}"
+          echo "The new tag is ${{ env.newTag }}"
+          echo "The new version is ${{ env.newVersion }}"
