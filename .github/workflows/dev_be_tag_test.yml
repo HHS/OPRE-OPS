@@ -28,21 +28,14 @@ jobs:
         with:
           tag-prefix: 'ops-backend-v'
           OPENAPI_DIR: 'backend'
-          minor-wording: 'feat,minor'
-          major-wording: 'BREAKING CHANGE,major'
-          rc-wording: 'pre-alpha,pre-beta,pre-rc'
-          skip-tag: false
-          skip-commit: false
-          skip-push: false
-          default: patch
-          preid: rc
-          bump-policy: all
-          check-last-commit-only: false
-          custom-git-domain: 'github.com'
-          push: true
+      
+      - name: Extract Version
+        id: extract_version
+        run: |
+          VERSION=$(echo "${{ steps.openapi_bump.outputs.newTag }}" | sed -e 's/.*v\(.*\)/v\1/')
+          echo "::set-output name=version::$VERSION"
       
       - name: Use the New Tag and Version
         run: |
           echo "The new tag is ${{ steps.version_bump.outputs.newTag }}"
-          echo "The new tag is ${{ env.newTag }}"
-          echo "The new version is ${{ env.newVersion }}"
+          echo "The new tag is ${{ steps.extract_version.outputs.version }}"
