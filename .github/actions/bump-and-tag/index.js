@@ -30,14 +30,14 @@ if (process.env.INPUT_SKIP_COMMIT !== 'true') {
 }
 
 const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
-const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
+const tagSuffix = process.env['INPUT_TAG_SUFFIX'] || '';
 let newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
 console.log(`Tag Prefix: [${tagPrefix}]`);
 console.log(`Creating new tag: ${newTag}`);
 
 if (process.env.INPUT_SKIP_TAG !== 'true') {
     execSync(`git tag ${newTag}`, { stdio: 'inherit' });
-    fs.writeFileSync(`${process.env.GITHUB_ENV}`, `newTag=${newTag}\n`, { flag: 'a' });
+    console.log(`::set-output name=newTag::${newTag}`);
 }
 
 if (process.env.INPUT_SKIP_PUSH !== 'true') {
@@ -46,5 +46,3 @@ if (process.env.INPUT_SKIP_PUSH !== 'true') {
         execSync('git push --tags', { stdio: 'inherit' });
     }
 }
-
-fs.writeFileSync(`${process.env.GITHUB_ENV}`, `newVersion=${newVersion}\n`, { flag: 'a' });
