@@ -10,14 +10,44 @@ console.log('Current working directory:', process.cwd());
 const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
 const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8'));
 
-function updateVersion(currentVersion) {
+const majorWords = process.env['INPUT_MAJOR-WORDING'] ? process.env['INPUT_MAJOR-WORDING'].split(',') : [];
+const minorWords = process.env['INPUT_MINOR-WORDING'] ? process.env['INPUT_MINOR-WORDING'].split(',') : [];
+const patchWords = process.env['INPUT_PATCH-WORDING'] ? process.env['INPUT_PATCH-WORDING'].split(',') : [];
+
+function getCommitMessages() {
+    return execSync('git log --format=%B -n 1').toString().trim().split('\n');
+}
+
+function determineBumpType(messages) {
+    if (messages.some(msg => majorWords.some(word => msg.includes(word)))) {
+        return 'major';
+    } else if (messages.some(msg => minorWords.some(word => msg.includes(word)))) {
+        return 'minor';
+    } else if (messages.some(msg => patchWords.some(word => msg.includes(word)))) {
+        return 'patch';
+    }
+    return 'patch'; // default to patch if no specific keywords found
+}
+
+function updateVersion(currentVersion, bumpType) {
     const parts = currentVersion.split('.');
-    parts[2] = parseInt(parts[2], 10) + 1; // Increment patch version
+    if (bumpType === 'major') {
+        parts[0] = parseInt(parts[0], 10) + 1;
+        parts[1] = 0;
+        parts[2] = 0;
+    } else if (bumpType === 'minor') {
+        parts[1] = parseInt(parts[1], 10) + 1;
+        parts[2] = 0;
+    } else {
+        parts[2] = parseInt(parts[2], 10) + 1;
+    }
     return parts.join('.');
 }
 
+const messages = getCommitMessages();
+const bumpType = determineBumpType(messages);
 const oldVersion = openapi.info.version;
-const newVersion = updateVersion(oldVersion);
+const newVersion = updateVersion(oldVersion, bumpType);
 openapi.info.version = newVersion;
 fs.writeFileSync(openApiFilePath, yaml.dump(openapi), 'utf8');
 
