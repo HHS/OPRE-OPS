@@ -12,8 +12,9 @@ from models import CAN, Agreement, BudgetLineItem, MethodologyType, OpsEventType
 from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.projects import ResearchProject
+from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers

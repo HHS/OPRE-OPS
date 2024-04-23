@@ -9,6 +9,9 @@ from typing_extensions import override
 
 from models import OpsEventType, ServicesComponent
 from models.base import BaseModel
+from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.services_component import (
     PATCHRequestBody,
@@ -21,7 +24,6 @@ from ops_api.ops.utils.api_helpers import (
     get_change_data,
     update_and_commit_model_instance,
 )
-from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 

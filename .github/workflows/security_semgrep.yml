@@ -9,10 +9,10 @@ jobs:
     name: Semgrep Analyze
     runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep@sha256:2b5c02a935d30fb01ebe52f1603f587e368795b8873994a1e06d208266566b25 # 1.47.0
+      image: returntocorp/semgrep@sha256:ef98cda118efc433aacd4d8656e096204506060ff92385a85f63fae71bb10041 # 1.47.0
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # v4
 
       # We've changed the behavior a little, instead of forcing a fail on `semgrep scan` step
       # we force the upload, and manage any results in the sencondary CodeQL Analysis of the
@@ -25,7 +25,7 @@ jobs:
           SEMGREP_RULES: "p/default"
 
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
-        uses: github/codeql-action/upload-sarif@4355270be187e1b672a7a1c7c7bae5afdc1ab94a # v3
+        uses: github/codeql-action/upload-sarif@8f596b4ae3cb3c588a5c46780b86dd53fef16c52 # v3
         with:
           sarif_file: ${{ env.SEMGREP_TO_UPLOAD }}
         if: always()

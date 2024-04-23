@@ -67,8 +67,47 @@ describe("accordion", () => {
         cy.visit("/agreements/review/1");
         cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
         cy.get(".usa-accordion__content").should("not.be.hidden");
-        cy.get("@acc-btn").type("{enter}");
+        cy.get("@acc-btn").focus().type("{enter}");
         cy.get(".usa-accordion__content").should("be.hidden");
+    });
+});
+
+describe("DatePicker", () => {
+    it("should display date picker", () => {
+        cy.visit("/agreements/1/budget-lines");
+        cy.get("#edit").click();
+        cy.get("#uswds-date-need-by-date").should("exist");
+    });
+
+    it("should error if date is not in the future", () => {
+        cy.visit("/agreements/1/budget-lines");
+        cy.get("#edit").click();
+        cy.get("#uswds-date-need-by-date").as("need-by-date").type("01/01/2020").blur();
+        cy.get(".usa-error-message").should("exist");
+        cy.get("#add-budget-line").should("be.disabled");
+        cy.get("@need-by-date").clear();
+        cy.get("@need-by-date").type("01/01/2048").blur();
+        cy.get(".usa-error-message").should("not.exist");
+        cy.get("#add-budget-line").should("not.be.disabled");
+    });
+    it('should error if date is not in the format "MM/DD/YYYY"', () => {
+        cy.visit("/agreements/1/budget-lines");
+        cy.get("#edit").click();
+        cy.get("#uswds-date-need-by-date").as("need-by-date").type("01/01/20").blur();
+        cy.get(".usa-error-message").should("exist");
+        cy.get("#add-budget-line").should("be.disabled");
+        cy.get("@need-by-date").clear();
+        cy.get("@need-by-date").type("01/01/2048").blur();
+        cy.get(".usa-error-message").should("not.exist");
+        cy.get("#add-budget-line").should("not.be.disabled");
+        cy.get("@need-by-date").clear();
+        cy.get("@need-by-date").type("tacocat").blur();
+        cy.get(".usa-error-message").should("exist");
+        cy.get("#add-budget-line").should("be.disabled");
+        cy.get("@need-by-date").clear();
+        cy.get("@need-by-date").type("01/01/2048").blur();
+        cy.get(".usa-error-message").should("not.exist");
+        cy.get("#add-budget-line").should("not.be.disabled");
     });
 });
 
