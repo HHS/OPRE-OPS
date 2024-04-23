@@ -28,6 +28,8 @@ from models.base import BaseModel
 from models.portfolios import Portfolio
 from models.users import User
 from models.workflows import (
+    BudgetLineItemChangeRequest,
+    ChangeRequestStatus,
     Package,
     PackageSnapshot,
     WorkflowAction,
@@ -593,6 +595,28 @@ class BudgetLineItem(BaseModel):
             .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
         )
         return current_workflow_step_instance_id
+
+    @property
+    def change_requests_in_review(self):
+        if object_session(self) is None:
+            return None
+        results = (
+            object_session(self)
+            .execute(
+                select(BudgetLineItemChangeRequest)
+                .where(BudgetLineItemChangeRequest.budget_line_item_id == self.id)
+                .where(
+                    BudgetLineItemChangeRequest.status == ChangeRequestStatus.IN_REVIEW
+                )
+            )
+            .all()
+        )
+        change_requests = [row[0] for row in results] if results else None
+        return change_requests
+
+    @property
+    def in_review(self):
+        return self.change_requests_in_review is not None or self.has_active_workflow
 
 
 class CAN(BaseModel):
