@@ -12,11 +12,11 @@ console.log('Current working directory:', process.cwd());
 const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
 const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8'));
 
-// Configurable wordings from action inputs
-const majorWords = process.env.INPUT_MAJOR_WORDING.split(',').map(word => word.trim());
-const minorWords = process.env.INPUT_MINOR_WORDING.split(',').map(word => word.trim());
-const patchWords = process.env.INPUT_PATCH_WORDING ? process.env.INPUT_PATCH_WORDING.split(',').map(word => word.trim()) : [];
-const preReleaseWords = process.env.INPUT_RC_WORDING.split(',').map(word => word.trim());
+// Configurable wordings from action inputs, handling undefined cases
+const majorWords = (process.env.INPUT_MAJOR_WORDING || 'BREAKING CHANGE,major').split(',').map(word => word.trim());
+const minorWords = (process.env.INPUT_MINOR_WORDING || 'feat,minor').split(',').map(word => word.trim());
+const patchWords = (process.env.INPUT_PATCH_WORDING ? process.env.INPUT_PATCH_WORDING : '').split(',').map(word => word.trim());
+const preReleaseWords = (process.env.INPUT_RC_WORDING || 'pre-alpha,pre-beta,pre-rc').split(',').map(word => word.trim());
 
 // Function to fetch all recent commit messages
 function getCommitMessages() {
@@ -31,7 +31,7 @@ function determineBumpType(messages) {
         return 'minor';
     } else if (messages.some(msg => preReleaseWords.some(word => msg.includes(word)))) {
         return 'prerelease';
-    } else if (messages.some(msg => patchWords.some(word => msg.includes(word)))) {
+    } else if (messages.some(msg => patchWords && patchWords.some(word => msg.includes(word)))) {
         return 'patch';
     }
     return 'patch'; // Default bump type if no other wordings are matched
@@ -79,8 +79,8 @@ if (process.env.INPUT_SKIP_COMMIT !== 'true') {
 }
 
 // Tagging
-const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
-const tagSuffix = process.env['INPUT_TAG_SUFFIX'] || '';
+const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
+const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
 const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
 console.log(`Creating new tag: ${newTag}`);
 
