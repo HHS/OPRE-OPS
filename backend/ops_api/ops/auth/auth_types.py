@@ -30,3 +30,9 @@ class UserInfoDict(TypedDict):
     sub: str
     email: Optional[str]
     given_name: Optional[str]
+
+
+class ProviderTypes(Enum):
+    fakeauth = auto()
+    logingov = auto()
+    hhsams = auto()

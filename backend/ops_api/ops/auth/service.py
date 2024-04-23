@@ -22,12 +22,6 @@ def login(code, provider) -> Union[Response, tuple[str, int]]:
         auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
 
     with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
-        # if auth_code is None:
-        #     return "Invalid Auth Code", 400
-        #
-        # if provider not in auth_gateway.providers.keys():
-        #     return "Invalid provider name", 400
-
         token = auth_gateway.authenticate(provider, code)
 
         if not token:
