@@ -28,10 +28,10 @@ jobs:
       - name: Extract Version
         id: extract_version
         run: |
-          VERSION=$(echo "${{ steps.openapi_bump.outputs.newTag }}" | sed -e 's/.*v\(.*\)/v\1/')
+          VERSION=$(echo "${{ steps.version_bump.outputs.newTag }}" | sed -e 's/.*v\(.*\)/v\1/')
           echo "::set-output name=version::$VERSION"
       
       - name: Use the New Tag and Version
         run: |
           echo "The new tag is ${{ steps.version_bump.outputs.newTag }}"
-          echo "The new tag is ${{ steps.extract_version.outputs.version }}"
+          echo "The new version is ${{ steps.extract_version.outputs.version }}"
