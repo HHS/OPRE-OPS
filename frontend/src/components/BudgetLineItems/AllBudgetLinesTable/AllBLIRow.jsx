@@ -9,11 +9,14 @@ import TextClip from "../../UI/Text/TextClip";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
-import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import {
+    changeBgColorIfExpanded,
+    removeBorderBottomIfExpanded
+} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 /**
  * BLIRow component that represents a single row in the Budget Lines table.

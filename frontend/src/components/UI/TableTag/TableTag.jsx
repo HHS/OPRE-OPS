@@ -4,10 +4,11 @@ import Tag from "../Tag/Tag";
 
 /**
  * A component that displays a tag with a background color based on the status code.
+ * @component
  * @param {object} props - The component props.
  * @param {string} props.status - The status code to display.
  * @param {boolean} [props.inReview] - Whether or not the tag is in review.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 const TableTag = ({ status, inReview = false }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);

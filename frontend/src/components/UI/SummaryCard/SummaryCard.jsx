@@ -3,11 +3,12 @@ import RoundedBox from "../RoundedBox";
 
 /**
  * SummaryCard component
+ * @component
  * @param {Object} props - Properties passed to component
  * @param {string} [props.title] - The title of the card
  * @param {string} [props.dataCy] - The data-cy attribute to add to the card
  * @param {React.ReactNode} props.children - The children to render
- * @returns {React.JSX.Element} - The rendered component
+ * @returns {JSX.Element} - The rendered component
  */
 const SummaryCard = ({ title, children, dataCy = "", ...rest }) => {
     return (

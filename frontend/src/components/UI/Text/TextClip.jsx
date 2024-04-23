@@ -7,11 +7,12 @@ const { tooltip } = USWDS;
 
 /**
  * The TextClip component is a layout component to limit text to two lines and provide the full value in a tooltip
+ * @component
  * @param {object} props - The component props.
  * @param {string} [props.text] - The text
  * @param {string} [props.maxLines] - optional (default 2), the number of lines to display, default is 2
  * @param {number} [props.tooltipThreshold] - optional (default 50), minimum character length to add the enhanced tooltip
- * @returns {React.JSX.Element} - The rendered component
+ * @returns {JSX.Element} - The rendered component
  **/
 const TextClip = ({ text, maxLines = 2, tooltipThreshold = 40 }) => {
     const tooltipEnabled = text?.length > tooltipThreshold;

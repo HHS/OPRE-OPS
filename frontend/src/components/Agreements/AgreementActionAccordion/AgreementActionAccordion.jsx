@@ -5,11 +5,12 @@ import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.
 
 /**
  * Renders an accordion component with two radio button tiles for selecting an action.
+ * @component
  * @param {Object} props - The component props.
  * @param {Function} props.setAction - The function to call when an action is selected.
  * @param {boolean} [props.optionOneDisabled=false] - Whether the first radio button tile should be disabled.
  * @param {boolean} [props.optionTwoDisabled=false] - Whether the second radio button tile should be disabled.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, optionTwoDisabled = false }) => {
     return (
