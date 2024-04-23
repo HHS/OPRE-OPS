@@ -1,28 +1,24 @@
-from flask import Response
+from flask import Response, request
 
 from ops_api.ops.auth import bp
+from ops_api.ops.auth.schema import LoginSchema
 from ops_api.ops.auth.service import login, logout, refresh
 from ops_api.ops.auth.utils import handle_api_error
+from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-@handle_api_error
 @bp.route("/login/", methods=["POST"])
-def login_post() -> Response:
-    # TODO: Implement validation
-    # errors = self.validator.validate(self, request.json)
-    #
-    # if errors:
-    #     return make_response_with_headers(errors, 400)
-
-    try:
-        return login()
-    except Exception as ex:
-        return make_response_with_headers(f"Login Error: {ex}", 400)
-
-
+@error_simulator
 @handle_api_error
+def login_post() -> Response:
+    schema = LoginSchema()
+    data = schema.dump(schema.load(request.json))
+    return login(**data)
+
+
 @bp.route("/logout/", methods=["POST"])
+@handle_api_error
 def logout_post() -> Response:
     # TODO: Implement validation
     # errors = self.validator.validate(self, request.json)
@@ -36,13 +32,7 @@ def logout_post() -> Response:
         return make_response_with_headers(f"Logout Error: {ex}", 400)
 
 
-@handle_api_error
 @bp.route("/refresh/", methods=["POST"])
+@handle_api_error
 def refresh_post() -> Response:
-    # TODO: Implement validation
-    # errors = self.validator.validate(self, request.json)
-    #
-    # if errors:
-    #     return jsonify(errors), 400
-
     return refresh()

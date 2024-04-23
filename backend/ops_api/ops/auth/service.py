@@ -1,42 +1,37 @@
-import datetime
 import json
 from typing import Union
 
 import requests
 from authlib.integrations.requests_client import OAuth2Session
-from flask import Response, current_app, request
+from flask import Response, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, current_user, get_jwt_identity, jwt_required
 
 from models.events import OpsEventType
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
-from ops_api.ops.auth.utils import create_oauth_jwt, decode_user, handle_api_error, register_user
+from ops_api.ops.auth.utils import create_oauth_jwt, decode_user, register_user
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-@error_simulator
-@handle_api_error
-def login() -> Union[Response, tuple[str, int]]:
-    auth_code = request.json.get("code")
-    provider = request.json.get("provider")
-    current_app.logger.debug(f"login - auth_code: {auth_code}")
+def login(code, provider) -> Union[Response, tuple[str, int]]:
+    current_app.logger.debug(f"login - auth_code: {code}")
     current_app.logger.debug(f"login - provider: {provider}")
 
     with current_app.app_context():
         auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
 
     with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
-        if auth_code is None:
-            return "Invalid Auth Code", 400
+        # if auth_code is None:
+        #     return "Invalid Auth Code", 400
+        #
+        # if provider not in auth_gateway.providers.keys():
+        #     return "Invalid provider name", 400
 
-        if provider not in auth_gateway.providers.keys():
-            return "Invalid provider name", 400
-
-        token = auth_gateway.authenticate(provider, auth_code)
+        token = auth_gateway.authenticate(provider, code)
 
         if not token:
-            current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {auth_code}")
+            current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {code}")
             return "Invalid Provider Auth Token", 400
 
         user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
@@ -70,29 +65,6 @@ def login() -> Union[Response, tuple[str, int]]:
             "is_new_user": is_new_user,
             "user": user.to_dict(),
         }
-    )
-    # TODO: For now, setting the cookie 'secure' flag based on our DEBUG,
-    # but should create a dedicated setting.
-    secure = not current_app.config["DEBUG"]
-
-    access_expires = current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES").total_seconds()
-    refresh_expires = current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES").total_seconds()
-
-    response.set_cookie(
-        "access_token_cookie",
-        access_token,
-        httponly=False,  # TODO: Update this once refactored
-        secure=secure,
-        samesite="Strict",
-        expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=access_expires),
-    )
-    response.set_cookie(
-        "refresh_token_cookie",
-        refresh_token,
-        httponly=True,
-        secure=secure,
-        samesite="Strict",
-        expires=datetime.datetime.utcnow() + datetime.timedelta(seconds=refresh_expires),
     )
     return response
 
