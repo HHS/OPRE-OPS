@@ -1,4 +1,4 @@
-openapi: 3.0.2
+openapi: '3.0.2'
 info:
   title: OPRE OPS API
   description: OPRE OPS API Specification
