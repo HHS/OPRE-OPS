@@ -81,13 +81,13 @@ console.log(`Tag Prefix: [${tagPrefix}]`);
 console.log(`Creating new tag: ${newTag}`);
 
 if (process.env.INPUT_SKIP_TAG !== 'true') {
-    execSync(`git tag ${newTag}`, { stdio: 'inherit' });
+  execSync(`git tag ${newTag}`, { stdio: 'inherit' });
+  console.log(`::set-output name=newTag::${newTag}`);
 }
 
-// Push changes
 if (process.env.INPUT_SKIP_PUSH !== 'true') {
-    execSync('git push', { stdio: 'inherit' });
-    if (newTag) {
-        execSync('git push --tags', { stdio: 'inherit' });
-    }
+  execSync('git push', { stdio: 'inherit' });
+  if (newTag) {
+      execSync('git push --tags', { stdio: 'inherit' });
+  }
 }
