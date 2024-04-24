@@ -2,11 +2,14 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import ServicesComponentSelect from "../ServicesComponentSelect";
-import PoPStartDate from "../PoPStartDate";
-import PoPEndDate from "../PoPEndDate";
+// import PoPStartDate from "../PoPStartDate";
+// import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../UI/Form/TextArea";
 import FormHeader from "../../UI/Form/FormHeader";
 import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../servicesComponents.constants";
+import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
+import DatePicker from "../../UI/USWDS/DatePicker";
+import DebugCode from "../../DebugCode";
 
 /**
  * ServicesComponentForm is a form component for creating and editing service components.
@@ -56,6 +59,7 @@ function ServicesComponentForm({
                 heading={heading}
                 details={details}
             />
+            <DebugCode data={formData} />
             <div className="grid-row grid-gap margin-top-3">
                 <div className="grid-col-4">
                     <ServicesComponentSelect
@@ -71,10 +75,36 @@ function ServicesComponentForm({
                         isRequired={true}
                     />
                     <div className="margin-top-3">
-                        <PoPStartDate
+                        <DateRangePickerWrapper id="period-of-performance">
+                            <DatePicker
+                                id="pop-start-date"
+                                name="pop-start-date"
+                                label="Period of Performance-Start"
+                                value={formData.popStartDate}
+                                onChange={(e) =>
+                                    setFormData((currentFormData) => ({
+                                        ...currentFormData,
+                                        popStartDate: e.target.value
+                                    }))
+                                }
+                            />
+                            <DatePicker
+                                id="pop-end-date"
+                                name="pop-end-date"
+                                label="Period of Performance-End"
+                                value={formData.popEndDate}
+                                onChange={(e) =>
+                                    setFormData((currentFormData) => ({
+                                        ...currentFormData,
+                                        PoPEndDate: e.target.value
+                                    }))
+                                }
+                            />
+                        </DateRangePickerWrapper>
+                        {/* <PoPStartDate
                             serviceComponent={formData}
                             setServiceComponent={setFormData}
-                        />
+                        /> */}
                     </div>
                 </div>
                 <div className="grid-col-4">
@@ -106,10 +136,10 @@ function ServicesComponentForm({
                         <div style={{ height: "3.90rem" }} />
                     )}
                     <div className="margin-top-4">
-                        <PoPEndDate
+                        {/* <PoPEndDate
                             serviceComponent={formData}
                             setServiceComponent={setFormData}
-                        />
+                        /> */}
                     </div>
                 </div>
                 <div className="grid-col-4">
