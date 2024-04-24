@@ -34,8 +34,8 @@ let initialState = { ...defaultState };
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to edit, if any.
  * @param {Object} props.projectOfficer - The project officer to set, if any.
- * @param {ReactNode} props.children - The child components.
- * @returns {ReactNode} The rendered component.
+ * @param {React.ReactNode} props.children - The child components.
+ * @returns {React.ReactNode} The rendered component.
  */
 export function EditAgreementProvider({ agreement, projectOfficer, children }) {
     if (agreement) {

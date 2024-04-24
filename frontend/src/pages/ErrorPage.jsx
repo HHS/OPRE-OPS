@@ -3,7 +3,8 @@ import App from "../App";
 
 /**
  * Page for displaying an error message.
- * @returns {React.JSX.Element} - The component JSX.
+ * @component
+ * @returns {JSX.Element} - The component JSX.
  */
 const ErrorPage = () => {
     return (

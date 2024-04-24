@@ -3,13 +3,14 @@ import PropTypes from "prop-types";
 
 /**
  * A radio button component that displays a tile with a label and optional description.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.label - The label to display for the radio button.
  * @param {string} [props.description] - An optional description to display below the label.
  * @param {boolean} [props.checked=false] - Whether the radio button should be checked by default.
  * @param {function} props.setValue - A function to call when the radio button is selected.
  * @param {Object} [props.rest] - Any other props to pass to the radio button.
- * @returns {React.JSX.Element} - The radio button tile component.
+ * @returns {JSX.Element} - The radio button tile component.
  */
 const RadioButtonTile = ({ label, description, checked = false, setValue = () => {}, ...rest }) => {
     const uniqueId = React.useId();

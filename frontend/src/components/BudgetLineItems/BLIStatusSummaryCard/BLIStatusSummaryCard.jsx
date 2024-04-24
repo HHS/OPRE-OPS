@@ -12,9 +12,10 @@ import styles from "./styles.module.css";
 
 /**
  * Renders a summary card that displays the total amount and percentage of budget lines by status.
+ * @component
  * @param {Object} props - The props that were defined by the caller of this component.
  * @param {Object[]} props.budgetLines - An array of budget line objects.
- * @returns {React.JSX.Element} - A React component that displays the budget line summary card.
+ * @returns {JSX.Element} - A React component that displays the budget line summary card.
  */
 const BLIStatusSummaryCard = ({ budgetLines }) => {
     const [percent, setPercent] = React.useState("");

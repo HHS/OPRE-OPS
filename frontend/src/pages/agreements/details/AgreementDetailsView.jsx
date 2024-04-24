@@ -5,10 +5,11 @@ import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetai
 
 /**
  * Renders the details of an agreement
+ * @component
  * @param {object} props - The component props.
  * @param {object} props.agreement - The agreement object to display details for.
  * @param {object} props.projectOfficer - The project officer object for the agreement.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 const AgreementDetailsView = ({ agreement, projectOfficer }) => {
     const missingValueText = "TBD";

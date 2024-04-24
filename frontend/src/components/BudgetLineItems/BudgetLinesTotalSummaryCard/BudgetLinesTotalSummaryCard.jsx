@@ -17,10 +17,11 @@ const calculateTotalAmountWithFees = (budgetLines) => {
 
 /**
  * BudgetLineTotalSummaryCard component
+ * @component
  * @param {Object} props - Properties passed to component
  * @param {string} props.title - The title of the card
  * @param {Object[]} props.budgetLines - The budget lines to render
- * @returns {React.JSX.Element} - The rendered component
+ * @returns {JSX.Element} - The rendered component
  */
 const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
     const totalAmountWithFees = calculateTotalAmountWithFees(budgetLines);
