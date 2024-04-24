@@ -146,23 +146,25 @@ def load_new_data(
                     session.commit()
                     insert_associated_data(data_with_associations, obj, session)
             if seq_needs_reset:
-                print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
-                stmt = (
-                    f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), coalesce(max(id),0) + 1, false) "
-                    f"FROM ops.services_component;"
-                )
-                session.execute(text(stmt))
+                with Session(conn) as session:
+                    print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
+                    stmt = (
+                        f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), coalesce(max(id),0) + 1, false) "
+                        f"FROM ops.services_component;"
+                    )
+                    session.execute(text(stmt))
 
     # set DD to Dave Director and Deputy DD to Admin Demo
-    stmt = (
-        "update ops.division "
-        "  set division_director_id = (select id from ops.\"user\" where email = 'dave.director@email.com') "
-        "  where division_director_id is null; "
-        "update ops.division "
-        "  set deputy_division_director_id = (select id from ops.\"user\" where email = 'admin.demo@email.com') "
-        "  where deputy_division_director_id is null;"
-    )
-    session.execute(text(stmt))
+    with Session(conn) as session:
+        stmt = (
+            "update ops.division "
+            "  set division_director_id = (select id from ops.\"user\" where email = 'dave.director@email.com') "
+            "  where division_director_id is null; "
+            "update ops.division "
+            "  set deputy_division_director_id = (select id from ops.\"user\" where email = 'admin.demo@email.com') "
+            "  where deputy_division_director_id is null;"
+        )
+        session.execute(text(stmt))
 
 
 def insert_associated_data(data_with_associations, obj, session):
