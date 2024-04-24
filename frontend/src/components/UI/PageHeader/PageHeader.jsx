@@ -1,10 +1,11 @@
 import PropTypes from "prop-types";
 /**
  * Renders a page header with a title and optional subtitle.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.title - The title to display.
  * @param {string} [props.subTitle] - The optional subtitle to display.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 const PageHeader = ({ title, subTitle }) => {
     return (

@@ -4,6 +4,7 @@ import Term from "../../UI/Term";
 
 /**
  * Renders an accordion component that displays the details of an agreement.
+ * @component
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement object to display.
  * @param {string} props.projectOfficerName - The name of the project officer.
@@ -11,7 +12,7 @@ import Term from "../../UI/Term";
  * @param {Object} [props.cn] - The classnames object.
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
  * @param {string} props.instructions - The instruction text of the agreement.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, convertCodeForDisplay, instructions }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members.length > 3;

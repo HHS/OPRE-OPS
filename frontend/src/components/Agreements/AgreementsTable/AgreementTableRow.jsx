@@ -17,7 +17,7 @@ import {
     useNavigateAgreementApprove,
     useHandleEditAgreement,
     useHandleDeleteAgreement
-} from "./agreements-table.hooks";
+} from "./AgreementsTable.hooks";
 import {
     convertCodeForDisplay,
     statusToClassName,

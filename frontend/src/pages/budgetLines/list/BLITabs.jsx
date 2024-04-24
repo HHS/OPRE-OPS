@@ -4,7 +4,8 @@ import TabsSection from "../../../components/UI/TabsSection";
 
 /**
  * A header section of the Budget lines list page that contains the filters.
- * @returns {React.JSX.Element} - The procurement shop select element.
+ * @component
+ * @returns {JSX.Element} - The procurement shop select element.
  */
 const BLITags = () => {
     const location = useLocation();

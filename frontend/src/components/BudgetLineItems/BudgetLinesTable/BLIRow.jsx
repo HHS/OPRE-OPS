@@ -8,7 +8,7 @@ import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import {
@@ -18,7 +18,10 @@ import {
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
-import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import {
+    removeBorderBottomIfExpanded,
+    changeBgColorIfExpanded
+} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
