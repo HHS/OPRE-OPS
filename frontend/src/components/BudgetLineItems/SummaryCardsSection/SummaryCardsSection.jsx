@@ -4,9 +4,10 @@ import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
 
 /**
  * SummaryCardsSection component
+ * @component
  * @param {Object} props - Properties passed to component
  * @param {Object[]} props.budgetLines - The budget lines to render
- * @returns {React.JSX.Element} - The rendered component
+ * @returns {JSX.Element} - The rendered component
  */
 const SummaryCardsSection = ({ budgetLines }) => {
     return (

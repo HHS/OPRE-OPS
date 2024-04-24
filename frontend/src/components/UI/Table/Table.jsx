@@ -3,11 +3,13 @@ import styles from "./table.module.css";
 
 /**
  * The Table component is a layout component that displays a table
+ * with the specified headings.
+ * @component
  * @param {object} props - The component props.
  * @param {React.ReactNode} [props.children] - The children to render - optional.
  * @param {string[]} props.tableHeadings - The table headings to display.
  * @param {React.ReactNode} [props.firstHeadingSlot] - The checkbox slot - optional.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  * @example
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/

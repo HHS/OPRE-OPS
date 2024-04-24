@@ -2,17 +2,18 @@ import React from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "./table-row.helpers";
+import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "./TableRowExpandable.helpers";
 
 /**
  * TableRowExpandable component that represents a single expandable row in a table.
+ * @component
  * @param {Object} props - The props for the TableRowExpandable component.
  * @param {React.ReactNode} props.tableRowData - The data for the row.
  * @param {React.ReactNode} props.expandedData - The expanded data for the row.
  * @param {boolean} props.isExpanded - Whether the row is expanded.
  * @param {Function} props.setIsExpanded - The setter function for isExpanded.
  * @param {Function} props.setIsRowActive - The setter function for isRowActive.
- * @returns {React.JSX.Element} The TableRowExpandable component.
+ * @returns {JSX.Element} The TableRowExpandable component.
  */
 const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, setIsRowActive, ...rest }) => {
     const trId = React.useId();

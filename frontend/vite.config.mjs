@@ -4,7 +4,6 @@ import react from "@vitejs/plugin-react";
 import viteJsconfigPaths from "vite-jsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import eslint from "vite-plugin-eslint";
-import fs from "fs/promises";
 
 export default defineConfig(({ mode }) => {
     // Load env file based on `mode` in the current working directory.
@@ -70,21 +69,6 @@ export default defineConfig(({ mode }) => {
             loader: "jsx",
             include: /src\/.*\.jsx?$/,
             exclude: []
-        },
-        optimizeDeps: {
-            esbuildOptions: {
-                plugins: [
-                    {
-                        name: "load-js-files-as-jsx",
-                        setup(build) {
-                            build.onLoad({ filter: /src\/.*\.js$/ }, async (args) => ({
-                                loader: "jsx",
-                                contents: await fs.readFile(args.path, "utf8")
-                            }));
-                        }
-                    }
-                ]
-            }
         }
     };
 });

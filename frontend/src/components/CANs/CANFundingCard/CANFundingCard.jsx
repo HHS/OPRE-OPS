@@ -11,6 +11,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
 /**
  * A component that displays funding information for a CAN
+ * @component
  * @param {Object} props - The props object.
  * @param {Object} props.can - The CAN object.
  * @param {number} props.pendingAmount - The pending amount.
