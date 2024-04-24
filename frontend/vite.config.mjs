@@ -59,9 +59,6 @@ export default defineConfig(({ mode }) => {
         test: {
             globals: true,
             environment: "jsdom",
-            transformMode: {
-                web: [/.[tj]sx?$/]
-            },
             setupFiles: "./src/setupTests.js",
             coverage: {}
         },
