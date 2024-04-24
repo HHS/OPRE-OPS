@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import Select from "../../UI/Select";
-import { CONTRACT_TYPE_OPTIONS } from "../servicesComponents.constants";
+import { CONTRACT_TYPE_OPTIONS } from "../ServicesComponents.constants";
 
 /**
  * ContractTypeSelect component.

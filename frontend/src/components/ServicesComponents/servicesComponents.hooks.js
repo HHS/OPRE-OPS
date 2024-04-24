@@ -1,13 +1,14 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
-import { initialFormData, SERVICE_REQ_TYPES } from "./servicesComponents.constants";
-import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
+import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
+import { dateToYearMonthDay, formatServiceComponent } from "./ServicesComponents.helpers";
 import {
     useAddServicesComponentMutation,
     useUpdateServicesComponentMutation,
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation
 } from "../../api/opsAPI";
+import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 
 const useServicesComponents = (agreementId) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
@@ -46,15 +47,8 @@ const useServicesComponents = (agreementId) => {
             number: Number(formData.number),
             optional: Boolean(formData.optional),
             description: formData.description,
-            period_start:
-                formData.popStartYear && formData.popStartMonth && formData.popStartDay
-                    ? `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`
-                    : null,
-
-            period_end:
-                formData.popEndYear && formData.popEndMonth && formData.popEndDay
-                    ? `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
-                    : null
+            period_start: formatDateForApi(formData.popStartDate),
+            period_end: formatDateForApi(formData.popEndDate)
         };
         const { id } = formData;
 

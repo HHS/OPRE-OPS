@@ -6,7 +6,7 @@ import ServicesComponentSelect from "../ServicesComponentSelect";
 // import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../UI/Form/TextArea";
 import FormHeader from "../../UI/Form/FormHeader";
-import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../servicesComponents.constants";
+import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../ServicesComponents.constants";
 import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
 import DatePicker from "../../UI/USWDS/DatePicker";
 import DebugCode from "../../DebugCode";
@@ -96,15 +96,11 @@ function ServicesComponentForm({
                                 onChange={(e) =>
                                     setFormData((currentFormData) => ({
                                         ...currentFormData,
-                                        PoPEndDate: e.target.value
+                                        popEndDate: e.target.value
                                     }))
                                 }
                             />
                         </DateRangePickerWrapper>
-                        {/* <PoPStartDate
-                            serviceComponent={formData}
-                            setServiceComponent={setFormData}
-                        /> */}
                     </div>
                 </div>
                 <div className="grid-col-4">

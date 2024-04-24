@@ -58,12 +58,6 @@ export const CONTRACT_TYPE_OPTIONS = [
 export const initialFormData = {
     number: "",
     optional: "",
-    // popStartMonth: "",
-    // popStartDay: "",
-    // popStartYear: "",
-    // popEndMonth: "",
-    // popEndDay: "",
-    // popEndYear: "",
     popStartDate: "",
     popEndDate: "",
     description: "",
