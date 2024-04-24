@@ -1,7 +1,7 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
 import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
-import { dateToYearMonthDay, formatServiceComponent } from "./ServicesComponents.helpers";
+import { formatServiceComponent } from "./ServicesComponents.helpers";
 import {
     useAddServicesComponentMutation,
     useUpdateServicesComponentMutation,
@@ -130,24 +130,12 @@ const useServicesComponents = (agreementId) => {
 
     const setFormDataById = (id) => {
         const index = servicesComponents.findIndex((component) => component.id === id);
-        const {
-            year: popStartYear,
-            month: popStartMonth,
-            day: popStartDay
-        } = dateToYearMonthDay(servicesComponents[index].period_start);
-        const {
-            year: popEndYear,
-            month: popEndMonth,
-            day: popEndDay
-        } = dateToYearMonthDay(servicesComponents[index].period_end);
+        const popStartDate = formatDateForScreen(servicesComponents[index].period_start);
+        const popEndDate = formatDateForScreen(servicesComponents[index].period_end);
         const newFormData = {
             ...servicesComponents[index],
-            popEndYear,
-            popEndMonth,
-            popEndDay,
-            popStartYear,
-            popStartMonth,
-            popStartDay,
+            popStartDate,
+            popEndDate,
             mode: "edit"
         };
         setFormData(newFormData);
