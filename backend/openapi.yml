@@ -1519,6 +1519,35 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
+  /api/v1/change-request-reviews/:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/simulatedError'
+      description: approve or reject a change request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                change_request_id:
+                  type: integer
+                action:
+                  type: string
+                  description: 'APROVE or REJECT'
+            examples:
+              '0':
+                value: >-
+                  {"change_request_id": 123, "action": "APPROVE"}
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
 
 components:
   parameters:
@@ -1912,7 +1941,7 @@ components:
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/BudgetLineItem"
+          - $ref: "#/components/schemas/BudgetLineItemChangeRequest"
 
     BudgetLineItem:
       type: object
@@ -1957,6 +1986,11 @@ components:
               { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
               { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
               ]
+        change_requests_in_review:
+          type: array
+          items:
+            anyOf:
+              - $ref: "#/components/schemas/BudgetLineItem"
         created_on:
           $ref: '#/components/parameters/created_on'
         updated_on:
@@ -2002,6 +2036,34 @@ components:
         - amount
         - status
         - date_needed
+
+    BudgetLineItemChangeRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: 'budget_line_item_change_request'
+        budget_line_item_id:
+          type: integer
+          example: 1
+        has_budget_changes:
+          type: boolean
+          example: True
+        has_status_changes:
+          type: boolean
+          example: False
+        requested_changes:
+          description: JSON for the request changes
+          type: object
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        created_on:
+          $ref: '#/components/parameters/created_on'
 
     ResearchProjectRequest:
       type: object
