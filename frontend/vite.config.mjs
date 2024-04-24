@@ -59,6 +59,9 @@ export default defineConfig(({ mode }) => {
         test: {
             globals: true,
             environment: "jsdom",
+            transformMode: {
+                web: [/.[tj]sx?$/]
+            },
             setupFiles: "./src/setupTests.js",
             coverage: {}
         },
@@ -66,6 +69,7 @@ export default defineConfig(({ mode }) => {
             "process.env": {}
         },
         esbuild: {
+            loader: "jsx" || "js",
             include: /src\/.*\.jsx?$/,
             exclude: []
         }
