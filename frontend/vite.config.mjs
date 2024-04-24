@@ -69,7 +69,7 @@ export default defineConfig(({ mode }) => {
             "process.env": {}
         },
         esbuild: {
-            loader: "jsx" || "js",
+            loader: "jsx",
             include: /src\/.*\.jsx?$/,
             exclude: []
         }
