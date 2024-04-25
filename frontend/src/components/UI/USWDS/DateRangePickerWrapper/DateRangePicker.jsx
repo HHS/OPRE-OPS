@@ -1,4 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import "./DateRangePicker.scss";
 
 function DatePickerComponent({ id, minDate, maxDate, label, onChange, disabled, name, value, required }, ref) {
     const [isDisabled, setIsDisabled] = useState(disabled !== undefined ? disabled : false);
