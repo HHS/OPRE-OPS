@@ -7,24 +7,36 @@ from typing import Optional
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.jose import JsonWebToken, JWTClaims
-from authlib.jose import jwt as jose_jwt
-from flask import current_app
+from flask import Config, current_app
 
-from ops_api.ops.auth.utils import get_jwks
+from ops_api.ops.auth.utils import create_oauth_jwt, get_jwks
+
+
+class AuthenticationProviderFactory:
+    @staticmethod
+    def create_provider(provider_name, key):
+        if provider_name == "fakeauth":
+            return FakeAuthProvider(provider_name, key)
+        elif provider_name == "logingov":
+            return LoginGovProvider(provider_name, key)
+        elif provider_name == "hhsams":
+            return HhsAmsProvider(provider_name, key)
+        else:
+            raise NotImplementedError
 
 
 class AuthenticationProvider(ABC):
-    def __init__(self, config_name, key) -> None:
-        self.config = None
-        self.client_id = self.config["client_id"]
-        self.server_metadata_url = self.config["server_metadata_url"]
-        self.user_info_url = self.config["user_info_url"]
-        self.client_kwargs = self.config["client_kwargs"]
-        self.aud = self.config["aud"] if "aud" in self.config else None
-        self.redirect_uri = self.config["redirect_uri"] or None
-        self.token_url = self.config["token_endpoint"] or None
-        self.key = key
-        self.scope = self.client_kwargs["scope"]
+    def __init__(self, config: Config) -> None:
+        self.config = config
+        # self.client_id = self.config["client_id"]
+        # self.server_metadata_url = self.config["server_metadata_url"]
+        # self.user_info_url = self.config["user_info_url"]
+        # self.client_kwargs = self.config["client_kwargs"]
+        # self.aud = self.config["aud"] if "aud" in self.config else None
+        # self.redirect_uri = self.config["redirect_uri"] or None
+        # self.token_url = self.config["token_endpoint"] or None
+        # self.key = key
+        # self.scope = self.client_kwargs["scope"]
 
     @abstractmethod
     def authenticate(self, auth_code):
@@ -37,36 +49,6 @@ class AuthenticationProvider(ABC):
     @abstractmethod
     def validate_token(self, token):
         pass
-
-    def create_oauth_jwt(
-        self,
-        key: Optional[str] = None,
-        header: Optional[str] = None,
-        payload: Optional[str] = None,
-    ) -> str:
-        """
-        Returns an Access Token JWS from the configured OAuth Client
-        :param key: OPTIONAL - Private Key used for encoding the JWS
-        :param header: OPTIONAL - JWS Header containing algorithm type
-        :param payload: OPTIONAL - Contains the JWS payload
-        :return: JsonWebSignature
-        """
-        jwt_private_key = key or current_app.config.get("JWT_PRIVATE_KEY")
-        if not jwt_private_key:
-            raise NotImplementedError
-
-        expires = current_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
-        _payload = payload or {
-            "iss": self.client_id,
-            "sub": self.client_id,
-            "aud": self.aud,
-            "jti": str(uuid.uuid4()),
-            "exp": int(time.time()) + expires.seconds,
-            "sso": "hhsams",
-        }
-        _header = header or {"alg": "RS256"}
-        jws = jose_jwt.encode(header=_header, payload=_payload, key=jwt_private_key)
-        return jws
 
 
 class FakeAuthProvider(AuthenticationProvider):
@@ -137,7 +119,7 @@ class LoginGovProvider(AuthenticationProvider):
             "exp": int(time.time()) + expires.seconds,
             "sso": "logingov",
         }
-        provider_jwt = super().create_oauth_jwt(payload=payload)
+        provider_jwt = create_oauth_jwt("logingov", current_app.config, payload=payload)
 
         token = client.fetch_token(
             self.config["token_endpoint"],
@@ -208,7 +190,7 @@ class HhsAmsProvider(AuthenticationProvider):
             "exp": int(time.time()) + expires.seconds,
             "sso": "hhsams",
         }
-        provider_jwt = super().create_oauth_jwt(payload=payload)
+        provider_jwt = create_oauth_jwt("hhsams", current_app.config, payload=payload)
         token = client.fetch_token(
             self.config["token_endpoint"],
             client_assertion=provider_jwt,

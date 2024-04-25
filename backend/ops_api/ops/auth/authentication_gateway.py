@@ -6,6 +6,7 @@ from ops_api.ops.auth.decorators import is_user_active
 
 class AuthenticationGateway:
     def __init__(self, key) -> None:
+        # TODO: This should use the config file and call a factory to create the providers
         self.providers = {
             "fakeauth": FakeAuthProvider("fakeauth", "devkey"),
             "logingov": LoginGovProvider("logingov", key),

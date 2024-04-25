@@ -119,7 +119,7 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
         current_app.logger.debug(f"auth_provider={provider}")
         provider_config = authlib_client_config[provider]
 
-        jwt = create_oauth_jwt(provider)
+        jwt = create_oauth_jwt(provider, current_app.config)
         current_app.logger.debug(f"jwt={jwt}")
 
         client = OAuth2Session(

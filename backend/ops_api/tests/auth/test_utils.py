@@ -19,16 +19,16 @@ def test_get_jwt_no_key(app):
     with app.test_request_context("/auth/login", method="POST", data={"provider": "fakeauth", "code": ""}):
         jwt1 = create_oauth_jwt(
             "fakeauth",
-            key,
-            {"alg": "RS256"},
-            {
+            app.config,
+            key=key,
+            header={"alg": "RS256"},
+            payload={
                 "sub": "1234567890",
                 "name": "John Doe",
                 "admin": "true",
                 "iat": 1516239022,
             },
         )
-        print(jwt)
         assert jwt is not None
         assert len(str(jwt1)) == 477
 
@@ -38,7 +38,7 @@ def test_get_jwt_no_key(app):
 
 @pytest.mark.skip(reason="Need to clean up auth a bit")
 @pytest.mark.usefixtures("app_ctx")
-def test_get_jwt_is_valid_jws():
+def test_get_jwt_is_valid_jws(app):
     header = {"alg": "RS256"}
     payload = {
         "iss": "client_id",
@@ -47,7 +47,7 @@ def test_get_jwt_is_valid_jws():
         "jti": str(uuid.uuid4()),
         "exp": int(time.time()) + 300,
     }
-    jws = create_oauth_jwt("fakeauth", key, header, payload)
+    jws = create_oauth_jwt("fakeauth", app.config, key=key, header=header, payload=payload)
     print(f"jws: {jws}")
     assert jws is not None
 

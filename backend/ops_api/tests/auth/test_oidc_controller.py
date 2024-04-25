@@ -1,6 +1,7 @@
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat
+from flask import current_app
 
 from models import User, UserStatus
 from models.events import OpsEventStatus, OpsEventType
@@ -19,7 +20,7 @@ def test_get_jwt_not_none(app):
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     encoded = key.private_bytes(Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption())
     with app.test_request_context("/auth/login", method="POST", data={"provider": "fakeauth", "code": ""}):
-        jwt = create_oauth_jwt("fakeauth", key=encoded)
+        jwt = create_oauth_jwt("fakeauth", current_app.config, key=encoded)
         print(f"jwt: {jwt}")
         assert jwt is not None
 
