@@ -1,16 +1,17 @@
 from typing import Any
 
-from ops_api.ops.auth.authentication_providers import FakeAuthProvider, HhsAmsProvider, LoginGovProvider
+from flask import Config
+
+from ops_api.ops.auth.authentication_provider.authentication_provider_factory import AuthenticationProviderFactory
 from ops_api.ops.auth.decorators import is_user_active
 
 
 class AuthenticationGateway:
-    def __init__(self, key) -> None:
-        # TODO: This should use the config file and call a factory to create the providers
+    def __init__(self, config: Config) -> None:
         self.providers = {
-            "fakeauth": FakeAuthProvider("fakeauth", "devkey"),
-            "logingov": LoginGovProvider("logingov", key),
-            "hhsams": HhsAmsProvider("hhsams", key),
+            "fakeauth": AuthenticationProviderFactory.create_provider("fakeauth", config),
+            "logingov": AuthenticationProviderFactory.create_provider("logingov", config),
+            "hhsams": AuthenticationProviderFactory.create_provider("hhsams", config),
         }
 
     @is_user_active
