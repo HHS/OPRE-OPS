@@ -24,6 +24,7 @@ class HhsAmsProvider(AuthenticationProvider):
         self.JWT_ACCESS_TOKEN_EXPIRES = config["JWT_ACCESS_TOKEN_EXPIRES"]
         self.aud = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["aud"]
         self.token_endpoint = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["token_endpoint"]
+        self.user_info_url = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["user_info_url"]
 
     def decode_user(
         self,
@@ -78,7 +79,7 @@ class HhsAmsProvider(AuthenticationProvider):
         }
         try:
             user_jwt = requests.get(
-                self.config["user_info_url"],
+                self.user_info_url,
                 headers=header,
             ).content.decode("utf-8")
             user_data = self.decode_user(payload=user_jwt)
