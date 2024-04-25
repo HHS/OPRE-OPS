@@ -6,6 +6,7 @@ import TextArea from "../../UI/Form/TextArea";
 import FormHeader from "../../UI/Form/FormHeader";
 import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../ServicesComponents.constants";
 import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
+import DateRangePicker from "../../UI/USWDS/DateRangePickerWrapper/DateRangePicker";
 import DatePicker from "../../UI/USWDS/DatePicker";
 
 /**
@@ -104,7 +105,8 @@ function ServicesComponentForm({
                             <div style={{ height: "3.90rem" }} />
                         )}
                     </div>
-                    <DateRangePickerWrapper
+                    <DateRangePicker />
+                    {/* <DateRangePickerWrapper
                         id="period-of-performance"
                         key={formKey}
                         className="display-flex flex-justify margin-top-2"
@@ -135,7 +137,7 @@ function ServicesComponentForm({
                                 }))
                             }
                         />
-                    </DateRangePickerWrapper>
+                    </DateRangePickerWrapper> */}
                 </div>
 
                 <div className="grid-col">
