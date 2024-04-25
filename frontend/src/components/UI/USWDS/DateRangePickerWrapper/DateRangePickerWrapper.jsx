@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import dateRangePicker from "@uswds/uswds/js/usa-date-range-picker";
 
@@ -14,9 +14,9 @@ import dateRangePicker from "@uswds/uswds/js/usa-date-range-picker";
  * @returns {JSX.Element} The rendered DateRangePickerWrapper component.
  */
 function DateRangePickerWrapper({ id, children, className = "" }) {
-    const dateRangePickerRef = useRef(null);
+    const dateRangePickerRef = React.useRef(null);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const dateRangePickerElement = dateRangePickerRef.current;
         if (dateRangePickerElement) {
             dateRangePicker.on(dateRangePickerElement);
