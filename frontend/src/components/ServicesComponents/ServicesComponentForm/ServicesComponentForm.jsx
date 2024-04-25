@@ -7,7 +7,6 @@ import FormHeader from "../../UI/Form/FormHeader";
 import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../ServicesComponents.constants";
 import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
 import DatePicker from "../../UI/USWDS/DatePicker";
-import DebugCode from "../../DebugCode";
 
 /**
  * ServicesComponentForm is a form component for creating and editing service components.
@@ -59,7 +58,6 @@ function ServicesComponentForm({
                 heading={heading}
                 details={details}
             />
-            <DebugCode data={formData} />
             <div className="grid-row flex-row">
                 <div className="grid-col flex-2">
                     <div className="grid-row flex-row">
