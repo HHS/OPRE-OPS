@@ -183,7 +183,6 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     assert len(change_requests_in_review) == 3
 
     can_id_change_request_id = None
-
     change_request_ids = []
     for change_request in change_requests_in_review:
         assert "id" in change_request
@@ -196,7 +195,6 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
         if "can_id" in change_request["requested_changes"]:
             assert can_id_change_request_id is None
             can_id_change_request_id = change_request_id
-
     assert can_id_change_request_id is not None
 
     # verify the BLI was not updated yet
@@ -208,11 +206,32 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     assert len(bli.change_requests_in_review) == len(change_request_ids)
     assert bli.in_review is True
 
-    # verify the change requests are in the BLI
+    # verify the change requests and in_review are in the BLI
     response = auth_client.get(url_for("api.budget-line-items-item", id=bli_id))
     assert response.status_code == 200
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
+    assert len(resp_json["change_requests_in_review"]) == 3
+    assert "in_review" in resp_json
+    assert resp_json["in_review"] is True
+
+    # verify the change requests and in_review are in the agreement's BLIs
+    response = auth_client.get(url_for("api.agreements-item", id=bli.agreement_id))
+    assert response.status_code == 200
+    resp_json = response.json
+    assert "budget_line_items" in resp_json
+    ag_blis = resp_json["budget_line_items"]
+    ag_bli = next((bli for bli in ag_blis if bli["id"] == bli_id), None)
+    assert ag_bli is not None
+    assert "in_review" in ag_bli
+    assert ag_bli["in_review"] is True
+    assert "change_requests_in_review" in ag_bli
+    assert len(ag_bli["change_requests_in_review"]) == 3
+    ag_bli_other = next((bli for bli in ag_blis if bli["id"] != bli_id), None)
+    assert "in_review" in ag_bli_other
+    assert ag_bli_other["in_review"] is False
+    assert "change_requests_in_review" in ag_bli
+    assert ag_bli_other["change_requests_in_review"] is None
 
     # review the change requests, reject the can_id change request and approve the others
     for change_request_id in change_request_ids:

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import EditModeTitle from "./EditModeTitle";
 import StepIndicator from "../../components/UI/StepIndicator";
 import ProjectSummaryCard from "../../components/Projects/ProjectSummaryCard/ProjectSummaryCard";
-import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
 
 /**
  * StepCreateAgreement is a component that represents a step in a wizard for creating or editing an agreement.

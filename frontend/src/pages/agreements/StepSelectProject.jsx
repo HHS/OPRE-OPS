@@ -8,7 +8,7 @@ import {
     useEditAgreement,
     useSetState,
     useUpdateAgreement
-} from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+} from "../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import EditModeTitle from "./EditModeTitle";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import useAlert from "../../hooks/use-alert.hooks";
