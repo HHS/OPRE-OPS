@@ -121,6 +121,8 @@ const useServicesComponents = (agreementId) => {
                     heading: "Services Component Deleted",
                     message: `${selectedServicesComponent.display_title} has been successfully deleted.`
                 });
+                setFormData(initialFormData);
+                setFormKey(Date.now());
             }
         });
     };
@@ -128,9 +130,11 @@ const useServicesComponents = (agreementId) => {
     const handleCancel = (e) => {
         e.preventDefault();
         setFormData(initialFormData);
+        setFormKey(Date.now());
     };
 
     const setFormDataById = (id) => {
+        setFormKey(Date.now());
         const index = servicesComponents.findIndex((component) => component.id === id);
         const popStartDate = formatDateForScreen(servicesComponents[index].period_start);
         const popEndDate = formatDateForScreen(servicesComponents[index].period_end);
