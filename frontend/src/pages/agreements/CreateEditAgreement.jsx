@@ -5,7 +5,7 @@ import CreateAgreementFlow from "./CreateAgreementFlow";
 import StepSelectProject from "./StepSelectProject";
 import StepCreateAgreement from "./StepCreateAgreement";
 import StepCreateBudgetLinesAndSCs from "../../components/BudgetLineItems/CreateBLIsAndSCs";
-import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+import { useEditAgreement } from "../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import useAlert from "../../hooks/use-alert.hooks";
 
 /**

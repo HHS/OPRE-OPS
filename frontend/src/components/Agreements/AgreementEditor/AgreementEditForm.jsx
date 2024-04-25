@@ -12,7 +12,12 @@ import TeamMemberList from "../TeamMemberList";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
-import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
+import {
+    useEditAgreement,
+    useEditAgreementDispatch,
+    useSetState,
+    useUpdateAgreement
+} from "./AgreementEditorContext.hooks";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";

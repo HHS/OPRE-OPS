@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import StepIndicator from "../../components/UI/StepIndicator";
 import ProjectSelectWithSummaryCard from "../../components/Projects/ProjectSelectWithSummaryCard";
 import AgreementSelect from "../../components/Agreements/AgreementSelect";
-import { useBudgetLines, useSetState } from "./budgetLineContext";
+import { useBudgetLines, useSetState } from "./BudgetLineContext.hooks";
 
 export const StepSelectProjectAndAgreement = ({ goToNext }) => {
     const { wizardSteps, selected_project: selectedProject, selected_agreement: selectedAgreement } = useBudgetLines();
