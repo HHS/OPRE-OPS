@@ -29,7 +29,8 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         handleDelete,
         handleCancel,
         setFormDataById,
-        servicesComponentsNumbers
+        servicesComponentsNumbers,
+        formKey
     } = useServicesComponents(agreementId);
 
     return (
@@ -52,6 +53,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                 handleCancel={handleCancel}
                 servicesComponentsNumbers={servicesComponentsNumbers}
                 isEditMode={isEditMode}
+                formKey={formKey}
             />
 
             <ServicesComponentsList

@@ -2,8 +2,6 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import ServicesComponentSelect from "../ServicesComponentSelect";
-// import PoPStartDate from "../PoPStartDate";
-// import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../UI/Form/TextArea";
 import FormHeader from "../../UI/Form/FormHeader";
 import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../ServicesComponents.constants";
@@ -18,6 +16,7 @@ import DebugCode from "../../DebugCode";
  * @param {Object} props - The properties object.
  * @param {string} props.serviceTypeReq - The type of service request.
  * @param {Object} props.formData - The form data.
+ * @param {string} props.formKey - The form key.
  * @param {Function} props.setFormData - Function to set form data.
  * @param {Function} props.handleSubmit - Function to handle form submission.
  * @param {Function} props.handleCancel - Function to handle form cancellation.
@@ -31,6 +30,7 @@ import DebugCode from "../../DebugCode";
 function ServicesComponentForm({
     serviceTypeReq,
     formData,
+    formKey,
     setFormData,
     handleSubmit,
     handleCancel,
@@ -108,8 +108,8 @@ function ServicesComponentForm({
                     </div>
                     <DateRangePickerWrapper
                         id="period-of-performance"
+                        key={formKey}
                         className="display-flex flex-justify margin-top-2"
-                        key={formData?.popStartDate + formData?.popEndDate}
                     >
                         <DatePicker
                             id="pop-start-date"
@@ -185,6 +185,7 @@ function ServicesComponentForm({
 ServicesComponentForm.propTypes = {
     serviceTypeReq: PropTypes.string.isRequired,
     formData: PropTypes.object.isRequired,
+    formKey: PropTypes.string.isRequired,
     setFormData: PropTypes.func.isRequired,
     handleSubmit: PropTypes.func.isRequired,
     handleCancel: PropTypes.func.isRequired,

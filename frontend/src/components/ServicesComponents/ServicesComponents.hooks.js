@@ -16,6 +16,7 @@ const useServicesComponents = (agreementId) => {
     const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [formKey, setFormKey] = React.useState(Date.now());
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
@@ -41,6 +42,7 @@ const useServicesComponents = (agreementId) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setFormKey(Date.now());
         let formattedServiceComponent = formatServiceComponent(formData.number, formData.optional, serviceTypeReq);
         const newFormData = {
             contract_agreement_id: agreementId,
@@ -159,7 +161,8 @@ const useServicesComponents = (agreementId) => {
         handleDelete,
         handleCancel,
         setFormDataById,
-        servicesComponentsNumbers
+        servicesComponentsNumbers,
+        formKey
     };
 };
 
