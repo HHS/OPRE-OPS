@@ -1,17 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
-// export interface DatePickerProps {
-//   id: string;
-//   minDate?: string;
-//   maxDate?: string;
-//   onChange?: (ev: React.ChangeEvent<HTMLInputElement>) => void;
-//   label?: string;
-//   disabled?: boolean;
-//   name?: string;
-//   value?: string;
-//   required?: boolean;
-// }
-
 function DatePickerComponent({ id, minDate, maxDate, label, onChange, disabled, name, value, required }, ref) {
     const [isDisabled, setIsDisabled] = useState(disabled !== undefined ? disabled : false);
 
@@ -78,15 +66,6 @@ const DatePicker = forwardRef(DatePickerComponent);
 
 // Alias for readability.
 const debounce = setTimeout;
-
-// export interface DateRangePickerProps extends Omit<DatePickerProps, 'value'> {
-//   onStartDateChange?: (ev: React.ChangeEvent<HTMLInputElement>) => void;
-//   onEndDateChange?: (ev: React.ChangeEvent<HTMLInputElement>) => void;
-//   startDateLabel?: string;
-//   endDateLabel?: string;
-//   value?: DateRange;
-//   disabled?: boolean;
-// }
 
 function DateRangePickerComponent(
     {
