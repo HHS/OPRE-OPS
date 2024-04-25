@@ -1,33 +1,31 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import dateRangePicker from "@uswds/uswds/js/usa-date-range-picker";
 
 /**
- * A date range picker helps users select a range between two dates.
- * This component wraps the USWDS date range picker.
+ * DateRangePickerWrapper is a component that wraps the USWDS date range picker functionality.
+ * It initializes the date range picker on a referenced div and cleans up when the component unmounts.
+ *
  * @component
- * @param {Object} props - The properties object.
- * @param {string} props.id - The ID of the date range picker.
- * @param {React.ReactNode} props.children - The child components to be rendered.
- * @param {string} [props.className] - The CSS class name to apply.
- * @returns {JSX.Element} The date range picker wrapper.
+ * @param {Object} props - The component props.
+ * @param {string} props.id - The ID for the date range picker element, must be unique.
+ * @param {React.ReactNode} props.children - The child components, typically two DatePicker components.
+ * @param {string} [props.className=""] - Optional additional CSS classes to apply to the wrapper.
+ * @returns {JSX.Element} The rendered DateRangePickerWrapper component.
  */
 function DateRangePickerWrapper({ id, children, className = "" }) {
-    const [isMounted, setIsMounted] = React.useState(false);
-    const dateRangePickerRef = React.useRef(null);
+    const dateRangePickerRef = useRef(null);
 
-    React.useEffect(() => {
-        if (isMounted) {
-            const dateRangePickerElement = dateRangePickerRef.current;
+    useEffect(() => {
+        const dateRangePickerElement = dateRangePickerRef.current;
+        if (dateRangePickerElement) {
             dateRangePicker.on(dateRangePickerElement);
-            return () => dateRangePicker.off(dateRangePickerElement);
+            // Ensure to properly clean up the event listeners and enhancements
+            return () => {
+                dateRangePicker.off(dateRangePickerElement);
+            };
         }
-    }, [isMounted]); // Depend on the mounting state
-
-    React.useEffect(() => {
-        setIsMounted(true); // Set mounted state after initial render
-        return () => setIsMounted(false); // Clean up on unmount
-    }, []);
+    }, []); // This ensures the code runs only once after the component mounts
 
     return (
         <div
@@ -45,4 +43,5 @@ DateRangePickerWrapper.propTypes = {
     children: PropTypes.node.isRequired,
     className: PropTypes.string
 };
+
 export default DateRangePickerWrapper;
