@@ -272,5 +272,5 @@ class BudgetLineItemResponse:
     team_members: Optional[list[BLITeamMembers]] = field(default_factory=lambda: [])
     has_active_workflow: bool = False
     services_component_id: Optional[int] = None
+    in_review: bool = False
     change_requests_in_review: Optional[list[BudgetLineItemChangeRequest]] = field(default_factory=lambda: [])
-    # change_requests_in_review: Optional[list[dict]] = field(default_factory=lambda: [])
