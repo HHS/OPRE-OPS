@@ -59,7 +59,7 @@ function ServicesComponentForm({
                 heading={heading}
                 details={details}
             />
-            {/* <DebugCode data={formData} /> */}
+            <DebugCode data={formData} />
             <div className="grid-row flex-row">
                 <div className="grid-col flex-2">
                     <div className="grid-row flex-row">
@@ -109,6 +109,7 @@ function ServicesComponentForm({
                     <DateRangePickerWrapper
                         id="period-of-performance"
                         className="display-flex flex-justify margin-top-2"
+                        key={formData?.popStartDate + formData?.popEndDate}
                     >
                         <DatePicker
                             id="pop-start-date"
