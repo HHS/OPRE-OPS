@@ -24,11 +24,19 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: ./.github/actions/generate-token
+        with:
+          APP_ID: ${{ secrets.FLEXION_APP_ID }}
+          PRIVATE_KEY: ${{ secrets.FLEXION_APP_PRIVATE_KEY }}
+          INSTALLATION_ID: ${{ secrets.FLEXION_APP_INSTALLATION_ID }}
+
       - name:  'Automated Version Bump'
         id: version_bump
         uses:  'phips28/gh-action-bump-version@56588a3c4a1d62a068f308dfbc17f4ee55c69d41' #v11.0.4
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
           tag-prefix:  'ops-frontend-v'
           PACKAGEJSON_DIR:  'frontend'

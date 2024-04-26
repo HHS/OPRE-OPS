@@ -1,0 +1,9 @@
+{
+  "name": "generate-github-app-token",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1",
+    "axios": "^0.21.1"
+  }
+}
