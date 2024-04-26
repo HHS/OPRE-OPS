@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import dateRangePicker from "@uswds/uswds/js/usa-date-range-picker";
 
@@ -13,8 +13,8 @@ import dateRangePicker from "@uswds/uswds/js/usa-date-range-picker";
  * @param {string} [props.className=""] - Optional additional CSS classes to apply to the wrapper.
  * @returns {JSX.Element} The rendered DateRangePickerWrapper component.
  */
-function DateRangePickerWrapper({ id, children, className = "" }) {
-    const dateRangePickerRef = React.useRef(null);
+function DateRangePickerWrapper({ id, children, className }) {
+    const dateRangePickerRef = useRef(null);
 
     React.useEffect(() => {
         const dateRangePickerElement = dateRangePickerRef.current;
@@ -44,4 +44,13 @@ DateRangePickerWrapper.propTypes = {
     className: PropTypes.string
 };
 
-export default DateRangePickerWrapper;
+export default React.memo(DateRangePickerWrapper, (prevProps, nextProps) => {
+    // Return true if passing nextProps to render would return
+    // the same result as passing prevProps to render,
+    // otherwise return false
+    return (
+        prevProps.id === nextProps.id &&
+        prevProps.className === nextProps.className &&
+        React.Children.count(prevProps.children) === React.Children.count(nextProps.children)
+    );
+});
