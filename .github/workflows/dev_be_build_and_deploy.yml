@@ -35,14 +35,27 @@ jobs:
   build-backend:
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
-    permissions:
-      contents: write
-      packages: write
+    # permissions:
+    #   contents: write
+    #   packages: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
-      - name: Install dependencies
+      - name: Install token dependencies
+        run: npm install
+        working-directory: ./.github/actions/generate-token
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: ./.github/actions/generate-token
+        with:
+          APP_ID: ${{ secrets.FLEXION_APP_ID }}
+          PRIVATE_KEY: ${{ secrets.FLEXION_APP_PRIVATE_KEY }}
+          INSTALLATION_ID: ${{ secrets.FLEXION_APP_INSTALLATION_ID }}
+
+      
+      - name: Install bump dependencies
         run: npm install
         working-directory: ./.github/actions/bump-and-tag 
         

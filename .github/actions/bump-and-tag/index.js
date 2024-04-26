@@ -64,7 +64,7 @@ openapi.info.version = newVersion;
 fs.writeFileSync(openApiFilePath, yaml.dump(openapi), 'utf8');
 
 // Configure git for commit
-execSync('git config user.name "GitHub Action"', { stdio: 'inherit' });
+execSync('git config user.name "gh-action-bump-version"', { stdio: 'inherit' });
 execSync('git config user.email "action@github.com"', { stdio: 'inherit' });
 
 // Commit changes
