@@ -14,7 +14,11 @@ Welcome aboard! We're excited to have you as part of our team. This guide is des
 
 ## Project Overview
 
-Brief description of what the project is about, its goals, and how it fits into the larger picture of the company's objectives.
+OPS is the OPRE Portfolio management System. It is a new system currently being designed and developed.
+
+OPS will empower managers and staff with the visibility they need into OPRE’s research, evaluation, and data activities, as well as streamline budget and administrative tasks. With this system, it will be easy for OPRE to plan and manage projects so they can spend less time managing the work and more time building evidence to improve the lives of children and families.
+
+- read more on the [wiki](https://github.com/HHS/OPRE-OPS/wiki/01-Background-and-introduction)
 
 ## Repository Setup
 
@@ -34,22 +38,42 @@ The front-end of the application is built using [React](https://react.dev/).
 You will want to familiarize yourself with the following tools and libraries:
 - [React](https://react.dev/)
   - The library for web and native user interfaces
+  - [Official React Tutorial](https://react.dev/learn)
+  - [Joy of React](https://www.joyofreact.com) course by Josh W Comeau [paid]
+  - [React - The Complete Guide 2024 (incl. React Router & Redux)](https://www.udemy.com/course/react-the-complete-guide-incl-redux/) by Academind [paid]
+  - [Delightful React File/Directory Structure](https://www.joshwcomeau.com/react/file-structure/)
 - [React Router](https://reactrouter.com/)
   -  Framework that lets us handle client and server-side routing in React applications
 - [React Redux](https://react-redux.js.org/)
   - Official React bindings for Redux
+  - Official [Tutorials Overview](https://redux-toolkit.js.org/tutorials/overview) 
 - [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)
   - The official, opinionated, batteries-included toolset for efficient Redux development
 - [Axios](https://axios-http.com/)
   - Promise based HTTP client for the browser and node.js
 - [Cypress](https://docs.cypress.io/guides/overview/why-cypress)
   - Next generation front end testing tool built for the modern web.
+  - [Real World Testing with Cypress](https://learn.cypress.io) course
+  - [Cypress End-to-End Testing - Getting Started](https://www.udemy.com/course/cypress-end-to-end-testing-getting-started/) by Academind [paid]
 - [Jest](https://jestjs.io/)
   - JavaScript Testing Framework with a focus on simplicity
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
-  -  Light-weight solution for testing React components
-- [USWDS](https://designsystem.digital.gov/)
+  - Light-weight solution for testing React components
+  - [Testing Javascript course](https://www.testingjavascript.com) by Kent C. Dodds [paid]
+  - [React Testing Library Tutorial](https://www.robinwieruch.de/react-testing-library/) by Robin Wieruch
+  - more [Learning Material](https://testing-library.com/docs/learning/)
+- [U.S. Web Design System (USWDS)](https://designsystem.digital.gov/)
   - A design system for the federal government
+  - A [tutorial project](https://github.com/uswds/uswds-tutorial) to learn about installing, compiling, and customizing with USWDS
+- [Vest](https://vestjs.dev) 
+  - Declarative validations framework inspired by unit testing libraries
+- [CSS Modules](https://github.com/css-modules/css-modules)
+  - CSS file where all class names and animation names are scoped locally by default
+- [Vite](https://vitejs.dev)
+  - Next Generation Frontend Tooling
+  - Learn Vite – [Frontend Build Tool Course](https://youtube.com/watch?v=VAeRhmpcWEQ)
+  - FrontEnd Masters Course on [Vite](https://frontendmasters.com/courses/vite/) [paid]
+
 
 ## BackEnd Development
 
@@ -86,6 +110,8 @@ You will want to familiarize yourself with the following tools and libraries:
 Some additional resources that may be helpful to you as you get started:
 - [Flask Mega-Tutorial](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world)
 - [SQLAlchemy Tutorial](https://docs.sqlalchemy.org/en/20/tutorial/index.html)
-- [React Tutorial](https://react.dev/learn)
 
 ## Getting Help
+- join a pairing session on team calendar
+- ping team engineering Slack channel `acf-ops-engineers`
+- ping team members on Slack
