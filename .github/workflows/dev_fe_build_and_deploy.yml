@@ -24,6 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./.github/actions/generate-token
+
       - name: Generate GitHub App Token
         id: app-token
         uses: ./.github/actions/generate-token
