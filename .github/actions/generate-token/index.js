@@ -1,37 +1,35 @@
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
-async function generateToken(appId, privateKey, installationId) {
-    const payload = {
+async function generateToken() {
+    if (!process.env.APP_ID || !process.env.PRIVATE_KEY || !process.env.INSTALLATION_ID) {
+        console.error('Required environment variables are missing');
+        process.exit(1);
+    }
+
+    const privateKey = process.env.PRIVATE_KEY.replace(/\\n/g, '\n');
+    const token = jwt.sign({
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + (10 * 60), // JWT valid for 10 minutes
-        iss: appId
-    };
-
-    const jwtToken = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
+        iss: process.env.APP_ID
+    }, privateKey, { algorithm: 'RS256' });
 
     try {
         const response = await axios.post(
-            `https://api.github.com/app/installations/${installationId}/access_tokens`,
+            `https://api.github.com/app/installations/${process.env.INSTALLATION_ID}/access_tokens`,
             {},
             {
                 headers: {
-                    Authorization: `Bearer ${jwtToken}`,
+                    Authorization: `Bearer ${token}`,
                     Accept: 'application/vnd.github.v3+json'
                 }
             }
         );
-        return response.data.token;
+        console.log(`::set-output name=token::${response.data.token}`);
     } catch (error) {
-        console.error('Failed to generate installation token:', error);
+        console.error('Failed to generate installation token:', error.message);
         process.exit(1);
     }
 }
 
-const appId = process.env.APP_ID;
-const privateKey = process.env.PRIVATE_KEY.replace(/\\n/g, '\n');
-const installationId = process.env.INSTALLATION_ID;
-
-generateToken(appId, privateKey, installationId).then(token => {
-    console.log(`::set-output name=token::${token}`);
-});
+generateToken();
