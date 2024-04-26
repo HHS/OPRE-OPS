@@ -92,7 +92,7 @@ You will want to familiarize yourself with the following tools and libraries:
 
 The project uses GitHub Actions for CI/CD.  The workflows are defined in the `.github/workflows` directory.
 The IaC for the project is defined using Terraform.
-The project is deployed to Azure using Container Instances.
+The project is deployed to Azure using Container Apps.
 
 The local development environment is defined using Docker Compose.
 You may need to install Docker Desktop to run the application locally.
@@ -103,7 +103,7 @@ You will want to familiarize yourself with the following tools and libraries:
 - [Terraform](https://www.terraform.io/)
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
-- [Azure Container Instances](https://learn.microsoft.com/en-us/azure/?product=containers)
+- [Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/)
 
 ## Additional Resources
 
