@@ -2,21 +2,24 @@ const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
 async function generateToken() {
-    if (!process.env.APP_ID || !process.env.PRIVATE_KEY || !process.env.INSTALLATION_ID) {
-        console.error('Required environment variables are missing');
+    const appId = process.env.INPUT_APP_ID;
+    const privateKey = process.env.INPUT_PRIVATE_KEY.replace(/\\n/g, '\n');
+    const installationId = process.env.INPUT_INSTALLATION_ID;
+
+    if (!appId || !privateKey || !installationId) {
+        console.error('Required inputs are missing');
         process.exit(1);
     }
 
-    const privateKey = process.env.PRIVATE_KEY.replace(/\\n/g, '\n');
     const token = jwt.sign({
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + (10 * 60), // JWT valid for 10 minutes
-        iss: process.env.APP_ID
+        iss: appId
     }, privateKey, { algorithm: 'RS256' });
 
     try {
         const response = await axios.post(
-            `https://api.github.com/app/installations/${process.env.INSTALLATION_ID}/access_tokens`,
+            `https://api.github.com/app/installations/${installationId}/access_tokens`,
             {},
             {
                 headers: {
