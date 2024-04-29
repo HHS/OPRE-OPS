@@ -99,7 +99,6 @@ export const CreateBudgetLinesForm = ({
         );
     };
 
-    const datePickerValue = React.useMemo(() => needByDate, [needByDate]);
     const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
     const isFormNotValid =
         (isEditMode && dateRes.hasErrors()) || (isReviewMode && (res.hasErrors() || !isFormComplete));
@@ -138,7 +137,6 @@ export const CreateBudgetLinesForm = ({
                 </div>
             </div>
             <div className="grid-col-4">
-                {/* <DebugCode data={{ needByDate, dateRes }} /> */}
                 <MemoizedDatePicker
                     id="need-by-date"
                     name="needByDate"
