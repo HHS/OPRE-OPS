@@ -25,7 +25,7 @@ it("project type select has some projects", () => {
     cy.get("#project-combobox-input").type("{esc}");
 });
 
-it.only("can create an SEVERABLE agreement", () => {
+it("can create an SEVERABLE agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
     // Step One - Select a Project
