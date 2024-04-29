@@ -3,6 +3,10 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 
+// Assuming GITHUB_TOKEN is passed as an environment variable
+const token = process.env.GITHUB_TOKEN;
+const repoUrlWithToken = `https://${token}:x-oauth-basic@github.com/${process.env.GITHUB_REPOSITORY}`;
+
 // Setup working directory
 const openApiDir = process.env.INPUT_OPENAPI_DIR || '.';
 process.chdir(path.join(process.env.GITHUB_WORKSPACE, openApiDir));
@@ -23,10 +27,10 @@ function determineBumpType(messages) {
         return 'major';
     } else if (messages.some(msg => minorWords.some(word => msg.includes(word)))) {
         return 'minor';
-    } else if (messages.some(msg => preReleaseWords.some(word => msg.includes(word)))) {
-        return 'prerelease';
     } else if (messages.some(msg => patchWords && patchWords.some(word => msg.includes(word)))) {
         return 'patch';
+    } else if (messages.some(msg => preReleaseWords.some(word => msg.includes(word)))) {
+        return 'prerelease';
     }
     return 'patch'; // Default bump type if no other wordings are matched
 }
@@ -73,7 +77,7 @@ if (process.env.INPUT_SKIP_COMMIT !== 'true') {
     execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`, { stdio: 'inherit' });
 }
 
-// Tagging
+// Tagging and Pushing with authenticated URL
 const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
 const tagSuffix = process.env['INPUT_TAG-SUFFIX'] || '';
 let newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
@@ -86,8 +90,8 @@ if (process.env.INPUT_SKIP_TAG !== 'true') {
 }
 
 if (process.env.INPUT_SKIP_PUSH !== 'true') {
-  execSync('git push', { stdio: 'inherit' });
+  execSync(`git push ${repoUrlWithToken}`, { stdio: 'inherit' });
   if (newTag) {
-      execSync('git push --tags', { stdio: 'inherit' });
+      execSync(`git push ${repoUrlWithToken} --tags`, { stdio: 'inherit' });
   }
 }
