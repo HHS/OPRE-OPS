@@ -3,9 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 
-// Assuming GITHUB_TOKEN is passed as an environment variable
+// Ensure that GITHUB_TOKEN is available as an environment variable
 const token = process.env.GITHUB_TOKEN;
-const repoUrlWithToken = `https://${token}:x-oauth-basic@github.com/${process.env.GITHUB_REPOSITORY}`;
+if (!token) {
+    console.error('GitHub token not found. Make sure it is set in environment variables.');
+    process.exit(1);
+}
+
+const repoUrlWithToken = `https://${token}@github.com/${process.env.GITHUB_REPOSITORY}`;
 
 // Setup working directory
 const openApiDir = process.env.INPUT_OPENAPI_DIR || '.';
@@ -27,10 +32,10 @@ function determineBumpType(messages) {
         return 'major';
     } else if (messages.some(msg => minorWords.some(word => msg.includes(word)))) {
         return 'minor';
-    } else if (messages.some(msg => patchWords && patchWords.some(word => msg.includes(word)))) {
-        return 'patch';
     } else if (messages.some(msg => preReleaseWords.some(word => msg.includes(word)))) {
         return 'prerelease';
+    } else if (messages.some(msg => patchWords && patchWords.some(word => msg.includes(word)))) {
+        return 'patch';
     }
     return 'patch'; // Default bump type if no other wordings are matched
 }
@@ -68,7 +73,7 @@ openapi.info.version = newVersion;
 fs.writeFileSync(openApiFilePath, yaml.dump(openapi), 'utf8');
 
 // Configure git for commit
-execSync('git config user.name "gh-action-bump-version"', { stdio: 'inherit' });
+execSync('git config user.name "GitHub Action"', { stdio: 'inherit' });
 execSync('git config user.email "action@github.com"', { stdio: 'inherit' });
 
 // Commit changes
@@ -78,20 +83,17 @@ if (process.env.INPUT_SKIP_COMMIT !== 'true') {
 }
 
 // Tagging and Pushing with authenticated URL
-const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
-const tagSuffix = process.env['INPUT_TAG-SUFFIX'] || '';
-let newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
-console.log(`Tag Prefix: [${tagPrefix}]`);
-console.log(`Creating new tag: ${newTag}`);
+const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
+const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
+const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
 
 if (process.env.INPUT_SKIP_TAG !== 'true') {
-  execSync(`git tag ${newTag}`, { stdio: 'inherit' });
-  console.log(`::set-output name=newTag::${newTag}`);
+    execSync(`git tag ${newTag}`, { stdio: 'inherit' });
 }
 
 if (process.env.INPUT_SKIP_PUSH !== 'true') {
-  execSync(`git push ${repoUrlWithToken}`, { stdio: 'inherit' });
-  if (newTag) {
-      execSync(`git push ${repoUrlWithToken} --tags`, { stdio: 'inherit' });
-  }
+    execSync(`git push ${repoUrlWithToken} HEAD:refs/heads/${process.env.GITHUB_REF_NAME}`, { stdio: 'inherit' });
+    if (newTag) {
+        execSync(`git push ${repoUrlWithToken} --tags`, { stdio: 'inherit' });
+    }
 }
