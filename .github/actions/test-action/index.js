@@ -12,9 +12,10 @@ async function run() {
     const repository = github.context.repo;
     const branch = github.context.ref.replace('refs/heads/', ''); // Get the branch name
     const octokit = github.getOctokit(token);
+    const repoUrl = `https://${token}:x-oauth-basic@github.com/${repository.owner}/${repository.repo}`;
 
-    // Clone repo, make changes, and configure git
-    execSync(`git clone -b ${branch} --single-branch https://github.com/${repository.owner}/${repository.repo}.git`);
+    // Clone repo with authentication, make changes, and configure git
+    execSync(`git clone -b ${branch} --single-branch ${repoUrl}`);
     process.chdir(repository.repo);
     execSync('git config user.name "GitHub Action"');
     execSync('git config user.email "action@github.com"');
@@ -24,8 +25,8 @@ async function run() {
     execSync('git add .');
     execSync(`git commit -m "Automated commit by GitHub Action"`);
 
-    // Push changes back to the same branch
-    execSync(`git push origin ${branch}`);
+    // Push changes back to the same branch with authentication
+    execSync(`git push ${repoUrl} ${branch}`);
     
   } catch (error) {
     core.setFailed(error.message);
