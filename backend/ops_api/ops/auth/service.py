@@ -1,14 +1,12 @@
 import json
 from typing import Any, Union
 
-import requests
-from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app
-from flask_jwt_extended import create_access_token, create_refresh_token, current_user, get_jwt_identity
+from flask_jwt_extended import create_access_token, current_user, get_jwt_identity
 
 from models.events import OpsEventType
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
-from ops_api.ops.auth.utils import create_oauth_jwt, decode_user, register_user
+from ops_api.ops.auth.utils import _get_token_and_user_data_from_internal_auth
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -73,87 +71,54 @@ def logout() -> Union[Response, tuple[str, int]]:
             return make_response_with_headers({"message": "Logged out"})
 
 
-def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
-    # Generate internal backend-JWT
-    # - user meta data
-    # - endpoints validate backend-JWT
-    #   - refresh - within 15 min - also include a call to login.gov /refresh
-    #   - invalid JWT
-    # - create backend-JWT endpoints /refesh /validate (drf-simplejwt)
-    # See if user exists
-    try:
-        user, is_new_user = register_user(user_data)  # Refactor me
-        current_app.logger.debug(f"User: {user}")
-        current_app.logger.debug(f"Is New User: {is_new_user}")
-        # TODO
-        # Do we want to embed the user's roles or permissions in the scope: [read write]?
-        # The next two tokens are specific to our backend API, these are used for our API
-        # authZ, given a valid login from the prior AuthN steps above.
-
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-        access_token = create_access_token(
-            identity=user,
-            expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
-            additional_claims=additional_claims,
-            fresh=True,
-        )
-        refresh_token = create_refresh_token(
-            identity=user,
-            expires_delta=current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES"),
-            additional_claims=additional_claims,
-        )
-    except Exception as e:
-        current_app.logger.exception(e)
-        return None, None, None, None
-    return access_token, refresh_token, user, is_new_user
-
-
-def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
-    try:
-        authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]
-        current_app.logger.debug(f"authlib_client_config={authlib_client_config}")
-        current_app.logger.debug(f"auth_provider={provider}")
-        provider_config = authlib_client_config[provider]
-
-        jwt = create_oauth_jwt(provider, current_app.config)
-        current_app.logger.debug(f"jwt={jwt}")
-
-        client = OAuth2Session(
-            provider_config["client_id"],
-            scope="openid profile email",
-            redirect_uri=provider_config["redirect_uri"],
-        )
-        token = client.fetch_token(
-            provider_config["token_endpoint"],
-            client_assertion=jwt,
-            client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-            grant_type="authorization_code",
-            code=auth_code,
-        )
-        current_app.logger.debug(f"token={token}")
-        access_token = token["access_token"].strip()
-        header = {
-            "Authorization": f"Bearer {access_token}",
-            "Accept": "application/json",
-        }
-        current_app.logger.debug(f"header={header}")
-        user_jwt = requests.get(
-            provider_config["user_info_url"],
-            headers=header,
-        ).content.decode("utf-8")
-
-        # HHSAMS returns a JWT, for user data, which needs decoded,
-        # Login.gov returns a JSON object for user data,
-        # so we need to handle both cases.
-        user_data = decode_user(payload=user_jwt, provider=provider) if provider == "hhsams" else user_jwt
-        current_app.logger.debug(f"user_data={user_data}")
-    except Exception as e:
-        current_app.logger.exception(e)
-        raise e
-    finally:
-        return token, user_data
+# def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
+#     try:
+#         authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]
+#         current_app.logger.debug(f"authlib_client_config={authlib_client_config}")
+#         current_app.logger.debug(f"auth_provider={provider}")
+#         provider_config = authlib_client_config[provider]
+#
+#         jwt = create_oauth_jwt(provider, current_app.config)
+#         current_app.logger.debug(f"jwt={jwt}")
+#
+#         client = OAuth2Session(
+#             provider_config["client_id"],
+#             scope="openid profile email",
+#             redirect_uri=provider_config["redirect_uri"],
+#         )
+#         token = client.fetch_token(
+#             provider_config["token_endpoint"],
+#             client_assertion=jwt,
+#             client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+#             grant_type="authorization_code",
+#             code=auth_code,
+#         )
+#         current_app.logger.debug(f"token={token}")
+#         access_token = token["access_token"].strip()
+#         header = {
+#             "Authorization": f"Bearer {access_token}",
+#             "Accept": "application/json",
+#         }
+#         current_app.logger.debug(f"header={header}")
+#         user_jwt = requests.get(
+#             provider_config["user_info_url"],
+#             headers=header,
+#         ).content.decode("utf-8")
+#
+#         # HHSAMS returns a JWT, for user data, which needs decoded,
+#         # Login.gov returns a JSON object for user data,
+#         # so we need to handle both cases.
+#         user_data = (
+#             decode_user(payload=user_jwt, provider=provider)
+#             if provider == "hhsams"
+#             else user_jwt
+#         )
+#         current_app.logger.debug(f"user_data={user_data}")
+#     except Exception as e:
+#         current_app.logger.exception(e)
+#         raise e
+#     finally:
+#         return token, user_data
 
 
 def refresh() -> Response:

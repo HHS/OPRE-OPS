@@ -8,6 +8,7 @@ import requests
 from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import Config, current_app
+from flask_jwt_extended import create_access_token, create_refresh_token
 from marshmallow import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError
@@ -111,32 +112,99 @@ def decode_user(
     return claims
 
 
-def register_user(userinfo: UserInfoDict) -> User:
+def get_user_from_email(email: str) -> Optional[User]:
+    """
+    Get a user from the database by email
+    :param email: REQUIRED - The email to search for
+    :return: User
+    """
+    stmt = select(User).where((User.email == email))
+    return current_app.db_session.scalars(stmt).one_or_none()
+
+
+def register_user(userinfo: UserInfoDict) -> tuple[User, bool]:
+    """
+    Register a new user in the database
+    :param userinfo: REQUIRED - The user information to register
+    :return: User, bool
+
+    The bool return param is used to determine if the user is new or not.
+    """
     user = get_user_from_sub(userinfo.get("sub"))
     if user:
         return user, False
     else:
-        # Create new user
-        # Default to an 'unassigned' role.
-        current_app.logger.debug("Creating new user")
-        try:
-            # Find the role with the matching permission
-            role = current_app.db_session.query(Role).options(load_only(Role.name)).filter_by(name="unassigned").one()
-            user = User(
-                email=userinfo["email"],
-                oidc_id=userinfo["sub"],
-                roles=[role],
-            )
+        user = get_user_from_email(userinfo.get("email"))
+        if user:
+            current_app.logger.debug("Updating oidc of existing user")
+            try:
+                user.oidc_id = userinfo.get("sub")
+                current_app.db_session.save(user)
+                current_app.db_session.commit()
+            except Exception as e:
+                current_app.logger.debug(f"User Update Error: {e}")
+                return None, False
+        else:
+            # Create new user
+            # Default to an 'unassigned' role.
+            current_app.logger.debug("Creating new user")
+            try:
+                # Find the role with the matching permission
+                role = (
+                    current_app.db_session.query(Role).options(load_only(Role.name)).filter_by(name="unassigned").one()
+                )
+                user = User(
+                    email=userinfo["email"],
+                    oidc_id=userinfo["sub"],
+                    roles=[role],
+                )
 
-            current_app.db_session.add(user)
-            current_app.db_session.commit()
-            return user, True
-        except Exception as e:
-            current_app.logger.debug(f"User Creation Error: {e}")
-            current_app.db_session.rollback()
-            return None, False
+                current_app.db_session.add(user)
+                current_app.db_session.commit()
+                return user, True
+            except Exception as e:
+                current_app.logger.debug(f"User Creation Error: {e}")
+                current_app.db_session.rollback()
+                return None, False
 
 
 def get_user_from_sub(sub: str) -> Optional[User]:
     stmt = select(User).where((User.oidc_id == sub))
     return current_app.db_session.scalars(stmt).one_or_none()
+
+
+def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
+    # Generate internal backend-JWT
+    # - user meta data
+    # - endpoints validate backend-JWT
+    #   - refresh - within 15 min - also include a call to login.gov /refresh
+    #   - invalid JWT
+    # - create backend-JWT endpoints /refesh /validate (drf-simplejwt)
+    # See if user exists
+    try:
+        user, is_new_user = register_user(user_data)  # Refactor me
+        current_app.logger.debug(f"User: {user}")
+        current_app.logger.debug(f"Is New User: {is_new_user}")
+        # TODO
+        # Do we want to embed the user's roles or permissions in the scope: [read write]?
+        # The next two tokens are specific to our backend API, these are used for our API
+        # authZ, given a valid login from the prior AuthN steps above.
+
+        additional_claims = {}
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+        access_token = create_access_token(
+            identity=user,
+            expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
+            additional_claims=additional_claims,
+            fresh=True,
+        )
+        refresh_token = create_refresh_token(
+            identity=user,
+            expires_delta=current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES"),
+            additional_claims=additional_claims,
+        )
+    except Exception as e:
+        current_app.logger.exception(e)
+        return None, None, None, None
+    return access_token, refresh_token, user, is_new_user
