@@ -4,12 +4,12 @@ import SummaryCard from "../../UI/SummaryCard";
 
 /**
  * A component that displays the total budget lines for an agreement.
- *
+ * @component
  * @param {Object} props - The component props.
  * @param {number} props.numberOfAgreements - The number of agreements.
  * @param {Object} props.countsByStatus - The counts of agreements by status.
  * @param {boolean} props.includeDrafts - Include draft BLIs
- * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
+ * @returns {JSX.Element} - The agreement total budget lines card component JSX.
  */
 const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus = {}, includeDrafts }) => {
     const headerText = "Total Budget Lines";

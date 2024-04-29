@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-from contextlib import suppress
 from functools import partial
 from typing import Optional
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity
-from marshmallow import Schema
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any, override
 
-from models import BudgetLineItemStatus, OpsEventType
+from models import BudgetLineItemChangeRequest, BudgetLineItemStatus, OpsEventType
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -25,7 +23,7 @@ from ops_api.ops.schemas.budget_line_items import (
     POSTRequestBody,
     QueryParameters,
 )
-from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, get_change_data
+from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -104,13 +102,73 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_BLI) as meta:
             schema.context["id"] = id
             schema.context["method"] = method
-            data = validate_and_normalize_request_data(schema)
-            budget_line_item = self.update_and_commit_budget_line_item(data, id)
+
+            # determine if the BLI is in an editable state or one that supports change requests (requires approval)
+
+            budget_line_item = current_app.db_session.get(BudgetLineItem, id)
+            if not budget_line_item:
+                return make_response_with_headers({}, 400)  # should this return 404, tests currently expect 400
+            editable = budget_line_item.status in [
+                BudgetLineItemStatus.DRAFT,
+                BudgetLineItemStatus.PLANNED,
+                BudgetLineItemStatus.IN_EXECUTION,
+            ]
+
+            # if the BLI is in review, it cannot be edited
+            if budget_line_item.in_review:
+                editable = False
+
+            # 403: forbidden to edit
+            if not editable:
+                return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
+
+            # determine if it can be edited directly or if a change request is required
+            directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
+
+            # validate and normalize the request data
+            change_data, changing_from_data = validate_and_prepare_change_data(
+                request.json,
+                budget_line_item,
+                schema,
+                ["id", "agreement_id"],
+                partial=False,
+            )
+
+            changed_budget_props = list(set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names))
+            # TODO: convert legacy status change workflows to status change requests
+            #   until then, status changes are ignored here
+            change_data.pop("status", None)
+            other_changed_props = list(set(change_data.keys()) - set(changed_budget_props))
+
+            direct_change_data = {
+                key: value for key, value in change_data.items() if directly_editable or key in other_changed_props
+            }
+
+            if direct_change_data:
+                update_data(budget_line_item, direct_change_data)
+                current_app.db_session.add(budget_line_item)
+                current_app.db_session.commit()
+
+            change_request_ids = []
+
+            if not directly_editable and changed_budget_props:
+                # create a budget change request for each changed prop separately (for separate approvals)
+                for changed_prop_key in changed_budget_props:
+                    change_request = BudgetLineItemChangeRequest()
+                    change_request.budget_line_item_id = id
+                    schema = budget_line_item.__marshmallow__(only=[changed_prop_key])
+                    change_request.requested_changes = schema.dump(change_data)
+                    current_app.db_session.add(change_request)
+                    current_app.db_session.commit()
+                    change_request_ids.append(change_request.id)
+
             bli_dict = self._response_schema.dump(budget_line_item)
             meta.metadata.update({"bli": bli_dict})
             current_app.logger.info(f"{message_prefix}: Updated BLI: {bli_dict}")
-
-            return make_response_with_headers(bli_dict, 200)
+            if change_request_ids:
+                return make_response_with_headers(bli_dict, 202)
+            else:
+                return make_response_with_headers(bli_dict, 200)
 
     @override
     @is_authorized(
@@ -252,29 +310,3 @@ def update_budget_line_item(data: dict[str, Any], id: int):
     current_app.db_session.add(budget_line_item)
     current_app.db_session.commit()
     return budget_line_item
-
-
-def validate_and_normalize_request_data(schema: Schema) -> dict[str, Any]:
-    id = schema.context["id"]
-    bli_stmt = select(BudgetLineItem).where(BudgetLineItem.id == id)
-    existing_bli = current_app.db_session.scalar(bli_stmt)
-    data = get_change_data(
-        request.json,
-        existing_bli,
-        schema,
-        ["id", "status", "agreement_id"],
-        partial=False,
-    )
-    data = convert_date_strings_to_dates(data)
-
-    with suppress(AttributeError):
-        try:
-            status = BudgetLineItemStatus[request.json["status"]]
-        except KeyError:
-            status = existing_bli.status
-
-        if len(data) > 0 and status == BudgetLineItemStatus.PLANNED:
-            status = BudgetLineItemStatus.DRAFT
-        data["status"] = status
-
-    return data

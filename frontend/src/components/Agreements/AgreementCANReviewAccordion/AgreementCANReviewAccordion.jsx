@@ -9,13 +9,14 @@ import { workflowActions } from "../../../pages/agreements/review/ReviewAgreemen
 
 /**
  * Renders an accordion component for reviewing CANs.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.instructions - The instructions for the accordion.
  * @param {Array<any>} props.selectedBudgetLines - The selected budget lines.
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
- * @returns {React.JSX.Element} The AgreementCANReviewAccordion component.
+ * @returns {JSX.Element} The AgreementCANReviewAccordion component.
  */
 const AgreementCANReviewAccordion = ({
     instructions,

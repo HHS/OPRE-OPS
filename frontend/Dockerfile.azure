@@ -32,10 +32,10 @@ RUN chown -R bun:bun .
 USER bun
 
 # Install the runtime script cli package
-RUN bun install -g runtime-env-cra
+RUN bun install runtime-env-cra express
 
 # Expose port
 EXPOSE 3000/tcp
 
 # Entry point to run the application.
-ENTRYPOINT ["/bin/sh", "-c", "NODE_ENV=production bun run ~/.bun/bin/runtime-env-cra && bun run index.js"]
+ENTRYPOINT ["/bin/sh", "-c", "NODE_ENV=production bun run ./node_modules/.bin/runtime-env-cra && bun run index.js"]

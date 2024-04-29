@@ -9,11 +9,12 @@ import styles from "./small-summary-card.module.css";
 
 /**
  * Renders an accordion component to review changes in an agreement.
+ * @component
  * @param {Object} props - The component props.
  * @param {React.ReactNode} [props.children] - The child components to be rendered inside the accordion.
  * @param {number} props.changeInBudgetLines - The change in budget lines.
  * @param {Array<any>} props.changeInCans - The changes in cans.
- * @returns {React.JSX.Element} - The AgreementChangesAccordion component.
+ * @returns {JSX.Element} - The AgreementChangesAccordion component.
  */
 const AgreementChangesAccordion = ({ children, changeInBudgetLines, changeInCans }) => {
     /**

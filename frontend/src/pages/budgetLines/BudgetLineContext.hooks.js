@@ -1,9 +1,7 @@
-import { createContext, useContext, useReducer } from "react";
+import { useContext } from "react";
+import { BudgetLinesDispatchContext, BudgetLinesContext } from "./BudgetLineContext.jsx";
 
-export const BudgetLinesContext = createContext(null);
-export const BudgetLinesDispatchContext = createContext(null);
-
-const initialState = {
+export const initialState = {
     projects_list: [],
     projects_filter: "",
     agreements: [],
@@ -16,16 +14,6 @@ const initialState = {
     selected_procurement_shop: {},
     wizardSteps: ["Project & Agreement", "Budget Lines", "Review"]
 };
-
-export function BudgetLinesProvider({ children }) {
-    const [state, dispatch] = useReducer(budgetLinesReducer, initialState);
-
-    return (
-        <BudgetLinesContext.Provider value={state}>
-            <BudgetLinesDispatchContext.Provider value={dispatch}>{children}</BudgetLinesDispatchContext.Provider>
-        </BudgetLinesContext.Provider>
-    );
-}
 
 export function useBudgetLines() {
     return useContext(BudgetLinesContext);
@@ -44,7 +32,7 @@ export function useSetState(key) {
     return setValue;
 }
 
-function budgetLinesReducer(state, action) {
+export function budgetLinesReducer(state, action) {
     switch (action.type) {
         case "SET_STATE": {
             return { ...state, [action.key]: action.value };

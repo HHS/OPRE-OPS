@@ -1,5 +1,5 @@
 import App from "../../App";
-import { BudgetLinesProvider } from "./budgetLineContext";
+import { BudgetLinesProvider } from "./BudgetLineContext";
 import CreateBudgetLine from "./CreateBudgetLine";
 
 const CreateBudgetLines = () => {

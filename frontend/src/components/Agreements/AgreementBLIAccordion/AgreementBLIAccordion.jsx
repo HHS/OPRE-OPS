@@ -10,6 +10,7 @@ import { workflowActions } from "../../../pages/agreements/review/ReviewAgreemen
 
 /**
  * Renders an accordion component for selecting budget lines for an agreement.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.title - The title of the accordion.
  * @param {string} props.instructions - The instructions for the accordion.
@@ -19,7 +20,7 @@ import { workflowActions } from "../../../pages/agreements/review/ReviewAgreemen
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
- * @returns {React.JSX.Element} - The rendered accordion component.
+ * @returns {JSX.Element} - The rendered accordion component.
  */
 function AgreementBLIAccordion({
     title,

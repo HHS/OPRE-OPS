@@ -2,7 +2,7 @@ import CreateBudgetLineFlow from "./CreateBudgetLineFlow";
 import StepSelectProjectAndAgreement from "./StepSelectProjectAndAgreement";
 import StepCreateBudgetLines from "../../components/BudgetLineItems/CreateBLIsAndSCs";
 import StepSuccessAlert from "../../components/UI/Alert/StepSuccessAlert";
-import { useBudgetLines } from "./budgetLineContext";
+import { useBudgetLines } from "./BudgetLineContext.hooks";
 
 export const CreateBudgetLine = () => {
     const {
