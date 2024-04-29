@@ -14,10 +14,10 @@ const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8'));
 
 // Function to determine the type of version bump needed
 function determineBumpType(messages) {
-    const majorWords = process.env.INPUT_MAJOR_WORDING.split(',').map(word => word.trim());
-    const minorWords = process.env.INPUT_MINOR_WORDING.split(',').map(word => word.trim());
-    const patchWords = process.env.INPUT_PATCH_WORDING.split(',').map(word => word.trim());
-    const preReleaseWords = process.env.INPUT_RC_WORDING.split(',').map(word => word.trim());
+    const majorWords = (process.env.INPUT_MAJOR_WORDING || 'BREAKING CHANGE,major').split(',').map(word => word.trim());
+    const minorWords = (process.env.INPUT_MINOR_WORDING || 'feat,minor').split(',').map(word => word.trim());
+    const patchWords = (process.env.INPUT_PATCH_WORDING || '').split(',').map(word => word.trim());
+    const preReleaseWords = (process.env.INPUT_RC_WORDING || 'pre-alpha,pre-beta,pre-rc').split(',').map(word => word.trim());
 
     if (messages.some(msg => majorWords.some(word => msg.includes(word)))) {
         return 'major';
@@ -25,7 +25,7 @@ function determineBumpType(messages) {
         return 'minor';
     } else if (messages.some(msg => preReleaseWords.some(word => msg.includes(word)))) {
         return 'prerelease';
-    } else if (messages.some(msg => patchWords.some(word => msg.includes(word)))) {
+    } else if (messages.some(msg => patchWords && patchWords.some(word => msg.includes(word)))) {
         return 'patch';
     }
     return 'patch'; // Default bump type if no other wordings are matched
@@ -63,35 +63,31 @@ const newVersion = updateVersion(oldVersion, bumpType);
 openapi.info.version = newVersion;
 fs.writeFileSync(openApiFilePath, yaml.dump(openapi), 'utf8');
 
-console.log(`Bump type: ${bumpType}, Old version: ${oldVersion}, New version: ${newVersion}`);
-
-// Configure git
-execSync('git config user.name "GitHub Actions"');
-execSync('git config user.email "action@github.com"');
+// Configure git for commit
+execSync('git config user.name "gh-action-bump-version"', { stdio: 'inherit' });
+execSync('git config user.email "action@github.com"', { stdio: 'inherit' });
 
 // Commit changes
-execSync(`git add ${openApiFilePath}`);
-execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`);
+execSync(`git add ${openApiFilePath}`, { stdio: 'inherit' });
+if (process.env.INPUT_SKIP_COMMIT !== 'true') {
+    execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`, { stdio: 'inherit' });
+}
 
 // Tagging
-const tagPrefix = process.env['INPUT_TAG_PREFIX'] || '';
-const newTag = `${tagPrefix}${newVersion}`;
+const tagPrefix = process.env['INPUT_TAG-PREFIX'] || '';
+const tagSuffix = process.env['INPUT_TAG-SUFFIX'] || '';
+let newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+console.log(`Tag Prefix: [${tagPrefix}]`);
 console.log(`Creating new tag: ${newTag}`);
 
-execSync(`git tag ${newTag}`);
+if (process.env.INPUT_SKIP_TAG !== 'true') {
+  execSync(`git tag ${newTag}`, { stdio: 'inherit' });
+  console.log(`::set-output name=newTag::${newTag}`);
+}
 
-// Explicit Git URL configuration using GIT_TOKEN
-const token = process.env.GIT_TOKEN;
-const repoSlug = process.env.GITHUB_REPOSITORY;
-const repoURL = `https://${token}@github.com/${repoSlug}`;
-
-console.log(`Preparing to push changes. Verifying token...`);
-console.log(`Token usage confirmation (masked): ${'*'.repeat(10)}`);
-
-try {
-    execSync(`git push ${repoURL} HEAD:main --tags`, { stdio: 'inherit' });
-} catch (error) {
-    console.error('Failed to push changes:', error);
-    console.error('Error details:', error.message);
-    process.exit(1);
+if (process.env.INPUT_SKIP_PUSH !== 'true') {
+  execSync('git push', { stdio: 'inherit' });
+  if (newTag) {
+      execSync('git push --tags', { stdio: 'inherit' });
+  }
 }
