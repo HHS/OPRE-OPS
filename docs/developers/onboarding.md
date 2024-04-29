@@ -5,6 +5,7 @@ Welcome aboard! We're excited to have you as part of our team. This guide is des
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Software Development Practices](...)
 - [Repository Setup](#repository-setup)
 - [FrontEnd Development](#frontend-development)
 - [BackEnd Development](#backend-development)
@@ -19,6 +20,24 @@ OPS is the OPRE Portfolio management System. It is a new system currently being 
 OPS will empower managers and staff with the visibility they need into OPRE’s research, evaluation, and data activities, as well as streamline budget and administrative tasks. With this system, it will be easy for OPRE to plan and manage projects so they can spend less time managing the work and more time building evidence to improve the lives of children and families.
 
 - read more on the [wiki](https://github.com/HHS/OPRE-OPS/wiki/01-Background-and-introduction)
+
+## Software Development Practices
+
+Software Engineering at Flexion is guided by OESA (Option Enabling Software Architecture).
+There is an OESA workshop that you can attend to learn more about the principles and practices.
+
+OESA is partly based on [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+and [SOLID](https://www.freecodecamp.org/news/solid-design-principles-in-software-development/) principles of object-oriented design.
+
+Some reference materials that may be helpful to you as you get started:
+
+- [Clean Code](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882) by Robert C. Martin
+- [Clean Architecture](https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164) by Robert C. Martin
+- [Refactoring](https://www.amazon.com/Refactoring-Improving-Existing-Addison-Wesley-Signature/dp/0134757599) by Martin Fowler
+- [Domain-Driven Design](https://www.amazon.com/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215) by Eric Evans
+- [The Pragmatic Programmer](https://www.amazon.com/Pragmatic-Programmer-Journeyman-Master/dp/020161622X) by Andrew Hunt and David Thomas
+- [Continuous Delivery](https://www.amazon.com/Continuous-Delivery-Deployment-Automation-Addison-Wesley/dp/0321601912) by Jez Humble and David Farley
+- [Modern Software Engineering](https://www.amazon.com/Modern-Software-Engineering-Discipline-Development/dp/0137314914/) by Dave Farley
 
 ## Repository Setup
 
@@ -46,7 +65,7 @@ You will want to familiarize yourself with the following tools and libraries:
   -  Framework that lets us handle client and server-side routing in React applications
 - [React Redux](https://react-redux.js.org/)
   - Official React bindings for Redux
-  - Official [Tutorials Overview](https://redux-toolkit.js.org/tutorials/overview) 
+  - Official [Tutorials Overview](https://redux-toolkit.js.org/tutorials/overview)
 - [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)
   - The official, opinionated, batteries-included toolset for efficient Redux development
 - [Axios](https://axios-http.com/)
@@ -65,7 +84,7 @@ You will want to familiarize yourself with the following tools and libraries:
 - [U.S. Web Design System (USWDS)](https://designsystem.digital.gov/)
   - A design system for the federal government
   - A [tutorial project](https://github.com/uswds/uswds-tutorial) to learn about installing, compiling, and customizing with USWDS
-- [Vest](https://vestjs.dev) 
+- [Vest](https://vestjs.dev)
   - Declarative validations framework inspired by unit testing libraries
 - [CSS Modules](https://github.com/css-modules/css-modules)
   - CSS file where all class names and animation names are scoped locally by default
