@@ -4,6 +4,27 @@ import cx from "clsx";
 import datePicker from "@uswds/uswds/js/usa-date-picker";
 import IsRequiredHelper from "../../Form/IsRequiredHelper";
 
+/**
+ * DatePicker component for selecting dates.
+ * Utilizes the USWDS (U.S. Web Design System) date picker component.
+ *
+ * @component
+ * @param {Object} props - The props for the DatePicker component.
+ * @param {string} props.id - The id for the date picker input element.
+ * @param {string} props.name - The name attribute for the date picker input element.
+ * @param {string} props.label - The label for the date picker.
+ * @param {string} [props.hint] - Optional hint text for the date picker.
+ * @param {string} [props.className] - Additional class names for the date picker container.
+ * @param {Function} props.onChange - Callback function that is called when the date is changed.
+ * @param {Date|string} [props.minDate] - The minimum date that can be selected.
+ * @param {Date|string} [props.maxDate] - The maximum date that can be selected.
+ * @param {string} [props.value] - The current value of the date picker.
+ * @param {boolean} [props.pending=false] - If true, indicates that the date picker is in a pending state.
+ * @param {Array<string>} [props.messages=[]] - Error messages to display.
+ * @param {boolean} [props.isRequired=false] - If true, indicates that the date picker is required.
+ * @param {boolean} [props.isRequiredNoShow=false] - If true, indicates that the date picker is required but does not visually show it.
+ * @returns {JSX.Element} The rendered DatePicker component.
+ */
 function DatePicker({
     id,
     name,
