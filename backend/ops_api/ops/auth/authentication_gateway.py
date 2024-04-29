@@ -8,10 +8,12 @@ from ops_api.ops.auth.decorators import is_user_active
 
 class AuthenticationGateway:
     def __init__(self, config: Config) -> None:
+        for provider in config["AUTHLIB_OAUTH_CLIENTS"]:
+            if provider not in ["fakeauth", "logingov", "hhsams"]:
+                raise ValueError(f"Invalid provider {provider}")
         self.providers = {
-            "fakeauth": AuthenticationProviderFactory.create_provider("fakeauth", config),
-            "logingov": AuthenticationProviderFactory.create_provider("logingov", config),
-            "hhsams": AuthenticationProviderFactory.create_provider("hhsams", config),
+            provider: AuthenticationProviderFactory.create_provider(provider, config)
+            for provider in config["AUTHLIB_OAUTH_CLIENTS"]
         }
 
     @is_user_active
