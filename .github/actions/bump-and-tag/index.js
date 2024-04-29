@@ -80,19 +80,16 @@ let newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
 console.log(`Tag Prefix: [${tagPrefix}]`);
 console.log(`Creating new tag: ${newTag}`);
 
-if (process.env.INPUT_SKIP_TAG !== 'true') {
-    execSync(`git tag ${newTag}`, { stdio: 'inherit' });
-    console.log(`::set-output name=newTag::${newTag}`);
-}
-
 // Explicit Git URL configuration using GIT_TOKEN
 const token = process.env.GIT_TOKEN;
 const repoSlug = process.env.GITHUB_REPOSITORY;
 const repoURL = `https://${token}@github.com/${repoSlug}`;
 
-if (process.env.INPUT_SKIP_PUSH !== 'true') {
-    execSync(`git push ${repoURL} HEAD:main --tags`, { stdio: 'inherit' });
-    if (newTag) {
-        execSync(`git push ${repoURL} --tags`, { stdio: 'inherit' });
-    }
+if (process.env.INPUT_SKIP_TAG !== 'true') {
+    execSync(`git tag ${newTag}`, { stdio: 'inherit' });
+    console.log(`::set-output name=newTag::${newTag}`);
 }
+
+if (process.env.INPUT_SKIP_PUSH !== 'true') {
+    try {
+        execSync(`git push ${repoURL} HEAD:main --tags`, { std
