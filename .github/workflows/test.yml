@@ -1,0 +1,19 @@
+name: Dev Backend Build and Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - cml/github-action-app
+      
+      jobs:
+        build:
+          runs-on: ubuntu-latest
+          steps:
+            - name: Checkout Code
+              uses: actions/checkout@v2
+            
+            - name: Custom Push to Protected Branch Action
+              uses: /.github/actions/test-action
+              env:
+                GITHUB_TOKEN: ${{ secrets.TEST_TOKEN }}

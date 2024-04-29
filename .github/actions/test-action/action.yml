@@ -1,0 +1,5 @@
+name: 'Push to Protected Branch'
+description: 'Custom action to push changes to a protected branch'
+runs:
+  using: 'node12'
+  main: 'index.js'
