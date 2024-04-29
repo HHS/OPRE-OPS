@@ -106,7 +106,7 @@ def test_change_request(auth_client, app):
     session = app.db_session
     change_request = ChangeRequest()
     change_request.created_by = 1
-    change_request.requested_changes = {"foo": "bar"}
+    change_request.requested_change_data = {"foo": "bar"}
     session.add(change_request)
     session.commit()
 
@@ -125,7 +125,7 @@ def test_agreement_change_request(auth_client, app):
     change_request = AgreementChangeRequest()
     change_request.agreement_id = 1
     change_request.created_by = 1
-    change_request.requested_changes = {"foo": "bar"}
+    change_request.requested_change_data = {"foo": "bar"}
     session.add(change_request)
     session.commit()
 
@@ -144,7 +144,7 @@ def test_budget_line_item_change_request(auth_client, app):
     change_request = BudgetLineItemChangeRequest()
     change_request.budget_line_item_id = 1
     change_request.created_by = 1
-    change_request.requested_changes = {"foo": "bar"}
+    change_request.requested_change_data = {"foo": "bar"}
     session.add(change_request)
     session.commit()
 
@@ -190,11 +190,27 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
         change_request_ids.append(change_request_id)
         assert change_request["type"] == "budget_line_item_change_request"
         assert change_request["budget_line_item_id"] == bli_id
-        assert change_request["has_budget_changes"] is True
+        assert change_request["has_budget_change"] is True
         assert change_request["has_status_change"] is False
-        if "can_id" in change_request["requested_changes"]:
+        assert "requested_change_data" in change_request
+        requested_change_data = change_request["requested_change_data"]
+        assert "requested_change_diff" in change_request
+        requested_change_diff = change_request["requested_change_diff"]
+        assert requested_change_diff.keys() == requested_change_data.keys()
+        if "amount" in requested_change_data:
+            assert requested_change_data["amount"] == 222.22
+            assert requested_change_diff["amount"]["old"] == 111.11
+            assert requested_change_diff["amount"]["new"] == 222.22
+        if "date_needed" in requested_change_data:
+            assert requested_change_data["date_needed"] == "2032-02-02"
+            assert requested_change_diff["date_needed"]["old"] is None
+            assert requested_change_diff["date_needed"]["new"] == "2032-02-02"
+        if "can_id" in requested_change_data:
             assert can_id_change_request_id is None
             can_id_change_request_id = change_request_id
+            assert requested_change_data["can_id"] == 2
+            assert requested_change_diff["can_id"]["old"] == 1
+            assert requested_change_diff["can_id"]["new"] == 2
     assert can_id_change_request_id is not None
 
     # verify the BLI was not updated yet
