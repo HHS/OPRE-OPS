@@ -82,12 +82,8 @@ describe("agreement review workflow", () => {
             //  Add Services Component
             cy.get("p").should("contain", "You have not added any Services Component yet.");
             cy.get("#servicesComponentSelect").select("1");
-            cy.get("#popStartMonth").select("01 - Jan");
-            cy.get("#popStartDay").type("1");
-            cy.get("#popStartYear").type("2024");
-            cy.get("#popEndMonth").select("01 - Jan");
-            cy.get("#popEndDay").type("1");
-            cy.get("#popEndYear").type("2025");
+            cy.get("#pop-start-date").type("01/01/2024");
+            cy.get("#pop-end-date").type("01/01/2025");
             cy.get("#description").type("This is a description.");
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("h2").should("contain", "Base Period 1");
@@ -246,12 +242,8 @@ describe("agreement review workflow", () => {
             //  Add Services Component
             cy.get("p").should("contain", "You have not added any Services Component yet.");
             cy.get("#servicesComponentSelect").select("1");
-            cy.get("#popStartMonth").select("01 - Jan");
-            cy.get("#popStartDay").type("1");
-            cy.get("#popStartYear").type("2024");
-            cy.get("#popEndMonth").select("01 - Jan");
-            cy.get("#popEndDay").type("1");
-            cy.get("#popEndYear").type("2025");
+            cy.get("#pop-start-date").type("01/01/2024");
+            cy.get("#pop-end-date").type("01/01/2025");
             cy.get("#description").type("This is a description.");
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("h2").should("contain", "Base Period 1");

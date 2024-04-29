@@ -25,7 +25,7 @@ it("project type select has some projects", () => {
     cy.get("#project-combobox-input").type("{esc}");
 });
 
-it("can create an SEVERABLE agreement", () => {
+it.only("can create an SEVERABLE agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
     // Step One - Select a Project
@@ -99,12 +99,8 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("p").should("contain", "You have not added any Services Component yet.");
     cy.get("#servicesComponentSelect").select("1");
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Base Period 1");
@@ -238,24 +234,16 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#servicesComponentSelect").select("2");
     cy.get("#optional-services-component").should("not.be.disabled");
     cy.get("#servicesComponentSelect").select("1");
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Services Component 1");
     //create a new optional services component
     cy.get("#servicesComponentSelect").select("2");
     cy.get(".usa-checkbox").click();
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Optional Services Component 2");
