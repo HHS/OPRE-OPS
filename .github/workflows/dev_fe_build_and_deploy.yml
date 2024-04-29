@@ -17,9 +17,9 @@ jobs:
   build-frontend:
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
-    permissions:
-      contents: write
-      packages: write
+    # permissions:
+    #   contents: write
+    #   packages: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
@@ -41,7 +41,7 @@ jobs:
         run: |
           curl -H "Authorization: token ${{ secrets.TEST_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/actions/runs
           echo $GITHUB_TOKEN | cut -c -5
-          
+
       - name:  'Automated Version Bump'
         id: version_bump
         uses:  'phips28/gh-action-bump-version@56588a3c4a1d62a068f308dfbc17f4ee55c69d41' #v11.0.4
