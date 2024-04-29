@@ -27,13 +27,12 @@ def login_post() -> Response:
 @error_simulator
 @handle_api_error
 def logout_post() -> Response:
-    try:
-        return logout()
-    except Exception as ex:
-        return make_response_with_headers(f"Logout Error: {ex}", 400)
+    return logout()
 
 
 @bp.route("/refresh/", methods=["POST"])
+@jwt_required(refresh=True, verify_type=True)
+@error_simulator
 @handle_api_error
 def refresh_post() -> Response:
     return refresh()

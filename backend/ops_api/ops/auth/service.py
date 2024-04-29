@@ -4,12 +4,11 @@ from typing import Any, Union
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Response, current_app
-from flask_jwt_extended import create_access_token, create_refresh_token, current_user, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, current_user, get_jwt_identity
 
 from models.events import OpsEventType
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
 from ops_api.ops.auth.utils import create_oauth_jwt, decode_user, register_user
-from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -157,10 +156,6 @@ def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
         return token, user_data
 
 
-# We are using the `refresh=True` options in jwt_required to only allow
-# refresh tokens to access this route.
-@jwt_required(refresh=True, verify_type=True)
-@error_simulator
 def refresh() -> Response:
     additional_claims = {"roles": []}
     current_app.logger.debug(f"user {current_user}")
