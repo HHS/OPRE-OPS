@@ -63,7 +63,7 @@ jobs:
         id: version_bump
         uses: ./.github/actions/bump-and-tag
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GIT_TOKEN: ${{ steps.app-token.outputs.token }}
         with:
           tag-prefix: 'ops-backend-v'
           OPENAPI_DIR: 'backend'

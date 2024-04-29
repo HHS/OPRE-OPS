@@ -63,7 +63,12 @@ const newVersion = updateVersion(oldVersion, bumpType);
 openapi.info.version = newVersion;
 fs.writeFileSync(openApiFilePath, yaml.dump(openapi), 'utf8');
 
-// Configure git for commit
+// Configure git for commit using the token securely
+const token = process.env.GIT_TOKEN; // Make sure this environment variable is correctly set in your GitHub Actions secrets
+const repoURL = `https://${token}@github.com`;
+execSync('git config --global credential.helper store');
+fs.writeFileSync(`${process.env.HOME}/.git-credentials`, `${repoURL}\n`, { mode: 0o600 });
+
 execSync('git config user.name "gh-action-bump-version"', { stdio: 'inherit' });
 execSync('git config user.email "action@github.com"', { stdio: 'inherit' });
 
@@ -81,13 +86,13 @@ console.log(`Tag Prefix: [${tagPrefix}]`);
 console.log(`Creating new tag: ${newTag}`);
 
 if (process.env.INPUT_SKIP_TAG !== 'true') {
-  execSync(`git tag ${newTag}`, { stdio: 'inherit' });
-  console.log(`::set-output name=newTag::${newTag}`);
+    execSync(`git tag ${newTag}`, { stdio: 'inherit' });
+    console.log(`::set-output name=newTag::${newTag}`);
 }
 
 if (process.env.INPUT_SKIP_PUSH !== 'true') {
-  execSync('git push', { stdio: 'inherit' });
-  if (newTag) {
-      execSync('git push --tags', { stdio: 'inherit' });
-  }
+    execSync('git push', { stdio: 'inherit' });
+    if (newTag) {
+        execSync('git push --tags', { stdio: 'inherit' });
+    }
 }
