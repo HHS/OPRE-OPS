@@ -63,8 +63,6 @@ def login(code: str, provider: str) -> dict[str, Any]:
     return response
 
 
-@jwt_required(True)
-@error_simulator
 def logout() -> Union[Response, tuple[str, int]]:
     with OpsEventHandler(OpsEventType.LOGOUT) as la:
         try:

@@ -1,4 +1,5 @@
 from flask import Response, request
+from flask_jwt_extended import jwt_required
 
 from ops_api.ops.auth import bp
 from ops_api.ops.auth.schema import LoginRequestSchema, LoginResponseSchema
@@ -22,14 +23,10 @@ def login_post() -> Response:
 
 
 @bp.route("/logout/", methods=["POST"])
+@jwt_required(True)
+@error_simulator
 @handle_api_error
 def logout_post() -> Response:
-    # TODO: Implement validation
-    # errors = self.validator.validate(self, request.json)
-    #
-    # if errors:
-    #     return make_response_with_headers(errors, 400)
-
     try:
         return logout()
     except Exception as ex:
