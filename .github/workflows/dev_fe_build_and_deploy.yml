@@ -40,7 +40,7 @@ jobs:
         id: version_bump
         uses:  'phips28/gh-action-bump-version@56588a3c4a1d62a068f308dfbc17f4ee55c69d41' #v11.0.4
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ secrets.TEST_TOKEN }}
         with:
           tag-prefix:  'ops-frontend-v'
           PACKAGEJSON_DIR:  'frontend'
