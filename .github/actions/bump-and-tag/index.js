@@ -90,6 +90,12 @@ if (process.env.INPUT_SKIP_TAG !== 'true') {
     console.log(`::set-output name=newTag::${newTag}`);
 }
 
+// Attempt to push changes and handle potential errors
 if (process.env.INPUT_SKIP_PUSH !== 'true') {
     try {
-        execSync(`git push ${repoURL} HEAD:main --tags`, { std
+        execSync(`git push ${repoURL} HEAD:main --tags`, { stdio: 'inherit' });
+    } catch (error) {
+        console.error('Failed to push changes:', error);
+        process.exit(1); // Exit with an error status
+    }
+}
