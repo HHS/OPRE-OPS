@@ -1,3 +1,4 @@
+import React from "react";
 import PropTypes from "prop-types";
 import classnames from "vest/classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -63,7 +64,7 @@ export const CreateBudgetLinesForm = ({
         valid: "success",
         warning: "warning"
     });
-    const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
+    const MemoizedDatePicker = React.memo(DatePicker);
 
     // validate all budgetline fields if in review mode and is editing
     if (isReviewMode && isEditing) {
@@ -97,6 +98,9 @@ export const CreateBudgetLinesForm = ({
             name
         );
     };
+
+    const datePickerValue = React.useMemo(() => needByDate, [needByDate]);
+    const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
     const isFormNotValid =
         (isEditMode && dateRes.hasErrors()) || (isReviewMode && (res.hasErrors() || !isFormComplete));
 
@@ -134,13 +138,12 @@ export const CreateBudgetLinesForm = ({
                 </div>
             </div>
             <div className="grid-col-4">
-                <DatePicker
+                {/* <DebugCode data={{ needByDate, dateRes }} /> */}
+                <MemoizedDatePicker
                     id="need-by-date"
-                    label="Need by Date"
                     name="needByDate"
-                    hint="MM/DD/YYYY"
-                    aria-describedby="need-by-date-hint"
-                    aria-labelledby="need-by-date-label"
+                    label="Need by Date"
+                    hint="mm/dd/yyyy"
                     messages={[...(res.getErrors("needByDate") || []), ...(dateRes.getErrors("needByDate") || [])]}
                     className={cn("needByDate")}
                     value={needByDate}
