@@ -178,6 +178,7 @@ export const CreateBudgetLinesForm = ({
                     onChange={(name, value) => {
                         setEnteredComments(value);
                     }}
+                    textAreaStyle={{ height: "9rem" }}
                 />
 
                 {isEditing ? (

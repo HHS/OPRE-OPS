@@ -64,22 +64,24 @@ function ServicesComponentForm({
                 style={{ gridGap: "1rem" }}
             >
                 <div className="grid-col flex-2">
-                    <div className="grid-row flex-row">
-                        <ServicesComponentSelect
-                            onChange={(name, value) => {
-                                setFormData({
-                                    ...formData,
-                                    number: +value,
-                                    optional: false
-                                });
-                            }}
-                            value={formData?.number || ""}
-                            options={optionsWithSelected}
-                            isRequired={true}
-                            className="flex-2 margin-right-3"
-                        />
+                    <div className="grid-row flex-row flex-justify">
+                        <div style={{ width: "16.25rem" }}>
+                            <ServicesComponentSelect
+                                onChange={(name, value) => {
+                                    setFormData({
+                                        ...formData,
+                                        number: +value,
+                                        optional: false
+                                    });
+                                }}
+                                value={formData?.number || ""}
+                                options={optionsWithSelected}
+                                isRequired={true}
+                                className="flex-2"
+                            />
+                        </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
-                            <div className="usa-checkbox margin-top-5 margin-right-2">
+                            <div className="usa-checkbox margin-top-4 margin-right-3">
                                 <input
                                     className="usa-checkbox__input"
                                     id="optional-services-component"
@@ -112,7 +114,7 @@ function ServicesComponentForm({
                     <DateRangePickerWrapper
                         id="period-of-performance"
                         key={formKey}
-                        className="display-flex flex-justify margin-top-2"
+                        className="display-flex flex-justify"
                     >
                         <DatePicker
                             id="pop-start-date"
