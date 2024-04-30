@@ -364,6 +364,28 @@ class DirectAgreement(Agreement):
     }
 
 
+class AgreementOpsDbHistory(BaseModel):
+    """Agreement X OpsDbHistory Model to cross-ref the history records related to an agreement"""
+
+    __tablename__ = "agreement_ops_db_history"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    agreement_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("agreement.id", ondelete="CASCADE")
+    )
+    agreement = relationship(
+        "Agreement",
+        passive_deletes=True,
+    )
+    ops_db_history_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("ops_db_history.id", ondelete="CASCADE")
+    )
+    ops_db_history = relationship(
+        "OpsDBHistory",
+        passive_deletes=True,
+    )
+
+
 class CANFiscalYear(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
