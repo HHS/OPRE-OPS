@@ -3,6 +3,7 @@ import time
 import uuid
 from functools import wraps
 from typing import Optional
+from uuid import UUID
 
 import requests
 from authlib.jose import JsonWebToken
@@ -14,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError
 from sqlalchemy.orm import load_only
 
-from models import Role, User
+from models import Role, User, UserStatus
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.exceptions import NotActiveUserError, PrivateKeyError
 from ops_api.ops.utils.response import make_response_with_headers
@@ -133,39 +134,35 @@ def register_user(userinfo: UserInfoDict) -> tuple[User, bool]:
     user = get_user_from_sub(userinfo.get("sub"))
     if user:
         return user, False
-    else:
-        user = get_user_from_email(userinfo.get("email"))
-        if user:
-            current_app.logger.debug("Updating oidc of existing user")
-            try:
-                user.oidc_id = userinfo.get("sub")
-                current_app.db_session.save(user)
-                current_app.db_session.commit()
-            except Exception as e:
-                current_app.logger.debug(f"User Update Error: {e}")
-                return None, False
-        else:
-            # Create new user
-            # Default to an 'unassigned' role.
-            current_app.logger.debug("Creating new user")
-            try:
-                # Find the role with the matching permission
-                role = (
-                    current_app.db_session.query(Role).options(load_only(Role.name)).filter_by(name="unassigned").one()
-                )
-                user = User(
-                    email=userinfo["email"],
-                    oidc_id=userinfo["sub"],
-                    roles=[role],
-                )
 
-                current_app.db_session.add(user)
-                current_app.db_session.commit()
-                return user, True
-            except Exception as e:
-                current_app.logger.debug(f"User Creation Error: {e}")
-                current_app.db_session.rollback()
-                return None, False
+    # user was not found by sub, check by email
+    user = get_user_from_email(userinfo.get("email"))
+    if user:
+        current_app.logger.debug("Updating oidc of existing user")
+        user.oidc_id = userinfo.get("sub")
+        current_app.db_session.add(user)
+        current_app.db_session.commit()
+
+        return user, False
+
+    # Create new user
+    # Default to an 'unassigned' role.
+    # Set status as INACTIVE to prevent them for logging in until they are whitelisted.
+    current_app.logger.debug("Creating new user")
+
+    # Find the role with the matching permission
+    role = current_app.db_session.query(Role).options(load_only(Role.name)).filter_by(name="unassigned").one()
+
+    user = User(
+        email=userinfo["email"],
+        oidc_id=UUID(userinfo["sub"]),
+        roles=[role],
+        status=UserStatus.INACTIVE,
+    )
+
+    current_app.db_session.add(user)
+    current_app.db_session.commit()
+    raise NotActiveUserError("User is not active")
 
 
 def get_user_from_sub(sub: str) -> Optional[User]:
