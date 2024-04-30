@@ -143,6 +143,7 @@ def test_budget_line_item_change_request(auth_client, app):
     session = app.db_session
     change_request = BudgetLineItemChangeRequest()
     change_request.budget_line_item_id = 1
+    change_request.agreement_id = 1
     change_request.created_by = 1
     change_request.requested_change_data = {"foo": "bar"}
     session.add(change_request)
