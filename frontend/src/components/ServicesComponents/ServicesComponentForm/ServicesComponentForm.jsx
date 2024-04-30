@@ -58,10 +58,7 @@ function ServicesComponentForm({
                 heading={heading}
                 details={details}
             />
-            <div
-                className="grid-row flex-row"
-                style={{ gridGap: "1rem" }}
-            >
+            <div className="grid-row flex-row">
                 <div className="grid-col flex-2">
                     <div className="grid-row flex-row flex-justify">
                         <div style={{ width: "16.25rem" }}>
@@ -76,7 +73,6 @@ function ServicesComponentForm({
                                 value={formData?.number || ""}
                                 options={optionsWithSelected}
                                 isRequired={true}
-                                className="flex-2"
                             />
                         </div>
                         {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
@@ -142,12 +138,11 @@ function ServicesComponentForm({
                         />
                     </DateRangePickerWrapper>
                 </div>
-
-                <div className="grid-col">
+                <div className="grid-col margin-left-5">
                     <TextArea
                         name="description"
                         label="Description"
-                        className="margin-top-0 flex-3"
+                        className="margin-top-0"
                         maxLength={150}
                         value={formData?.description || ""}
                         onChange={(name, value) => setFormData({ ...formData, description: value })}
