@@ -63,6 +63,14 @@ const useCreateBLIsAndSCs = (
     const feesForCards = getProcurementShopSubTotal(selectedAgreement, budgetLines);
     const subTotalForCards = budgetLinesTotal(budgetLines);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLines);
+    // TODO: Capture initial form state of these fields
+    // TODO: if there is a change, then alert the user that a Division Director needs to review the changes
+    // TODO: allow for cancelling the changes
+    // const formPropsThatNeedReview = {
+    //     needByDate,
+    //     selectedCan,
+    //     enteredAmount
+    // };
 
     // Validation
     let res = suite.get();
