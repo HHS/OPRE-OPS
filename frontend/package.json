@@ -62,7 +62,7 @@
         "vite-plugin-babel-macros": "1.0.6",
         "vite-plugin-eslint": "1.8.1",
         "vite-plugin-svgr": "4.2.0",
-        "vitest": "1.5.2"
+        "vitest": "1.5.3"
     },
     "scripts": {
         "start": "vite",
