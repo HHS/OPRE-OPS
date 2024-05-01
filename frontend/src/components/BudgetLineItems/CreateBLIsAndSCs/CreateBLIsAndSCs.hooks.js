@@ -50,6 +50,7 @@ const useCreateBLIsAndSCs = (
     const [enteredComments, setEnteredComments] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
+    const [financialSnapshot, setFinancialSnapshot] = React.useState(null);
     const searchParams = new URLSearchParams(location.search);
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
@@ -67,11 +68,8 @@ const useCreateBLIsAndSCs = (
     // TODO: Capture initial form state of these fields
     // TODO: if there is a change, then alert the user that a Division Director needs to review the changes
     // TODO: allow for cancelling the changes
-    // const formPropsThatNeedReview = {
-    //     needByDate,
-    //     selectedCan,
-    //     enteredAmount
-    // };
+    console.log({ financialSnapshot });
+    console.log({ enteredAmount, needByDate });
 
     // Validation
     let res = suite.get();
@@ -124,6 +122,12 @@ const useCreateBLIsAndSCs = (
 
     const handleEditBLI = (e) => {
         e.preventDefault();
+        const amountChanged = financialSnapshot.enteredAmount !== enteredAmount;
+        const dateChanged = financialSnapshot.needByDate !== needByDate;
+
+        if (amountChanged || dateChanged) {
+            confirm("Are you sure you want to make these changes? A Division Director will need to review them.");
+        }
         const payload = {
             id: budgetLines[budgetLineBeingEdited].id,
             services_component_id: servicesComponentId,
@@ -217,7 +221,6 @@ const useCreateBLIsAndSCs = (
         const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];
-
             const dateForScreen = formatDateForScreen(date_needed);
 
             setBudgetLineBeingEdited(index);
@@ -227,6 +230,7 @@ const useCreateBLIsAndSCs = (
             setNeedByDate(dateForScreen);
             setEnteredComments(comments);
             setIsEditing(true);
+            setFinancialSnapshot({ enteredAmount: amount, needByDate: dateForScreen });
         }
     };
 
