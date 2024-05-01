@@ -85,6 +85,10 @@ if (process.env.INPUT_SKIP_COMMIT !== 'true') {
     execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`, { stdio: 'inherit' });
 }
 
+// Set remote URL to ensure correct token usage
+console.log(`Setting remote URL...`);
+execSync(`git remote set-url origin ${repoUrlWithToken}`);
+
 // Tagging and Pushing with authenticated URL
 const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
 const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
@@ -97,9 +101,9 @@ if (process.env.INPUT_SKIP_TAG !== 'true') {
 
 if (process.env.INPUT_SKIP_PUSH !== 'true') {
     console.log(`Pushing changes and tags to repository...`);
-    execSync(`git push ${repoUrlWithToken} HEAD:refs/heads/${process.env.GITHUB_REF_NAME}`, { stdio: 'inherit' });
+    execSync(`git push origin HEAD:refs/heads/${process.env.GITHUB_REF_NAME}`, { stdio: 'inherit' });
     if (newTag) {
         console.log(`Pushing tags...`);
-        execSync(`git push ${repoUrlWithToken} --tags`, { stdio: 'inherit' });
+        execSync(`git push origin --tags`, { stdio: 'inherit' });
     }
 }
