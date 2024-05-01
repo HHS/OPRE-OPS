@@ -2,6 +2,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
+const github = require('@actions/github');
 
 // Ensure that GITHUB_TOKEN is available as an environment variable
 const token = process.env.GITHUB_TOKEN;
@@ -10,7 +11,10 @@ if (!token) {
     process.exit(1);
 }
 
-const repoUrlWithToken = `https://${token}@github.com/${process.env.GITHUB_REPOSITORY}`;
+const repository = github.context.repo.repo;
+const owner = github.context.repo.owner;
+const branch = github.context.ref.replace('refs/heads/', ''); // Extract branch name from ref
+const repoUrlWithToken = `https://${token}:x-oauth-basic@github.com/${owner}/${repository}`;
 
 // Setup working directory
 const openApiDir = process.env.INPUT_OPENAPI_DIR || '.';
@@ -85,10 +89,6 @@ if (process.env.INPUT_SKIP_COMMIT !== 'true') {
     execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`, { stdio: 'inherit' });
 }
 
-// Set remote URL to ensure correct token usage
-console.log(`Setting remote URL...`);
-execSync(`git remote set-url origin ${repoUrlWithToken}`);
-
 // Tagging and Pushing with authenticated URL
 const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
 const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
@@ -99,11 +99,12 @@ if (process.env.INPUT_SKIP_TAG !== 'true') {
     execSync(`git tag ${newTag}`, { stdio: 'inherit' });
 }
 
-if (process.env.INPUT_SKIP_PUSH !== 'true') {
-    console.log(`Pushing changes and tags to repository...`);
-    execSync(`git push origin HEAD:refs/heads/${process.env.GITHUB_REF_NAME}`, { stdio: 'inherit' });
-    if (newTag) {
-        console.log(`Pushing tags...`);
-        execSync(`git push origin --tags`, { stdio: 'inherit' });
-    }
+console.log(`Setting remote URL...`);
+execSync(`git remote set-url origin ${repoUrlWithToken}`);
+
+console.log(`Pushing changes and tags to repository...`);
+execSync(`git push ${repoUrlWithToken} HEAD:refs/heads/${branch}`, { stdio: 'inherit' });
+if (newTag) {
+    console.log(`Pushing tags...`);
+    execSync(`git push ${repoUrlWithToken} --tags`, { stdio: 'inherit' });
 }
