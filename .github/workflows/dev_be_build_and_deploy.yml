@@ -62,9 +62,8 @@ jobs:
       - name:  'Automated Version Bump'
         id: version_bump
         uses: ./.github/actions/bump-and-tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.TEST_TOKEN }}
         with:
+          custom-token:  ${{ secrets.TEST_TOKEN }}
           tag-prefix: 'ops-backend-v'
           OPENAPI_DIR: 'backend'
 

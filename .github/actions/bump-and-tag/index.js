@@ -5,91 +5,61 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 
-// Setup variables
-const openApiDir = process.env.INPUT_OPENAPI_DIR || '.';
-const workspace = process.env.GITHUB_WORKSPACE || '.';
-process.chdir(path.join(workspace, openApiDir));
+async function run() {
+    try {
+        // Get the custom token or fall back to the default GitHub token
+        const token = core.getInput('custom-token', { required: false }) || process.env.GITHUB_TOKEN;
+        if (!token) {
+            throw new Error('GitHub token is not provided');
+        }
 
-// Load the OpenAPI file
-const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
-const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8'));
+        const workspace = process.env.GITHUB_WORKSPACE || '.';
+        const openApiDir = core.getInput('openapi-dir', { required: false }) || '.';
+        process.chdir(path.join(workspace, openApiDir));
+        const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
+        const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8')); 'utf8'));
 
-// Function to determine the type of version bump needed
-function determineBumpType(messages) {
-    const majorWords = (process.env.INPUT_MAJOR_WORDING || 'BREAKING CHANGE,major').split(',').map(word => word.trim());
-    const minorWords = (process.env.INPUT_MINOR_WORDING || 'feat,minor').split(',').map(word => word.trim());
-    const patchWords = (process.env.INPUT_PATCH_WORDING || 'fix').split(',').map(word => word.trim());
-    const preReleaseWords = (process.env.INPUT_RC_WORDING || 'pre-alpha,pre-beta,pre-rc').split(',').map(word => word.trim());
+        const octokit = github.getOctokit(token);
+        const { repo } = github.context;
+        const { data: commits } = await octokit.rest.repos.listCommits({
+            owner: repo.owner,
+            repo: repo.repo,
+            sha: 'HEAD',
+            per_page: 10
+        });
+        const messages = commits.map(commit => commit.commit.message);
 
-    if (messages.some(msg => majorWords.some(word => msg.includes(word)))) {
-        return 'major';
-    } else if (messages.some(msg => minorWords.some(word => msg.includes(word)))) {
-        return 'minor';
-    } else if (messages.some(msg => preReleaseWords.some(word => msg.includes(word)))) {
-        return 'prerelease';
-    } else if (messages.some(msg => patchWords.some(word => msg.includes(word)))) {
-        return 'patch';
-    }
-    return 'patch'; // Default bump type if no other wordings are matched
-}
+        const bumpType = determineBumpType(messages);
+        const oldVersion = openapi.info.version;
+        const newVersion = updateVersion(oldVersion, bumpType);
+        openapi.info.version = newVersion;
+        fs.writeFileSync(openApiFilePath, yaml.dump(openapi));
 
-// Fetch all recent commit messages
-const messages = execSync('git log --format=%B -n 10').toString().trim().split('\n\n');
-const bumpType = determineBumpType(messages);
+        execSync('git config user.name "GitHub Action"');
+        execSync('git config user.email "action@github.com"');
+        execSync(`git add ${openApiFilePath}`);
 
-// Function to update the version based on the bump type
-function updateVersion(currentVersion, bumpType) {
-    const parts = currentVersion.split('.');
-    switch (bumpType) {
-        case 'major':
-            parts[0] = parseInt(parts[0], 10) + 1;
-            parts[1] = 0;
-            parts[2] = 0;
-            break;
-        case 'minor':
-            parts[1] = parseInt(parts[1], 10) + 1;
-            parts[2] = 0;
-            break;
-        case 'prerelease':
-            parts[3] = parseInt(parts[3] || '0', 10) + 1; // Assumes 'prerelease' is the fourth segment
-            break;
-        case 'patch':
-            parts[2] = parseInt(parts[2], 10) + 1;
-            break;
-    }
-    return parts.join('.');
-}
+        if (!core.getBooleanInput('SKIP_COMMIT', { required: false })) {
+            execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`);
+        }
 
-// Update version in openapi
-const oldVersion = openapi.info.version;
-const newVersion = updateVersion(oldVersion, bumpType);
-openapi.info.version = newVersion;
-fs.writeFileSync(openApiFilePath, yaml.dump(openapi), 'utf8');
+        const tagPrefix = core.getInput('TAG_PREFIX', { required: false });
+        const tagSuffix = core.getInput('TAG_SUFFIX', { required: false });
+        const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
+        if (!core.getBooleanInput('SKIP_TAG', { required: false })) {
+            execSync(`git tag ${newTag}`);
+            core.setOutput('newTag', newTag);
+        }
 
-// Git configuration for commit
-execSync('git config user.name "GitHub Action"');
-execSync('git config user.email "action@github.com"');
-
-// Commit changes
-execSync(`git add ${openApiFilePath}`);
-if (process.env.INPUT_SKIP_COMMIT !== 'true') {
-    execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`);
-}
-
-// Tagging
-const tagPrefix = process.env.INPUT_TAG_PREFIX || '';
-const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
-let newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
-if (process.env.INPUT_SKIP_TAG !== 'true') {
-    execSync(`git tag ${newTag}`);
-    console.log(`Created new tag: ${newTag}`);
-    console.log(`::set-output name=newTag::${newTag}`);
-}
-
-// Push changes
-if (process.env.INPUT_SKIP_PUSH !== 'true') {
-    execSync('git push');
-    if (newTag) {
-        execSync('git push --tags');
+        if (!core.getBooleanInput('SKIP_PUSH', { required: false })) {
+            execSync('git push');
+            if (newTag) {
+                execSync('git push --tags');
+            }
+        }
+    } catch (error) {
+        core.setFailed(error.message);
     }
 }
+
+run();

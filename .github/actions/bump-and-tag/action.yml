@@ -4,6 +4,9 @@ runs:
   using: node20
   main: index.js
 inputs:
+  custom-token:
+    description: 'Custom GitHub token to use for authentication'
+    required: false
   tag-prefix:
     description: 'Prefix that is used for the git tag'
     default: ''
