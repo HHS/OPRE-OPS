@@ -65,11 +65,9 @@ const useCreateBLIsAndSCs = (
     const feesForCards = getProcurementShopSubTotal(selectedAgreement, budgetLines);
     const subTotalForCards = budgetLinesTotal(budgetLines);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLines);
-    // TODO: Capture initial form state of these fields
-    // TODO: if there is a change, then alert the user that a Division Director needs to review the changes
-    // TODO: allow for cancelling the changes
+
     console.log({ financialSnapshot });
-    console.log({ enteredAmount, needByDate });
+    console.log({ enteredAmount, needByDate, selectedCanId: selectedCan?.id });
 
     // Validation
     let res = suite.get();
@@ -122,11 +120,20 @@ const useCreateBLIsAndSCs = (
 
     const handleEditBLI = (e) => {
         e.preventDefault();
-        const amountChanged = financialSnapshot.enteredAmount !== enteredAmount;
-        const dateChanged = financialSnapshot.needByDate !== needByDate;
+        const amountChanged = financialSnapshot?.enteredAmount !== enteredAmount;
+        const dateChanged = financialSnapshot?.needByDate !== needByDate;
+        const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
+        const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
 
-        if (amountChanged || dateChanged) {
-            confirm("Are you sure you want to make these changes? A Division Director will need to review them.");
+        if (financialSnapshotChanged) {
+            const userConfirmed = confirm(
+                "Are you sure you want to make these changes? A Division Director will need to review them."
+            );
+
+            if (!userConfirmed) {
+                resetForm();
+                return;
+            }
         }
         const payload = {
             id: budgetLines[budgetLineBeingEdited].id,
@@ -220,7 +227,7 @@ const useCreateBLIsAndSCs = (
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
         const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
-            const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];
+            const { services_component_id, comments, can, can_id, amount, date_needed } = budgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
 
             setBudgetLineBeingEdited(index);
@@ -230,7 +237,7 @@ const useCreateBLIsAndSCs = (
             setNeedByDate(dateForScreen);
             setEnteredComments(comments);
             setIsEditing(true);
-            setFinancialSnapshot({ enteredAmount: amount, needByDate: dateForScreen });
+            setFinancialSnapshot({ enteredAmount: amount, needByDate: dateForScreen, selectedCanId: can_id });
         }
     };
 
@@ -340,6 +347,7 @@ const useCreateBLIsAndSCs = (
         setEnteredAmount(null);
         setNeedByDate(null);
         setEnteredComments(null);
+        setFinancialSnapshot(null);
     };
 
     React.useEffect(() => {
