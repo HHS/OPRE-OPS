@@ -13,6 +13,7 @@ import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -84,13 +85,6 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
-    const formatDateForApi = (date) => {
-        if (date) {
-            const [month, day, year] = date.split("/");
-            return `${year}-${month}-${day}`;
-        }
-        return null;
-    };
 
     const handleAddBLI = (e) => {
         e.preventDefault();
@@ -220,13 +214,6 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
-        const formatDateForScreen = (date) => {
-            if (date) {
-                const [year, month, day] = date.split("-");
-                return `${month}/${day}/${year}`;
-            }
-            return null;
-        };
         const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, comments, can, amount, date_needed } = budgetLines[index];

@@ -2,11 +2,11 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import ServicesComponentSelect from "../ServicesComponentSelect";
-import PoPStartDate from "../PoPStartDate";
-import PoPEndDate from "../PoPEndDate";
 import TextArea from "../../UI/Form/TextArea";
 import FormHeader from "../../UI/Form/FormHeader";
-import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../servicesComponents.constants";
+import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../ServicesComponents.constants";
+import DateRangePickerWrapper from "../../UI/USWDS/DateRangePickerWrapper";
+import DatePicker from "../../UI/USWDS/DatePicker";
 
 /**
  * ServicesComponentForm is a form component for creating and editing service components.
@@ -15,6 +15,7 @@ import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../
  * @param {Object} props - The properties object.
  * @param {string} props.serviceTypeReq - The type of service request.
  * @param {Object} props.formData - The form data.
+ * @param {string} props.formKey - The form key.
  * @param {Function} props.setFormData - Function to set form data.
  * @param {Function} props.handleSubmit - Function to handle form submission.
  * @param {Function} props.handleCancel - Function to handle form cancellation.
@@ -28,6 +29,7 @@ import { NON_SEVERABLE_OPTIONS, SEVERABLE_OPTIONS, SERVICE_REQ_TYPES } from "../
 function ServicesComponentForm({
     serviceTypeReq,
     formData,
+    formKey,
     setFormData,
     handleSubmit,
     handleCancel,
@@ -56,63 +58,87 @@ function ServicesComponentForm({
                 heading={heading}
                 details={details}
             />
-            <div className="grid-row grid-gap margin-top-3">
-                <div className="grid-col-4">
-                    <ServicesComponentSelect
-                        onChange={(name, value) => {
-                            setFormData({
-                                ...formData,
-                                number: +value,
-                                optional: false
-                            });
-                        }}
-                        value={formData?.number || ""}
-                        options={optionsWithSelected}
-                        isRequired={true}
-                    />
-                    <div className="margin-top-3">
-                        <PoPStartDate
-                            serviceComponent={formData}
-                            setServiceComponent={setFormData}
-                        />
-                    </div>
-                </div>
-                <div className="grid-col-4">
-                    {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
-                        <div className="usa-checkbox margin-top-5">
-                            <input
-                                className="usa-checkbox__input"
-                                id="optional-services-component"
-                                type="checkbox"
-                                name="optional-services-checkbox"
-                                value={formData?.optional || ""}
-                                checked={formData?.optional}
-                                onChange={() => {
+            <div className="grid-row flex-row">
+                <div className="grid-col flex-2">
+                    <div className="grid-row flex-row flex-justify">
+                        <div style={{ width: "16.25rem" }}>
+                            <ServicesComponentSelect
+                                onChange={(name, value) => {
                                     setFormData({
                                         ...formData,
-                                        optional: !formData?.optional
+                                        number: +value,
+                                        optional: false
                                     });
                                 }}
-                                disabled={formData?.number === 0 || formData?.number === 1 || formData?.number === ""}
+                                value={formData?.number || ""}
+                                options={optionsWithSelected}
+                                isRequired={true}
                             />
-                            <label
-                                className="usa-checkbox__label"
-                                htmlFor="optional-services-component"
-                            >
-                                Optional Services Component
-                            </label>
                         </div>
-                    ) : (
-                        <div style={{ height: "3.90rem" }} />
-                    )}
-                    <div className="margin-top-4">
-                        <PoPEndDate
-                            serviceComponent={formData}
-                            setServiceComponent={setFormData}
-                        />
+                        {serviceTypeReq === SERVICE_REQ_TYPES.NON_SEVERABLE ? (
+                            <div className="usa-checkbox margin-top-4 margin-right-3">
+                                <input
+                                    className="usa-checkbox__input"
+                                    id="optional-services-component"
+                                    type="checkbox"
+                                    name="optional-services-checkbox"
+                                    value={formData?.optional || ""}
+                                    checked={formData?.optional}
+                                    onChange={() => {
+                                        setFormData({
+                                            ...formData,
+                                            optional: !formData?.optional
+                                        });
+                                    }}
+                                    disabled={
+                                        formData?.number === 0 || formData?.number === 1 || formData?.number === ""
+                                    }
+                                />
+                                <label
+                                    className="usa-checkbox__label"
+                                    htmlFor="optional-services-component"
+                                >
+                                    Optional Services Component
+                                </label>
+                            </div>
+                        ) : (
+                            <div style={{ height: "3.90rem" }} />
+                        )}
                     </div>
+                    <DateRangePickerWrapper
+                        id="period-of-performance"
+                        key={formKey}
+                        className="display-flex flex-justify"
+                    >
+                        <DatePicker
+                            id="pop-start-date"
+                            name="pop-start-date"
+                            label="Period of Performance-Start"
+                            hint="mm/dd/yyyy"
+                            value={formData.popStartDate}
+                            onChange={(e) =>
+                                setFormData((currentFormData) => ({
+                                    ...currentFormData,
+                                    popStartDate: e.target.value
+                                }))
+                            }
+                        />
+                        <DatePicker
+                            id="pop-end-date"
+                            name="pop-end-date"
+                            label="Period of Performance-End"
+                            hint="mm/dd/yyyy"
+                            value={formData.popEndDate}
+                            onChange={(e) =>
+                                setFormData((currentFormData) => ({
+                                    ...currentFormData,
+                                    popEndDate: e.target.value
+                                }))
+                            }
+                        />
+                    </DateRangePickerWrapper>
                 </div>
-                <div className="grid-col-4">
+                <div className="grid-col margin-left-5">
                     <TextArea
                         name="description"
                         label="Description"
@@ -123,6 +149,7 @@ function ServicesComponentForm({
                     />
                 </div>
             </div>
+
             <div className="display-flex flex-justify-end margin-top-2">
                 {formData.mode === "edit" ? (
                     <>
@@ -156,6 +183,7 @@ function ServicesComponentForm({
 ServicesComponentForm.propTypes = {
     serviceTypeReq: PropTypes.string.isRequired,
     formData: PropTypes.object.isRequired,
+    formKey: PropTypes.string.isRequired,
     setFormData: PropTypes.func.isRequired,
     handleSubmit: PropTypes.func.isRequired,
     handleCancel: PropTypes.func.isRequired,
