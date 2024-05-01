@@ -17,7 +17,7 @@ async function run() {
         const openApiDir = core.getInput('openapi-dir', { required: false }) || '.';
         process.chdir(path.join(workspace, openApiDir));
         const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
-        const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8')); 'utf8'));
+        const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8'));
 
         const octokit = github.getOctokit(token);
         const { repo } = github.context;
