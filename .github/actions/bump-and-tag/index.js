@@ -54,7 +54,7 @@ function updateVersion(currentVersion, bumpType) {
             parts[2] = 0;
             break;
         case 'prerelease':
-            parts[3] = parseInt(parts[3] || '0', 10) + 1; // Assumes 'prerelease' is the fourth segment
+            parts[3] = parseInt(parts[3] || '0', 10) + 1;
             break;
         case 'patch':
         default:
@@ -73,12 +73,15 @@ openapi.info.version = newVersion;
 fs.writeFileSync(openApiFilePath, yaml.dump(openapi), 'utf8');
 
 // Configure git for commit
+console.log('Configuring git user settings...');
 execSync('git config user.name "GitHub Action"', { stdio: 'inherit' });
 execSync('git config user.email "action@github.com"', { stdio: 'inherit' });
 
 // Commit changes
+console.log(`Adding ${openApiFilePath} to git...`);
 execSync(`git add ${openApiFilePath}`, { stdio: 'inherit' });
 if (process.env.INPUT_SKIP_COMMIT !== 'true') {
+    console.log(`Committing changes for version bump from ${oldVersion} to ${newVersion}...`);
     execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`, { stdio: 'inherit' });
 }
 
@@ -88,12 +91,15 @@ const tagSuffix = process.env.INPUT_TAG_SUFFIX || '';
 const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
 
 if (process.env.INPUT_SKIP_TAG !== 'true') {
+    console.log(`Creating new tag: ${newTag}`);
     execSync(`git tag ${newTag}`, { stdio: 'inherit' });
 }
 
 if (process.env.INPUT_SKIP_PUSH !== 'true') {
+    console.log(`Pushing changes and tags to repository...`);
     execSync(`git push ${repoUrlWithToken} HEAD:refs/heads/${process.env.GITHUB_REF_NAME}`, { stdio: 'inherit' });
     if (newTag) {
+        console.log(`Pushing tags...`);
         execSync(`git push ${repoUrlWithToken} --tags`, { stdio: 'inherit' });
     }
 }
