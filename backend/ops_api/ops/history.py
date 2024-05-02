@@ -129,8 +129,12 @@ def track_db_history_catch_errors(exception_context):
     # Avoid JSON serialization error with exception_context.parameters by safely converting first
     # Otherwise, if there are objects in exception_context.parameters that SQLAlchemy can't convert to JSON
     # then it can spawn another error which comes back to here which spawns another error, etc
-    params_json = json.dumps(exception_context.parameters, default=str)
-    params_obj = json.loads(params_json)
+    try:
+        params_json = json.dumps(exception_context.parameters, default=str)
+        params_obj = json.loads(params_json)
+    except Exception as e:
+        current_app.logger.error(f"Failed to convert exception_context.parameters to JSON: {e}")
+        params_obj = None
 
     ops_db = OpsDBHistory(
         event_type=OpsDBHistoryType.ERROR,
