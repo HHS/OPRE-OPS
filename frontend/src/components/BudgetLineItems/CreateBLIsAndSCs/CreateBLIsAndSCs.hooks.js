@@ -12,7 +12,7 @@ import {
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
-import { groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { groupByServicesComponent, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 
 /**
@@ -124,6 +124,9 @@ const useCreateBLIsAndSCs = (
         const dateChanged = financialSnapshot?.needByDate !== needByDate;
         const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
         const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
+        const BLIStatusIsPlannedOrExecuting =
+            budgetLines[budgetLineBeingEdited].status === BLI_STATUS.PLANNED ||
+            budgetLines[budgetLineBeingEdited].status === BLI_STATUS.EXECUTING;
 
         const payload = {
             id: budgetLines[budgetLineBeingEdited].id,
@@ -136,7 +139,7 @@ const useCreateBLIsAndSCs = (
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
         const { id, data } = cleanBudgetLineItemForApi(payload);
-        if (financialSnapshotChanged) {
+        if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
             setShowModal(true);
             setModalProps({
                 heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
