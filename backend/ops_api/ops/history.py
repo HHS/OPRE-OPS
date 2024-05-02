@@ -194,18 +194,13 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
 
 def create_agreement_history_relations(obj, ops_db) -> list[AgreementOpsDbHistory]:
     objs = []
-    # ~~~ creating AgreementOpsDBHistory record ~~~
     if isinstance(obj, Agreement):
-        print(f"\n\n~~~ creating AgreementOpsDBHistory record for Agreement {obj.id=} {ops_db.event_type=}~~~")
         agreement_ops_db_history = AgreementOpsDbHistory(
             agreement_id=obj.id,
             ops_db_history=ops_db,
         )
         objs.append(agreement_ops_db_history)
     elif isinstance(obj, (BudgetLineItem, AgreementChangeRequest)):
-        print(
-            f"\n\n~~~ creating AgreementOpsDBHistory record for Agreement related {obj.__class__.__name__=}  {obj.id=} {ops_db.event_type=}~~~"
-        )
         agreement_ops_db_history = AgreementOpsDbHistory(
             agreement_id=obj.agreement_id,
             ops_db_history=ops_db,
