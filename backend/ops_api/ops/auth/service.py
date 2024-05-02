@@ -12,11 +12,15 @@ from ops_api.ops.utils.response import make_response_with_headers
 
 
 def login(code: str, provider: str) -> dict[str, Any]:
+    """
+    If the user is authenticated with the provider, but there is no existing user in the database, then a new user
+    is created in the database however, the user is not active until the user is approved by an admin.
+    Therefore, the new user will not receive an access token until the user is approved by an admin.
+    """
     current_app.logger.debug(f"login - auth_code: {code}")
     current_app.logger.debug(f"login - provider: {provider}")
 
     with current_app.app_context():
-        # auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
         auth_gateway = AuthenticationGateway(current_app.config)
 
     with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
@@ -27,11 +31,13 @@ def login(code: str, provider: str) -> dict[str, Any]:
             return "Invalid Provider Auth Token", 400
 
         user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
+
         # Issues where user_data is sometimes just a string, and sometimes a dict.
         if isinstance(user_data, str):
             user_data = json.loads(user_data)  # pragma: allowlist
         else:
             user_data = user_data
+
         current_app.logger.debug(f"Provider Returned user_data: {user_data}")
 
         (

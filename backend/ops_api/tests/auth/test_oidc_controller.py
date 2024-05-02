@@ -70,7 +70,7 @@ def test_login_succeeds_with_active_status(client, loaded_db, mocker):
 
 
 def test_login_fails_with_inactive_status(client, loaded_db, mocker):
-    m1 = mocker.patch("ops_api.ops.auth.decorators.get_user_from_sub")
+    m1 = mocker.patch("ops_api.ops.auth.decorators.get_user_from_userinfo")
     m1.return_value = User(status=UserStatus.INACTIVE)
 
     # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process
@@ -79,7 +79,7 @@ def test_login_fails_with_inactive_status(client, loaded_db, mocker):
 
 
 def test_login_fails_with_locked_status(client, loaded_db, mocker):
-    m1 = mocker.patch("ops_api.ops.auth.decorators.get_user_from_sub")
+    m1 = mocker.patch("ops_api.ops.auth.decorators.get_user_from_userinfo")
     m1.return_value = User(status=UserStatus.LOCKED)
 
     # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process
@@ -88,7 +88,7 @@ def test_login_fails_with_locked_status(client, loaded_db, mocker):
 
 
 def test_login_fails_with_null_status(client, loaded_db, mocker):
-    m1 = mocker.patch("ops_api.ops.auth.decorators.get_user_from_sub")
+    m1 = mocker.patch("ops_api.ops.auth.decorators.get_user_from_userinfo")
     m1.return_value = User(status=None)
 
     # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process

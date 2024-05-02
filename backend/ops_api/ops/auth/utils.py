@@ -113,38 +113,61 @@ def decode_user(
     return claims
 
 
-def get_user_from_email(email: str) -> Optional[User]:
+def get_user_from_userinfo(user_info: UserInfoDict) -> Optional[User]:
     """
-    Get a user from the database by email
-    :param email: REQUIRED - The email to search for
+    Get a user from the database using the user information
+    :param user_info: REQUIRED - The user information to search for
     :return: User
     """
-    stmt = select(User).where((User.email == email))
-    return current_app.db_session.scalars(stmt).one_or_none()
+    user = current_app.db_session.scalars(
+        select(User).where((User.email == user_info.get("sub")))
+    ).one_or_none()  # type: ignore
+    if user:
+        return user
+    user = current_app.db_session.scalars(
+        select(User).where((User.email == user_info.get("email")))
+    ).one_or_none()  # type: ignore
+    return user
 
 
-def register_user(userinfo: UserInfoDict) -> tuple[User, bool]:
+def update_user_from_userinfo(user: User, user_info: UserInfoDict) -> None:
     """
-    Register a new user in the database
-    :param userinfo: REQUIRED - The user information to register
+    Update a user in the database using the user information
+    :param user: REQUIRED - The user to update
+    :param user_info: REQUIRED - The user information to update
+    """
+    user.first_name = user_info.get("given_name")
+    user.last_name = user_info.get("family_name")
+    user.hhs_id = user_info.get("hhsid")
+    user.email = user_info.get("email")
+    user.oidc_id = UUID(user_info.get("sub"))
+
+
+def get_user(user_info: UserInfoDict) -> tuple[User, bool] | None:
+    """
+    Get a user from the database by user data
+    :param user_data: REQUIRED - The user data to search for
     :return: User, bool
 
     The bool return param is used to determine if the user is new or not.
     """
-    user = get_user_from_sub(userinfo.get("sub"))
+    # Find existing user
+    user = get_user_from_userinfo(user_info)
     if user:
+        update_user_from_userinfo(user, user_info)
         return user, False
 
-    # user was not found by sub, check by email
-    user = get_user_from_email(userinfo.get("email"))
-    if user:
-        current_app.logger.debug("Updating oidc of existing user")
-        user.oidc_id = userinfo.get("sub")
-        current_app.db_session.add(user)
-        current_app.db_session.commit()
+    # Create new user
+    user = register_user(user_info)
+    return user, True
 
-        return user, False
 
+def register_user(userinfo: UserInfoDict) -> User:
+    """
+    Register a new user in the database
+    :param userinfo: REQUIRED - The user information to register
+    :return: User
+    """
     # Create new user
     # Default to an 'unassigned' role.
     # Set status as INACTIVE to prevent them for logging in until they are whitelisted.
@@ -158,19 +181,14 @@ def register_user(userinfo: UserInfoDict) -> tuple[User, bool]:
         oidc_id=UUID(userinfo["sub"]),
         roles=[role],
         status=UserStatus.INACTIVE,
-        first_name=userinfo.get("given_name"),
-        last_name=userinfo.get("family_name"),
-        hhs_id=userinfo.get("hhsid"),
     )
+
+    update_user_from_userinfo(user, userinfo)
 
     current_app.db_session.add(user)
     current_app.db_session.commit()
-    raise NotActiveUserError("User is not active")
 
-
-def get_user_from_sub(sub: str) -> Optional[User]:
-    stmt = select(User).where((User.oidc_id == sub))
-    return current_app.db_session.scalars(stmt).one_or_none()
+    return user
 
 
 def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
@@ -181,30 +199,28 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
     #   - invalid JWT
     # - create backend-JWT endpoints /refesh /validate (drf-simplejwt)
     # See if user exists
-    try:
-        user, is_new_user = register_user(user_data)  # Refactor me
-        current_app.logger.debug(f"User: {user}")
-        current_app.logger.debug(f"Is New User: {is_new_user}")
-        # TODO
-        # Do we want to embed the user's roles or permissions in the scope: [read write]?
-        # The next two tokens are specific to our backend API, these are used for our API
-        # authZ, given a valid login from the prior AuthN steps above.
+    user, is_new_user = get_user(user_data)
 
-        additional_claims = {}
-        if user.roles:
-            additional_claims["roles"] = [role.name for role in user.roles]
-        access_token = create_access_token(
-            identity=user,
-            expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
-            additional_claims=additional_claims,
-            fresh=True,
-        )
-        refresh_token = create_refresh_token(
-            identity=user,
-            expires_delta=current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES"),
-            additional_claims=additional_claims,
-        )
-    except Exception as e:
-        current_app.logger.exception(e)
-        return None, None, None, None
+    # TODO
+    # Do we want to embed the user's roles or permissions in the scope: [read write]?
+    # The next two tokens are specific to our backend API, these are used for our API
+    # authZ, given a valid login from the prior AuthN steps above.
+
+    if is_new_user:
+        return None, None, user, is_new_user
+
+    additional_claims = {}
+    if user.roles:
+        additional_claims["roles"] = [role.name for role in user.roles]
+    access_token = create_access_token(
+        identity=user,
+        expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
+        additional_claims=additional_claims,
+        fresh=True,
+    )
+    refresh_token = create_refresh_token(
+        identity=user,
+        expires_delta=current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES"),
+        additional_claims=additional_claims,
+    )
     return access_token, refresh_token, user, is_new_user

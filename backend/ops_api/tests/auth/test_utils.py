@@ -13,8 +13,7 @@ from sqlalchemy import select
 from models import UserStatus
 from models.users import User
 from ops_api.ops.auth.authorization_providers import AuthorizationGateway
-from ops_api.ops.auth.exceptions import NotActiveUserError
-from ops_api.ops.auth.utils import create_oauth_jwt, register_user
+from ops_api.ops.auth.utils import create_oauth_jwt, get_user
 
 key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
 
@@ -113,9 +112,9 @@ def hhsams_jwt():
     }
 
 
-def test_register_user(user_with_no_oidc_id, loaded_db, hhsams_jwt):
+def test_get_user(user_with_no_oidc_id, loaded_db, hhsams_jwt):
     # test happy path
-    user, new_user = register_user(
+    user, new_user = get_user(
         {
             "email": "admin.demo@email.com",
             "sub": "00000000-0000-1111-a111-000000000018",
@@ -132,7 +131,7 @@ def test_register_user(user_with_no_oidc_id, loaded_db, hhsams_jwt):
     assert user is not None
     assert user.oidc_id is None
 
-    user, new_user = register_user(
+    user, new_user = get_user(
         {
             "email": "user@example.com",
             "sub": "9b5b5b5e-5288-401d-8267-a80605cce16f",
@@ -150,9 +149,7 @@ def test_register_user(user_with_no_oidc_id, loaded_db, hhsams_jwt):
     # test new user
     # - new user should be set to status INACTIVE
     # - new user should have attributes from the JWT
-    with pytest.raises(NotActiveUserError):
-        register_user(hhsams_jwt)
-
+    user, new_user = get_user(hhsams_jwt)
     stmt = select(User).where(User.email == hhsams_jwt.get("email"))  # type: ignore
     user = loaded_db.scalars(stmt).one_or_none()
     assert user is not None
