@@ -23,31 +23,32 @@ const MultiAuthSection = () => {
                 navigate("/login");
             }
 
+            let response;
             try {
-                const response = await apiLogin(activeProvider, authCode);
-                const access_token = response.access_token;
-                const refresh_token = response.refresh_token;
-
-                if (access_token === null || access_token === undefined) {
-                    console.error("API Login Failed!");
-                    navigate("/login");
-                } else {
-                    // TODO: We should try to move the access_token to a secure cookie,
-                    // which will require a bit of re-work, since we won't have access to
-                    // the data within the cookie; instead will need to do additional API calls
-                    // to get the data we need.
-                    localStorage.setItem("access_token", access_token);
-                    localStorage.setItem("refresh_token", refresh_token);
-                    dispatch(login());
-
-                    await setActiveUser(access_token, dispatch);
-
-                    navigate("/");
-                }
+                response = await apiLogin(activeProvider, authCode);
             } catch (error) {
                 console.error("Error logging in");
                 dispatch(logout());
                 navigate("/login");
+            }
+            const access_token = response.access_token;
+            const refresh_token = response.refresh_token;
+
+            if (access_token === null || access_token === undefined) {
+                console.error("API Login Failed!");
+                navigate("/login");
+            } else {
+                // TODO: We should try to move the access_token to a secure cookie,
+                // which will require a bit of re-work, since we won't have access to
+                // the data within the cookie; instead will need to do additional API calls
+                // to get the data we need.
+                localStorage.setItem("access_token", access_token);
+                localStorage.setItem("refresh_token", refresh_token);
+                dispatch(login());
+
+                await setActiveUser(access_token, dispatch);
+
+                navigate("/");
             }
         },
         [dispatch, navigate]

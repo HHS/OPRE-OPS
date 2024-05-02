@@ -44,7 +44,6 @@ def login(code: str, provider: str) -> dict[str, Any]:
             access_token,
             refresh_token,
             user,
-            is_new_user,
         ) = _get_token_and_user_data_from_internal_auth(user_data)
 
     la.metadata.update(
@@ -59,7 +58,6 @@ def login(code: str, provider: str) -> dict[str, Any]:
     response = {
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "is_new_user": is_new_user,
         "user": user,
     }
 

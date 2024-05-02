@@ -141,6 +141,9 @@ def update_user_from_userinfo(user: User, user_info: UserInfoDict) -> None:
     user.email = user_info.get("email")
     user.oidc_id = UUID(user_info.get("sub"))
 
+    current_app.db_session.add(user)
+    current_app.db_session.commit()
+
 
 def get_user(user_info: UserInfoDict) -> User | None:
     """

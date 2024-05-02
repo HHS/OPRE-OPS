@@ -12,4 +12,3 @@ class LoginResponseSchema(Schema):
     # user is also passed back in the response, but it is not defined here
     access_token: str = fields.String(required=True)
     refresh_token: str = fields.String(required=True)
-    is_new_user: bool = fields.Boolean(required=True)
