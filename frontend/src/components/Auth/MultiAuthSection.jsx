@@ -39,11 +39,6 @@ const MultiAuthSection = () => {
                 localStorage.setItem("refresh_token", refresh_token);
                 dispatch(login());
 
-                if (response.is_new_user) {
-                    navigate(`/user/edit/${response?.user?.id}`);
-                    return;
-                }
-
                 await setActiveUser(access_token, dispatch);
 
                 navigate("/");

@@ -25,10 +25,6 @@ const AuthSection = () => {
                 localStorage.setItem("refresh_token", response.refresh_token);
                 dispatch(login());
                 if (!activeUser) await setActiveUser(response.access_token, dispatch);
-                if (response.is_new_user) {
-                    navigate("/user/edit");
-                    return;
-                }
             }
             navigate("/");
         },

@@ -13,9 +13,8 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 from marshmallow import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError
-from sqlalchemy.orm import load_only
 
-from models import Role, User, UserStatus
+from models import User
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.exceptions import NotActiveUserError, PrivateKeyError
 from ops_api.ops.utils.response import make_response_with_headers
@@ -120,13 +119,13 @@ def get_user_from_userinfo(user_info: UserInfoDict) -> Optional[User]:
     :return: User
     """
     user = current_app.db_session.scalars(
-        select(User).where((User.email == user_info.get("sub")))
-    ).one_or_none()  # type: ignore
+        select(User).where((User.oidc_id == user_info.get("sub")))  # type: ignore
+    ).one_or_none()
     if user:
         return user
     user = current_app.db_session.scalars(
-        select(User).where((User.email == user_info.get("email")))
-    ).one_or_none()  # type: ignore
+        select(User).where((User.email == user_info.get("email")))  # type: ignore
+    ).one_or_none()
     return user
 
 
@@ -143,7 +142,7 @@ def update_user_from_userinfo(user: User, user_info: UserInfoDict) -> None:
     user.oidc_id = UUID(user_info.get("sub"))
 
 
-def get_user(user_info: UserInfoDict) -> tuple[User, bool] | None:
+def get_user(user_info: UserInfoDict) -> User | None:
     """
     Get a user from the database by user data
     :param user_data: REQUIRED - The user data to search for
@@ -155,40 +154,8 @@ def get_user(user_info: UserInfoDict) -> tuple[User, bool] | None:
     user = get_user_from_userinfo(user_info)
     if user:
         update_user_from_userinfo(user, user_info)
-        return user, False
-
-    # Create new user
-    user = register_user(user_info)
-    return user, True
-
-
-def register_user(userinfo: UserInfoDict) -> User:
-    """
-    Register a new user in the database
-    :param userinfo: REQUIRED - The user information to register
-    :return: User
-    """
-    # Create new user
-    # Default to an 'unassigned' role.
-    # Set status as INACTIVE to prevent them for logging in until they are whitelisted.
-    current_app.logger.debug("Creating new user")
-
-    # Find the role with the matching permission
-    role = current_app.db_session.query(Role).options(load_only(Role.name)).filter_by(name="unassigned").one()
-
-    user = User(
-        email=userinfo["email"],
-        oidc_id=UUID(userinfo["sub"]),
-        roles=[role],
-        status=UserStatus.INACTIVE,
-    )
-
-    update_user_from_userinfo(user, userinfo)
-
-    current_app.db_session.add(user)
-    current_app.db_session.commit()
-
-    return user
+        current_app.logger.debug(f"Found user: {user.to_dict()}")
+        return user
 
 
 def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
@@ -199,15 +166,12 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
     #   - invalid JWT
     # - create backend-JWT endpoints /refesh /validate (drf-simplejwt)
     # See if user exists
-    user, is_new_user = get_user(user_data)
+    user = get_user(user_data)
 
     # TODO
     # Do we want to embed the user's roles or permissions in the scope: [read write]?
     # The next two tokens are specific to our backend API, these are used for our API
     # authZ, given a valid login from the prior AuthN steps above.
-
-    if is_new_user:
-        return None, None, user, is_new_user
 
     additional_claims = {}
     if user.roles:
@@ -223,4 +187,4 @@ def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
         expires_delta=current_app.config.get("JWT_REFRESH_TOKEN_EXPIRES"),
         additional_claims=additional_claims,
     )
-    return access_token, refresh_token, user, is_new_user
+    return access_token, refresh_token, user

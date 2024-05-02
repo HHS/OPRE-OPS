@@ -24,7 +24,6 @@ def is_user_active(f):
 
         from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
 
-        # auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
         auth_gateway = AuthenticationGateway(current_app.config)
 
         provider = request.json.get("provider")
