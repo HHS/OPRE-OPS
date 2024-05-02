@@ -1,6 +1,6 @@
 import Select from "../../UI/Select";
 import PropTypes from "prop-types";
-import { SERVICE_REQ_TYPES_OPTIONS } from "../servicesComponents.constants";
+import { SERVICE_REQ_TYPES_OPTIONS } from "../ServicesComponents.constants";
 
 /**
  * ServiceReqTypeSelect is a select component for choosing a service requirement type.

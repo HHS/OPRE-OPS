@@ -32,7 +32,7 @@ RUN chown -R bun:bun .
 USER bun
 
 # Install the runtime script cli package
-RUN bun install runtime-env-cra
+RUN bun install runtime-env-cra express
 
 # Expose port
 EXPOSE 3000/tcp

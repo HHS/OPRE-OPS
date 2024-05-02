@@ -1,9 +1,10 @@
 /**
  * A wrapper component for displaying filter tags.
  *
+ * @component
  * @param {Object} props - The props object containing children.
  * @param {React.ReactNode} props.children - The child components to be rendered.
- * @returns {React.JSX.Element} - The JSX element representing the filter tags wrapper.
+ * @returns {JSX.Element} - The JSX element representing the filter tags wrapper.
  */
 const FilterTagsWrapper = ({ children }) => {
     return (

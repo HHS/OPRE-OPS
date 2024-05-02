@@ -1,10 +1,8 @@
-import { createContext, useContext, useReducer } from "react";
-import { SERVICE_REQ_TYPES } from "../../ServicesComponents/servicesComponents.constants";
+import { useContext } from "react";
+import { SERVICE_REQ_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
+import { AgreementEditorContext, EditAgreementDispatchContext } from "./AgreementEditorContext";
 
-export const AgreementEditorContext = createContext(null);
-export const EditAgreementDispatchContext = createContext(null);
-
-const defaultState = {
+export const defaultState = {
     agreement: {
         id: null,
         agreement_type: null,
@@ -27,41 +25,7 @@ const defaultState = {
     selected_project_officer: {},
     wizardSteps: ["Project", "Agreement", "Budget Lines"]
 };
-let initialState = { ...defaultState };
-
-/**
- * Provides a context for creating an agreement.
- * @param {Object} props - The component props.
- * @param {Object} props.agreement - The agreement to edit, if any.
- * @param {Object} props.projectOfficer - The project officer to set, if any.
- * @param {React.ReactNode} props.children - The child components.
- * @returns {React.ReactNode} The rendered component.
- */
-export function EditAgreementProvider({ agreement, projectOfficer, children }) {
-    if (agreement) {
-        initialState.agreement = { ...agreement };
-        initialState.selected_project = agreement.project;
-        initialState.selected_product_service_code = agreement.product_service_code;
-        initialState.selected_procurement_shop = agreement.procurement_shop;
-        if (projectOfficer) {
-            initialState.selected_project_officer = projectOfficer;
-        }
-        delete initialState.agreement.project;
-        delete initialState.agreement.product_service_code;
-        delete initialState.agreement.procurement_shop;
-        delete initialState.agreement.status;
-    } else {
-        initialState = { ...defaultState };
-    }
-
-    const [state, dispatch] = useReducer(editAgreementReducer, initialState);
-
-    return (
-        <AgreementEditorContext.Provider value={state}>
-            <EditAgreementDispatchContext.Provider value={dispatch}>{children}</EditAgreementDispatchContext.Provider>
-        </AgreementEditorContext.Provider>
-    );
-}
+export let initialState = { ...defaultState };
 
 export function useEditAgreement() {
     return useContext(AgreementEditorContext);
@@ -90,7 +54,7 @@ export function useUpdateAgreement(key) {
     return setValue;
 }
 
-function editAgreementReducer(state, action) {
+export function editAgreementReducer(state, action) {
     switch (action.type) {
         case "SET_STATE": {
             return { ...state, [action.key]: action.value };

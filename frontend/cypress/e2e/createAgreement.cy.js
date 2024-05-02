@@ -99,12 +99,8 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("p").should("contain", "You have not added any Services Component yet.");
     cy.get("#servicesComponentSelect").select("1");
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Base Period 1");
@@ -112,7 +108,7 @@ it("can create an SEVERABLE agreement", () => {
     // Add a new budget line item
     cy.get("#allServicesComponentSelect").should("exist");
     cy.get("#allServicesComponentSelect").select("Base Period 1");
-    cy.get("#uswds-date-need-by-date").type("01/01/2024");
+    cy.get("#need-by-date").type("01/01/2024");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
@@ -238,24 +234,16 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#servicesComponentSelect").select("2");
     cy.get("#optional-services-component").should("not.be.disabled");
     cy.get("#servicesComponentSelect").select("1");
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Services Component 1");
     //create a new optional services component
     cy.get("#servicesComponentSelect").select("2");
     cy.get(".usa-checkbox").click();
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Optional Services Component 2");
@@ -274,7 +262,7 @@ it("can create an NON-SEVERABLE agreement", () => {
         cy.get("option").should("contain", "OSC2");
     });
     cy.get("#allServicesComponentSelect").select("SC1");
-    cy.get("#uswds-date-need-by-date").type("01/01/2024");
+    cy.get("#need-by-date").type("01/01/2024");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
@@ -286,7 +274,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
 
     cy.get("#allServicesComponentSelect").select("SC1");
-    cy.get("#uswds-date-need-by-date").type("01/01/2025");
+    cy.get("#need-by-date").type("01/01/2025");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("2000000");
     cy.get("#enteredComments").type("Something something note something.");
@@ -305,7 +293,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     // sc1 table should contain 2 rows
     cy.get("@sc1").next().find(".usa-table").find("tbody").find("tr").should("have.length", 2);
     cy.get("#allServicesComponentSelect").select("OSC2");
-    cy.get("#uswds-date-need-by-date").type("01/01/2026");
+    cy.get("#need-by-date").type("01/01/2026");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("3000000");
     cy.get("#enteredComments").type("Something something note something.");

@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import ServicesComponentForm from "./ServicesComponentForm";
 import ServicesComponentsList from "./ServicesComponentsList";
 import ConfirmationModal from "../UI/Modals/ConfirmationModal";
-import useServicesComponents from "./servicesComponents.hooks";
+import useServicesComponents from "./ServicesComponents.hooks";
 
 /**
  * ServicesComponents is a component that handles the display and functionality of service components.
@@ -29,7 +29,8 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
         handleDelete,
         handleCancel,
         setFormDataById,
-        servicesComponentsNumbers
+        servicesComponentsNumbers,
+        formKey
     } = useServicesComponents(agreementId);
 
     return (
@@ -52,6 +53,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
                 handleCancel={handleCancel}
                 servicesComponentsNumbers={servicesComponentsNumbers}
                 isEditMode={isEditMode}
+                formKey={formKey}
             />
 
             <ServicesComponentsList
@@ -66,7 +68,7 @@ const ServicesComponents = ({ serviceRequirementType, agreementId, isEditMode = 
 
 ServicesComponents.propTypes = {
     serviceRequirementType: PropTypes.string.isRequired,
-    agreementId: PropTypes.string.isRequired,
+    agreementId: PropTypes.number.isRequired,
     isEditMode: PropTypes.bool
 };
 export default ServicesComponents;
