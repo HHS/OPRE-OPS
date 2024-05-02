@@ -4,53 +4,53 @@ runs:
   using: node20
   main: index.js
 inputs:
-  custom-token:
+  custom_token:
     description: 'Custom GitHub token to use for authentication'
     required: false
-  tag-prefix:
+  tag_prefix:
     description: 'Prefix that is used for the git tag'
     default: ''
     required: false
-  tag-suffix:
+  tag_suffix:
     description: 'Suffix that is used for the git tag'
     default: ''
     required: false
-  version-type:
+  version_type:
     description: 'Overrides version type from commit message'
     default: ''
     required: false
-  minor-wording:
+  minor_wording:
     description: 'Words list that trigger a minor version bump'
     default: 'feat,minor'
     required: false
-  major-wording:
+  major_wording:
     description: 'Words list that trigger a major version bump'
     default: 'BREAKING CHANGE,major'
     required: false
-  patch-wording:
+  patch_wording:
     description: 'Words list that trigger a patch version bump'
     required: false
-  rc-wording:
+  rc_wording:
     description: 'Words list that trigger a rc version bump'
     default: 'pre-alpha,pre-beta,pre-rc'
     required: false
-  skip-tag:
+  skip_tag:
     description: 'Avoid to add a TAG to the version update commit'
     default: 'false'
     required: false
-  skip-commit:
+  skip_commit:
     description: 'Avoid to add a commit after the version is bumped'
     default: 'false'
     required: false
-  skip-push:
+  skip_push:
     description: 'If true, skip pushing any commits or tags created after the version bump'
     default: 'false'
     required: false
-  OPENAPI_DIR:
+  openapi_dir:
     description: 'Custom dir to the package'
     default: ''
     required: false
-  target-branch:
+  target_branch:
     description: 'A separate branch to perform the version bump on'
     default: ''
     required: false
@@ -62,19 +62,19 @@ inputs:
     description: 'Set a custom preid for prerelease build'
     default: 'rc'
     required: false
-  commit-message:
+  commit_message:
     description: 'Set a custom commit message for version bump commit'
     default: ''
     required: false
-  bump-policy:
+  bump_policy:
     description: 'Set version bump ignore policy'
     default: 'all'
     required: false
-  check-last-commit-only:
+  check_last_commit_only:
     description: 'Check only last commit message'
     default: 'false'
     required: false
-  custom-git-domain:
+  custom_git_domain:
     description: 'Set a custom domain of the git instance'
     default: 'github.com'
     required: false
@@ -83,5 +83,5 @@ inputs:
     default: 'true'
     required: false
 outputs:
-  newTag:
+  new_tag:
     description: 'The newly created tag'
