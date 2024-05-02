@@ -370,13 +370,7 @@ class AgreementOpsDbHistory(BaseModel):
     __tablename__ = "agreement_ops_db_history"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    agreement_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("agreement.id", ondelete="CASCADE")
-    )
-    agreement = relationship(
-        "Agreement",
-        passive_deletes=True,
-    )
+    agreement_id: Mapped[Optional[int]] = mapped_column(Integer)
     ops_db_history_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("ops_db_history.id", ondelete="CASCADE")
     )

@@ -1,8 +1,8 @@
 """add agreement_ops_db_history table
 
-Revision ID: 69f1b313f438
+Revision ID: bed8c1a2b69b
 Revises: c7b103a191fd
-Create Date: 2024-04-30 14:39:04.434346+00:00
+Create Date: 2024-05-02 13:23:55.728864+00:00
 
 """
 from typing import Sequence, Union
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '69f1b313f438'
+revision: str = 'bed8c1a2b69b'
 down_revision: Union[str, None] = 'c7b103a191fd'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -43,7 +43,6 @@ def upgrade() -> None:
     sa.Column('updated_by', sa.Integer(), nullable=True),
     sa.Column('created_on', sa.DateTime(), nullable=True),
     sa.Column('updated_on', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['agreement_id'], ['agreement.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['created_by'], ['user.id'], ),
     sa.ForeignKeyConstraint(['ops_db_history_id'], ['ops_db_history.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['updated_by'], ['user.id'], ),
