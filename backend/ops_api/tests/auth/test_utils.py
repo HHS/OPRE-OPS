@@ -94,7 +94,25 @@ def user_with_no_oidc_id(loaded_db):
     loaded_db.commit()
 
 
-def test_register_user(user_with_no_oidc_id, loaded_db):
+@pytest.fixture()
+def hhsams_jwt():
+    yield {
+        "sub": "6b3f72cb-0c04-4eff-94b3-fa012f63a9c6",
+        "aud": "1aba44a4-4fd3-4d8b-a4bc-d8afecc6abb7",
+        "email_verified": True,
+        "hhsid": "9765836011",
+        "IAL": 3,
+        "name": "JOHN DOE",
+        "iss": "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO",
+        "preferred_username": "john.doe@acf.hhs.gov",
+        "AAL": 3,
+        "given_name": "JOHN",
+        "family_name": "DOE",
+        "email": "john.doe@acf.hhs.gov",
+    }
+
+
+def test_register_user(user_with_no_oidc_id, loaded_db, hhsams_jwt):
     # test happy path
     user, new_user = register_user(
         {
@@ -129,17 +147,12 @@ def test_register_user(user_with_no_oidc_id, loaded_db):
     assert user.oidc_id == UUID("9b5b5b5e-5288-401d-8267-a80605cce16f")
 
     # test new user
+    # - new user should be set to status INACTIVE
+    # - new user should have attributes from the JWT
     with pytest.raises(NotActiveUserError):
-        register_user(
-            {
-                "email": "new_user@example.com",
-                "sub": "0a513599-c178-4db8-a968-bd3543a8678f",
-                "given_name": "New User",
-            }
-        )
-        stmt = select(User).where(User.email == "new_user@example.com")
-        user = loaded_db.scalars(stmt).one_or_none()
-        assert user is not None
-        assert user.oidc_id == UUID("0a513599-c178-4db8-a968-bd3543a8678f")
+        register_user(hhsams_jwt)
 
-    # TODO: generate a real JWT token and test the register_user function for creating a new user
+    stmt = select(User).where(User.email == "john.doe@acf.hhs.gov")
+    user = loaded_db.scalars(stmt).one_or_none()
+    assert user is not None
+    assert user.oidc_id == UUID("6b3f72cb-0c04-4eff-94b3-fa012f63a9c6")
