@@ -10,6 +10,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from sqlalchemy import select
 
+from models import UserStatus
 from models.users import User
 from ops_api.ops.auth.authorization_providers import AuthorizationGateway
 from ops_api.ops.auth.exceptions import NotActiveUserError
@@ -126,7 +127,7 @@ def test_register_user(user_with_no_oidc_id, loaded_db, hhsams_jwt):
     assert user.email == "admin.demo@email.com"
 
     # test user with no oidc_id
-    stmt = select(User).where(User.email == "user@example.com")
+    stmt = select(User).where(User.email == "user@example.com")  # type: ignore
     user = loaded_db.scalars(stmt).one_or_none()
     assert user is not None
     assert user.oidc_id is None
@@ -141,7 +142,7 @@ def test_register_user(user_with_no_oidc_id, loaded_db, hhsams_jwt):
     assert user is not None
     assert new_user is False
     assert user.email == "user@example.com"
-    stmt = select(User).where(User.email == "user@example.com")
+    stmt = select(User).where(User.email == "user@example.com")  # type: ignore
     user = loaded_db.scalars(stmt).one_or_none()
     assert user is not None
     assert user.oidc_id == UUID("9b5b5b5e-5288-401d-8267-a80605cce16f")
@@ -152,7 +153,11 @@ def test_register_user(user_with_no_oidc_id, loaded_db, hhsams_jwt):
     with pytest.raises(NotActiveUserError):
         register_user(hhsams_jwt)
 
-    stmt = select(User).where(User.email == "john.doe@acf.hhs.gov")
+    stmt = select(User).where(User.email == hhsams_jwt.get("email"))  # type: ignore
     user = loaded_db.scalars(stmt).one_or_none()
     assert user is not None
-    assert user.oidc_id == UUID("6b3f72cb-0c04-4eff-94b3-fa012f63a9c6")
+    assert user.oidc_id == UUID(hhsams_jwt.get("sub"))
+    assert user.status == UserStatus.INACTIVE
+    assert user.first_name == hhsams_jwt.get("given_name")
+    assert user.last_name == hhsams_jwt.get("family_name")
+    assert user.hhs_id == hhsams_jwt.get("hhsid")

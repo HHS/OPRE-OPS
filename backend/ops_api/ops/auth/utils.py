@@ -158,6 +158,9 @@ def register_user(userinfo: UserInfoDict) -> tuple[User, bool]:
         oidc_id=UUID(userinfo["sub"]),
         roles=[role],
         status=UserStatus.INACTIVE,
+        first_name=userinfo.get("given_name"),
+        last_name=userinfo.get("family_name"),
+        hhs_id=userinfo.get("hhsid"),
     )
 
     current_app.db_session.add(user)
