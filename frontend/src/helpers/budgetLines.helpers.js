@@ -1,5 +1,12 @@
 import { formatDateToMonthDayYear } from "./utils";
 
+export const BLI_STATUS = {
+    DRAFT: "DRAFT",
+    PLANNED: "PLANNED",
+    EXECUTING: "IN_EXECUTION",
+    OBLIGATED: "OBLIGATED"
+};
+
 /**
  * Validates if the given budget line is an object.
  * @param {Object} budgetLine - The budget line to validate.
@@ -45,7 +52,7 @@ export const getBudgetByStatus = (budgetLines, status) => {
 
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIProp(budgetLines);
-    return budgetLines?.filter((bli) => bli.status !== "DRAFT" && bli.status !== "IN_REVIEW");
+    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT && bli.status !== "IN_REVIEW");
 };
 
 export const hasActiveWorkflow = (budgetLines) => {
