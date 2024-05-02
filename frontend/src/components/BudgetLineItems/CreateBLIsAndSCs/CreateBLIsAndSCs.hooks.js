@@ -66,8 +66,8 @@ const useCreateBLIsAndSCs = (
     const subTotalForCards = budgetLinesTotal(budgetLines);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLines);
 
-    console.log({ financialSnapshot });
-    console.log({ enteredAmount, needByDate, selectedCanId: selectedCan?.id });
+    // console.log({ financialSnapshot });
+    // console.log({ enteredAmount, needByDate, selectedCanId: selectedCan?.id });
 
     // Validation
     let res = suite.get();
@@ -125,16 +125,6 @@ const useCreateBLIsAndSCs = (
         const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
         const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
 
-        if (financialSnapshotChanged) {
-            const userConfirmed = confirm(
-                "Are you sure you want to make these changes? A Division Director will need to review them."
-            );
-
-            if (!userConfirmed) {
-                resetForm();
-                return;
-            }
-        }
         const payload = {
             id: budgetLines[budgetLineBeingEdited].id,
             services_component_id: servicesComponentId,
@@ -146,6 +136,35 @@ const useCreateBLIsAndSCs = (
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
         const { id, data } = cleanBudgetLineItemForApi(payload);
+        if (financialSnapshotChanged) {
+            setShowModal(true);
+            setModalProps({
+                heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
+                actionButtonText: "Send to Approval",
+                secondaryButtonText: "Continue Editing",
+                handleConfirm: () => {
+                    updateBudgetLineItem({ id, data })
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log("Updated BLI:", fulfilled);
+                        })
+                        .catch((rejected) => {
+                            console.error("Error Updating Budget Line");
+                            console.error({ rejected });
+                            setAlert({
+                                type: "error",
+                                heading: "Error",
+                                message: "An error occurred. Please try again.",
+                                navigateUrl: "/error"
+                            });
+                        });
+                    resetForm();
+                }
+            });
+
+            return;
+        }
+
         updateBudgetLineItem({ id, data })
             .unwrap()
             .then((fulfilled) => {
