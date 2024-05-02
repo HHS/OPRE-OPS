@@ -13,10 +13,17 @@ async function run() {
             throw new Error('GitHub token is not provided');
         }
 
+        // Navigate to the specified directory where openapi.yml is expected to be
         const workspace = process.env.GITHUB_WORKSPACE || '.';
-        const openApiDir = core.getInput('openapi-dir', { required: false }) || '.';
-        process.chdir(path.join(workspace, openApiDir));
+        const openApiDir = core.getInput('OPENAPI_DIR', { required: false }) || '.';
+        const fullPath = path.join(workspace, openApiDir);
+        process.chdir(fullPath);
+        console.log(`Working directory set to: ${fullPath}`);
+
         const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
+        if (!fs.existsSync(openApiFilePath)) {
+            throw new Error(`The openapi.yml file does not exist at ${openApiFilePath}`);
+        }
         const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8'));
 
         const octokit = github.getOctokit(token);
@@ -63,3 +70,50 @@ async function run() {
 }
 
 run();
+
+function determineBumpType(messages) {
+  const majorWords = core.getInput('major-wording', { required: false }).split(',').map(word => word.trim());
+  const minorWords = core.getInput('minor-wording', { required: false }).split(',').map(word => word.trim());
+  const patchWords = core.getInput('patch-wording', { required: false }).split(',').map(word => word.trim());
+  const preReleaseWords = core.getInput('rc-wording', { required: false }).split(',').map(word => word.trim());
+
+  let bumpType = 'patch'; // default to patch if no other conditions are met
+  if (messages.some(msg => preReleaseWords.some(word => msg.includes(word)))) {
+      bumpType = 'prerelease';
+  }
+  if (messages.some(msg => patchWords.some(word => msg.includes(word)))) {
+      bumpType = 'patch';
+  }
+  if (messages.some(msg => minorWords.some(word => msg.includes(word)))) {
+      bumpType = 'minor';
+  }
+  if (messages.some(msg => majorWords.some(word => msg.includes(word)))) {
+      bumpType = 'major';
+  }
+
+  return bumpType;
+}
+
+
+function updateVersion(oldVersion, bumpType) {
+  let parts = oldVersion.split('.').map(x => parseInt(x, 10));
+  switch (bumpType) {
+      case 'major':
+          parts[0] += 1;
+          parts[1] = 0;
+          parts[2] = 0;
+          break;
+      case 'minor':
+          parts[1] += 1;
+          parts[2] = 0;
+          break;
+      case 'patch':
+          parts[2] += 1;
+          break;
+      case 'prerelease':
+          parts[2] += 1; 
+          break;
+  }
+  return parts.join('.');
+}
+
