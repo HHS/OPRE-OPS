@@ -1,44 +1,29 @@
-import json
 from typing import Any, Union
 
+from authlib.oauth2.rfc6749 import OAuth2Token
 from flask import Response, current_app
 from flask_jwt_extended import create_access_token, current_user, get_jwt_identity
 
 from models.events import OpsEventType
+from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
+from ops_api.ops.auth.exceptions import AuthenticationError
 from ops_api.ops.auth.utils import _get_token_and_user_data_from_internal_auth
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
 def login(code: str, provider: str) -> dict[str, Any]:
-    """
-    If the user is authenticated with the provider, but there is no existing user in the database, then a new user
-    is created in the database however, the user is not active until the user is approved by an admin.
-    Therefore, the new user will not receive an access token until the user is approved by an admin.
-    """
-    current_app.logger.debug(f"login - auth_code: {code}")
-    current_app.logger.debug(f"login - provider: {provider}")
-
     with current_app.app_context():
         auth_gateway = AuthenticationGateway(current_app.config)
 
     with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
-        token = auth_gateway.authenticate(provider, code)
+        token: OAuth2Token = auth_gateway.authenticate(provider, code)
 
         if not token:
-            current_app.logger.error(f"Failed to authenticate with provider {provider} using auth code {code}")
-            return "Invalid Provider Auth Token", 400
+            raise AuthenticationError(f"Failed to authenticate with provider {provider} using auth code {code}")
 
-        user_data = auth_gateway.get_user_info(provider, token["access_token"].strip())
-
-        # Issues where user_data is sometimes just a string, and sometimes a dict.
-        if isinstance(user_data, str):
-            user_data = json.loads(user_data)  # pragma: allowlist
-        else:
-            user_data = user_data
-
-        current_app.logger.debug(f"Provider Returned user_data: {user_data}")
+        user_data: UserInfoDict = auth_gateway.get_user_info(provider, token["access_token"].strip())
 
         (
             access_token,

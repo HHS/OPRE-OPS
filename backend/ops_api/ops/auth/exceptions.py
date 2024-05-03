@@ -22,3 +22,11 @@ class PrivateKeyError(Exception):
     """
 
     pass
+
+
+class AuthenticationError(Exception):
+    """
+    Exception to raise when there is an error with authentication.
+    """
+
+    pass

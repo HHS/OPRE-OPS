@@ -16,7 +16,7 @@ from sqlalchemy.exc import PendingRollbackError
 
 from models import User
 from ops_api.ops.auth.auth_types import UserInfoDict
-from ops_api.ops.auth.exceptions import NotActiveUserError, PrivateKeyError
+from ops_api.ops.auth.exceptions import AuthenticationError, NotActiveUserError, PrivateKeyError
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -34,6 +34,9 @@ def handle_api_error(f):
         except NotActiveUserError as e:
             current_app.logger.error(e)
             return make_response_with_headers({}, 403)
+        except AuthenticationError as e:
+            current_app.logger.error(e)
+            return make_response_with_headers({}, 400)
         except Exception as e:
             current_app.logger.exception(e)
             return make_response_with_headers({}, 500)
@@ -162,12 +165,10 @@ def get_user(user_info: UserInfoDict) -> User | None:
 
 
 def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
-    # Generate internal backend-JWT
-    # - user meta data
-    # - endpoints validate backend-JWT
-    #   - refresh - within 15 min - also include a call to login.gov /refresh
-    #   - invalid JWT
-    # - create backend-JWT endpoints /refesh /validate (drf-simplejwt)
+    """
+    Generate internal backend-JWT.
+    """
+
     # See if user exists
     user = get_user(user_data)
 

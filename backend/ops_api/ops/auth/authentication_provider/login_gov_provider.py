@@ -7,6 +7,7 @@ from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc6749 import OAuth2Token
 from flask import Config, current_app
 
+from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_provider.authentication_provider import AuthenticationProvider
 from ops_api.ops.auth.utils import create_oauth_jwt
 
@@ -50,7 +51,7 @@ class LoginGovProvider(AuthenticationProvider):
         )
         return token
 
-    def get_user_info(self, token: OAuth2Token) -> dict[str, str]:
+    def get_user_info(self, token: OAuth2Token) -> UserInfoDict | None:
         header = {
             "Authorization": f"Bearer {token}",
             "Accept": "application/json",
