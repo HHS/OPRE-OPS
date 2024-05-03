@@ -61,6 +61,11 @@ export const hasActiveWorkflow = (budgetLines) => {
     return budgetLines?.some((bli) => bli.has_active_workflow);
 };
 
+export const hasBlIsInReview = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.some((bli) => bli.in_review);
+};
+
 export const groupByServicesComponent = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines

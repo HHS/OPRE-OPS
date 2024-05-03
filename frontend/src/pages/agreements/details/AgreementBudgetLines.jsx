@@ -11,7 +11,7 @@ import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import { hasActiveWorkflow, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
+import { hasActiveWorkflow, groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { findPeriodStart, findPeriodEnd, findDescription } from "../../../helpers/servicesComponent.helpers";
 
 /**
@@ -24,10 +24,11 @@ import { findPeriodStart, findPeriodEnd, findDescription } from "../../../helper
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
-    // TODO: Create a custom hook for this business logix (./agreementBudgetLines.hooks.js)
+    // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = useState(false);
     const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
+    const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveActiveWorkflow;
     const { setAlert } = useAlert();
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
@@ -84,6 +85,25 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
     };
 
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
+    const handleAlert = () => {
+        if (doesAgreementHaveBLIsInReview) {
+            setAlert({
+                type: "success",
+                heading: "Agreement Edits Sent to Approval",
+                message:
+                    "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
+                navigateUrl: navigate(`/agreements/${agreement.id}/budget-lines`)
+            });
+            return;
+        }
+
+        setAlert({
+            type: "success",
+            heading: "Budget Lines Saved",
+            message: "The budget lines have been successfully saved.",
+            navigateUrl: navigate(`/agreements/${agreement.id}/budget-lines`)
+        });
+    };
 
     return (
         <>
@@ -138,12 +158,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                     }}
                     continueOverRide={() => {
                         setIsEditMode(false);
-                        setAlert({
-                            type: "success",
-                            heading: "Budget Lines Saved",
-                            message: "The budget lines have been successfully saved.",
-                            navigateUrl: navigate(-1)
-                        });
+                        handleAlert();
                     }}
                 />
             )}
