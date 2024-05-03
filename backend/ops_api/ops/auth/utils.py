@@ -1,7 +1,6 @@
 import json
 import time
 import uuid
-from functools import wraps
 from typing import Optional
 from uuid import UUID
 
@@ -9,38 +8,11 @@ import requests
 from authlib.jose import jwt as jose_jwt
 from flask import Config, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token
-from marshmallow import ValidationError
 from sqlalchemy import select
-from sqlalchemy.exc import PendingRollbackError
 
 from models import User
 from ops_api.ops.auth.auth_types import UserInfoDict
-from ops_api.ops.auth.exceptions import AuthenticationError, NotActiveUserError, PrivateKeyError
-from ops_api.ops.utils.response import make_response_with_headers
-
-
-def handle_api_error(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except (KeyError, RuntimeError, PendingRollbackError) as er:
-            current_app.logger.error(er)
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            current_app.logger.error(ve)
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except NotActiveUserError as e:
-            current_app.logger.error(e)
-            return make_response_with_headers({}, 403)
-        except AuthenticationError as e:
-            current_app.logger.error(e)
-            return make_response_with_headers({}, 400)
-        except Exception as e:
-            current_app.logger.exception(e)
-            return make_response_with_headers({}, 500)
-
-    return decorated
+from ops_api.ops.auth.exceptions import PrivateKeyError
 
 
 def create_oauth_jwt(
