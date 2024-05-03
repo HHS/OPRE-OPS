@@ -63,9 +63,9 @@ jobs:
         id: version_bump
         uses: ./.github/actions/bump-and-tag
         with:
-          custom-token:  ${{ secrets.TEST_TOKEN }}
-          tag-prefix: 'ops-backend-v'
-          OPENAPI_DIR: 'backend'
+          custom_token:  ${{ secrets.TEST_TOKEN }}
+          tag_prefix: 'ops-backend-v'
+          openapi_dir: 'backend'
 
       - name: Extract Version
         id: extract_version
