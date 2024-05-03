@@ -52,9 +52,10 @@ export const getBudgetByStatus = (budgetLines, status) => {
 
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIProp(budgetLines);
-    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT && bli.status !== "IN_REVIEW");
+    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
 };
-
+// TODO: Should we be checking for `in_review` here?
+// TODO: Are workflows deprecated?
 export const hasActiveWorkflow = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.some((bli) => bli.has_active_workflow);

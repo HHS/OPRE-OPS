@@ -18,8 +18,10 @@ import { BLI_STATUS } from "../helpers/budgetLines.helpers";
 export const useIsBudgetLineEditableByStatus = (/** @type {BudgetLine} */ budgetLine) => {
     const isBudgetLineDraft = budgetLine?.status === BLI_STATUS.DRAFT;
     const isBudgetLinePlanned = budgetLine?.status === BLI_STATUS.PLANNED;
+    const isBudgetLineExecuting = budgetLine?.status === BLI_STATUS.EXECUTING;
     const isBudgetLineInReview = budgetLine?.in_review;
-    const isBudgetLineInEditableStatus = (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInReview;
+    const isBudgetLineInEditableStatus =
+        (isBudgetLineDraft || isBudgetLinePlanned || isBudgetLineExecuting) && !isBudgetLineInReview;
 
     return isBudgetLineInEditableStatus;
 };
