@@ -60,56 +60,6 @@ def logout() -> Union[Response, tuple[str, int]]:
             return make_response_with_headers({"message": "Logged out"})
 
 
-# def _get_token_and_user_data_from_oauth_provider(provider: str, auth_code: str):
-#     try:
-#         authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]
-#         current_app.logger.debug(f"authlib_client_config={authlib_client_config}")
-#         current_app.logger.debug(f"auth_provider={provider}")
-#         provider_config = authlib_client_config[provider]
-#
-#         jwt = create_oauth_jwt(provider, current_app.config)
-#         current_app.logger.debug(f"jwt={jwt}")
-#
-#         client = OAuth2Session(
-#             provider_config["client_id"],
-#             scope="openid profile email",
-#             redirect_uri=provider_config["redirect_uri"],
-#         )
-#         token = client.fetch_token(
-#             provider_config["token_endpoint"],
-#             client_assertion=jwt,
-#             client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-#             grant_type="authorization_code",
-#             code=auth_code,
-#         )
-#         current_app.logger.debug(f"token={token}")
-#         access_token = token["access_token"].strip()
-#         header = {
-#             "Authorization": f"Bearer {access_token}",
-#             "Accept": "application/json",
-#         }
-#         current_app.logger.debug(f"header={header}")
-#         user_jwt = requests.get(
-#             provider_config["user_info_url"],
-#             headers=header,
-#         ).content.decode("utf-8")
-#
-#         # HHSAMS returns a JWT, for user data, which needs decoded,
-#         # Login.gov returns a JSON object for user data,
-#         # so we need to handle both cases.
-#         user_data = (
-#             decode_user(payload=user_jwt, provider=provider)
-#             if provider == "hhsams"
-#             else user_jwt
-#         )
-#         current_app.logger.debug(f"user_data={user_data}")
-#     except Exception as e:
-#         current_app.logger.exception(e)
-#         raise e
-#     finally:
-#         return token, user_data
-
-
 def refresh() -> Response:
     additional_claims = {"roles": []}
     current_app.logger.debug(f"user {current_user}")

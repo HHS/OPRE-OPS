@@ -6,7 +6,6 @@ from typing import Optional
 from uuid import UUID
 
 import requests
-from authlib.jose import JsonWebToken
 from authlib.jose import jwt as jose_jwt
 from flask import Config, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token
@@ -81,7 +80,10 @@ def create_oauth_jwt(
     return jws
 
 
-def get_jwks(provider_metadata_url: str):
+def get_jwks(provider_metadata_url: str) -> str:
+    """
+    See: https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-sets
+    """
     provider_uris = json.loads(
         requests.get(
             provider_metadata_url,
@@ -92,27 +94,6 @@ def get_jwks(provider_metadata_url: str):
     jwks_uri = provider_uris["jwks_uri"]
     jwks = requests.get(jwks_uri).content.decode("utf-8")
     return jwks
-
-
-def decode_user(
-    payload: Optional[str] = None,
-    provider: Optional[str] = None,
-) -> dict[str, str]:
-    # TODO: Determine which claims we want to validate when decoding a user from the provider
-    #       beyond just the signature. Should these be universal for any claims (global)?
-    # ex: validate the JTI, validate the expiration, validate the si
-    # claims_options = {
-    #     "iss": {
-    #         "essential": True,
-    #         "values": current_app.config["AUTHLIB_OAUTH_CLIENTS"][provider]["client_id"],
-    #     },
-    #     "jti": {"validate": JWTClaims.validate_jti},
-    #     "exp": {"validate": JWTClaims.validate_exp},
-    # }
-    jwt = JsonWebToken(["RS256"])
-    # claims = jwt.decode(payload, get_jwks(provider), claims_options=claims_options)
-    claims = jwt.decode(payload, get_jwks(provider))
-    return claims
 
 
 def get_user_from_userinfo(user_info: UserInfoDict) -> Optional[User]:
@@ -152,11 +133,8 @@ def get_user(user_info: UserInfoDict) -> User | None:
     """
     Get a user from the database by user data
     :param user_data: REQUIRED - The user data to search for
-    :return: User, bool
-
-    The bool return param is used to determine if the user is new or not.
+    :return: User.
     """
-    # Find existing user
     user = get_user_from_userinfo(user_info)
     if user:
         update_user_from_userinfo(user, user_info)
@@ -164,16 +142,13 @@ def get_user(user_info: UserInfoDict) -> User | None:
         return user
 
 
-def _get_token_and_user_data_from_internal_auth(user_data: dict[str, str]):
+def _get_token_and_user_data_from_internal_auth(user_data: UserInfoDict) -> tuple[str, str, User]:
     """
     Generate internal backend-JWT.
     """
 
-    # See if user exists
     user = get_user(user_data)
 
-    # TODO
-    # Do we want to embed the user's roles or permissions in the scope: [read write]?
     # The next two tokens are specific to our backend API, these are used for our API
     # authZ, given a valid login from the prior AuthN steps above.
 
