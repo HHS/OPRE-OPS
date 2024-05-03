@@ -56,6 +56,20 @@ const BLIRow = ({
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
     const location = useLocation();
+
+    // styles for the table row
+    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
+    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    // are you on the approve page?
+    const isApprovePage = location.pathname.includes("approve");
+    const isBLIInReview = budgetLine?.in_review || false;
+    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    let lockedMessage = "";
+
+    if (isBLIInReview) {
+        lockedMessage = "This budget line has pending edits";
+    }
+
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -64,16 +78,9 @@ const BLIRow = ({
             handleSetItemForEditing={handleSetBudgetLineForEditing}
             isItemEditable={isBudgetLineEditable}
             duplicateIcon={true}
+            lockedMessage={lockedMessage}
         />
     );
-    // styles for the table row
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    // are you on the approve page?
-    const isApprovePage = location.pathname.includes("approve");
-    const isBLIInAnyActiveWorkflow = budgetLine?.has_active_workflow || false;
-    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const inReview = isBLIInAnyActiveWorkflow;
 
     const TableRowData = (
         <>
@@ -169,7 +176,7 @@ const BLIRow = ({
                     <div>{changeIcons}</div>
                 ) : (
                     <TableTag
-                        inReview={inReview}
+                        inReview={isBLIInReview}
                         status={budgetLine?.status}
                     />
                 )}
