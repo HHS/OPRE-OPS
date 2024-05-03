@@ -64,6 +64,7 @@ class HhsAmsProvider(AuthenticationProvider):
             "sso": self.provider_name,
         }
         provider_jwt = create_oauth_jwt(self.provider_name, self.config, payload=payload)
+        current_app.logger.info(f"Provider JWT: {provider_jwt}")
         token = client.fetch_token(
             self.token_endpoint,
             client_assertion=provider_jwt,

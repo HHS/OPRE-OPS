@@ -31,7 +31,7 @@ def is_user_active(f):
         if not user_info:
             raise NotActiveUserError(f"Unable to get user_info for token={token}")
 
-        user = get_user_from_userinfo(user_info)
+        user = get_user_from_userinfo(user_info, current_app.db_session)
         if not user or user.status != UserStatus.ACTIVE:
             raise NotActiveUserError(f"User with token={token} is not active")
 

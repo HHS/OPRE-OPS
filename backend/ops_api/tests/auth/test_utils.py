@@ -118,7 +118,8 @@ def test_get_user(user_with_no_oidc_id, loaded_db):
             "email": "admin.demo@email.com",
             "sub": "00000000-0000-1111-a111-000000000018",
             "given_name": "Admin",
-        }
+        },
+        loaded_db,
     )
     assert user is not None
     assert user.email == "admin.demo@email.com"
@@ -134,7 +135,8 @@ def test_get_user(user_with_no_oidc_id, loaded_db):
             "email": "user@example.com",
             "sub": "9b5b5b5e-5288-401d-8267-a80605cce16f",
             "given_name": "Admin",
-        }
+        },
+        loaded_db,
     )
     assert user is not None
     assert user.email == "user@example.com"
@@ -149,7 +151,7 @@ def test_get_user_info_set(loaded_db, hhsams_user_info):
     loaded_db.add(user)
     loaded_db.commit()
 
-    user = get_user(hhsams_user_info)
+    user = get_user(hhsams_user_info, loaded_db)
     assert user is not None
     assert user.oidc_id == UUID(hhsams_user_info["sub"])
     assert user.email == hhsams_user_info["email"]

@@ -29,7 +29,7 @@ def login(code: str, provider: str) -> dict[str, Any]:
             access_token,
             refresh_token,
             user,
-        ) = _get_token_and_user_data_from_internal_auth(user_data)
+        ) = _get_token_and_user_data_from_internal_auth(user_data, current_app.config, current_app.db_session)
 
     la.metadata.update(
         {
