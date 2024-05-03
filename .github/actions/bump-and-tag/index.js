@@ -7,55 +7,56 @@ const yaml = require('js-yaml');
 
 async function run() {
     try {
-        // Obtain the GitHub token, prioritizing a custom input if provided.
+        // Obtain the GitHub token from the environment variable or action input
         const token = core.getInput('custom_token', { required: false }) || process.env.GITHUB_TOKEN;
         if (!token) {
             throw new Error('GitHub token is not provided');
         }
 
-        // Initialize Octokit with the token to interact with GitHub API.
+        // Setup GitHub client with the token
         const octokit = github.getOctokit(token);
 
-        // Setup the working directory based on action input or default to the current workspace.
+        // Setup the working directory based on the action input or default to the current workspace
         const workspace = process.env.GITHUB_WORKSPACE || '.';
         const openApiDir = core.getInput('openapi_dir', { required: false }) || '.';
         const fullPath = path.join(workspace, openApiDir);
         process.chdir(fullPath);
 
-        // Read and parse the OpenAPI specification file.
+        // Ensure the OpenAPI file exists
         const openApiFilePath = path.join(process.cwd(), 'openapi.yml');
         if (!fs.existsSync(openApiFilePath)) {
             throw new Error(`The openapi.yml file does not exist at ${openApiFilePath}`);
         }
         const openapi = yaml.load(fs.readFileSync(openApiFilePath, 'utf8'));
 
-        // Fetch recent commits to determine the type of version bump required.
-        const { repo } = github.context;
+        // Fetch recent commits to determine the type of version bump required
+        const repo = github.context.repo;
+        const branch = github.context.ref.replace('refs/heads/', '');
         const { data: commits } = await octokit.rest.repos.listCommits({
             owner: repo.owner,
             repo: repo.repo,
-            sha: 'HEAD',
+            sha: branch,
             per_page: 10
         });
         const messages = commits.map(commit => commit.commit.message);
         const bumpType = determineBumpType(messages);
 
-        // Update the OpenAPI version based on commits.
+        // Update the OpenAPI version based on commits
         const oldVersion = openapi.info.version;
         const newVersion = updateVersion(oldVersion, bumpType);
         openapi.info.version = newVersion;
         fs.writeFileSync(openApiFilePath, yaml.dump(openapi));
 
-        // Setup git with user configuration and the repo URL including the token for authentication.
-        const repoUrl = `https://${token}:x-oauth-basic@github.com/${repo.owner}/${repo.repo}`;
-        execSync(`git config user.name "GitHub Action"`);
-        execSync(`git config user.email "action@github.com"`);
-
-        // Commit and push changes.
+        // Configure Git for commit
+        const repoUrl = `https://${token}@github.com/${repo.owner}/${repo.repo}`;
+        execSync('git config user.name "GitHub Action"');
+        execSync('git config user.email "action@github.com"');
         execSync('git add .');
         if (!core.getBooleanInput('skip_commit', { required: false })) {
-            execSync(`git commit -m "Bump OpenAPI version from ${oldVersion} to ${newVersion}"`);
+            execSync(`git commit -m "Automated commit by GitHub Action: Bump version ${oldVersion} to ${newVersion}"`);
         }
+
+        // Tagging and pushing changes
         const tagPrefix = core.getInput('tag_prefix', { required: false });
         const tagSuffix = core.getInput('tag_suffix', { required: false });
         const newTag = `${tagPrefix}${newVersion}${tagSuffix}`;
@@ -64,7 +65,7 @@ async function run() {
             core.setOutput('new_tag', newTag);
         }
         if (!core.getBooleanInput('skip_push', { required: false })) {
-            execSync(`git push ${repoUrl} HEAD:${github.context.ref}`);
+            execSync(`git push ${repoUrl} HEAD:${branch}`);
             if (newTag) {
                 execSync('git push --tags');
             }
