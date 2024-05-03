@@ -13,17 +13,22 @@ import Tag from "../Tag/Tag";
 const TableTag = ({ status, inReview = false }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
     let classNames = "padding-x-105 padding-y-1 ";
+
+    if (inReview) {
+        return (
+            <Tag
+                className="bg-brand-data-viz-primary-9 text-white"
+                text="In Review"
+            />
+        );
+    }
+
     switch (statusText) {
         case "Draft":
-            inReview
-                ? (classNames += "bg-transparent text-brand-primary border")
-                : (classNames += "bg-brand-neutral-lighter text-ink");
+            classNames += "bg-brand-neutral-lighter text-ink";
             break;
         case "Planned":
-            inReview
-                ? (classNames += "bg-transparent text-brand-data-viz-primary-8 border")
-                : (classNames += "bg-brand-data-viz-primary-11 text-white");
-
+            classNames += "bg-brand-data-viz-primary-11 text-white";
             break;
         case "Executing":
             classNames += "bg-brand-data-viz-primary-8 text-ink";
@@ -37,7 +42,7 @@ const TableTag = ({ status, inReview = false }) => {
     return (
         <Tag
             className={classNames}
-            text={inReview ? "In Review" : statusText}
+            text={statusText}
         />
     );
 };
