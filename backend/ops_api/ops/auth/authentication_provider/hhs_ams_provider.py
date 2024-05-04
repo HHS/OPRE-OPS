@@ -26,6 +26,7 @@ class HhsAmsProvider(AuthenticationProvider):
         self.aud = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["aud"]
         self.token_endpoint = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["token_endpoint"]
         self.user_info_url = config["AUTHLIB_OAUTH_CLIENTS"][self.provider_name]["user_info_url"]
+        self.JWT_PRIVATE_KEY = config["JWT_PRIVATE_KEY"]
 
     def decode_user(
         self,
@@ -44,6 +45,15 @@ class HhsAmsProvider(AuthenticationProvider):
         claims = jwt.decode(payload, jwks, claims_options=claims_options)
         return claims
 
+    def fetch_token(self, client: OAuth2Session, auth_code: str, provider_jwt: str) -> OAuth2Token:
+        return client.fetch_token(
+            self.token_endpoint,
+            client_assertion=provider_jwt,
+            client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+            grant_type="authorization_code",
+            code=auth_code,
+        )
+
     def authenticate(self, auth_code: str) -> OAuth2Token:
         client = OAuth2Session(
             client_id=self.client_id,
@@ -61,14 +71,7 @@ class HhsAmsProvider(AuthenticationProvider):
         }
         provider_jwt = create_oauth_jwt(self.provider_name, self.config, payload=payload)
         current_app.logger.info(f"Provider JWT: {provider_jwt}")
-        token = client.fetch_token(
-            self.token_endpoint,
-            client_assertion=provider_jwt,
-            client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-            grant_type="authorization_code",
-            code=auth_code,
-        )
-        return token
+        return self.fetch_token(client, auth_code, provider_jwt)
 
     def get_user_info(self, token: OAuth2Token) -> UserInfoDict | None:
         header = {

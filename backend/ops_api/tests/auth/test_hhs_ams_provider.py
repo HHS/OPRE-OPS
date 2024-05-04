@@ -1,4 +1,7 @@
 import json
+import os
+from datetime import timedelta
+from unittest.mock import MagicMock
 
 import pytest
 from cryptography.hazmat.primitives import serialization
@@ -26,7 +29,8 @@ def config() -> Config:
                     "user_info_url": "https://some.endpoint.test",
                 }
             },
-            "JWT_ACCESS_TOKEN_EXPIRES": 300,
+            "JWT_ACCESS_TOKEN_EXPIRES": timedelta(minutes=300),
+            "JWT_PRIVATE_KEY": os.getenv("JWT_PRIVATE_KEY"),
         }
     )
     return config
@@ -97,3 +101,14 @@ def test_decode_user(config, mocker):
     assert claims["sso"] == "hhs_ams"
     assert claims["name"] == "John Doe"
     assert claims["email"] == "john.doe@example.com"
+
+
+def test_authenticate(app_ctx, config, mocker):
+    # mock member method fetch_token on the HhsAmsProvider class
+    mock_fetch_token = mocker.patch(
+        "ops_api.ops.auth.authentication_provider.hhs_ams_provider.HhsAmsProvider.fetch_token"
+    )
+    mock_fetch_token.return_value = MagicMock()
+    provider = HhsAmsProvider("hhs_ams", config)
+    token = provider.authenticate("1234")
+    assert token is not None
