@@ -129,9 +129,10 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
         response_data = {
             "method": request.method,
             "url": request.url,
+            "request_headers": request.headers,
             "status_code": response.status_code,
             "json": response.get_data(as_text=True),
-            "headers": response.headers,
+            "response_headers": response.headers,
         }
         app.logger.info(f"Response: {response_data}")
         return response
