@@ -78,16 +78,12 @@ class HhsAmsProvider(AuthenticationProvider):
             "Authorization": f"Bearer {token}",
             "Accept": "application/json",
         }
-        try:
-            user_jwt = requests.get(
-                self.user_info_url,
-                headers=header,
-            ).content.decode("utf-8")
-            user_data = self.decode_user(payload=user_jwt)
-            return user_data
-        except Exception as e:
-            current_app.logger.exception(e)
-            return None
+        user_jwt = requests.get(
+            self.user_info_url,
+            headers=header,
+        ).content.decode("utf-8")
+        user_data = self.decode_user(payload=user_jwt)
+        return user_data
 
     def validate_token(self, token):
         return True
