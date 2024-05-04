@@ -30,7 +30,7 @@ class HhsAmsProvider(AuthenticationProvider):
     def decode_user(
         self,
         payload: Optional[str] = None,
-    ) -> dict[str, str]:
+    ) -> JWTClaims | None:
         try:
             claims_options = {
                 "iss": {
