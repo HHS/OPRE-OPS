@@ -14,8 +14,7 @@ from ops_api.ops.utils.response import make_response_with_headers
 
 
 def login(code: str, provider: str) -> dict[str, Any]:
-    with current_app.app_context():
-        auth_gateway = AuthenticationGateway(current_app.config)
+    auth_gateway = AuthenticationGateway(current_app.config)
 
     with OpsEventHandler(OpsEventType.LOGIN_ATTEMPT) as la:
         token: OAuth2Token = auth_gateway.authenticate(provider, code)
