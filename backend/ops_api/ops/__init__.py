@@ -3,7 +3,7 @@ import os
 from typing import Any, Optional
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask
+from flask import Blueprint, Flask, request
 from flask_cors import CORS
 from sqlalchemy import event
 from sqlalchemy.orm import Session
@@ -112,5 +112,28 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     @event.listens_for(db_session, "before_commit")
     def update_create_update_by(session: Session):
         handle_create_update_by_attrs(session)
+
+    @app.before_request
+    def before_request():
+        request_data = {
+            "method": request.method,
+            "url": request.url,
+            "json": request.get_json(silent=True),
+            "args": request.args,
+            "headers": request.headers,
+        }
+        app.logger.info(f"Request: {request_data}")
+
+    @app.after_request
+    def after_request(response):
+        response_data = {
+            "method": request.method,
+            "url": request.url,
+            "status_code": response.status_code,
+            "json": response.get_data(as_text=True),
+            "headers": response.headers,
+        }
+        app.logger.info(f"Response: {response_data}")
+        return response
 
     return app
