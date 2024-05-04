@@ -31,22 +31,18 @@ class HhsAmsProvider(AuthenticationProvider):
         self,
         payload: Optional[str] = None,
     ) -> JWTClaims | None:
-        try:
-            claims_options = {
-                "iss": {
-                    "essential": True,
-                    "values": self.client_id,
-                },
-                "jti": {"validate": JWTClaims.validate_jti},
-                "exp": {"validate": JWTClaims.validate_exp},
-            }
-            jwt = JsonWebToken(["RS256"])
-            jwks = get_jwks(self.server_metadata_url)
-            claims = jwt.decode(payload, jwks, claims_options=claims_options)
-            return claims
-        except Exception as e:
-            current_app.logger.exception(e)
-            raise e
+        claims_options = {
+            "iss": {
+                "essential": True,
+                "values": self.client_id,
+            },
+            "jti": {"validate": JWTClaims.validate_jti},
+            "exp": {"validate": JWTClaims.validate_exp},
+        }
+        jwt = JsonWebToken(["RS256"])
+        jwks = get_jwks(self.server_metadata_url)
+        claims = jwt.decode(payload, jwks, claims_options=claims_options)
+        return claims
 
     def authenticate(self, auth_code: str) -> OAuth2Token:
         client = OAuth2Session(
