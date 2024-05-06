@@ -14,32 +14,32 @@ class FakeAuthProvider(AuthenticationProvider):
 
         self.fakeUsers = {
             "admin_user": {
-                "first_name": "Admin",
-                "last_name": "Demo",
+                "given_name": "Admin",
+                "family_name": "Demo",
                 "email": "admin.demo@email.com",
                 "sub": "00000000-0000-1111-a111-000000000018",
             },
             "division_director": {
-                "first_name": "Dave",
-                "last_name": "Director",
+                "given_name": "Dave",
+                "family_name": "Director",
                 "email": "dave.director@email.com",
                 "sub": "00000000-0000-1111-a111-000000000020",
             },
             "cor_user": {
-                "first_name": "COR",
-                "last_name": "User",
+                "given_name": "COR",
+                "family_name": "User",
                 "email": "cor.user@email.com",
                 "sub": "00000000-0000-1111-a111-000000000021",
             },
             "basic_user": {
-                "first_name": "User",
-                "last_name": "Demo",
+                "given_name": "User",
+                "family_name": "Demo",
                 "email": "user.demo@email.com",
                 "sub": "00000000-0000-1111-a111-000000000019",
             },
             "new_user": {
-                "first_name": "New",
-                "last_name": "User",
+                "given_name": "New",
+                "family_name": "User",
                 "email": "user.new@email.com",
                 "sub": "00000000-0000-1111-a111-000000000017",
             },
