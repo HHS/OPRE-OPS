@@ -82,12 +82,8 @@ describe("agreement review workflow", () => {
             //  Add Services Component
             cy.get("p").should("contain", "You have not added any Services Component yet.");
             cy.get("#servicesComponentSelect").select("1");
-            cy.get("#popStartMonth").select("01 - Jan");
-            cy.get("#popStartDay").type("1");
-            cy.get("#popStartYear").type("2024");
-            cy.get("#popEndMonth").select("01 - Jan");
-            cy.get("#popEndDay").type("1");
-            cy.get("#popEndYear").type("2025");
+            cy.get("#pop-start-date").type("01/01/2024");
+            cy.get("#pop-end-date").type("01/01/2025");
             cy.get("#description").type("This is a description.");
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("h2").should("contain", "Base Period 1");
@@ -100,17 +96,17 @@ describe("agreement review workflow", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             // ensure date is in the future
-            cy.get("#uswds-date-need-by-date").type("09/01/1998");
+            cy.get("#need-by-date").type("09/01/1998");
             // check for date to be in the future  which should error
             cy.get(".usa-error-message").should("exist");
             // fix by adding a valid date
-            cy.get("#uswds-date-need-by-date").clear();
+            cy.get("#need-by-date").clear();
             // test for invalid date
-            cy.get("#uswds-date-need-by-date").type("tacocat");
+            cy.get("#need-by-date").type("tacocat");
             cy.get(".usa-error-message").should("exist");
             // fix by adding a valid date
-            cy.get("#uswds-date-need-by-date").clear();
-            cy.get("#uswds-date-need-by-date").type(blData[0].needByDate);
+            cy.get("#need-by-date").clear();
+            cy.get("#need-by-date").type(blData[0].needByDate);
             // add entered amount and clear it
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredAmount").clear();
@@ -171,7 +167,7 @@ describe("agreement review workflow", () => {
             // fix errors
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             cy.get("#allServicesComponentSelect").select(`${blData[0].services_component}`);
-            cy.get("#uswds-date-need-by-date").type(`${blData[0].needByDate}`);
+            cy.get("#need-by-date").type(`${blData[0].needByDate}`);
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredComments").type(`${blData[0].note}`);
             cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");
@@ -246,12 +242,8 @@ describe("agreement review workflow", () => {
             //  Add Services Component
             cy.get("p").should("contain", "You have not added any Services Component yet.");
             cy.get("#servicesComponentSelect").select("1");
-            cy.get("#popStartMonth").select("01 - Jan");
-            cy.get("#popStartDay").type("1");
-            cy.get("#popStartYear").type("2024");
-            cy.get("#popEndMonth").select("01 - Jan");
-            cy.get("#popEndDay").type("1");
-            cy.get("#popEndYear").type("2025");
+            cy.get("#pop-start-date").type("01/01/2024");
+            cy.get("#pop-end-date").type("01/01/2025");
             cy.get("#description").type("This is a description.");
             cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("h2").should("contain", "Base Period 1");
@@ -264,11 +256,11 @@ describe("agreement review workflow", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             // ensure date is in the future
-            cy.get("#uswds-date-need-by-date").type("09/01/1998");
+            cy.get("#need-by-date").type("09/01/1998");
             cy.get(".usa-error-message").should("exist");
             // fix
-            cy.get("#uswds-date-need-by-date").clear();
-            cy.get("#uswds-date-need-by-date").type(blData[0].needByDate);
+            cy.get("#need-by-date").clear();
+            cy.get("#need-by-date").type(blData[0].needByDate);
             // add entered amount and clear it
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredAmount").clear();
@@ -326,7 +318,7 @@ describe("agreement review workflow", () => {
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
-            cy.get("#uswds-date-need-by-date").type(`${blData[0].needByDate}`);
+            cy.get("#need-by-date").type(`${blData[0].needByDate}`);
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
             cy.get("#enteredComments").type(`${blData[0].note}`);
             cy.get('[data-cy="update-budget-line"]').should("not.be.disabled");

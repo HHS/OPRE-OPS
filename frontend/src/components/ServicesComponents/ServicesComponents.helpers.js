@@ -1,4 +1,4 @@
-import { SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "./servicesComponents.constants";
+import { SERVICE_REQ_TYPES, SEVERABLE_OPTIONS } from "./ServicesComponents.constants";
 
 export function formatServiceComponent(number, optional, serviceReqType) {
     if (serviceReqType === SERVICE_REQ_TYPES.NON_SEVERABLE) {

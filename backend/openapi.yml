@@ -2136,8 +2136,11 @@ components:
         status:
           type: string
           example: 'IN_REVIEW'
-        requested_changes:
+        requested_change_data:
           description: JSON for the request changes
+          type: object
+        requested_change_diff:
+          description: JSON for the request changes with new and old values at request time
           type: object
         created_by:
           $ref: '#/components/parameters/created_by'
@@ -2158,14 +2161,17 @@ components:
         budget_line_item_id:
           type: integer
           example: 1
-        has_budget_changes:
+        has_budget_change:
           type: boolean
           example: True
-        has_status_changes:
+        has_status_change:
           type: boolean
           example: False
-        requested_changes:
-          description: JSON for the request changes
+        requested_change_data:
+          description: JSON for the requested updates
+          type: object
+        requested_change_diff:
+          description: JSON for the requested changes with new and old values at request time
           type: object
         created_by:
           $ref: '#/components/parameters/created_by'

@@ -134,14 +134,16 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 partial=False,
             )
 
-            changed_budget_props = list(set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names))
+            changed_budget_prop_keys = list(
+                set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names)
+            )
             # TODO: convert legacy status change workflows to status change requests
             #   until then, status changes are ignored here
             change_data.pop("status", None)
-            other_changed_props = list(set(change_data.keys()) - set(changed_budget_props))
+            other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_prop_keys))
 
             direct_change_data = {
-                key: value for key, value in change_data.items() if directly_editable or key in other_changed_props
+                key: value for key, value in change_data.items() if directly_editable or key in other_changed_prop_keys
             }
 
             if direct_change_data:
@@ -151,13 +153,23 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
             change_request_ids = []
 
-            if not directly_editable and changed_budget_props:
+            if not directly_editable and changed_budget_prop_keys:
                 # create a budget change request for each changed prop separately (for separate approvals)
-                for changed_prop_key in changed_budget_props:
+                # the 'only' schema arg limits the request to a single prop, but otherwise this can work for multiple
+                for changed_prop_key in changed_budget_prop_keys:
+                    change_keys = [changed_prop_key]
                     change_request = BudgetLineItemChangeRequest()
                     change_request.budget_line_item_id = id
-                    schema = budget_line_item.__marshmallow__(only=[changed_prop_key])
-                    change_request.requested_changes = schema.dump(change_data)
+                    change_request.agreement_id = budget_line_item.agreement_id
+                    schema = mmdc.class_schema(PATCHRequestBody)(only=change_keys)
+                    requested_change_data = schema.dump(change_data)
+                    change_request.requested_change_data = requested_change_data
+                    old_values = schema.dump(changing_from_data)
+                    requested_change_diff = {
+                        key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
+                        for key in change_keys
+                    }
+                    change_request.requested_change_diff = requested_change_diff
                     current_app.db_session.add(change_request)
                     current_app.db_session.commit()
                     change_request_ids.append(change_request.id)

@@ -13,7 +13,16 @@ from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
 
-from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent
+from models import (
+    Agreement,
+    AgreementChangeRequest,
+    AgreementOpsDbHistory,
+    BaseModel,
+    BudgetLineItem,
+    OpsDBHistory,
+    OpsDBHistoryType,
+    OpsEvent,
+)
 
 DbRecordAudit = namedtuple("DbRecordAudit", "row_key changes")
 
@@ -139,9 +148,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
     result = []
 
     for obj in objs:
-        if not isinstance(
-            obj, (OpsEvent, OpsDBHistory)  # , WorkflowInstance, WorkflowStepInstance, PackageSnapshot, Package)
-        ):  # not interested in tracking these
+        if not isinstance(obj, (OpsEvent, OpsDBHistory, AgreementOpsDbHistory)):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
                 logging.info(
@@ -158,5 +165,26 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 row_key=db_audit.row_key,
                 changes=db_audit.changes,
             )
+
             result.append(ops_db)
+
+            result += create_agreement_history_relations(obj, ops_db)
+
     return result
+
+
+def create_agreement_history_relations(obj, ops_db) -> list[AgreementOpsDbHistory]:
+    objs = []
+    if isinstance(obj, Agreement):
+        agreement_ops_db_history = AgreementOpsDbHistory(
+            agreement_id=obj.id,
+            ops_db_history=ops_db,
+        )
+        objs.append(agreement_ops_db_history)
+    elif isinstance(obj, (BudgetLineItem, AgreementChangeRequest)):
+        agreement_ops_db_history = AgreementOpsDbHistory(
+            agreement_id=obj.agreement_id,
+            ops_db_history=ops_db,
+        )
+        objs.append(agreement_ops_db_history)
+    return objs

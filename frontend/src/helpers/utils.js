@@ -305,3 +305,19 @@ export const statusToClassName = (status, styleType = "text") => {
         }
     }
 };
+
+export const formatDateForApi = (date) => {
+    if (date) {
+        const [month, day, year] = date.split("/");
+        return `${year}-${month}-${day}`;
+    }
+    return null;
+};
+
+export const formatDateForScreen = (date) => {
+    if (date) {
+        const [year, month, day] = date.split("-");
+        return `${month}/${day}/${year}`;
+    }
+    return null;
+};

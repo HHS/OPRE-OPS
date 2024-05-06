@@ -31,7 +31,7 @@ def review_change_request(
         if isinstance(change_request, BudgetLineItemChangeRequest):
             budget_line_item = session.get(BudgetLineItem, change_request.budget_line_item_id)
             # need to copy to avoid changing the original data in the ChangeRequest and triggering an update
-            data = copy.deepcopy(change_request.requested_changes)
+            data = copy.deepcopy(change_request.requested_change_data)
             schema = mmdc.class_schema(PATCHRequestBody)()
             schema.context["id"] = change_request.budget_line_item_id
             schema.context["method"] = "PATCH"

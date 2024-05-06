@@ -1,13 +1,14 @@
 import React from "react";
 import useAlert from "../../hooks/use-alert.hooks";
-import { initialFormData, SERVICE_REQ_TYPES } from "./servicesComponents.constants";
-import { dateToYearMonthDay, formatServiceComponent } from "./servicesComponents.helpers";
+import { initialFormData, SERVICE_REQ_TYPES } from "./ServicesComponents.constants";
+import { formatServiceComponent } from "./ServicesComponents.helpers";
 import {
     useAddServicesComponentMutation,
     useUpdateServicesComponentMutation,
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation
 } from "../../api/opsAPI";
+import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 
 const useServicesComponents = (agreementId) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
@@ -15,6 +16,7 @@ const useServicesComponents = (agreementId) => {
     const [servicesComponents, setServicesComponents] = React.useState([]);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
+    const [formKey, setFormKey] = React.useState(Date.now());
     const { setAlert } = useAlert();
     const [addServicesComponent] = useAddServicesComponentMutation();
     const [updateServicesComponent] = useUpdateServicesComponentMutation();
@@ -40,21 +42,15 @@ const useServicesComponents = (agreementId) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setFormKey(Date.now());
         let formattedServiceComponent = formatServiceComponent(formData.number, formData.optional, serviceTypeReq);
         const newFormData = {
             contract_agreement_id: agreementId,
             number: Number(formData.number),
             optional: Boolean(formData.optional),
             description: formData.description,
-            period_start:
-                formData.popStartYear && formData.popStartMonth && formData.popStartDay
-                    ? `${formData.popStartYear}-${formData.popStartMonth}-${formData.popStartDay}`
-                    : null,
-
-            period_end:
-                formData.popEndYear && formData.popEndMonth && formData.popEndDay
-                    ? `${formData.popEndYear}-${formData.popEndMonth}-${formData.popEndDay}`
-                    : null
+            period_start: formatDateForApi(formData.popStartDate),
+            period_end: formatDateForApi(formData.popEndDate)
         };
         const { id } = formData;
 
@@ -125,6 +121,8 @@ const useServicesComponents = (agreementId) => {
                     heading: "Services Component Deleted",
                     message: `${selectedServicesComponent.display_title} has been successfully deleted.`
                 });
+                setFormData(initialFormData);
+                setFormKey(Date.now());
             }
         });
     };
@@ -132,28 +130,18 @@ const useServicesComponents = (agreementId) => {
     const handleCancel = (e) => {
         e.preventDefault();
         setFormData(initialFormData);
+        setFormKey(Date.now());
     };
 
     const setFormDataById = (id) => {
+        setFormKey(Date.now());
         const index = servicesComponents.findIndex((component) => component.id === id);
-        const {
-            year: popStartYear,
-            month: popStartMonth,
-            day: popStartDay
-        } = dateToYearMonthDay(servicesComponents[index].period_start);
-        const {
-            year: popEndYear,
-            month: popEndMonth,
-            day: popEndDay
-        } = dateToYearMonthDay(servicesComponents[index].period_end);
+        const popStartDate = formatDateForScreen(servicesComponents[index].period_start);
+        const popEndDate = formatDateForScreen(servicesComponents[index].period_end);
         const newFormData = {
             ...servicesComponents[index],
-            popEndYear,
-            popEndMonth,
-            popEndDay,
-            popStartYear,
-            popStartMonth,
-            popStartDay,
+            popStartDate,
+            popEndDate,
             mode: "edit"
         };
         setFormData(newFormData);
@@ -177,7 +165,8 @@ const useServicesComponents = (agreementId) => {
         handleDelete,
         handleCancel,
         setFormDataById,
-        servicesComponentsNumbers
+        servicesComponentsNumbers,
+        formKey
     };
 };
 
