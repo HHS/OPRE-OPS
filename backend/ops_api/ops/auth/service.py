@@ -1,9 +1,12 @@
+from datetime import datetime
 from typing import Any, Union
 
 from authlib.oauth2.rfc6749 import OAuth2Token
-from flask import Response, current_app
+from flask import Response, current_app, request
 from flask_jwt_extended import create_access_token, current_user, get_jwt_identity
+from sqlalchemy import select
 
+from models import UserSession
 from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
@@ -30,14 +33,37 @@ def login(code: str, provider: str) -> dict[str, Any]:
             user,
         ) = _get_token_and_user_data_from_internal_auth(user_data, current_app.config, current_app.db_session)
 
-    la.metadata.update(
-        {
-            "user": user.to_dict(),
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "oidc_access_token": token,
-        }
-    )
+        # TODO: Check if there is an existing user session for this user and update it if it exists.
+        stmt = select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.created_on.desc())
+        user_sessions = current_app.db_session.execute(stmt).all()
+
+        if user_sessions and user_sessions[0].is_active:
+            return {
+                "access_token": user_sessions[0].access_token,
+                "refresh_token": user_sessions[0].refresh_token,
+                "user": user,
+            }
+
+        user_session = UserSession(
+            user_id=user.id,
+            is_active=True,
+            ip_address=request.remote_addr,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            last_active_at=datetime.now(),
+        )
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+
+        la.metadata.update(
+            {
+                "user": user.to_dict(),
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "oidc_access_token": token,
+                "session_id": user_session.id,
+            }
+        )
 
     response = {
         "access_token": access_token,

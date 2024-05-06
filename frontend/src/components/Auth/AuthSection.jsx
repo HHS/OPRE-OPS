@@ -80,7 +80,7 @@ const AuthSection = () => {
         dispatch(logout());
         localStorage.removeItem("access_token");
         localStorage.removeItem("activeProvider");
-        //await apiLogout();
+        // await apiLogout();
         navigate("/login");
         // TODO: ⬇ Logout from Auth Provider ⬇
         // const output = await logoutUser(localStorage.getItem("ops-state-key"));
