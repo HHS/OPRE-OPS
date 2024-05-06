@@ -24,6 +24,7 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import DebugCode from "../../DebugCode";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -81,9 +82,27 @@ const BLIRow = ({
             lockedMessage={lockedMessage}
         />
     );
+    const changeRequests = budgetLine?.change_requests_in_review;
+    let changeRequestsMessages = [];
 
+    if (changeRequests?.length > 0) {
+        changeRequests.forEach((changeRequest) => {
+            if (changeRequest?.requested_changes?.amount) {
+                changeRequestsMessages.push(`Amount: ${changeRequest.requested_changes.amount}`);
+            }
+            if (changeRequest?.requested_changes?.date_needed) {
+                changeRequestsMessages.push(`Date Needed: ${changeRequest.requested_changes.date_needed}`);
+            }
+            if (changeRequest?.requested_changes?.can_id) {
+                changeRequestsMessages.push(`CAN: ${changeRequest.requested_changes.can_id}`);
+            }
+
+            return changeRequestsMessages;
+        });
+    }
     const TableRowData = (
         <>
+            <DebugCode data={changeRequestsMessages} />
             <th
                 scope="row"
                 className={`${borderExpandedStyles}`}
