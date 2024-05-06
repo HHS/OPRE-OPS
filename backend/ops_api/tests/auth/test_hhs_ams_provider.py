@@ -82,6 +82,10 @@ def test_authenticate(app, mocker):
     mock_fetch_token = mocker.patch(
         "ops_api.ops.auth.authentication_provider.hhs_ams_provider.HhsAmsProvider.fetch_token"
     )
+    # mock create_oauth_jwt method
+    # N.B. This currently fails in GHA because the key is not being passed in correctly but is not
+    # a problem in local testing
+    mocker.patch("ops_api.ops.auth.authentication_provider.hhs_ams_provider.create_oauth_jwt")
     mock_fetch_token.return_value = MagicMock()
     provider = HhsAmsProvider("hhsams", app.config)
     token = provider.authenticate("1234")

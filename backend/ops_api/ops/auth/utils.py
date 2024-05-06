@@ -1,7 +1,7 @@
 import json
 import time
 import uuid
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 
 import requests
@@ -21,7 +21,7 @@ def create_oauth_jwt(
     config: Config,
     key: Optional[str] = None,
     header: Optional[str] = None,
-    payload: Optional[str] = None,
+    payload: Optional[dict[str, Any]] = None,
 ) -> str:
     """
     Returns an Access Token JWS from the configured OAuth Client
