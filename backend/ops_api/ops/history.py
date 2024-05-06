@@ -14,7 +14,17 @@ from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import get_history
 
-from models import BaseModel, OpsDBHistory, OpsDBHistoryType, OpsEvent, User
+from models import (
+    Agreement,
+    AgreementChangeRequest,
+    AgreementOpsDbHistory,
+    BaseModel,
+    BudgetLineItem,
+    OpsDBHistory,
+    OpsDBHistoryType,
+    OpsEvent,
+    User,
+)
 from ops_api.ops.utils.user import get_user_from_token
 
 DbRecordAudit = namedtuple("DbRecordAudit", "row_key changes")
@@ -119,8 +129,12 @@ def track_db_history_catch_errors(exception_context):
     # Avoid JSON serialization error with exception_context.parameters by safely converting first
     # Otherwise, if there are objects in exception_context.parameters that SQLAlchemy can't convert to JSON
     # then it can spawn another error which comes back to here which spawns another error, etc
-    params_json = json.dumps(exception_context.parameters, default=str)
-    params_obj = json.loads(params_json)
+    try:
+        params_json = json.dumps(exception_context.parameters, default=str)
+        params_obj = json.loads(params_json)
+    except Exception as e:
+        current_app.logger.error(f"Failed to convert exception_context.parameters to JSON: {e}")
+        params_obj = None
 
     ops_db = OpsDBHistory(
         event_type=OpsDBHistoryType.ERROR,
@@ -153,9 +167,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
         current_app.logger.info(f"Failed trying to get the user from the request. {type(e)}: {e}")
 
     for obj in objs:
-        if not isinstance(
-            obj, (OpsEvent, OpsDBHistory)  # , WorkflowInstance, WorkflowStepInstance, PackageSnapshot, Package)
-        ):  # not interested in tracking these
+        if not isinstance(obj, (OpsEvent, OpsDBHistory, AgreementOpsDbHistory)):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
                 logging.info(
@@ -172,5 +184,26 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 row_key=db_audit.row_key,
                 changes=db_audit.changes,
             )
+
             result.append(ops_db)
+
+            result += create_agreement_history_relations(obj, ops_db)
+
     return result
+
+
+def create_agreement_history_relations(obj, ops_db) -> list[AgreementOpsDbHistory]:
+    objs = []
+    if isinstance(obj, Agreement):
+        agreement_ops_db_history = AgreementOpsDbHistory(
+            agreement_id=obj.id,
+            ops_db_history=ops_db,
+        )
+        objs.append(agreement_ops_db_history)
+    elif isinstance(obj, (BudgetLineItem, AgreementChangeRequest)):
+        agreement_ops_db_history = AgreementOpsDbHistory(
+            agreement_id=obj.agreement_id,
+            ops_db_history=ops_db,
+        )
+        objs.append(agreement_ops_db_history)
+    return objs

@@ -245,9 +245,10 @@ class BudgetLineItemChangeRequest:
     id: int
     type: str
     budget_line_item_id: int
-    has_budget_changes: bool
+    has_budget_change: bool
     has_status_change: bool
-    requested_changes: dict
+    requested_change_data: dict
+    requested_change_diff: dict
     created_by: int
     created_by_user: Optional[SafeUser] = None
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
