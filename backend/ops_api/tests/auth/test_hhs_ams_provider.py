@@ -31,6 +31,7 @@ def config() -> Config:
             },
             "JWT_ACCESS_TOKEN_EXPIRES": timedelta(minutes=300),
             "JWT_PRIVATE_KEY": os.getenv("JWT_PRIVATE_KEY"),
+            "JWT_PUBLIC_KEY_PATH": "./static/public.pem",
         }
     )
     return config
@@ -103,12 +104,13 @@ def test_decode_user(config, mocker):
     assert claims["email"] == "john.doe@example.com"
 
 
-def test_authenticate(app_ctx, config, mocker):
+@pytest.mark.usefixtures("app_ctx")
+def test_authenticate(app, config, mocker):
     # mock member method fetch_token on the HhsAmsProvider class
     mock_fetch_token = mocker.patch(
         "ops_api.ops.auth.authentication_provider.hhs_ams_provider.HhsAmsProvider.fetch_token"
     )
     mock_fetch_token.return_value = MagicMock()
-    provider = HhsAmsProvider("hhs_ams", config)
+    provider = HhsAmsProvider("hhsams", app.config)
     token = provider.authenticate("1234")
     assert token is not None
