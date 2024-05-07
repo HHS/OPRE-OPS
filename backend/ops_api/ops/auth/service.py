@@ -89,6 +89,9 @@ def _get_or_create_user_session(user: User, access_token: str, refresh_token: st
     if latest_user_session and latest_user_session.is_active:
         return latest_user_session
     else:
+        # set all other sessions to inactive before creating a new one
+        _deactivate_all_user_sessions(user_sessions)
+
         user_session = UserSession(
             user_id=user.id,
             is_active=True,
@@ -99,4 +102,13 @@ def _get_or_create_user_session(user: User, access_token: str, refresh_token: st
         )
         current_app.db_session.add(user_session)
         current_app.db_session.commit()
+
         return user_session
+
+
+def _deactivate_all_user_sessions(user_sessions):
+    active_sessions = [session for session in user_sessions if session.is_active]
+    for session in active_sessions:
+        session.is_active = False
+        current_app.db_session.add(session)
+    current_app.db_session.commit()
