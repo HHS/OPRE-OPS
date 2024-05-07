@@ -6,7 +6,7 @@ from flask import Response, current_app, request
 from flask_jwt_extended import create_access_token, current_user, get_jwt_identity
 from sqlalchemy import select
 
-from models import UserSession
+from models import User, UserSession
 from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
@@ -33,41 +33,21 @@ def login(code: str, provider: str) -> dict[str, Any]:
             user,
         ) = _get_token_and_user_data_from_internal_auth(user_data, current_app.config, current_app.db_session)
 
-        # TODO: Check if there is an existing user session for this user and update it if it exists.
-        stmt = select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.created_on.desc())
-        user_sessions = current_app.db_session.execute(stmt).all()
-
-        if user_sessions and user_sessions[0].is_active:
-            return {
-                "access_token": user_sessions[0].access_token,
-                "refresh_token": user_sessions[0].refresh_token,
-                "user": user,
-            }
-
-        user_session = UserSession(
-            user_id=user.id,
-            is_active=True,
-            ip_address=request.remote_addr,
-            access_token=access_token,
-            refresh_token=refresh_token,
-            last_active_at=datetime.now(),
-        )
-        current_app.db_session.add(user_session)
-        current_app.db_session.commit()
+        user_session = _get_or_create_user_session(user, access_token, refresh_token)
 
         la.metadata.update(
             {
                 "user": user.to_dict(),
-                "access_token": access_token,
-                "refresh_token": refresh_token,
+                "access_token": user_session.access_token,
+                "refresh_token": user_session.refresh_token,
                 "oidc_access_token": token,
                 "session_id": user_session.id,
             }
         )
 
     response = {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
+        "access_token": user_session.access_token,
+        "refresh_token": user_session.refresh_token,
         "user": user,
     }
 
@@ -97,3 +77,26 @@ def refresh() -> Response:
         fresh=False,
     )
     return make_response_with_headers({"access_token": access_token})
+
+
+def _get_or_create_user_session(user: User, access_token: str, refresh_token: str) -> UserSession:
+    stmt = (
+        select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.created_on.desc())
+    )  # type: ignore
+    user_sessions = current_app.db_session.execute(stmt).scalars().all()
+    latest_user_session = user_sessions[0] if user_sessions else None
+
+    if latest_user_session and latest_user_session.is_active:
+        return latest_user_session
+    else:
+        user_session = UserSession(
+            user_id=user.id,
+            is_active=True,
+            ip_address=request.remote_addr,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            last_active_at=datetime.now(),
+        )
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+        return user_session
