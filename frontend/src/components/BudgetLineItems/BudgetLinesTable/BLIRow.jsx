@@ -65,12 +65,34 @@ const BLIRow = ({
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+
+    const changeRequests = budgetLine?.change_requests_in_review;
+    let changeRequestsMessages = [];
+
+    if (changeRequests?.length > 0) {
+        changeRequests.forEach((changeRequest) => {
+            if (changeRequest?.requested_change_data?.amount) {
+                changeRequestsMessages.push(`Amount: ${changeRequest.requested_change_data.amount}`);
+            }
+            if (changeRequest?.requested_change_data?.date_needed) {
+                changeRequestsMessages.push(`Date Needed: ${changeRequest.requested_change_data.date_needed}`);
+            }
+            if (changeRequest?.requested_change_data?.can_id) {
+                changeRequestsMessages.push(`CAN: ${changeRequest.requested_change_data.can_id}`);
+            }
+
+            return changeRequestsMessages;
+        });
+    }
+
     let lockedMessage = "";
 
     if (isBLIInReview) {
-        lockedMessage = "This budget line has pending edits";
+        lockedMessage = "This budget line has pending edits:";
+        changeRequestsMessages.forEach((message) => {
+            lockedMessage += `\n - ${message}`;
+        });
     }
-
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -82,27 +104,10 @@ const BLIRow = ({
             lockedMessage={lockedMessage}
         />
     );
-    const changeRequests = budgetLine?.change_requests_in_review;
-    let changeRequestsMessages = [];
 
-    if (changeRequests?.length > 0) {
-        changeRequests.forEach((changeRequest) => {
-            if (changeRequest?.requested_changes?.amount) {
-                changeRequestsMessages.push(`Amount: ${changeRequest.requested_changes.amount}`);
-            }
-            if (changeRequest?.requested_changes?.date_needed) {
-                changeRequestsMessages.push(`Date Needed: ${changeRequest.requested_changes.date_needed}`);
-            }
-            if (changeRequest?.requested_changes?.can_id) {
-                changeRequestsMessages.push(`CAN: ${changeRequest.requested_changes.can_id}`);
-            }
-
-            return changeRequestsMessages;
-        });
-    }
     const TableRowData = (
         <>
-            <DebugCode data={changeRequestsMessages} />
+            {/* <DebugCode data={changeRequestsMessages} /> */}
             <th
                 scope="row"
                 className={`${borderExpandedStyles}`}
