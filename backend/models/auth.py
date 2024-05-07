@@ -4,7 +4,6 @@ from typing import Optional
 from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models import User
 from models.base import BaseModel
 
 
@@ -14,7 +13,7 @@ class UserSession(BaseModel):
     id: Mapped[int] = BaseModel.get_pk_column()
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    user: Mapped[User] = relationship(
+    user: Mapped["User"] = relationship(
         "User", back_populates="sessions", foreign_keys=[user_id]
     )
 
