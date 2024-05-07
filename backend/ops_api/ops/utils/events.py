@@ -2,14 +2,11 @@ from types import TracebackType
 from typing import Optional, Type
 
 from flask import current_app, request
-from flask_jwt_extended import verify_jwt_in_request
-from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_jwt_extended import current_user
 from sqlalchemy.orm import Session
 from werkzeug.exceptions import UnsupportedMediaType
 
-from models import User
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
-from ops_api.ops.utils.user import get_user_from_token
 
 
 class OpsEventHandler:
@@ -47,18 +44,11 @@ class OpsEventHandler:
         else:
             event_status = OpsEventStatus.SUCCESS
 
-        user: User = None
-        try:
-            token = verify_jwt_in_request()
-            user = get_user_from_token(token[1] if token else None)
-        except NoAuthorizationError:
-            current_app.logger.warning("JWT is invalid")
-
         event = OpsEvent(
             event_type=self.event_type,
             event_status=event_status,
             event_details=self.metadata,
-            created_by=user.id if user else None,
+            created_by=current_user.id if current_user else None,
         )
 
         with Session(current_app.engine) as session:
