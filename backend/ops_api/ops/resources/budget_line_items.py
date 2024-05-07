@@ -170,6 +170,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                         for key in change_keys
                     }
                     change_request.requested_change_diff = requested_change_diff
+                    requested_change_info = {"target_display_name": budget_line_item.display_name}
+                    change_request.requested_change_info = requested_change_info
                     current_app.db_session.add(change_request)
                     current_app.db_session.commit()
                     change_request_ids.append(change_request.id)

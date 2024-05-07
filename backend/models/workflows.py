@@ -414,6 +414,7 @@ class ChangeRequest(BaseModel):
     )
     requested_change_data: Mapped[JSONB] = mapped_column(JSONB)
     requested_change_diff: Mapped[Optional[JSONB]] = mapped_column(JSONB)
+    requested_change_info: Mapped[Optional[JSONB]] = mapped_column(JSONB)
     # BaseModel.created_by is the requestor, so there's no need for another column for that
     reviewed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
     reviewed_on: Mapped[Optional[DateTime]] = mapped_column(DateTime)
