@@ -412,8 +412,9 @@ class ChangeRequest(BaseModel):
     status: Mapped[ChangeRequestStatus] = mapped_column(
         ENUM(ChangeRequestStatus), nullable=False, default=ChangeRequestStatus.IN_REVIEW
     )
-    requested_changes: Mapped[JSONB] = mapped_column(JSONB)
-    # BaseModel.created_by is the requestor, so requested_by_id is not needed
+    requested_change_data: Mapped[JSONB] = mapped_column(JSONB)
+    requested_change_diff: Mapped[Optional[JSONB]] = mapped_column(JSONB)
+    # BaseModel.created_by is the requestor, so there's no need for another column for that
     reviewed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
     reviewed_on: Mapped[Optional[DateTime]] = mapped_column(DateTime)
     # should there be a fields to store pending reviewer and backup pending reviewer?
@@ -442,23 +443,14 @@ class AgreementChangeRequest(ChangeRequest):
 
     @hybrid_property
     def has_budget_change(self):
-        return any(key in self.requested_changes for key in self.budget_field_names)
+        return any(key in self.requested_change_data for key in self.budget_field_names)
 
     @has_budget_change.expression
-    def has_budget_changes(cls):
-        return cls.requested_changes.has_any(cls.budget_field_names)
+    def has_budget_change(cls):
+        return cls.requested_change_data.has_any(cls.budget_field_names)
 
 
-# require agreement_id for Agreement changes.
-# (It has to be Optional in the model to keep the column nullable for other types)
-@event.listens_for(AgreementChangeRequest, "before_insert")
-@event.listens_for(AgreementChangeRequest, "before_update")
-def check_agreement_id(mapper, connection, target):
-    if target.agreement_id is None:
-        raise ValueError("agreement_id is required for AgreementChangeRequest")
-
-
-class BudgetLineItemChangeRequest(ChangeRequest):
+class BudgetLineItemChangeRequest(AgreementChangeRequest):
     budget_line_item_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("budget_line_item.id", ondelete="CASCADE")
     )
@@ -475,19 +467,30 @@ class BudgetLineItemChangeRequest(ChangeRequest):
 
     @hybrid_property
     def has_budget_change(self):
-        return any(key in self.requested_changes for key in self.budget_field_names)
+        return any(key in self.requested_change_data for key in self.budget_field_names)
 
     @has_budget_change.expression
-    def has_budget_changes(cls):
-        return cls.requested_changes.has_any(cls.budget_field_names)
+    def has_budget_change(cls):
+        return cls.requested_change_data.has_any(cls.budget_field_names)
 
     @hybrid_property
     def has_status_change(self):
-        return "status" in self.requested_changes
+        return "status" in self.requested_change_data
 
     @has_status_change.expression
     def has_status_change(cls):
-        return cls.requested_changes.has_key("status")
+        return cls.requested_change_data.has_key("status")
+
+
+# require agreement_id for Agreement changes.
+# (It has to be Optional in the model to keep the column nullable for other types)
+@event.listens_for(AgreementChangeRequest, "before_insert")
+@event.listens_for(AgreementChangeRequest, "before_update")
+@event.listens_for(BudgetLineItemChangeRequest, "before_insert")
+@event.listens_for(BudgetLineItemChangeRequest, "before_update")
+def check_agreement_id(mapper, connection, target):
+    if target.agreement_id is None:
+        raise ValueError("agreement_id is required for AgreementChangeRequest")
 
 
 # require budget_line_item_id for BLI changes.
