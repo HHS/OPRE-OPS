@@ -6,7 +6,7 @@ from typing_extensions import override
 
 from models import ContractType
 from models.cans import ContractAgreement
-from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.agreements import AgreementData

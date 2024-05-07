@@ -5,12 +5,12 @@ from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 
 from models import UserStatus
-from ops_api.ops.auth.auth_enum import Permission, PermissionType
+from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_extra, _check_groups, _check_role
 from ops_api.ops.auth.exceptions import ExtraCheckError, NotActiveUserError
+from ops_api.ops.auth.utils import get_user_from_userinfo
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 
 def is_user_active(f):
@@ -24,14 +24,14 @@ def is_user_active(f):
 
         from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
 
-        auth_gateway = AuthenticationGateway(current_app.config.get("JWT_PRIVATE_KEY"))
+        auth_gateway = AuthenticationGateway(current_app.config)
 
         provider = request.json.get("provider")
         user_info = auth_gateway.get_user_info(provider, token.get("access_token"))
         if not user_info:
             raise NotActiveUserError(f"Unable to get user_info for token={token}")
 
-        user = get_user_from_token(user_info)
+        user = get_user_from_userinfo(user_info, current_app.db_session)
         if not user or user.status != UserStatus.ACTIVE:
             raise NotActiveUserError(f"User with token={token} is not active")
 

@@ -19,18 +19,20 @@ const AuthSection = () => {
 
     const callBackend = useCallback(
         async (authCode) => {
-            const response = await apiLogin(authCode);
-            if (response.access_token) {
-                localStorage.setItem("access_token", response.access_token);
-                localStorage.setItem("refresh_token", response.refresh_token);
-                dispatch(login());
-                if (!activeUser) await setActiveUser(response.access_token, dispatch);
-                if (response.is_new_user) {
-                    navigate("/user/edit");
-                    return;
+            try {
+                const response = await apiLogin(authCode);
+                if (response.access_token) {
+                    localStorage.setItem("access_token", response.access_token);
+                    localStorage.setItem("refresh_token", response.refresh_token);
+                    dispatch(login());
+                    if (!activeUser) await setActiveUser(response.access_token, dispatch);
                 }
+                navigate("/");
+            } catch (error) {
+                console.error("Error logging in");
+                dispatch(logout());
+                navigate("/login");
             }
-            navigate("/");
         },
         [activeUser, dispatch, navigate]
     );

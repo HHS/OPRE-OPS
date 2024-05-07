@@ -14,3 +14,19 @@ class ExtraCheckError(Exception):
     def __init__(self, response_data):
         super().__init__()
         self.response_data = response_data
+
+
+class PrivateKeyError(Exception):
+    """
+    Exception to raise when the private key is not set.
+    """
+
+    pass
+
+
+class AuthenticationError(Exception):
+    """
+    Exception to raise when there is an error with authentication.
+    """
+
+    pass

@@ -90,6 +90,15 @@ paths:
       summary: Update an Agreement (Over-write)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: agreement_id
+          description: Agreement Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
       requestBody:
         required: true
         content:
@@ -639,7 +648,7 @@ paths:
               examples:
                 '0':
                   $ref: '#/components/examples/User'
-  /api/v1/auth/login/:
+  /auth/login/:
     post:
       parameters:
         - $ref: '#/components/parameters/simulatedError'
@@ -652,12 +661,12 @@ paths:
               properties:
                 code:
                   type: string
-                callbackUrl:
+                provider:
                   type: string
             examples:
               '0':
                 value: >-
-                  {"callbackUrl":"http://localhost:3000/?code=fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7&state=b0c4a75ec9405edc88f13e9de8807d3daa7d2202ed94ca04cb5b77698cdcc782","code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7"}
+                  {"code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7", "provider":"logingov"}
       responses:
         '200':
           description: OK
@@ -967,6 +976,15 @@ paths:
       summary: Update a new Budget Line Item (Over-write)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1087,6 +1105,15 @@ paths:
       summary: Update a Notification (Over-write)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1106,6 +1133,15 @@ paths:
       summary: Update a Notification (Merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1180,6 +1216,15 @@ paths:
       summary: Update a Services Component (Over-write)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1199,6 +1244,15 @@ paths:
       summary: Update a Services Component (Merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1278,6 +1332,15 @@ paths:
       summary: Update Get an Acquisition Planning (merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1318,6 +1381,15 @@ paths:
       summary: Update Get an Acquisition Planning (merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1358,6 +1430,15 @@ paths:
       summary: Update a Pre-Solicitation step (merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1398,6 +1479,15 @@ paths:
       summary: Update an Evaluation step (merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1438,6 +1528,15 @@ paths:
       summary: Update a Pre-Award step (merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1478,6 +1577,15 @@ paths:
       summary: Update an Award step (merge)
       parameters:
         - $ref: '#/components/parameters/simulatedError'
+        - in: path
+          name: id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
       requestBody:
         required: true
         content:
@@ -1759,20 +1867,21 @@ components:
         team_leaders:
           type: array
           items:
-            type: array
-            example:
-              - created_by: null
-                created_on: '2023-04-17T14:43:15.216759'
-                date_joined: '2023-04-17T14:43:15.216759'
-                division: 1
-                email: chris.fortunato@example.com
-                first_name: Chris
-                full_name: Chris Fortunato
-                id: 1
-                last_name: Fortunato
-                oidc_id: 00000000-0000-1111-a111-000000000001
-                updated: null
-                updated_on: '2023-04-17T14:43:15.216759'
+            type: object
+            example: [ {
+              "created_by": null,
+              "created_on": "2023-04-17T14:43:15.216759",
+              "date_joined": "2023-04-17T14:43:15.216759",
+              "division": 1,
+              "email": "chris.fortunato@example.com",
+              "first_name": "Chris",
+              "full_name": "Chris Fortunato",
+              "id": 1,
+              "last_name": "Fortunato",
+              "oidc_id": "00000000-0000-1111-a111-000000000001",
+              "updated": null,
+              "updated_on": "2023-04-17T14:43:15.216759",
+              } ]
         origination_date:
           type: string
           example: '2022-01-01'
@@ -1806,37 +1915,10 @@ components:
     AGREEMENTS:
       description: All Agreements
       type: array
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-        agreement_type:
-          type: string
-        project_officer:
-          type: string
-        period_of_performance_start:
-          type: string
-        period_of_performance_end:
-          type: string
-        procurement_shop:
-          type: object
-        budget_line_items:
-          type: array
-        created_on:
-          $ref: '#/components/parameters/created_on'
-        updated_on:
-          $ref: '#/components/parameters/updated_on'
-        created_by:
-          $ref: '#/components/parameters/created_by'
-        updated_by:
-          $ref: '#/components/parameters/updated_by'
-        created_by_user:
-          $ref: '#/components/parameters/created_by_user'
-        updated_by_user:
-          $ref: '#/components/parameters/updated_by_user'
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/Agreement"
+
     Agreement:
       type: object
       properties:
@@ -1870,17 +1952,12 @@ components:
         team_members:
           type: array
           items:
-            type: array
-            example:
-              - id: 1
-                full_name: Chris Fortunato
-                email: chris.fortunato@example.com
-              - id: 2
-                full_name: Amy Madigan
-                email: Amy.Madigan@example.com
-              - id: 3
-                full_name: Ivelisse Martinez-Beck
-                email: Ivelisse.Martinez-Beck@example.com
+            type: object
+            example: [
+              { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
+              { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
+              { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
+              ]
         project_id:
           type: integer
           example: 1
@@ -1991,7 +2068,7 @@ components:
         team_members:
           type: array
           items:
-            type: array
+            type: object
             example: [
               { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
               { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
@@ -2139,11 +2216,9 @@ components:
         team_leaders:
           type: array
           items:
-            type: array
-            example:
-              - id: 1
-              - id: 2
-              - id: 3
+            type: object
+            example: [ { 'id': 1 }, { 'id': 2 }, { 'id': 3 } ]
+
       required:
         - title
     Notifications:
