@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from authlib.oauth2.rfc6749 import OAuth2Token
 from flask import Response, current_app, request
@@ -11,7 +11,7 @@ from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
 from ops_api.ops.auth.exceptions import AuthenticationError
-from ops_api.ops.auth.utils import _get_token_and_user_data_from_internal_auth
+from ops_api.ops.auth.utils import _get_token_and_user_data_from_internal_auth, is_token_expired
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -70,16 +70,31 @@ def refresh() -> Response:
     current_app.logger.debug(f"user {current_user}")
     if current_user.roles:
         additional_claims["roles"] = [role.name for role in current_user.roles]
+
     access_token = create_access_token(
         identity=current_user,
         expires_delta=current_app.config.get("JWT_ACCESS_TOKEN_EXPIRES"),
         additional_claims=additional_claims,
         fresh=False,
     )
+
+    user_session = _get_or_create_user_session(current_user)
+
+    # if the current access token is not expired, return it
+    if not is_token_expired(user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
+        return make_response_with_headers({"access_token": user_session.access_token})
+
+    user_session.access_token = access_token
+    user_session.last_active_at = datetime.now()
+    current_app.db_session.add(user_session)
+    current_app.db_session.commit()
+
     return make_response_with_headers({"access_token": access_token})
 
 
-def _get_or_create_user_session(user: User, access_token: str, refresh_token: str) -> UserSession:
+def _get_or_create_user_session(
+    user: User, access_token: Optional[str] = None, refresh_token: Optional[str] = None
+) -> UserSession:
     stmt = (
         select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.created_on.desc())
     )  # type: ignore

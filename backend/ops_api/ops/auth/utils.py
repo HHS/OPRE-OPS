@@ -6,7 +6,7 @@ from uuid import UUID
 
 import requests
 from authlib.jose import jwt as jose_jwt
-from flask import Config
+from flask import Config, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -94,6 +94,8 @@ def update_user_from_userinfo(user: User, user_info: UserInfoDict, session: Sess
     user.email = user_info.get("email")
     user.oidc_id = UUID(user_info.get("sub"))
 
+    current_app.logger.debug(f"Updating User: {user.to_dict()}")
+
     session.add(user)
     session.commit()
 
@@ -138,3 +140,11 @@ def _get_token_and_user_data_from_internal_auth(
         additional_claims=additional_claims,
     )
     return access_token, refresh_token, user
+
+
+def is_token_expired(token: str, secret_key: str) -> bool:
+    data = jose_jwt.decode(token, secret_key)
+    exp = data.get("exp")
+    current_timestamp = time.time()
+    current_app.logger.debug(f"Token Expiration: {exp} Current Time: {current_timestamp}")
+    return exp < current_timestamp
