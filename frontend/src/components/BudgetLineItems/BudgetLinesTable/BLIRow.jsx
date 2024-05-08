@@ -67,6 +67,10 @@ const BLIRow = ({
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
 
     const changeRequests = budgetLine?.change_requests_in_review;
+    const isBudgetLinePermanent = budgetLine?.created_on;
+    const CANLabel = isBudgetLinePermanent ? budgetLine?.can?.display_name : budgetLine?.canDisplayName;
+    const BLILabel = isBudgetLinePermanent ? budgetLine?.id : "TBD";
+
     let changeRequestsMessages = [];
 
     if (changeRequests?.length > 0) {
@@ -90,7 +94,7 @@ const BLIRow = ({
     if (isBLIInReview) {
         lockedMessage = "This budget line has pending edits:";
         changeRequestsMessages.forEach((message) => {
-            lockedMessage += `\n - ${message}`;
+            lockedMessage += `\n &#x2022; ${message}`;
         });
     }
     const changeIcons = (
@@ -121,7 +125,7 @@ const BLIRow = ({
                         <span>{budgetLine?.id}</span>
                     </Tooltip>
                 ) : (
-                    budgetLine?.id
+                    BLILabel
                 )}
             </th>
             <td
@@ -148,7 +152,7 @@ const BLIRow = ({
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {budgetLine?.can?.number}
+                {CANLabel}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}

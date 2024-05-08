@@ -55,6 +55,7 @@ const useCreateBLIsAndSCs = (
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
     );
+    const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -80,41 +81,58 @@ const useCreateBLIsAndSCs = (
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(budgetLines);
+    const combinedBudgetLines = [...budgetLines, ...tempBudgetLines];
+    // console.log({ budgetLines });
+    // console.log({ tempBudgetLines });
+    // console.log({ combinedBudgetLines });
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(combinedBudgetLines);
 
     const handleAddBLI = (e) => {
         e.preventDefault();
-        const payload = {
+        const newBudgetLine = {
+            id: crypto.randomUUID(),
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
+            canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
             status: "DRAFT",
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
-        const { data } = cleanBudgetLineItemForApi(payload);
-        addBudgetLineItem(data)
-            .unwrap()
-            .then((fulfilled) => {
-                console.log("Created New BLIs:", fulfilled);
-            })
-            .catch((rejected) => {
-                console.error("Error Creating Budget Lines");
-                console.error({ rejected });
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred. Please try again.",
-                    navigateUrl: "/error"
-                });
-            });
-        setAlert({
-            type: "success",
-            heading: "Budget Line Added",
-            message: "The budget line has been successfully added."
-        });
+        setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
+        // const payload = {
+        //     services_component_id: servicesComponentId,
+        //     comments: enteredComments || "",
+        //     can_id: selectedCan?.id || null,
+        //     agreement_id: selectedAgreement?.id || null,
+        //     amount: enteredAmount || 0,
+        //     status: "DRAFT",
+        //     date_needed: formatDateForApi(needByDate),
+        //     proc_shop_fee_percentage: selectedProcurementShop?.fee || null
+        // };
+        // const { data } = cleanBudgetLineItemForApi(payload);
+        // addBudgetLineItem(data)
+        //     .unwrap()
+        //     .then((fulfilled) => {
+        //         console.log("Created New BLIs:", fulfilled);
+        //     })
+        //     .catch((rejected) => {
+        //         console.error("Error Creating Budget Lines");
+        //         console.error({ rejected });
+        //         setAlert({
+        //             type: "error",
+        //             heading: "Error",
+        //             message: "An error occurred. Please try again.",
+        //             navigateUrl: "/error"
+        //         });
+        //     });
+        // setAlert({
+        //     type: "success",
+        //     heading: "Budget Line Added",
+        //     message: "The budget line has been successfully added."
+        // });
         resetForm();
     };
 
@@ -416,7 +434,8 @@ const useCreateBLIsAndSCs = (
         subTotalForCards,
         totalsForCards,
         handleCancel,
-        handleGoBack
+        handleGoBack,
+        combinedBudgetLines
     };
 };
 

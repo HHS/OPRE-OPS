@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
 import BudgetLinesTable from "../BudgetLinesTable";
-import CreateBudgetLinesForm from "../BudgetLinesForm";
+import BudgetLinesForm from "../BudgetLinesForm";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import ServicesComponents from "../../ServicesComponents";
@@ -15,6 +15,7 @@ import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/Agreement
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
+import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -85,7 +86,8 @@ export const CreateBLIsAndSCs = ({
         subTotalForCards,
         totalsForCards,
         handleCancel,
-        handleGoBack
+        handleGoBack,
+        combinedBudgetLines
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -195,7 +197,8 @@ export const CreateBLIsAndSCs = ({
                     />
                 </>
             )}
-            <CreateBudgetLinesForm
+
+            <BudgetLinesForm
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
                 enteredAmount={enteredAmount}
@@ -259,6 +262,7 @@ export const CreateBLIsAndSCs = ({
             ) : (
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}
+            <DebugCode data={combinedBudgetLines} />
             <div className="display-flex flex-justify margin-top-1">
                 <GoBackButton handleGoBack={handleGoBack} />
                 <div>
