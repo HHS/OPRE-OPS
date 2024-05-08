@@ -29,6 +29,7 @@ def test_logout(app, client, loaded_db, mocker):
 
     res = client.post("/auth/logout/", headers={"Authorization": f"Bearer {access_token}"})
     assert res.status_code == 200
+    assert res.json["message"] == f"User: {user.email} Logged out"
 
     stmt = select(UserSession).where(UserSession.user_id == user.id)
     user_sessions = loaded_db.execute(stmt).scalars().all()

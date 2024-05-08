@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from authlib.oauth2.rfc6749 import OAuth2Token
 from flask import Response, current_app, request
@@ -54,24 +54,19 @@ def login(code: str, provider: str) -> dict[str, Any]:
     return response
 
 
-def logout() -> Union[Response, tuple[str, int]]:
+def logout() -> dict[str, str]:
     with OpsEventHandler(OpsEventType.LOGOUT) as la:
-        try:
-            identity = get_jwt_identity()
-            la.metadata.update({"oidc_id": identity})
-            # TODO: Process the /logout endpoint for the OIDC Provider here.
+        identity = get_jwt_identity()
+        la.metadata.update({"oidc_id": identity})
+        # TODO: Process the /logout endpoint for the OIDC Provider here.
 
-            stmt = (
-                select(UserSession)
-                .where(UserSession.user_id == current_user.id)
-                .order_by(UserSession.created_on.desc())
-            )  # type: ignore
-            user_sessions = current_app.db_session.execute(stmt).scalars().all()
-            _deactivate_all_user_sessions(user_sessions)
+        stmt = (
+            select(UserSession).where(UserSession.user_id == current_user.id).order_by(UserSession.created_on.desc())
+        )  # type: ignore
+        user_sessions = current_app.db_session.execute(stmt).scalars().all()
+        _deactivate_all_user_sessions(user_sessions)
 
-            return make_response_with_headers({"message": f"User {identity} Logged out"})
-        except RuntimeError:
-            return make_response_with_headers({"message": "Logged out"})
+        return {"message": f"User: {current_user.email} Logged out"}
 
 
 def refresh() -> Response:
