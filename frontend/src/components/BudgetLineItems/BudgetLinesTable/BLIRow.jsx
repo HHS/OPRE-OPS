@@ -17,7 +17,7 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, canLabel, BLILabel } from "../../../helpers/budgetLines.helpers";
 import {
     removeBorderBottomIfExpanded,
     changeBgColorIfExpanded
@@ -67,9 +67,6 @@ const BLIRow = ({
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
 
     const changeRequests = budgetLine?.change_requests_in_review;
-    const isBudgetLinePermanent = budgetLine?.created_on;
-    const CANLabel = isBudgetLinePermanent ? budgetLine?.can?.display_name : budgetLine?.canDisplayName;
-    const BLILabel = isBudgetLinePermanent ? budgetLine?.id : "TBD";
 
     let changeRequestsMessages = [];
 
@@ -125,7 +122,7 @@ const BLIRow = ({
                         <span>{budgetLine?.id}</span>
                     </Tooltip>
                 ) : (
-                    BLILabel
+                    BLILabel(budgetLine)
                 )}
             </th>
             <td
@@ -152,7 +149,7 @@ const BLIRow = ({
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {CANLabel}
+                {canLabel(budgetLine)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}

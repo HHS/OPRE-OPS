@@ -10,7 +10,7 @@ import {
     useDeleteBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { budgetLinesTotal } from "../../../helpers/budgetLines.helpers";
+import { budgetLinesTotal, BLILabel, canLabel, isBLIPermanent } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
@@ -94,6 +94,7 @@ const useCreateBLIsAndSCs = (
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
+            can: selectedCan || null,
             canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
@@ -102,6 +103,12 @@ const useCreateBLIsAndSCs = (
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
         setTempBudgetLines([...tempBudgetLines, newBudgetLine]);
+        setAlert({
+            type: "success",
+            heading: "Budget Line Added",
+            message: "The budget line has been successfully added."
+        });
+        // TODO: Batch add BLIs
         // const payload = {
         //     services_component_id: servicesComponentId,
         //     comments: enteredComments || "",
@@ -157,6 +164,7 @@ const useCreateBLIsAndSCs = (
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
         const { id, data } = cleanBudgetLineItemForApi(payload);
+        // TODO: Batch update BLIs
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
             setShowModal(true);
             setModalProps({
@@ -213,36 +221,52 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleDeleteBudgetLine = (budgetLineId) => {
-        const budgetLine = budgetLines.find((bl) => bl.id === budgetLineId);
-        const budgetLineDisplayName = budgetLine?.id;
+        const budgetLine = combinedBudgetLines.find((bl) => bl.id === budgetLineId);
+
         setShowModal(true);
         setModalProps({
-            heading: `Are you sure you want to delete budget line ${budgetLineDisplayName}?`,
+            heading: `Are you sure you want to delete budget line ${BLILabel(budgetLine)}?`,
             actionButtonText: "Delete",
             handleConfirm: () => {
-                deleteBudgetLineItem(budgetLineId)
-                    .unwrap()
-                    .then((fulfilled) => {
-                        console.log("Deleted BLI:", fulfilled);
-                        setAlert({
-                            type: "success",
-                            heading: "Budget Line Deleted",
-                            message: `Budget line ${budgetLineDisplayName} has been successfully deleted.`
-                        });
-                    })
-                    .catch((rejected) => {
-                        console.error("Error Deleting Budget Line");
-                        console.error({ rejected });
-                        setAlert({
-                            type: "error",
-                            heading: "Error",
-                            message: "An error occurred. Please try again.",
-                            navigateUrl: "/error"
-                        });
-                    });
+                setTempBudgetLines(tempBudgetLines.filter((bl) => bl.id !== budgetLineId));
+                setAlert({
+                    type: "success",
+                    heading: "Budget Line Deleted",
+                    message: `Budget line ${BLILabel(budgetLine)} has been successfully deleted.`
+                });
                 resetForm();
             }
         });
+        return;
+        // TODO: Batch delete BLIs
+        // setShowModal(true);
+        // setModalProps({
+        //     heading: `Are you sure you want to delete budget line ${BLILabel(budgetLine)}?`,
+        //     actionButtonText: "Delete",
+        //     handleConfirm: () => {
+        //         deleteBudgetLineItem(budgetLineId)
+        //             .unwrap()
+        //             .then((fulfilled) => {
+        //                 console.log("Deleted BLI:", fulfilled);
+        //                 setAlert({
+        //                     type: "success",
+        //                     heading: "Budget Line Deleted",
+        //                     message: `Budget line ${BLILabel(budgetLine)} has been successfully deleted.`
+        //                 });
+        //             })
+        //             .catch((rejected) => {
+        //                 console.error("Error Deleting Budget Line");
+        //                 console.error({ rejected });
+        //                 setAlert({
+        //                     type: "error",
+        //                     heading: "Error",
+        //                     message: "An error occurred. Please try again.",
+        //                     navigateUrl: "/error"
+        //                 });
+        //             });
+        //         resetForm();
+        //     }
+        // });
     };
 
     const cleanBudgetLineItemForApi = (data) => {
@@ -265,9 +289,9 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
-        const index = budgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
+        const index = combinedBudgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
-            const { services_component_id, comments, can, can_id, amount, date_needed } = budgetLines[index];
+            const { services_component_id, comments, can, can_id, amount, date_needed } = combinedBudgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
 
             setBudgetLineBeingEdited(index);
@@ -334,6 +358,7 @@ const useCreateBLIsAndSCs = (
                 if (isEditMode || isReviewMode) {
                     setIsEditMode(false);
                     resetForm();
+                    setTempBudgetLines([]);
                     if (budgetLineIdFromUrl) {
                         resetQueryParams();
                     }
@@ -388,6 +413,7 @@ const useCreateBLIsAndSCs = (
         setNeedByDate(null);
         setEnteredComments(null);
         setFinancialSnapshot(null);
+        setBudgetLineBeingEdited(null);
     };
 
     React.useEffect(() => {

@@ -85,3 +85,12 @@ export const groupByServicesComponent = (budgetLines) => {
             return a.servicesComponentId - b.servicesComponentId;
         });
 };
+
+export const isBLIPermanent = (bli) => {
+    handleBLIProp(bli);
+    return bli?.created_on;
+};
+
+export const canLabel = (bli) => (isBLIPermanent(bli) ? bli?.can?.display_name : bli?.canDisplayName);
+
+export const BLILabel = (bli) => (isBLIPermanent(bli) ? bli?.id : "TBD");
