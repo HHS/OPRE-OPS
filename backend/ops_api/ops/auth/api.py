@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 
 from ops_api.ops.auth import bp
 from ops_api.ops.auth.api_error import handle_api_error
-from ops_api.ops.auth.schema import LoginRequestSchema, LoginResponseSchema, LogoutResponseSchema
+from ops_api.ops.auth.schema import LoginRequestSchema, LoginResponseSchema, LogoutResponseSchema, RefreshResponseSchema
 from ops_api.ops.auth.service import login, logout, refresh
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
@@ -38,4 +38,7 @@ def logout_post() -> Response:
 @error_simulator
 @handle_api_error
 def refresh_post() -> Response:
-    return refresh()
+    result = refresh()
+    response_schema = RefreshResponseSchema()
+    data = response_schema.dump(result)
+    return make_response_with_headers(data)

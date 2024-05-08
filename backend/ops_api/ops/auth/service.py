@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from authlib.oauth2.rfc6749 import OAuth2Token
-from flask import Response, current_app, request
+from flask import current_app, request
 from flask_jwt_extended import create_access_token, current_user, get_jwt_identity
 from sqlalchemy import select
 
@@ -13,7 +13,6 @@ from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
 from ops_api.ops.auth.exceptions import AuthenticationError
 from ops_api.ops.auth.utils import _get_token_and_user_data_from_internal_auth, is_token_expired
 from ops_api.ops.utils.events import OpsEventHandler
-from ops_api.ops.utils.response import make_response_with_headers
 
 
 def login(code: str, provider: str) -> dict[str, Any]:
@@ -69,7 +68,7 @@ def logout() -> dict[str, str]:
         return {"message": f"User: {current_user.email} Logged out"}
 
 
-def refresh() -> Response:
+def refresh() -> dict[str, str]:
     additional_claims = {"roles": []}
     current_app.logger.debug(f"user {current_user}")
     if current_user.roles:
@@ -86,14 +85,14 @@ def refresh() -> Response:
 
     # if the current access token is not expired, return it
     if not is_token_expired(user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
-        return make_response_with_headers({"access_token": user_session.access_token})
+        return {"access_token": user_session.access_token}
 
     user_session.access_token = access_token
     user_session.last_active_at = datetime.now()
     current_app.db_session.add(user_session)
     current_app.db_session.commit()
 
-    return make_response_with_headers({"access_token": access_token})
+    return {"access_token": access_token}
 
 
 def _get_or_create_user_session(

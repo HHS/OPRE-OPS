@@ -16,3 +16,7 @@ class LoginResponseSchema(Schema):
 
 class LogoutResponseSchema(Schema):
     message: str = fields.String(required=True)
+
+
+class RefreshResponseSchema(Schema):
+    access_token: str = fields.String(required=True)
