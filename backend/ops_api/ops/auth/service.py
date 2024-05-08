@@ -61,12 +61,13 @@ def logout() -> Union[Response, tuple[str, int]]:
             la.metadata.update({"oidc_id": identity})
             # TODO: Process the /logout endpoint for the OIDC Provider here.
 
-            user_session = _get_or_create_user_session(current_user)
-            if user_session.is_active:
-                user_session.is_active = False
-                user_session.last_active_at = datetime.now()
-                current_app.db_session.add(user_session)
-                current_app.db_session.commit()
+            stmt = (
+                select(UserSession)
+                .where(UserSession.user_id == current_user.id)
+                .order_by(UserSession.created_on.desc())
+            )  # type: ignore
+            user_sessions = current_app.db_session.execute(stmt).scalars().all()
+            _deactivate_all_user_sessions(user_sessions)
 
             return make_response_with_headers({"message": f"User {identity} Logged out"})
         except RuntimeError:
@@ -133,5 +134,6 @@ def _deactivate_all_user_sessions(user_sessions):
     active_sessions = [session for session in user_sessions if session.is_active]
     for session in active_sessions:
         session.is_active = False
+        session.last_active_at = datetime.now()
         current_app.db_session.add(session)
     current_app.db_session.commit()
