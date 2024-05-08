@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import CanComboBox from "../../CANs/CanComboBox";
 import TextArea from "../../UI/Form/TextArea/TextArea";
-import CurrencyInput from "./CurrencyInput";
+import CurrencyInput from "../../UI/CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import DatePicker from "../../UI/USWDS/DatePicker";
 import suite from "./suite";
@@ -37,7 +37,7 @@ import datePickerSuite from "./datePickerSuite";
  * @param {number} props.agreementId - The agreement ID.
  * @returns {JSX.Element} - The rendered component.
  */
-export const CreateBudgetLinesForm = ({
+export const BudgetLinesForm = ({
     agreementId,
     selectedCan,
     setSelectedCan,
@@ -224,7 +224,7 @@ export const CreateBudgetLinesForm = ({
     );
 };
 
-CreateBudgetLinesForm.propTypes = {
+BudgetLinesForm.propTypes = {
     agreementId: PropTypes.number,
     selectedCan: PropTypes.object,
     setSelectedCan: PropTypes.func,
@@ -244,4 +244,4 @@ CreateBudgetLinesForm.propTypes = {
     isEditMode: PropTypes.bool
 };
 
-export default CreateBudgetLinesForm;
+export default BudgetLinesForm;
