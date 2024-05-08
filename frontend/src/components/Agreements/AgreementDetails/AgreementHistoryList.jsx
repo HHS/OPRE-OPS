@@ -96,7 +96,9 @@ const relations = {
     can_id: {
         eventKey: "can"
     },
-    project_officer: {}
+    project_officer_id: {
+        eventKey: "project_officer"
+    }
 };
 
 /**
@@ -124,11 +126,13 @@ const prepareChanges = (historyItem) => {
             preparedChange["added"] = objectsToNames(change.added);
             preparedChange["deleted"] = objectsToNames(change.deleted);
         } else if (key in relations) {
+            console.log(`~~~>>> prepareChanges relations key=${key}`);
             preparedChange["isRelation"] = true;
             const eventKey = relations[key]["eventKey"];
             if (eventKey) {
                 preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, eventKey);
-                preparedChange["to"] = historyItem.event_details[eventKey]?.display_name;
+                // preparedChange["to"] = historyItem.event_details[eventKey]?.display_name;
+                preparedChange["toId"] = change.new;
             } else {
                 preparedChange["toId"] = change.new;
             }
@@ -146,6 +150,7 @@ const prepareChanges = (historyItem) => {
 };
 
 const UserName = ({ id }) => {
+    console.log("~~~>>> UserName", id);
     const name = useGetUserFullNameFromId(id);
     return <>{name}</>;
 };
@@ -171,7 +176,7 @@ const CanName = ({ id }) => {
 };
 
 const components = {
-    project_officer: UserName,
+    project_officer_id: UserName,
     procurement_shop_id: ProcurementShopName,
     product_service_code_id: ProductServiceCodeName,
     project_id: ResearchProjectName,
@@ -184,7 +189,11 @@ const RenderProperty = ({ className, propertyKey, value, id: lookupId }) => {
         return <>{renderField(className, propertyKey, value)}</>;
     }
     if (components[propertyKey]) {
+        console.log(
+            `~~~>>> RenderProperty className=${className}, propertyKey=${propertyKey}, value=${value}, lookupId=${lookupId}`
+        );
         if (!lookupId) return "none";
+        console.log(`~~~>>> RenderProperty component propertyKey=${propertyKey} lookupId=${lookupId}`);
         const Component = components[propertyKey];
         return <Component id={lookupId} />;
     }
