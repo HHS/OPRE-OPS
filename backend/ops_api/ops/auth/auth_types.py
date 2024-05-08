@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import NotRequired, Required, TypedDict
 
 
 class PermissionType(Enum):
@@ -25,3 +26,24 @@ class Permission(Enum):
     SERVICES_COMPONENT = auto()
     USER = auto()
     WORKFLOW = auto()
+
+
+class UserInfoDict(TypedDict):
+    sub: Required[str]
+    email: Required[str]
+    aud: NotRequired[str]
+    email_verified: NotRequired[bool]
+    hhsid: NotRequired[str]
+    IAL: NotRequired[int]
+    name: NotRequired[str]
+    iss: NotRequired[str]
+    preferred_username: NotRequired[str]
+    AAL: NotRequired[int]
+    given_name: NotRequired[str]
+    family_name: NotRequired[str]
+
+
+class ProviderTypes(Enum):
+    fakeauth = auto()
+    logingov = auto()
+    hhsams = auto()

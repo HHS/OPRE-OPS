@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { login } from "./authSlice";
+import { login, logout } from "./authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
@@ -23,7 +23,14 @@ const MultiAuthSection = () => {
                 navigate("/login");
             }
 
-            const response = await apiLogin(activeProvider, authCode);
+            let response;
+            try {
+                response = await apiLogin(activeProvider, authCode);
+            } catch (error) {
+                console.error("Error logging in");
+                dispatch(logout());
+                navigate("/login");
+            }
             const access_token = response.access_token;
             const refresh_token = response.refresh_token;
 
@@ -38,11 +45,6 @@ const MultiAuthSection = () => {
                 localStorage.setItem("access_token", access_token);
                 localStorage.setItem("refresh_token", refresh_token);
                 dispatch(login());
-
-                if (response.is_new_user) {
-                    navigate(`/user/edit/${response?.user?.id}`);
-                    return;
-                }
 
                 await setActiveUser(access_token, dispatch);
 
