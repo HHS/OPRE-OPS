@@ -380,7 +380,7 @@ const useCreateBLIsAndSCs = (
                     if (budgetLineIdFromUrl) {
                         resetQueryParams();
                     }
-                    navigate(`/agreements/${selectedAgreement?.id}`);
+                    navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                 } else {
                     deleteAgreement(selectedAgreement?.id)
                         .unwrap()
