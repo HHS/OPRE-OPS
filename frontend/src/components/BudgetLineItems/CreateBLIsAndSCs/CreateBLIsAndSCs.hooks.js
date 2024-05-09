@@ -155,6 +155,7 @@ const useCreateBLIsAndSCs = (
         //     budgetLines[budgetLineBeingEdited].status === BLI_STATUS.EXECUTING;
 
         const payload = {
+            ...tempBudgetLines[budgetLineBeingEdited],
             id: tempBudgetLines[budgetLineBeingEdited].id,
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
