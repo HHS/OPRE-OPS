@@ -12,7 +12,7 @@ import {
 const noDataMessage = "There is currently no history for this agreement.";
 
 const findObjectTitle = (historyItem) => {
-    return historyItem.event_details.display_name;
+    return historyItem.target_display_name;
 };
 
 const omitChangeDetailsFor = ["description", "notes", "comments"];
@@ -32,18 +32,45 @@ const eventLogItemTitle = (historyItem) => {
 const propertyLogItemTitle = (historyItem, change) => {
     let title = `${change.propertyLabel} Edited`;
     if (historyItem.class_name === "BudgetLineItem") {
-        title = "Budget Line " + title;
+        title = `Budget Line ${change.propertyLabel} Edited`;
+    } else if (historyItem.class_name === "BudgetLineItemChangeRequest") {
+        if (historyItem.event_type === "IN_REVIEW") {
+            title = `Edit to BL ${change.propertyLabel} In Review`;
+        } else if (historyItem.event_type === "APPROVED") {
+            title = `Edit to BL ${change.propertyLabel} Approved`;
+        } else if (historyItem.event_type === "REJECTED") {
+            title = `Edit to BL ${change.propertyLabel} Rejected`;
+        } else {
+            title = `${historyItem.event_type} ${change.propertyLabel} Edited`;
+        }
     }
     return title;
 };
 
-const changeMessageBeginning = (historyItem, change) => {
+const propertyLogItemMessageBeginning = (historyItem, change) => {
     let msg = `${change.propertyLabel} changed`;
     if (historyItem.class_name === "BudgetLineItem") {
         if (change.key !== "line_description") {
             msg = `${findObjectTitle(historyItem)} ${change.propertyLabel} changed`;
         } else {
             msg = `${change.propertyLabel} changed`;
+        }
+    } else if (historyItem.class_name === "BudgetLineItemChangeRequest") {
+        msg = `${findObjectTitle(historyItem)} ${change.propertyLabel} edited`;
+    }
+    return msg;
+};
+
+const propertyLogItemMessageAddendum = (historyItem) => {
+    let msg = "";
+    if (historyItem.class_name === "BudgetLineItemChangeRequest") {
+        if (historyItem.event_type === "IN_REVIEW") {
+            msg = ` This budget change is currently In Review for approval.`;
+        } else if (historyItem.event_type === "APPROVED") {
+            // TODO: change these placeholder messages when working on approvals
+            msg = ` This budget change has been approved.`;
+        } else if (historyItem.event_type === "REJECTED") {
+            msg = ` This budget change has been rejected.`;
         }
     }
     return msg;
@@ -75,7 +102,8 @@ const eventMessage = (historyItem) => {
 };
 
 const getPropertyLabel = (className, fieldName) => {
-    if (className === "BudgetLineItem") return `${convertCodeForDisplay("budgetLineItemPropertyLabels", fieldName)}`;
+    if (["BudgetLineItem", "BudgetLineItemChangeRequest"].includes(className))
+        return `${convertCodeForDisplay("budgetLineItemPropertyLabels", fieldName)}`;
     return convertCodeForDisplay("agreementPropertyLabels", fieldName);
 };
 
@@ -126,12 +154,10 @@ const prepareChanges = (historyItem) => {
             preparedChange["added"] = objectsToNames(change.added);
             preparedChange["deleted"] = objectsToNames(change.deleted);
         } else if (key in relations) {
-            console.log(`~~~>>> prepareChanges relations key=${key}`);
             preparedChange["isRelation"] = true;
             const eventKey = relations[key]["eventKey"];
             if (eventKey) {
                 preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, eventKey);
-                // preparedChange["to"] = historyItem.event_details[eventKey]?.display_name;
                 preparedChange["toId"] = change.new;
             } else {
                 preparedChange["toId"] = change.new;
@@ -150,7 +176,6 @@ const prepareChanges = (historyItem) => {
 };
 
 const UserName = ({ id }) => {
-    console.log("~~~>>> UserName", id);
     const name = useGetUserFullNameFromId(id);
     return <>{name}</>;
 };
@@ -189,11 +214,7 @@ const RenderProperty = ({ className, propertyKey, value, id: lookupId }) => {
         return <>{renderField(className, propertyKey, value)}</>;
     }
     if (components[propertyKey]) {
-        console.log(
-            `~~~>>> RenderProperty className=${className}, propertyKey=${propertyKey}, value=${value}, lookupId=${lookupId}`
-        );
         if (!lookupId) return "none";
-        console.log(`~~~>>> RenderProperty component propertyKey=${propertyKey} lookupId=${lookupId}`);
         const Component = components[propertyKey];
         return <Component id={lookupId} />;
     }
@@ -202,7 +223,7 @@ const RenderProperty = ({ className, propertyKey, value, id: lookupId }) => {
 
 const CollectionLogItems = ({ historyItem, change, baseKey }) => {
     const eventType = historyItem.event_type;
-    if (eventType !== "UPDATED") return;
+    if (!["UPDATED"].includes(eventType)) return;
 
     let logItems = [];
 
@@ -237,7 +258,7 @@ const CollectionLogItems = ({ historyItem, change, baseKey }) => {
 
 const PropertyLogItems = ({ historyItem, baseKey }) => {
     const eventType = historyItem.event_type;
-    if (eventType !== "UPDATED") return;
+    if (!["UPDATED", "IN_REVIEW", "APPROVED", "REJECTED"].includes(eventType)) return;
     const preparedChanges = prepareChanges(historyItem);
 
     return preparedChanges.map((change, index) => {
@@ -257,7 +278,8 @@ const PropertyLogItems = ({ historyItem, baseKey }) => {
 
         const title = propertyLogItemTitle(historyItem, change);
         const createdOn = historyItem.created_on;
-        const messageBeginning = changeMessageBeginning(historyItem, change);
+        const messageBeginning = propertyLogItemMessageBeginning(historyItem, change);
+        const messageAddendum = propertyLogItemMessageAddendum(historyItem);
         const shouldRenderDetails = !omitChangeDetailsFor.includes(change.key);
         const from = (
             <RenderProperty
@@ -290,7 +312,7 @@ const PropertyLogItems = ({ historyItem, baseKey }) => {
                         from {from} to {to}
                     </>
                 )}{" "}
-                by {createdBy}
+                by {createdBy}. {messageAddendum}
             </LogItem>
         );
     });
@@ -302,6 +324,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
     }
 
     const renderHistoryItem = (historyItem, index) => {
+        console.log("~~~>>> renderHistoryItem historyItem.log_items", historyItem.log_items);
         // for create and delete, display a single log item
         if (["NEW", "DELETED"].includes(historyItem.event_type)) {
             return (

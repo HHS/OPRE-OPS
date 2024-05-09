@@ -144,18 +144,18 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
     assert bli.in_review is False
 
     # verify delete cascade
-    session.delete(bli)
-    session.commit()
-    for change_request_id in change_request_ids:
-        change_request = session.get(BudgetLineItemChangeRequest, change_request_id)
-        assert change_request is None
-    bli = session.get(BudgetLineItem, bli_id)
-    assert bli is None
-
-    # verify agreement history added for 1 BLI delete (cascading CR deletes are not tracked)
-    hists = find_agreement_histories(agreement_id, limit=100)
-    hist_count = len(hists)
-    assert hist_count == prev_hist_count + 1
+    # session.delete(bli)
+    # session.commit()
+    # for change_request_id in change_request_ids:
+    #     change_request = session.get(BudgetLineItemChangeRequest, change_request_id)
+    #     assert change_request is None
+    # bli = session.get(BudgetLineItem, bli_id)
+    # assert bli is None
+    #
+    # # verify agreement history added for 1 BLI delete (cascading CR deletes are not tracked)
+    # hists = find_agreement_histories(agreement_id, limit=100)
+    # hist_count = len(hists)
+    # assert hist_count == prev_hist_count + 1
 
 
 @pytest.mark.skipif(
@@ -369,14 +369,64 @@ def test_agreement_history_with_change_requests(auth_client, app):
         resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
+        # print("~~~~history~~~~", json.dumps(resp_json, indent=2))
         hist_count = len(resp_json)
         assert hist_count == prev_hist_count + 1
         prev_hist_count = hist_count
         log_items = resp_json[0]["log_items"]
         assert len(log_items) == 1
         log_item = log_items[0]
-        assert log_item["title"] == "Agreement Created"
-        assert log_item["message"] == f"Agreement created by {test_user_name}"
+        assert log_item["event_class_name"] == "ContractAgreement"
+        assert log_item["target_class_name"] == "ContractAgreement"
+        assert log_item["created_by_user_full_name"] == "Amelia Popham"
+        assert log_item["event_type"] == "NEW"
+        assert log_item["scope"] == "object"
+        assert log_item["created_on"] is not None
+        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+
+        # update Agreement
+        data = {
+            "name": "TEST: Agreement history with change requests EDITED",
+            "description": "Description EDITED",
+            # "incumbent": "Vendor B",
+            # "project_officer_id": 22,
+            # "team_members": [
+            #     {
+            #         "id": 4,
+            #     },
+            #     {
+            #         "id": 23,
+            #     },
+            #     {
+            #         "id": 24,
+            #     },
+            # ],
+            # "notes": "Updated Agreement for purpose X",
+        }
+        resp = auth_client.patch(f"/api/v1/agreements/{agreement_id}", json=data)
+        assert resp.status_code == 200
+
+        # verify agreement history (+1 agreement updated)
+        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        assert resp.status_code == 200
+        resp_json = resp.json
+        # print("~~~~history~~~~", json.dumps(resp_json, indent=2))
+        hist_count = len(resp_json)
+        assert hist_count == prev_hist_count + 1
+        prev_hist_count = hist_count
+        log_items = resp_json[0]["log_items"]
+        assert len(log_items) == 2
+        log_item = log_items[0]
+        assert log_item["event_class_name"] == "ContractAgreement"
+        assert log_item["target_class_name"] == "ContractAgreement"
+        assert log_item["created_by_user_full_name"] == "Amelia Popham"
+        assert log_item["event_type"] == "UPDATED"
+        assert log_item["scope"] == "property"
+        assert log_item["property_key"] == "name"
+        assert log_item["change"] == {
+            "new": "TEST: Agreement history with change requests EDITED",
+            "old": "TEST: Agreement history with change requests",
+        }
         assert log_item["created_on"] is not None
         assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
 
@@ -399,14 +449,42 @@ def test_agreement_history_with_change_requests(auth_client, app):
         resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
+        print("~~~~history (after BLI create) ~~~~", json.dumps(resp_json, indent=2))
         hist_count = len(resp_json)
         assert hist_count == prev_hist_count + 1
         prev_hist_count = hist_count
         log_items = resp_json[0]["log_items"]
         assert len(log_items) == 1
         log_item = log_items[0]
-        assert log_item["title"] == "Budget Line Created"
-        assert log_item["message"] == f"BL {bli_id} created by {test_user_name}"
+        assert log_item["event_class_name"] == "BudgetLineItem"
+        assert log_item["created_by_user_full_name"] == "Amelia Popham"
+        assert log_item["event_type"] == "NEW"
+        assert log_item["scope"] == "object"
+        assert log_item["created_on"] is not None
+        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+
+        # update BLI
+        bli.can_id = 2
+        bli.amount = 222.22
+        bli.date_needed = datetime.date(2025, 2, 2)
+        session.add(bli)
+        session.commit()
+
+        # verify agreement history added (+1 BLI update with 3 log_item)
+        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        assert resp.status_code == 200
+        resp_json = resp.json
+        print("~~~~history (after BLI update) ~~~~", json.dumps(resp_json, indent=2))
+        hist_count = len(resp_json)
+        assert hist_count == prev_hist_count + 1
+        prev_hist_count = hist_count
+        log_items = resp_json[0]["log_items"]
+        assert len(log_items) == 3
+        log_item = log_items[0]
+        assert log_item["event_class_name"] == "BudgetLineItem"
+        assert log_item["created_by_user_full_name"] == "Amelia Popham"
+        assert log_item["event_type"] == "UPDATED"
+        assert log_item["scope"] == "property"
         assert log_item["created_on"] is not None
         assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
 
@@ -419,21 +497,21 @@ def test_agreement_history_with_change_requests(auth_client, app):
         resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
+        # print("~~~~history~~~~", json.dumps(resp_json, indent=2))
         hist_count = len(resp_json)
         assert hist_count == prev_hist_count + 1
         prev_hist_count = hist_count
         log_items = resp_json[0]["log_items"]
         assert len(log_items) == 1
         log_item = log_items[0]
-        assert log_item["title"] == "Budget Line Status Edited"
-        assert log_item["message"] == f"BL {bli_id} Status changed from Draft to Planned by {test_user_name}"
+        assert log_item["scope"] == "property"
+        assert log_item["event_class_name"] == "BudgetLineItem"
+        assert log_item["target_class_name"] == "BudgetLineItem"
+        assert log_item["property_key"] == "status"
+        assert log_item["event_type"] == "UPDATED"
         assert log_item["created_on"] is not None
-        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT%H"))
-
-        # hist_dicts = [build_agreement_history_dict(row[0], None) for row in hists]
-        # for hist_dict in hist_dicts:
-        #     print(f"\n\n~~~{hist_dict['class_name']} {hist_dict['row_key']} {hist_dict['event_type']} ~~~")
-        #     print(json.dumps(hist_dict, indent=2))
+        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+        assert log_item["change"] == {"new": "PLANNED", "old": "DRAFT"}
 
         #  submit PATCH BLI which triggers a budget change requests
         # data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02"}

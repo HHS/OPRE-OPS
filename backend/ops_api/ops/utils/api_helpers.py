@@ -168,3 +168,14 @@ def get_property_label(class_name, field_name):
     if class_name == "BudgetLineItem":
         return convert_code_for_display("budgetLineItemPropertyLabels", field_name)
     return convert_code_for_display("agreementPropertyLabels", field_name)
+
+
+def get_all_classes(cls: type):
+    all_classes = [cls]
+    for subclass in cls.__subclasses__():
+        all_classes.extend(get_all_classes(subclass))
+    return all_classes
+
+
+def get_all_class_names(cls: type):
+    return [cls.__name__ for cls in get_all_classes(cls)]
