@@ -7,7 +7,7 @@ import { getAccessToken, getAuthorizationCode } from "./auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
-import { apiLogin } from "../../api/apiLogin";
+import { apiLogin, apiLogout } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
 import { setActiveUser } from "./auth";
 
@@ -77,10 +77,8 @@ const AuthSection = () => {
     }, [activeUser, callBackend, dispatch, navigate]);
 
     const logoutHandler = async () => {
-        dispatch(logout());
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("activeProvider");
-        // await apiLogout();
+        await apiLogout();
+        await dispatch(logout());
         navigate("/login");
         // TODO: ⬇ Logout from Auth Provider ⬇
         // const output = await logoutUser(localStorage.getItem("ops-state-key"));

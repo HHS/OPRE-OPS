@@ -31,6 +31,7 @@ const MultiAuthSection = () => {
                 dispatch(logout());
                 navigate("/login");
             }
+
             const access_token = response.access_token;
             const refresh_token = response.refresh_token;
 
@@ -44,10 +45,8 @@ const MultiAuthSection = () => {
                 // to get the data we need.
                 localStorage.setItem("access_token", access_token);
                 localStorage.setItem("refresh_token", refresh_token);
-                dispatch(login());
-
+                await dispatch(login());
                 await setActiveUser(access_token, dispatch);
-
                 navigate("/");
             }
         },

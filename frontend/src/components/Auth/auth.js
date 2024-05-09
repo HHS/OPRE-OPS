@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
 import { logout, setUserDetails } from "../Auth/authSlice";
 import { callBackend } from "../../helpers/backend";
+import store from "../../store";
 
 /**
  * Represents the status of a token.
@@ -118,7 +119,7 @@ export const getAccessToken = () => {
     const validToken = isValidToken(token);
     if (validToken.isValid) {
         return token;
-    } else if (validToken.msg == "EXPIRED") {
+    } else if (validToken.msg === "EXPIRED") {
         // lets try to get a new token
         // is the refresh token still valid?
         callBackend("/auth/refresh/", "POST", {}, null, true)
@@ -128,7 +129,7 @@ export const getAccessToken = () => {
             })
             .catch((error) => {
                 console.log(error);
-                logout();
+                store.dispatch(logout());
             });
     } else {
         return null;
