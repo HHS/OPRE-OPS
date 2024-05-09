@@ -141,6 +141,8 @@ def test_login_with_no_active_session(client, loaded_db, mocker):
 
 def test_login_with_active_session(client, db_with_active_user_session, mocker):
     # setup mocks
+    m1 = mocker.patch("ops_api.ops.auth.service.is_token_expired")
+    m1.return_value = False
     m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
     user = (
         db_with_active_user_session.execute(select(User).where(User.email == "admin.demo@email.com"))

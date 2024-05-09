@@ -11,7 +11,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import User
+from models import User, UserSession
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.exceptions import PrivateKeyError
 
@@ -148,3 +148,15 @@ def is_token_expired(token: str, secret_key: str) -> bool:
     current_timestamp = time.time()
     current_app.logger.debug(f"Token Expiration: {exp} Current Time: {current_timestamp}")
     return exp < current_timestamp
+
+
+def get_latest_user_session(user_id: int, session: Session) -> UserSession | None:
+    return (
+        session.execute(
+            select(UserSession)
+            .where(UserSession.user_id == user_id)  # type: ignore
+            .order_by(UserSession.created_on.desc())
+        )
+        .scalars()
+        .first()
+    )

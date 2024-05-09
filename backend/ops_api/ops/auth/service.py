@@ -11,7 +11,11 @@ from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
 from ops_api.ops.auth.exceptions import AuthenticationError
-from ops_api.ops.auth.utils import _get_token_and_user_data_from_internal_auth, is_token_expired
+from ops_api.ops.auth.utils import (
+    _get_token_and_user_data_from_internal_auth,
+    get_latest_user_session,
+    is_token_expired,
+)
 from ops_api.ops.utils.events import OpsEventHandler
 
 
@@ -81,15 +85,15 @@ def refresh() -> dict[str, str]:
         fresh=False,
     )
 
-    user_session = _get_or_create_user_session(current_user)
+    latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
 
     # if the current access token is not expired, return it
-    if not is_token_expired(user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
-        return {"access_token": user_session.access_token}
+    if not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"]):
+        return {"access_token": latest_user_session.access_token}
 
-    user_session.access_token = access_token
-    user_session.last_active_at = datetime.now()
-    current_app.db_session.add(user_session)
+    latest_user_session.access_token = access_token
+    latest_user_session.last_active_at = datetime.now()
+    current_app.db_session.add(latest_user_session)
     current_app.db_session.commit()
 
     return {"access_token": access_token}
@@ -99,12 +103,18 @@ def _get_or_create_user_session(
     user: User, access_token: Optional[str] = None, refresh_token: Optional[str] = None
 ) -> UserSession:
     stmt = (
-        select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.created_on.desc())
-    )  # type: ignore
+        select(UserSession)
+        .where(UserSession.user_id == user.id)
+        .order_by(UserSession.created_on.desc())  # type: ignore
+    )
     user_sessions = current_app.db_session.execute(stmt).scalars().all()
-    latest_user_session = user_sessions[0] if user_sessions else None
+    latest_user_session = get_latest_user_session(user.id, current_app.db_session)
 
-    if latest_user_session and latest_user_session.is_active:
+    if (
+        latest_user_session
+        and latest_user_session.is_active
+        and not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"])
+    ):
         return latest_user_session
     else:
         # set all other sessions to inactive before creating a new one
