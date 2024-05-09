@@ -117,6 +117,8 @@ def _get_or_create_user_session(
             access_token=access_token,
             refresh_token=refresh_token,
             last_active_at=datetime.now(),
+            created_by=user.id,
+            updated_by=user.id,
         )
         current_app.db_session.add(user_session)
         current_app.db_session.commit()
