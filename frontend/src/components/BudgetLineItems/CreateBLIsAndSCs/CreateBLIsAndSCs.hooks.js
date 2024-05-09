@@ -145,70 +145,75 @@ const useCreateBLIsAndSCs = (
 
     const handleEditBLI = (e) => {
         e.preventDefault();
-        const amountChanged = financialSnapshot?.enteredAmount !== enteredAmount;
-        const dateChanged = financialSnapshot?.needByDate !== needByDate;
-        const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
-        const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
-        const BLIStatusIsPlannedOrExecuting =
-            budgetLines[budgetLineBeingEdited].status === BLI_STATUS.PLANNED ||
-            budgetLines[budgetLineBeingEdited].status === BLI_STATUS.EXECUTING;
+        console.log({ budgetLineBeingEdited });
+        // const amountChanged = financialSnapshot?.enteredAmount !== enteredAmount;
+        // const dateChanged = financialSnapshot?.needByDate !== needByDate;
+        // const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
+        // const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
+        // const BLIStatusIsPlannedOrExecuting =
+        //     budgetLines[budgetLineBeingEdited].status === BLI_STATUS.PLANNED ||
+        //     budgetLines[budgetLineBeingEdited].status === BLI_STATUS.EXECUTING;
 
         const payload = {
-            id: budgetLines[budgetLineBeingEdited].id,
+            id: tempBudgetLines[budgetLineBeingEdited].id,
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
+            can: selectedCan || null,
+            canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
+            status: tempBudgetLines[budgetLineBeingEdited].status || "DRAFT",
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
-        const { id, data } = cleanBudgetLineItemForApi(payload);
+        setTempBudgetLines(tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payload : item)));
+        // const { id, data } = cleanBudgetLineItemForApi(payload);
         // TODO: Batch update BLIs
-        if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
-            setShowModal(true);
-            setModalProps({
-                heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
-                actionButtonText: "Send to Approval",
-                secondaryButtonText: "Continue Editing",
-                handleConfirm: () => {
-                    updateBudgetLineItem({ id, data })
-                        .unwrap()
-                        .then((fulfilled) => {
-                            console.log("Updated BLI:", fulfilled);
-                        })
-                        .catch((rejected) => {
-                            console.error("Error Updating Budget Line");
-                            console.error({ rejected });
-                            setAlert({
-                                type: "error",
-                                heading: "Error",
-                                message: "An error occurred. Please try again.",
-                                navigateUrl: "/error"
-                            });
-                        });
-                    resetForm();
-                }
-            });
+        // if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
+        //     setShowModal(true);
+        //     setModalProps({
+        //         heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
+        //         actionButtonText: "Send to Approval",
+        //         secondaryButtonText: "Continue Editing",
+        //         handleConfirm: () => {
+        //             updateBudgetLineItem({ id, data })
+        //                 .unwrap()
+        //                 .then((fulfilled) => {
+        //                     console.log("Updated BLI:", fulfilled);
+        //                 })
+        //                 .catch((rejected) => {
+        //                     console.error("Error Updating Budget Line");
+        //                     console.error({ rejected });
+        //                     setAlert({
+        //                         type: "error",
+        //                         heading: "Error",
+        //                         message: "An error occurred. Please try again.",
+        //                         navigateUrl: "/error"
+        //                     });
+        //                 });
+        //             resetForm();
+        //         }
+        //     });
 
-            return;
-        }
+        //     return;
+        // }
 
-        updateBudgetLineItem({ id, data })
-            .unwrap()
-            .then((fulfilled) => {
-                console.log("Updated BLI:", fulfilled);
-            })
-            .catch((rejected) => {
-                console.error("Error Updating Budget Line");
-                console.error({ rejected });
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred. Please try again.",
-                    navigateUrl: "/error"
-                });
-            });
+        // updateBudgetLineItem({ id, data })
+        //     .unwrap()
+        //     .then((fulfilled) => {
+        //         console.log("Updated BLI:", fulfilled);
+        //     })
+        //     .catch((rejected) => {
+        //         console.error("Error Updating Budget Line");
+        //         console.error({ rejected });
+        //         setAlert({
+        //             type: "error",
+        //             heading: "Error",
+        //             message: "An error occurred. Please try again.",
+        //             navigateUrl: "/error"
+        //         });
+        //     });
         if (budgetLineIdFromUrl) {
             resetQueryParams();
         }
@@ -321,6 +326,7 @@ const useCreateBLIsAndSCs = (
             proc_shop_fee_percentage
         } = budgetLine;
         const payload = {
+            id: crypto.randomUUID(),
             services_component_id,
             comments,
             can_id,
