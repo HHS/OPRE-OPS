@@ -12,7 +12,7 @@
         "@nivo/bar": "0.86.0",
         "@nivo/core": "0.86.0",
         "@nivo/pie": "0.86.0",
-        "@reduxjs/toolkit": "2.2.3",
+        "@reduxjs/toolkit": "2.2.4",
         "@uswds/uswds": "3.8.0",
         "axios": "1.6.8",
         "clsx": "2.1.1",
