@@ -92,7 +92,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
                 heading: "Agreement Edits Sent to Approval",
                 message:
                     "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
-                navigateUrl: navigate(`/agreements/${agreement.id}/budget-lines`)
+                redirectUrl: `/agreements/${agreement.id}/budget-lines`
             });
             return;
         }
@@ -101,7 +101,7 @@ export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) =
             type: "success",
             heading: "Budget Lines Saved",
             message: "The budget lines have been successfully saved.",
-            navigateUrl: navigate(`/agreements/${agreement.id}/budget-lines`)
+            redirectUrl: `/agreements/${agreement.id}/budget-lines`
         });
     };
 
