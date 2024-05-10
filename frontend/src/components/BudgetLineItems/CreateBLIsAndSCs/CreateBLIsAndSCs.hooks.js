@@ -82,11 +82,61 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
-    // console.log({ budgetLines });
-    // console.log({ tempBudgetLines });
-    // console.log({ combinedBudgetLines });
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(tempBudgetLines);
 
+    let handleSave = () => {
+        setIsEditMode(false);
+        const newBudgetLineItems = tempBudgetLines.filter(
+            // eslint-disable-next-line no-prototype-builtins
+            (budgetLineItem) => !budgetLineItem.hasOwnProperty("created_on")
+        );
+        const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) =>
+            // eslint-disable-next-line no-prototype-builtins
+            budgetLineItem.hasOwnProperty("created_on")
+        );
+        newBudgetLineItems.forEach((newBudgetLineItem) => {
+            const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+            addBudgetLineItem(cleanNewBLI)
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log("Created New BLIs:", fulfilled);
+                })
+                .catch((rejected) => {
+                    console.error("Error Creating Budget Lines");
+                    console.error({ rejected });
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                });
+        });
+        existingBudgetLineItems.forEach((existingBudgetLineItem) => {
+            const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
+            updateBudgetLineItem({ id, data: cleanExistingBLI })
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log("Updated BLI:", fulfilled);
+                })
+                .catch((rejected) => {
+                    console.error("Error Updating Budget Line");
+                    console.error({ rejected });
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                });
+        });
+        setAlert({
+            type: "success",
+            heading: "Budget Lines Added",
+            message: "The budget lines has been successfully updated.",
+            redirectUrl: `/agreements/${selectedAgreement?.id}`
+        });
+    };
     const handleAddBLI = (e) => {
         e.preventDefault();
         const newBudgetLine = {
@@ -290,6 +340,7 @@ const useCreateBLIsAndSCs = (
         delete cleanData.can;
         delete cleanData.id;
         delete cleanData.has_active_workflow;
+        delete cleanData.canDisplayName;
 
         return { id: budgetLineId, data: cleanData };
     };
@@ -479,7 +530,8 @@ const useCreateBLIsAndSCs = (
         totalsForCards,
         handleCancel,
         handleGoBack,
-        tempBudgetLines
+        tempBudgetLines,
+        handleSave
     };
 };
 
