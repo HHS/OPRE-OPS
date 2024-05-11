@@ -3,6 +3,8 @@ RUN useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app
 
+RUN apt-get --no-install-recommends -y install unzip=6.0-28
+
 COPY --chown=app:app ./package.json ./bun.lockb /home/app/
 
 RUN bun install
