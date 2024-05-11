@@ -1,5 +1,6 @@
 FROM oven/bun@sha256:079291a18dd6aa9d0858abab5df925172dbee4f12b938ec51bec650e160a20a0
-RUN apt-get update && apt-get -y --no-install-recommends install unzip=6.0-26 && apt-get clean && rm -rf /var/lib/apt/lists/*
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get -y --no-install-recommends install unzip && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN useradd -ms /bin/bash app
 USER app
 WORKDIR /home/app
