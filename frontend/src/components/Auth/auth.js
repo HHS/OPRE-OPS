@@ -127,8 +127,7 @@ export const getAccessToken = () => {
                 localStorage.setItem("access_token", response.access_token);
                 return response.access_token;
             })
-            .catch((error) => {
-                console.log(error);
+            .catch(() => {
                 store.dispatch(logout());
             });
     } else {
