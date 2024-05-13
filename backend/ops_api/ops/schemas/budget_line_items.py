@@ -106,6 +106,7 @@ class RequestBody:
             if (
                 bli
                 and bli.agreement_id
+                and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
                 and isinstance(bli.agreement, ContractAgreement)  # only contracts have incumbents
                 and bli.agreement.incumbent_id
             ):
