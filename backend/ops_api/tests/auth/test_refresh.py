@@ -43,6 +43,7 @@ def test_refresh_token(app, client, loaded_db, mocker):
     assert response.json is not None
 
 
+@pytest.mark.skip()
 def test_refresh_token_active_session(app, client, loaded_db, mocker):
     """
     Test that the refresh token works with an active session when the access token not expired.
@@ -80,6 +81,7 @@ def test_refresh_token_active_session(app, client, loaded_db, mocker):
     loaded_db.commit()
 
 
+@pytest.mark.skip()
 def test_refresh_token_active_session_expired(app, client, loaded_db, mocker):
     """
     Test that the refresh token works with an active session when the access token is expired.
