@@ -64,8 +64,6 @@ def db_with_active_user_session(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_logout(app, client, db_with_active_user_session, mocker):
-    # provider = FakeAuthProvider("fakeauth", app.config)
-    # key = rsa.generate_private_key(backend=default_backend(), public_exponent=65537, key_size=2048)
     jwt = create_oauth_jwt(
         "fakeauth",
         app.config,
