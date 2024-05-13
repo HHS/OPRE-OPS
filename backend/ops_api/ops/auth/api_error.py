@@ -26,7 +26,8 @@ def handle_api_error(f):
             current_app.logger.error(e)
             return make_response_with_headers({}, 400)
         except Exception as e:
-            current_app.logger.exception(e)
+            current_app.logger.info(e)
+            # current_app.logger.exception(e)
             return make_response_with_headers({}, 500)
 
     return decorated
