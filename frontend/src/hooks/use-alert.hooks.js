@@ -22,7 +22,7 @@ const useAlert = () => {
 
     /**
      * Sets the alert data in the Redux store.
-     * @param {Object} alertData - The data for the alert to be displayed.
+     * @param {AlertData} alertData - The data for the alert to be displayed.
      */
     const setAlert = (alertData) => {
         dispatch(SetAlertAction(alertData));

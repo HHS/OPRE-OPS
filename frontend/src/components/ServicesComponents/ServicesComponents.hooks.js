@@ -35,7 +35,7 @@ const useServicesComponents = (agreementId) => {
                 type: "error",
                 heading: "Error",
                 message: "An error occurred. Please try again.",
-                navigateUrl: "/error"
+                redirectUrl: "/error"
             });
         }
     }, [isSuccess, error, data, setAlert]);
@@ -73,7 +73,7 @@ const useServicesComponents = (agreementId) => {
                         type: "error",
                         heading: "Error",
                         message: "An error occurred. Please try again.",
-                        navigateUrl: "/error"
+                        redirectUrl: "/error"
                     });
                 });
 
@@ -97,7 +97,7 @@ const useServicesComponents = (agreementId) => {
                         type: "error",
                         heading: "Error",
                         message: "An error occurred. Please try again.",
-                        navigateUrl: "/error"
+                        redirectUrl: "/error"
                     });
                 });
 

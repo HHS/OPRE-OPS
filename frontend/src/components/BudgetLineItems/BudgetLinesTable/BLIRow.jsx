@@ -17,7 +17,7 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, canLabel, BLILabel } from "../../../helpers/budgetLines.helpers";
 import {
     removeBorderBottomIfExpanded,
     changeBgColorIfExpanded
@@ -67,6 +67,7 @@ const BLIRow = ({
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
 
     const changeRequests = budgetLine?.change_requests_in_review;
+
     let changeRequestsMessages = [];
 
     if (changeRequests?.length > 0) {
@@ -90,7 +91,7 @@ const BLIRow = ({
     if (isBLIInReview) {
         lockedMessage = "This budget line has pending edits:";
         changeRequestsMessages.forEach((message) => {
-            lockedMessage += `\n - ${message}`;
+            lockedMessage += `\n &#x2022; ${message}`;
         });
     }
     const changeIcons = (
@@ -121,7 +122,7 @@ const BLIRow = ({
                         <span>{budgetLine?.id}</span>
                     </Tooltip>
                 ) : (
-                    budgetLine?.id
+                    BLILabel(budgetLine)
                 )}
             </th>
             <td
@@ -148,7 +149,7 @@ const BLIRow = ({
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {budgetLine?.can?.number}
+                {canLabel(budgetLine)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
 import BudgetLinesTable from "../BudgetLinesTable";
-import CreateBudgetLinesForm from "../BudgetLinesForm";
+import BudgetLinesForm from "../BudgetLinesForm";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import ServicesComponents from "../../ServicesComponents";
@@ -85,7 +85,8 @@ export const CreateBLIsAndSCs = ({
         subTotalForCards,
         totalsForCards,
         handleCancel,
-        handleGoBack
+        handleGoBack,
+        handleSave
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -195,7 +196,8 @@ export const CreateBLIsAndSCs = ({
                     />
                 </>
             )}
-            <CreateBudgetLinesForm
+
+            <BudgetLinesForm
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
                 enteredAmount={enteredAmount}
@@ -272,7 +274,8 @@ export const CreateBLIsAndSCs = ({
                     <button
                         className="usa-button"
                         data-cy="continue-btn"
-                        onClick={continueOverRide ? continueOverRide : goToNext}
+                        // onClick={continueOverRide ? continueOverRide : goToNext}
+                        onClick={handleSave}
                         disabled={isReviewMode && !res.isValid()}
                     >
                         {isReviewMode ? "Review" : continueBtnText}
