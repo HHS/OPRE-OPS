@@ -9,7 +9,7 @@ from marshmallow import ValidationError, validates_schema
 from marshmallow_enum import EnumField
 
 from models import AgreementReason, BudgetLineItemStatus
-from models.cans import BudgetLineItem, ServicesComponent
+from models.cans import BudgetLineItem, ContractAgreement, ServicesComponent
 from ops_api.ops.schemas.users import SafeUser
 
 ENDPOINT_STRING = "/budget-line-items"
@@ -99,19 +99,19 @@ class RequestBody:
             if bli and bli.agreement_id and not bli.agreement.agreement_reason:
                 raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
 
-    # @validates_schema(skip_on_field_errors=False)
-    # def validate_agreement_reason_must_not_have_incumbent(self, data, **kwargs):
-    #     if is_changing_status(data):
-    #         bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
-    #         if (
-    #             bli
-    #             and bli.agreement_id
-    #             and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
-    #             and bli.agreement.incumbent_id
-    #         ):
-    #             raise ValidationError(
-    #                 "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
-    #             )
+    @validates_schema(skip_on_field_errors=False)
+    def validate_agreement_reason_must_not_have_incumbent(self, data, **kwargs):
+        if is_changing_status(data):
+            bli = current_app.db_session.get(BudgetLineItem, self.context.get("id"))
+            if (
+                bli
+                and bli.agreement_id
+                and isinstance(bli.agreement, ContractAgreement)  # only contracts have incumbents
+                and bli.agreement.incumbent_id
+            ):
+                raise ValidationError(
+                    "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
+                )
 
     @validates_schema(skip_on_field_errors=False)
     def validate_agreement_reason_must_have_incumbent(self, data, **kwargs):
