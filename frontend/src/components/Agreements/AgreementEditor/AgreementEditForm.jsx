@@ -241,7 +241,7 @@ export const AgreementEditForm = ({
         await saveAgreement();
         setHasAgreementChanged(false);
         if (isEditMode && setIsEditMode) setIsEditMode(false);
-        await goToNext();
+        await goToNext({ agreement });
     };
 
     const handleDraft = async () => {

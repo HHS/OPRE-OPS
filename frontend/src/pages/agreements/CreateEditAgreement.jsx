@@ -77,8 +77,6 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
             break;
     }
 
-    // NOTE: Consider refactoring to elevate handleCancel to this parent component
-
     return (
         <CreateAgreementFlow>
             <StepSelectProject
@@ -86,6 +84,7 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
                 isReviewMode={isReviewMode}
                 selectedAgreementId={selectedAgreement?.id}
                 cancelHeading={cancelMsg}
+                formData={createAgreementContext}
             />
             <StepCreateAgreement
                 isEditMode={isEditMode}

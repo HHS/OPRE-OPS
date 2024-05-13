@@ -3,18 +3,24 @@ import React from "react";
 export const CreateAgreementFlow = ({ children, onFinish }) => {
     const [formData, setFormData] = React.useState({});
     const [currentIndex, setCurrentIndex] = React.useState(0);
+    const wizardSteps = ["Project", "Agreement", "Services Components & Budget Lines"];
+
+    console.log({ formData });
 
     React.useEffect(() => {
         window.scrollTo(0, 0);
     }, [currentIndex]);
 
-    const wizardSteps = ["Project", "Agreement", "Services Components & Budget Lines"];
-
-    const goBack = () => {
+    const goBack = (stepData) => {
         const previousIndex = currentIndex - 1;
+        const updatedData = {
+            ...formData,
+            ...stepData
+        };
         if (previousIndex >= 0) {
             setCurrentIndex(previousIndex);
         }
+        setFormData(updatedData);
     };
 
     const goToNext = (stepData) => {
