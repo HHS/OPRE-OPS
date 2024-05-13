@@ -22,7 +22,3 @@ class UserSession(BaseModel):
     access_token: Mapped[str] = mapped_column(Text, nullable=False)
     refresh_token: Mapped[str] = mapped_column(Text, nullable=False)
     last_active_at: Mapped[datetime]
-    #
-    # @BaseModel.display_name.getter
-    # def display_name(self):
-    #     return f"{self.first_name} {self.last_name}"
