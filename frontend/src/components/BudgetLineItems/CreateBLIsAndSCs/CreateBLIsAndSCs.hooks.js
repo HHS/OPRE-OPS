@@ -407,7 +407,7 @@ const useCreateBLIsAndSCs = (
             setIsEditMode(false);
             navigate(`/agreements/${selectedAgreement?.id}`);
         } else {
-            goBack();
+            goBack({ tempBudgetLines });
         }
     };
 
