@@ -15,7 +15,6 @@ import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/Agreement
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
-import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -87,7 +86,6 @@ export const CreateBLIsAndSCs = ({
         totalsForCards,
         handleCancel,
         handleGoBack,
-        tempBudgetLines,
         handleSave
     } = useCreateBLIsAndSCs(
         isEditMode,
@@ -263,7 +261,6 @@ export const CreateBLIsAndSCs = ({
             ) : (
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}
-            <DebugCode data={tempBudgetLines} />
             <div className="display-flex flex-justify margin-top-1">
                 <GoBackButton handleGoBack={handleGoBack} />
                 <div>
