@@ -23,7 +23,7 @@ def login_post() -> Response:
 
 
 @bp.route("/logout/", methods=["POST"])
-@jwt_required(True)
+@jwt_required()
 @error_simulator
 @handle_api_error
 def logout_post() -> Response:
