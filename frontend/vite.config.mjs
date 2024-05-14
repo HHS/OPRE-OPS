@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => {
         ],
         test: {
             globals: true,
-            environment: "happy-dom",
+            environment: "jsdom",
             setupFiles: "./src/setupTests.js",
             coverage: {}
         },

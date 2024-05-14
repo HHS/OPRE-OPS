@@ -119,11 +119,11 @@ const useCreateBLIsAndSCs = (
                 });
         });
         existingBudgetLineItems.forEach((existingBudgetLineItem) => {
-            //check to see if changes were made before sending to the API
-            if (
+            let budgetLineHasChanged =
                 JSON.stringify(existingBudgetLineItem) !==
-                JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id))
-            ) {
+                JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
+
+            if (budgetLineHasChanged) {
                 const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
                 updateBudgetLineItem({ id, data: cleanExistingBLI })
                     .unwrap()

@@ -16,14 +16,15 @@ import { findPeriodStart, findPeriodEnd, findDescription } from "../../../helper
 
 /**
  * Renders Agreement budget lines view
+ * @component
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to display.
  * @param {number} props.agreement.id - The agreement id.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
  * @param {function} props.setIsEditMode - The function to set the edit mode.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
-export const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
+const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = useState(false);
