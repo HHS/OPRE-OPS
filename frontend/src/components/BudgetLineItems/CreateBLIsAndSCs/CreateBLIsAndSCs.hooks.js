@@ -97,8 +97,57 @@ const useCreateBLIsAndSCs = (
     let handleSave = () => {
         setIsEditMode(false);
         const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
-
         const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
+
+        const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
+            (tempBudgetLines) => tempBudgetLines.financialSnapshotChanged
+        );
+
+        if (isThereAnyBLIsFinancialSnapshotChanged) {
+            debugger;
+            setShowModal(true);
+            setModalProps({
+                heading: `Are you sure you want to delete budget line?`,
+                actionButtonText: "Delete",
+                handleConfirm: () => {
+                    setAlert({
+                        type: "success",
+                        heading: "Budget Line Deleted",
+                        message: `Budget line has been successfully deleted.`
+                    });
+                    resetForm();
+                    return;
+                }
+            });
+            return;
+            //     setShowModal(true);
+            //     setModalProps({
+            //         heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
+            //         actionButtonText: "Send to Approval",
+            //         secondaryButtonText: "Continue Editing",
+            //         handleConfirm: () => {
+            //             updateBudgetLineItem({ id, data })
+            //                 .unwrap()
+            //                 .then((fulfilled) => {
+            //                     console.log("Updated BLI:", fulfilled);
+            //                 })
+            //                 .catch((rejected) => {
+            //                     console.error("Error Updating Budget Line");
+            //                     console.error({ rejected });
+            //                     setAlert({
+            //                         type: "error",
+            //                         heading: "Error",
+            //                         message: "An error occurred. Please try again.",
+            //                         navigateUrl: "/error"
+            //                     });
+            //                 });
+            //             resetForm();
+            //         }
+            //     });
+
+            //     return;
+            // }
+        }
 
         newBudgetLineItems.forEach((newBudgetLineItem) => {
             const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
@@ -118,6 +167,7 @@ const useCreateBLIsAndSCs = (
                     });
                 });
         });
+
         existingBudgetLineItems.forEach((existingBudgetLineItem) => {
             let budgetLineHasChanged =
                 JSON.stringify(existingBudgetLineItem) !==
@@ -142,6 +192,7 @@ const useCreateBLIsAndSCs = (
                     });
             }
         });
+
         deletedBudgetLines.forEach((deletedBudgetLine) => {
             deleteBudgetLineItem(deletedBudgetLine.id)
                 .unwrap()
@@ -167,6 +218,7 @@ const useCreateBLIsAndSCs = (
             redirectUrl: `/agreements/${selectedAgreement?.id}`
         });
     };
+
     const handleAddBLI = (e) => {
         e.preventDefault();
         const newBudgetLine = {
@@ -193,13 +245,13 @@ const useCreateBLIsAndSCs = (
 
     const handleEditBLI = (e) => {
         e.preventDefault();
-        // const amountChanged = financialSnapshot?.enteredAmount !== enteredAmount;
-        // const dateChanged = financialSnapshot?.needByDate !== needByDate;
-        // const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
-        // const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
-        // const BLIStatusIsPlannedOrExecuting =
-        //     budgetLines[budgetLineBeingEdited].status === BLI_STATUS.PLANNED ||
-        //     budgetLines[budgetLineBeingEdited].status === BLI_STATUS.EXECUTING;
+        const amountChanged = financialSnapshot?.enteredAmount !== enteredAmount;
+        const dateChanged = financialSnapshot?.needByDate !== needByDate;
+        const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
+        const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
+        const BLIStatusIsPlannedOrExecuting =
+            budgetLines[budgetLineBeingEdited].status === BLI_STATUS.PLANNED ||
+            budgetLines[budgetLineBeingEdited].status === BLI_STATUS.EXECUTING;
 
         const payload = {
             ...tempBudgetLines[budgetLineBeingEdited],
@@ -215,53 +267,22 @@ const useCreateBLIsAndSCs = (
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
+
+        if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
+            const payloadPlusFinances = {
+                ...payload,
+                financialSnapshotChanged
+            };
+            setTempBudgetLines(
+                tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payloadPlusFinances : item))
+            );
+            resetForm();
+
+            return;
+        }
+
         setTempBudgetLines(tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payload : item)));
-        // const { id, data } = cleanBudgetLineItemForApi(payload);
-        // TODO: Batch update BLIs
-        // if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
-        //     setShowModal(true);
-        //     setModalProps({
-        //         heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
-        //         actionButtonText: "Send to Approval",
-        //         secondaryButtonText: "Continue Editing",
-        //         handleConfirm: () => {
-        //             updateBudgetLineItem({ id, data })
-        //                 .unwrap()
-        //                 .then((fulfilled) => {
-        //                     console.log("Updated BLI:", fulfilled);
-        //                 })
-        //                 .catch((rejected) => {
-        //                     console.error("Error Updating Budget Line");
-        //                     console.error({ rejected });
-        //                     setAlert({
-        //                         type: "error",
-        //                         heading: "Error",
-        //                         message: "An error occurred. Please try again.",
-        //                         navigateUrl: "/error"
-        //                     });
-        //                 });
-        //             resetForm();
-        //         }
-        //     });
 
-        //     return;
-        // }
-
-        // updateBudgetLineItem({ id, data })
-        //     .unwrap()
-        //     .then((fulfilled) => {
-        //         console.log("Updated BLI:", fulfilled);
-        //     })
-        //     .catch((rejected) => {
-        //         console.error("Error Updating Budget Line");
-        //         console.error({ rejected });
-        //         setAlert({
-        //             type: "error",
-        //             heading: "Error",
-        //             message: "An error occurred. Please try again.",
-        //             navigateUrl: "/error"
-        //         });
-        //     });
         if (budgetLineIdFromUrl) {
             resetQueryParams();
         }
@@ -275,7 +296,6 @@ const useCreateBLIsAndSCs = (
 
     const handleDeleteBudgetLine = (budgetLineId) => {
         const budgetLine = tempBudgetLines.find((bl) => bl.id === budgetLineId);
-
         setShowModal(true);
         setModalProps({
             heading: `Are you sure you want to delete budget line ${BLILabel(budgetLine)}?`,
@@ -313,6 +333,7 @@ const useCreateBLIsAndSCs = (
         delete cleanData.versions;
         delete cleanData.clin;
         delete cleanData.agreement;
+        delete cleanData.financialSnapshotChanged;
 
         return { id: budgetLineId, data: cleanData };
     };
