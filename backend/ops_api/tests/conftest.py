@@ -1,5 +1,6 @@
 """Configuration for pytest tests."""
 
+import datetime
 import subprocess
 from collections.abc import Generator
 
@@ -13,7 +14,7 @@ from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 
-from models import OpsDBHistory, OpsEvent
+from models import OpsDBHistory, OpsEvent, User, UserSession
 from ops_api.ops import create_app
 from tests.auth_client import AuthClient, NoPermsAuthClient
 
@@ -118,15 +119,28 @@ def loaded_db(app: Flask, app_ctx: None):
 
     session = app.db_session
 
+    unit_test_user = session.get(User, 4)
+
+    user_session = UserSession(
+        user_id=unit_test_user.id,
+        is_active=True,
+        ip_address="127.0.0.1",
+        access_token="unit_test_access_token",
+        refresh_token="unit_test_refresh_token",
+        last_active_at=datetime.datetime.now(),
+    )
+
+    session.add(user_session)
+    session.commit()
+
     yield session
 
     # cleanup
     session.rollback()
 
-    stmt = delete(OpsDBHistory)
-    session.execute(stmt)
-    stmt = delete(OpsEvent)
-    session.execute(stmt)
+    session.execute(delete(OpsDBHistory))
+    session.execute(delete(OpsEvent))
+    session.execute(delete(UserSession))
 
     session.commit()
     session.close()

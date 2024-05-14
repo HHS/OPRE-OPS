@@ -2,13 +2,13 @@ from functools import wraps
 from typing import Callable, Optional
 
 from flask import Response, current_app, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import current_user, jwt_required
 
 from models import UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_extra, _check_groups, _check_role
-from ops_api.ops.auth.exceptions import ExtraCheckError, NotActiveUserError
-from ops_api.ops.auth.utils import get_user_from_userinfo
+from ops_api.ops.auth.exceptions import ExtraCheckError, InvalidUserSessionError, NotActiveUserError
+from ops_api.ops.auth.utils import get_latest_user_session, get_user_from_userinfo
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -90,3 +90,21 @@ class is_authorized:
             return response
 
         return wrapper
+
+
+def check_user_session(f):
+    """
+    Decorator to check if the user has a valid user session.
+    """
+
+    @wraps(f)
+    def decorated(*args, **kwargs):
+
+        latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
+
+        if not latest_user_session or not latest_user_session.is_active:
+            raise InvalidUserSessionError(f"User with id={current_user.id} does not have a valid user session")
+
+        return f(*args, **kwargs)
+
+    return decorated

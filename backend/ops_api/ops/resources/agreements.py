@@ -29,9 +29,10 @@ from models.cans import (
     ContractAgreement,
     ServiceRequirementType,
 )
+from ops_api.ops.auth.api_error import handle_api_error
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
+from ops_api.ops.auth.decorators import check_user_session, is_authorized
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
@@ -173,9 +174,9 @@ class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
 
-    @override
-    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     @handle_api_error
+    @is_authorized(PermissionType.GET, Permission.AGREEMENT)
+    @check_user_session
     def get(self) -> Response:
         agreement_classes = [
             ContractAgreement,
