@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import Tag from "../Tag/Tag";
+import Tag from "../Tag";
 
 /**
  * A component that displays a tag with a background color based on the status code.
@@ -12,7 +12,8 @@ import Tag from "../Tag/Tag";
  */
 const TableTag = ({ status, inReview = false }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
-    let classNames = "padding-x-105 padding-y-1 ";
+    // let classNames = "padding-x-105 padding-y-1 ";
+    let classNames = "";
 
     if (inReview) {
         return (
