@@ -278,11 +278,9 @@ def test_agreement_history_log_items(auth_client, app):
     assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
     assert log_item["change"] == {"new": "PLANNED", "old": "DRAFT"}
 
-    if bli:
-        session.delete(bli)
-    if agreement_id:
-        agreement = session.get(Agreement, agreement_id)
-        session.delete(agreement)
+    session.delete(bli)
+    agreement = session.get(Agreement, agreement_id)
+    session.delete(agreement)
     session.commit()
 
 
@@ -371,9 +369,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
             assert log_item["change"] == {"new": "2032-03-03", "old": "2025-01-01"}
 
     # cleanup
-    if bli:
-        session.delete(bli)
-    if agreement_id:
-        agreement = session.get(Agreement, agreement_id)
-        session.delete(agreement)
+    session.delete(bli)
+    agreement = session.get(Agreement, agreement_id)
+    session.delete(agreement)
     session.commit()
