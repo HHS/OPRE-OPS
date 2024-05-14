@@ -10,7 +10,6 @@ from ops_api.ops.resources.agreement_history import build_agreement_history_dict
 
 test_user_id = 4
 test_user_name = "Amelia Popham"
-today = datetime.datetime.today().strftime("%Y-%m-%d")
 
 from models import Agreement, BudgetLineItem, BudgetLineItemStatus
 from models.workflows import (
@@ -380,7 +379,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         assert log_item["target_class_name"] == "ContractAgreement"
         assert log_item["created_by_user_full_name"] == "Amelia Popham"
         assert log_item["event_type"] == "NEW"
-        assert log_item["scope"] == "object"
+        assert log_item["scope"] == "OBJECT"
         assert log_item["created_on"] is not None
         assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
 
@@ -421,7 +420,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         assert log_item["target_class_name"] == "ContractAgreement"
         assert log_item["created_by_user_full_name"] == "Amelia Popham"
         assert log_item["event_type"] == "UPDATED"
-        assert log_item["scope"] == "property"
+        assert log_item["scope"] == "PROPERTY"
         assert log_item["property_key"] == "name"
         assert log_item["change"] == {
             "new": "TEST: Agreement history with change requests EDITED",
@@ -449,7 +448,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
-        print("~~~~history (after BLI create) ~~~~", json.dumps(resp_json, indent=2))
+        # print("~~~~history (after BLI create) ~~~~", json.dumps(resp_json, indent=2))
         hist_count = len(resp_json)
         assert hist_count == prev_hist_count + 1
         prev_hist_count = hist_count
@@ -459,7 +458,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         assert log_item["event_class_name"] == "BudgetLineItem"
         assert log_item["created_by_user_full_name"] == "Amelia Popham"
         assert log_item["event_type"] == "NEW"
-        assert log_item["scope"] == "object"
+        assert log_item["scope"] == "OBJECT"
         assert log_item["created_on"] is not None
         assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
 
@@ -474,19 +473,27 @@ def test_agreement_history_with_change_requests(auth_client, app):
         resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
-        print("~~~~history (after BLI update) ~~~~", json.dumps(resp_json, indent=2))
+        # print("~~~~history (after BLI update) ~~~~", json.dumps(resp_json, indent=2))
         hist_count = len(resp_json)
         assert hist_count == prev_hist_count + 1
         prev_hist_count = hist_count
         log_items = resp_json[0]["log_items"]
         assert len(log_items) == 3
-        log_item = log_items[0]
-        assert log_item["event_class_name"] == "BudgetLineItem"
-        assert log_item["created_by_user_full_name"] == "Amelia Popham"
-        assert log_item["event_type"] == "UPDATED"
-        assert log_item["scope"] == "property"
-        assert log_item["created_on"] is not None
-        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+        for i in range(2):
+            log_item = log_items[i]
+            assert log_item["event_class_name"] == "BudgetLineItem"
+            assert log_item["created_by_user_full_name"] == "Amelia Popham"
+            assert log_item["event_type"] == "UPDATED"
+            assert log_item["scope"] == "PROPERTY"
+            assert log_item["created_on"] is not None
+            assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+            assert log_item["property_key"] in ["amount", "can_id", "date_needed"]
+            if log_item["property_key"] == "amount":
+                assert log_item["change"] == {"new": 222.22, "old": 111.11}
+            elif log_item["property_key"] == "can_id":
+                assert log_item["change"] == {"new": 2, "old": 1}
+            elif log_item["property_key"] == "date_needed":
+                assert log_item["change"] == {"new": "2025-02-02", "old": "2025-01-01"}
 
         #  update BLI to PLANNED
         bli.status = BudgetLineItemStatus.PLANNED
@@ -504,7 +511,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         log_items = resp_json[0]["log_items"]
         assert len(log_items) == 1
         log_item = log_items[0]
-        assert log_item["scope"] == "property"
+        assert log_item["scope"] == "PROPERTY"
         assert log_item["event_class_name"] == "BudgetLineItem"
         assert log_item["target_class_name"] == "BudgetLineItem"
         assert log_item["property_key"] == "status"
@@ -514,19 +521,43 @@ def test_agreement_history_with_change_requests(auth_client, app):
         assert log_item["change"] == {"new": "PLANNED", "old": "DRAFT"}
 
         #  submit PATCH BLI which triggers a budget change requests
-        # data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02"}
-        # response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
-        # assert response.status_code == 202
-        # resp_json = response.json
-        # assert "change_requests_in_review" in resp_json
-        # change_requests_in_review = resp_json["change_requests_in_review"]
-        # assert len(change_requests_in_review) == 3
-        #
-        # # verify agreement history added for 3 change requests
-        # hists = find_agreement_histories(agreement_id, limit=100)
-        # hist_count = len(hists)
-        # assert hist_count == prev_hist_count + 3
-        # prev_hist_count = hist_count
+        data = {"amount": 333.33, "can_id": 3, "date_needed": "2032-03-03"}
+        response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+        assert response.status_code == 202
+        resp_json = response.json
+        assert "change_requests_in_review" in resp_json
+        change_requests_in_review = resp_json["change_requests_in_review"]
+        assert len(change_requests_in_review) == 3
+
+        # verify agreement history added (+3 change requests created)
+        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        assert resp.status_code == 200
+        resp_json = resp.json
+        # print("~~~~history (after change requests) ~~~~", json.dumps(resp_json, indent=2))
+        hist_count = len(resp_json)
+        assert hist_count == prev_hist_count + 3
+        prev_hist_count = hist_count
+
+        # check history and log item for the change requests which each have one property change
+        for i in range(2):
+            assert resp_json[i]["class_name"] == "BudgetLineItemChangeRequest"
+            assert resp_json[i]["event_type"] == "IN_REVIEW"
+            assert len(resp_json[i]["log_items"]) == 1
+            log_item = resp_json[i]["log_items"][0]
+            assert log_item["event_class_name"] == "BudgetLineItemChangeRequest"
+            assert log_item["target_class_name"] == "BudgetLineItem"
+            assert log_item["created_by_user_full_name"] == "Amelia Popham"
+            assert log_item["event_type"] == "IN_REVIEW"
+            assert log_item["scope"] == "PROPERTY"
+            assert log_item["created_on"] is not None
+            assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+            assert log_item["property_key"] in ["amount", "can_id", "date_needed"]
+            if log_item["property_key"] == "amount":
+                assert log_item["change"] == {"new": 333.33, "old": 222.22}
+            elif log_item["property_key"] == "can_id":
+                assert log_item["change"] == {"new": 3, "old": 2}
+            elif log_item["property_key"] == "date_needed":
+                assert log_item["change"] == {"new": "2032-03-03", "old": "2025-02-02"}
 
     finally:
         # cleanup

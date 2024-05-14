@@ -62,12 +62,14 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
         )
         target_display_name = ops_db_hist.event_details.get("requested_change_info", {}).get("target_display_name")
 
+    # TODO: After reworking the UI to use log_items, include just what's needed instead of the full to_dict()
     d = ops_db_hist.to_dict()
     d["created_by_user_full_name"] = created_by_user_full_name
     d["event_type"] = event_type
     d["changes"] = changes
     d["target_display_name"] = target_display_name
 
+    # break down changes into log items which can be used to render a history log in the UI
     log_items = []
     # if Agreement or BLI and NEW or DELETE create single new log item (object scope
     if (
@@ -80,34 +82,61 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
     ):
         log_items.append(
             {
-                "scope": "object",
+                "scope": "OBJECT",
                 "event_class_name": ops_db_hist.class_name,
-                "class_name": ops_db_hist.class_name,
                 "target_class_name": target_class_name,
+                "target_display_name": target_display_name,
                 "event_type": event_type,
                 "created_by_user_full_name": created_by_user_full_name,
                 "created_on": ops_db_hist.created_on.isoformat(),
             }
         )
-    else:  # if UPDATED Agreement or BLI or a ChangeRequest create log items per property change
+    else:  # if UPDATED or a ChangeRequest create log items per property change and per collection item change
         for key, change in changes.items():
-            log_item = {
-                "scope": "property",
-                "event_class_name": ops_db_hist.class_name,
-                "target_class_name": target_class_name,
-                "property_key": key,
-                "event_type": event_type,
-                "created_by_user_full_name": created_by_user_full_name,
-                "created_on": ops_db_hist.created_on.isoformat(),
-                "change": change,
-            }
-            # if "collection_of" in change:
-            #     log_item["isCollection"] = True
-            log_items.append(log_item)
-
+            # hiding changes with proc_shop_fee_percentage which seem confusing since it's changed by system
+            if key == "proc_shop_fee_percentage":
+                continue
+            if "collection_of" in change:
+                for deleted_item in change["added"]:
+                    log_item = {
+                        "scope": "PROPERTY_COLLECTION_ITEM",
+                        "event_class_name": ops_db_hist.class_name,
+                        "target_class_name": target_class_name,
+                        "target_display_name": target_display_name,
+                        "property_key": key,
+                        "event_type": event_type,
+                        "created_by_user_full_name": created_by_user_full_name,
+                        "created_on": ops_db_hist.created_on.isoformat(),
+                        "change": {"added": deleted_item},
+                    }
+                    log_items.append(log_item)
+                for deleted_item in change["deleted"]:
+                    log_item = {
+                        "scope": "PROPERTY_COLLECTION_ITEM",
+                        "event_class_name": ops_db_hist.class_name,
+                        "target_class_name": target_class_name,
+                        "target_display_name": target_display_name,
+                        "property_key": key,
+                        "event_type": event_type,
+                        "created_by_user_full_name": created_by_user_full_name,
+                        "created_on": ops_db_hist.created_on.isoformat(),
+                        "change": {"deleted": deleted_item},
+                    }
+                    log_items.append(log_item)
+            else:
+                log_item = {
+                    "scope": "PROPERTY",
+                    "event_class_name": ops_db_hist.class_name,
+                    "target_class_name": target_class_name,
+                    "target_display_name": target_display_name,
+                    "property_key": key,
+                    "event_type": event_type,
+                    "created_by_user_full_name": created_by_user_full_name,
+                    "created_on": ops_db_hist.created_on.isoformat(),
+                    "change": change,
+                }
+                log_items.append(log_item)
     d["log_items"] = log_items
-    # import json
-    # print("\n\n~~~~history-dict~~~~\n\n", json.dumps(d, indent=2))
     return d
 
 
