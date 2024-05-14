@@ -1,3 +1,4 @@
+from .auth import *
 from .base import *
 from .cans import *
 from .events import *
