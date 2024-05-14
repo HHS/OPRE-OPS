@@ -11,8 +11,8 @@ import {
 
 const noDataMessage = "There is currently no history for this agreement.";
 
-const findObjectTitle = (historyItem) => {
-    return historyItem.target_display_name;
+const findObjectTitle = (logItem) => {
+    return logItem.target_display_name;
 };
 
 const omitChangeDetailsFor = ["description", "notes", "comments"];
@@ -27,7 +27,6 @@ const logItemTitle = (logItem) => {
 };
 
 const objectLogItemTitle = (logItem) => {
-    console.log("~~~>>> logItem", logItem);
     const className = convertCodeForDisplay("baseClassNameLabels", logItem.target_class_name);
     if (logItem.event_type === "NEW") {
         return `${className} Created`;
