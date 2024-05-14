@@ -15,6 +15,7 @@ import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/Agreement
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
+import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -41,6 +42,7 @@ import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHea
 export const CreateBLIsAndSCs = ({
     goToNext,
     goBack,
+    formData,
     wizardSteps,
     currentStep,
     selectedResearchProject = {},
@@ -97,11 +99,13 @@ export const CreateBLIsAndSCs = ({
         selectedAgreement,
         selectedProcurementShop,
         setIsEditMode,
-        workflow
+        workflow,
+        formData
     );
 
     return (
         <>
+            {/* <DebugCode data={formData} /> */}
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}

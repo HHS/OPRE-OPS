@@ -76,15 +76,17 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
             cancelMsg = cancelMessages.isCreatedMode;
             break;
     }
+    const handleFinish = (formData) => {
+        console.log("Finished!", formData);
+    };
 
     return (
-        <CreateAgreementFlow>
+        <CreateAgreementFlow onFinish={handleFinish}>
             <StepSelectProject
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
                 selectedAgreementId={selectedAgreement?.id}
                 cancelHeading={cancelMsg}
-                formData={createAgreementContext}
             />
             <StepCreateAgreement
                 isEditMode={isEditMode}

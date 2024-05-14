@@ -36,10 +36,11 @@ const useCreateBLIsAndSCs = (
     goToNext,
     goBack,
     continueOverRide,
-    selectedAgreement,
+    selectedAgreement = {},
     selectedProcurementShop,
     setIsEditMode,
-    workflow
+    workflow,
+    formData
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -55,7 +56,7 @@ const useCreateBLIsAndSCs = (
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
     );
-    const [tempBudgetLines, setTempBudgetLines] = React.useState(budgetLines || []);
+    const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
@@ -64,9 +65,17 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feesForCards = getProcurementShopSubTotal(selectedAgreement, budgetLines);
+    const feesForCards = getProcurementShopSubTotal(selectedAgreement, tempBudgetLines);
     const subTotalForCards = budgetLinesTotal(budgetLines);
-    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLines);
+    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, tempBudgetLines);
+
+    React.useEffect(() => {
+        let newTempBudgetLines =
+            (budgetLines && budgetLines.length > 0) ||
+            (formData.tempBudgetLines && formData.tempBudgetLines.length > 0 ? formData.tempBudgetLines : []) ||
+            [];
+        setTempBudgetLines(newTempBudgetLines);
+    }, [formData, budgetLines]);
 
     // Validation
     let res = suite.get();
