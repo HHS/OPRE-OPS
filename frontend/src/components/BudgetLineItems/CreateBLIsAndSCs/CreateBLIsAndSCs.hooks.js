@@ -36,7 +36,7 @@ const useCreateBLIsAndSCs = (
     goToNext,
     goBack,
     continueOverRide,
-    selectedAgreement = {},
+    selectedAgreement,
     selectedProcurementShop,
     setIsEditMode,
     workflow,
@@ -93,8 +93,6 @@ const useCreateBLIsAndSCs = (
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
-
-    // const groupedBudgetLinesByServicesComponent = groupByServicesComponent(tempBudgetLines);
 
     let handleSave = () => {
         setIsEditMode(false);
