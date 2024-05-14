@@ -57,6 +57,7 @@ const useCreateBLIsAndSCs = (
         () => searchParams.get("budget-line-id") || null
     );
     const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
+    const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
@@ -71,11 +72,15 @@ const useCreateBLIsAndSCs = (
 
     React.useEffect(() => {
         let newTempBudgetLines =
-            (budgetLines && budgetLines.length > 0) ||
-            (formData.tempBudgetLines && formData.tempBudgetLines.length > 0 ? formData.tempBudgetLines : []) ||
+            (budgetLines && budgetLines.length > 0 ? budgetLines : null) ??
+            (formData.tempBudgetLines && formData.tempBudgetLines.length > 0 ? formData.tempBudgetLines : null) ??
             [];
         setTempBudgetLines(newTempBudgetLines);
     }, [formData, budgetLines]);
+
+    React.useEffect(() => {
+        setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
+    }, [tempBudgetLines]);
 
     // Validation
     let res = suite.get();
@@ -89,7 +94,7 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(tempBudgetLines);
+    // const groupedBudgetLinesByServicesComponent = groupByServicesComponent(tempBudgetLines);
 
     let handleSave = () => {
         setIsEditMode(false);
