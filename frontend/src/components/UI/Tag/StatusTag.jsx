@@ -1,5 +1,5 @@
 import { convertCodeForDisplay, draftBudgetLineStatuses } from "../../../helpers/utils";
-import Tag from "../Tag/Tag";
+import Tag from "./Tag";
 
 const statusClasses = {
     DRAFT: "bg-brand-neutral-lighter",
