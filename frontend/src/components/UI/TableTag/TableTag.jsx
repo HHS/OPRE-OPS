@@ -12,7 +12,6 @@ import Tag from "../Tag";
  */
 const TableTag = ({ status, inReview = false }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
-    // let classNames = "padding-x-105 padding-y-1 ";
     let classNames = "";
 
     if (inReview) {
