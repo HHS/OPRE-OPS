@@ -1989,11 +1989,11 @@ components:
         anyOf:
           - $ref: '#/components/schemas/Agreement'
     AgreementHistory:
-      description: OPS List of Agreement History records
+      description: List of Agreement History records
       type: array
       items:
         anyOf:
-          - $ref: '#/components/schemas/OpsDbHistoryItem'
+          - $ref: '#/components/schemas/AgreementHistoryItem'
     AgreementHistoryItem:
       type: object
       properties:
