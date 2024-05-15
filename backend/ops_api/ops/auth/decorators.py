@@ -99,7 +99,6 @@ def check_user_session(f):
 
     @wraps(f)
     def decorated(*args, **kwargs):
-
         latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
 
         if not latest_user_session or not latest_user_session.is_active:
