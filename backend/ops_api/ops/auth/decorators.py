@@ -8,7 +8,7 @@ from models import UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_extra, _check_groups, _check_role
 from ops_api.ops.auth.exceptions import ExtraCheckError, InvalidUserSessionError, NotActiveUserError
-from ops_api.ops.auth.utils import get_latest_user_session, get_user_from_userinfo
+from ops_api.ops.auth.utils import get_bearer_token, get_latest_user_session, get_user_from_userinfo
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -101,8 +101,18 @@ def check_user_session(f):
     def decorated(*args, **kwargs):
         latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
 
+        # Check if the latest user session is active
         if not latest_user_session or not latest_user_session.is_active:
-            raise InvalidUserSessionError(f"User with id={current_user.id} does not have a valid user session")
+            raise InvalidUserSessionError(f"User with id={current_user.id} does not have an active user session")
+
+        # Check if the access token in the request is the same as the latest user session access token
+        bearer_token = get_bearer_token()
+
+        if bearer_token:
+            access_token = bearer_token.replace("Bearer", "").strip()
+
+            if access_token != latest_user_session.access_token:
+                raise InvalidUserSessionError(f"User with id={current_user.id} is using an invalid access token")
 
         return f(*args, **kwargs)
 
