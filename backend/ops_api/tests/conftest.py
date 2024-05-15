@@ -1,12 +1,9 @@
 """Configuration for pytest tests."""
 
-import datetime
 import subprocess
 from collections.abc import Generator
 
 import pytest
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import Flask
 from flask.testing import FlaskClient
 from pytest_docker.plugin import Services
@@ -14,7 +11,7 @@ from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 
-from models import OpsDBHistory, OpsEvent, User, UserSession
+from models import OpsDBHistory, OpsEvent
 from ops_api.ops import create_app
 from tests.auth_client import AuthClient, NoPermsAuthClient
 
@@ -29,18 +26,20 @@ def app(db_service) -> Generator[Flask, None, None]:
 @pytest.fixture()
 def client(app: Flask, loaded_db) -> FlaskClient:  # type: ignore [type-arg]
     """Get a test client for flask."""
+    app.testing = True
+    app.test_client_class = FlaskClient
     return app.test_client()
 
 
 @pytest.fixture()
 def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
+    # private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    # public_key = private_key.public_key().public_bytes(
+    #     encoding=serialization.Encoding.PEM,
+    #     format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    # )
+    # app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = AuthClient
     return app.test_client()
@@ -49,12 +48,12 @@ def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
 @pytest.fixture()
 def no_perms_auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
+    # private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    # public_key = private_key.public_key().public_bytes(
+    #     encoding=serialization.Encoding.PEM,
+    #     format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    # )
+    # app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = NoPermsAuthClient
     return app.test_client()
@@ -114,24 +113,24 @@ def docker_compose_command() -> str:
 
 
 @pytest.fixture()
-def loaded_db(app: Flask, app_ctx: None):
+def loaded_db(app: Flask, app_ctx: None, auth_client: FlaskClient) -> Engine:
     """Get SQLAlchemy Session."""
 
     session = app.db_session
 
-    unit_test_user = session.get(User, 4)
-
-    user_session = UserSession(
-        user_id=unit_test_user.id,
-        is_active=True,
-        ip_address="127.0.0.1",
-        access_token="unit_test_access_token",
-        refresh_token="unit_test_refresh_token",
-        last_active_at=datetime.datetime.now(),
-    )
-
-    session.add(user_session)
-    session.commit()
+    # unit_test_user = session.get(User, 4)
+    #
+    # user_session = UserSession(
+    #     user_id=unit_test_user.id,
+    #     is_active=True,
+    #     ip_address="127.0.0.1",
+    #     access_token="unit_test_access_token",
+    #     refresh_token="unit_test_refresh_token",
+    #     last_active_at=datetime.datetime.now(),
+    # )
+    #
+    # session.add(user_session)
+    # session.commit()
 
     yield session
 
@@ -140,7 +139,7 @@ def loaded_db(app: Flask, app_ctx: None):
 
     session.execute(delete(OpsDBHistory))
     session.execute(delete(OpsEvent))
-    session.execute(delete(UserSession))
+    # session.execute(delete(UserSession))
 
     session.commit()
     session.close()
