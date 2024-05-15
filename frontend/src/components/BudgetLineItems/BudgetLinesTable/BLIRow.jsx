@@ -15,7 +15,8 @@ import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineFeeAmount,
-    totalBudgetLineAmountPlusFees
+    totalBudgetLineAmountPlusFees,
+    renderField
 } from "../../../helpers/utils";
 import { getBudgetLineCreatedDate, canLabel, BLILabel } from "../../../helpers/budgetLines.helpers";
 import {
@@ -24,6 +25,7 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -67,18 +69,29 @@ const BLIRow = ({
 
     const changeRequests = budgetLine?.change_requests_in_review;
 
+    // const CanName = ({ id }) => {
+    //     const canName = useGetNameForCanId(id);
+    //     return <span>{canName}</span>;
+    // };
+
     let changeRequestsMessages = [];
 
     if (changeRequests?.length > 0) {
         changeRequests.forEach((changeRequest) => {
             if (changeRequest?.requested_change_data?.amount) {
-                changeRequestsMessages.push(`Amount: ${changeRequest.requested_change_data.amount}`);
+                changeRequestsMessages.push(
+                    `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                );
             }
+            const canName = useGetNameForCanId(changeRequest.requested_change_data.can_id);
+
             if (changeRequest?.requested_change_data?.date_needed) {
-                changeRequestsMessages.push(`Date Needed: ${changeRequest.requested_change_data.date_needed}`);
+                changeRequestsMessages.push(
+                    `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                );
             }
             if (changeRequest?.requested_change_data?.can_id) {
-                changeRequestsMessages.push(`CAN: ${changeRequest.requested_change_data.can_id}`);
+                changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
             }
 
             return changeRequestsMessages;
