@@ -1989,11 +1989,86 @@ components:
         anyOf:
           - $ref: '#/components/schemas/Agreement'
     AgreementHistory:
-      description: OPS List of Agreement History records
+      description: List of Agreement History records
       type: array
       items:
         anyOf:
-          - $ref: '#/components/schemas/OpsDbHistoryItem'
+          - $ref: '#/components/schemas/AgreementHistoryItem'
+    AgreementHistoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        class_name:
+          type: string
+          example: ContractAgreement
+        row_key:
+          type: string
+          example: '21'
+        event_details:
+          description: JSON copy of the relevant object after editing or some JSON message
+          type: object
+        changes:
+          description: JSON for the changeset
+          type: object
+        log_items:
+          type: array
+          items:
+            type: object
+            properties:
+              scope:
+                type: string
+              event_type:
+                type: string
+              event_class_name:
+                type: string
+              target_class_name:
+                type: string
+              target_display_name:
+                type: string
+              property_key:
+                type: string
+              change:
+                type: object
+                properties:
+                  new:
+                    type: string
+                  old:
+                    type: string
+                  added:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      display_name:
+                        type: string
+                  deleted:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      display_name:
+                        type: string
+              created_by_user_full_name:
+                type: string
+              created_on:
+                type: string
+                format: date-time
+
+        created_on:
+          $ref: '#/components/parameters/created_on'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        created_by:
+          $ref: '#/components/parameters/created_by'
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        created_by_user:
+          $ref: '#/components/parameters/created_by_user'
+        updated_by_user:
+          $ref: '#/components/parameters/updated_by_user'
+
     OpsDbHistoryItem:
       type: object
       properties:

@@ -78,3 +78,14 @@ def convert_date_strings_to_dates(data: dict[str, Any], date_keys: list[str] | N
         if k in data:
             data[k] = date.fromisoformat(data[k]) if data[k] else None
     return data
+
+
+def get_all_classes(cls: type):
+    all_classes = [cls]
+    for subclass in cls.__subclasses__():
+        all_classes.extend(get_all_classes(subclass))
+    return all_classes
+
+
+def get_all_class_names(cls: type):
+    return [cls.__name__ for cls in get_all_classes(cls)]
