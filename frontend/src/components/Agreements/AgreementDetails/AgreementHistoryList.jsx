@@ -102,7 +102,7 @@ const propertyLogItemTitle = (logItem) => {
 
 const LogItemMessage = ({ logItem }) => {
     if (logItem.scope === "OBJECT") {
-        return <>{objectLogItemMessage(logItem)}</>;
+        return <>{objectLogItemMessage(logItem)}.</>;
     }
     const eventType = logItem.event_type;
     const change = logItem.change;
@@ -113,14 +113,14 @@ const LogItemMessage = ({ logItem }) => {
         if (change.added) {
             return (
                 <>
-                    {getLogItemPropertyLabel(logItem)} {change.added.display_name} added by {createdBy}
+                    {getLogItemPropertyLabel(logItem)} {change.added.display_name} added by {createdBy}.
                 </>
             );
         }
         if (change.deleted) {
             return (
                 <>
-                    {getLogItemPropertyLabel(logItem)} {change.deleted.display_name} removed by {createdBy}
+                    {getLogItemPropertyLabel(logItem)} {change.deleted.display_name} removed by {createdBy}.
                 </>
             );
         }
