@@ -1,4 +1,5 @@
 """User models."""
+
 from enum import Enum, auto
 from typing import List, Optional
 
@@ -110,6 +111,12 @@ class User(BaseModel):
     notifications: Mapped[List["Notification"]] = relationship(
         "Notification",
         foreign_keys="Notification.recipient_id",
+    )
+
+    sessions: Mapped[List["UserSession"]] = relationship(
+        "UserSession",
+        back_populates="user",
+        foreign_keys="UserSession.user_id",
     )
 
     def get_user_id(self):

@@ -126,6 +126,14 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
 
     @app.after_request
     def after_request(response):
+        log_response(app.logger, response)
+        return response
+
+    return app
+
+
+def log_response(log, response):
+    if request.url != request.url_root:
         response_data = {
             "method": request.method,
             "url": request.url,
@@ -134,7 +142,4 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
             "json": response.get_data(as_text=True),
             "response_headers": response.headers,
         }
-        app.logger.info(f"Response: {response_data}")
-        return response
-
-    return app
+        log.info(f"Response: {response_data}")
