@@ -24,7 +24,6 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import DebugCode from "../../DebugCode";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -91,7 +90,7 @@ const BLIRow = ({
     if (isBLIInReview) {
         lockedMessage = "This budget line has pending edits:";
         changeRequestsMessages.forEach((message) => {
-            lockedMessage += `\n &#x2022; ${message}`;
+            lockedMessage += `\n * ${message}`;
         });
     }
     const changeIcons = (
@@ -108,7 +107,6 @@ const BLIRow = ({
 
     const TableRowData = (
         <>
-            {/* <DebugCode data={changeRequestsMessages} /> */}
             <th
                 scope="row"
                 className={`${borderExpandedStyles}`}
