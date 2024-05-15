@@ -104,49 +104,60 @@ const useCreateBLIsAndSCs = (
         );
 
         if (isThereAnyBLIsFinancialSnapshotChanged) {
-            debugger;
-            setShowModal(true);
-            setModalProps({
-                heading: `Are you sure you want to delete budget line?`,
-                actionButtonText: "Delete",
-                handleConfirm: () => {
-                    setAlert({
-                        type: "success",
-                        heading: "Budget Line Deleted",
-                        message: `Budget line has been successfully deleted.`
-                    });
-                    resetForm();
-                    return;
-                }
-            });
-            return;
-            //     setShowModal(true);
-            //     setModalProps({
-            //         heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
-            //         actionButtonText: "Send to Approval",
-            //         secondaryButtonText: "Continue Editing",
-            //         handleConfirm: () => {
-            //             updateBudgetLineItem({ id, data })
-            //                 .unwrap()
-            //                 .then((fulfilled) => {
-            //                     console.log("Updated BLI:", fulfilled);
-            //                 })
-            //                 .catch((rejected) => {
-            //                     console.error("Error Updating Budget Line");
-            //                     console.error({ rejected });
-            //                     setAlert({
-            //                         type: "error",
-            //                         heading: "Error",
-            //                         message: "An error occurred. Please try again.",
-            //                         navigateUrl: "/error"
-            //                     });
+            const response = confirm(
+                "Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?"
+            );
+            if (response) {
+                existingBudgetLineItems.forEach((existingBudgetLineItem) => {
+                    let budgetLineHasChanged =
+                        JSON.stringify(existingBudgetLineItem) !==
+                        JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
+                    if (budgetLineHasChanged) {
+                        const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
+                        updateBudgetLineItem({ id, data: cleanExistingBLI })
+                            .unwrap()
+                            .then((fulfilled) => {
+                                console.log("Updated BLI:", fulfilled);
+                            })
+                            .catch((rejected) => {
+                                console.error("Error Updating Budget Line");
+                                console.error({ rejected });
+                                setAlert({
+                                    type: "error",
+                                    heading: "Error",
+                                    message: "An error occurred. Please try again.",
+                                    redirectUrl: "/error"
+                                });
+                            });
+                    }
+                });
+                resetForm();
+            }
+            // setShowModal(true);
+            // setModalProps({
+            //     heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
+            //     actionButtonText: "Send to Approval",
+            //     secondaryButtonText: "Continue Editing",
+            //     handleConfirm: () => {
+            //         updateBudgetLineItem({ id, data })
+            //             .unwrap()
+            //             .then((fulfilled) => {
+            //                 console.log("Updated BLI:", fulfilled);
+            //             })
+            //             .catch((rejected) => {
+            //                 console.error("Error Updating Budget Line");
+            //                 console.error({ rejected });
+            //                 setAlert({
+            //                     type: "error",
+            //                     heading: "Error",
+            //                     message: "An error occurred. Please try again.",
+            //                     navigateUrl: "/error"
             //                 });
-            //             resetForm();
-            //         }
-            //     });
-
-            //     return;
-            // }
+            //             });
+            //         resetForm();
+            //     }
+            // });
+            return;
         }
 
         newBudgetLineItems.forEach((newBudgetLineItem) => {
