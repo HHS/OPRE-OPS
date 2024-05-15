@@ -67,7 +67,7 @@ it("edit an agreement", () => {
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Agreement created by Admin Demo"
+            "Agreement created by Admin Demo."
         );
         cy.get("#edit").click();
         cy.get("#edit").should("not.exist");
