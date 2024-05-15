@@ -45,30 +45,6 @@ jobs:
       - name: Install dependencies
         run: npm install
         working-directory: ./.github/actions/bump-and-tag 
-        
-      # - name:  'Automated Version Bump'
-      #   id: version_bump
-      #   uses: ./.github/actions/bump-and-tag
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag-prefix: 'ops-backend-v'
-      #     OPENAPI_DIR: 'backend'
-
-      # - name: Extract Version
-        id: extract_version
-        run: |
-          # Log the original tag output to see what is being processed
-          echo "Original newTag: ${{ steps.version_bump.outputs.newTag }}"
-          
-          # Use sed to extract the version part
-          VERSION=$(echo "${{ steps.version_bump.outputs.newTag }}" | sed -e 's/.*v\(.*\)/v\1/')
-          
-          # Log the extracted version before setting it as output
-          echo "Extracted Version: $VERSION"
-          
-          # Set the output value
-          echo "::set-output name=version::$VERSION"
 
       - name: Build and publish the Docker image for ${{ github.repository }}
         uses: ./.github/actions/build-and-push
