@@ -10,7 +10,7 @@ import {
     useDeleteBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { budgetLinesTotal, BLILabel, canLabel, isBLIPermanent } from "../../../helpers/budgetLines.helpers";
+import { budgetLinesTotal, BLILabel } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
@@ -94,8 +94,7 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
-    let handleSave = () => {
-        setIsEditMode(false);
+    const handleSave = () => {
         const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
         const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
@@ -104,59 +103,48 @@ const useCreateBLIsAndSCs = (
         );
 
         if (isThereAnyBLIsFinancialSnapshotChanged) {
-            const response = confirm(
-                "Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?"
-            );
-            if (response) {
-                existingBudgetLineItems.forEach((existingBudgetLineItem) => {
-                    let budgetLineHasChanged =
-                        JSON.stringify(existingBudgetLineItem) !==
-                        JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
-                    if (budgetLineHasChanged) {
-                        const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
-                        updateBudgetLineItem({ id, data: cleanExistingBLI })
-                            .unwrap()
-                            .then((fulfilled) => {
-                                console.log("Updated BLI:", fulfilled);
-                            })
-                            .catch((rejected) => {
-                                console.error("Error Updating Budget Line");
-                                console.error({ rejected });
-                                setAlert({
-                                    type: "error",
-                                    heading: "Error",
-                                    message: "An error occurred. Please try again.",
-                                    redirectUrl: "/error"
+            setShowModal(true);
+            setModalProps({
+                heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
+                actionButtonText: "Send to Approval",
+                secondaryButtonText: "Continue Editing",
+                description: "your mom",
+                handleConfirm: () => {
+                    existingBudgetLineItems.forEach((existingBudgetLineItem) => {
+                        let budgetLineHasChanged =
+                            JSON.stringify(existingBudgetLineItem) !==
+                            JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
+                        if (budgetLineHasChanged) {
+                            const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
+                            updateBudgetLineItem({ id, data: cleanExistingBLI })
+                                .unwrap()
+                                .then((fulfilled) => {
+                                    console.log("Updated BLI:", fulfilled);
+                                })
+                                .catch((rejected) => {
+                                    console.error("Error Updating Budget Line");
+                                    console.error({ rejected });
+                                    setAlert({
+                                        type: "error",
+                                        heading: "Error",
+                                        message: "An error occurred. Please try again.",
+                                        redirectUrl: "/error"
+                                    });
                                 });
-                            });
-                    }
-                });
-                resetForm();
-            }
-            // setShowModal(true);
-            // setModalProps({
-            //     heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
-            //     actionButtonText: "Send to Approval",
-            //     secondaryButtonText: "Continue Editing",
-            //     handleConfirm: () => {
-            //         updateBudgetLineItem({ id, data })
-            //             .unwrap()
-            //             .then((fulfilled) => {
-            //                 console.log("Updated BLI:", fulfilled);
-            //             })
-            //             .catch((rejected) => {
-            //                 console.error("Error Updating Budget Line");
-            //                 console.error({ rejected });
-            //                 setAlert({
-            //                     type: "error",
-            //                     heading: "Error",
-            //                     message: "An error occurred. Please try again.",
-            //                     navigateUrl: "/error"
-            //                 });
-            //             });
-            //         resetForm();
-            //     }
-            // });
+                        }
+                    });
+                    resetForm();
+                    setIsEditMode(false);
+                    setAlert({
+                        type: "success",
+                        heading: "Agreement Edits Sent to Approval",
+                        message:
+                            "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
+                        redirectUrl: `/agreements/${selectedAgreement?.id}`
+                    });
+                }
+            });
+
             return;
         }
 
