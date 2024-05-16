@@ -7,6 +7,7 @@ from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
 from marshmallow import EXCLUDE, Schema
 from sqlalchemy.future import select
+from sqlalchemy.orm import object_session
 from typing_extensions import Any, override
 
 from models import (
@@ -336,9 +337,16 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     )
                 elif getattr(agreement, item) != data[item]:
                     setattr(agreement, item, data[item])
+                    # Flush the session to update the procurement_shop relationship
+                    session = object_session(agreement)
+                    session.flush()
+                    # Refresh the agreement object to update the procurement_shop relationship
+                    session.refresh(agreement)
                     for bli in agreement.budget_line_items:
                         if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
-                            bli.proc_shop_fee_percentage = agreement.procurement_shop.fee
+                            bli.proc_shop_fee_percentage = (
+                                agreement.procurement_shop.fee if agreement.procurement_shop else None
+                            )
                     changed = True
 
             case "agreement_reason":
