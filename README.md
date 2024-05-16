@@ -89,7 +89,7 @@ You can also get code coverage information by running...
 
 ```shell
 cd ./frontend/
-bun run test:coverage --watchAll=false
+bun bun run test --coverage --watch=false
 ```
 
 We require 90% code coverage.
