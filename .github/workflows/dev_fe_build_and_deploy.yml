@@ -61,7 +61,7 @@ jobs:
           creds:  ${{ secrets.AZURE_CREDS }}
 
       - name: Deploy Container App
-        uses: azure/container-apps-deploy-action@02d045129c058b13312276b50a552834cf74e2af # v2
+        uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
         with:
             # azureCredentials: ${{ secrets.AZURE_CREDS }}
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
