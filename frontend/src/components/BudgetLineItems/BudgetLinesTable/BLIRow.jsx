@@ -7,6 +7,7 @@ import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { useGetCansQuery } from "../../../api/opsAPI";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
@@ -25,7 +26,6 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -58,6 +58,11 @@ const BLIRow = ({
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
     const location = useLocation();
+    const { data: cans, isSuccess, isLoading } = useGetCansQuery();
+
+    if (isLoading) {
+        return <p>Loading...</p>;
+    }
 
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
@@ -68,29 +73,28 @@ const BLIRow = ({
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
 
     const changeRequests = budgetLine?.change_requests_in_review;
-
-    // const CanName = ({ id }) => {
-    //     const canName = useGetNameForCanId(id);
-    //     return <span>{canName}</span>;
-    // };
-
+    /**
+     * Array of messages for each change request.
+     * @type {string[]}
+     */
     let changeRequestsMessages = [];
 
-    if (changeRequests?.length > 0) {
+    if (changeRequests?.length > 0 && isSuccess) {
         changeRequests.forEach((changeRequest) => {
             if (changeRequest?.requested_change_data?.amount) {
                 changeRequestsMessages.push(
                     `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                 );
             }
-            const canName = useGetNameForCanId(changeRequest.requested_change_data.can_id);
-
             if (changeRequest?.requested_change_data?.date_needed) {
                 changeRequestsMessages.push(
                     `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                 );
             }
             if (changeRequest?.requested_change_data?.can_id) {
+                let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                let canName = matchingCan?.display_name || "TBD";
+
                 changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
             }
 
@@ -103,7 +107,7 @@ const BLIRow = ({
     if (isBLIInReview) {
         lockedMessage = "This budget line has pending edits:";
         changeRequestsMessages.forEach((message) => {
-            lockedMessage += `\n * ${message}`;
+            lockedMessage += `\n \u2022 ${message}`;
         });
     }
     const changeIcons = (
@@ -214,6 +218,7 @@ const BLIRow = ({
                     <TableTag
                         inReview={isBLIInReview}
                         status={budgetLine?.status}
+                        lockedMessage={lockedMessage}
                     />
                 )}
             </td>
