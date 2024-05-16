@@ -2,32 +2,31 @@ from flask import Response, current_app, request
 from sqlalchemy import select
 from typing_extensions import override
 
-from models import AgreementOpsDbHistory, ChangeRequest, OpsDBHistory, OpsDBHistoryType, User
+from models import (
+    Agreement,
+    AgreementOpsDbHistory,
+    BudgetLineItem,
+    BudgetLineItemChangeRequest,
+    ChangeRequest,
+    OpsDBHistory,
+    OpsDBHistoryType,
+)
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI, handle_api_error
+from ops_api.ops.utils.api_helpers import get_all_class_names
 from ops_api.ops.utils.response import make_response_with_headers
 
+change_request_class_names = get_all_class_names(ChangeRequest)
+# budget_line_item_change_request_class_names = get_all_class_names(BudgetLineItemChangeRequest)
 
-# TODO: move to utility module
-def get_all_subclasses(cls):
-    all_subclasses = []
-    for subclass in cls.__subclasses__():
-        all_subclasses.append(subclass)
-        all_subclasses.extend(get_all_subclasses(subclass))
-    return all_subclasses
-
-
-change_request_classes = get_all_subclasses(ChangeRequest) + [ChangeRequest]
-change_request_class_names = [cls.__name__ for cls in change_request_classes]
+# omit_change_details_for = ["description", "notes", "comments"]
 
 
 def find_agreement_histories(agreement_id, limit=10, offset=0):
-    stmt = (
-        select(OpsDBHistory, User)
-        .join(User, OpsDBHistory.created_by == User.id, isouter=True)
-        .join(AgreementOpsDbHistory, OpsDBHistory.id == AgreementOpsDbHistory.ops_db_history_id, isouter=True)
+    stmt = select(OpsDBHistory).join(
+        AgreementOpsDbHistory, OpsDBHistory.id == AgreementOpsDbHistory.ops_db_history_id, isouter=True
     )
     stmt = stmt.where(AgreementOpsDbHistory.agreement_id == agreement_id)
     stmt = stmt.where(
@@ -47,13 +46,97 @@ def find_agreement_histories(agreement_id, limit=10, offset=0):
     return results
 
 
-def build_agreement_history_dict(ops_db_hist: OpsDBHistory, user: User):
-    d = ops_db_hist.to_dict()
+def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
+    created_by_user_full_name = ops_db_hist.created_by_user.full_name if ops_db_hist.created_by_user else None
+    event_type = ops_db_hist.event_type.name
+    changes = ops_db_hist.changes
+    target_class_name = ops_db_hist.class_name
+    target_display_name = ops_db_hist.event_details.get("display_name", None)
     if ops_db_hist.class_name in change_request_class_names:
-        requested_change_diff = ops_db_hist.event_details.get("requested_change_diff", None)
-        d["changes"] = requested_change_diff
-    # TODO: eliminate join to User if possible
-    d["created_by_user_full_name"] = user.full_name if user else None
+        event_type = ops_db_hist.event_details.get("status", None)
+        changes = ops_db_hist.event_details.get("requested_change_diff", None)
+        target_class_name = (
+            BudgetLineItem.__name__
+            if ops_db_hist.class_name == BudgetLineItemChangeRequest.__name__
+            else Agreement.__name__
+        )
+        target_display_name = ops_db_hist.event_details.get("requested_change_info", {}).get("target_display_name")
+
+    # TODO: After reworking the UI to use log_items, include just what's needed instead of the full to_dict()
+    d = ops_db_hist.to_dict()
+    d["created_by_user_full_name"] = created_by_user_full_name
+    d["event_type"] = event_type
+    d["changes"] = changes
+    d["target_display_name"] = target_display_name
+
+    # break down changes into log items which can be used to render a history log in the UI
+    log_items = []
+    # if Agreement or BLI and NEW or DELETE create single new log item (object scope
+    if (
+        ops_db_hist.event_type
+        in [
+            OpsDBHistoryType.NEW,
+            OpsDBHistoryType.DELETED,
+        ]
+        and ops_db_hist.class_name not in change_request_class_names
+    ):
+        log_items.append(
+            {
+                "scope": "OBJECT",
+                "event_class_name": ops_db_hist.class_name,
+                "target_class_name": target_class_name,
+                "target_display_name": target_display_name,
+                "event_type": event_type,
+                "created_by_user_full_name": created_by_user_full_name,
+                "created_on": ops_db_hist.created_on.isoformat(),
+            }
+        )
+    else:  # if UPDATED or a ChangeRequest create log items per property change and per collection item change
+        for key, change in changes.items():
+            # hiding changes with proc_shop_fee_percentage which seem confusing since it's changed by system
+            if key == "proc_shop_fee_percentage":
+                continue
+            if "collection_of" in change:
+                for deleted_item in change["added"]:
+                    log_item = {
+                        "scope": "PROPERTY_COLLECTION_ITEM",
+                        "event_class_name": ops_db_hist.class_name,
+                        "target_class_name": target_class_name,
+                        "target_display_name": target_display_name,
+                        "property_key": key,
+                        "event_type": event_type,
+                        "created_by_user_full_name": created_by_user_full_name,
+                        "created_on": ops_db_hist.created_on.isoformat(),
+                        "change": {"added": deleted_item},
+                    }
+                    log_items.append(log_item)
+                for deleted_item in change["deleted"]:
+                    log_item = {
+                        "scope": "PROPERTY_COLLECTION_ITEM",
+                        "event_class_name": ops_db_hist.class_name,
+                        "target_class_name": target_class_name,
+                        "target_display_name": target_display_name,
+                        "property_key": key,
+                        "event_type": event_type,
+                        "created_by_user_full_name": created_by_user_full_name,
+                        "created_on": ops_db_hist.created_on.isoformat(),
+                        "change": {"deleted": deleted_item},
+                    }
+                    log_items.append(log_item)
+            else:
+                log_item = {
+                    "scope": "PROPERTY",
+                    "event_class_name": ops_db_hist.class_name,
+                    "target_class_name": target_class_name,
+                    "target_display_name": target_display_name,
+                    "property_key": key,
+                    "event_type": event_type,
+                    "created_by_user_full_name": created_by_user_full_name,
+                    "created_on": ops_db_hist.created_on.isoformat(),
+                    "change": change,
+                }
+                log_items.append(log_item)
+    d["log_items"] = log_items
     return d
 
 
@@ -69,7 +152,7 @@ class AgreementHistoryListAPI(BaseListAPI):
         offset = request.args.get("offset", 0, type=int)
         results = find_agreement_histories(id, limit, offset)
         if results:
-            response = make_response_with_headers([build_agreement_history_dict(row[0], row[1]) for row in results])
+            response = make_response_with_headers([build_agreement_history_dict(row[0]) for row in results])
         else:
             response = make_response_with_headers({}, 404)
         return response
