@@ -114,6 +114,10 @@ def check_user_session(f):
             if access_token != latest_user_session.access_token:
                 raise InvalidUserSessionError(f"User with id={current_user.id} is using an invalid access token")
 
+        # Check if the ip address in the request is the same as the latest user session ip address
+        if request.remote_addr != latest_user_session.ip_address:
+            raise InvalidUserSessionError(f"User with id={current_user.id} is using an invalid ip address")
+
         return f(*args, **kwargs)
 
     return decorated
