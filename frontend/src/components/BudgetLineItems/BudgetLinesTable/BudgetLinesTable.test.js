@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { Router } from "react-router-dom";
 import BudgetLinesTable from "./BudgetLinesTable";
@@ -54,7 +54,7 @@ function customRender(ui, store) {
 }
 
 describe("PreviewTable", () => {
-    test("renders rows for budget lines", () => {
+    test("renders rows for budget lines", async () => {
         customRender(
             <BudgetLinesTable
                 canUserEditBudgetLines={false}
@@ -67,8 +67,10 @@ describe("PreviewTable", () => {
             />,
             store
         );
-        mockBudgetLinesOne.forEach((bl) => {
-            expect(screen.getByText(bl.id)).toBeInTheDocument();
+        await waitFor(() => {
+            mockBudgetLinesOne.forEach((bl) => {
+                expect(screen.getByText(bl.id)).toBeInTheDocument();
+            });
         });
     });
 
