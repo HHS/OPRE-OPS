@@ -6,12 +6,11 @@ from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import select
 from sqlalchemy.orm import InstrumentedAttribute
-from typing_extensions import override
 
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.auth.decorators import check_user_session, is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -27,9 +26,9 @@ class CANItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
 
-    @override
-    @is_authorized(PermissionType.GET, Permission.CAN)
     @handle_api_error
+    @is_authorized(PermissionType.GET, Permission.CAN)
+    @check_user_session
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -55,9 +54,10 @@ class CANListAPI(BaseListAPI):
 
         return stmt
 
-    @jwt_required(True)  # For an example case, we're allowing CANs to be queried unauthed
-    @error_simulator
     @handle_api_error
+    @jwt_required()
+    @error_simulator
+    @check_user_session
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
 
@@ -74,15 +74,17 @@ class CANsByPortfolioAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
     @handle_api_error
+    @jwt_required()
+    @check_user_session
     def _get_item(self, id: int) -> List[CAN]:
         cans = CAN.query.filter(CAN.managing_portfolio_id == id).all()
 
         return cans
 
-    @override
     @handle_api_error
+    @jwt_required()
+    @check_user_session
     def get(self, id: int) -> Response:
         cans = self._get_item(id)
         return make_response_with_headers([can.to_dict() for can in cans])
