@@ -1,9 +1,17 @@
+import marshmallow_dataclass
 from marshmallow import Schema, fields
 
 from models import ContractType
 from models.cans import AgreementReason, AgreementType, ServiceRequirementType
+from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponse
+from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
+from ops_api.ops.schemas.projects import Project
 from ops_api.ops.schemas.team_members import TeamMembers
+
+
+class Vendor(Schema):
+    name = fields.String(required=True)
 
 
 class AgreementData(Schema):
@@ -19,6 +27,18 @@ class AgreementData(Schema):
     procurement_shop_id = fields.Integer(allow_none=True)
     notes = fields.String(allow_none=True)
     procurement_tracker_workflow_id = fields.Integer(allow_none=True)
+
+
+class AgreementDataResponse(AgreementData):
+    id = fields.Integer(required=True)
+    budget_line_items = fields.List(
+        fields.Nested(marshmallow_dataclass.class_schema(BudgetLineItemResponse)), allow_none=True
+    )
+    vendor = fields.Pluck("self", "name", allow_none=True)
+    display_name = fields.String(required="true")
+    project = fields.Nested(Project)
+    product_service_code = fields.Nested(ProductServiceCodeSchema)
+    procurement_shop = fields.Nested(ProcurementShopSchema)
 
 
 class ContractAgreementData(AgreementData):

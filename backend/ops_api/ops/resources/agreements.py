@@ -37,6 +37,7 @@ from ops_api.ops.resources.agreements_constants import (
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
+from ops_api.ops.schemas.agreements import AgreementDataResponse
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -73,9 +74,15 @@ class AgreementItemAPI(BaseItemAPI):
     @handle_api_error
     def get(self, id: int) -> Response:
         item = self._get_item(id)
-        additional_fields = add_additional_fields_to_agreement_response(item)
 
-        return self._get_item_with_try(id, additional_fields=additional_fields)
+        if item:
+            agreement_schema = AgreementDataResponse()
+            serialized_agreement = agreement_schema.dump(item)
+            response = make_response_with_headers(serialized_agreement)
+        else:
+            response = make_response_with_headers({}, 404)
+
+        return response
 
     @override
     @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
@@ -189,12 +196,12 @@ class AgreementListAPI(BaseListAPI):
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
         agreement_response: List[dict] = []
+
         for item in result:
             for agreement in item:
-                additional_fields = add_additional_fields_to_agreement_response(agreement)
-                agreement_dict = agreement.to_dict()
-                agreement_dict.update(additional_fields)
-                agreement_response.append(agreement_dict)
+                schema = AgreementDataResponse()
+                serialized_agreement = schema.dump(agreement)
+                agreement_response.append(serialized_agreement)
 
         return make_response_with_headers(agreement_response)
 
