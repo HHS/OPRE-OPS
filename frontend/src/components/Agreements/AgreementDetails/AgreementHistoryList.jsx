@@ -11,138 +11,192 @@ import {
 
 const noDataMessage = "There is currently no history for this agreement.";
 
-const findObjectTitle = (historyItem) => {
-    return historyItem.event_details.display_name;
+const findObjectTitle = (logItem) => {
+    return logItem.target_display_name;
 };
 
 const omitChangeDetailsFor = ["description", "notes", "comments"];
 
-const eventLogItemTitle = (historyItem) => {
-    const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
-    if (historyItem.event_type === "NEW") {
+const logItemTitle = (logItem) => {
+    if (logItem.scope === "OBJECT") {
+        return objectLogItemTitle(logItem);
+    } else {
+        // PROPERTY or PROPERTY_COLLECTION_ITEM
+        return propertyLogItemTitle(logItem);
+    }
+};
+
+const objectLogItemTitle = (logItem) => {
+    const className = convertCodeForDisplay("baseClassNameLabels", logItem.target_class_name);
+    if (logItem.event_type === "NEW") {
         return `${className} Created`;
-    } else if (historyItem.event_type === "UPDATED") {
+    } else if (logItem.event_type === "UPDATED") {
         return `${className} Updated`;
-    } else if (historyItem.event_type === "DELETED") {
+    } else if (logItem.event_type === "DELETED") {
         return `${className} Deleted`;
     }
-    return `${className} ${historyItem.event_type}`;
+    return `${className} ${logItem.event_type}`;
 };
 
-const propertyLogItemTitle = (historyItem, change) => {
-    let title = `${change.propertyLabel} Edited`;
-    if (historyItem.class_name === "BudgetLineItem") {
-        title = "Budget Line " + title;
-    }
-    return title;
-};
-
-const changeMessageBeginning = (historyItem, change) => {
-    let msg = `${change.propertyLabel} changed`;
-    if (historyItem.class_name === "BudgetLineItem") {
-        if (change.key !== "line_description") {
-            msg = `${findObjectTitle(historyItem)} ${change.propertyLabel} changed`;
-        } else {
-            msg = `${change.propertyLabel} changed`;
-        }
-    }
-    return msg;
-};
-
-const eventMessage = (historyItem) => {
-    const className = convertCodeForDisplay("baseClassNameLabels", historyItem.class_name);
-    const createdByName = historyItem.created_by_user_full_name;
+const objectLogItemMessage = (logItem) => {
+    const className = convertCodeForDisplay("baseClassNameLabels", logItem.target_class_name);
+    const createdByName = logItem.created_by_user_full_name;
     let titleName = className;
-    switch (historyItem.event_type) {
+    switch (logItem.event_type) {
         case "NEW":
-            if (historyItem.class_name === "BudgetLineItem") {
-                return `${findObjectTitle(historyItem)} created by ${createdByName}`;
+            if (logItem.class_name === "BudgetLineItem") {
+                return `${findObjectTitle(logItem)} created by ${createdByName}`;
             } else {
                 return `${titleName} created by ${createdByName}`;
             }
         case "UPDATED":
             return `${titleName} updated by ${createdByName}`;
         case "DELETED":
-            if (historyItem.class_name === "BudgetLineItem") {
-                return `${findObjectTitle(historyItem)} deleted by ${createdByName}`;
+            if (logItem.class_name === "BudgetLineItem") {
+                return `${findObjectTitle(logItem)} deleted by ${createdByName}`;
             } else {
                 return `${titleName} deleted by ${createdByName}`;
             }
 
         default:
-            return `${className} ${historyItem.event_type} by ${createdByName}`;
+            return `${className} ${logItem.event_type} by ${createdByName}`;
     }
 };
 
+const getLogItemPropertyLabel = (logItem) => {
+    if (logItem.scope === "PROPERTY_COLLECTION_ITEM")
+        return getPropertyLabel(logItem.target_class_name, logItem.property_key + "_item");
+    const key = logItem.property_key in relations ? relations[logItem.property_key] : logItem.property_key;
+    return getPropertyLabel(logItem.target_class_name, key);
+};
+
 const getPropertyLabel = (className, fieldName) => {
-    if (className === "BudgetLineItem") return `${convertCodeForDisplay("budgetLineItemPropertyLabels", fieldName)}`;
+    if (["BudgetLineItem", "BudgetLineItemChangeRequest"].includes(className))
+        return `${convertCodeForDisplay("budgetLineItemPropertyLabels", fieldName)}`;
     return convertCodeForDisplay("agreementPropertyLabels", fieldName);
 };
 
-const objectsToNames = (objects) => {
-    return objects.map((obj) => obj.display_name);
+const propertyLogItemTitle = (logItem) => {
+    const propertyLabel = getLogItemPropertyLabel(logItem);
+    // NOTE: currently no collections are a part of change requests
+    if (logItem.scope === "PROPERTY_COLLECTION_ITEM") {
+        if (logItem.change.added) return `${propertyLabel} Added`;
+        if (logItem.change.deleted) return `${propertyLabel} Removed`;
+    }
+    let title = `${propertyLabel} Edited`;
+    if (logItem.event_class_name === "BudgetLineItem") {
+        title = `Budget Line ${propertyLabel} Edited`;
+    } else if (logItem.event_class_name === "BudgetLineItemChangeRequest") {
+        if (logItem.event_type === "IN_REVIEW") {
+            title = `Edit to BL ${propertyLabel} In Review`;
+        } else if (logItem.event_type === "APPROVED") {
+            title = `Edit to BL ${propertyLabel} Approved`;
+        } else if (logItem.event_type === "REJECTED") {
+            title = `Edit to BL ${propertyLabel} Rejected`;
+        } else {
+            title = `${logItem.event_type} ${propertyLabel} Edited`;
+        }
+    }
+    return title;
+};
+
+const LogItemMessage = ({ logItem }) => {
+    if (logItem.scope === "OBJECT") {
+        return <>{objectLogItemMessage(logItem)}.</>;
+    }
+    const eventType = logItem.event_type;
+    const change = logItem.change;
+    const createdBy = logItem.created_by_user_full_name;
+    if (!["UPDATED", "IN_REVIEW", "APPROVED", "REJECTED"].includes(eventType)) return;
+
+    if (logItem.scope === "PROPERTY_COLLECTION_ITEM") {
+        if (change.added) {
+            return (
+                <>
+                    {getLogItemPropertyLabel(logItem)} {change.added.display_name} added by {createdBy}.
+                </>
+            );
+        }
+        if (change.deleted) {
+            return (
+                <>
+                    {getLogItemPropertyLabel(logItem)} {change.deleted.display_name} removed by {createdBy}.
+                </>
+            );
+        }
+    }
+
+    const messageBeginning = propertyLogItemMessageBeginning(logItem);
+    const shouldRenderDetails = !omitChangeDetailsFor.includes(logItem.property_key);
+    const messageAddendum = propertyLogItemMessageAddendum(logItem);
+    const from = (
+        <RenderProperty
+            className={logItem.target_class_name}
+            propertyKey={logItem.property_key}
+            value={logItem.change.old}
+            // id={change.fromId}
+        />
+    );
+    const to = (
+        <RenderProperty
+            className={logItem.target_class_name}
+            propertyKey={logItem.property_key}
+            value={logItem.change.new}
+            // id={change.toId}
+        />
+    );
+
+    return (
+        <>
+            {messageBeginning}
+            {shouldRenderDetails && (
+                <>
+                    {" "}
+                    from {from} to {to}
+                </>
+            )}{" "}
+            by {createdBy}. {messageAddendum}
+        </>
+    );
+};
+
+const propertyLogItemMessageBeginning = (logItem) => {
+    const change = logItem.change;
+    const propertyLabel = getLogItemPropertyLabel(logItem);
+    let msg = `${propertyLabel} changed`;
+    if (logItem.event_class_name === "BudgetLineItem") {
+        if (change.key !== "line_description") {
+            msg = `${findObjectTitle(logItem)} ${propertyLabel} changed`;
+        } else {
+            msg = `${propertyLabel} changed`;
+        }
+    } else if (logItem.event_class_name === "BudgetLineItemChangeRequest") {
+        msg = `${findObjectTitle(logItem)} ${propertyLabel} edited`;
+    }
+    return msg;
+};
+
+const propertyLogItemMessageAddendum = (logItem) => {
+    let msg = "";
+    if (logItem.event_class_name === "BudgetLineItemChangeRequest") {
+        if (logItem.event_type === "IN_REVIEW") {
+            msg = ` This budget change is currently In Review for approval.`;
+        } else if (logItem.event_type === "APPROVED") {
+            // TODO: change these placeholder messages when working on approvals
+            msg = ` This budget change has been approved.`;
+        } else if (logItem.event_type === "REJECTED") {
+            msg = ` This budget change has been rejected.`;
+        }
+    }
+    return msg;
 };
 
 const relations = {
-    procurement_shop_id: {
-        eventKey: "procurement_shop"
-    },
-    product_service_code_id: {
-        eventKey: "product_service_code"
-    },
-    project_id: {
-        eventKey: "project"
-    },
-    can_id: {
-        eventKey: "can"
-    },
-    project_officer: {}
-};
-
-/**
- * For a single history record process the changes field and convert the object
- * into array of changes with values of foreign keys resolved to display names
- * @returns {*[]} - array of changes
- * @param historyItem - a record from ops_db_history
- */
-const prepareChanges = (historyItem) => {
-    const rawChanges = historyItem.changes;
-    let preparedChanges = [];
-
-    Object.entries(rawChanges).forEach(([key, change]) => {
-        // hiding changes with proc_shop_fee_percentage which seem confusing since it's changed by system
-        if (["proc_shop_fee_percentage"].includes(key)) return;
-        let preparedChange = {
-            key: key,
-            propertyLabel: getPropertyLabel(historyItem.class_name, key),
-            createdOn: historyItem.created_on,
-            createdByName: historyItem.created_by_user_full_name
-        };
-        if ("collection_of" in change) {
-            preparedChange["isCollection"] = true;
-            preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, key + "_item");
-            preparedChange["added"] = objectsToNames(change.added);
-            preparedChange["deleted"] = objectsToNames(change.deleted);
-        } else if (key in relations) {
-            preparedChange["isRelation"] = true;
-            const eventKey = relations[key]["eventKey"];
-            if (eventKey) {
-                preparedChange["propertyLabel"] = getPropertyLabel(historyItem.class_name, eventKey);
-                preparedChange["to"] = historyItem.event_details[eventKey]?.display_name;
-            } else {
-                preparedChange["toId"] = change.new;
-            }
-            preparedChange["fromId"] = change.old;
-        } else {
-            if (!omitChangeDetailsFor.includes(key)) {
-                preparedChange["from"] = change.old;
-                preparedChange["to"] = change.new;
-            }
-        }
-        preparedChanges.push(preparedChange);
-    });
-
-    return preparedChanges;
+    procurement_shop_id: "procurement_shop",
+    product_service_code_id: "product_service_code",
+    project_id: "project",
+    can_id: "can",
+    project_officer_id: "project_officer"
 };
 
 const UserName = ({ id }) => {
@@ -171,146 +225,46 @@ const CanName = ({ id }) => {
 };
 
 const components = {
-    project_officer: UserName,
+    project_officer_id: UserName,
     procurement_shop_id: ProcurementShopName,
     product_service_code_id: ProductServiceCodeName,
     project_id: ResearchProjectName,
     can_id: CanName
 };
 
-const RenderProperty = ({ className, propertyKey, value, id: lookupId }) => {
-    if (typeof value !== "undefined") {
-        if (value === null) return <>none</>;
-        return <>{renderField(className, propertyKey, value)}</>;
-    }
+const RenderProperty = ({ className, propertyKey, value }) => {
     if (components[propertyKey]) {
+        const lookupId = value;
         if (!lookupId) return "none";
         const Component = components[propertyKey];
         return <Component id={lookupId} />;
     }
+    if (typeof value !== "undefined") {
+        if (value === null) return <>none</>;
+        return <>{renderField(className, propertyKey, value)}</>;
+    }
+
     return <>(unable to render value for {propertyKey})</>;
-};
-
-const CollectionLogItems = ({ historyItem, change, baseKey }) => {
-    const eventType = historyItem.event_type;
-    if (eventType !== "UPDATED") return;
-
-    let logItems = [];
-
-    change.added.forEach((member) => {
-        logItems.push({
-            title: `${change.propertyLabel} Added`,
-            createdOn: change.createdOn,
-            message: `${change.propertyLabel} ${member} added by ${change.createdByName}`
-        });
-    });
-    change.deleted.forEach((member) => {
-        logItems.push({
-            title: `${change.propertyLabel} Removed`,
-            createdOn: change.createdOn,
-            message: `${change.propertyLabel} ${member} removed by ${change.createdByName}`
-        });
-    });
-
-    return (
-        <>
-            {logItems.map((logItem, index) => (
-                <LogItem
-                    key={`${baseKey}_${index}`}
-                    title={logItem.title}
-                    message={logItem.message}
-                    createdOn={logItem.createdOn}
-                />
-            ))}
-        </>
-    );
-};
-
-const PropertyLogItems = ({ historyItem, baseKey }) => {
-    const eventType = historyItem.event_type;
-    if (eventType !== "UPDATED") return;
-    const preparedChanges = prepareChanges(historyItem);
-
-    return preparedChanges.map((change, index) => {
-        const key = `${baseKey}_${index}`;
-
-        // for collections like, team_members, create log items for each item add/removed
-        if (change.isCollection) {
-            return (
-                <CollectionLogItems
-                    key={key}
-                    historyItem={historyItem}
-                    change={change}
-                    baseKey={key}
-                />
-            );
-        }
-
-        const title = propertyLogItemTitle(historyItem, change);
-        const createdOn = historyItem.created_on;
-        const messageBeginning = changeMessageBeginning(historyItem, change);
-        const shouldRenderDetails = !omitChangeDetailsFor.includes(change.key);
-        const from = (
-            <RenderProperty
-                className={historyItem.class_name}
-                propertyKey={change.key}
-                value={change.from}
-                id={change.fromId}
-            />
-        );
-        const to = (
-            <RenderProperty
-                className={historyItem.class_name}
-                propertyKey={change.key}
-                value={change.to}
-                id={change.toId}
-            />
-        );
-        const createdBy = change.createdByName;
-
-        return (
-            <LogItem
-                key={key}
-                title={title}
-                createdOn={createdOn}
-            >
-                {messageBeginning}
-                {shouldRenderDetails && (
-                    <>
-                        {" "}
-                        from {from} to {to}
-                    </>
-                )}{" "}
-                by {createdBy}
-            </LogItem>
-        );
-    });
 };
 
 const AgreementHistoryList = ({ agreementHistory }) => {
     if (!agreementHistory || agreementHistory.length === 0) {
         return <span className="font-12px">{noDataMessage}</span>;
     }
+    const allLogItems = agreementHistory.flatMap((historyItem) => historyItem.log_items);
 
-    const renderHistoryItem = (historyItem, index) => {
-        // for create and delete, display a single log item
-        if (["NEW", "DELETED"].includes(historyItem.event_type)) {
-            return (
-                <LogItem
-                    key={index}
-                    title={eventLogItemTitle(historyItem)}
-                    message={eventMessage(historyItem)}
-                    createdOn={historyItem.created_on}
-                />
-            );
-        }
-        // for updates, display a log item for each property change
+    const renderHistoryLogItem = (logItem, index) => {
         return (
-            <PropertyLogItems
+            <LogItem
                 key={index}
-                historyItem={historyItem}
-                baseKey={index}
-            />
+                title={logItemTitle(logItem)}
+                createdOn={logItem.created_on}
+            >
+                <LogItemMessage
+                    logItem={logItem}
+                    baseKey={index}
+                />
+            </LogItem>
         );
     };
 
@@ -319,7 +273,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
             className="usa-list--unstyled"
             data-cy="agreement-history-list"
         >
-            {agreementHistory.map(renderHistoryItem)}
+            {allLogItems.map(renderHistoryLogItem)}
         </ul>
     );
 };
