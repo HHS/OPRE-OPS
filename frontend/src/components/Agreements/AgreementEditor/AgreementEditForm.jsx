@@ -135,7 +135,7 @@ export const AgreementEditForm = ({
     let res = suite.get();
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
+    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors() || selectedProcurementShop.id !== 2
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",

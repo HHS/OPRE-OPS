@@ -63,4 +63,17 @@ describe("ProcurementShopSelect", () => {
             expect(option).toBeInTheDocument();
         }
     });
+
+    it("displays error message when shop is not GCS", async () => {
+        useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
+        render(
+            <ProcurementShopSelect
+                selectedProcurementShop={sampleShops[1]}
+                onChangeSelectedProcurementShop={mockFn}
+            />
+        );
+
+        const errorMessage = await screen.findByText("GCS is the only available type for now");
+        expect(errorMessage).toBeInTheDocument();
+    });
 });
