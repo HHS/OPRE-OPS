@@ -7,13 +7,14 @@ import {
     useUpdateBudgetLineItemMutation,
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
-    useDeleteBudgetLineItemMutation
+    useDeleteBudgetLineItemMutation,
+    useGetCansQuery
 } from "../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { budgetLinesTotal, BLILabel } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
-import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
+import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
@@ -61,6 +62,7 @@ const useCreateBLIsAndSCs = (
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
+    const { data: cans, isSuccess, isLoading } = useGetCansQuery();
     const [deleteAgreement] = useDeleteAgreementMutation();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
@@ -94,6 +96,50 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
+    const changeRequestsFromBudgetLines = budgetLines
+        .filter((budgetLine) => budgetLine.in_review)
+        .flatMap((budgetLine) =>
+            budgetLine.change_requests_in_review.map((changeRequest) => ({ ...budgetLine, changeRequest }))
+        );
+
+    console.log({ changeRequestsFromBudgetLines });
+    /**
+     * Array of messages for each change request.
+     * @type {string[]}
+     */
+    let changeRequestsMessages = [];
+
+    if (changeRequestsFromBudgetLines?.length > 0 && isSuccess) {
+        changeRequestsFromBudgetLines.forEach((budgetLine) => {
+            budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                if (changeRequest?.requested_change_data?.amount) {
+                    changeRequestsMessages.push(
+                        `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                    );
+                }
+                if (changeRequest?.requested_change_data?.date_needed) {
+                    changeRequestsMessages.push(
+                        `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                    );
+                }
+                if (changeRequest?.requested_change_data?.can_id) {
+                    let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                    let canName = matchingCan?.display_name || "TBD";
+
+                    changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
+                }
+            });
+        });
+    }
+
+    let lockedMessage = "";
+
+    lockedMessage = "This budget line has pending edits:";
+    changeRequestsMessages.forEach((message) => {
+        lockedMessage += `\n \u2022 ${message}`;
+    });
+    console.log({ lockedMessage });
+
     const handleSave = () => {
         const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
         const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
@@ -108,7 +154,6 @@ const useCreateBLIsAndSCs = (
                 heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
                 actionButtonText: "Send to Approval",
                 secondaryButtonText: "Continue Editing",
-                description: "your mom",
                 handleConfirm: () => {
                     existingBudgetLineItems.forEach((existingBudgetLineItem) => {
                         let budgetLineHasChanged =
@@ -140,6 +185,7 @@ const useCreateBLIsAndSCs = (
                         heading: "Agreement Edits Sent to Approval",
                         message:
                             "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
+                        changeRequests: lockedMessage,
                         redirectUrl: `/agreements/${selectedAgreement?.id}`
                     });
                 }

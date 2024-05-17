@@ -9,7 +9,9 @@ import { setAlert as SetAlertAction } from "../components/UI/Alert/alertSlice";
  * @property {string} heading - The heading of the alert.
  * @property {string} message - The message to display in the alert.
  * @property {string} [redirectUrl] - The URL to redirect to when the alert is dismissed.
+ * @property {string} [changeRequests] - The change requests to display in the alert.
  */
+
 /**
  * The shape of the object returned by the useAlert hook.
  * @typedef {Object} AlertHook
