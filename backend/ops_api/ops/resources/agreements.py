@@ -33,11 +33,11 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
 from ops_api.ops.resources.agreements_constants import (
+    AGREEMENT_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
-from ops_api.ops.schemas.agreements import AgreementDataResponse
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -76,8 +76,8 @@ class AgreementItemAPI(BaseItemAPI):
         item = self._get_item(id)
 
         if item:
-            agreement_schema = AgreementDataResponse()
-            serialized_agreement = agreement_schema.dump(item)
+            schema = AGREEMENT_RESPONSE_SCHEMAS.get(item.agreement_type)
+            serialized_agreement = schema.dump(item)
             response = make_response_with_headers(serialized_agreement)
         else:
             response = make_response_with_headers({}, 404)
@@ -116,7 +116,7 @@ class AgreementItemAPI(BaseItemAPI):
             meta.metadata.update({"updated_agreement": agreement_dict})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
-            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+        return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
 
     @override
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
@@ -199,7 +199,7 @@ class AgreementListAPI(BaseListAPI):
 
         for item in result:
             for agreement in item:
-                schema = AgreementDataResponse()
+                schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement.agreement_type)
                 serialized_agreement = schema.dump(agreement)
                 agreement_response.append(serialized_agreement)
 
