@@ -45,7 +45,7 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
- * @param {number} props.selectedAgreementId - The ID of the selected agreement. - optional
+ * @param {number} [props.selectedAgreementId] - The ID of the selected agreement. - optional
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  * @returns {JSX.Element} - The rendered component.
  */
