@@ -28,6 +28,7 @@ import { formatDateForApi, formatDateForScreen, renderField } from "../../../hel
  * @param {Object} selectedProcurementShop - Selected procurement shop object.
  * @param {Function} setIsEditMode - Function to set the edit mode.
  * @param {string} workflow - The workflow type ("agreement" or "budgetLines").
+ * @param {Object} formData - The form data.
  *
  */
 const useCreateBLIsAndSCs = (
@@ -112,33 +113,26 @@ const useCreateBLIsAndSCs = (
     if (changeRequestsFromBudgetLines?.length > 0 && isSuccess) {
         changeRequestsFromBudgetLines.forEach((budgetLine) => {
             budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                let bliId = `BL ${budgetLine.id}`;
                 if (changeRequest?.requested_change_data?.amount) {
                     changeRequestsMessages.push(
-                        `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                        `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                     );
                 }
                 if (changeRequest?.requested_change_data?.date_needed) {
                     changeRequestsMessages.push(
-                        `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                        `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                     );
                 }
                 if (changeRequest?.requested_change_data?.can_id) {
                     let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
                     let canName = matchingCan?.display_name || "TBD";
 
-                    changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
+                    changeRequestsMessages.push(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
                 }
             });
         });
     }
-
-    let lockedMessage = "";
-
-    lockedMessage = "This budget line has pending edits:";
-    changeRequestsMessages.forEach((message) => {
-        lockedMessage += `\n \u2022 ${message}`;
-    });
-    console.log({ lockedMessage });
 
     const handleSave = () => {
         const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
@@ -185,7 +179,7 @@ const useCreateBLIsAndSCs = (
                         heading: "Agreement Edits Sent to Approval",
                         message:
                             "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
-                        changeRequests: lockedMessage,
+                        changeRequests: changeRequestsMessages,
                         redirectUrl: `/agreements/${selectedAgreement?.id}`
                     });
                 }

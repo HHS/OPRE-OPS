@@ -5,7 +5,7 @@ const initialState = {
     type: "",
     heading: "",
     message: "",
-    changeRequests: "",
+    changeRequests: [],
     redirectUrl: ""
 };
 
