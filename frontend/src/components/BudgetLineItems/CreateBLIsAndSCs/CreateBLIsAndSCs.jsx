@@ -22,6 +22,7 @@ import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHea
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
  * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
+ * @param {Object} [props.formData] - The form data.
  * @param {Array<String>} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {Object} props.selectedResearchProject - The selected research project.
@@ -291,6 +292,7 @@ export const CreateBLIsAndSCs = ({
 CreateBLIsAndSCs.propTypes = {
     goToNext: PropTypes.func,
     goBack: PropTypes.func,
+    formData: PropTypes.object,
     wizardSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
     currentStep: PropTypes.number.isRequired,
     selectedResearchProject: PropTypes.object,
