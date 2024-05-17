@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import {AGREEMENT_TYPES, SERVICE_REQ_TYPES} from "../../ServicesComponents/ServicesComponents.constants";
+import { AGREEMENT_TYPES, SERVICE_REQ_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import { AgreementEditorContext, EditAgreementDispatchContext } from "./AgreementEditorContext";
 
 export const defaultState = {

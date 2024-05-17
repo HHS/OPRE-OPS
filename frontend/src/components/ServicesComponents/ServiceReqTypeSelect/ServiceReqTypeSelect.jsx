@@ -20,7 +20,7 @@ function ServiceReqTypeSelect({ value, onChange, ...rest }) {
             onChange={onChange}
             value={value}
             messages={[]}
-            defaultOption="Select Service Requirement Type"
+            defaultOption="-Select Service Requirement Type-"
             options={SERVICE_REQ_TYPES_OPTIONS}
             {...rest}
         />
