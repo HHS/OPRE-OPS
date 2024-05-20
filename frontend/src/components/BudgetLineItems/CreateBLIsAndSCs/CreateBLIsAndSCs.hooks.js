@@ -20,7 +20,7 @@ import { formatDateForApi, formatDateForScreen, renderField } from "../../../hel
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
- * @param {Array<any>} budgetLines - Array of budget lines.
+ * @param {Array<Object>} budgetLines - Array of budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
@@ -97,41 +97,50 @@ const useCreateBLIsAndSCs = (
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
 
-    const changeRequestsFromBudgetLines = budgetLines
-        .filter((budgetLine) => budgetLine.in_review)
-        .flatMap((budgetLine) =>
-            budgetLine.change_requests_in_review.map((changeRequest) => ({ ...budgetLine, changeRequest }))
-        );
-
-    console.log({ changeRequestsFromBudgetLines });
     /**
-     * Array of messages for each change request.
-     * @type {string[]}
+     * Get change requests from budget lines.
+     * @param {Object[]} budgetLines - The budget lines.
+     * @returns {string[]} The change requests messages.
      */
-    let changeRequestsMessages = [];
+    function getChangeRequestsFromBudgetLines(budgetLines) {
+        debugger;
+        /**
+         * Array of messages for each change request.
+         * @type {string[]}
+         */
+        let changeRequestsMessages = [];
+        const changeRequestsFromBudgetLines = budgetLines
+            .filter((budgetLine) => budgetLine.in_review)
+            .flatMap((budgetLine) =>
+                budgetLine.change_requests_in_review.map((changeRequest) => ({ ...budgetLine, changeRequest }))
+            );
 
-    if (changeRequestsFromBudgetLines?.length > 0 && isSuccess) {
-        changeRequestsFromBudgetLines.forEach((budgetLine) => {
-            budgetLine.change_requests_in_review.forEach((changeRequest) => {
-                let bliId = `BL ${budgetLine.id}`;
-                if (changeRequest?.requested_change_data?.amount) {
-                    changeRequestsMessages.push(
-                        `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
-                    );
-                }
-                if (changeRequest?.requested_change_data?.date_needed) {
-                    changeRequestsMessages.push(
-                        `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
-                    );
-                }
-                if (changeRequest?.requested_change_data?.can_id) {
-                    let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
-                    let canName = matchingCan?.display_name || "TBD";
+        console.log({ changeRequestsFromBudgetLines });
 
-                    changeRequestsMessages.push(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
-                }
+        if (changeRequestsFromBudgetLines?.length > 0 && isSuccess) {
+            changeRequestsFromBudgetLines.forEach((budgetLine) => {
+                budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                    let bliId = `BL ${budgetLine.id}`;
+                    if (changeRequest?.requested_change_data?.amount) {
+                        changeRequestsMessages.push(
+                            `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                        );
+                    }
+                    if (changeRequest?.requested_change_data?.date_needed) {
+                        changeRequestsMessages.push(
+                            `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                        );
+                    }
+                    if (changeRequest?.requested_change_data?.can_id) {
+                        let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                        let canName = matchingCan?.display_name || "TBD";
+
+                        changeRequestsMessages.push(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
+                    }
+                });
             });
-        });
+        }
+        return changeRequestsMessages;
     }
 
     const handleSave = () => {
@@ -149,13 +158,13 @@ const useCreateBLIsAndSCs = (
                 actionButtonText: "Send to Approval",
                 secondaryButtonText: "Continue Editing",
                 handleConfirm: () => {
-                    existingBudgetLineItems.forEach((existingBudgetLineItem) => {
+                    let promises = existingBudgetLineItems.map((existingBudgetLineItem) => {
                         let budgetLineHasChanged =
                             JSON.stringify(existingBudgetLineItem) !==
                             JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
                         if (budgetLineHasChanged) {
                             const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
-                            updateBudgetLineItem({ id, data: cleanExistingBLI })
+                            return updateBudgetLineItem({ id, data: cleanExistingBLI })
                                 .unwrap()
                                 .then((fulfilled) => {
                                     console.log("Updated BLI:", fulfilled);
@@ -170,17 +179,23 @@ const useCreateBLIsAndSCs = (
                                         redirectUrl: "/error"
                                     });
                                 });
+                        } else {
+                            // If no changes, return a resolved promise
+                            return Promise.resolve();
                         }
                     });
-                    resetForm();
-                    setIsEditMode(false);
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Edits Sent to Approval",
-                        message:
-                            "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
-                        changeRequests: changeRequestsMessages,
-                        redirectUrl: `/agreements/${selectedAgreement?.id}`
+                    Promise.all(promises).then(() => {
+                        resetForm();
+                        setIsEditMode(false);
+                        const changeRequestsMessages = getChangeRequestsFromBudgetLines(budgetLines);
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Edits Sent to Approval",
+                            message:
+                                "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
+                            changeRequests: changeRequestsMessages,
+                            redirectUrl: `/agreements/${selectedAgreement?.id}`
+                        });
                     });
                 }
             });
