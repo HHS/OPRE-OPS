@@ -61,7 +61,6 @@ class IaaAaAgreementData(AgreementData):
 
 class AgreementResponse(AgreementData):
     id = fields.Integer(required=True)
-    created_by = fields.Integer(allow_none=True)
     project = fields.Nested(Project)
     product_service_code = fields.Nested(ProductServiceCodeSchema)
     budget_line_items = fields.List(
@@ -69,6 +68,10 @@ class AgreementResponse(AgreementData):
     )
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
 
 
 class ContractAgreementResponse(AgreementResponse):
