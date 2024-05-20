@@ -18,7 +18,7 @@ from models.workflows import (
     Solicitation,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.procurement_steps import (
@@ -101,7 +101,6 @@ class BaseProcurementStepListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @check_user_session
     def get(self) -> Response:
         data = self._request_schema.dump(self._request_schema.load(request.args))
 
@@ -138,7 +137,6 @@ class BaseProcurementStepItemAPI(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @check_user_session
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -173,7 +171,6 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
         extra_check=partial(step_associated_with_agreement, permission_type=PermissionType.PATCH),
         groups=["Budget Team", "Admins"],
     )
-    @check_user_session
     def patch(self, id: int) -> Response:
         return self._update(id, "PATCH", self._patch_schema)
 

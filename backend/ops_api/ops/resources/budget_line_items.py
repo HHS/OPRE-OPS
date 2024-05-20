@@ -14,7 +14,7 @@ from models import BudgetLineItemChangeRequest, BudgetLineItemStatus, OpsEventTy
 from models.base import BaseModel
 from models.cans import BudgetLineItem
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.budget_line_items import (
@@ -90,7 +90,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
-    @check_user_session
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
 
@@ -191,7 +190,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PUT),
         groups=["Budget Team", "Admins"],
     )
-    @check_user_session
     def put(self, id: int) -> Response:
         return self._update(id, "PUT", self._put_schema)
 
@@ -202,7 +200,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PATCH),
         groups=["Budget Team", "Admins"],
     )
-    @check_user_session
     def patch(self, id: int) -> Response:
         return self._update(id, "PATCH", self._patch_schema)
 
@@ -219,7 +216,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.DELETE),
         groups=["Budget Team", "Admins"],
     )
-    @check_user_session
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
             bli: BudgetLineItem = self._get_item(id)
@@ -271,7 +267,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
-    @check_user_session
     def get(self) -> Response:
         data = self._get_schema.dump(self._get_schema.load(request.args))
 
@@ -288,7 +283,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
-    @check_user_session
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
         with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:

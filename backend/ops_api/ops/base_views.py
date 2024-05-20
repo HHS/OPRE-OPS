@@ -13,7 +13,6 @@ from sqlalchemy.exc import PendingRollbackError
 
 from models.base import BaseModel
 from ops_api.ops.auth.authorization_providers import AuthorizationGateway, BasicAuthorizationProvider
-from ops_api.ops.auth.decorators import check_user_session
 from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionError, NotActiveUserError
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -139,7 +138,6 @@ class BaseItemAPI(OPSMethodView):
     @handle_api_error
     @jwt_required()
     @error_simulator
-    @check_user_session
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -151,14 +149,12 @@ class BaseListAPI(OPSMethodView):
     @handle_api_error
     @jwt_required()
     @error_simulator
-    @check_user_session
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
     @handle_api_error
     @jwt_required()
     @error_simulator
-    @check_user_session
     def post(self) -> Response:
         raise NotImplementedError
 
@@ -176,7 +172,6 @@ class EnumListAPI(MethodView):
     @handle_api_error
     @jwt_required()
     @error_simulator
-    @check_user_session
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)

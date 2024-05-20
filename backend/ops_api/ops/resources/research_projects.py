@@ -13,7 +13,7 @@ from models.base import BaseModel
 from models.cans import CANFiscalYear
 from models.projects import ResearchProject
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -73,7 +73,6 @@ class ResearchProjectItemAPI(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
-    @check_user_session
     def get(self, id: int) -> Response:
         item = self._get_item(id)
         if item:
@@ -121,7 +120,6 @@ class ResearchProjectListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
-    @check_user_session
     def get(self) -> Response:
         fiscal_year = request.args.get("fiscal_year")
         portfolio_id = request.args.get("portfolio_id")
@@ -140,7 +138,6 @@ class ResearchProjectListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
-    @check_user_session
     def post(self) -> Response:
         try:
             with OpsEventHandler(OpsEventType.CREATE_PROJECT) as meta:

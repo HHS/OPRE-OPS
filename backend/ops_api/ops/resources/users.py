@@ -6,7 +6,7 @@ from marshmallow import Schema
 
 from models import BaseModel, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.users import PATCHRequestBody, POSTRequestBody, QueryParameters, UserResponse
 from ops_api.ops.utils.response import make_response_with_headers
@@ -21,7 +21,6 @@ class UsersItemAPI(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.USER)
-    @check_user_session
     def get(self, id: int) -> Response:
         # token = verify_jwt_in_request()
         # Get the user from the token to see who's making the request
@@ -47,7 +46,6 @@ class UsersItemAPI(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.PUT, Permission.USER)
-    @check_user_session
     def put(self, id: int) -> Response:
         old_user: User = User.query.get(id)
         if not old_user:
@@ -61,7 +59,6 @@ class UsersItemAPI(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.PATCH, Permission.USER)
-    @check_user_session
     def patch(self, id: int) -> Response:
         # Update the user with the request data, and save the changes to the database
         user = update_user(request.json, id)
@@ -77,7 +74,6 @@ class UsersListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.USER)
-    @check_user_session
     def get(self) -> Response:
         oidc_id = request.args.get("oidc_id", type=str)
 
@@ -90,7 +86,6 @@ class UsersListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.PUT, Permission.USER)
-    @check_user_session
     def put(self, id: int) -> Response:
         # Update the user with the request data, and save the changes to the database
         user = update_user(request.json, id)

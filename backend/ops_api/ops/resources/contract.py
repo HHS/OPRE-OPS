@@ -6,7 +6,7 @@ from marshmallow import fields
 from models import ContractType
 from models.cans import ContractAgreement
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.agreements import AgreementData
 from ops_api.ops.schemas.team_members import TeamMembers
@@ -30,7 +30,6 @@ class ContractItemAPI(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
         return response
@@ -44,7 +43,6 @@ class ContractListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self) -> Response:
         stmt = self._get_query(self.model, **request.args)
 

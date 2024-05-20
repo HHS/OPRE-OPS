@@ -5,7 +5,7 @@ from models import Project, ProjectType
 from models.base import BaseModel
 from models.projects import ResearchProject
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
@@ -21,7 +21,6 @@ class ProjectItemAPI(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
-    @check_user_session
     def get(self, id: int) -> Response:
         item = self._get_item(id)
         if not item:
@@ -41,7 +40,6 @@ class ProjectListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.GET, Permission.RESEARCH_PROJECT)
-    @check_user_session
     def get(self) -> Response:
         fiscal_year = request.args.get("fiscal_year")
         portfolio_id = request.args.get("portfolio_id")
@@ -66,7 +64,6 @@ class ProjectListAPI(BaseListAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.POST, Permission.RESEARCH_PROJECT)
-    @check_user_session
     def post(self) -> Response:
         project_type = request.json.get("project_type")
         if not project_type:

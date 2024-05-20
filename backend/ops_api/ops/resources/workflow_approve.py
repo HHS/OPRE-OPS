@@ -17,7 +17,7 @@ from models.workflows import (
     WorkflowStepStatus,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.utils.procurement_workflow_helper import create_procurement_workflow
 from ops_api.ops.utils.response import make_response_with_headers
@@ -43,7 +43,6 @@ class WorkflowApprovalListApi(BaseItemAPI):
 
     @handle_api_error
     @is_authorized(PermissionType.PATCH, Permission.WORKFLOW)
-    @check_user_session
     def post(self) -> Response:
         # TODO: Using a dataclass schema for ApprovalSubmissionData, load data from request.json
 

@@ -3,11 +3,12 @@ import os
 from typing import Any, Optional
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, request
+from flask import Blueprint, Flask, request, url_for
 from flask_cors import CORS
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
+from ops_api.ops.auth.decorators import check_user_session
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
@@ -115,14 +116,7 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
 
     @app.before_request
     def before_request():
-        request_data = {
-            "method": request.method,
-            "url": request.url,
-            "json": request.get_json(silent=True),
-            "args": request.args,
-            "headers": request.headers,
-        }
-        app.logger.info(f"Request: {request_data}")
+        before_request_function(app.logger)
 
     @app.after_request
     def after_request(response):
@@ -143,3 +137,28 @@ def log_response(log, response):
             "response_headers": response.headers,
         }
         log.info(f"Response: {response_data}")
+
+
+def log_request(log: logging.Logger):
+    request_data = {
+        "method": request.method,
+        "url": request.url,
+        "json": request.get_json(silent=True),
+        "args": request.args,
+        "headers": request.headers,
+    }
+    log.info(f"Request: {request_data}")
+
+
+@check_user_session
+def check_user_session_function(log: logging.Logger):
+    log.debug("Checking user session")
+
+
+def before_request_function(log: logging.Logger):
+    log_request(log)
+    if request.url not in [url_for("auth.login_post"), url_for("auth.logout_post"), url_for("auth.refresh_post")]:
+
+        @check_user_session
+        def check_user_session_function():
+            log.debug("User session is valid.")
