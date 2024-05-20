@@ -36,7 +36,7 @@ def login(code: str, provider: str) -> dict[str, Any]:
             user,
         ) = _get_token_and_user_data_from_internal_auth(user_data, current_app.config, current_app.db_session)
 
-        user_session = _get_or_create_user_session(user, access_token, refresh_token)
+        user_session = _get_or_create_user_session(user, access_token, refresh_token, request.remote_addr)
 
         la.metadata.update(
             {
@@ -100,7 +100,10 @@ def refresh() -> dict[str, str]:
 
 
 def _get_or_create_user_session(
-    user: User, access_token: Optional[str] = None, refresh_token: Optional[str] = None
+    user: User,
+    access_token: Optional[str] = None,
+    refresh_token: Optional[str] = None,
+    ip_address: Optional[str] = "127.0.0.1",
 ) -> UserSession:
     stmt = (
         select(UserSession)
@@ -123,7 +126,7 @@ def _get_or_create_user_session(
         user_session = UserSession(
             user_id=user.id,
             is_active=True,
-            ip_address=request.remote_addr,
+            ip_address=ip_address,
             access_token=access_token,
             refresh_token=refresh_token,
             last_active_at=datetime.now(),
