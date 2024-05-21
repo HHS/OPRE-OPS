@@ -2,8 +2,10 @@ import PropTypes from "prop-types";
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
+import AgreementChangesAlert from "../../../components/UI/Alert/AgreementChangesAlert";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
+import { hasActiveWorkflow, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
+import useChangeRequests from "../../../hooks/useChangeRequests.hooks";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -21,10 +23,13 @@ const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer, i
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
+    let doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveActiveWorkflow;
+    const changeRequests = useChangeRequests(agreement?.id);
 
     return (
-        <div>
+        <article>
+            {doesAgreementHaveBlIsInReview && <AgreementChangesAlert changeRequests={changeRequests} />}
             <AgreementDetailHeader
                 heading="Agreement Details"
                 details=""
@@ -46,7 +51,7 @@ const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer, i
                     projectOfficer={projectOfficer}
                 />
             )}
-        </div>
+        </article>
     );
 };
 
