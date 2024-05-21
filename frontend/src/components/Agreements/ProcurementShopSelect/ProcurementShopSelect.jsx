@@ -57,7 +57,6 @@ export const ProcurementShopSelect = ({
             fee: procurementShops[procurementShopId - 1].fee
         };
         onChangeSelectedProcurementShop(procurementShop);
-        console.log(procurementShop)
 
         setHasSelectedDefault(procurementShop.id === 2);
     };
@@ -70,9 +69,9 @@ export const ProcurementShopSelect = ({
             >
                 Procurement Shop
             </label>
-            <span className={`usa-error-message ${hasSelectedDefault ? "display-none" : ""}`}>
-                {"GCS is the only available type for now"}
-            </span>
+            {!hasSelectedDefault && (
+                <span className="usa-error-message">GCS is the only available type for now</span>
+            )}
             <div className="display-flex flex-align-center">
                 <select
                     className={`usa-select margin-top-1 ${hasSelectedDefault ? "" : "usa-input--error"}`}
