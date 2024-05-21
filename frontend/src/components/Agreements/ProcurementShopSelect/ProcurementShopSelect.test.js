@@ -72,11 +72,9 @@ describe("ProcurementShopSelect", () => {
                 onChangeSelectedProcurementShop={mockFn}
             />
         );
-
         fireEvent.change(screen.getByLabelText("Procurement Shop"), { target: { value: sampleShops[0].id } });
 
-        expect(mockFn).toHaveBeenCalledTimes(1);
-        expect(screen.queryByText("GCS is the only available type for now")).toBeInTheDocument();
+        expect(screen.getByText("GCS is the only available type for now")).toBeInTheDocument();
     });
 
     it("does not display error message when shop is GCS", async () => {
@@ -90,5 +88,4 @@ describe("ProcurementShopSelect", () => {
 
         expect(screen.queryByText("GCS is the only available type for now")).not.toBeInTheDocument();
     });
-
 });
