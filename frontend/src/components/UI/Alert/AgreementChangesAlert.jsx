@@ -14,6 +14,7 @@ function AgreementChangesAlert({ changeRequests }) {
             type="warning"
             heading="Agreement Edits In Review"
             message="There are edits pending approval from your Division Director. After they are approved, they will update on the Agreement."
+            isClosable={true}
         >
             {changeRequests && changeRequests.length > 0 && (
                 <>
