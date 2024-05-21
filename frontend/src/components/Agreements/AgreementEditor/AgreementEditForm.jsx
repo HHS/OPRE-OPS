@@ -60,7 +60,10 @@ export const AgreementEditForm = ({
     cancelHeading
 }) => {
     // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
-    const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
+    const isCreatingAgreement = location.pathname === "/agreements/create";
+    const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
+    const isWizardMode = isCreatingAgreement || isEditingAgreement;
+
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -135,7 +138,11 @@ export const AgreementEditForm = ({
     let res = suite.get();
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors() || selectedProcurementShop.id !== 2;
+    const shouldDisableBtn =
+        !agreementTitle ||
+        !agreementType ||
+        res.hasErrors() ||
+        (isCreatingAgreement && selectedProcurementShop.id !== 2);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
