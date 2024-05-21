@@ -154,10 +154,6 @@ def log_request(log: logging.Logger):
 
 
 def before_request_function(log: logging.Logger):
-    log_and_check_session(log)
-
-
-def log_and_check_session(log):
     log_request(log)
     if request.url not in [url_for("auth.login_post"), url_for("auth.logout_post"), url_for("auth.refresh_post")]:
 

@@ -4,6 +4,7 @@ from flask_jwt_extended import verify_jwt_in_request
 
 from ops_api.ops.auth.decorators import check_user_session
 from ops_api.ops.auth.exceptions import InvalidUserSessionError
+from ops_api.ops.auth.utils import get_all_user_sessions
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -30,7 +31,7 @@ def test_check_user_session_decorator_with_active_session(mocker):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_check_user_session_decorator_without_active_session(mocker):
+def test_check_user_session_decorator_without_active_session(loaded_db, mocker):
     # Arrange
     mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
     mock_user_session = mocker.MagicMock()
@@ -49,6 +50,9 @@ def test_check_user_session_decorator_without_active_session(mocker):
     # Assert
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
+
+    user_sessions = get_all_user_sessions(4, loaded_db)
+    assert all([not user_session.is_active for user_session in user_sessions])
 
 
 def test_any_endpoint_active_session(auth_client, loaded_db, mocker):
@@ -80,6 +84,9 @@ def test_check_user_session_token_doesnt_match(mocker, loaded_db):
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
 
+    user_sessions = get_all_user_sessions(4, loaded_db)
+    assert all([not user_session.is_active for user_session in user_sessions])
+
 
 @pytest.mark.usefixtures("app_ctx")
 def test_ip_address_doesnt_match(mocker, loaded_db):
@@ -104,3 +111,6 @@ def test_ip_address_doesnt_match(mocker, loaded_db):
     # Assert
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
+
+    user_sessions = get_all_user_sessions(4, loaded_db)
+    assert all([not user_session.is_active for user_session in user_sessions])
