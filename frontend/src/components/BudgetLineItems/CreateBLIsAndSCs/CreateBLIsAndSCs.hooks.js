@@ -140,7 +140,13 @@ const useCreateBLIsAndSCs = (
                     Promise.all(promises).then(() => {
                         resetForm();
                         setIsEditMode(false);
-                        navigate(`/agreements/${selectedAgreement?.id}`);
+                        setAlert({
+                            type: "success",
+                            heading: "Agreement Edits Sent to Approval",
+                            message:
+                                "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
+                            redirectUrl: `/agreements/${selectedAgreement?.id}`
+                        });
                     });
                 }
             });
