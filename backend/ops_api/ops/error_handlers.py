@@ -3,7 +3,7 @@ from marshmallow import ValidationError
 from sqlalchemy.exc import PendingRollbackError
 from werkzeug.exceptions import NotFound
 
-from ops_api.ops import AuthenticationError, InvalidUserSessionError, NotActiveUserError
+from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionError, NotActiveUserError
 from ops_api.ops.utils.response import make_response_with_headers
 
 
