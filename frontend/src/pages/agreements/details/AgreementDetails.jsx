@@ -2,10 +2,8 @@ import PropTypes from "prop-types";
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
-import AgreementChangesAlert from "../../../components/UI/Alert/AgreementChangesAlert";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { hasActiveWorkflow, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
-import useChangeRequests from "../../../hooks/useChangeRequests.hooks";
+import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -22,14 +20,11 @@ const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer, i
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
-    let doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveActiveWorkflow;
-    const changeRequests = useChangeRequests(agreement?.id);
+    const isAgreementInReview = hasBlIsInReview(agreement?.budget_line_items);
+    const isEditable = isAgreementEditable && canUserEditAgreement && !isAgreementInReview;
 
     return (
         <article>
-            {doesAgreementHaveBlIsInReview && <AgreementChangesAlert changeRequests={changeRequests} />}
             <AgreementDetailHeader
                 heading="Agreement Details"
                 details=""
@@ -37,6 +32,7 @@ const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer, i
                 setIsEditMode={setIsEditMode}
                 isEditable={isEditable}
             />
+
             {isEditMode ? (
                 <AgreementDetailsEdit
                     agreement={agreement}
