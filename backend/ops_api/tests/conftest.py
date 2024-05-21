@@ -4,14 +4,13 @@ import subprocess
 from collections.abc import Generator
 
 import pytest
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import Flask
 from flask.testing import FlaskClient
 from pytest_docker.plugin import Services
 from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 
 from models import OpsDBHistory, OpsEvent
 from ops_api.ops import create_app
@@ -28,18 +27,14 @@ def app(db_service) -> Generator[Flask, None, None]:
 @pytest.fixture()
 def client(app: Flask, loaded_db) -> FlaskClient:  # type: ignore [type-arg]
     """Get a test client for flask."""
+    app.testing = True
+    app.test_client_class = FlaskClient
     return app.test_client()
 
 
 @pytest.fixture()
 def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = AuthClient
     return app.test_client()
@@ -48,12 +43,6 @@ def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
 @pytest.fixture()
 def no_perms_auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = NoPermsAuthClient
     return app.test_client()
@@ -113,7 +102,7 @@ def docker_compose_command() -> str:
 
 
 @pytest.fixture()
-def loaded_db(app: Flask, app_ctx: None):
+def loaded_db(app: Flask, app_ctx: None, auth_client: FlaskClient) -> Session:
     """Get SQLAlchemy Session."""
 
     session = app.db_session
@@ -123,10 +112,8 @@ def loaded_db(app: Flask, app_ctx: None):
     # cleanup
     session.rollback()
 
-    stmt = delete(OpsDBHistory)
-    session.execute(stmt)
-    stmt = delete(OpsEvent)
-    session.execute(stmt)
+    session.execute(delete(OpsDBHistory))
+    session.execute(delete(OpsEvent))
 
     session.commit()
     session.close()

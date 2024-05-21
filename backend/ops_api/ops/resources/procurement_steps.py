@@ -5,7 +5,6 @@ from flask import Response, current_app, request
 from flask_jwt_extended import current_user, get_jwt_identity
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
-from typing_extensions import override
 
 from models import Agreement, OpsEventType
 from models.base import BaseModel
@@ -19,7 +18,7 @@ from models.workflows import (
     Solicitation,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.auth.decorators import check_user_session, is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
 from ops_api.ops.schemas.procurement_steps import (
@@ -100,9 +99,9 @@ class BaseProcurementStepListAPI(BaseListAPI):
         self._request_schema = mmdc.class_schema(ProcurementStepListQuery)()
         self._response_schema_collection = mmdc.class_schema(ProcurementStepResponse)(many=True)
 
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     @handle_api_error
+    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
+    @check_user_session
     def get(self) -> Response:
         data = self._request_schema.dump(self._request_schema.load(request.args))
 
@@ -137,9 +136,9 @@ class BaseProcurementStepItemAPI(BaseItemAPI):
 
         return response
 
-    @override
-    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     @handle_api_error
+    @is_authorized(PermissionType.GET, Permission.WORKFLOW)
+    @check_user_session
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -167,13 +166,14 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
             resp_dict = {"message": f"{self.model.__name__} updated", "id": id}
             return make_response_with_headers(resp_dict, 200)
 
+    @handle_api_error
     @is_authorized(
         PermissionType.PATCH,
         Permission.WORKFLOW,
         extra_check=partial(step_associated_with_agreement, permission_type=PermissionType.PATCH),
         groups=["Budget Team", "Admins"],
     )
-    @handle_api_error
+    @check_user_session
     def patch(self, id: int) -> Response:
         return self._update(id, "PATCH", self._patch_schema)
 

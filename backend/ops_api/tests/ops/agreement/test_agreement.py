@@ -506,7 +506,7 @@ def test_get_iaa_agreement(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post(auth_client):
+def test_agreements_post(auth_client, loaded_db):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
@@ -522,7 +522,7 @@ def test_agreements_post(auth_client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_service_requirement_type(auth_client):
+def test_agreements_post_contract_with_service_requirement_type(auth_client, loaded_db):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
