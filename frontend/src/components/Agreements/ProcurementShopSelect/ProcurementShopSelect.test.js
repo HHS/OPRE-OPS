@@ -1,4 +1,4 @@
-import { screen, render } from "@testing-library/react";
+import { screen, render, fireEvent } from "@testing-library/react";
 import { vi } from "vitest";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
@@ -73,7 +73,22 @@ describe("ProcurementShopSelect", () => {
             />
         );
 
-        const errorMessage = await screen.findByText("GCS is the only available type for now");
-        expect(errorMessage).toBeInTheDocument();
+        fireEvent.change(screen.getByLabelText("Procurement Shop"), { target: { value: sampleShops[0].id } });
+
+        expect(mockFn).toHaveBeenCalledTimes(1);
+        expect(screen.queryByText("GCS is the only available type for now")).toBeInTheDocument();
     });
+
+    it("does not display error message when shop is GCS", async () => {
+        useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
+        render(
+            <ProcurementShopSelect
+                selectedProcurementShop={sampleShops[2]}
+                onChangeSelectedProcurementShop={mockFn}
+            />
+        );
+
+        expect(screen.queryByText("GCS is the only available type for now")).not.toBeInTheDocument();
+    });
+
 });
