@@ -7,7 +7,7 @@ import AgreementBudgetLines from "./AgreementBudgetLines";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
-import AgreementChangesAlert from "../../../components/UI/Alert/AgreementChangesAlert";
+import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import useChangeRequests from "../../../hooks/useChangeRequests.hooks";
 
 const Agreement = () => {

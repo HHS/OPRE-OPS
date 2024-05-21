@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import SimpleAlert from "./SimpleAlert";
+import SimpleAlert from "../../UI/Alert/SimpleAlert";
 
 /**
  * Alert for when there are agreement changes in review.
