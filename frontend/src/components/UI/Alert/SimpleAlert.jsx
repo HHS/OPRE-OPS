@@ -1,4 +1,3 @@
-import * as React from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
@@ -11,10 +10,11 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
  * @param {string} props.message - The message text for the alert.
  * @param {string} props.type - The type of alert to display.
  * @param {boolean} [props.isClosable] - Whether the alert is closable. - optional
+ * @param {boolean} props.isAlertVisible - Whether the alert is visible.
+ * @param {Function} props.setIsAlertVisible - The function to set the alert visibility.
  * @returns {JSX.Element | null} - The rendered alert component.
  */
-const SimpleAlert = ({ children, heading, message, type, isClosable = false }) => {
-    const [isAlertVisible, setIsAlertVisible] = React.useState(true);
+const SimpleAlert = ({ children, heading, message, type, isClosable = false, isAlertVisible, setIsAlertVisible }) => {
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4";
 
     switch (type) {
@@ -64,7 +64,9 @@ SimpleAlert.propTypes = {
     heading: PropTypes.string.isRequired,
     message: PropTypes.string.isRequired,
     type: PropTypes.oneOf(["success", "warning", "error"]).isRequired,
-    isClosable: PropTypes.bool
+    isClosable: PropTypes.bool,
+    isAlertVisible: PropTypes.bool.isRequired,
+    setIsAlertVisible: PropTypes.func.isRequired
 };
 
 export default SimpleAlert;

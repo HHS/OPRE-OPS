@@ -16,6 +16,7 @@ const Agreement = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
+    const [isAlertVisible, setIsAlertVisible] = useState(true);
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
@@ -67,8 +68,12 @@ const Agreement = () => {
 
     return (
         <App breadCrumbName={agreement?.name}>
-            {doesAgreementHaveBlIsInReview ? (
-                <AgreementChangesAlert changeRequests={changeRequests} />
+            {doesAgreementHaveBlIsInReview && isAlertVisible ? (
+                <AgreementChangesAlert
+                    changeRequests={changeRequests}
+                    isAlertVisible={isAlertVisible}
+                    setIsAlertVisible={setIsAlertVisible}
+                />
             ) : (
                 <>
                     <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
