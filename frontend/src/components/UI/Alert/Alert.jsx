@@ -18,7 +18,7 @@ const Alert = ({ children }) => {
     /**
      * @type {import('../../../hooks/use-alert.hooks').AlertData}
      */
-    const { heading, message, type, changeRequests, redirectUrl } = useSelector((state) => state.alert);
+    const { heading, message, type, redirectUrl } = useSelector((state) => state.alert);
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
     let waitTime = redirectUrl ? 3000 : 2000;
@@ -36,14 +36,14 @@ const Alert = ({ children }) => {
     }, [navigate, redirectUrl]);
 
     // Manage alert visibility and auto-dismiss without affecting navigation
-    // useEffect(() => {
-    //     const timer = setTimeout(() => {
-    //         dispatch(clearState());
-    //         setIsAlertVisible(false);
-    //     }, waitTime);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            dispatch(clearState());
+            setIsAlertVisible(false);
+        }, waitTime);
 
-    //     return () => clearTimeout(timer);
-    // }, [dispatch, waitTime]);
+        return () => clearTimeout(timer);
+    }, [dispatch, waitTime]);
 
     const typeClass =
         {
@@ -76,16 +76,6 @@ const Alert = ({ children }) => {
                     <div>
                         <h1 className="usa-alert__heading">{heading}</h1>
                         <p className="usa-alert__text">{message}</p>
-                        {changeRequests && changeRequests.length > 0 && (
-                            <>
-                                <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Pending Edits:</h2>
-                                <ul className="margin-0 font-sans-sm">
-                                    {changeRequests?.map((changeRequest) => (
-                                        <li key={changeRequest}>{changeRequest}</li>
-                                    ))}
-                                </ul>
-                            </>
-                        )}
                         {children}
                     </div>
                     <FontAwesomeIcon
