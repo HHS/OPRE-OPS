@@ -8,7 +8,7 @@ const statusClasses = {
     OBLIGATED: "bg-brand-data-viz-primary-6 text-white"
 };
 
-export const statuses = Object.keys(statusClasses);
+const statuses = Object.keys(statusClasses);
 
 /**
  * A component that displays a tag with a background color based on the status code.
@@ -22,7 +22,7 @@ export const statuses = Object.keys(statusClasses);
  * @param {StatusTagProps} props - The component props.
  * @returns {JSX.Element} - The rendered component.
  */
-export const StatusTag = ({ status, count = -1 }) => {
+const StatusTag = ({ status, count = -1 }) => {
     const statusText = convertCodeForDisplay("budgetLineStatus", status);
     let classNames = "margin-bottom-1 ";
     if (statusClasses[status]) {
@@ -37,7 +37,7 @@ export const StatusTag = ({ status, count = -1 }) => {
     );
 };
 
-export const StatusTagList = ({ countsByStatus, includeDrafts }) => {
+const StatusTagList = ({ countsByStatus, includeDrafts }) => {
     const filteredStatues = includeDrafts
         ? statuses
         : statuses.filter((status) => !draftBudgetLineStatuses.includes(status));
@@ -60,4 +60,4 @@ export const StatusTagList = ({ countsByStatus, includeDrafts }) => {
     );
 };
 
-export default StatusTag;
+export default StatusTagList;
