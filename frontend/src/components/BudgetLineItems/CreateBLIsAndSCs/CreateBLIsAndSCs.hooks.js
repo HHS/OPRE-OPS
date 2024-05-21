@@ -7,26 +7,26 @@ import {
     useUpdateBudgetLineItemMutation,
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
-    useDeleteBudgetLineItemMutation,
-    useGetCansQuery
+    useDeleteBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { budgetLinesTotal, BLILabel } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
-import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
+import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
+ * @param {Function} setIsEditMode - Function to set the edit mode.
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
+ * @param {boolean} isEditMode - Flag to indicate if the component is in edit mode.
  * @param {Array<Object>} budgetLines - Array of budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
  * @param {Object} selectedAgreement - Selected agreement object.
  * @param {Object} selectedProcurementShop - Selected procurement shop object.
- * @param {Function} setIsEditMode - Function to set the edit mode.
  * @param {string} workflow - The workflow type ("agreement" or "budgetLines").
  * @param {Object} formData - The form data.
  *
@@ -63,7 +63,6 @@ const useCreateBLIsAndSCs = (
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
-    const { data: cans, isSuccess, isLoading } = useGetCansQuery();
     const [deleteAgreement] = useDeleteAgreementMutation();
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
@@ -96,52 +95,6 @@ const useCreateBLIsAndSCs = (
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
-
-    /**
-     * Get change requests from budget lines.
-     * @param {Object[]} budgetLines - The budget lines.
-     * @returns {string[]} The change requests messages.
-     */
-    function getChangeRequestsFromBudgetLines(budgetLines) {
-        debugger;
-        /**
-         * Array of messages for each change request.
-         * @type {string[]}
-         */
-        let changeRequestsMessages = [];
-        const changeRequestsFromBudgetLines = budgetLines
-            .filter((budgetLine) => budgetLine.in_review)
-            .flatMap((budgetLine) =>
-                budgetLine.change_requests_in_review.map((changeRequest) => ({ ...budgetLine, changeRequest }))
-            );
-
-        console.log({ changeRequestsFromBudgetLines });
-
-        if (changeRequestsFromBudgetLines?.length > 0 && isSuccess) {
-            changeRequestsFromBudgetLines.forEach((budgetLine) => {
-                budgetLine.change_requests_in_review.forEach((changeRequest) => {
-                    let bliId = `BL ${budgetLine.id}`;
-                    if (changeRequest?.requested_change_data?.amount) {
-                        changeRequestsMessages.push(
-                            `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
-                        );
-                    }
-                    if (changeRequest?.requested_change_data?.date_needed) {
-                        changeRequestsMessages.push(
-                            `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
-                        );
-                    }
-                    if (changeRequest?.requested_change_data?.can_id) {
-                        let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
-                        let canName = matchingCan?.display_name || "TBD";
-
-                        changeRequestsMessages.push(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
-                    }
-                });
-            });
-        }
-        return changeRequestsMessages;
-    }
 
     const handleSave = () => {
         const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
@@ -187,15 +140,7 @@ const useCreateBLIsAndSCs = (
                     Promise.all(promises).then(() => {
                         resetForm();
                         setIsEditMode(false);
-                        const changeRequestsMessages = getChangeRequestsFromBudgetLines(budgetLines);
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Edits Sent to Approval",
-                            message:
-                                "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
-                            changeRequests: changeRequestsMessages,
-                            redirectUrl: `/agreements/${selectedAgreement?.id}`
-                        });
+                        navigate(`/agreements/${selectedAgreement?.id}`);
                     });
                 }
             });
@@ -267,8 +212,8 @@ const useCreateBLIsAndSCs = (
 
         setAlert({
             type: "success",
-            heading: "Budget Lines Added",
-            message: "The budget lines has been successfully updated.",
+            heading: "Budget Lines Edited",
+            message: "The budget lines have been successfully updated.",
             redirectUrl: `/agreements/${selectedAgreement?.id}`
         });
     };
@@ -464,6 +409,8 @@ const useCreateBLIsAndSCs = (
                     }
                     navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                 } else {
+                    // TODO: Add logic to delete the agreement in the workflow
+                    // Delete the agreement in the workflow
                     deleteAgreement(selectedAgreement?.id)
                         .unwrap()
                         .then((fulfilled) => {

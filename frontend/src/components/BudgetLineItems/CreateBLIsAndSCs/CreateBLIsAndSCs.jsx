@@ -23,12 +23,12 @@ import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHea
  * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
  * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
  * @param {Object} [props.formData] - The form data.
- * @param {Array<String>} props.wizardSteps - An array of objects representing the steps in the flow.
+ * @param {string[]} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {Object} props.selectedResearchProject - The selected research project.
  * @param {Object} props.selectedAgreement - The selected agreement.
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
- * @param {Array<any>} props.budgetLines - The selected Agreements budget lines.
+ * @param {Object[]} props.budgetLines - The selected Agreements budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
@@ -300,10 +300,10 @@ CreateBLIsAndSCs.propTypes = {
     selectedProcurementShop: PropTypes.object,
     budgetLines: PropTypes.array,
     continueBtnText: PropTypes.string.isRequired,
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
+    isEditMode: PropTypes.bool.isRequired,
     canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
+    setIsEditMode: PropTypes.func,
+    isReviewMode: PropTypes.bool.isRequired,
     continueOverRide: PropTypes.func,
     workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
     cardData: PropTypes.object
