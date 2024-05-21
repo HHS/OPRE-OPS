@@ -23,6 +23,7 @@ from ops_api.ops.schemas.budget_line_items import (
     POSTRequestBody,
     QueryParameters,
 )
+from ops_api.ops.schemas.budget_line_items_marshmallow import PATCHRequestBodySchema
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -72,7 +73,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         super().__init__(model)
         self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
-        self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
+        # self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
+        self._patch_schema = PATCHRequestBodySchema()
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -125,6 +127,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             # determine if it can be edited directly or if a change request is required
             directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
 
+            print(">>>~~~ before validation")
             # validate and normalize the request data
             change_data, changing_from_data = validate_and_prepare_change_data(
                 request.json,
@@ -133,6 +136,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 ["id", "agreement_id"],
                 partial=False,
             )
+            print(">>>~~~ after validation")
 
             changed_budget_prop_keys = list(
                 set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names)

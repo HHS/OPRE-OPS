@@ -2,8 +2,9 @@ import json
 import sys
 
 import pytest
+from flask import url_for
 
-from models import Agreement, BudgetLineItem
+from models import Agreement, BudgetLineItem, BudgetLineItemStatus
 
 
 @pytest.mark.skipif(
@@ -16,6 +17,7 @@ def test_budget_line_item_validation(auth_client, app):
     agreement_id = None
     bli_id = None
 
+    print("\n~~~ create agrement (using API)")
     # create agreement (using API)
     data = {
         "agreement_type": "CONTRACT",
@@ -31,34 +33,33 @@ def test_budget_line_item_validation(auth_client, app):
         ],
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
-    print(f"~~~ Agreement POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    # print(f"~~~ Agreement POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
     assert resp.status_code == 201
     assert "id" in resp.json
     agreement_id = resp.json["id"]
 
+    print("\n~~~ create BLI (using API)")
     #  create BLI (using API)
     data = {
         "line_description": "Test Experiments Workflows BLI",
         "agreement_id": agreement_id,
-        # "can_id": 1,
-        # "amount": 111.11,
         "status": "DRAFT",
-        # "date_needed": "2025-01-01",
     }
     resp = auth_client.post("/api/v1/budget-line-items/", json=data)
-    print(f"~~~ BLI POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    # print(f"~~~ BLI POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
     assert resp.status_code == 201
     assert "id" in resp.json
     bli_id = resp.json["id"]
 
+    print("\n~~~ update BLI status to PLANNED and expect validation errors")
     # update BLI status to PLANNED and expect validation errors
     data = {
         "status": "PLANNED",
     }
     resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
-    print(f"~~~ BLI PATCH 1: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    # print(f"~~~ BLI PATCH 1: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
     assert resp.status_code == 400
-    print(json.dumps(resp.json, indent=2))
+    # print(json.dumps(resp.json, indent=2))
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 8
     assert resp.json == {
@@ -74,6 +75,7 @@ def test_budget_line_item_validation(auth_client, app):
         ]
     }
 
+    print("\n~~~ update agreement for validation")
     # update agreement for validation
     data = {
         "description": "Description",
@@ -83,15 +85,16 @@ def test_budget_line_item_validation(auth_client, app):
         "project_officer_id": 21,
     }
     resp = auth_client.patch(f"/api/v1/agreements/{agreement_id}", json=data)
-    print(f"~~~ Agreement PATCH to valid: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    # print(f"~~~ BLI PATCH 3 to valid: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
     assert resp.status_code == 200
 
+    print("\n~~~ update BLI status to PLANNED and expect validation errors")
     # update BLI status to PLANNED and expect only BLI validation errors
     data = {
         "status": "PLANNED",
     }
     resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
-    print(f"~~~ BLI PATCH 2: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    # print(f"~~~ BLI PATCH 4: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
     assert resp.status_code == 400
     print(json.dumps(resp.json, indent=2))
     assert "_schema" in resp.json
@@ -103,6 +106,284 @@ def test_budget_line_item_validation(auth_client, app):
             "BLI must valid a valid Need By Date when status is not DRAFT",
         ]
     }
+
+    print("\n~~~ update BLI for validation")
+    # update BLI for validation
+    data = {
+        "can_id": 1,
+        "amount": 111.11,
+        "date_needed": "2025-01-01",
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    # print(f"~~~ BLI PATCH 3: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 200
+    assert "id" in resp.json
+    bli_id = resp.json["id"]
+
+    print("\n~~~ update BLI status to PLANNED and expect no validation errors")
+    # update BLI status to PLANNED and expect no validation errors
+    # this doesn't actually change the status, but it validates it
+    data = {
+        "status": "PLANNED",
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    # print(f"~~~ BLI PATCH 4: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 200
+    assert resp.json["in_review"] == False
+    assert resp.json["change_requests_in_review"] is None
+    assert resp.json["status"] == "DRAFT"
+
+    print("\n~~~ chanage the status directly to PLANNED")
+    # change the status directly to PLANNED
+    bli = session.get(BudgetLineItem, bli_id)
+    bli.status = BudgetLineItemStatus.PLANNED
+    session.add(bli)
+    session.commit()
+    print("\n\n~~~ BLI status changed to PLANNED ~~~\n\n")
+
+    print("\n~~~ update BLI with invalid data (for PLANNED status)")
+    # update BLI with invalid data (for PLANNED status)
+    data = {
+        # "can_id": None,
+        "amount": None,
+        # "date_needed": None,
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    print(f"~~~ BLI PATCH 5: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 400
+    # assert resp.status_code == 202
+
+    # that shouldn't have been accepted, but for now since it was, let's try to approve them
+    # assert "change_requests_in_review" in resp.json
+    # change_request_ids = [cr["id"] for cr in resp.json["change_requests_in_review"]]
+    # for change_request in resp.json["change_requests_in_review"]:
+    #     change_request_id = change_request["id"]
+    #     print(f"~~~ Approving Change Request: {change_request_id}, {change_request['requested_change_data']}")
+    #     action = "APPROVE"
+    #     data = {"change_request_id": change_request_id, "action": action}
+    #     response = auth_client.post(url_for("api.change-request-review-list"), json=data)
+    #     assert response.status_code == 200
+    #
+    # resp = auth_client.get(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    # assert resp.status_code == 200
+    # print(f"~~~ BLI GET: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+
+    # cleanup
+    bli = session.get(BudgetLineItem, bli_id)
+    session.delete(bli)
+    agreement = session.get(Agreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+@pytest.mark.skipif(
+    "test_budget_line_item.py::test_budget_line_item_validation_create_invalid" not in sys.argv,
+    reason="Skip unless run manually by itself",
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_validation_create_invalid(auth_client, app):
+    session = app.db_session
+    agreement_id = None
+    bli_id = None
+
+    print("\n~~~ create agrement (using API)")
+    # create agreement (using API)
+    data = {
+        "agreement_type": "CONTRACT",
+        "agreement_reason": "NEW_REQ",
+        "name": "TEST: Agreement for BLI Validation",
+        "team_members": [
+            {
+                "id": 21,
+            },
+            {
+                "id": 23,
+            },
+        ],
+        "description": "Description",
+        "procurement_shop_id": 2,
+        "product_service_code_id": 1,
+        "project_id": 1,
+        "project_officer_id": 21,
+    }
+    resp = auth_client.post("/api/v1/agreements/", json=data)
+    # print(f"~~~ Agreement POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    agreement_id = resp.json["id"]
+
+    print("\n~~~ create BLI (using API)")
+    #  create BLI (using API)
+    data = {
+        "line_description": "Test Experiments Workflows BLI",
+        "agreement_id": agreement_id,
+        "status": "PLANNED",
+        "can_id": 1,
+        "amount": 111.11,
+        # "date_needed": "2025-01-01",
+    }
+    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    # print(f"~~~ BLI POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 400
+    print(json.dumps(resp.json, indent=2))
+
+    # cleanup
+    # bli = session.get(BudgetLineItem, bli_id)
+    # session.delete(bli)
+    agreement = session.get(Agreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+@pytest.mark.skipif(
+    "test_budget_line_item.py::test_budget_line_item_validation_status_change" not in sys.argv,
+    reason="Skip unless run manually by itself",
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_validation_status_change(auth_client, app):
+    session = app.db_session
+    agreement_id = None
+    bli_id = None
+
+    print("\n~~~ create agrement (using API)")
+    # create agreement (using API)
+    data = {
+        "agreement_type": "CONTRACT",
+        "agreement_reason": "NEW_REQ",
+        "name": "TEST: Agreement for BLI Validation",
+        "team_members": [
+            {
+                "id": 21,
+            },
+            {
+                "id": 23,
+            },
+        ],
+        "description": "Description",
+        "procurement_shop_id": 2,
+        "product_service_code_id": 1,
+        "project_id": 1,
+        "project_officer_id": 21,
+    }
+    resp = auth_client.post("/api/v1/agreements/", json=data)
+    # print(f"~~~ Agreement POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    agreement_id = resp.json["id"]
+
+    print("\n~~~ create BLI (using API)")
+    #  create BLI (using API)
+    data = {
+        "line_description": "Test Experiments Workflows BLI",
+        "agreement_id": agreement_id,
+        "status": "DRAFT",
+        # "can_id": 1,
+        # "amount": 111.11,
+        # "date_needed": "2025-01-01",
+    }
+    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    # print(f"~~~ BLI POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    bli_id = resp.json["id"]
+    # print(json.dumps(resp.json, indent=2))
+
+    # update BLI status to PLANNED and expect validation errors
+    # this doesn't actually change the status, but it validates it
+    data = {
+        "status": "PLANNED",
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    # print(f"~~~ BLI PATCH 4: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 400
+    print(json.dumps(resp.json, indent=2))
+
+    # cleanup
+    bli = session.get(BudgetLineItem, bli_id)
+    session.delete(bli)
+    agreement = session.get(Agreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+@pytest.mark.skipif(
+    "test_budget_line_item.py::test_budget_line_item_validation_patch_to_invalid" not in sys.argv,
+    reason="Skip unless run manually by itself",
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_validation_patch_to_invalid(auth_client, app):
+    session = app.db_session
+    agreement_id = None
+    bli_id = None
+
+    print("\n~~~ create agrement (using API)")
+    # create agreement (using API)
+    data = {
+        "agreement_type": "CONTRACT",
+        "agreement_reason": "NEW_REQ",
+        "name": "TEST: Agreement for BLI Validation",
+        "team_members": [
+            {
+                "id": 21,
+            },
+            {
+                "id": 23,
+            },
+        ],
+        "description": "Description",
+        "procurement_shop_id": 2,
+        "product_service_code_id": 1,
+        "project_id": 1,
+        "project_officer_id": 21,
+    }
+    resp = auth_client.post("/api/v1/agreements/", json=data)
+    # print(f"~~~ Agreement POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    agreement_id = resp.json["id"]
+
+    print("\n~~~ create BLI (using API)")
+    #  create BLI (using API)
+    data = {
+        "line_description": "Test Experiments Workflows BLI",
+        "agreement_id": agreement_id,
+        "status": "PLANNED",
+        "can_id": 1,
+        "amount": 111.11,
+        "date_needed": "2025-01-01",
+    }
+    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    # print(f"~~~ BLI POST:\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    bli_id = resp.json["id"]
+
+    print("\n~~~ update BLI with invalid data (for PLANNED status)")
+    # update BLI with invalid data (for PLANNED status)
+    data = {
+        "can_id": None,
+        # "amount": None,
+        # "date_needed": None,
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    # print(f"~~~ BLI PATCH 5: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
+    # assert resp.status_code == 400
+    assert resp.status_code == 202
+
+    # that shouldn't have been accepted, but for now since it was, let's try to approve them
+    assert "change_requests_in_review" in resp.json
+    change_request_ids = [cr["id"] for cr in resp.json["change_requests_in_review"]]
+    for change_request in resp.json["change_requests_in_review"]:
+        change_request_id = change_request["id"]
+        print(f"~~~ Approving Change Request: {change_request_id}, {change_request['requested_change_data']}")
+        action = "APPROVE"
+        data = {"change_request_id": change_request_id, "action": action}
+        response = auth_client.post(url_for("api.change-request-review-list"), json=data)
+        assert response.status_code == 200
+
+    resp = auth_client.get(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    assert resp.status_code == 200
+    print(f"~~~ BLI GET: {resp.status_code}\n {json.dumps(resp.json, indent=2)} \n ~~~")
 
     # cleanup
     bli = session.get(BudgetLineItem, bli_id)

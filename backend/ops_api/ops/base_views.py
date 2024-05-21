@@ -1,3 +1,4 @@
+import traceback
 from contextlib import suppress
 from enum import Enum
 from functools import wraps
@@ -41,6 +42,9 @@ def handle_api_error(f):
             current_app.logger.error(e)
             return make_response_with_headers({}, 403)
         except Exception as e:
+            current_app.logger.error(e)
+            print("~~~(base_view)>>>!!! ", e)
+            print(traceback.format_exc())
             current_app.logger.exception(e)
             return make_response_with_headers({}, 500)
 

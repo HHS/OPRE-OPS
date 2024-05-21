@@ -33,7 +33,7 @@ def get_change_data(
 
 def validate_and_prepare_change_data(
     request_json, model_instance: BaseModel, schema: Schema, protected=None, partial: bool = False
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     if protected is None:
         protected = ["id"]
     try:
@@ -45,12 +45,14 @@ def validate_and_prepare_change_data(
 
     # load and validate the request data
     # schema.load will run the validator and throw a ValidationError if it fails
+    print(">>> ~~~ schema.load")
     loaded_data = schema.load(request_json, unknown=EXCLUDE, partial=partial)
+    loaded_data_dict = vars(loaded_data) if not isinstance(loaded_data, dict) else loaded_data
 
     # build dict of requested changes, omitting protected fields and unchanged fields
     change_data_dict = {
         key: value
-        for key, value in vars(loaded_data).items()
+        for key, value in loaded_data_dict.items()
         if key not in protected and key in request_json and value != old_data.get(key, None)
     }
     filtered_old_data = {key: value for key, value in old_data.items() if key in change_data_dict}

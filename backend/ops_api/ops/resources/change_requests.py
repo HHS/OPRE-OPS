@@ -40,7 +40,8 @@ def review_change_request(
                 data,
                 budget_line_item,
                 schema,
-                ["id", "status", "agreement_id"],
+                # ["id", "status", "agreement_id"],
+                ["id", "agreement_id"],
                 partial=False,
             )
 
