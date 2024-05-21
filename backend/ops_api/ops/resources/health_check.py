@@ -3,13 +3,11 @@ import asyncio
 from flask import Response, current_app, jsonify
 from flask.views import MethodView
 
-from ops_api.ops.base_views import handle_api_error
 from ops_api.ops.utils.health_check import check_all
 from ops_api.ops.utils.response import make_response_with_headers
 
 
 class HealthCheckAPI(MethodView):
-    @handle_api_error
     def get(self) -> Response:
         current_app.logger.debug("Health check request received")
         checks = asyncio.run(check_all())

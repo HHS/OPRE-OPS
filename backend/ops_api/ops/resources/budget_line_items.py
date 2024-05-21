@@ -16,7 +16,7 @@ from models.cans import BudgetLineItem
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.budget_line_items import (
     BudgetLineItemResponse,
     PATCHRequestBody,
@@ -88,7 +88,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         return response
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
@@ -183,7 +182,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             else:
                 return make_response_with_headers(bli_dict, 200)
 
-    @handle_api_error
     @is_authorized(
         PermissionType.PUT,
         Permission.BUDGET_LINE_ITEM,
@@ -193,7 +191,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     def put(self, id: int) -> Response:
         return self._update(id, "PUT", self._put_schema)
 
-    @handle_api_error
     @is_authorized(
         PermissionType.PATCH,
         Permission.BUDGET_LINE_ITEM,
@@ -209,7 +206,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         current_app.db_session.commit()
         return budget_line_item
 
-    @handle_api_error
     @is_authorized(
         PermissionType.DELETE,
         Permission.BUDGET_LINE_ITEM,
@@ -265,7 +261,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
         return stmt
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.BUDGET_LINE_ITEM)
     def get(self) -> Response:
         data = self._get_schema.dump(self._get_schema.load(request.args))
@@ -281,7 +276,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
         return response
 
-    @handle_api_error
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"

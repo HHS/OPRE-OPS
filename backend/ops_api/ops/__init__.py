@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from ops_api.ops.auth.decorators import check_user_session
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
+from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
@@ -123,6 +124,8 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
         log_response(app.logger, response)
         return response
 
+    register_error_handlers(app)
+
     return app
 
 
@@ -150,12 +153,11 @@ def log_request(log: logging.Logger):
     log.info(f"Request: {request_data}")
 
 
-@check_user_session
-def check_user_session_function(log: logging.Logger):
-    log.debug("Checking user session")
-
-
 def before_request_function(log: logging.Logger):
+    log_and_check_session(log)
+
+
+def log_and_check_session(log):
     log_request(log)
     if request.url not in [url_for("auth.login_post"), url_for("auth.logout_post"), url_for("auth.refresh_post")]:
 

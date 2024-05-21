@@ -9,7 +9,7 @@ from sqlalchemy import select
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
@@ -56,7 +56,6 @@ class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
     def get(self) -> Response:
         limit = request.args.get("limit", 10, type=int)
@@ -78,7 +77,6 @@ class ChangeRequestReviewAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
 
-    @handle_api_error
     @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
     def post(self) -> Response:
         request_json = request.get_json()

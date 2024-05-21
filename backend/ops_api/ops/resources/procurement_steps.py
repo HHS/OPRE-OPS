@@ -20,7 +20,7 @@ from models.workflows import (
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.procurement_steps import (
     AcquisitionPlanningRequest,
     AcquisitionPlanningResponse,
@@ -99,7 +99,6 @@ class BaseProcurementStepListAPI(BaseListAPI):
         self._request_schema = mmdc.class_schema(ProcurementStepListQuery)()
         self._response_schema_collection = mmdc.class_schema(ProcurementStepResponse)(many=True)
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     def get(self) -> Response:
         data = self._request_schema.dump(self._request_schema.load(request.args))
@@ -135,7 +134,6 @@ class BaseProcurementStepItemAPI(BaseItemAPI):
 
         return response
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
@@ -164,7 +162,6 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
             resp_dict = {"message": f"{self.model.__name__} updated", "id": id}
             return make_response_with_headers(resp_dict, 200)
 
-    @handle_api_error
     @is_authorized(
         PermissionType.PATCH,
         Permission.WORKFLOW,

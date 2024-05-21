@@ -11,7 +11,7 @@ from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -26,7 +26,6 @@ class CANItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.CAN)
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
@@ -53,7 +52,6 @@ class CANListAPI(BaseListAPI):
 
         return stmt
 
-    @handle_api_error
     @jwt_required()
     @error_simulator
     def get(self) -> Response:
@@ -72,14 +70,12 @@ class CANsByPortfolioAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @handle_api_error
     @jwt_required()
     def _get_item(self, id: int) -> List[CAN]:
         cans = CAN.query.filter(CAN.managing_portfolio_id == id).all()
 
         return cans
 
-    @handle_api_error
     @jwt_required()
     def get(self, id: int) -> Response:
         cans = self._get_item(id)

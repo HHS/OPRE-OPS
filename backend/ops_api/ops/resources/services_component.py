@@ -11,7 +11,7 @@ from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.services_component import (
     PATCHRequestBody,
     POSTRequestBody,
@@ -113,13 +113,11 @@ class ServicesComponentItemAPI(BaseItemAPI):
 
             return make_response_with_headers(sc_dict, 200)
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
         return response
 
-    @handle_api_error
     @is_authorized(
         PermissionType.PUT,
         Permission.SERVICES_COMPONENT,
@@ -129,7 +127,6 @@ class ServicesComponentItemAPI(BaseItemAPI):
     def put(self, id: int) -> Response:
         return self._update(id, "PUT", self._put_schema)
 
-    @handle_api_error
     @is_authorized(
         PermissionType.PATCH,
         Permission.SERVICES_COMPONENT,
@@ -139,7 +136,6 @@ class ServicesComponentItemAPI(BaseItemAPI):
     def patch(self, id: int) -> Response:
         return self._update(id, "PATCH", self._patch_schema)
 
-    @handle_api_error
     @is_authorized(
         PermissionType.DELETE,
         Permission.AGREEMENT,
@@ -171,7 +167,6 @@ class ServicesComponentListAPI(BaseListAPI):
         self._response_schema = mmdc.class_schema(ServicesComponentItemResponse)()
         self._response_schema_collection = mmdc.class_schema(ServicesComponentItemResponse)(many=True)
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.SERVICES_COMPONENT)
     def get(self) -> Response:
         data = self._get_schema.dump(self._get_schema.load(request.args))
@@ -185,7 +180,6 @@ class ServicesComponentListAPI(BaseListAPI):
 
         return response
 
-    @handle_api_error
     @is_authorized(PermissionType.POST, Permission.SERVICES_COMPONENT)
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"

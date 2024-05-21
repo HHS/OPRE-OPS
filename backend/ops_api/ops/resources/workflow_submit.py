@@ -20,7 +20,7 @@ from models.workflows import (
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -42,7 +42,6 @@ class WorkflowSubmisionListApi(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @handle_api_error
     @is_authorized(PermissionType.POST, Permission.BLI_PACKAGE)
     def post(self) -> Response:
         current_app.logger.info(f"********** /approve Request: {request.json}")
