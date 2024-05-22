@@ -1,10 +1,11 @@
+from datetime import datetime
 from functools import wraps
 from typing import Callable, Optional
 
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user, jwt_required
 
-from models import UserStatus
+from models import User, UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_extra, _check_groups, _check_role
 from ops_api.ops.auth.exceptions import ExtraCheckError, InvalidUserSessionError, NotActiveUserError
@@ -105,29 +106,57 @@ def check_user_session(f):
 
     @wraps(f)
     def decorated(*args, **kwargs):
-        user_sessions = get_all_user_sessions(current_user.id, current_app.db_session)
-        latest_user_session = get_latest_user_session(current_user.id, current_app.db_session)
-
-        # Check if the latest user session is active
-        if not latest_user_session or not latest_user_session.is_active:
-            deactivate_all_user_sessions(user_sessions)
-            raise InvalidUserSessionError(f"User with id={current_user.id} does not have an active user session")
-
-        # Check if the access token in the request is the same as the latest user session access token
-        bearer_token = get_bearer_token()
-
-        if bearer_token:
-            access_token = bearer_token.replace("Bearer", "").strip()
-
-            if access_token != latest_user_session.access_token:
-                deactivate_all_user_sessions(user_sessions)
-                raise InvalidUserSessionError(f"User with id={current_user.id} is using an invalid access token")
-
-        # Check if the ip address in the request is the same as the latest user session ip address
-        if request.remote_addr != latest_user_session.ip_address:
-            deactivate_all_user_sessions(user_sessions)
-            raise InvalidUserSessionError(f"User with id={current_user.id} is using an invalid ip address")
+        check_user_session_function(current_user)
 
         return f(*args, **kwargs)
 
     return decorated
+
+
+def check_user_session_function(user: User):
+    """
+    Function to check if the user has a valid user session.
+
+    A user session is considered valid if:
+    1. The user has an active user session.
+    2. The access token in the request is the same as the latest user session access token.
+    3. The ip address in the request is the same as the latest user session ip address.
+    4. The last_accessed_at field of the latest user session is not more than 30 minutes ago.
+    """
+    user_sessions = get_all_user_sessions(user.id, current_app.db_session)
+    latest_user_session = get_latest_user_session(user.id, current_app.db_session)
+    # Check if the latest user session is active
+    if not latest_user_session or not latest_user_session.is_active:
+        deactivate_all_user_sessions(user_sessions)
+        raise InvalidUserSessionError(f"User with id={user.id} does not have an active user session")
+    # Check if the access token in the request is the same as the latest user session access token
+    bearer_token = get_bearer_token()
+    if bearer_token:
+        access_token = bearer_token.replace("Bearer", "").strip()
+
+        if access_token != latest_user_session.access_token:
+            deactivate_all_user_sessions(user_sessions)
+            raise InvalidUserSessionError(f"User with id={user.id} is using an invalid access token")
+    # Check if the ip address in the request is the same as the latest user session ip address
+    if request.remote_addr != latest_user_session.ip_address:
+        deactivate_all_user_sessions(user_sessions)
+        raise InvalidUserSessionError(f"User with id={user.id} is using an invalid ip address")
+    # Update the last_accessed_at field of the latest user session (if this isn't only touching /notification)
+    if "notification" not in request.endpoint:
+        # If last_accessed_at is more than 30 minutes ago, then throw an exception
+        if check_last_active_at(latest_user_session):
+            deactivate_all_user_sessions(user_sessions)
+            raise InvalidUserSessionError(
+                f"User with id={user.id} has not accessed the system for more than 1800 seconds"
+            )
+
+        latest_user_session.last_active_at = datetime.now()
+        current_app.db_session.add(latest_user_session)
+        current_app.db_session.commit()
+
+
+def check_last_active_at(latest_user_session, threshold_in_seconds=1800):
+    """
+    Return True if the last_active_at field of the latest user session is more than threshold_in_seconds ago.
+    """
+    return (datetime.now() - latest_user_session.last_active_at).total_seconds() > threshold_in_seconds

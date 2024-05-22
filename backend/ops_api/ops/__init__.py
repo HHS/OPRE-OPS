@@ -3,12 +3,13 @@ import os
 from typing import Any, Optional
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, request, url_for
+from flask import Blueprint, Flask, request
 from flask_cors import CORS
+from flask_jwt_extended import current_user, verify_jwt_in_request
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
-from ops_api.ops.auth.decorators import check_user_session
+from ops_api.ops.auth.decorators import check_user_session_function
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.error_handlers import register_error_handlers
@@ -117,7 +118,7 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
 
     @app.before_request
     def before_request():
-        before_request_function(app.logger)
+        before_request_function(app, request)
 
     @app.after_request
     def after_request(response):
@@ -153,10 +154,21 @@ def log_request(log: logging.Logger):
     log.info(f"Request: {request_data}")
 
 
-def before_request_function(log: logging.Logger):
-    log_request(log)
-    if request.url not in [url_for("auth.login_post"), url_for("auth.logout_post"), url_for("auth.refresh_post")]:
-
-        @check_user_session
-        def check_user_session_function():
-            log.debug("User session is valid.")
+def before_request_function(app: Flask, request: request):
+    log_request(app.logger)
+    # check that the UserSession is valid
+    all_valid_endpoints = [
+        rule.endpoint
+        for rule in app.url_map.iter_rules()
+        if rule.endpoint
+        not in [
+            "auth.login_post",
+            "auth.logout_post",
+            "auth.refresh_post",
+            "home.show",
+            "api.health-check",
+        ]
+    ]
+    if request.endpoint in all_valid_endpoints and request.method not in ["OPTIONS", "HEAD"]:
+        verify_jwt_in_request()  # needed to load current_user
+        check_user_session_function(current_user)
