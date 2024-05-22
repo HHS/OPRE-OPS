@@ -209,9 +209,8 @@ class RequestBodySchema(Schema):
         return None
 
     def target_status_is_beyond_draft(self, data):
-        return self.is_changing_status(data)
-        # target_status = self.get_target_status(data)
-        # return target_status and target_status != BudgetLineItemStatus.DRAFT
+        target_status = self.get_target_status(data)
+        return target_status and target_status != BudgetLineItemStatus.DRAFT
 
     def get_current_budget_line_item(self):
         return current_app.db_session.get(BudgetLineItem, self.context.get("id"))

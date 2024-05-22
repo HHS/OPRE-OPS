@@ -296,8 +296,9 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
         "name": "TEST: Agreement history with change requests",
         "description": "Description",
         "product_service_code_id": 1,
-        "incumbent": "Vendor A",
+        "procurement_shop_id": 2,
         "project_officer_id": 21,
+        "project_id": 1,
         "team_members": [
             {
                 "id": 4,
@@ -334,6 +335,9 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 333.33, "can_id": 3, "date_needed": "2032-03-03"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    import json
+
+    print(json.dumps(response.json, indent=2))
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
