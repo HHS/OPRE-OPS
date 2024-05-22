@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from typing import Callable, Optional
 
@@ -155,8 +155,11 @@ def check_user_session_function(user: User):
         current_app.db_session.commit()
 
 
-def check_last_active_at(latest_user_session, threshold_in_seconds=1800):
+def check_last_active_at(latest_user_session, threshold_in_seconds=None):
     """
     Return True if the last_active_at field of the latest user session is more than threshold_in_seconds ago.
     """
-    return (datetime.now() - latest_user_session.last_active_at).total_seconds() > threshold_in_seconds
+    final_threshold_in_seconds = (
+        threshold_in_seconds or current_app.config.get("USER_SESSION_EXPIRATION", timedelta(minutes=30)).total_seconds()
+    )
+    return (datetime.now() - latest_user_session.last_active_at).total_seconds() > final_threshold_in_seconds

@@ -57,3 +57,6 @@ STORAGE_ACCOUNT_NAME = "timstoragetesting"
 STORAGE_ACCOUNT_KEY = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
 
 JSONIFY_PRETTYPRINT_REGULAR = True
+
+# User Session Variables
+USER_SESSION_EXPIRATION = timedelta(minutes=30)
