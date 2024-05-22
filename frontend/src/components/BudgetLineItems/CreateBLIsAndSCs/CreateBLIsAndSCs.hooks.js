@@ -125,28 +125,34 @@ const useCreateBLIsAndSCs = (
                                 .catch((rejected) => {
                                     console.error("Error Updating Budget Line");
                                     console.error({ rejected });
-                                    setAlert({
-                                        type: "error",
-                                        heading: "Error",
-                                        message: "An error occurred. Please try again.",
-                                        redirectUrl: "/error"
-                                    });
+                                    throw new Error("Error Updating Budget Line");
                                 });
                         } else {
                             // If no changes, return a resolved promise
                             return Promise.resolve();
                         }
                     });
-                    Promise.all(promises).then(() => {
-                        resetForm();
-                        setIsEditMode(false);
-                        setAlert({
-                            type: "success",
-                            heading: "Agreement Edits Sent to Approval",
-                            message:
-                                "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
-                            redirectUrl: `/agreements/${selectedAgreement?.id}`
-                        });
+                    Promise.allSettled(promises).then((results) => {
+                        let rejected = results.filter((result) => result.status === "rejected");
+                        if (rejected.length > 0) {
+                            console.error(rejected[0].reason);
+                            setAlert({
+                                type: "error",
+                                heading: "Error Sending Agreement Edits",
+                                message: "There was an error sending your edits for approval. Please try again.",
+                                redirectUrl: "/error"
+                            });
+                        } else {
+                            resetForm();
+                            setIsEditMode(false);
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement Edits Sent to Approval",
+                                message:
+                                    "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
+                                redirectUrl: `/agreements/${selectedAgreement?.id}`
+                            });
+                        }
                     });
                 }
             });
