@@ -54,7 +54,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Agreements'
+              $ref: '#/components/schemas/Agreement'
       responses:
         '201':
           description: Created
@@ -1943,6 +1943,18 @@ components:
         incumbent:
           type: string
           example: Previous Vendor
+        vendor:
+          type: string
+          example: Current Vendor
+        display_name:
+          type: string
+          example: Test Display Name
+        project:
+          $ref: '#/components/schemas/Project'
+        product_service_code:
+          $ref: '#/components/schemas/ProductServiceCode'
+        procurement_shop:
+          $ref: '#/components/schemas/ProcurementShop'
         procurement_shop_id:
           type: integer
           example: 1
@@ -1958,6 +1970,8 @@ components:
               { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
               { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
               ]
+        budget_line_items:
+          $ref: '#/components/schemas/BudgetLineItems'
         project_id:
           type: integer
           example: 1
@@ -2472,6 +2486,74 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
+    ProcurementShop:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          required: true
+        name:
+          type: string
+          example: Procurement Shop Name
+          required: true
+        abbr:
+          type: string
+          example: PSN
+          required: true
+        fee:
+          type: number
+          format: float
+          example: 1.1
+          default: 0.0
+    ProductServiceCode:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          required: true
+        name:
+          type: string
+          exampe: Code ABC
+          required: true
+        naics:
+          type: integer
+          example: 3
+        support_code:
+          type: string
+          example: Example Support Code
+        description:
+          type: string
+          example: Description of the product service code
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          required: true
+        project_type:
+          type: string
+          enum:
+            - RESEARCH
+            - ADMINISTRATIVE_AND_SUPPORT
+          required: true
+        title:
+          type: string
+          example: Example Project Title
+          required: true
+        short_title:
+          type: string
+          example: Short Title
+          required: true
+        description:
+          type: string
+          example: A short description about the project
+          required: true
+        url:
+          type: string
+          example: www.example.com
     Attestation:
       type: object
       properties:
