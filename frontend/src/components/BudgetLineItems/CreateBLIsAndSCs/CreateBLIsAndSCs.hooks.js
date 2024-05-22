@@ -10,7 +10,7 @@ import {
     useDeleteBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { budgetLinesTotal, BLILabel } from "../../../helpers/budgetLines.helpers";
+import { budgetLinesTotal, BLILabel, getNonDRAFTBudgetLines } from "../../../helpers/budgetLines.helpers";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
 import { groupByServicesComponent, BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
@@ -21,7 +21,7 @@ import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
  * @param {Function} setIsEditMode - Function to set the edit mode.
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
  * @param {boolean} isEditMode - Flag to indicate if the component is in edit mode.
- * @param {Array<Object>} budgetLines - Array of budget lines.
+ * @param {Object[]} budgetLines - Array of budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
@@ -29,6 +29,7 @@ import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
  * @param {Object} selectedProcurementShop - Selected procurement shop object.
  * @param {string} workflow - The workflow type ("agreement" or "budgetLines").
  * @param {Object} formData - The form data.
+ * @param {boolean} includeDrafts - Flag to include drafts budget lines
  *
  */
 const useCreateBLIsAndSCs = (
@@ -42,7 +43,8 @@ const useCreateBLIsAndSCs = (
     selectedProcurementShop,
     setIsEditMode,
     workflow,
-    formData
+    formData,
+    includeDrafts
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -68,9 +70,6 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feesForCards = getProcurementShopSubTotal(selectedAgreement, tempBudgetLines);
-    const subTotalForCards = budgetLinesTotal(budgetLines);
-    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, tempBudgetLines);
 
     React.useEffect(() => {
         let newTempBudgetLines =
@@ -95,6 +94,12 @@ const useCreateBLIsAndSCs = (
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
+    // card data
+    const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
+    const budgetLinesForCards = includeDrafts ? tempBudgetLines : notDraftBLIs;
+    const feesForCards = getProcurementShopSubTotal(selectedAgreement, budgetLinesForCards);
+    const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
+    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLinesForCards);
 
     const handleSave = () => {
         const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
@@ -524,7 +529,8 @@ const useCreateBLIsAndSCs = (
         handleGoBack,
         tempBudgetLines,
         handleSave,
-        deletedBudgetLines
+        deletedBudgetLines,
+        budgetLinesForCards
     };
 };
 

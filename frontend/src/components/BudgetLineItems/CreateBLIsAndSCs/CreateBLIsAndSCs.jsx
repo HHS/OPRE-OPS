@@ -36,7 +36,8 @@ import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHea
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines" | "none"} props.workflow - The workflow type.
- * @param {Object} [props.cardData] - The card data. - optional
+ * @param {boolean} props.includeDrafts - Whether to include drafts budget lines.
+ * @param {Function} props.setIncludeDrafts - A function to set the include drafts state.
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBLIsAndSCs = ({
@@ -56,7 +57,8 @@ export const CreateBLIsAndSCs = ({
     setIsEditMode = () => {},
     isReviewMode,
     workflow,
-    cardData = {}
+    includeDrafts,
+    setIncludeDrafts
 }) => {
     const {
         budgetLinePageErrorsExist,
@@ -88,7 +90,8 @@ export const CreateBLIsAndSCs = ({
         totalsForCards,
         handleCancel,
         handleGoBack,
-        handleSave
+        handleSave,
+        budgetLinesForCards
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -100,7 +103,8 @@ export const CreateBLIsAndSCs = ({
         selectedProcurementShop,
         setIsEditMode,
         workflow,
-        formData
+        formData,
+        includeDrafts
     );
 
     return (
@@ -173,15 +177,16 @@ export const CreateBLIsAndSCs = ({
                     />
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
-                        includeDrafts={cardData.includeDrafts}
-                        setIncludeDrafts={cardData.setIncludeDrafts}
+                        includeDrafts={includeDrafts}
+                        setIncludeDrafts={setIncludeDrafts}
+                        isEditable={false}
                     />
                     <div className="display-flex flex-justify margin-y-2">
-                        <BLIsByFYSummaryCard budgetLineItems={cardData.filteredBlis} />
+                        <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                         <AgreementTotalCard
-                            total={cardData.agreementTotal}
-                            subtotal={cardData.agreementSubtotal}
-                            fees={cardData.agreementFees}
+                            total={totalsForCards}
+                            subtotal={subTotalForCards}
+                            fees={feesForCards}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />
@@ -306,7 +311,8 @@ CreateBLIsAndSCs.propTypes = {
     isReviewMode: PropTypes.bool.isRequired,
     continueOverRide: PropTypes.func,
     workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
-    cardData: PropTypes.object
+    includeDrafts: PropTypes.bool.isRequired,
+    setIncludeDrafts: PropTypes.func.isRequired
 };
 
 export default CreateBLIsAndSCs;

@@ -21,7 +21,7 @@ import { findPeriodStart, findPeriodEnd, findDescription } from "../../../helper
  * @param {Object} props.agreement - The agreement to display.
  * @param {number} props.agreement.id - The agreement id.
  * @param {boolean} props.isEditMode - Whether the edit mode is on.
- * @param {function} props.setIsEditMode - The function to set the edit mode.
+ * @param {Function} props.setIsEditMode - The function to set the edit mode.
  * @returns {JSX.Element} - The rendered component.
  */
 const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
@@ -76,14 +76,6 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const agreementTotal = totals.Agreement.total;
     const agreementSubtotal = totals.Agreement.subtotal;
     const agreementFees = totals.Agreement.fees;
-    const cardData = {
-        agreementTotal,
-        agreementSubtotal,
-        agreementFees,
-        includeDrafts,
-        setIncludeDrafts,
-        filteredBlis
-    };
 
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
     const handleAlert = () => {
@@ -152,7 +144,8 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                     continueBtnText="Save Changes"
                     currentStep={0}
                     workflow="none"
-                    cardData={cardData}
+                    includeDrafts={includeDrafts}
+                    setIncludeDrafts={setIncludeDrafts}
                     goBack={() => {
                         setIsEditMode(false);
                         navigate(`/agreements/${agreement.id}/budget-lines`);
