@@ -121,7 +121,7 @@ def check_user_session_function(user: User):
     1. The user has an active user session.
     2. The access token in the request is the same as the latest user session access token.
     3. The ip address in the request is the same as the latest user session ip address.
-    4. The last_accessed_at field of the latest user session is not more than 30 minutes ago.
+    4. The last_accessed_at field of the latest user session is not more than a configurable threshold ago.
     """
     user_sessions = get_all_user_sessions(user.id, current_app.db_session)
     latest_user_session = get_latest_user_session(user.id, current_app.db_session)
@@ -141,15 +141,13 @@ def check_user_session_function(user: User):
     if request.remote_addr != latest_user_session.ip_address:
         deactivate_all_user_sessions(user_sessions)
         raise InvalidUserSessionError(f"User with id={user.id} is using an invalid ip address")
+    # Check if the last_accessed_at field of the latest user session is not more than a configurable threshold ago
+    if check_last_active_at(latest_user_session):
+        deactivate_all_user_sessions(user_sessions)
+        raise InvalidUserSessionError(f"User with id={user.id} has not accessed the system for more than the threshold")
     # Update the last_accessed_at field of the latest user session (if this isn't only touching /notification)
     if "notification" not in request.endpoint:
         # If last_accessed_at is more than 30 minutes ago, then throw an exception
-        if check_last_active_at(latest_user_session):
-            deactivate_all_user_sessions(user_sessions)
-            raise InvalidUserSessionError(
-                f"User with id={user.id} has not accessed the system for more than 1800 seconds"
-            )
-
         latest_user_session.last_active_at = datetime.now()
         current_app.db_session.add(latest_user_session)
         current_app.db_session.commit()
@@ -161,5 +159,9 @@ def check_last_active_at(latest_user_session, threshold_in_seconds=None):
     """
     final_threshold_in_seconds = (
         threshold_in_seconds or current_app.config.get("USER_SESSION_EXPIRATION", timedelta(minutes=30)).total_seconds()
+    )
+    current_app.logger.info(
+        f"Checking if latest_user_session.last_active_at={latest_user_session.last_active_at} is more than "
+        f"{final_threshold_in_seconds} seconds ago"
     )
     return (datetime.now() - latest_user_session.last_active_at).total_seconds() > final_threshold_in_seconds
