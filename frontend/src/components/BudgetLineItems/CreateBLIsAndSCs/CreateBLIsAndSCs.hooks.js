@@ -133,6 +133,8 @@ const useCreateBLIsAndSCs = (
                         }
                     });
                     Promise.allSettled(promises).then((results) => {
+                        resetForm();
+                        setIsEditMode(false);
                         let rejected = results.filter((result) => result.status === "rejected");
                         if (rejected.length > 0) {
                             console.error(rejected[0].reason);
@@ -143,8 +145,6 @@ const useCreateBLIsAndSCs = (
                                 redirectUrl: "/error"
                             });
                         } else {
-                            resetForm();
-                            setIsEditMode(false);
                             setAlert({
                                 type: "success",
                                 heading: "Agreement Edits Sent to Approval",
@@ -222,6 +222,8 @@ const useCreateBLIsAndSCs = (
                 });
         });
 
+        resetForm();
+        setIsEditMode(false);
         setAlert({
             type: "success",
             heading: "Budget Lines Edited",
