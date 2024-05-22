@@ -76,6 +76,7 @@ class AgreementItemAPI(BaseItemAPI):
 
         if item:
             schema = AGREEMENT_RESPONSE_SCHEMAS.get(item.agreement_type)
+            print(f"\n\n\n\n{item}")
             serialized_agreement = schema.dump(item)
             response = make_response_with_headers(serialized_agreement)
         else:
