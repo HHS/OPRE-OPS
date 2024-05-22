@@ -5,11 +5,10 @@ import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from sqlalchemy import select
-from typing_extensions import override
 
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.auth.decorators import check_user_session, is_authorized
 from ops_api.ops.base_views import BaseListAPI, handle_api_error
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
@@ -58,9 +57,9 @@ class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
 
-    @override
-    @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
     @handle_api_error
+    @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
+    @check_user_session
     def get(self) -> Response:
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
@@ -81,7 +80,9 @@ class ChangeRequestReviewAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
 
+    @handle_api_error
     @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
+    @check_user_session
     def post(self) -> Response:
         request_json = request.get_json()
         change_request_id = request_json.get("change_request_id")

@@ -41,7 +41,7 @@ export const AgreementTypeSelect = ({ selectedAgreementType, onChange, ...rest }
             onChange={onChange}
             value={selectedAgreementType}
             messages={[]}
-            defaultOption="Select Agreement Type"
+            defaultOption="-Select Agreement Type-"
             options={agreementTypesOptions}
             {...rest}
         />

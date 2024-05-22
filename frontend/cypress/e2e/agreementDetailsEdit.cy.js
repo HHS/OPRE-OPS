@@ -9,7 +9,7 @@ const testAgreement = {
     description: "Test Description",
     project_id: 1,
     product_service_code_id: 1,
-    procurement_shop_id: 1,
+    procurement_shop_id: 2,
     project_officer_id: 1,
     team_members: [
         {
