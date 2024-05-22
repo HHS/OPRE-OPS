@@ -33,14 +33,17 @@ def original_agreement():
     }
 
 
-@given("I am logged in as an OPS user")
-def client(auth_client):
+@given(
+    "I am logged in as an OPS user",
+    target_fixture="bdd_client",
+)
+def bdd_client(auth_client):
     yield auth_client
 
 
 @given(
     "I am logged in as an OPS user with the correct authorization but no perms",
-    target_fixture="client",
+    target_fixture="bdd_client",
 )
 def no_perms_client(no_perms_auth_client):
     yield no_perms_auth_client
@@ -165,10 +168,10 @@ def edit_bli(bli):
 
 
 @when("I submit the budget line item", target_fixture="submit_response")
-def submit(client, edited_bli):
+def submit(bdd_client, edited_bli):
     field_names = {f.name for f in fields(RequestBody)} | {"agreement_id"}
     data = {k: v for k, v in edited_bli.to_dict().items() if k in field_names}
-    resp = client.put(f"/api/v1/budget-line-items/{edited_bli.id}", json=data)
+    resp = bdd_client.put(f"/api/v1/budget-line-items/{edited_bli.id}", json=data)
     return resp
 
 

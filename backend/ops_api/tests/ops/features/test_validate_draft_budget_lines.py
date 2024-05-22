@@ -155,8 +155,11 @@ def setup_and_teardown(loaded_db, context):
     cleanup(loaded_db, context)
 
 
-@given("I am logged in as an OPS user")
-def client(auth_client):
+@given(
+    "I am logged in as an OPS user",
+    target_fixture="bdd_client",
+)
+def bdd_client(auth_client):
     return auth_client
 
 
@@ -605,7 +608,7 @@ def bli_without_agreement(loaded_db, context):
 
 
 @when("I submit a BLI to move to IN_REVIEW status")
-def submit(client, context):
+def submit(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
@@ -617,9 +620,11 @@ def submit(client, context):
         "proc_shop_fee_percentage": 2.34,
     }
 
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+    context["response_put"] = bdd_client.put(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data
+    )
 
-    context["response_patch"] = client.patch(
+    context["response_patch"] = bdd_client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
             "status": "PLANNED",
@@ -628,7 +633,7 @@ def submit(client, context):
 
 
 @when("I submit a BLI to move to IN_REVIEW status (without an Agreement)")
-def submit_without_agreement(client, context):
+def submit_without_agreement(bdd_client, context):
     data = {
         "line_description": "Updated LI 1",
         "comments": "hah hah",
@@ -639,9 +644,11 @@ def submit_without_agreement(client, context):
         "proc_shop_fee_percentage": 2.34,
     }
 
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+    context["response_put"] = bdd_client.put(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data
+    )
 
-    context["response_patch"] = client.patch(
+    context["response_patch"] = bdd_client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
             "status": "PLANNED",
@@ -650,7 +657,7 @@ def submit_without_agreement(client, context):
 
 
 @when("I submit a BLI to move to IN_REVIEW status (without Need By Date)")
-def submit_without_need_by_date(client, context):
+def submit_without_need_by_date(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
@@ -661,9 +668,11 @@ def submit_without_need_by_date(client, context):
         "proc_shop_fee_percentage": 2.34,
     }
 
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+    context["response_put"] = bdd_client.put(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data
+    )
 
-    context["response_patch"] = client.patch(
+    context["response_patch"] = bdd_client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
             "status": "PLANNED",
@@ -672,7 +681,7 @@ def submit_without_need_by_date(client, context):
 
 
 @when("I submit a BLI to move to IN_REVIEW status with an empty Need By Date")
-def submit_empty_need_by_date(client, context):
+def submit_empty_need_by_date(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
@@ -684,9 +693,11 @@ def submit_empty_need_by_date(client, context):
         "proc_shop_fee_percentage": 2.34,
     }
 
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+    context["response_put"] = bdd_client.put(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data
+    )
 
-    context["response_patch"] = client.patch(
+    context["response_patch"] = bdd_client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
             "status": "PLANNED",
@@ -695,7 +706,7 @@ def submit_empty_need_by_date(client, context):
 
 
 @when("I submit a BLI to move to IN_REVIEW status (without a CAN)")
-def submit_without_can(client, context):
+def submit_without_can(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
@@ -706,9 +717,11 @@ def submit_without_can(client, context):
         "proc_shop_fee_percentage": 2.34,
     }
 
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+    context["response_put"] = bdd_client.put(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data
+    )
 
-    context["response_patch"] = client.patch(
+    context["response_patch"] = bdd_client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
             "status": "PLANNED",
@@ -717,7 +730,7 @@ def submit_without_can(client, context):
 
 
 @when("I submit a BLI to move to IN_REVIEW status (without an Amount)")
-def submit_without_amount(client, context):
+def submit_without_amount(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
@@ -728,9 +741,11 @@ def submit_without_amount(client, context):
         "proc_shop_fee_percentage": 2.34,
     }
 
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+    context["response_put"] = bdd_client.put(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data
+    )
 
-    context["response_patch"] = client.patch(
+    context["response_patch"] = bdd_client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
             "status": "PLANNED",
@@ -739,7 +754,7 @@ def submit_without_amount(client, context):
 
 
 @when("I submit a BLI to move to IN_REVIEW status (with an Amount less than or equal to 0)")
-def submit_amount_less_than_zero(client, context):
+def submit_amount_less_than_zero(bdd_client, context):
     data = {
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
@@ -751,9 +766,11 @@ def submit_amount_less_than_zero(client, context):
         "proc_shop_fee_percentage": 2.34,
     }
 
-    context["response_put"] = client.put(f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data)
+    context["response_put"] = bdd_client.put(
+        f"/api/v1/budget-line-items/{context['initial_bli_for_put'].id}", json=data
+    )
 
-    context["response_patch"] = client.patch(
+    context["response_patch"] = bdd_client.patch(
         f"/api/v1/budget-line-items/{context['initial_bli_for_patch'].id}",
         json={
             "status": "PLANNED",

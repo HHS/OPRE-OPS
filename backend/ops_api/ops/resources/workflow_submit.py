@@ -5,7 +5,6 @@ import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from marshmallow import EXCLUDE, Schema, fields
-from typing_extensions import override
 
 from models.base import BaseModel
 from models.cans import BudgetLineItem, BudgetLineItemStatus
@@ -20,7 +19,7 @@ from models.workflows import (
     WorkflowTriggerType,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.auth.decorators import check_user_session, is_authorized
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
 from ops_api.ops.utils.response import make_response_with_headers
@@ -43,9 +42,9 @@ class WorkflowSubmisionListApi(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
-    @is_authorized(PermissionType.POST, Permission.BLI_PACKAGE)
     @handle_api_error
+    @is_authorized(PermissionType.POST, Permission.BLI_PACKAGE)
+    @check_user_session
     def post(self) -> Response:
         current_app.logger.info(f"********** /approve Request: {request.json}")
 
