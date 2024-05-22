@@ -76,7 +76,6 @@ class AgreementItemAPI(BaseItemAPI):
 
         if item:
             schema = AGREEMENT_RESPONSE_SCHEMAS.get(item.agreement_type)
-            print(f"\n\n\n\n{item}")
             serialized_agreement = schema.dump(item)
             response = make_response_with_headers(serialized_agreement)
         else:
@@ -116,7 +115,7 @@ class AgreementItemAPI(BaseItemAPI):
             meta.metadata.update({"updated_agreement": agreement_dict})
             current_app.logger.info(f"{message_prefix}: Updated Agreement: {agreement_dict}")
 
-        return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
+            return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
 
     @handle_api_error
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
