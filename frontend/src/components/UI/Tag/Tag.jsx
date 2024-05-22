@@ -3,15 +3,15 @@ import PropTypes from "prop-types";
 /**
  * Tag component.
  * @component
- * @param {Object} props Properties passed to component
- * @param {string} [props.tagStyle] The style of the tag.
- * @param {string} [props.tagStyleActive] The style of the tag when active.
- * @param {string} [props.text] The text to display in the tag.
- * @param {boolean} [props.active] Whether the tag is active or not.
- * @param {string} [props.label ]  The label of the tag.
- * @param {string} [props.className] Additional CSS classes.
- * @param {React.ReactNode} [props.children] Child elements.
- * @returns {JSX.Element} The tag element.
+ * @param {Object} props - Properties passed to component
+ * @param {string} [props.tagStyle] -  The style of the tag.
+ * @param {string} [props.tagStyleActive] -  The style of the tag when active.
+ * @param {string} [props.text] -  The text to display in the tag.
+ * @param {boolean} [props.active] -  Whether the tag is active or not.
+ * @param {string} [props.label ] -   The label of the tag.
+ * @param {string} [props.className] -  Additional CSS classes.
+ * @param {React.ReactNode} [props.children] -  Child elements.
+ * @returns {JSX.Element} - The tag element.
  */
 const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children }) => {
     let tagClasses = "font-12px padding-y-05 padding-x-1 height-205 radius-md",
