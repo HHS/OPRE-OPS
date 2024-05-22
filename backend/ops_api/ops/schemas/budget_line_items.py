@@ -22,13 +22,7 @@ def is_changing_status(data: dict) -> bool:
 
 
 def get_current_budget_line_item(context: dict) -> Optional[BudgetLineItem]:
-    if context.get("current_bli"):
-        return context.get("current_bli")
-    if not context.get("id"):
-        return None
-    bli = current_app.db_session.get(BudgetLineItem, context.get("id"))
-    context["current_bli"] = bli
-    return bli
+    return current_app.db_session.get(BudgetLineItem, context.get("id"))
 
 
 def get_target_status(data: dict, context: dict) -> Optional[BudgetLineItemStatus]:
@@ -42,8 +36,9 @@ def get_target_status(data: dict, context: dict) -> Optional[BudgetLineItemStatu
 
 
 def target_status_is_beyond_draft(data: dict, context: dict) -> bool:
-    target_status = get_target_status(data, context)
-    return target_status and target_status != BudgetLineItemStatus.DRAFT
+    return is_changing_status(data)
+    # target_status = get_target_status(data, context)
+    # return target_status and target_status != BudgetLineItemStatus.DRAFT
 
 
 def is_missing_required_value(current_value, update_requested: bool, requested_value) -> bool:
