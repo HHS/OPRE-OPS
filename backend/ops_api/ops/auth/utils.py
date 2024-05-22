@@ -6,7 +6,7 @@ from uuid import UUID
 
 import requests
 from authlib.jose import jwt as jose_jwt
-from flask import Config, current_app
+from flask import Config, current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -160,3 +160,10 @@ def get_latest_user_session(user_id: int, session: Session) -> UserSession | Non
         .scalars()
         .first()
     )
+
+
+def get_bearer_token() -> str:
+    """
+    Get the bearer token from the request headers.
+    """
+    return request.headers.get("Authorization")

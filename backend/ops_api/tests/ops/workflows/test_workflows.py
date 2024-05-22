@@ -162,7 +162,7 @@ def test_budget_line_item_change_request(auth_client, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
+def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, loaded_db):
     session = app.db_session
     agreement_id = 1
 
