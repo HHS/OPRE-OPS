@@ -8,6 +8,16 @@ from models import Agreement, BudgetLineItem, BudgetLineItemStatus
 
 
 @pytest.mark.skipif(
+    "test_budget_line_item.py::test_foobar" not in sys.argv,
+    reason="Skip unless run manually by itself",
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_foobar(auth_client, app):
+    session = app.db_session
+    print("OK")
+
+
+@pytest.mark.skipif(
     "test_budget_line_item.py::test_budget_line_item_validation" not in sys.argv,
     reason="Skip unless run manually by itself",
 )

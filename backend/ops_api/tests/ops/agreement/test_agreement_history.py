@@ -60,7 +60,7 @@ def test_agreement_history(auth_client, loaded_db):
         "agreement_id": agreement_id,
         "amount": 1000000,
         "status": "DRAFT",
-        "date_needed": "2022-3-3",
+        "date_needed": "2034-3-3",
         "proc_shop_fee_percentage": None,
     }
 
@@ -74,9 +74,12 @@ def test_agreement_history(auth_client, loaded_db):
     data = {
         "amount": 2000000,
         "comments": "Comments Updated",
-        "date_needed": "2021-1-1",
+        "date_needed": "2043-1-1",
     }
     resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    import json
+
+    print(json.dumps(resp.json, indent=2))
     assert resp.status_code == 200
 
     # DELETE budget line
