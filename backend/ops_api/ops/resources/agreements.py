@@ -11,7 +11,6 @@ from sqlalchemy.orm import object_session
 from typing_extensions import Any
 
 from models import (
-    CAN,
     ContractType,
     DirectAgreement,
     GrantAgreement,
@@ -34,6 +33,7 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import check_user_session, is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
 from ops_api.ops.resources.agreements_constants import (
+    AGREEMENT_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
@@ -74,9 +74,15 @@ class AgreementItemAPI(BaseItemAPI):
     @check_user_session
     def get(self, id: int) -> Response:
         item = self._get_item(id)
-        additional_fields = add_additional_fields_to_agreement_response(item)
 
-        return self._get_item_with_try(id, additional_fields=additional_fields)
+        if item:
+            schema = AGREEMENT_RESPONSE_SCHEMAS.get(item.agreement_type)
+            serialized_agreement = schema.dump(item)
+            response = make_response_with_headers(serialized_agreement)
+        else:
+            response = make_response_with_headers({}, 404)
+
+        return response
 
     @handle_api_error
     @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
@@ -190,12 +196,12 @@ class AgreementListAPI(BaseListAPI):
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
         agreement_response: List[dict] = []
+
         for item in result:
             for agreement in item:
-                additional_fields = add_additional_fields_to_agreement_response(agreement)
-                agreement_dict = agreement.to_dict()
-                agreement_dict.update(additional_fields)
-                agreement_response.append(agreement_dict)
+                schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement.agreement_type)
+                serialized_agreement = schema.dump(agreement)
+                agreement_response.append(serialized_agreement)
 
         return make_response_with_headers(agreement_response)
 
@@ -423,57 +429,6 @@ def add_vendor(data: dict, field_name: str = "vendor") -> None:
         else:
             data[f"{field_name}_id"] = vendor_obj.id
         del data[field_name]
-
-
-def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[str, Any]:
-    """
-    Add additional fields to the agreement response.
-
-    N.B. This is a temporary solution to add additional fields to the response.
-    This should be refactored to use marshmallow.
-    Also, the frontend/OpenAPI needs to be refactored to not use these fields.
-    """
-    if not agreement:
-        return {}
-
-    transformed_blis = []
-    for bli in agreement.budget_line_items:
-        transformed_bli = bli.to_dict()
-        if transformed_bli.get("amount"):
-            transformed_bli["amount"] = float(transformed_bli.get("amount"))
-        # nest the CAN object (temp needed for the frontend)
-        if transformed_bli.get("can"):
-            transformed_bli["can"] = current_app.db_session.get(CAN, transformed_bli.get("can")).to_dict()
-        # include has_active_workflow
-        transformed_bli["has_active_workflow"] = bli.has_active_workflow
-        # include active_workflow_current_step_id
-        transformed_bli["active_workflow_current_step_id"] = bli.active_workflow_current_step_id
-        # include in_review
-        transformed_bli["in_review"] = bli.in_review
-        # include change_requests_in_review
-        transformed_bli["change_requests_in_review"] = (
-            [cr.to_dict() for cr in bli.change_requests_in_review] if bli.change_requests_in_review else None
-        )
-        transformed_blis.append(transformed_bli)
-
-    # change PS amount from string to float - this is a temporary solution in lieu of marshmallow
-    transformed_ps = agreement.procurement_shop.to_dict() if agreement.procurement_shop else {}
-    if transformed_ps:
-        transformed_ps["fee"] = float(transformed_ps.get("fee"))
-
-    return {
-        "agreement_type": agreement.agreement_type.name if agreement.agreement_type else None,
-        "agreement_reason": agreement.agreement_reason.name if agreement.agreement_reason else None,
-        "budget_line_items": transformed_blis,
-        "team_members": [tm.to_dict() for tm in agreement.team_members],
-        "project": agreement.project.to_dict() if agreement.project else None,
-        "procurement_shop": transformed_ps,
-        "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
-        "display_name": agreement.display_name,
-        "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
-        "incumbent": agreement.incumbent.name if hasattr(agreement, "incumbent") and agreement.incumbent else None,
-        "procurement_tracker_workflow_id": agreement.procurement_tracker_workflow_id,
-    }
 
 
 def reject_change_of_agreement_type(old_agreement):
