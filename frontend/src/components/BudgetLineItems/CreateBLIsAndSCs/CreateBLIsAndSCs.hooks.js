@@ -71,6 +71,16 @@ const useCreateBLIsAndSCs = (
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
 
+    const handleSetBudgetLineFromUrl = () => {
+        if (!budgetLineIdFromUrl) return;
+        setIsEditMode(true);
+        const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
+
+        if (selectedBudgetLine) {
+            handleSetBudgetLineForEditingById(selectedBudgetLine.id);
+        }
+    };
+
     React.useEffect(() => {
         let newTempBudgetLines =
             (budgetLines && budgetLines.length > 0 ? budgetLines : null) ??
@@ -82,6 +92,12 @@ const useCreateBLIsAndSCs = (
     React.useEffect(() => {
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines]);
+
+    React.useEffect(
+        handleSetBudgetLineFromUrl,
+        //eslint-disable-next-line
+        [budgetLineIdFromUrl, budgetLines, tempBudgetLines]
+    );
 
     // Validation
     let res = suite.get();
@@ -356,6 +372,11 @@ const useCreateBLIsAndSCs = (
         return { id: budgetLineId, data: cleanData };
     };
 
+    /**
+     * Set the budget line for editing by its ID
+     * @param {string} budgetLineId - The ID of the budget line to edit
+     * @returns {void}
+     */
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
         const index = tempBudgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
@@ -481,17 +502,6 @@ const useCreateBLIsAndSCs = (
         setFinancialSnapshot(null);
         setBudgetLineBeingEdited(null);
     };
-
-    React.useEffect(() => {
-        if (budgetLineIdFromUrl) {
-            setIsEditMode(true);
-            const budgetLineFromUrl = budgetLines.find((budgetLine) => budgetLine.id === +budgetLineIdFromUrl);
-            if (budgetLineFromUrl) {
-                handleSetBudgetLineForEditingById(budgetLineFromUrl?.id);
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [budgetLineIdFromUrl, budgetLines]);
 
     return {
         handleAddBLI,
