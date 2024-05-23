@@ -91,7 +91,8 @@ export const CreateBLIsAndSCs = ({
         handleCancel,
         handleGoBack,
         handleSave,
-        budgetLinesForCards
+        budgetLinesForCards,
+        tempBudgetLines
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -135,6 +136,7 @@ export const CreateBLIsAndSCs = ({
             }
 
             {workflow !== "none" && (
+                // this includes the agreement workflow
                 <>
                     <StepIndicator
                         steps={wizardSteps}
@@ -156,11 +158,11 @@ export const CreateBLIsAndSCs = ({
                         />
                     </div>
                     <div className="display-flex flex-justify margin-y-2">
-                        <BLIsByFYSummaryCard budgetLineItems={budgetLines} />
+                        <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                         <AgreementTotalCard
-                            total={totalsForCards}
-                            subtotal={subTotalForCards}
-                            fees={feesForCards}
+                            total={totalsForCards(subTotalForCards(tempBudgetLines), tempBudgetLines)}
+                            subtotal={subTotalForCards(tempBudgetLines)}
+                            fees={feesForCards(tempBudgetLines)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />
@@ -169,6 +171,7 @@ export const CreateBLIsAndSCs = ({
             )}
 
             {workflow === "none" && (
+                // this is the Agreement details page
                 <>
                     <ServicesComponents
                         serviceRequirementType={selectedAgreement.service_requirement_type}
@@ -184,9 +187,9 @@ export const CreateBLIsAndSCs = ({
                     <div className="display-flex flex-justify margin-y-2">
                         <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                         <AgreementTotalCard
-                            total={totalsForCards}
-                            subtotal={subTotalForCards}
-                            fees={feesForCards}
+                            total={totalsForCards(subTotalForCards(budgetLinesForCards), budgetLinesForCards)}
+                            subtotal={subTotalForCards(budgetLinesForCards)}
+                            fees={feesForCards(budgetLinesForCards)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />

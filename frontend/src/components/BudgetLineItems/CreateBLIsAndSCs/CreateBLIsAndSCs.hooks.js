@@ -113,9 +113,26 @@ const useCreateBLIsAndSCs = (
     // card data
     const notDraftBLIs = getNonDRAFTBudgetLines(tempBudgetLines);
     const budgetLinesForCards = includeDrafts ? tempBudgetLines : notDraftBLIs;
-    const feesForCards = getProcurementShopSubTotal(selectedAgreement, budgetLinesForCards);
-    const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
-    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(selectedAgreement, budgetLinesForCards);
+    /**
+     * Get the total fees for the cards
+     * @param {Object[]} budgetLines - The budget lines
+     * @returns {number} - The total fees
+     */
+    const feesForCards = (budgetLines) => getProcurementShopSubTotal(selectedAgreement, budgetLines);
+    /**
+     * Get the sub total for the cards
+     * @param {Object[]} budgetLines - The budget lines
+     * @returns {number} - The sub total
+     * */
+    const subTotalForCards = (budgetLines) => budgetLinesTotal(budgetLines);
+    /**
+     * Get the totals for the cards
+     * @param {number} subTotal - The sub total
+     * @param {Object[]} budgetLines - The budget lines
+     * @returns {number} - The total
+     * */
+    const totalsForCards = (subTotal, budgetLines) =>
+        subTotal + getProcurementShopSubTotal(selectedAgreement, budgetLines);
 
     const handleSave = () => {
         const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
