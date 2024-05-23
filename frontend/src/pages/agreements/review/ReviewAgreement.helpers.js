@@ -46,6 +46,9 @@ export const selectedBudgetLinesTotal = (budgetLines) => {
 };
 
 export const totalByCan = (accumulator, { can, amount }) => {
+    if (!can) {
+        return accumulator;
+    }
     if (!accumulator[can.number]) {
         accumulator[can.number] = 0;
     }
