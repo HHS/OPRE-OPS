@@ -256,13 +256,30 @@ class BudgetLineItemChangeRequest:
 
 
 @dataclass
+class BudgetLineItemCAN:
+    id: int
+    number: str
+    description: str
+    purpose: str
+    nickname: str
+    appropriation_term: int
+    # arrangement_type: CANArrangementType
+    authorizer_id: int
+    managing_portfolio_id: int
+    expiration_date: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    appropriation_date: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+
+
+@dataclass
 class BudgetLineItemResponse:
     id: int
     agreement_id: int
+    can: BudgetLineItemCAN
     can_id: int
     amount: float
     created_by: int
     line_description: str
+    active_workflow_current_step_id: Optional[int] = None
     status: BudgetLineItemStatus = EnumField(BudgetLineItemStatus)
     comments: Optional[str] = None
     proc_shop_fee_percentage: Optional[float] = None

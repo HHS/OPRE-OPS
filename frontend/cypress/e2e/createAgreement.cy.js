@@ -63,7 +63,7 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("#contractType").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
     cy.get("#serviceReqType").should("contain", "Non-Severable");
-    cy.get("#serviceReqType").select("Select Service Requirement Type");
+    cy.get("#serviceReqType").select("-Select Service Requirement Type-");
     cy.get(".usa-error-message").should("contain", "This is required information");
     cy.get("[data-cy='continue-btn']").should("be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
@@ -75,8 +75,8 @@ it("can create an SEVERABLE agreement", () => {
     // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
     cy.get("#agreement_reason").select("NEW_REQ");
 
     // Select Project Officer
@@ -206,8 +206,8 @@ it("can create an NON-SEVERABLE agreement", () => {
     // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
     cy.get("#agreement_reason").select("NEW_REQ");
 
     // Select Project Officer
@@ -364,7 +364,7 @@ it("should handle cancelling out of workflow on step 2", () => {
     cy.get("#name").type("Test Agreement Title");
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
     cy.get("#agreement_reason").select("NEW_REQ");
     // cancel out of workflow
     cy.get('[data-cy="cancel-button"]').click();
