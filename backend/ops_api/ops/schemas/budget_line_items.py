@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Optional
 
 from flask import current_app
@@ -36,9 +37,26 @@ def get_target_status(data: dict, context: dict) -> Optional[BudgetLineItemStatu
 
 
 def target_status_is_beyond_draft(data: dict, context: dict) -> bool:
-    return is_changing_status(data)
-    # target_status = get_target_status(data, context)
-    # return target_status and target_status != BudgetLineItemStatus.DRAFT
+    # return is_changing_status(data)
+    target_status = get_target_status(data, context)
+    return target_status and target_status != BudgetLineItemStatus.DRAFT
+
+
+def get_target_value(data: dict, key: str, context: dict):
+    print(f"~~~??? get_target_value: present: {key in data}, key={key}, data={data},  context={context}")
+    print(f"~~~??? get_target_value: data.get(key)={data.get(key)}")
+    requested_value = data.get(key)
+    if context.get("method") in ["POST", "PUT"]:
+        return requested_value
+    # Unlike Marshmallow schema, the key is always in the data for data class,
+    # so we will check if the value is None.
+    # However, this won't work right when patching to None
+    if key in data and requested_value is not None:
+        return requested_value
+    current_budget_line_item = get_current_budget_line_item(context)
+    if current_budget_line_item and hasattr(current_budget_line_item, key):
+        return getattr(current_budget_line_item, key)
+    return requested_value
 
 
 def is_missing_required_value(current_value, update_requested: bool, requested_value) -> bool:
@@ -81,8 +99,8 @@ class RequestBody:
     @validates_schema(skip_on_field_errors=False)
     def validate_agreement_id(self, data, **kwargs):
         if target_status_is_beyond_draft(data, self.context):
-            bli = get_current_budget_line_item(self.context)
-            if bli and not bli.agreement_id and not data.get("agreement_id"):
+            target_value = get_target_value(data, "agreement_id", self.context)
+            if not target_value:
                 raise ValidationError("BLI must have an Agreement when status is not DRAFT")
 
     @validates_schema(skip_on_field_errors=False)
@@ -168,18 +186,19 @@ class RequestBody:
     @validates_schema(skip_on_field_errors=False)
     def validate_need_by_date(self, data: dict, **kwargs):
         if target_status_is_beyond_draft(data, self.context):
-            bli = get_current_budget_line_item(self.context)
-            bli_date_needed = bli.date_needed if bli else None
-            data_date_needed = data.get("date_needed")
+            target_value = get_target_value(data, "date_needed", self.context)
             msg = "BLI must valid a valid Need By Date when status is not DRAFT"
-            if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_date_needed, data_date_needed):
-                raise ValidationError(msg)
-            if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_date_needed, data_date_needed):
+            if not target_value:
                 raise ValidationError(msg)
 
     @validates_schema(skip_on_field_errors=False)
     def validate_need_by_date_in_the_future(self, data: dict, **kwargs):
         if target_status_is_beyond_draft(data, self.context):
+            # target_value = get_target_value(data, "date_needed", self.context)
+            # today = date.today()
+            # msg = "BLI must valid a Need By Date in the future when status is not DRAFT"
+            # if isinstance(target_value, date) and target_value <= today:
+            #     raise ValidationError(msg)
             bli = get_current_budget_line_item(self.context)
             bli_date_needed = bli.date_needed if bli else None
             data_date_needed = data.get("date_needed")
@@ -193,40 +212,25 @@ class RequestBody:
     @validates_schema(skip_on_field_errors=False)
     def validate_can(self, data: dict, **kwargs):
         if target_status_is_beyond_draft(data, self.context):
-            bli = get_current_budget_line_item(self.context)
-            bli_can_id = bli.can_id if bli else None
-            data_can_id = data.get("can_id")
+            target_value = get_target_value(data, "can_id", self.context)
             msg = "BLI must have a valid CAN when status is not DRAFT"
-            if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_can_id, data_can_id):
-                raise ValidationError(msg)
-            if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_can_id, data_can_id):
+            if not target_value:
                 raise ValidationError(msg)
 
     @validates_schema(skip_on_field_errors=False)
     def validate_amount(self, data: dict, **kwargs):
         if target_status_is_beyond_draft(data, self.context):
-            bli = get_current_budget_line_item(self.context)
-            bli_amount = bli.amount if bli else None
-            data_amount = data.get("amount")
+            target_value = get_target_value(data, "amount", self.context)
             msg = "BLI must have a valid Amount when status is not DRAFT"
-            if self.context.get("method") in ["POST", "PUT"] and is_invalid_full(bli_amount, data_amount):
-                raise ValidationError(msg)
-            if self.context.get("method") in ["PATCH"] and is_invalid_partial(bli_amount, data_amount):
-                print(f"!!!!!!!!!! ~~~ validate_amount (PATCH) {msg} ~~~")
+            if not target_value:
                 raise ValidationError(msg)
 
     @validates_schema(skip_on_field_errors=False)
     def validate_amount_greater_than_zero(self, data: dict, **kwargs):
         if target_status_is_beyond_draft(data, self.context):
-            bli = get_current_budget_line_item(self.context)
-            bli_amount = bli.amount if bli else None
-            data_amount = data.get("amount")
+            target_value = get_target_value(data, "amount", self.context)
             msg = "BLI must be a valid Amount (greater than zero) when status is not DRAFT"
-            if (
-                (data_amount is None and bli_amount is not None and bli_amount <= 0)
-                or (bli_amount is None and data_amount is not None and data_amount <= 0)
-                or (bli_amount is not None and bli_amount <= 0 and data_amount is not None and data_amount <= 0)
-            ):
+            if isinstance(target_value, (Decimal, float, int)) and (target_value <= 0):
                 raise ValidationError(msg)
 
     @validates_schema(skip_on_field_errors=False)

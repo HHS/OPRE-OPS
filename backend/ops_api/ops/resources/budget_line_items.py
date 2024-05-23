@@ -3,7 +3,6 @@ from __future__ import annotations
 from functools import partial
 from typing import Optional
 
-import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy import inspect, select
@@ -17,13 +16,12 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import check_user_session, is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.schemas.budget_line_items import (
-    BudgetLineItemResponse,
-    PATCHRequestBody,
-    POSTRequestBody,
-    QueryParameters,
+from ops_api.ops.schemas.budget_line_items_marshmallow import (
+    BudgetLineItemResponseSchema,
+    PATCHRequestBodySchema,
+    POSTRequestBodySchema,
+    QueryParametersSchema,
 )
-from ops_api.ops.schemas.budget_line_items_marshmallow import PATCHRequestBodySchema
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -71,8 +69,10 @@ def bli_associated_with_agreement(self, id: int, permission_type: PermissionType
 class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
-        self._put_schema = mmdc.class_schema(POSTRequestBody)()
+        # self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
+        self._response_schema = BudgetLineItemResponseSchema()
+        # self._put_schema = mmdc.class_schema(POSTRequestBody)()
+        self._put_schema = POSTRequestBodySchema()
         # self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
         self._patch_schema = PATCHRequestBodySchema()
 
@@ -165,7 +165,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     change_request = BudgetLineItemChangeRequest()
                     change_request.budget_line_item_id = id
                     change_request.agreement_id = budget_line_item.agreement_id
-                    schema = mmdc.class_schema(PATCHRequestBody)(only=change_keys)
+                    schema = PATCHRequestBodySchema(only=change_keys)
                     requested_change_data = schema.dump(change_data)
                     change_request.requested_change_data = requested_change_data
                     old_values = schema.dump(changing_from_data)
@@ -244,10 +244,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 class BudgetLineItemsListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._post_schema = mmdc.class_schema(POSTRequestBody)()
-        self._get_schema = mmdc.class_schema(QueryParameters)()
-        self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
-        self._response_schema_collection = mmdc.class_schema(BudgetLineItemResponse)(many=True)
+        # self._post_schema = mmdc.class_schema(POSTRequestBody)()
+        # self._get_schema = mmdc.class_schema(QueryParameters)()
+        # self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
+        # self._response_schema_collection = mmdc.class_schema(BudgetLineItemResponse)(many=True)
+        self._post_schema = POSTRequestBodySchema()
+        self._get_schema = QueryParametersSchema()
+        self._response_schema = BudgetLineItemResponseSchema()
+        self._response_schema_collection = BudgetLineItemResponseSchema(many=True)
 
     @staticmethod
     def _get_query(

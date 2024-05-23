@@ -37,18 +37,18 @@ class RequestBodySchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    status = EnumField(BudgetLineItemStatus, missing=Missing, default=None, allow_none=True)
-    line_description = fields.Str(missing=Missing, default=None, allow_none=True)
-    can_id = fields.Int(missing=Missing, default=None, allow_none=True)
-    amount = fields.Float(missing=Missing, default=None, allow_none=True)
-    date_needed = fields.Date(missing=Missing, default=None, allow_none=True)
-    comments = fields.Str(missing=Missing, default=None, allow_none=True)
-    proc_shop_fee_percentage = fields.Float(missing=Missing, default=None, allow_none=True)
-    services_component_id = fields.Int(missing=Missing, default=None, allow_none=True)
+    status = EnumField(BudgetLineItemStatus, ZZZ_missing=Missing, default=None, allow_none=True)
+    line_description = fields.Str(ZZZ_missing=Missing, default=None, allow_none=True)
+    can_id = fields.Int(ZZZ_missing=Missing, default=None, allow_none=True)
+    amount = fields.Float(ZZZ_missing=Missing, default=None, allow_none=True)
+    date_needed = fields.Date(ZZZ_missing=Missing, default=None, allow_none=True)
+    comments = fields.Str(ZZZ_missing=Missing, default=None, allow_none=True)
+    proc_shop_fee_percentage = fields.Float(ZZZ_missing=Missing, default=None, allow_none=True)
+    services_component_id = fields.Int(ZZZ_missing=Missing, default=None, allow_none=True)
 
     def get_target_status(self, data):
-        requested_status = data.get("status")
-        if not is_blank_or_missing(requested_status):
+        requested_status = data.get("status") if "status" in data else None
+        if requested_status:
             return requested_status
         current_bli = self.get_current_budget_line_item()
         if current_bli:
@@ -66,8 +66,7 @@ class RequestBodySchema(Schema):
         requested_value = data.get(key)
         if self.context.get("method") in ["POST", "PUT"]:
             return requested_value
-        # if self.context.get("method") in ["PATCH"]:
-        if not is_missing(requested_value):
+        if key in data:
             return requested_value
         current_budget_line_item = self.get_current_budget_line_item()
         if current_budget_line_item and hasattr(current_budget_line_item, key):
@@ -86,7 +85,7 @@ class RequestBodySchema(Schema):
     def validate_agreement_id(self, data, **kwargs):
         if self.target_status_is_beyond_draft(data):
             target_value = self.get_target_value(data, "agreement_id")
-            if is_blank_or_missing(target_value):
+            if not target_value:
                 raise ValidationError("BLI must have an Agreement when status is not DRAFT")
 
     @validates_schema
@@ -172,11 +171,9 @@ class RequestBodySchema(Schema):
     @validates_schema
     def validate_need_by_date(self, data: dict, **kwargs):
         if self.target_status_is_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            bli_date_needed = bli.date_needed if bli else None
-            data_date_needed = data.get("date_needed")
+            target_value = self.get_target_value(data, "date_needed")
             msg = "BLI must valid a valid Need By Date when status is not DRAFT"
-            if self.is_invalid_request_for_required_field(bli_date_needed, data_date_needed):
+            if is_blank(target_value):
                 raise ValidationError(msg)
 
     @validates_schema
@@ -191,21 +188,17 @@ class RequestBodySchema(Schema):
     @validates_schema
     def validate_can(self, data: dict, **kwargs):
         if self.target_status_is_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            bli_can_id = bli.can_id if bli else None
-            data_can_id = data.get("can_id")
+            target_value = self.get_target_value(data, "can_id")
             msg = "BLI must have a valid CAN when status is not DRAFT"
-            if self.is_invalid_request_for_required_field(bli_can_id, data_can_id):
+            if not target_value:
                 raise ValidationError(msg)
 
     @validates_schema
     def validate_amount(self, data: dict, **kwargs):
         if self.target_status_is_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            bli_amount = bli.amount if bli else None
-            data_amount = data.get("amount")
+            target_value = self.get_target_value(data, "amount")
             msg = "BLI must have a valid Amount when status is not DRAFT"
-            if self.is_invalid_request_for_required_field(bli_amount, data_amount):
+            if not target_value:
                 raise ValidationError(msg)
 
     @validates_schema
@@ -219,7 +212,7 @@ class RequestBodySchema(Schema):
     @validates_schema
     def validate_services_component_id(self, data: dict, **kwargs):
         services_component_id = data.get("services_component_id")
-        if not is_blank_or_missing(services_component_id):
+        if services_component_id is not None:
             sc: ServicesComponent = current_app.db_session.get(ServicesComponent, services_component_id)
             if sc:
                 sc_contract_agreement_id = sc.contract_agreement_id
@@ -238,7 +231,7 @@ class POSTRequestBodySchema(RequestBodySchema):
 
 class PATCHRequestBodySchema(RequestBodySchema):
     agreement_id = fields.Int(
-        missing=Missing, default=None, allow_none=True
+        ZZZ_missing=Missing, default=None, allow_none=True
     )  # agreement_id (and all params) are optional for PATCH
 
 
@@ -246,9 +239,9 @@ class QueryParametersSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
 
-    can_id = fields.Int(missing=Missing, default=None, allow_none=True)
-    agreement_id = fields.Int(missing=Missing, default=None, allow_none=True)
-    status = EnumField(BudgetLineItemStatus, missing=Missing, default=None, allow_none=True)
+    can_id = fields.Int(ZZZ_missing=Missing, default=None, allow_none=True)
+    agreement_id = fields.Int(ZZZ_missing=Missing, default=None, allow_none=True)
+    status = EnumField(BudgetLineItemStatus, ZZZ_missing=Missing, default=None, allow_none=True)
 
 
 class BLITeamMembersSchema(Schema):
@@ -256,8 +249,8 @@ class BLITeamMembersSchema(Schema):
         unknown = EXCLUDE  # Exclude unknown fields
 
     id = fields.Int(required=True)
-    full_name = fields.Str(missing=Missing, default=None, allow_none=True)
-    email = fields.Str(missing=Missing, default=None, allow_none=True)
+    full_name = fields.Str(ZZZ_missing=Missing, default=None, allow_none=True)
+    email = fields.Str(ZZZ_missing=Missing, default=None, allow_none=True)
 
 
 class BudgetLineItemChangeRequestSchema(Schema):
@@ -272,7 +265,7 @@ class BudgetLineItemChangeRequestSchema(Schema):
     requested_change_data = fields.Dict(required=True)
     requested_change_diff = fields.Dict(required=True)
     created_by = fields.Int(required=True)
-    created_by_user = fields.Nested(SafeUserSchema(), missing=Missing, default=None, allow_none=True)
+    created_by_user = fields.Nested(SafeUserSchema(), ZZZ_missing=Missing, default=None, allow_none=True)
     created_on = fields.DateTime(required=True)
 
 
@@ -287,17 +280,17 @@ class BudgetLineItemResponseSchema(Schema):
     created_by = fields.Int(required=True)
     line_description = fields.Str(required=True)
     status = EnumField(BudgetLineItemStatus, required=True)
-    comments = fields.Str(missing=Missing, default=None, allow_none=True)
-    proc_shop_fee_percentage = fields.Float(missing=Missing, default=None, allow_none=True)
+    comments = fields.Str(ZZZ_missing=Missing, default=None, allow_none=True)
+    proc_shop_fee_percentage = fields.Float(ZZZ_missing=Missing, default=None, allow_none=True)
     created_on = fields.DateTime(required=True)
     updated_on = fields.DateTime(required=True)
     date_needed = fields.Date(required=True)
-    portfolio_id = fields.Int(missing=Missing, default=None, allow_none=True)
-    fiscal_year = fields.Int(missing=Missing, default=None, allow_none=True)
-    team_members = fields.Nested(BLITeamMembersSchema(), many=True, missing=Missing, default=None, allow_none=True)
+    portfolio_id = fields.Int(ZZZ_missing=Missing, default=None, allow_none=True)
+    fiscal_year = fields.Int(ZZZ_missing=Missing, default=None, allow_none=True)
+    team_members = fields.Nested(BLITeamMembersSchema(), many=True, ZZZ_missing=Missing, default=None, allow_none=True)
     has_active_workflow = fields.Bool(required=True)
-    services_component_id = fields.Int(missing=Missing, default=None, allow_none=True)
+    services_component_id = fields.Int(ZZZ_missing=Missing, default=None, allow_none=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        BudgetLineItemChangeRequestSchema(), many=True, missing=Missing, default=None, allow_none=True
+        BudgetLineItemChangeRequestSchema(), many=True, ZZZ_missing=Missing, default=None, allow_none=True
     )
