@@ -18,15 +18,17 @@ import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
 /**
  * Custom hook to manage the creation and manipulation of Budget Line Items and Service Components.
  *
+ * @param {Function} setIsEditMode - Function to set the edit mode.
  * @param {boolean} isReviewMode - Flag to indicate if the component is in review mode.
- * @param {Array<any>} budgetLines - Array of budget lines.
+ * @param {boolean} isEditMode - Flag to indicate if the component is in edit mode.
+ * @param {Array<Object>} budgetLines - Array of budget lines.
  * @param {Function} goToNext - Function to navigate to the next step.
  * @param {Function} goBack - Function to navigate to the previous step.
  * @param {Function} continueOverRide - Function to override the continue action.
  * @param {Object} selectedAgreement - Selected agreement object.
  * @param {Object} selectedProcurementShop - Selected procurement shop object.
- * @param {Function} setIsEditMode - Function to set the edit mode.
  * @param {string} workflow - The workflow type ("agreement" or "budgetLines").
+ * @param {Object} formData - The form data.
  *
  */
 const useCreateBLIsAndSCs = (
@@ -108,15 +110,14 @@ const useCreateBLIsAndSCs = (
                 heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
                 actionButtonText: "Send to Approval",
                 secondaryButtonText: "Continue Editing",
-                description: "your mom",
                 handleConfirm: () => {
-                    existingBudgetLineItems.forEach((existingBudgetLineItem) => {
+                    let promises = existingBudgetLineItems.map((existingBudgetLineItem) => {
                         let budgetLineHasChanged =
                             JSON.stringify(existingBudgetLineItem) !==
                             JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
                         if (budgetLineHasChanged) {
                             const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
-                            updateBudgetLineItem({ id, data: cleanExistingBLI })
+                            return updateBudgetLineItem({ id, data: cleanExistingBLI })
                                 .unwrap()
                                 .then((fulfilled) => {
                                     console.log("Updated BLI:", fulfilled);
@@ -124,23 +125,34 @@ const useCreateBLIsAndSCs = (
                                 .catch((rejected) => {
                                     console.error("Error Updating Budget Line");
                                     console.error({ rejected });
-                                    setAlert({
-                                        type: "error",
-                                        heading: "Error",
-                                        message: "An error occurred. Please try again.",
-                                        redirectUrl: "/error"
-                                    });
+                                    throw new Error("Error Updating Budget Line");
                                 });
+                        } else {
+                            // If no changes, return a resolved promise
+                            return Promise.resolve();
                         }
                     });
-                    resetForm();
-                    setIsEditMode(false);
-                    setAlert({
-                        type: "success",
-                        heading: "Agreement Edits Sent to Approval",
-                        message:
-                            "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
-                        redirectUrl: `/agreements/${selectedAgreement?.id}`
+                    Promise.allSettled(promises).then((results) => {
+                        resetForm();
+                        setIsEditMode(false);
+                        let rejected = results.filter((result) => result.status === "rejected");
+                        if (rejected.length > 0) {
+                            console.error(rejected[0].reason);
+                            setAlert({
+                                type: "error",
+                                heading: "Error Sending Agreement Edits",
+                                message: "There was an error sending your edits for approval. Please try again.",
+                                redirectUrl: "/error"
+                            });
+                        } else {
+                            setAlert({
+                                type: "success",
+                                heading: "Agreement Edits Sent to Approval",
+                                message:
+                                    "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
+                                redirectUrl: `/agreements/${selectedAgreement?.id}`
+                            });
+                        }
                     });
                 }
             });
@@ -210,10 +222,12 @@ const useCreateBLIsAndSCs = (
                 });
         });
 
+        resetForm();
+        setIsEditMode(false);
         setAlert({
             type: "success",
-            heading: "Budget Lines Added",
-            message: "The budget lines has been successfully updated.",
+            heading: "Budget Lines Edited",
+            message: "The budget lines have been successfully updated.",
             redirectUrl: `/agreements/${selectedAgreement?.id}`
         });
     };
@@ -409,6 +423,8 @@ const useCreateBLIsAndSCs = (
                     }
                     navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                 } else {
+                    // TODO: Add logic to delete the agreement in the workflow
+                    // Delete the agreement in the workflow
                     deleteAgreement(selectedAgreement?.id)
                         .unwrap()
                         .then((fulfilled) => {
