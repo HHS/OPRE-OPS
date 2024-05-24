@@ -58,12 +58,14 @@ jobs:
 
   e2e:
     name: End-to-End Testing
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
     needs: prepare-matrix
+    runs-on: ubuntu-latest
+
     strategy:
+      fail-fast: false
       matrix:
         file: ${{ fromJson(needs.prepare-matrix.outputs.files) }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
