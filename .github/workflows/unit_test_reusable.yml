@@ -59,6 +59,7 @@ jobs:
   e2e:
     name: End-to-End Testing
     runs-on: ubuntu-latest
+    if: ${{ always() }}
     needs: prepare-matrix
     strategy:
       matrix:
