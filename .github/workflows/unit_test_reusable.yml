@@ -61,10 +61,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() }}
     needs: prepare-matrix
-    strategy:
-      fail-fast: false
-      matrix:
-        file: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        file: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
 
     steps:
       - name: Test-Matrix
