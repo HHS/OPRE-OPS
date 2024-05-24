@@ -59,7 +59,7 @@ jobs:
   e2e:
     name: End-to-End Testing
     runs-on: ubuntu-latest
-    if: ${{ always() }}
+#    if: ${{ always() }}
     needs: prepare-matrix
 #    strategy:
 #      fail-fast: false
@@ -69,7 +69,7 @@ jobs:
     steps:
       - name: Test-Matrix
         run: |
-          echo "${{ matrix.file }}"
+          echo "${{ steps.set-matrix.outputs.matrix }}"
 
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
@@ -92,7 +92,7 @@ jobs:
       - name: E2E Test
         working-directory: frontend
         run:
-          for file in ${{ matrix.file }}; do
+          for file in ${{ steps.set-matrix.outputs.matrix }}; do
             bun run cypress install && bun run cypress run --config-file ./cypress.config.js --headless --spec $file
           done
 
