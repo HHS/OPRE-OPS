@@ -61,7 +61,7 @@ jobs:
     needs: prepare-matrix
     steps:
       - name: Read Prepared Matrix Output
-      - env:
+        env:
           FILES: ${{ needs.prepare-matrix.outputs.files }}
         run: echo "$FILES"
 
