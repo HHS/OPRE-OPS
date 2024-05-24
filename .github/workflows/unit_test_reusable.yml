@@ -49,7 +49,7 @@ jobs:
       - id: set-matrix
         run: |
           FILE_LIST=$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')
-          echo "matrix=${FILE_LIST}" >> $GITHUB_ENV
+          echo "matrix=$FILE_LIST" >> $GITHUB_ENV
 
       - name: Test Matrix Output
         run: |
@@ -89,7 +89,10 @@ jobs:
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
-        run: bun run cypress install && bun run cypress run --config-file ./cypress.config.js --headless --spec ${{ matrix.file }}
+        run:
+          for file in ${{ matrix.file }}; do
+            bun run cypress install && bun run cypress run --config-file ./cypress.config.js --headless --spec $file
+          done
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
