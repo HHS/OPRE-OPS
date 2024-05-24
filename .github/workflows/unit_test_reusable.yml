@@ -59,11 +59,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: prepare-matrix
+    strategy:
+        matrix:
+            file: ${{ fromJson(needs.prepare-matrix.outputs.files) }}
     steps:
       - name: Read Prepared Matrix Output
-        env:
-          FILES: ${{ needs.prepare-matrix.outputs.files }}
-        run: echo "$FILES"
+        run: echo "${{ matrix.file }}"
 
   e2e:
     name: End-to-End Testing
