@@ -61,7 +61,7 @@ jobs:
     needs: prepare-matrix
     strategy:
         matrix:
-            file: ${{ fromJson(needs.prepare-matrix.outputs.files) }}
+            file: ${{ needs.prepare-matrix.outputs.files }}
     steps:
       - name: Read Prepared Matrix Output
         run: echo "${{ matrix.file }}"
