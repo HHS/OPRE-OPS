@@ -60,11 +60,12 @@ jobs:
     name: End-to-End Testing
     needs: prepare-matrix
     runs-on: ubuntu-latest
-
+    env:
+      FILES: ${{ needs.prepare-matrix.outputs.files }}
     strategy:
       fail-fast: false
       matrix:
-        file: ${{ fromJson(needs.prepare-matrix.outputs.files) }}
+        file: ${{ FILES }}
 
     steps:
       - name: Checkout
