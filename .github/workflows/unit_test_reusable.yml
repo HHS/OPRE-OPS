@@ -42,18 +42,25 @@ jobs:
     name: Prepare Matrix
     runs-on: ubuntu-latest
     outputs:
-        files: ${{ steps.set-files.outputs.files }}
+        files: ${{ steps.set-files.outputs.FILE_LIST }}
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
 
       - id: set-files
         run: |
-          FILE_LIST=$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')
-          echo "{files}={$FILE_LIST}" >> $GITHUB_OUTPUT
+          echo "{FILE_LIST}={$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')}" >> $GITHUB_OUTPUT
 
       - name: Print files output for testing
-        run: echo "${{ steps.set-files.outputs.files }}"
+        run: |
+          echo "${{ steps.set-files.outputs.FILE_LIST }}"
+
+  test:
+    runs-on: ubuntu-latest
+    needs: prepare-matrix
+    steps:
+      - name: Read Prepared Matrix Output
+        run: echo "${{ needs.prepare-matrix.outputs.files }}"
 
   e2e:
     name: End-to-End Testing
