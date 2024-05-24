@@ -58,9 +58,11 @@ jobs:
 
   e2e:
     name: End-to-End Testing
-    needs: [prepare-matrix]
     runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: prepare-matrix
     strategy:
+      fail-fast: false
       matrix:
         file: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
 
