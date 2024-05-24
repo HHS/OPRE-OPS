@@ -27,7 +27,9 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
     const changeRequestsFromBudgetLines = budgetLines
         .filter((budgetLine) => budgetLine.in_review)
         .flatMap((budgetLine) =>
-            budgetLine.change_requests_in_review.map((changeRequest) => ({ ...budgetLine, changeRequest }))
+            Array.isArray(budgetLine.change_requests_in_review)
+                ? budgetLine.change_requests_in_review.map((changeRequest) => ({ ...budgetLine, changeRequest }))
+                : []
         );
 
     if (changeRequestsFromBudgetLines?.length > 0) {

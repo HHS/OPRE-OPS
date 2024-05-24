@@ -105,7 +105,7 @@ const useCreateBLIsAndSCs = (
 
     if (isReviewMode) {
         suite({
-            new_budget_lines: budgetLines
+            budgetLines: tempBudgetLines
         });
     }
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
