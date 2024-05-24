@@ -2,41 +2,41 @@ on:
   workflow_call:
 
 jobs:
-#  backend-api:
-#    name: Backend API Unit Tests
-#    runs-on: ubuntu-latest
-#    env:
-#      JWT_PRIVATE_KEY: "__blank__"
-#    steps:
-#      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-#      - uses: ./.github/actions/setup-python
-#      # Stand up the system stack, to have something to poke
-#      - name: Run backend unit tests
-#        working-directory: ./backend/ops_api/
-#        run: pipenv run pytest
-#
-#  backend-data-tools:
-#    name: Data-Tools Unit Tests
-#    runs-on: ubuntu-latest
-#    env:
-#      JWT_PRIVATE_KEY: "__blank__"
-#    steps:
-#      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-#      - uses: ./.github/actions/setup-python
-#      - name: Run backend unit tests
-#        working-directory: ./backend/data_tools/
-#        run: pipenv install --dev && pipenv run pytest
-#
-#  frontend:
-#    name: Frontend Unit Tests
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-#      - uses: ./.github/actions/setup-javascript
-#      # Stand up the system stack, to have something to poke
-#      - name: Run frontend unit tests
-#        working-directory: ./frontend
-#        run: bun run test
+  backend-api:
+    name: Backend API Unit Tests
+    runs-on: ubuntu-latest
+    env:
+      JWT_PRIVATE_KEY: "__blank__"
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: ./.github/actions/setup-python
+      # Stand up the system stack, to have something to poke
+      - name: Run backend unit tests
+        working-directory: ./backend/ops_api/
+        run: pipenv run pytest
+
+  backend-data-tools:
+    name: Data-Tools Unit Tests
+    runs-on: ubuntu-latest
+    env:
+      JWT_PRIVATE_KEY: "__blank__"
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: ./.github/actions/setup-python
+      - name: Run backend unit tests
+        working-directory: ./backend/data_tools/
+        run: pipenv install --dev && pipenv run pytest
+
+  frontend:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: ./.github/actions/setup-javascript
+      # Stand up the system stack, to have something to poke
+      - name: Run frontend unit tests
+        working-directory: ./frontend
+        run: bun run test
 
   prepare-matrix:
     name: Prepare Matrix
