@@ -47,9 +47,6 @@ def test_agreements_get_all(auth_client, loaded_db):
 def test_agreements_get_by_id(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
-    import json
-
-    print(f"~~~GET Agreement~~~\n {json.dumps(response.json, indent=2)}")
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
     assert "procurement_tracker_workflow_id" in response.json
     assert response.json["procurement_tracker_workflow_id"] is None
@@ -107,9 +104,6 @@ def test_agreements_with_project_found(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": "1"})
     assert response.status_code == 200
     assert len(response.json) == 3
-
-    print(response.json)
-
     assert response.json[0]["id"] == 1
     assert response.json[1]["id"] == 10
     assert response.json[2]["id"] == 2
@@ -274,7 +268,6 @@ def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract):
             "description": "Updated Contract Description",
         },
     )
-    print(f"{response.status_code=}")
     assert response.status_code == 400
 
 

@@ -127,7 +127,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             # determine if it can be edited directly or if a change request is required
             directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
 
-            print(">>>~~~ before validation")
             # validate and normalize the request data
             change_data, changing_from_data = validate_and_prepare_change_data(
                 request.json,
@@ -136,7 +135,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 ["id", "agreement_id"],
                 partial=False,
             )
-            print(">>>~~~ after validation")
 
             changed_budget_prop_keys = list(
                 set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names)

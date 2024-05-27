@@ -45,7 +45,6 @@ def validate_and_prepare_change_data(
 
     # load and validate the request data
     # schema.load will run the validator and throw a ValidationError if it fails
-    print(">>> ~~~ schema.load")
     loaded_data = schema.load(request_json, unknown=EXCLUDE, partial=partial)
     loaded_data_dict = vars(loaded_data) if not isinstance(loaded_data, dict) else loaded_data
 
