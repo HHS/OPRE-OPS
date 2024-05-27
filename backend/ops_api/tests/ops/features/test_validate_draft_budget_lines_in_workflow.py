@@ -620,7 +620,6 @@ def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown)
     assert context["response_post"].status_code == 400
     assert context["response_post"].json == {
         "_schema": [
-            "BLI must have a valid Amount when status is not DRAFT",
             "BLI must be a valid Amount (greater than zero) when status is " "not DRAFT",
         ]
     }
