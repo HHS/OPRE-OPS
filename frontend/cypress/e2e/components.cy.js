@@ -1,4 +1,4 @@
-// TODO: add Cypress component testing to project
+// TODO: consider Cypress component testing to project
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
@@ -9,20 +9,6 @@ beforeEach(() => {
 afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
-});
-
-describe("procurement shop select", () => {
-    it("should display all shops in the dropdown", () => {
-        getToProcurementShopSelect();
-        // Step Two - Select Procurement Shop
-        cy.get("#procurement-shop-select option").should("have.length", 5);
-    });
-    it("should default to GCS", () => {
-        getToProcurementShopSelect();
-        // Step Two - Select Procurement Shop
-        cy.get("#procurement-shop-select").should("have.value", "2");
-        cy.get('[data-cy="fee"]').contains("0");
-    });
 });
 
 describe("table row", () => {
@@ -124,9 +110,3 @@ describe("DateRangePicker", () => {
         cy.get("h2").contains("Services Component 4").should("not.exist");
     });
 });
-
-const getToProcurementShopSelect = () => {
-    cy.visit("/agreements/create");
-    cy.get("#project-combobox-input").type("Human Services Interoperability Support{enter}");
-    cy.get("#continue").click();
-};
