@@ -12,7 +12,7 @@ from models import (
     ContractType,
     User,
 )
-from ops_api.ops.schemas.budget_line_items_marshmallow import RequestBodySchema
+from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
 
 @pytest.fixture

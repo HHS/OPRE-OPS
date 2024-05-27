@@ -11,7 +11,7 @@ from ops_api.ops.auth.decorators import check_user_session, is_authorized
 from ops_api.ops.base_views import BaseListAPI, handle_api_error
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
-from ops_api.ops.schemas.budget_line_items_marshmallow import PATCHRequestBodySchema
+from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.utils.response import make_response_with_headers
 
 
