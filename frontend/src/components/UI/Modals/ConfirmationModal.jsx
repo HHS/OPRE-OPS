@@ -105,7 +105,7 @@ export const ConfirmationModal = ({
                                         ))}
                                     </ul>
                                 )}
-                                {description && description instanceof String && (
+                                {description && typeof description === "string" && (
                                     <div className="usa-prose">
                                         <p id="ops-modal-description">{description}</p>
                                     </div>

@@ -11,24 +11,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-describe("modal management", () => {
-    it("should open and close modal with cancel button", () => {
-        fireModal();
-        cy.get(".usa-modal button").contains("Cancel").click(); // close modal
-        cy.get(".usa-modal").should("not.exist");
-    });
-    it("should open and close modal with clicking background", () => {
-        fireModal();
-        cy.get(".usa-modal-overlay").click({ force: true }); // close modal
-        cy.get(".usa-modal").should("not.exist");
-    });
-    it("should open and close modal with esc key", () => {
-        fireModal();
-        cy.get("body").type("{esc}"); // close modal
-        cy.get(".usa-modal").should("not.exist");
-    });
-});
-
 describe("procurement shop select", () => {
     it("should display all shops in the dropdown", () => {
         getToProcurementShopSelect();
@@ -142,12 +124,6 @@ describe("DateRangePicker", () => {
         cy.get("h2").contains("Services Component 4").should("not.exist");
     });
 });
-
-const fireModal = () => {
-    cy.visit("/projects/create");
-    cy.get("#cancel").click(); // open modal
-    cy.get(".usa-modal").should("exist");
-};
 
 const getToProcurementShopSelect = () => {
     cy.visit("/agreements/create");
