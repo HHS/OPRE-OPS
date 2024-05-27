@@ -282,8 +282,8 @@ class BudgetLineItemResponseSchema(Schema):
 
     id = fields.Int(required=True)
     agreement_id = fields.Int(required=True)
+    can = fields.Nested(BudgetLineItemCANSchema, required=True)
     can_id = fields.Int(required=True)
-    can: fields.Nested(BudgetLineItemCANSchema(), required=True)
     services_component_id = fields.Int(default=None, allow_none=True)
     amount = fields.Float(required=True)
     created_by = fields.Int(required=True)

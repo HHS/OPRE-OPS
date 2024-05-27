@@ -1,5 +1,4 @@
 import datetime
-from dataclasses import fields
 
 import pytest
 from pytest_bdd import given, scenario, then, when
@@ -13,7 +12,7 @@ from models import (
     ContractType,
     User,
 )
-from ops_api.ops.schemas.budget_line_items import RequestBody
+from ops_api.ops.schemas.budget_line_items_marshmallow import RequestBodySchema
 
 
 @pytest.fixture
@@ -169,7 +168,7 @@ def edit_bli(bli):
 
 @when("I submit the budget line item", target_fixture="submit_response")
 def submit(bdd_client, edited_bli):
-    field_names = {f.name for f in fields(RequestBody)} | {"agreement_id"}
+    field_names = {f for f in RequestBodySchema().fields.keys()} | {"agreement_id"}
     data = {k: v for k, v in edited_bli.to_dict().items() if k in field_names}
     resp = bdd_client.put(f"/api/v1/budget-line-items/{edited_bli.id}", json=data)
     return resp

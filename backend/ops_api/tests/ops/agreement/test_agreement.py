@@ -37,15 +37,26 @@ def test_agreements_get_all(auth_client, loaded_db):
     assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
     assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
     assert response.json[0]["incumbent"] == "Vendor 1"
+    assert "budget_line_items" in response.json[0]
+    assert "can_id" in response.json[0]["budget_line_items"][0]
+    assert "can" in response.json[0]["budget_line_items"][0]
+    assert response.json[0]["budget_line_items"][0]["can"]["number"] is not None
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_by_id(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
+    import json
+
+    print(f"~~~GET Agreement~~~\n {json.dumps(response.json, indent=2)}")
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
     assert "procurement_tracker_workflow_id" in response.json
     assert response.json["procurement_tracker_workflow_id"] is None
+    assert "budget_line_items" in response.json
+    assert "can_id" in response.json["budget_line_items"][0]
+    assert "can" in response.json["budget_line_items"][0]
+    assert response.json["budget_line_items"][0]["can"]["number"] is not None
 
 
 @pytest.mark.usefixtures("app_ctx")

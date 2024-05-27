@@ -43,6 +43,8 @@ def target_status_is_beyond_draft(data: dict, context: dict) -> bool:
 
 
 def get_target_value(data: dict, key: str, context: dict):
+    print(f"~~~??? get_target_value: present: {key in data}, key={key}, data={data},  context={context}")
+    print(f"~~~??? get_target_value: data.get(key)={data.get(key)}")
     requested_value = data.get(key)
     if context.get("method") in ["POST", "PUT"]:
         return requested_value
