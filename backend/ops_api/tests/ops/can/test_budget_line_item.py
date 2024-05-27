@@ -967,3 +967,114 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app):
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
     session.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_client, app):
+    session = app.db_session
+
+    # create agreement (using API)
+    data = {
+        "agreement_type": "CONTRACT",
+        "agreement_reason": "NEW_REQ",
+        "name": "TEST: Agreement for BLI Validation",
+        "description": "Description",
+        "procurement_shop_id": 2,
+        "product_service_code_id": 1,
+        "project_id": 1,
+        "project_officer_id": 21,
+    }
+    resp = auth_client.post("/api/v1/agreements/", json=data)
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    agreement_id = resp.json["id"]
+
+    #  create BLI (using API)
+    data = {
+        "line_description": "Test Experiments Workflows BLI",
+        "agreement_id": agreement_id,
+        "status": "PLANNED",
+        "can_id": 1,
+        "amount": 111.11,
+        "date_needed": "2025-01-01",
+    }
+    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    bli_id = resp.json["id"]
+
+    # update BLI with zero amount, expect 400 (rejection)
+    data = {
+        "amount": 0,
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    assert resp.status_code == 400
+    assert "_schema" in resp.json
+    assert len(resp.json["_schema"]) == 1
+
+    # update BLI with negative amount, expect 400 (rejection)
+    data = {
+        "amount": -222.22,
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    assert resp.status_code == 400
+    assert "_schema" in resp.json
+    assert len(resp.json["_schema"]) == 1
+
+    # cleanup
+    bli = session.get(BudgetLineItem, bli_id)
+    session.delete(bli)
+    agreement = session.get(Agreement, agreement_id)
+    session.delete(agreement)
+    session.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app):
+    session = app.db_session
+
+    # create agreement (using API)
+    data = {
+        "agreement_type": "CONTRACT",
+        "agreement_reason": "NEW_REQ",
+        "name": "TEST: Agreement for BLI Validation",
+        "description": "Description",
+        "procurement_shop_id": 2,
+        "product_service_code_id": 1,
+        "project_id": 1,
+        "project_officer_id": 21,
+    }
+    resp = auth_client.post("/api/v1/agreements/", json=data)
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    agreement_id = resp.json["id"]
+
+    #  create BLI (using API)
+    data = {
+        "line_description": "Test Experiments Workflows BLI",
+        "agreement_id": agreement_id,
+        "status": "PLANNED",
+        "can_id": 1,
+        "amount": 111.11,
+        "date_needed": "2025-01-01",
+    }
+    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    assert resp.status_code == 201
+    assert "id" in resp.json
+    bli_id = resp.json["id"]
+
+    # update BLI with invalid data (in the past), expect 400 (rejection)
+    data = {
+        "date_needed": "1900-01-01",
+    }
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    assert resp.status_code == 400
+    assert "_schema" in resp.json
+    assert len(resp.json["_schema"]) == 1
+
+    # cleanup
+    bli = session.get(BudgetLineItem, bli_id)
+    session.delete(bli)
+    agreement = session.get(Agreement, agreement_id)
+    session.delete(agreement)
+    session.commit()

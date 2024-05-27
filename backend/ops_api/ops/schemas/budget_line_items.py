@@ -195,7 +195,7 @@ class RequestBodySchema(Schema):
         if self.should_validate_field(key, data):
             target_value = self.get_target_value(key, data)
             msg = "BLI must have a valid Amount when status is not DRAFT"
-            if not target_value:
+            if target_value is None:
                 raise ValidationError(msg)
 
     @validates_schema
