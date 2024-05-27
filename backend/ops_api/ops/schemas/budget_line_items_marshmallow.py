@@ -298,7 +298,7 @@ class BudgetLineItemResponseSchema(Schema):
     fiscal_year = fields.Int(default=None, allow_none=True)
     team_members = fields.Nested(BLITeamMembersSchema(), many=True, default=None, allow_none=True)
     has_active_workflow = fields.Bool(required=True)
-    active_workflow_current_step_id: fields.Int(default=None, allow_none=True)
+    active_workflow_current_step_id = fields.Int(default=None, allow_none=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
         BudgetLineItemChangeRequestSchema(), many=True, default=None, allow_none=True
