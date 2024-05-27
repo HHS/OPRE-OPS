@@ -5,7 +5,7 @@ from sqlalchemy_continuum import parent_class, version_class
 
 from models import CAN
 from models.cans import Agreement, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
-from ops_api.ops.resources.budget_line_items import PATCHRequestBody, POSTRequestBody
+from ops_api.ops.schemas.budget_line_items import PATCHRequestBody, POSTRequestBody
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -953,7 +953,6 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app):
 
     # update BLI with invalid data (for PLANNED status)
     data = {
-        "agreement_id": None,
         "can_id": None,
         "amount": None,
         "date_needed": None,

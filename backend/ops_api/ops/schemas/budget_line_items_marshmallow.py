@@ -59,10 +59,18 @@ class RequestBodySchema(Schema):
         target_status = self.get_target_status(data)
         return target_status and target_status != BudgetLineItemStatus.DRAFT
 
+    def status_is_changing_beyond_draft(self, data):
+        requested_status = data.get("status") if "status" in data else None
+        if not requested_status or requested_status == BudgetLineItemStatus.DRAFT:
+            return False
+        current_bli = self.get_current_budget_line_item()
+        current_status = current_bli.status if current_bli else None
+        return requested_status != current_status
+
     def get_current_budget_line_item(self):
         return current_app.db_session.get(BudgetLineItem, self.context.get("id"))
 
-    def get_target_value(self, data: dict, key: str) -> bool:
+    def get_target_value(self, key: str, data: dict) -> bool:
         requested_value = data.get(key)
         if self.context.get("method") in ["POST", "PUT"]:
             return requested_value
@@ -72,6 +80,13 @@ class RequestBodySchema(Schema):
         if current_budget_line_item and hasattr(current_budget_line_item, key):
             return getattr(current_budget_line_item, key)
         return requested_value
+
+    def should_validate_field(self, key: str, data: dict) -> bool:
+        if self.status_is_changing_beyond_draft(data):
+            return True
+        if self.target_status_is_beyond_draft(data) and key in data:
+            return True
+        return False
 
     def is_invalid_request_for_required_field(self, existing_value, requested_value) -> bool:
         if self.context.get("method") in ["POST", "PUT"]:
@@ -83,56 +98,57 @@ class RequestBodySchema(Schema):
 
     @validates_schema
     def validate_agreement_id(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
-            target_value = self.get_target_value(data, "agreement_id")
+        key = "agreement_id"
+        if self.status_is_changing_beyond_draft(data):
+            target_value = self.get_target_value(key, data)
             if not target_value:
                 raise ValidationError("BLI must have an Agreement when status is not DRAFT")
 
     @validates_schema
-    def validate_project_id(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+    def validate_agreement_project_id(self, data, **kwargs):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if bli and bli.agreement_id and not bli.agreement.project_id:
                 raise ValidationError("BLI's Agreement must have a Project when status is not DRAFT")
 
     @validates_schema
     def validate_agreement_type(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if bli and bli.agreement_id and not bli.agreement.agreement_type:
                 raise ValidationError("BLI's Agreement must have an AgreementType when status is not DRAFT")
 
     @validates_schema
     def validate_agreement_description(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if bli and bli.agreement_id and not bli.agreement.description:
                 raise ValidationError("BLI's Agreement must have a Description when status is not DRAFT")
 
     @validates_schema
-    def validate_product_service_code(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+    def validate_agreement_product_service_code(self, data, **kwargs):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if bli and bli.agreement_id and not bli.agreement.product_service_code_id:
                 raise ValidationError("BLI's Agreement must have a ProductServiceCode when status is not DRAFT")
 
     @validates_schema
-    def validate_procurement_shop(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+    def validate_agreement_procurement_shop(self, data, **kwargs):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if bli and bli.agreement_id and not bli.agreement.procurement_shop_id:
                 raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
 
     @validates_schema
     def validate_agreement_reason(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if bli and bli.agreement_id and not bli.agreement.agreement_reason:
                 raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
 
     @validates_schema
     def validate_agreement_reason_must_not_have_incumbent(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if (
                 bli
@@ -146,7 +162,7 @@ class RequestBodySchema(Schema):
 
     @validates_schema
     def validate_agreement_reason_must_have_incumbent(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if (
                 bli
@@ -162,24 +178,26 @@ class RequestBodySchema(Schema):
                 )
 
     @validates_schema
-    def validate_project_officer(self, data, **kwargs):
-        if self.target_status_is_beyond_draft(data):
+    def validate_agreement_project_officer(self, data, **kwargs):
+        if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if bli and bli.agreement_id and not bli.agreement.project_officer:
                 raise ValidationError("BLI's Agreement must have a ProjectOfficer when status is not DRAFT")
 
     @validates_schema
     def validate_need_by_date(self, data: dict, **kwargs):
-        if self.target_status_is_beyond_draft(data):
-            target_value = self.get_target_value(data, "date_needed")
+        key = "date_needed"
+        if self.should_validate_field(key, data):
+            target_value = self.get_target_value(key, data)
             msg = "BLI must valid a valid Need By Date when status is not DRAFT"
             if is_blank(target_value):
                 raise ValidationError(msg)
 
     @validates_schema
     def validate_need_by_date_in_the_future(self, data: dict, **kwargs):
-        if self.target_status_is_beyond_draft(data):
-            target_value = self.get_target_value(data, "date_needed")
+        key = "date_needed"
+        if self.should_validate_field(key, data):
+            target_value = self.get_target_value(key, data)
             today = date.today()
             msg = "BLI must valid a Need By Date in the future when status is not DRAFT"
             if isinstance(target_value, date) and target_value <= today:
@@ -187,24 +205,27 @@ class RequestBodySchema(Schema):
 
     @validates_schema
     def validate_can(self, data: dict, **kwargs):
-        if self.target_status_is_beyond_draft(data):
-            target_value = self.get_target_value(data, "can_id")
+        key = "can_id"
+        if self.should_validate_field(key, data):
+            target_value = self.get_target_value(key, data)
             msg = "BLI must have a valid CAN when status is not DRAFT"
             if not target_value:
                 raise ValidationError(msg)
 
     @validates_schema
     def validate_amount(self, data: dict, **kwargs):
-        if self.target_status_is_beyond_draft(data):
-            target_value = self.get_target_value(data, "amount")
+        key = "amount"
+        if self.should_validate_field(key, data):
+            target_value = self.get_target_value(key, data)
             msg = "BLI must have a valid Amount when status is not DRAFT"
             if not target_value:
                 raise ValidationError(msg)
 
     @validates_schema
     def validate_amount_greater_than_zero(self, data: dict, **kwargs):
-        if self.target_status_is_beyond_draft(data):
-            target_value = self.get_target_value(data, "amount")
+        key = "amount"
+        if self.should_validate_field(key, data):
+            target_value = self.get_target_value(key, data)
             msg = "BLI must be a valid Amount (greater than zero) when status is not DRAFT"
             if isinstance(target_value, (Decimal, float, int)) and (target_value <= 0):
                 raise ValidationError(msg)

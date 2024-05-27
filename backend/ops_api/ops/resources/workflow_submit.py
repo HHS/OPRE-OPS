@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 
-import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from marshmallow import EXCLUDE, Schema, fields
@@ -21,7 +20,7 @@ from models.workflows import (
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import check_user_session, is_authorized
 from ops_api.ops.base_views import BaseItemAPI, handle_api_error
-from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
+from ops_api.ops.schemas.budget_line_items_marshmallow import PATCHRequestBodySchema
 from ops_api.ops.utils.response import make_response_with_headers
 
 ENDPOINT_STRING = "/workflow-submit"
@@ -136,7 +135,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
 def validate_bli(bli: BudgetLineItem, pending_changes: dict):
     if bli is None:
         raise ValueError("bli is a required argument")
-    schema = mmdc.class_schema(PATCHRequestBody)()
+    schema = PATCHRequestBodySchema()
     schema.context["id"] = bli.id
     schema.context["method"] = "PATCH"
     # validate
