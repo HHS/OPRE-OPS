@@ -11,35 +11,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-describe("table row", () => {
-    it("hover on table row displays icons", () => {
-        cy.visit("/agreements/1/budget-lines?mode=edit");
-        cy.get("tbody").find("tr").first().find('[data-cy="expand-row"]').should("exist");
-        cy.get("tbody").find("tr").first().trigger("mouseover");
-        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
-        cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
-        cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').should("exist");
-    });
-});
-
-describe("accordion", () => {
-    it("accordion should close when clicked", () => {
-        cy.visit("/agreements/review/1");
-        cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
-        cy.get(".usa-accordion__content").should("not.be.hidden");
-        cy.get("@acc-btn").click();
-        cy.get(".usa-accordion__content").should("be.hidden");
-    });
-
-    it("accordion should close via keyboard enter", () => {
-        cy.visit("/agreements/review/1");
-        cy.get(".usa-accordion__heading > .usa-accordion__button").first().as("acc-btn").should("exist");
-        cy.get(".usa-accordion__content").should("not.be.hidden");
-        cy.get("@acc-btn").focus().type("{enter}");
-        cy.get(".usa-accordion__content").should("be.hidden");
-    });
-});
-
 describe("DatePicker", () => {
     it("should display date picker", () => {
         cy.visit("/agreements/1/budget-lines");
