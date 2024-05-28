@@ -1,6 +1,7 @@
 import json
 import time
 import uuid
+from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID
 
@@ -167,3 +168,21 @@ def get_bearer_token() -> str:
     Get the bearer token from the request headers.
     """
     return request.headers.get("Authorization")
+
+
+def get_all_user_sessions(user_id: int, session: Session) -> list[UserSession]:
+    stmt = (
+        select(UserSession)
+        .where(UserSession.user_id == user_id)  # type: ignore
+        .order_by(UserSession.created_on.desc())
+    )
+    return session.execute(stmt).scalars().all()
+
+
+def deactivate_all_user_sessions(user_sessions):
+    active_sessions = [session for session in user_sessions if session.is_active]
+    for session in active_sessions:
+        session.is_active = False
+        session.last_active_at = datetime.now()
+        current_app.db_session.add(session)
+    current_app.db_session.commit()

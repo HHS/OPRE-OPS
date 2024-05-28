@@ -5,11 +5,14 @@ from typing import Any, Optional
 from authlib.integrations.flask_client import OAuth
 from flask import Blueprint, Flask, request
 from flask_cors import CORS
+from flask_jwt_extended import current_user, verify_jwt_in_request
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
+from ops_api.ops.auth.decorators import check_user_session_function
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
+from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
@@ -115,19 +118,14 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
 
     @app.before_request
     def before_request():
-        request_data = {
-            "method": request.method,
-            "url": request.url,
-            "json": request.get_json(silent=True),
-            "args": request.args,
-            "headers": request.headers,
-        }
-        app.logger.info(f"Request: {request_data}")
+        before_request_function(app, request)
 
     @app.after_request
     def after_request(response):
         log_response(app.logger, response)
         return response
+
+    register_error_handlers(app)
 
     return app
 
@@ -143,3 +141,34 @@ def log_response(log, response):
             "response_headers": response.headers,
         }
         log.info(f"Response: {response_data}")
+
+
+def log_request(log: logging.Logger):
+    request_data = {
+        "method": request.method,
+        "url": request.url,
+        "json": request.get_json(silent=True),
+        "args": request.args,
+        "headers": request.headers,
+    }
+    log.info(f"Request: {request_data}")
+
+
+def before_request_function(app: Flask, request: request):
+    log_request(app.logger)
+    # check that the UserSession is valid
+    all_valid_endpoints = [
+        rule.endpoint
+        for rule in app.url_map.iter_rules()
+        if rule.endpoint
+        not in [
+            "auth.login_post",
+            "auth.logout_post",
+            "auth.refresh_post",
+            "home.show",
+            "api.health-check",
+        ]
+    ]
+    if request.endpoint in all_valid_endpoints and request.method not in ["OPTIONS", "HEAD"]:
+        verify_jwt_in_request()  # needed to load current_user
+        check_user_session_function(current_user)

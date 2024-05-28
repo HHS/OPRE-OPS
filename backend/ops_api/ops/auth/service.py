@@ -13,6 +13,8 @@ from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
 from ops_api.ops.auth.exceptions import AuthenticationError
 from ops_api.ops.auth.utils import (
     _get_token_and_user_data_from_internal_auth,
+    deactivate_all_user_sessions,
+    get_all_user_sessions,
     get_latest_user_session,
     is_token_expired,
 )
@@ -63,11 +65,8 @@ def logout() -> dict[str, str]:
         la.metadata.update({"oidc_id": identity})
         # TODO: Process the /logout endpoint for the OIDC Provider here.
 
-        stmt = (
-            select(UserSession).where(UserSession.user_id == current_user.id).order_by(UserSession.created_on.desc())
-        )  # type: ignore
-        user_sessions = current_app.db_session.execute(stmt).scalars().all()
-        _deactivate_all_user_sessions(user_sessions)
+        user_sessions = get_all_user_sessions(current_user.id, current_app.db_session)
+        deactivate_all_user_sessions(user_sessions)
 
         return {"message": f"User: {current_user.email} Logged out"}
 
@@ -121,7 +120,7 @@ def _get_or_create_user_session(
         return latest_user_session
     else:
         # set all other sessions to inactive before creating a new one
-        _deactivate_all_user_sessions(user_sessions)
+        deactivate_all_user_sessions(user_sessions)
 
         user_session = UserSession(
             user_id=user.id,
@@ -137,12 +136,3 @@ def _get_or_create_user_session(
         current_app.db_session.commit()
 
         return user_session
-
-
-def _deactivate_all_user_sessions(user_sessions):
-    active_sessions = [session for session in user_sessions if session.is_active]
-    for session in active_sessions:
-        session.is_active = False
-        session.last_active_at = datetime.now()
-        current_app.db_session.add(session)
-    current_app.db_session.commit()
