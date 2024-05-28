@@ -35,6 +35,7 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
                     <FontAwesomeIcon
                         id={`expand-${trId}`}
                         data-cy="expand-row"
+                        data-testid="expand-row"
                         icon={isExpanded ? faChevronUp : faChevronDown}
                         className="height-2 width-2 padding-right-1 cursor-pointer"
                         onClick={() => setIsExpanded(!isExpanded)}
@@ -42,7 +43,14 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
                 </td>
             </tr>
 
-            {isExpanded && <tr data-cy="expanded-data">{expandedData}</tr>}
+            {isExpanded && (
+                <tr
+                    data-cy="expanded-data"
+                    data-testid="expanded-data"
+                >
+                    {expandedData}
+                </tr>
+            )}
         </>
     );
 };
