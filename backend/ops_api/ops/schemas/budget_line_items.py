@@ -9,7 +9,7 @@ from marshmallow import ValidationError, validates_schema
 from marshmallow_enum import EnumField
 
 from models import AgreementReason, BudgetLineItemStatus
-from models.cans import BudgetLineItem, ServicesComponent
+from models.cans import BudgetLineItem, ContractAgreement, ServicesComponent
 from ops_api.ops.schemas.users import SafeUser
 
 ENDPOINT_STRING = "/budget-line-items"
@@ -107,6 +107,7 @@ class RequestBody:
                 bli
                 and bli.agreement_id
                 and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
+                and isinstance(bli.agreement, ContractAgreement)  # only contracts have incumbents
                 and bli.agreement.incumbent_id
             ):
                 raise ValidationError(

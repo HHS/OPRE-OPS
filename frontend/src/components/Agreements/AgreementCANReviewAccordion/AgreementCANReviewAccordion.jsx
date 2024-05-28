@@ -90,28 +90,30 @@ const AgreementCANReviewAccordion = ({
                 className="display-flex flex-wrap margin-bottom-0"
                 style={{ gap: "32px 28px" }}
             >
-                {cansWithPendingAmount.map((value) => (
-                    <CANFundingCard
-                        key={value.can.id}
-                        can={value.can}
-                        pendingAmount={value.pendingAmount}
-                        afterApproval={afterApproval}
-                    />
-                ))}
+                {cansWithPendingAmount.length > 0 &&
+                    cansWithPendingAmount.map((value) => (
+                        <CANFundingCard
+                            key={value.can.id}
+                            can={value.can}
+                            pendingAmount={value.pendingAmount}
+                            afterApproval={afterApproval}
+                        />
+                    ))}
             </div>
             <div className="text-base-dark font-12px margin-top-1">
                 *Total Spending equals the sum of Budget Lines in Planned, Executing and Obligated
             </div>
             <div className="margin-top-3">
                 <span className="text-base-dark font-12px">Portfolios:</span>
-                {canPortfolios.map((portfolio) => (
-                    <Tag
-                        key={portfolio.id}
-                        className="margin-left-1"
-                        text={portfolio.name}
-                        tagStyle="primaryDarkTextLightBackground"
-                    />
-                ))}
+                {canPortfolios.length > 0 &&
+                    canPortfolios.map((portfolio) => (
+                        <Tag
+                            key={portfolio.id}
+                            className="margin-left-1"
+                            text={portfolio.name}
+                            tagStyle="primaryDarkTextLightBackground"
+                        />
+                    ))}
             </div>
             <div className="margin-top-1">
                 <span className="text-base-dark font-12px">Other CANs Outside Your Division:</span>

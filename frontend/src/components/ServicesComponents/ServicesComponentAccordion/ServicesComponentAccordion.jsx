@@ -10,10 +10,10 @@ import { useGetServicesComponentDisplayTitle } from "../../../hooks/useServicesC
  * @component
  * @param {Object} props - The properties passed to this component.
  * @param {number} [props.servicesComponentId] - The ID of the services component.
- * @param {boolean} props.withMetadata - Whether to display metadata.
- * @param {string} props.periodStart - The start date of the period of performance.
- * @param {string} props.periodEnd - The end date of the period of performance.
- * @param {string} props.description - The description of the services component.
+ * @param {boolean} [props.withMetadata] - Whether to display metadata.
+ * @param {string} [props.periodStart] - The start date of the period of performance.
+ * @param {string} [props.periodEnd] - The end date of the period of performance.
+ * @param {string} [props.description] - The description of the services component.
  * @param {React.ReactNode} props.children - The child elements to be wrapped in the Accordion.
  * @returns {JSX.Element} - The rendered component.
  */

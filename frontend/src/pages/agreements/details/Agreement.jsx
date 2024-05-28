@@ -6,6 +6,9 @@ import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
+import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
+import useChangeRequests from "../../../hooks/useChangeRequests.hooks";
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -13,6 +16,7 @@ const Agreement = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
+    const [isAlertVisible, setIsAlertVisible] = useState(true);
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
@@ -23,10 +27,18 @@ const Agreement = () => {
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement
+        isLoading: isLoadingAgreement,
+        isSuccess
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
+
+    let doesAgreementHaveBlIsInReview = false;
+
+    if (isSuccess) {
+        doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
+    }
+    let changeRequests = useChangeRequests(agreement?.id);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -56,8 +68,20 @@ const Agreement = () => {
 
     return (
         <App breadCrumbName={agreement?.name}>
-            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
-            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{agreement.project?.title}</h2>
+            {doesAgreementHaveBlIsInReview && isAlertVisible ? (
+                <AgreementChangesAlert
+                    changeRequests={changeRequests}
+                    isAlertVisible={isAlertVisible}
+                    setIsAlertVisible={setIsAlertVisible}
+                />
+            ) : (
+                <>
+                    <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
+                    <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
+                        {agreement.project?.title}
+                    </h2>
+                </>
+            )}
 
             <div>
                 <section className="display-flex flex-justify margin-top-3">

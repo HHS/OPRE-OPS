@@ -7,6 +7,7 @@ import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { useGetCansQuery } from "../../../api/opsAPI";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
@@ -15,9 +16,10 @@ import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineFeeAmount,
-    totalBudgetLineAmountPlusFees
+    totalBudgetLineAmountPlusFees,
+    renderField
 } from "../../../helpers/utils";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, canLabel, BLILabel } from "../../../helpers/budgetLines.helpers";
 import {
     removeBorderBottomIfExpanded,
     changeBgColorIfExpanded
@@ -56,6 +58,58 @@ const BLIRow = ({
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
     const location = useLocation();
+    const { data: cans, isSuccess, isLoading } = useGetCansQuery();
+
+    if (isLoading) {
+        return <p>Loading...</p>;
+    }
+
+    // styles for the table row
+    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
+    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    // are you on the approve page?
+    const isApprovePage = location.pathname.includes("approve");
+    const isBLIInReview = budgetLine?.in_review || false;
+    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+
+    const changeRequests = budgetLine?.change_requests_in_review;
+    /**
+     * Array of messages for each change request.
+     * @type {string[]}
+     */
+    let changeRequestsMessages = [];
+
+    if (changeRequests?.length > 0 && isSuccess) {
+        changeRequests.forEach((changeRequest) => {
+            if (changeRequest?.requested_change_data?.amount) {
+                changeRequestsMessages.push(
+                    `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                );
+            }
+            if (changeRequest?.requested_change_data?.date_needed) {
+                changeRequestsMessages.push(
+                    `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                );
+            }
+            if (changeRequest?.requested_change_data?.can_id) {
+                let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                let canName = matchingCan?.display_name || "TBD";
+
+                changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
+            }
+
+            return changeRequestsMessages;
+        });
+    }
+
+    let lockedMessage = "";
+
+    if (isBLIInReview) {
+        lockedMessage = "This budget line has pending edits:";
+        changeRequestsMessages.forEach((message) => {
+            lockedMessage += `\n \u2022 ${message}`;
+        });
+    }
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -64,16 +118,9 @@ const BLIRow = ({
             handleSetItemForEditing={handleSetBudgetLineForEditing}
             isItemEditable={isBudgetLineEditable}
             duplicateIcon={true}
+            lockedMessage={lockedMessage}
         />
     );
-    // styles for the table row
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    // are you on the approve page?
-    const isApprovePage = location.pathname.includes("approve");
-    const isBLIInAnyActiveWorkflow = budgetLine?.has_active_workflow || false;
-    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const inReview = isBLIInAnyActiveWorkflow;
 
     const TableRowData = (
         <>
@@ -90,7 +137,7 @@ const BLIRow = ({
                         <span>{budgetLine?.id}</span>
                     </Tooltip>
                 ) : (
-                    budgetLine?.id
+                    BLILabel(budgetLine)
                 )}
             </th>
             <td
@@ -117,7 +164,7 @@ const BLIRow = ({
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {budgetLine?.can?.number}
+                {canLabel(budgetLine)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
@@ -169,8 +216,9 @@ const BLIRow = ({
                     <div>{changeIcons}</div>
                 ) : (
                     <TableTag
-                        inReview={inReview}
+                        inReview={isBLIInReview}
                         status={budgetLine?.status}
+                        lockedMessage={lockedMessage}
                     />
                 )}
             </td>

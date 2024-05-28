@@ -90,9 +90,9 @@ const ChangeIcons = ({
                     <>
                         <Tooltip
                             position="top"
-                            label={`${
+                            label={
                                 lockedMessage ? lockedMessage : "Only team members listed on this agreement can edit"
-                            } `}
+                            }
                             className="line-height-body-1"
                         >
                             <button

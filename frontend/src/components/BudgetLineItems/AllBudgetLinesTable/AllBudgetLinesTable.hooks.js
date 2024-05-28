@@ -33,7 +33,7 @@ function useAllBudgetLinesTable(budgetLines) {
                             type: "error",
                             heading: "Error",
                             message: "An error occurred. Please try again.",
-                            navigateUrl: "/error"
+                            redirectUrl: "/error"
                         });
                     });
             }

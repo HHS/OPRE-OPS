@@ -10,6 +10,7 @@ import { setAlert as SetAlertAction } from "../components/UI/Alert/alertSlice";
  * @property {string} message - The message to display in the alert.
  * @property {string} [redirectUrl] - The URL to redirect to when the alert is dismissed.
  */
+
 /**
  * The shape of the object returned by the useAlert hook.
  * @typedef {Object} AlertHook
@@ -22,7 +23,7 @@ const useAlert = () => {
 
     /**
      * Sets the alert data in the Redux store.
-     * @param {Object} alertData - The data for the alert to be displayed.
+     * @param {AlertData} alertData - The data for the alert to be displayed.
      */
     const setAlert = (alertData) => {
         dispatch(SetAlertAction(alertData));
