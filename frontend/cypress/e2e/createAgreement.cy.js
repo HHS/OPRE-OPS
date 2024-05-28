@@ -120,9 +120,11 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
 
     // Duplicate budget line item
-    cy.get("[id^=expand-]").click();
-    cy.get("[id^=duplicate-]").click();
-    cy.get("[id^=expand-]").click();
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').click();
+    cy.get("[data-cy='currency-summary-card']").contains("$2,000,000.00");
+    // close accordion to beat a11y check
+    cy.get(".usa-accordion__heading > .usa-accordion__button").click();
 
     // expand budget line and check that the "created by" name is not empty.
     cy.get("[id^=expand-]").each((_, element) => {

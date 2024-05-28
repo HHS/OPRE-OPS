@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { BLI_STATUS } from "../helpers/budgetLines.helpers";
 
 /**
  * @typedef {Object} BudgetLine
@@ -15,10 +16,12 @@ import { useSelector } from "react-redux";
  * const isBudgetLineInEditableStatus = useIsBudgetLineEditableByStatus(budgetLine);
  */
 export const useIsBudgetLineEditableByStatus = (/** @type {BudgetLine} */ budgetLine) => {
-    const isBudgetLineDraft = budgetLine?.status === "DRAFT";
-    const isBudgetLinePlanned = budgetLine?.status === "PLANNED";
-    const isBudgetLineInActiveWorkflow = budgetLine?.has_active_workflow;
-    const isBudgetLineInEditableStatus = (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInActiveWorkflow;
+    const isBudgetLineDraft = budgetLine?.status === BLI_STATUS.DRAFT;
+    const isBudgetLinePlanned = budgetLine?.status === BLI_STATUS.PLANNED;
+    const isBudgetLineExecuting = budgetLine?.status === BLI_STATUS.EXECUTING;
+    const isBudgetLineInReview = budgetLine?.in_review;
+    const isBudgetLineInEditableStatus =
+        (isBudgetLineDraft || isBudgetLinePlanned || isBudgetLineExecuting) && !isBudgetLineInReview;
 
     return isBudgetLineInEditableStatus;
 };
