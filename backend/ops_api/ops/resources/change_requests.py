@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime
 
-import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from sqlalchemy import select
@@ -12,7 +11,7 @@ from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
-from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
+from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -31,7 +30,7 @@ def review_change_request(
             budget_line_item = session.get(BudgetLineItem, change_request.budget_line_item_id)
             # need to copy to avoid changing the original data in the ChangeRequest and triggering an update
             data = copy.deepcopy(change_request.requested_change_data)
-            schema = mmdc.class_schema(PATCHRequestBody)()
+            schema = PATCHRequestBodySchema()
             schema.context["id"] = change_request.budget_line_item_id
             schema.context["method"] = "PATCH"
 
@@ -39,7 +38,8 @@ def review_change_request(
                 data,
                 budget_line_item,
                 schema,
-                ["id", "status", "agreement_id"],
+                # ["id", "status", "agreement_id"],
+                ["id", "agreement_id"],
                 partial=False,
             )
 

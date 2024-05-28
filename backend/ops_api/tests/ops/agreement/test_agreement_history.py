@@ -60,7 +60,7 @@ def test_agreement_history(auth_client, loaded_db):
         "agreement_id": agreement_id,
         "amount": 1000000,
         "status": "DRAFT",
-        "date_needed": "2022-3-3",
+        "date_needed": "2034-3-3",
         "proc_shop_fee_percentage": None,
     }
 
@@ -74,9 +74,12 @@ def test_agreement_history(auth_client, loaded_db):
     data = {
         "amount": 2000000,
         "comments": "Comments Updated",
-        "date_needed": "2021-1-1",
+        "date_needed": "2043-1-1",
     }
     resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    import json
+
+    print(json.dumps(resp.json, indent=2))
     assert resp.status_code == 200
 
     # DELETE budget line
@@ -296,8 +299,9 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
         "name": "TEST: Agreement history with change requests",
         "description": "Description",
         "product_service_code_id": 1,
-        "incumbent": "Vendor A",
+        "procurement_shop_id": 2,
         "project_officer_id": 21,
+        "project_id": 1,
         "team_members": [
             {
                 "id": 4,
@@ -334,6 +338,9 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 333.33, "can_id": 3, "date_needed": "2032-03-03"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    import json
+
+    print(json.dumps(response.json, indent=2))
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
