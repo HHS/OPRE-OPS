@@ -12,8 +12,8 @@ from models import (
 )
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
-from ops_api.ops.base_views import BaseListAPI, handle_api_error
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.utils.api_helpers import get_all_class_names
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -143,9 +143,7 @@ class AgreementHistoryListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.HISTORY)
-    @check_user_session
     def get(self, id: int) -> Response:
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)

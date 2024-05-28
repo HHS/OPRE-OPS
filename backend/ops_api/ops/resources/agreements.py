@@ -30,8 +30,8 @@ from models.cans import (
     ServiceRequirementType,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.resources.agreements_constants import (
     AGREEMENT_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
@@ -69,9 +69,7 @@ class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self, id: int) -> Response:
         item = self._get_item(id)
 
@@ -84,9 +82,7 @@ class AgreementItemAPI(BaseItemAPI):
 
         return response
 
-    @handle_api_error
     @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
-    @check_user_session
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
@@ -118,9 +114,7 @@ class AgreementItemAPI(BaseItemAPI):
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
 
-    @handle_api_error
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
-    @check_user_session
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
@@ -150,13 +144,11 @@ class AgreementItemAPI(BaseItemAPI):
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
 
-    @handle_api_error
     @is_authorized(
         PermissionType.DELETE,
         Permission.AGREEMENT,
         extra_check=associated_with_agreement,
     )
-    @check_user_session
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
             agreement: Agreement = self._get_item(id)
@@ -180,9 +172,7 @@ class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self) -> Response:
         agreement_classes = [
             ContractAgreement,
@@ -205,9 +195,7 @@ class AgreementListAPI(BaseListAPI):
 
         return make_response_with_headers(agreement_response)
 
-    @handle_api_error
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
-    @check_user_session
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
 
@@ -281,18 +269,14 @@ class AgreementListAPI(BaseListAPI):
 
 
 class AgreementReasonListAPI(MethodView):
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self) -> Response:
         reasons = [item.name for item in AgreementReason]
         return make_response_with_headers(reasons)
 
 
 class AgreementTypeListAPI(MethodView):
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self) -> Response:
         return make_response_with_headers([e.name for e in AgreementType])
 

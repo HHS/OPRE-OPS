@@ -17,8 +17,8 @@ from models.workflows import (
     WorkflowTriggerType,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import check_user_session, is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.workflow_step_instance import WorkflowStepInstanceResponse
 
 ENDPOINT_STRING = "/workflow-instance"
@@ -44,36 +44,28 @@ class WorkflowInstanceResponse:
 
 # Workflows Metadata Endpoings
 class WorkflowTriggerTypeListAPI(MethodView):
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowTriggerType]
         return reasons
 
 
 class WorkflowActionListAPI(MethodView):
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowAction]
         return reasons
 
 
 class WorkflowStatusListAPI(MethodView):
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowStepStatus]
         return reasons
 
 
 class WorkflowStepDependencyListAPI(MethodView):
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @check_user_session
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowStepDependency]
         return reasons
@@ -86,9 +78,7 @@ class WorkflowInstanceItemAPI(BaseItemAPI):
         # self._response_schema = desert.schema(WorkflowInstanceResponse)
         self._response_schema = mmdc.class_schema(WorkflowInstanceResponse)()
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @check_user_session
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -100,8 +90,6 @@ class WorkflowInstanceListAPI(BaseListAPI):
         # self._response_schema = desert.schema(WorkflowInstanceResponse)
         self._response_schema = mmdc.class_schema(WorkflowInstanceResponse)()
 
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @check_user_session
     def get(self) -> Response:
         return super().get()
