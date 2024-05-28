@@ -8,7 +8,7 @@ import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
-import useChangeRequests from "../../../hooks/useChangeRequests.hooks";
+import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -38,7 +38,7 @@ const Agreement = () => {
     if (isSuccess) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     }
-    let changeRequests = useChangeRequests(agreement?.id);
+    let changeRequests = useChangeRequestsForAgreement(agreement?.id);
 
     useEffect(() => {
         window.scrollTo(0, 0);

@@ -7,7 +7,6 @@ import TableTag from "../../UI/TableTag";
 import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import { useGetCansQuery } from "../../../api/opsAPI";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
@@ -16,8 +15,7 @@ import {
     fiscalYearFromDate,
     formatDateNeeded,
     totalBudgetLineFeeAmount,
-    totalBudgetLineAmountPlusFees,
-    renderField
+    totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
 import { getBudgetLineCreatedDate, canLabel, BLILabel } from "../../../helpers/budgetLines.helpers";
 import {
@@ -26,9 +24,11 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
+ * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
@@ -37,7 +37,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
  * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
  * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
- * @returns {React.JSX.Element} The BLIRow component.
+ * @returns {JSX.Element} The BLIRow component.
  **/
 const BLIRow = ({
     budgetLine,
@@ -58,58 +58,13 @@ const BLIRow = ({
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
     const location = useLocation();
-    const { data: cans, isSuccess, isLoading } = useGetCansQuery();
-
-    if (isLoading) {
-        return <p>Loading...</p>;
-    }
-
-    // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    // are you on the approve page?
     const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
     const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
 
-    const changeRequests = budgetLine?.change_requests_in_review;
-    /**
-     * Array of messages for each change request.
-     * @type {string[]}
-     */
-    let changeRequestsMessages = [];
-
-    if (changeRequests?.length > 0 && isSuccess) {
-        changeRequests.forEach((changeRequest) => {
-            if (changeRequest?.requested_change_data?.amount) {
-                changeRequestsMessages.push(
-                    `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
-                );
-            }
-            if (changeRequest?.requested_change_data?.date_needed) {
-                changeRequestsMessages.push(
-                    `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
-                );
-            }
-            if (changeRequest?.requested_change_data?.can_id) {
-                let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
-                let canName = matchingCan?.display_name || "TBD";
-
-                changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
-            }
-
-            return changeRequestsMessages;
-        });
-    }
-
-    let lockedMessage = "";
-
-    if (isBLIInReview) {
-        lockedMessage = "This budget line has pending edits:";
-        changeRequestsMessages.forEach((message) => {
-            lockedMessage += `\n \u2022 ${message}`;
-        });
-    }
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
