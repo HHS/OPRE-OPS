@@ -818,11 +818,11 @@ def error_message_valid_agreement_description(context, setup_and_teardown):
 def error_message_valid_product_service_code(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is " "not DRAFT"]
+        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is not DRAFT"]
     }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is " "not DRAFT"]
+        "_schema": ["BLI's Agreement must have a ProductServiceCode when status is not DRAFT"]
     }
 
 
@@ -830,11 +830,11 @@ def error_message_valid_product_service_code(context, setup_and_teardown):
 def error_message_valid_procurement_shop(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have a ProcurementShop when status is " "not DRAFT"]
+        "_schema": ["BLI's Agreement must have a ProcurementShop when status is not DRAFT"]
     }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have a ProcurementShop when status is " "not DRAFT"]
+        "_schema": ["BLI's Agreement must have a ProcurementShop when status is not DRAFT"]
     }
 
 
@@ -842,11 +842,11 @@ def error_message_valid_procurement_shop(context, setup_and_teardown):
 def error_message_valid_agreement_reason(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement must have an AgreementReason when status is " "not DRAFT"]
+        "_schema": ["BLI's Agreement must have an AgreementReason when status is not DRAFT"]
     }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement must have an AgreementReason when status is " "not DRAFT"]
+        "_schema": ["BLI's Agreement must have an AgreementReason when status is not DRAFT"]
     }
 
 
@@ -908,7 +908,6 @@ def error_message_need_by_date(context, setup_and_teardown):
 def error_message_need_by_date_put_only(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"],
         "date_needed": ["Not a valid date."],
     }
     assert context["response_patch"].status_code == 200
@@ -918,7 +917,6 @@ def error_message_need_by_date_put_only(context, setup_and_teardown):
 def error_message_need_by_date_empty_request(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI must valid a valid Need By Date when status is not DRAFT"],
         "date_needed": ["Not a valid date."],
     }
     assert context["response_patch"].status_code == 400
@@ -969,7 +967,6 @@ def error_message_amount_put_only(context, setup_and_teardown):
 def error_message_agreement(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI must have an Agreement when status is not DRAFT"],
         "agreement_id": ["Missing data for required field."],
     }
     assert context["response_patch"].status_code == 400
@@ -980,10 +977,6 @@ def error_message_agreement(context, setup_and_teardown):
 def error_message_future_need_by_date(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": [
-            "BLI must valid a valid Need By Date when status is not DRAFT",
-            "BLI must valid a Need By Date in the future when status is not " "DRAFT",
-        ],
         "date_needed": ["Not a valid date."],
     }
     assert context["response_patch"].status_code == 400
@@ -997,13 +990,12 @@ def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown)
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
         "_schema": [
-            "BLI must be a valid Amount (greater than zero) when status is " "not DRAFT",
+            "BLI must be a valid Amount (greater than zero) when status is not DRAFT",
         ]
     }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
         "_schema": [
-            "BLI must have a valid Amount when status is not DRAFT",
-            "BLI must be a valid Amount (greater than zero) when status is " "not DRAFT",
+            "BLI must be a valid Amount (greater than zero) when status is not DRAFT",
         ]
     }

@@ -273,8 +273,10 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     assert ag_bli_other["change_requests_in_review"] is None
 
     # review the change requests, reject the can_id change request and approve the others
-    for change_request_id in change_request_ids:
-        action = "REJECT" if change_request_id == can_id_change_request_id else "APPROVE"
+    for change_request in change_requests_in_review:
+        change_request_id = change_request["id"]
+        can_request = "can_id" in change_request["requested_change_data"]
+        action = "REJECT" if can_request else "APPROVE"
         data = {"change_request_id": change_request_id, "action": action}
         response = auth_client.post(url_for("api.change-request-review-list"), json=data)
         assert response.status_code == 200

@@ -1,9 +1,8 @@
-import marshmallow_dataclass
 from marshmallow import Schema, fields
 
 from models import ContractType
 from models.cans import AgreementReason, AgreementType, ServiceRequirementType
-from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponse
+from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
 from ops_api.ops.schemas.projects import Project
@@ -63,9 +62,7 @@ class AgreementResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(Project)
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    budget_line_items = fields.List(
-        fields.Nested(marshmallow_dataclass.class_schema(BudgetLineItemResponse)), allow_none=True
-    )
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), allow_none=True)
     procurement_shop = fields.Nested(ProcurementShopSchema)
     display_name = fields.String(required=True)
     created_by = fields.Integer(allow_none=True)
