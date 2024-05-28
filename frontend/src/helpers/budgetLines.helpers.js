@@ -1,5 +1,12 @@
 import { formatDateToMonthDayYear } from "./utils";
 
+export const BLI_STATUS = {
+    DRAFT: "DRAFT",
+    PLANNED: "PLANNED",
+    EXECUTING: "IN_EXECUTION",
+    OBLIGATED: "OBLIGATED"
+};
+
 /**
  * Validates if the given budget line is an object.
  * @param {Object} budgetLine - The budget line to validate.
@@ -45,12 +52,18 @@ export const getBudgetByStatus = (budgetLines, status) => {
 
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIProp(budgetLines);
-    return budgetLines?.filter((bli) => bli.status !== "DRAFT" && bli.status !== "IN_REVIEW");
+    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
 };
-
+// TODO: Should we be checking for `in_review` here?
+// TODO: Are workflows deprecated?
 export const hasActiveWorkflow = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.some((bli) => bli.has_active_workflow);
+};
+
+export const hasBlIsInReview = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.some((bli) => bli.in_review);
 };
 
 export const groupByServicesComponent = (budgetLines) => {
@@ -72,3 +85,12 @@ export const groupByServicesComponent = (budgetLines) => {
             return a.servicesComponentId - b.servicesComponentId;
         });
 };
+
+export const isBLIPermanent = (bli) => {
+    handleBLIProp(bli);
+    return bli?.created_on;
+};
+
+export const canLabel = (bli) => (isBLIPermanent(bli) ? bli?.can?.number : bli?.canDisplayName);
+
+export const BLILabel = (bli) => (isBLIPermanent(bli) ? bli?.id : "TBD");

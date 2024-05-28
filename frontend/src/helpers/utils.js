@@ -261,7 +261,12 @@ export const renderField = (className, fieldName, value) => {
                 case "date_needed":
                     return formatDateNeeded(value);
                 case "amount":
-                    return "$" + value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    return new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(value);
                 case "agreement_reason":
                     return convertCodeForDisplay("agreementReason", value);
                 case "agreement_type":

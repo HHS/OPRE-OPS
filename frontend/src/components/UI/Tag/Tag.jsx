@@ -1,16 +1,17 @@
 import PropTypes from "prop-types";
 
 /**
- *  Tag component.
- *  @param {Object} props - Properties passed to component
- *  @param {string} [props.tagStyle] - The style of the tag.
- * @param {string} [props.tagStyleActive] - The style of the tag when active.
- *  @param {string} [props.text] - The text to display in the tag.
- *  @param {boolean} [props. active] - Whether the tag is active or not.
- *  @param {string} [props.label ]- The label of the tag.
- *  @param {string} [props.className] - Additional CSS classes.
- *  @param {React.ReactNode} [props.children] - Child elements.
- *  @returns {React.JSX.Element} - The tag element.
+ * Tag component.
+ * @component
+ * @param {Object} props - Properties passed to component
+ * @param {string} [props.tagStyle] -  The style of the tag.
+ * @param {string} [props.tagStyleActive] -  The style of the tag when active.
+ * @param {string} [props.text] -  The text to display in the tag.
+ * @param {boolean} [props.active] -  Whether the tag is active or not.
+ * @param {string} [props.label ] -   The label of the tag.
+ * @param {string} [props.className] -  Additional CSS classes.
+ * @param {React.ReactNode} [props.children] -  Child elements.
+ * @returns {JSX.Element} - The tag element.
  */
 const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children }) => {
     let tagClasses = "font-12px padding-y-05 padding-x-1 height-205 radius-md",
@@ -94,18 +95,14 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
     }
 
     return (
-        <>
-            <span
-                className={`${tagClasses} ${activeClass} ${className}`}
-                style={{ width: "fit-content" }}
-            >
-                {text ? text : children}
-            </span>
-        </>
+        <span
+            className={`${tagClasses} ${activeClass} ${className}`}
+            style={{ width: "fit-content" }}
+        >
+            {text ? text : children}
+        </span>
     );
 };
-
-export default Tag;
 
 Tag.propTypes = {
     tagStyle: PropTypes.string,
@@ -116,3 +113,5 @@ Tag.propTypes = {
     children: PropTypes.node,
     tagStyleActive: PropTypes.string
 };
+
+export default Tag;

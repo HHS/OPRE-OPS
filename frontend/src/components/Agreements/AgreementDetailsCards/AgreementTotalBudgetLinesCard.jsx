@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { StatusTagList } from "../../UI/Tag/StatusTag";
+import StatusTagList from "../../UI/Tag/StatusTagList";
 import SummaryCard from "../../UI/SummaryCard";
 
 /**

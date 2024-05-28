@@ -76,11 +76,12 @@ export const CreateEditAgreement = ({ budgetLines, setAgreementId = () => {} }) 
             cancelMsg = cancelMessages.isCreatedMode;
             break;
     }
-
-    // NOTE: Consider refactoring to elevate handleCancel to this parent component
+    const handleFinish = (formData) => {
+        console.log("Finished!", formData);
+    };
 
     return (
-        <CreateAgreementFlow>
+        <CreateAgreementFlow onFinish={handleFinish}>
             <StepSelectProject
                 isEditMode={isEditMode}
                 isReviewMode={isReviewMode}
