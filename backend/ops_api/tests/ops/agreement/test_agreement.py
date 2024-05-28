@@ -41,6 +41,7 @@ def test_agreements_get_all(auth_client, loaded_db):
     assert "can_id" in response.json[0]["budget_line_items"][0]
     assert "can" in response.json[0]["budget_line_items"][0]
     assert response.json[0]["budget_line_items"][0]["can"]["number"] is not None
+    assert response.json[0]["budget_line_items"][0]["can"]["display_name"] is not None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -54,6 +55,7 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     assert "can_id" in response.json["budget_line_items"][0]
     assert "can" in response.json["budget_line_items"][0]
     assert response.json["budget_line_items"][0]["can"]["number"] is not None
+    assert response.json["budget_line_items"][0]["can"]["display_name"] is not None
 
 
 @pytest.mark.usefixtures("app_ctx")

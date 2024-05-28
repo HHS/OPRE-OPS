@@ -7,7 +7,7 @@ from flask import current_app
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow_enum import EnumField
 
-from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
+from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ServicesComponent
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
@@ -130,6 +130,7 @@ class RequestBodySchema(Schema):
             if (
                 bli
                 and bli.agreement_id
+                and isinstance(bli.agreement, ContractAgreement)  # only contracts have incumbents
                 and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
                 and bli.agreement.incumbent_id
             ):
@@ -267,6 +268,7 @@ class BudgetLineItemChangeRequestSchema(Schema):
 
 class BudgetLineItemCANSchema(Schema):
     id = fields.Int(required=True)
+    display_name = fields.Str(required=True)
     number = fields.Str(required=True)
     description = fields.Str(required=True)
     purpose = fields.Str(required=True)

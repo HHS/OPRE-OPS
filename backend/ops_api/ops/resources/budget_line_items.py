@@ -69,11 +69,8 @@ def bli_associated_with_agreement(self, id: int, permission_type: PermissionType
 class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        # self._response_schema = mmdc.class_schema(BudgetLineItemResponse)()
         self._response_schema = BudgetLineItemResponseSchema()
-        # self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._put_schema = POSTRequestBodySchema()
-        # self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
         self._patch_schema = PATCHRequestBodySchema()
 
     def _get_item_with_try(self, id: int) -> Response:
