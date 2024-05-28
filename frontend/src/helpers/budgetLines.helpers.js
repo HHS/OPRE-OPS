@@ -91,6 +91,6 @@ export const isBLIPermanent = (bli) => {
     return bli?.created_on;
 };
 
-export const canLabel = (bli) => (isBLIPermanent(bli) ? bli?.can?.display_name : bli?.canDisplayName);
+export const canLabel = (bli) => (isBLIPermanent(bli) ? bli?.can?.number : bli?.canDisplayName);
 
 export const BLILabel = (bli) => (isBLIPermanent(bli) ? bli?.id : "TBD");
