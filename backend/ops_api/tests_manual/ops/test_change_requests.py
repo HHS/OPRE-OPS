@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 from flask import url_for
 
-from models import Agreement, BudgetLineItem, BudgetLineItemStatus
+from models import Agreement, BudgetLineItem, BudgetLineItemStatus, Division
 from models.workflows import BudgetLineItemChangeRequest, ChangeRequestStatus
 from ops_api.ops.resources.agreement_history import find_agreement_histories
 
@@ -533,47 +533,74 @@ def test_agreement_history_with_change_requests(auth_client, app):
 def test_change_request_list(auth_client, app):
     session = app.db_session
 
+    # verify no change request in list to review for this user
     response = auth_client.get(url_for("api.change-request-list"))
     assert response.status_code == 200
-    import json
-
-    print(f"~~~ GET before create {len(response.json)=} ~~~~ \n{json.dumps(response.json, indent=2)}")
     assert len(response.json) == 0
 
-    change_request = BudgetLineItemChangeRequest()
-    change_request.status = ChangeRequestStatus.IN_REVIEW
-    change_request.budget_line_item_id = 1
-    change_request.agreement_id = 1
-    change_request.created_by = 1
-    change_request.managing_division_id = 1
-    change_request.requested_change_data = {"key": "value"}
-    session.add(change_request)
+    # create a change request
+    change_request1 = BudgetLineItemChangeRequest()
+    change_request1.status = ChangeRequestStatus.IN_REVIEW
+    change_request1.budget_line_item_id = 1
+    change_request1.agreement_id = 1
+    change_request1.created_by = 1
+    change_request1.managing_division_id = 1
+    change_request1.requested_change_data = {"key": "value"}
+    session.add(change_request1)
     session.commit()
 
+    # verify no change request in the list to review for this user
     response = auth_client.get(url_for("api.change-request-list"))
     assert response.status_code == 200
-    print(f"~~~ GET after create {len(response.json)=} ~~~~ {json.dumps(response.json, indent=2)}")
+    assert len(response.json) == 0
+
+    # change division#1 director and division#2 deputy directory to this test user
+    division1: Division = session.get(Division, 1)
+    division1.division_director_id = 4
+    session.add(division1)
+    division2: Division = session.get(Division, 2)
+    division2.deputy_division_director_id = 4
+    session.add(division2)
+    session.commit()
+
+    # verify there is one change request in the list to review for this user
+    response = auth_client.get(url_for("api.change-request-list"))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+
+    # create a change request for division#2
+    change_request2 = BudgetLineItemChangeRequest()
+    change_request2.status = ChangeRequestStatus.IN_REVIEW
+    change_request2.budget_line_item_id = 2
+    change_request2.agreement_id = 1
+    change_request2.requested_change_data = {"key": "value"}
+    change_request2.created_by = 1
+    change_request2.managing_division_id = 2
+    session.add(change_request2)
+    session.commit()
+
+    # verify there is two change requests in the list to review for this user
+    response = auth_client.get(url_for("api.change-request-list"))
+    assert response.status_code == 200
+    assert len(response.json) == 2
+
+    # review (approve/reject) the change requests
+    change_request1.status = ChangeRequestStatus.APPROVED
+    change_request2.status = ChangeRequestStatus.REJECTED
+    session.add(change_request1)
+    session.add(change_request2)
+    session.commit()
+
+    # verify no change request in the list to review for this user
+    response = auth_client.get(url_for("api.change-request-list"))
+    assert response.status_code == 200
     assert len(response.json) == 0
 
     # cleanup
-    session.delete(change_request)
+    division1.division_director_id = 23
+    session.add(division1)
+    division2.division_director_id = 21
+    session.add(division2)
+    session.delete(change_request1)
+    session.delete(change_request2)
     session.commit()
-
-
-@pytest.mark.skipif(
-    "test_change_requests.py::test_nothing" not in sys.argv,
-    reason="Skip unless run manually by itself",
-)
-@pytest.mark.usefixtures("app_ctx")
-def test_nothing(auth_client, app):
-    pass
-
-
-@pytest.mark.skipif(
-    "test_change_requests.py::test_get" not in sys.argv,
-    reason="Skip unless run manually by itself",
-)
-@pytest.mark.usefixtures("app_ctx")
-def test_get(auth_client, app):
-    response = auth_client.get(url_for("api.agreements-group"))
-    assert response.status_code == 200

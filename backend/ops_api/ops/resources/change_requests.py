@@ -4,7 +4,6 @@ from datetime import datetime
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from sqlalchemy import or_, select
-from sqlalchemy.dialects import postgresql
 
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -52,6 +51,8 @@ def review_change_request(
     return change_request
 
 
+# TODO: add more query options, for now this just returns CRs in review for
+#  the current user as a division director or deputy division director
 def find_change_requests(limit: int = 10, offset: int = 0):
 
     current_user_id = getattr(current_user, "id", None)
@@ -70,14 +71,10 @@ def find_change_requests(limit: int = 10, offset: int = 0):
     stmt = stmt.limit(limit)
     if offset:
         stmt = stmt.offset(int(offset))
-    print(
-        f"~~~find_change_requests>>>\n{str(stmt.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))}"
-    )
     results = current_app.db_session.execute(stmt).all()
     return results
 
 
-# TODO: Implement the queries needed for the For Approvals page, for now it's just a placeholder
 class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
