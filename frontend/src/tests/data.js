@@ -1,7 +1,7 @@
 export const budgetLine = {
     active_workflow_current_step_id: null,
     agreement_id: 1,
-    amount: 1000000,
+    amount: 1_000_000,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         appropriation_term: 1,
