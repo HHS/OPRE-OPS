@@ -100,7 +100,9 @@ export const BudgetLinesForm = ({
 
     const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
     const isFormNotValid =
-        (isEditMode && dateRes.hasErrors()) || (isReviewMode && (res.hasErrors() || !isFormComplete));
+        (isEditMode && dateRes.hasErrors()) ||
+        (isReviewMode && (res.hasErrors() || !isFormComplete)) ||
+        (isEditMode && isBudgetLineNotDraft && res.hasErrors());
 
     return (
         <form className="grid-row grid-gap margin-y-3">

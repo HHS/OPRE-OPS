@@ -50,7 +50,8 @@ describe("BudgetLinesForm", () => {
         handleResetForm,
         isEditing: true,
         isReviewMode: true,
-        isEditMode: true
+        isEditMode: true,
+        isBudgetLineNotDraft: false
     };
 
     it("should render the component", () => {
@@ -125,13 +126,14 @@ describe("BudgetLinesForm", () => {
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
         expect(updateBudgetLineBtn).toBeDisabled();
     });
-    it("should not allow user to submit the form if the form is not valid in edit mode and BLI is not DRAFT", () => {
+    it("should not allow user to submit the form if the form is not valid and in edit mode and BLI is not DRAFT", () => {
         render(
             <Provider store={store}>
                 <BudgetLinesForm
                     {...defaultProps}
                     isReviewMode={false}
                     enteredAmount={null}
+                    isBudgetLineNotDraft={true}
                 />
             </Provider>
         );
