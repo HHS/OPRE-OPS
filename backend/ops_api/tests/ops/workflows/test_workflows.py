@@ -10,6 +10,7 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
+    ChangeRequestStatus,
     WorkflowAction,
     WorkflowInstance,
     WorkflowStepInstance,
@@ -313,3 +314,35 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     hists = find_agreement_histories(agreement_id, limit=100)
     hist_count = len(hists)
     assert hist_count == prev_hist_count + 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_change_request_list(auth_client, app):
+    session = app.db_session
+
+    # verify no change requests to review in the list
+    response = auth_client.get(url_for("api.change-request-list"))
+    assert response.status_code == 200
+    import json
+
+    print(f"~~~ GET before create {len(response.json)=} ~~~~ \n{json.dumps(response.json, indent=2)}")
+    assert len(response.json) == 0
+
+    # create a change request
+    change_request = BudgetLineItemChangeRequest()
+    change_request.status = ChangeRequestStatus.IN_REVIEW
+    change_request.budget_line_item_id = 1
+    change_request.agreement_id = 1
+    change_request.created_by = 1
+    change_request.managing_division_id = 1
+    change_request.requested_change_data = {"key": "value"}
+    session.add(change_request)
+    session.commit()
+
+    # verify there is a change request to review in the list
+    response = auth_client.get(url_for("api.change-request-list"))
+    assert response.status_code == 200
+    print(f"~~~ GET after create {len(response.json)=} ~~~~ {json.dumps(response.json, indent=2)}")
+    assert len(response.json) == 1
+    session.delete(change_request)
+    session.commit()

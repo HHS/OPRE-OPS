@@ -6,7 +6,7 @@ import pytest
 from flask import url_for
 
 from models import Agreement, BudgetLineItem, BudgetLineItemStatus
-from models.workflows import BudgetLineItemChangeRequest
+from models.workflows import BudgetLineItemChangeRequest, ChangeRequestStatus
 from ops_api.ops.resources.agreement_history import find_agreement_histories
 
 test_user_id = 4
@@ -523,3 +523,57 @@ def test_agreement_history_with_change_requests(auth_client, app):
             agreement = session.get(Agreement, agreement_id)
             session.delete(agreement)
         session.commit()
+
+
+@pytest.mark.skipif(
+    "test_change_requests.py::test_change_request_list" not in sys.argv,
+    reason="Skip unless run manually by itself",
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_change_request_list(auth_client, app):
+    session = app.db_session
+
+    response = auth_client.get(url_for("api.change-request-list"))
+    assert response.status_code == 200
+    import json
+
+    print(f"~~~ GET before create {len(response.json)=} ~~~~ \n{json.dumps(response.json, indent=2)}")
+    assert len(response.json) == 0
+
+    change_request = BudgetLineItemChangeRequest()
+    change_request.status = ChangeRequestStatus.IN_REVIEW
+    change_request.budget_line_item_id = 1
+    change_request.agreement_id = 1
+    change_request.created_by = 1
+    change_request.managing_division_id = 1
+    change_request.requested_change_data = {"key": "value"}
+    session.add(change_request)
+    session.commit()
+
+    response = auth_client.get(url_for("api.change-request-list"))
+    assert response.status_code == 200
+    print(f"~~~ GET after create {len(response.json)=} ~~~~ {json.dumps(response.json, indent=2)}")
+    assert len(response.json) == 0
+
+    # cleanup
+    session.delete(change_request)
+    session.commit()
+
+
+@pytest.mark.skipif(
+    "test_change_requests.py::test_nothing" not in sys.argv,
+    reason="Skip unless run manually by itself",
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_nothing(auth_client, app):
+    pass
+
+
+@pytest.mark.skipif(
+    "test_change_requests.py::test_get" not in sys.argv,
+    reason="Skip unless run manually by itself",
+)
+@pytest.mark.usefixtures("app_ctx")
+def test_get(auth_client, app):
+    response = auth_client.get(url_for("api.agreements-group"))
+    assert response.status_code == 200
