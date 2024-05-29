@@ -32,6 +32,7 @@ import datePickerSuite from "./datePickerSuite";
  * @param {boolean} props.isEditing - Whether the form is in edit mode.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
  * @returns {JSX.Element} - The rendered component.
  */
 export const BudgetLinesForm = ({
@@ -51,7 +52,8 @@ export const BudgetLinesForm = ({
     handleResetForm = () => {},
     isEditing,
     isReviewMode,
-    isEditMode
+    isEditMode,
+    isBudgetLineNotDraft = true
 }) => {
     let res = suite.get();
     let dateRes = datePickerSuite.get();
@@ -63,8 +65,8 @@ export const BudgetLinesForm = ({
     });
     const MemoizedDatePicker = React.memo(DatePicker);
 
-    // validate all budgetline fields if in review mode and is editing
-    if (isReviewMode && isEditing) {
+    // validate all budget line fields if in review mode and is editing
+    if ((isReviewMode && isEditing) || (isEditing && isBudgetLineNotDraft)) {
         suite({
             servicesComponentId,
             selectedCan,
@@ -186,9 +188,7 @@ export const BudgetLinesForm = ({
                                 e.preventDefault();
                                 datePickerSuite.reset();
                                 handleResetForm();
-                                if (isReviewMode) {
-                                    suite.reset();
-                                }
+                                suite.reset();
                             }}
                         >
                             Cancel
@@ -238,7 +238,8 @@ BudgetLinesForm.propTypes = {
     handleResetForm: PropTypes.func,
     isEditing: PropTypes.bool,
     isReviewMode: PropTypes.bool,
-    isEditMode: PropTypes.bool
+    isEditMode: PropTypes.bool,
+    isBudgetLineNotDraft: PropTypes.bool
 };
 
 export default BudgetLinesForm;
