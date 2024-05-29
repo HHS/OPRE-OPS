@@ -417,8 +417,10 @@ class ChangeRequest(BaseModel):
     requested_change_info: Mapped[Optional[JSONB]] = mapped_column(JSONB)
     # BaseModel.created_by is the requestor, so there's no need for another column for that
 
-    owning_division_id: Mapped[Optional[int]] = mapped_column(ForeignKey("division.id"))
-    owning_division = relationship(
+    managing_division_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("division.id")
+    )
+    managing_division = relationship(
         "Division",
         passive_deletes=True,
     )

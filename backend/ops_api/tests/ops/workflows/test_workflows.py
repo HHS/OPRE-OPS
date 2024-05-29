@@ -272,6 +272,11 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     assert "change_requests_in_review" in ag_bli
     assert ag_bli_other["change_requests_in_review"] is None
 
+    # verify managing_division
+    for change_request in change_requests_in_review:
+        assert "managing_division_id" in change_request
+        assert change_request["managing_division_id"] == 5
+
     # review the change requests, reject the can_id change request and approve the others
     for change_request in change_requests_in_review:
         change_request_id = change_request["id"]
