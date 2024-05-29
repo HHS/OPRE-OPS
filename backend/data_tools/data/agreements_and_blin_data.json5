@@ -292,6 +292,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 2,
     },
     {
       line_description: "Line Item 2",
@@ -302,6 +303,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Line Item 1",
@@ -312,6 +314,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 2,
     },
     {
       line_description: "Line Item 2",
@@ -322,6 +325,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Line Item 1",
@@ -332,6 +336,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Line Item 2",
@@ -342,6 +347,7 @@
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 2,
     },
     {
       line_description: "Line Item 2",
@@ -352,6 +358,7 @@
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Line Item 2",
@@ -362,6 +369,7 @@
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 2,
     },
     {
       line_description: "Line Item 2",
@@ -372,6 +380,7 @@
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Line Item 2",
@@ -382,6 +391,7 @@
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Line Item 2",
@@ -392,6 +402,7 @@
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 3,
     },
     {
       line_description: "Line Item 2",
@@ -402,6 +413,7 @@
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 2,
     },
     {
       line_description: "Line Item 2",
@@ -412,6 +424,7 @@
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Line Item 2",
@@ -422,6 +435,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 2,
     },
     {
       line_description: "Line Item 2",
@@ -432,6 +446,7 @@
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Line Item 2",
@@ -442,6 +457,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "Yet Another Line Item",
@@ -452,6 +468,7 @@
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.048,
+      services_component_id: 1,
     },
     {
     line_description: "Yet Another Line Item",
@@ -462,6 +479,7 @@
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.048,
+      services_component_id: 1,
     },
     {
       line_description: "SC2",
@@ -472,6 +490,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     },
     {
       line_description: "SC3",
@@ -482,6 +501,7 @@
       status: "PLANNED",
       date_needed: "2044-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 2,
     },
     {
       line_description: "LI 1",
@@ -492,6 +512,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0,
+      services_component_id: 1,
     },
     {
       line_description: "LI 2",
@@ -502,6 +523,7 @@
       status: "DRAFT",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0,
+      services_component_id: 2,
     },
     {
       line_description: "Support #1",
@@ -512,6 +534,7 @@
       status: "PLANNED",
       date_needed: "2044-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 1,
     }
   ]
 }
