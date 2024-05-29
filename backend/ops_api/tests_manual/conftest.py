@@ -33,12 +33,6 @@ def client(app: Flask, loaded_db) -> FlaskClient:  # type: ignore [type-arg]
 @pytest.fixture()
 def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = AuthClient
     return app.test_client()
