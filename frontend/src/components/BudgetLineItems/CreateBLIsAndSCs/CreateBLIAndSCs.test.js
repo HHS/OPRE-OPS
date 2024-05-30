@@ -5,8 +5,13 @@ import { BrowserRouter } from "react-router-dom";
 import CreateBLIsAndSCs from "./CreateBLIsAndSCs"; // replace with your component
 import store from "../../../store";
 import { agreement } from "../../../tests/data";
+import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
 
 const wizardSteps = ["Project", "Agreement", "Budget Lines"];
+
+const mockFn = TestApplicationContext.helpers().mockFn;
+const setIncludeDrafts = mockFn;
+const setIsEditMode = mockFn;
 
 test("renders without crashing", () => {
     render(
@@ -24,9 +29,9 @@ test("renders without crashing", () => {
                     currentStep={1}
                     isReviewMode={false}
                     canUserEditBudgetLines={false}
-                    setIsEditMode={() => {}}
+                    setIsEditMode={setIsEditMode}
                     includeDrafts={true}
-                    setIncludeDrafts={() => {}}
+                    setIncludeDrafts={setIncludeDrafts}
                 />
             </BrowserRouter>
         </Provider>

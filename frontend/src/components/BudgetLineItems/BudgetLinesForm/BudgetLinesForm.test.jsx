@@ -92,14 +92,11 @@ describe("BudgetLinesForm", () => {
 
         expect(handleResetForm).toHaveBeenCalled();
     });
-    it("should call handleEditBLI when the update button is clicked and not in review mode", async () => {
+    it("should call handleEditBLI when the update button is clicked", async () => {
         const user = userEvent.setup();
         render(
             <Provider store={store}>
-                <BudgetLinesForm
-                    {...defaultProps}
-                    isReviewMode={false}
-                />
+                <BudgetLinesForm {...defaultProps} />
             </Provider>
         );
         const needByDate = screen.getByRole("textbox", { name: /need by date/i });
@@ -111,11 +108,38 @@ describe("BudgetLinesForm", () => {
 
         expect(handleEditBLI).toHaveBeenCalled();
     });
+    it("should not allow the user to submit the form if need by date is blank", () => {
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm
+                    {...defaultProps}
+                    needByDate={null}
+                />
+            </Provider>
+        );
+
+        const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+        expect(updateBudgetLineBtn).toBeDisabled();
+    });
+    it("should not allow the user to submit the form if need by date is not valid string", () => {
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm
+                    {...defaultProps}
+                    needByDate="tacocat"
+                />
+            </Provider>
+        );
+
+        const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+        expect(updateBudgetLineBtn).toBeDisabled();
+    });
     it("should not allow the user to submit the form if the form is not valid in review mode", () => {
         render(
             <Provider store={store}>
                 <BudgetLinesForm
                     {...defaultProps}
+                    isReviewMode={true}
                     needByDate={null}
                     selectedCan={null}
                     enteredAmount={null}
@@ -126,13 +150,58 @@ describe("BudgetLinesForm", () => {
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
         expect(updateBudgetLineBtn).toBeDisabled();
     });
-    it("should not allow user to submit the form if the form is not valid and in edit mode and BLI is not DRAFT", () => {
+    it("should not allow user to submit the form if the amount is not valid and BLI is not DRAFT", () => {
         render(
             <Provider store={store}>
                 <BudgetLinesForm
                     {...defaultProps}
                     isReviewMode={false}
                     enteredAmount={null}
+                    isBudgetLineNotDraft={true}
+                />
+            </Provider>
+        );
+
+        const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+        expect(updateBudgetLineBtn).toBeDisabled();
+    });
+    it("should not allow user to submit the form if the date needed is not valid and BLI is not DRAFT", () => {
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm
+                    {...defaultProps}
+                    isReviewMode={false}
+                    needByDate={null}
+                    isBudgetLineNotDraft={true}
+                />
+            </Provider>
+        );
+
+        const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+        expect(updateBudgetLineBtn).toBeDisabled();
+    });
+    it("should not allow user to submit the form if the selected CAN is not valid and BLI is not DRAFT", () => {
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm
+                    {...defaultProps}
+                    isReviewMode={false}
+                    selectedCan={null}
+                    isBudgetLineNotDraft={true}
+                />
+            </Provider>
+        );
+
+        const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+        expect(updateBudgetLineBtn).toBeDisabled();
+    });
+    it("should not allow user to submit the form if the services component is not valid and BLI is not DRAFT", () => {
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm
+                    {...defaultProps}
+                    isReviewMode={false}
+                    servicesComponentId={null}
                     isBudgetLineNotDraft={true}
                 />
             </Provider>
