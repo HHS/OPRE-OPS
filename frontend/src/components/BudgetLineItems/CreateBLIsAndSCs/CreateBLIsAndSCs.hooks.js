@@ -63,6 +63,7 @@ const useCreateBLIsAndSCs = (
     const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
+    const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -408,6 +409,7 @@ const useCreateBLIsAndSCs = (
             setEnteredComments(comments);
             setIsEditing(true);
             setFinancialSnapshot({ enteredAmount: amount, needByDate: dateForScreen, selectedCanId: can_id });
+            setIsBudgetLineNotDraft(tempBudgetLines[index].status !== BLI_STATUS.DRAFT);
         }
     };
 
@@ -557,7 +559,8 @@ const useCreateBLIsAndSCs = (
         tempBudgetLines,
         handleSave,
         deletedBudgetLines,
-        budgetLinesForCards
+        budgetLinesForCards,
+        isBudgetLineNotDraft
     };
 };
 

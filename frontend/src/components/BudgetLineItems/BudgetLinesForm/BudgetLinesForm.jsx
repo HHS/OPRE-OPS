@@ -53,7 +53,7 @@ export const BudgetLinesForm = ({
     isEditing,
     isReviewMode,
     isEditMode,
-    isBudgetLineNotDraft = true
+    isBudgetLineNotDraft = false
 }) => {
     let res = suite.get();
     let dateRes = datePickerSuite.get();
