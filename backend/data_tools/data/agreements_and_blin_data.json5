@@ -104,6 +104,7 @@
       delivered_status: false,
       contract_type: "TIME_AND_MATERIALS",
       support_contacts: [],
+      service_requirement_type: "SEVERABLE"
     },
     {
       name: "MIHOPE Long-Term",
@@ -121,6 +122,7 @@
       delivered_status: false,
       contract_type: "LABOR_HOUR",
       support_contacts: [],
+      service_requirement_type: "NON_SEVERABLE"
     },
     {
       name: "Interoperability Initiatives",
@@ -157,6 +159,7 @@
       agreement_reason: "RECOMPETE",
       project_officer_id: 1,
       agreement_type: "CONTRACT",
+      service_requirement_type: "NON_SEVERABLE",
       project_id: 1,
       procurement_shop_id: 1,
       created_by: 4,
@@ -192,6 +195,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 4,
       agreement_type: "CONTRACT",
+      service_requirement_type: "SEVERABLE",
       project_id: 14,
       procurement_shop_id: 3,
       created_by: 4,
