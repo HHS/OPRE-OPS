@@ -9,9 +9,16 @@ from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any
 
-from models import BudgetLineItemChangeRequest, BudgetLineItemStatus, OpsEventType
-from models.base import BaseModel
-from models.cans import BudgetLineItem
+from models import (
+    CAN,
+    BaseModel,
+    BudgetLineItem,
+    BudgetLineItemChangeRequest,
+    BudgetLineItemStatus,
+    Division,
+    OpsEventType,
+    Portfolio,
+)
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.auth.exceptions import ExtraCheckError
@@ -64,6 +71,18 @@ def bli_associated_with_agreement(self, id: int, permission_type: PermissionType
     ret = jwt_identity in oidc_ids
 
     return ret
+
+
+def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
+    division = (
+        current_app.db_session.query(Division)
+        .join(Portfolio, Division.id == Portfolio.division_id)
+        .join(CAN, Portfolio.id == CAN.managing_portfolio_id)
+        .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
+        .filter(BudgetLineItem.id == bli_id)
+        .one_or_none()
+    )
+    return division
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
@@ -158,6 +177,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     change_request = BudgetLineItemChangeRequest()
                     change_request.budget_line_item_id = id
                     change_request.agreement_id = budget_line_item.agreement_id
+                    managing_division = get_division_for_budget_line_item(id)
+                    change_request.managing_division_id = managing_division.id if managing_division else None
                     schema = PATCHRequestBodySchema(only=change_keys)
                     requested_change_data = schema.dump(change_data)
                     change_request.requested_change_data = requested_change_data
