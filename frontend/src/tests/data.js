@@ -12,7 +12,8 @@ export const budgetLine = {
         managing_portfolio_id: 2,
         nickname: "HS",
         number: "G994426",
-        purpose: ""
+        purpose: "",
+        display_name: "G994426"
     },
     can_id: 5,
     change_requests_in_review: null,
@@ -45,7 +46,7 @@ export const agreement = {
         {
             active_workflow_current_step_id: null,
             agreement_id: 1,
-            amount: 1000000,
+            amount: 1_000_000,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 appropriation_term: 1,
@@ -56,7 +57,8 @@ export const agreement = {
                 managing_portfolio_id: 2,
                 nickname: "HS",
                 number: "G994426",
-                purpose: ""
+                purpose: "",
+                display_name: "G994426"
             },
             can_id: 5,
             change_requests_in_review: null,
@@ -100,7 +102,7 @@ export const agreement = {
         {
             active_workflow_current_step_id: null,
             agreement_id: 1,
-            amount: 1000000,
+            amount: 1_000_000,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 appropriation_term: 1,
@@ -111,7 +113,8 @@ export const agreement = {
                 managing_portfolio_id: 2,
                 nickname: "HS",
                 number: "G994426",
-                purpose: ""
+                purpose: "",
+                display_name: "G994426"
             },
             can_id: 5,
             change_requests_in_review: null,
