@@ -285,7 +285,6 @@ export const CreateBLIsAndSCs = ({
                     <button
                         className="usa-button"
                         data-cy="continue-btn"
-                        // onClick={continueOverRide ? continueOverRide : goToNext}
                         onClick={handleSave}
                         disabled={isReviewMode && !res.isValid()}
                     >

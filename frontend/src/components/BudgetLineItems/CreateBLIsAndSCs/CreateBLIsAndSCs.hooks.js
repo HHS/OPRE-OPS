@@ -259,15 +259,16 @@ const useCreateBLIsAndSCs = (
                     });
                 });
         });
-
         resetForm();
         setIsEditMode(false);
-        setAlert({
-            type: "success",
-            heading: "Budget Lines Edited",
-            message: "The budget lines have been successfully updated.",
-            redirectUrl: `/agreements/${selectedAgreement?.id}`
-        });
+        continueOverRide
+            ? continueOverRide()
+            : setAlert({
+                  type: "success",
+                  heading: "Budget Lines Edited",
+                  message: "The budget lines have been successfully updated.",
+                  redirectUrl: `/agreements/${selectedAgreement?.id}`
+              });
     };
 
     const handleAddBLI = (e) => {
