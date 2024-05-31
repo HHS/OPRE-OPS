@@ -119,6 +119,7 @@ describe("BudgetLinesForm", () => {
         );
 
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+
         expect(updateBudgetLineBtn).toBeDisabled();
     });
     it("should not allow the user to submit the form if need by date is not valid string", () => {
@@ -132,6 +133,23 @@ describe("BudgetLinesForm", () => {
         );
 
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+
+        expect(updateBudgetLineBtn).toBeDisabled();
+    });
+    it.todo("should not allow the user to submit the form if need by date is in the past", () => {
+        render(
+            <Provider store={store}>
+                <BudgetLinesForm
+                    {...defaultProps}
+                    needByDate="1982-06-13"
+                />
+            </Provider>
+        );
+
+        const needByDate = screen.getByRole("textbox", { name: /need by date/i });
+        expect(needByDate).toHaveValue("1982-06-13");
+        const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+
         expect(updateBudgetLineBtn).toBeDisabled();
     });
     it("should not allow the user to submit the form if the form is not valid in review mode", () => {
@@ -146,8 +164,8 @@ describe("BudgetLinesForm", () => {
                 />
             </Provider>
         );
-
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+
         expect(updateBudgetLineBtn).toBeDisabled();
     });
     it("should not allow user to submit the form if the amount is not valid and BLI is not DRAFT", () => {
@@ -163,6 +181,7 @@ describe("BudgetLinesForm", () => {
         );
 
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+
         expect(updateBudgetLineBtn).toBeDisabled();
     });
     it("should not allow user to submit the form if the date needed is not valid and BLI is not DRAFT", () => {
@@ -178,6 +197,7 @@ describe("BudgetLinesForm", () => {
         );
 
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+
         expect(updateBudgetLineBtn).toBeDisabled();
     });
     it("should not allow user to submit the form if the selected CAN is not valid and BLI is not DRAFT", () => {
@@ -193,6 +213,7 @@ describe("BudgetLinesForm", () => {
         );
 
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+
         expect(updateBudgetLineBtn).toBeDisabled();
     });
     it("should not allow user to submit the form if the services component is not valid and BLI is not DRAFT", () => {
@@ -208,6 +229,7 @@ describe("BudgetLinesForm", () => {
         );
 
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
+
         expect(updateBudgetLineBtn).toBeDisabled();
     });
 });
