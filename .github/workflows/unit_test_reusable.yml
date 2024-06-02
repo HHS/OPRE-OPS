@@ -64,7 +64,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        file: ${{ needs.prepare-matrix.outputs.files }}
+        # convert the json string output into an object
+        file: ${{fromJson(needs.prepare-matrix.outputs.files)}}
 
     steps:
       - name: Checkout
