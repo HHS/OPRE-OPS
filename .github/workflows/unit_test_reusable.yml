@@ -60,12 +60,13 @@ jobs:
     name: End-to-End Testing
     needs: prepare-matrix
     runs-on: ubuntu-latest
-
+    env:
+      FILES: ${{needs.prepare-matrix.outputs.files}}
+      run: echo "$FILES"
     strategy:
       fail-fast: false
       matrix:
-        # convert the json string output into an object
-        file: ${{fromJson(needs.prepare-matrix.outputs.files)}}
+        file: ${{ FILES }}
 
     steps:
       - name: Checkout
