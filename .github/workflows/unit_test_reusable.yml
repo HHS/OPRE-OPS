@@ -56,6 +56,10 @@ jobs:
         run: |
           echo "${{ steps.set-files.outputs.FILES }}"
 
+      - name: Print fromJson output for testing
+        run: |
+          echo "${{fromJson(needs.prepare-matrix.outputs.files)}}"
+
   e2e:
     name: End-to-End Testing
     runs-on: ubuntu-latest
