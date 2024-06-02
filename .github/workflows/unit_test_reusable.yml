@@ -58,15 +58,15 @@ jobs:
 
   e2e:
     name: End-to-End Testing
-    needs: prepare-matrix
+#    needs: prepare-matrix
     runs-on: ubuntu-latest
-    env:
-      FILES: ${{needs.prepare-matrix.outputs.files}}
-      run: echo "$FILES"
-    strategy:
-      fail-fast: false
-      matrix:
-        file: ${{ FILES }}
+#    env:
+#      FILES: ${{needs.prepare-matrix.outputs.files}}
+#      run: echo "$FILES"
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        file: ${{ FILES }}
 
     steps:
       - name: Checkout
