@@ -70,8 +70,9 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-        matrix:
-            file: ${{fromJson(needs.prepare-matrix.outputs.files)}}
+      fail-fast: true
+      matrix:
+        file: ${{fromJson(needs.prepare-matrix.outputs.files)}}
 
     needs: prepare-matrix
 
@@ -95,7 +96,10 @@ jobs:
 
       # Run the Cypress E2E Tests
       - name: E2E Test
-        run: bun run cypress install && bun run test:e2e --spec ${{ matrix.file }}
+        working-directory: frontend
+        run: |
+          matrix_file=$(echo "${{ matrix.file }}" | sed 's/frontend\///')
+          bun run cypress install && bun run test:e2e --spec $matrix_file
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
