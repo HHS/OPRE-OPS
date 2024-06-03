@@ -77,6 +77,7 @@ jobs:
     needs: prepare-matrix
 
     steps:
+      # Checkout the code
       - name: Checkout
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
 
@@ -94,6 +95,13 @@ jobs:
       - name: Install Cypress globally
         run: bun install -g cypress
 
+      # Parse file and extract test file name
+      - name: Parse file
+        id: parse-file
+        run: |
+          TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
+          echo "::set-output name=test_file::$TEST_FILE"
+
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
@@ -106,7 +114,7 @@ jobs:
         if: failure() # This step will run only if the previous step fails
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
         with:
-          path: frontend/cypress/screenshots # Update this path based on your project structure
+          path: frontend/cypress/${{ env.TEST_FILE }}/screenshots # Update this path based on your project structure
           name: cypress-screenshots
 
       # Capture logs from all services
