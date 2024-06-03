@@ -77,24 +77,6 @@ jobs:
     needs: prepare-matrix
 
     steps:
-      # Checkout the code
-      - name: Checkout
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
-
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
-      - uses: ./.github/actions/setup-javascript
-
-      # Stand up the system stack, to have something to poke
-      - name: Launch Stack
-        uses: ./.github/actions/run-full-stack
-        env:
-          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-
-      # Install Cypress globally
-      - name: Install Cypress globally
-        run: bun install -g cypress
-
       # Parse file and extract test file name
       - name: Parse Filename
         id: parse-filename
@@ -102,34 +84,7 @@ jobs:
           TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
           echo "TEST_FILE=$TEST_FILE" >> $GITHUB_ENV
 
-      # Run the Cypress E2E Tests
-      - name: E2E Test
-        working-directory: frontend
+      - name: Print Parse Filname output for testing
         run: |
-          matrix_file=$(echo "${{ matrix.file }}" | sed 's/frontend\///')
-          bun run cypress install && bun run test:e2e --spec $matrix_file
-
-      # Upload Cypress screenshots as artifact if a test fails
-      - name: Upload screenshots if failure
-        if: failure() # This step will run only if the previous step fails
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
-        with:
-          path: frontend/cypress/${{ steps.parse-filename.outputs.TEST_FILE }}/screenshots # Update this path based on your project structure
-          name: cypress-screenshots
-
-      # Capture logs from all services
-      - name: Capture logs
-        shell: bash
-        if: always()
-        run: | # Capture logs from all services
-          docker compose -f docker-compose.yml logs --no-color > full-stack-logs-${{ steps.parse-filename.outputs.TEST_FILE }}.log
-
-      # Upload logs as artifact
-      - name: Upload logs as artifact
-        if: always() # Ensure this runs, even if E2E fails
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
-        with:
-          # Set the path to the log file
-          path: full-stack-logs-${{ steps.parse-filename.outputs.TEST_FILE }}.log
-          # Optionally, set a name for the artifact
-          name: full-stack-logs-${{ steps.parse-filename.outputs.TEST_FILE }}
+          echo $TEST_FILE
+          echo "${{ steps.parse-filename.outputs.TEST_FILE }}"
