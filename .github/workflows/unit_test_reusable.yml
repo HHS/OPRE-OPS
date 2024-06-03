@@ -49,7 +49,7 @@ jobs:
 
       - id: set-files
         run: |
-          FILE_LIST=$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')
+          FILE_LIST=$(ls cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')
           echo "FILES=$FILE_LIST" >> $GITHUB_OUTPUT
 
       - name: Print files output for testing
@@ -96,7 +96,7 @@ jobs:
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
-        run: bun run cypress install && bun run test:e2e --spec "cypress/e2e/${{ matrix.file }}"
+        run: bun run cypress install && bun run test:e2e --spec ${{ matrix.file }}
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
