@@ -100,7 +100,7 @@ jobs:
         id: parse-filename
         run: |
           TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
-          echo "::set-output name=test_file::$TEST_FILE"
+          echo "TEST_FILE=$TEST_FILE" >> $GITHUB_ENV
 
       # Run the Cypress E2E Tests
       - name: E2E Test
@@ -122,7 +122,7 @@ jobs:
         shell: bash
         if: always()
         run: | # Capture logs from all services
-          docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
+          docker compose -f docker-compose.yml logs --no-color > full-stack-logs-${{ steps.parse-file.outputs.test_file }}.log
 
       # Upload logs as artifact
       - name: Upload logs as artifact
@@ -130,6 +130,6 @@ jobs:
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
         with:
           # Set the path to the log file
-          path: full-stack-logs.log
+          path: full-stack-logs-${{ steps.parse-file.outputs.test_file }}.log
           # Optionally, set a name for the artifact
           name: full-stack-logs-${{ steps.parse-file.outputs.test_file }}
