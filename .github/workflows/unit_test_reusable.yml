@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         file: ${{fromJson(needs.prepare-matrix.outputs.files)}}
 
@@ -132,4 +132,4 @@ jobs:
           # Set the path to the log file
           path: full-stack-logs.log
           # Optionally, set a name for the artifact
-          name: full-stack-logs
+          name: full-stack-logs-${{ env.TEST_FILE }}
