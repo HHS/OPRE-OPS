@@ -114,7 +114,7 @@ jobs:
         if: failure() # This step will run only if the previous step fails
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
         with:
-          path: frontend/cypress/${{ steps.parse-file.outputs.test_file }}/screenshots # Update this path based on your project structure
+          path: frontend/cypress/${{ steps.parse-filename.outputs.TEST_FILE }}/screenshots # Update this path based on your project structure
           name: cypress-screenshots
 
       # Capture logs from all services
@@ -122,7 +122,7 @@ jobs:
         shell: bash
         if: always()
         run: | # Capture logs from all services
-          docker compose -f docker-compose.yml logs --no-color > full-stack-logs-${{ steps.parse-file.outputs.test_file }}.log
+          docker compose -f docker-compose.yml logs --no-color > full-stack-logs-${{ steps.parse-filename.outputs.TEST_FILE }}.log
 
       # Upload logs as artifact
       - name: Upload logs as artifact
@@ -130,6 +130,6 @@ jobs:
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
         with:
           # Set the path to the log file
-          path: full-stack-logs-${{ steps.parse-file.outputs.test_file }}.log
+          path: full-stack-logs-${{ steps.parse-filename.outputs.TEST_FILE }}.log
           # Optionally, set a name for the artifact
-          name: full-stack-logs-${{ steps.parse-file.outputs.test_file }}
+          name: full-stack-logs-${{ steps.parse-filename.outputs.TEST_FILE }}
