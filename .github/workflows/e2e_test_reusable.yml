@@ -31,7 +31,7 @@ jobs:
 
     # Define the strategy for running the e2e job
     strategy:
-      fail-fast: false # Continue running tests even if some fail
+      fail-fast: true # Stop the job as soon as one matrix job fails
       matrix:
         file: ${{fromJson(needs.prepare-matrix.outputs.files)}}
 
