@@ -96,7 +96,7 @@ jobs:
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
-        run: bun run cypress install && bun run test:e2e --spec ${{ matrix.file }}
+        run: bun run cypress install && bun run test:e2e --spec "cypress/e2e/${{ matrix.file }}"
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
