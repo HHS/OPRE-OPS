@@ -49,7 +49,7 @@ jobs:
 
       - id: set-files
         run: |
-          FILE_LIST=$(ls frontend/cypress/e2e/*.cy.js | jq -R -s -c 'split("\n")[:-1]')
+          FILE_LIST=$(ls frontend/cypress/e2e/*.cy.js | xargs -n1 basename | sed 's/\.cy\.js$//')
           echo "FILES=$FILE_LIST" >> $GITHUB_OUTPUT
 
       - name: Print files output for testing
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         file: ${{fromJson(needs.prepare-matrix.outputs.files)}}
 
@@ -95,26 +95,18 @@ jobs:
       - name: Install Cypress globally
         run: bun install -g cypress
 
-      # Parse file and extract test file name
-      - name: Parse file
-        id: parse-file
-        run: |
-          TEST_FILE=$(basename "${{ matrix.file }}" | sed 's/\.cy\.js//')
-          echo "::set-output name=test_file::$TEST_FILE"
-
       # Run the Cypress E2E Tests
       - name: E2E Test
         working-directory: frontend
         run: |
-          matrix_file=$(echo "${{ matrix.file }}" | sed 's/frontend\///')
-          bun run cypress install && bun run test:e2e --spec $matrix_file
+          bun run cypress install && bun run test:e2e --spec "cypress/e2e/${{ matrix.file }}.cy.js"
 
       # Upload Cypress screenshots as artifact if a test fails
       - name: Upload screenshots if failure
         if: failure() # This step will run only if the previous step fails
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
         with:
-          path: frontend/cypress/${{ env.TEST_FILE }}/screenshots # Update this path based on your project structure
+          path: frontend/cypress/${{ matrix.file }}/screenshots # Update this path based on your project structure
           name: cypress-screenshots
 
       # Capture logs from all services
@@ -132,4 +124,4 @@ jobs:
           # Set the path to the log file
           path: full-stack-logs.log
           # Optionally, set a name for the artifact
-          name: full-stack-logs-${{ env.TEST_FILE }}
+          name: full-stack-logs-${{ matrix.file }}
