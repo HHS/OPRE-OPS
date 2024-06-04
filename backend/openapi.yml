@@ -2262,6 +2262,10 @@ components:
         requested_change_diff:
           description: JSON for the requested changes with new and old values at request time
           type: object
+        managing_division_id:
+          description: The division who's DD will approve/reject the change request
+          type: integer
+          example: 1
         created_by:
           $ref: '#/components/parameters/created_by'
         created_by_user:

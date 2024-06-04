@@ -264,6 +264,7 @@ class BudgetLineItemChangeRequestSchema(Schema):
     created_by = fields.Int(required=True)
     created_by_user = fields.Nested(SafeUserSchema(), default=None, allow_none=True)
     created_on = fields.DateTime(required=True)
+    managing_division_id = fields.Int(required=True, default=None, allow_none=True)
 
 
 class BudgetLineItemCANSchema(Schema):

@@ -416,9 +416,16 @@ class ChangeRequest(BaseModel):
     requested_change_diff: Mapped[Optional[JSONB]] = mapped_column(JSONB)
     requested_change_info: Mapped[Optional[JSONB]] = mapped_column(JSONB)
     # BaseModel.created_by is the requestor, so there's no need for another column for that
+
+    managing_division_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("division.id")
+    )
+    managing_division = relationship(
+        "Division",
+        passive_deletes=True,
+    )
     reviewed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
     reviewed_on: Mapped[Optional[DateTime]] = mapped_column(DateTime)
-    # should there be a fields to store pending reviewer and backup pending reviewer?
 
     __mapper_args__ = {
         "polymorphic_on": "type",
