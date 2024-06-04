@@ -104,6 +104,7 @@
       delivered_status: false,
       contract_type: "TIME_AND_MATERIALS",
       support_contacts: [],
+      service_requirement_type: "SEVERABLE"
     },
     {
       name: "MIHOPE Long-Term",
@@ -121,6 +122,7 @@
       delivered_status: false,
       contract_type: "LABOR_HOUR",
       support_contacts: [],
+      service_requirement_type: "NON_SEVERABLE"
     },
     {
       name: "Interoperability Initiatives",
@@ -129,6 +131,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 4,
       agreement_type: "CONTRACT",
+      service_requirement_type: "NON_SEVERABLE",
       project_id: 3,
       procurement_shop_id: 3,
       created_by: 4,
@@ -156,6 +159,7 @@
       agreement_reason: "RECOMPETE",
       project_officer_id: 1,
       agreement_type: "CONTRACT",
+      service_requirement_type: "NON_SEVERABLE",
       project_id: 1,
       procurement_shop_id: 1,
       created_by: 4,
@@ -191,6 +195,7 @@
       agreement_reason: "NEW_REQ",
       project_officer_id: 4,
       agreement_type: "CONTRACT",
+      service_requirement_type: "SEVERABLE",
       project_id: 14,
       procurement_shop_id: 3,
       created_by: 4,
@@ -259,6 +264,51 @@
       period_end: "2045-06-13T14:00:00",
       contract_agreement_id: 1,
       clin_id: 3,
+    },
+    {
+      id: 4,
+      number: 1,
+      optional: false,
+      description: "Artisan fixie messenger bag",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      contract_agreement_id: 7,
+    },
+     {
+      id: 5,
+      number: 1,
+      optional: false,
+      description: "Gentrify shaman mustache",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      contract_agreement_id: 8,
+    },
+    {
+      id: 6,
+      number: 1,
+      optional: false,
+      description: "Solarpunk 3 wolf moon",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      contract_agreement_id: 9,
+    },
+    {
+      id: 7,
+      number: 1,
+      optional: false,
+      description: "Etsy semiotics church key",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      contract_agreement_id: 10,
+    },
+    {
+      id: 8,
+      number: 1,
+      optional: false,
+      description: "Keytar literally austin blog",
+      period_start: "2044-06-13T14:00:00",
+      period_end: "2045-06-13T14:00:00",
+      contract_agreement_id: 11,
     }
   ],
   budget_line_item: [
@@ -291,7 +341,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -301,7 +351,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 1",
@@ -311,7 +361,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -321,7 +371,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 1",
@@ -331,7 +381,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -341,7 +391,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -351,7 +401,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -361,7 +411,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -371,7 +421,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -381,7 +431,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -391,7 +441,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -401,7 +451,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -411,7 +461,7 @@
       amount: 2000000.0,
       status: "IN_EXECUTION",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -421,7 +471,7 @@
       amount: 1000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -431,7 +481,7 @@
       amount: 3000000.0,
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Line Item 2",
@@ -441,7 +491,7 @@
       amount: 7000000.0,
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
-      proc_shop_fee_percentage: 0.005,
+      proc_shop_fee_percentage: 0.005
     },
     {
       line_description: "Yet Another Line Item",
@@ -452,6 +502,7 @@
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.048,
+      services_component_id: 4,
     },
     {
     line_description: "Yet Another Line Item",
@@ -462,6 +513,7 @@
       status: "OBLIGATED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.048,
+      services_component_id: 5,
     },
     {
       line_description: "SC2",
@@ -472,6 +524,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 6,
     },
     {
       line_description: "SC3",
@@ -482,6 +535,7 @@
       status: "PLANNED",
       date_needed: "2044-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 6,
     },
     {
       line_description: "LI 1",
@@ -492,6 +546,7 @@
       status: "PLANNED",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0,
+      services_component_id: 7,
     },
     {
       line_description: "LI 2",
@@ -502,6 +557,7 @@
       status: "DRAFT",
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0,
+      services_component_id: 7,
     },
     {
       line_description: "Support #1",
@@ -512,6 +568,7 @@
       status: "PLANNED",
       date_needed: "2044-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0.005,
+      services_component_id: 8,
     }
   ]
 }

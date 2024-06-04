@@ -1,7 +1,7 @@
 export const budgetLine = {
     active_workflow_current_step_id: null,
     agreement_id: 1,
-    amount: 1000000,
+    amount: 1_000_000,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         appropriation_term: 1,
@@ -16,7 +16,7 @@ export const budgetLine = {
     },
     can_id: 5,
     change_requests_in_review: null,
-    comments: "",
+    comments: "comment one",
     created_by: null,
     created_on: "2024-05-27T13:56:50.363964Z",
     date_needed: "2043-06-13",
@@ -220,4 +220,20 @@ export const agreement = {
     updated_on: "2024-05-27T19:20:43.774009Z",
     vendor: "Vendor 1",
     vendor_id: 1
+};
+
+export const servicesComponent = {
+    clin_id: 1,
+    contract_agreement_id: 1,
+    created_by: null,
+    created_on: "2024-05-29T20:06:50.973668Z",
+    description: "Perform Research",
+    display_name: "SC1",
+    display_title: "Services Component 1",
+    id: 1,
+    number: 1,
+    optional: false,
+    period_end: "2044-06-13",
+    period_start: "2043-06-13,",
+    updated_on: "2024-05-29T20:06:50.973668Z"
 };
