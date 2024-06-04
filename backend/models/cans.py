@@ -449,6 +449,8 @@ class ServicesComponent(BaseModel):
     period_start = Column(Date)
     period_end = Column(Date)
 
+    sub_component = Column(String, nullable=True, default=None)
+
     contract_agreement_id = Column(
         Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE"), nullable=False
     )
@@ -456,9 +458,6 @@ class ServicesComponent(BaseModel):
         "ContractAgreement",
         passive_deletes=True,
     )
-
-    clin_id = Column(Integer, ForeignKey("clin.id"), nullable=True)
-    clin = relationship("CLIN", back_populates="services_component", uselist=False)
 
     def severable(self):
         return (
@@ -498,12 +497,12 @@ class CLIN(BaseModel):
     __tablename__ = "clin"
 
     id = BaseModel.get_pk_column()
-    name = Column(String(256), nullable=False)
-    source_id = Column(Integer)  # purely an example
+    number = Column(Integer, nullable=False)
+    name = Column(String)
+    pop_start_date = Column(Date)
+    pop_end_date = Column(Date)
 
-    services_component = relationship(
-        "ServicesComponent", back_populates="clin", uselist=False
-    )
+    budget_line_item = relationship("BudgetLineItem", back_populates="clin")
 
 
 class BudgetLineItem(BaseModel):
