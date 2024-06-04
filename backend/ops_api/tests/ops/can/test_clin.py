@@ -1,6 +1,6 @@
 import pytest
 
-from models.cans import CLIN, ServicesComponent
+from models.cans import CLIN
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -9,27 +9,8 @@ def test_clin_retrieve(loaded_db):
 
     assert clin is not None
     assert clin.name == "CLIN 1"
-    assert clin.services_component is not None
-
-
-def test_clin_creation(loaded_db):
-    services_component = ServicesComponent(
-        # Assuming a ServicesComponent object is required
-        number=1,
-        optional=False,
-        description="Test Services Component",
-    )
-
-    clin = CLIN(name="456", source_id=789, services_component=services_component)
-
-    # we technically don't need to add these to the DB, but if we change this
-    # and need to test the loading, then we can still utilize it.
-    # loaded_db.add(clin)
-    # loaded_db.commit()
-
-    assert clin is not None
-    assert clin.name == "456"
-    assert clin.services_component == services_component
+    assert clin.number == 1
+    assert len(clin.budget_line_item) > 0
 
 
 @pytest.mark.usefixtures("app_ctx")

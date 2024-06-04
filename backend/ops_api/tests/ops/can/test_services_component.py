@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 
-from models.cans import CLIN, AgreementType, ContractAgreement, ContractType, ServiceRequirementType, ServicesComponent
+from models.cans import AgreementType, ContractAgreement, ContractType, ServiceRequirementType, ServicesComponent
 
 # Assuming that your testing setup includes a fixture for the database and an authenticated client
 
@@ -14,7 +14,6 @@ def test_services_component_retrieve(loaded_db):
     assert sc is not None
     assert sc.number == 1
     assert sc.optional is False
-    assert sc.clin is not None  # Assuming there's a CLIN associated
     assert sc.description == "Perform Research"
     assert sc.period_start == datetime.date(2043, 6, 13)  # 2043-06-13
     assert sc.period_end == datetime.date(2044, 6, 13)
@@ -25,12 +24,9 @@ def test_services_component_retrieve(loaded_db):
 
 
 def test_services_component_creation(loaded_db):
-    clin = CLIN(id=123, name="123")  # Assuming a CLIN object is required
-
     sc = ServicesComponent(
         number=2,
         optional=True,
-        clin_id=clin.id,
         description="Optional Services Component",
         period_start=datetime.date(2024, 1, 1),
         period_end=datetime.date(2024, 6, 30),
@@ -39,7 +35,6 @@ def test_services_component_creation(loaded_db):
     assert sc is not None
     assert sc.number == 2
     assert sc.optional
-    assert sc.clin_id == clin.id
     assert sc.period_duration.days == 181
     assert sc.display_title == "Optional Services Component 2"
     assert sc.display_name == "OSC2"
@@ -153,10 +148,7 @@ def test_services_components_post(auth_client, app):
     data = {
         "contract_agreement_id": 1,
         "description": "Test SC description",
-        # "display_name": "SC3",
-        # "id": 1,
         "number": 99,
-        # "optional": True,
         "period_end": "2044-06-13",
         "period_start": "2043-06-13",
     }
