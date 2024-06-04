@@ -11,7 +11,6 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
-    Identity,
     Integer,
     Numeric,
     String,
@@ -40,24 +39,20 @@ from models.workflows import (
     WorkflowTriggerType,
 )
 
-# from ops_api.ops.utils.procurement_workflow_helper import (
-#     PROCUREMENT_WORKFLOW_TEMPLATE_NAME,
-# )
-
 
 class BudgetLineItemStatus(Enum):
-    DRAFT = 1
-    PLANNED = 2
-    IN_EXECUTION = 3
-    OBLIGATED = 4
+    DRAFT = auto()
+    PLANNED = auto()
+    IN_EXECUTION = auto()
+    OBLIGATED = auto()
 
 
 class CANArrangementType(Enum):
-    OPRE_APPROPRIATION = 1
-    COST_SHARE = 2
-    IAA = 3
-    IDDA = 4
-    MOU = 5
+    OPRE_APPROPRIATION = auto()
+    COST_SHARE = auto()
+    IAA = auto()
+    IDDA = auto()
+    MOU = auto()
 
 
 class CANFundingSources(BaseModel):
