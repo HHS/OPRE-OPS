@@ -438,6 +438,11 @@ class ServicesComponent(BaseModel):
     """
 
     __tablename__ = "services_component"
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "number", "sub_component", "optional", "contract_agreement_id"
+        ),
+    )
 
     # start Identity at 4 to allow for the records load with IDs
     # in agreements_and_blin_data.json5
@@ -495,6 +500,7 @@ class CLIN(BaseModel):
     """
 
     __tablename__ = "clin"
+    __table_args__ = (sa.UniqueConstraint("number", "contract_agreement_id"),)
 
     id = BaseModel.get_pk_column()
     number = Column(Integer, nullable=False)
@@ -502,7 +508,13 @@ class CLIN(BaseModel):
     pop_start_date = Column(Date)
     pop_end_date = Column(Date)
 
-    budget_line_item = relationship("BudgetLineItem", back_populates="clin")
+    contract_agreement_id = Column(
+        Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE"), nullable=False
+    )
+    contract_agreement = relationship(
+        "ContractAgreement",
+        passive_deletes=True,
+    )
 
 
 class BudgetLineItem(BaseModel):
@@ -522,7 +534,7 @@ class BudgetLineItem(BaseModel):
     services_component = relationship(ServicesComponent, backref="budget_line_items")
 
     clin_id = Column(Integer, ForeignKey("clin.id"))
-    clin = relationship("CLIN", backref="budget_line_items")
+    clin = relationship(CLIN, backref="budget_line_items")
 
     amount = Column(Numeric(12, 2))
 

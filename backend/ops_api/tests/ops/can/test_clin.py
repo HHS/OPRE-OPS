@@ -10,7 +10,7 @@ def test_clin_retrieve(loaded_db):
     assert clin is not None
     assert clin.name == "CLIN 1"
     assert clin.number == 1
-    assert len(clin.budget_line_item) > 0
+    assert len(clin.budget_line_items) > 0
 
 
 @pytest.mark.usefixtures("app_ctx")
