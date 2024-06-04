@@ -25,7 +25,7 @@ jobs:
           SEMGREP_RULES: "p/default"
 
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
-        uses: github/codeql-action/upload-sarif@9fdb3e49720b44c48891d036bb502feb25684276 # v3
+        uses: github/codeql-action/upload-sarif@2e230e8fe0ad3a14a340ad0815ddb96d599d2aff # v3
         with:
           sarif_file: ${{ env.SEMGREP_TO_UPLOAD }}
         if: always()

@@ -154,8 +154,11 @@ def load_new_data(
                     )
                     session.execute(text(stmt))
 
+
+def after_user_load(conn: Connection) -> None:
     # set DD to Dave Director and Deputy DD to Admin Demo
     with Session(conn) as session:
+        print("Setting Division Director and Deputy Division Director...")
         stmt = (
             "update ops.division "
             "  set division_director_id = (select id from ops.\"user\" where email = 'dave.director@email.com') "
@@ -165,6 +168,7 @@ def load_new_data(
             "  where deputy_division_director_id is null;"
         )
         session.execute(text(stmt))
+        session.commit()
 
 
 def insert_associated_data(data_with_associations, obj, session):
@@ -181,6 +185,8 @@ def import_data(engine: Engine, data: dict[str, Any]) -> None:
     with engine.connect() as conn:
         load_new_data(conn, data)
         conn.commit()
+        if "user" in data:
+            after_user_load(conn)
 
 
 if __name__ == "__main__":
