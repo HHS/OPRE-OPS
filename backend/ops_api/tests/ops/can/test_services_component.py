@@ -9,7 +9,7 @@ from models.cans import AgreementType, ContractAgreement, ContractType, ServiceR
 
 @pytest.mark.usefixtures("app_ctx")
 def test_services_component_retrieve(loaded_db):
-    sc = loaded_db.query(ServicesComponent).filter(ServicesComponent.number == 1).one()
+    sc = loaded_db.get(ServicesComponent, 1)
 
     assert sc is not None
     assert sc.number == 1

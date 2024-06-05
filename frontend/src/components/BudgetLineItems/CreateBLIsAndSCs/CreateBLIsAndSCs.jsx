@@ -92,7 +92,8 @@ export const CreateBLIsAndSCs = ({
         handleGoBack,
         handleSave,
         budgetLinesForCards,
-        tempBudgetLines
+        tempBudgetLines,
+        isBudgetLineNotDraft
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -226,6 +227,7 @@ export const CreateBLIsAndSCs = ({
                 isReviewMode={isReviewMode}
                 isEditMode={isEditMode}
                 agreementId={selectedAgreement.id}
+                isBudgetLineNotDraft={isBudgetLineNotDraft}
             />
             {budgetLinePageErrorsExist && (
                 <ul
