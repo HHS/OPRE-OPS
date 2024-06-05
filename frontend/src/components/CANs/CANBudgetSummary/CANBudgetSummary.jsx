@@ -36,8 +36,8 @@ const CANBudgetSummary = () => {
     }, [dispatch, canFiscalYearId, selectedFiscalYear]);
 
     const totalFiscalYearFundingTableData = (
-        <td className={canFiscalYear?.total_fiscal_year_funding < 0 ? styles.redNegative : ""}>
-            {canFiscalYear?.total_fiscal_year_funding || constants.notFilledInText}
+        <td className={canFiscalYear?.total_funding < 0 ? styles.redNegative : ""}>
+            {canFiscalYear?.total_funding || constants.notFilledInText}
         </td>
     );
 
