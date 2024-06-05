@@ -29,7 +29,7 @@ class TotalFunding(TypedDict):
 
 def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
     stmt = (
-        select(coalesce(sql.functions.sum(CANFiscalYear.total_fiscal_year_funding), 0))
+        select(coalesce(sql.functions.sum(CANFiscalYear.total_funding), 0))
         .join(CAN)
         .where(CAN.managing_portfolio_id == portfolio_id)
         .where(CANFiscalYear.fiscal_year == fiscal_year)
