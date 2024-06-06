@@ -100,7 +100,7 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
     loaded_db.add(portfolio)
     loaded_db.commit()
 
-    cfy = CANFiscalYear(can_id=can.id, fiscal_year=2023, total_fiscal_year_funding=2.0)
+    cfy = CANFiscalYear(can_id=can.id, fiscal_year=2023, expected_funding=2.0)
 
     blin_1 = BudgetLineItem(
         line_description="#1",

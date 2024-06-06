@@ -30,6 +30,7 @@ class RequestBodySchema(Schema):
     comments = fields.Str(default=None, allow_none=True)
     proc_shop_fee_percentage = fields.Float(default=None, allow_none=True)
     services_component_id = fields.Int(default=None, allow_none=True)
+    clin_id = fields.Int(default=None, allow_none=True)
 
     def get_target_status(self, data):
         requested_status = data.get("status") if "status" in data else None

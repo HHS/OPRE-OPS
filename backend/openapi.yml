@@ -2168,6 +2168,9 @@ components:
           items:
             anyOf:
               - $ref: "#/components/schemas/BudgetLineItemChangeRequest"
+        clin_id:
+          type: integer
+          example: 1
         created_on:
           $ref: '#/components/parameters/created_on'
         updated_on:
@@ -2205,6 +2208,9 @@ components:
         status:
           type: string
           example: PLANNED
+        clin_id:
+          type: integer
+          example: 1
       required:
         - line_description
         - agreement_id
@@ -2392,9 +2398,6 @@ components:
           type: string
         display_name:
           type: string
-        clin_id:
-          type: integer
-          example: 1
         period_start:
           type: string
           example: '2023-05-06'
