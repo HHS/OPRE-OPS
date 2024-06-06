@@ -7,11 +7,11 @@ import LogItem from "../LogItem";
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading text to display in the modal.
- * @param {string|Array<any>} [props.description=""] - The description text to display in the modal.
- * @param {function} [props.setShowModal=() => {}] - A function to set the visibility of the modal.
+ * @param {string | Array<any>} [props.description=""] - The description text to display in the modal.
+ * @param {Function} [props.setShowModal=() => {}] - A function to set the visibility of the modal.
  * @param {string} props.actionButtonText - The text to display on the primary action button.
  * @param {string} [props.secondaryButtonText="Cancel"] - The text to display on the secondary action button.
- * @param {function} [props.handleConfirm=() => {}] - A function to handle the primary action button click.
+ * @param {Function} [props.handleConfirm=() => {}] - A function to handle the primary action button click.
  * @returns {JSX.Element} - The modal component JSX.
  */
 export const ConfirmationModal = ({
@@ -105,7 +105,7 @@ export const ConfirmationModal = ({
                                         ))}
                                     </ul>
                                 )}
-                                {description && description instanceof String && (
+                                {description && typeof description === "string" && (
                                     <div className="usa-prose">
                                         <p id="ops-modal-description">{description}</p>
                                     </div>
