@@ -11,5 +11,9 @@ class DocumentRepository(ABC):
         pass
 
     @abstractmethod
+    def update_document(self, document_id, document_content):
+        pass
+
+    @abstractmethod
     def delete_document(self, document_id):
         pass
