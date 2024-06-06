@@ -110,14 +110,16 @@ const MultiAuthSection = () => {
                         You can access your account by signing in with one of the options below.
                     </p>
                 </div>
-                <p>
-                    <button
-                        className="usa-button usa-button--outline width-full"
-                        onClick={() => handleSSOLogin("logingov")}
-                    >
-                        Sign in with Login.gov
-                    </button>
-                </p>
+                {!import.meta.env.PROD && (
+                    <p>
+                        <button
+                            className="usa-button usa-button--outline width-full"
+                            onClick={() => handleSSOLogin("logingov")}
+                        >
+                            Sign in with Login.gov
+                        </button>
+                    </p>
+                )}
                 <p>
                     <button
                         className="usa-button usa-button--outline width-full"
@@ -126,28 +128,16 @@ const MultiAuthSection = () => {
                         Sign in with HHS AMS
                     </button>
                 </p>
-                <p>
-                    <button
-                        className="usa-button usa-button--outline width-full"
-                        onClick={() => setShowModal(true)}
-                    >
-                        Sign in with FakeAuth®
-                    </button>
-                </p>
-                <div className="border-top border-base-lighter margin-top-6 padding-top-1">
+                {!import.meta.env.PROD && (
                     <p>
-                        <strong>Don&apos;t have an account?</strong>
-                    </p>
-                    <p>If you don&apos;t have an account already, sign up here:</p>
-                    <p>
-                        <a
-                            href="https://www.login.gov/help/get-started/create-your-account/"
-                            className="usa-button width-full"
+                        <button
+                            className="usa-button usa-button--outline width-full"
+                            onClick={() => setShowModal(true)}
                         >
-                            Create Login.gov account
-                        </a>
+                            Sign in with FakeAuth®
+                        </button>
                     </p>
-                </div>
+                )}
                 {showModal && (
                     <ContainerModal
                         heading="FakeAuth® User Selection"

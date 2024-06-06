@@ -96,11 +96,11 @@ describe("agreement review workflow", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             // ensure date is in the future
-            cy.get("#need-by-date").type("09/01/1998");
+            cy.get("#need-by-date").type("09/01/1998", { force: true });
             // check for date to be in the future  which should error
             cy.get(".usa-error-message").should("exist");
             // fix by adding a valid date
-            cy.get("#need-by-date").clear();
+            cy.get("#need-by-date").clear({ force: true });
             // test for invalid date
             cy.get("#need-by-date").type("tacocat");
             cy.get(".usa-error-message").should("exist");
@@ -161,7 +161,7 @@ describe("agreement review workflow", () => {
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-            cy.get("[data-cy='edit-row']").click();
+            cy.get("[data-cy='edit-row']").click().click();
             cy.get(".usa-form-group--error").should("have.length", 3);
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors
@@ -256,10 +256,10 @@ describe("agreement review workflow", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#can-combobox-input").type(`${blData[0].can}{enter}`);
             // ensure date is in the future
-            cy.get("#need-by-date").type("09/01/1998");
+            cy.get("#need-by-date").type("09/01/1998", { force: true });
             cy.get(".usa-error-message").should("exist");
             // fix
-            cy.get("#need-by-date").clear();
+            cy.get("#need-by-date").clear({ force: true }).clear();
             cy.get("#need-by-date").type(blData[0].needByDate);
             // add entered amount and clear it
             cy.get("#enteredAmount").type(`${blData[0].amount}`);
@@ -313,7 +313,7 @@ describe("agreement review workflow", () => {
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-            cy.get("[data-cy='edit-row']").click();
+            cy.get("[data-cy='edit-row']").click().click();
             cy.get(".usa-form-group--error").should("have.length", 3);
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
             // fix errors

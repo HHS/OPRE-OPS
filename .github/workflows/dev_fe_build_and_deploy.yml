@@ -47,7 +47,9 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "unstable,${{ github.sha }},${{ steps.extract_version.outputs.version }}"
-          build_args: VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.acf.opre-ops.flexion.us
+          build_args: |
+            VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.acf.opre-ops.flexion.us
+            MODE=${{ env.ENVIRONMENT }}
 
   deploy-frontend:
     needs: build-frontend

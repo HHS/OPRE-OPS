@@ -103,11 +103,9 @@ services:
       dockerfile: Dockerfile.azure
       args:
         VITE_BACKEND_DOMAIN: http://localhost:8080
+        MODE: dev  # set this to production to create a production build
     platform: linux/amd64
     container_name: ops-frontend-azure
-    environment:
-      - REACT_APP_BACKEND_DOMAIN=http://localhost:8080
-      - VITE_BACKEND_DOMAIN=http://localhost:8080
     ports:
       - "3000:3000"
     depends_on:
