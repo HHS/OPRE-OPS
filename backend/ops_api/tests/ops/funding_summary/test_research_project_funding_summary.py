@@ -112,9 +112,6 @@ def db_loaded_with_research_projects(app, loaded_db):
         loaded_db.add_all([blin_1, blin_2, blin_3, blin_4])
         loaded_db.commit()
 
-        # agreement_1.budget_line_items.extend([blin_1, blin_2, blin_3])
-        # agreement_2.budget_line_items.append(blin_4)
-
         loaded_db.add_all([agreement_1, agreement_2])
         loaded_db.commit()
 
