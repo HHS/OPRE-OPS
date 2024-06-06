@@ -221,17 +221,20 @@
     {
       id: 1,
       name: "CLIN 1",
-      source_id: 49932,
+      number: 1,
+      contract_agreement_id: 1,
     },
     {
       id: 2,
       name: "CLIN 2",
-      source_id: 49933,
+      number: 2,
+      contract_agreement_id: 1,
     },
     {
       id: 3,
       name: "CLIN 3",
-      source_id: 49934,
+      number: 3,
+      contract_agreement_id: 1,
     }
   ],
   services_component: [
@@ -243,7 +246,6 @@
       period_start: "2043-06-13T14:00:00",
       period_end: "2044-06-13T14:00:00",
       contract_agreement_id: 1,
-      clin_id: 1,
     },
     {
       id: 2,
@@ -253,7 +255,6 @@
       period_start: "2043-06-13T14:00:00",
       period_end: "2044-06-13T14:00:00",
       contract_agreement_id: 1,
-      clin_id: 2,
     },
     {
       id: 3,
@@ -263,7 +264,6 @@
       period_start: "2044-06-13T14:00:00",
       period_end: "2045-06-13T14:00:00",
       contract_agreement_id: 1,
-      clin_id: 3,
     },
     {
       id: 4,
@@ -322,6 +322,7 @@
       date_needed: "2043-06-13T14:03:25.765487",
       proc_shop_fee_percentage: 0,
       services_component_id: 1,
+      clin_id: 1,
     },
     {
       line_description: "LI 2",

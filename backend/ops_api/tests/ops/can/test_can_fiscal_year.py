@@ -8,7 +8,7 @@ def test_can_fiscal_year_lookup(loaded_db):
     cfy = loaded_db.query(CANFiscalYear).filter(CANFiscalYear.can_id == 3, CANFiscalYear.fiscal_year == 2022).one()
     assert cfy is not None
     assert cfy.fiscal_year == 2022
-    assert cfy.total_fiscal_year_funding == 7000000.00
+    assert cfy.total_funding == 7000000.00
     assert cfy.potential_additional_funding == 3000000.00
     assert cfy.can_lead is None
     assert cfy.notes == ""
@@ -20,7 +20,8 @@ def test_can_fiscal_year_create():
     cfy = CANFiscalYear(
         can_id=1,
         fiscal_year=2023,
-        total_fiscal_year_funding=55000,
+        received_funding=100,
+        expected_funding=200,
         potential_additional_funding=100,
         can_lead="Ralph",
         notes="all-the-notes!",

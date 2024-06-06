@@ -12,7 +12,6 @@ class RequestBody:
     description: Optional[str] = None
     period_start: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
     period_end: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
-    clin_id: Optional[int] = None
 
 
 @dataclass(kw_only=True)
@@ -41,7 +40,6 @@ class ServicesComponentItemResponse:
     description: str
     display_title: str
     display_name: str
-    clin_id: int
     created_by: int
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
     updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
