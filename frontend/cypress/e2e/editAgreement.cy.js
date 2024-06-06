@@ -84,7 +84,7 @@ it("edit an agreement", () => {
 
         cy.get('[data-cy="continue-btn"]').click();
         // get Alert role status
-        cy.get("[data-cy='alert']").find("h1").should("have.text", "Budget Lines Edited");
+        cy.get("[data-cy='alert']").find("h1").should("have.text", "Agreement Created");
         cy.get("h1").should("exist");
 
         cy.request({
