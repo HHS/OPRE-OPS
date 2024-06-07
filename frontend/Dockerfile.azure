@@ -1,6 +1,6 @@
 # ---- Build Stage ----
 # alpine
-FROM oven/bun@sha256:80fc17015860244b1ffdaccb10eab9072d3d33bfec0751a74ad14e289d31b19d as build
+FROM oven/bun@sha256:4d375b7fb75445d389f4ecf3872a7876c7589f2f7322566f2785eccbcea3f256 as build
 
 WORKDIR /home/bun/app
 
