@@ -20,7 +20,8 @@ export const opsApi = createApi({
         "CanFunding",
         "Notifications",
         "WorkflowStepInstance",
-        "ServicesComponents"
+        "ServicesComponents",
+        "ChangeRequests"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -293,6 +294,10 @@ export const opsApi = createApi({
                 method: "DELETE"
             }),
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        getChangeRequestsList: builder.query({
+            query: () => `/change-requests/`,
+            providesTags: ["ChangeRequests"]
         })
     })
 });
@@ -337,5 +342,6 @@ export const {
     useUpdateServicesComponentMutation,
     useGetServicesComponentByIdQuery,
     useGetServicesComponentsListQuery,
-    useDeleteServicesComponentMutation
+    useDeleteServicesComponentMutation,
+    useGetChangeRequestsListQuery
 } = opsApi;
