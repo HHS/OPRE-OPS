@@ -20,7 +20,7 @@ describe("ReviewCard", () => {
         const type = screen.getByText("Budget Change");
         const agreementName = screen.getByText("TBD");
         const requesterName = screen.getByText("Jane Doe");
-        const requestDate = screen.getByText("2021-10-01");
+        const requestDate = screen.getByText("September 30, 2021");
         const actionIcons = screen.queryByText("icons");
 
         expect(type).toBeInTheDocument();

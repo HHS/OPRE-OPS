@@ -4,6 +4,8 @@ import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { formatDateToMonthDayYear } from "../../../helpers/utils";
 
 /**
  * ReviewCard component
@@ -79,9 +81,20 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                     </div>
                 )}
             </header>
-            <div>{requesterName}</div>
+            <dl className="font-12px margin-0 margin-top-3">
+                <dt className="margin-0 text-base-dark">Requested By</dt>
+                <dd className="margin-0">{requesterName}</dd>
+            </dl>
             <footer>
-                <div>{requestDate}</div>
+                <dl className="font-12px">
+                    <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
+                        <FontAwesomeIcon
+                            icon={faClock}
+                            className="height-2 width-2 margin-right-1"
+                        />
+                        {formatDateToMonthDayYear(requestDate)}
+                    </dt>
+                </dl>
             </footer>
         </div>
     );
