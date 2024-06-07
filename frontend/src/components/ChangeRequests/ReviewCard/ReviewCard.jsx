@@ -1,6 +1,9 @@
 import * as React from "react";
 import PropTypes from "prop-types";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
+import Tooltip from "../../UI/USWDS/Tooltip";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * ReviewCard component
@@ -27,11 +30,55 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <header>
-                <div>{typeLabel}</div>
+            <header className="display-flex flex-justify">
+                <div className="display-flex">
+                    <h2 className="margin-0 font-sans-sm">{typeLabel}</h2>
+                    <dl className="font-12px margin-0 margin-left-4">
+                        <dt className="margin-0 text-base-dark">Agreement</dt>
+                        <dd className="margin-0">{agreementName}</dd>
+                    </dl>
+                </div>
+                {isHovered && actionIcons && (
+                    <div>
+                        <Tooltip
+                            label="Approve"
+                            position="top"
+                        >
+                            <button
+                                id="approve"
+                                aria-label="Approve"
+                                onClick={() => {
+                                    alert("Not yet implemented");
+                                }}
+                            >
+                                <FontAwesomeIcon
+                                    icon={faCheck}
+                                    size="2x"
+                                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                />
+                            </button>
+                        </Tooltip>
+                        <Tooltip
+                            label="Decline"
+                            position="top"
+                        >
+                            <button
+                                id="decline"
+                                aria-label="Decline"
+                                onClick={() => {
+                                    alert("Not yet implemented");
+                                }}
+                            >
+                                <FontAwesomeIcon
+                                    icon={faXmark}
+                                    size="2x"
+                                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                />
+                            </button>
+                        </Tooltip>
+                    </div>
+                )}
             </header>
-            <div>{agreementName}</div>
-            <div>{actionIcons && <p>icons</p>}</div>
             <div>{requesterName}</div>
             <footer>
                 <div>{requestDate}</div>

@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import ReviewCard from "./ReviewCard";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 
 vi.mock("../../../api/opsAPI");
 describe("ReviewCard", () => {
@@ -28,6 +29,22 @@ describe("ReviewCard", () => {
         expect(requestDate).toBeInTheDocument();
         expect(actionIcons).not.toBeInTheDocument();
     });
-    it.todo("should render the ReviewCard component with action icons");
+    it("should render the ReviewCard component with action icons", async () => {
+        const user = userEvent.setup();
+        useGetAgreementByIdQuery.mockReturnValue({ data: { display_name: "TBD" } });
+        render(
+            <ReviewCard
+                {...initialProps}
+                actionIcons={true}
+            />
+        );
+        // mouse over the card
+        await user.hover(screen.getByText("Budget Change"));
+        const approveBtn = screen.getByRole("button", { name: /approve/i });
+        const declineBtn = screen.getByRole("button", { name: /decline/i });
+
+        expect(approveBtn).toBeInTheDocument();
+        expect(declineBtn).toBeInTheDocument();
+    });
     it.todo('should render the ReviewCard component with a type of "type"');
 });
