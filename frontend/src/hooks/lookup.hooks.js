@@ -3,7 +3,8 @@ import {
     useGetCansQuery,
     useGetProcurementShopsQuery,
     useGetProductServiceCodesQuery,
-    useGetResearchProjectsQuery
+    useGetResearchProjectsQuery,
+    useGetAgreementByIdQuery
 } from "../api/opsAPI";
 
 /**
@@ -67,6 +68,24 @@ export const useGetNameForCanId = (id) => {
         if (isSuccess) {
             const item = data.find((element) => element.id === id);
             if (item) setDisplayName(`${item.display_name}`);
+        }
+    }, [id, data, isSuccess]);
+
+    return displayName;
+};
+
+/**
+ * This hook returns the display name of an Agreement given the id.
+ * @param {number} id - The id.
+ * @returns {string} - The display name of the Agreement.
+ */
+export const useGetAgreementName = (id) => {
+    const [displayName, setDisplayName] = React.useState("TBD");
+    const { data, isSuccess } = useGetAgreementByIdQuery(id);
+
+    React.useEffect(() => {
+        if (isSuccess) {
+            setDisplayName(data?.display_name);
         }
     }, [id, data, isSuccess]);
 
