@@ -8,10 +8,10 @@ import AgreementTabs from "./AgreementsTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
-import { useGetAgreementsQuery, useGetChangeRequestsListQuery } from "../../../api/opsAPI";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import sortAgreements from "./utils";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import DebugCode from "../../../components/DebugCode";
+import ChangeRequestsList from "../../../components/ChangeRequests/ChangeRequestsList";
 
 /**
  * Page for the Agreements List.
@@ -41,25 +41,19 @@ export const AgreementsList = () => {
         isLoading: isLoadingAgreement
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
 
-    const {
-        data: changeRequestsData,
-        isLoading: loadingChangeRequests,
-        isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery({ refetchOnMountOrArgChange: true });
-
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const forApprovalUrl = searchParams.get("filter") === "for-approval";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
-    if (isLoadingAgreement || loadingChangeRequests) {
+    if (isLoadingAgreement) {
         return (
             <App>
                 <h1>Loading...</h1>
             </App>
         );
     }
-    if (errorAgreement || errorChangeRequests) {
+    if (errorAgreement) {
         return (
             <App>
                 <h1>Oops, an error occurred</h1>
@@ -235,7 +229,7 @@ export const AgreementsList = () => {
                     buttonLink="/agreements/create"
                     TabsSection={<AgreementTabs />}
                 >
-                    <DebugCode data={changeRequestsData} />
+                    <ChangeRequestsList />
                 </TablePageLayout>
             )}
         </App>

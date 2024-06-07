@@ -240,3 +240,52 @@ export const servicesComponent = {
     period_start: "2043-06-13,",
     updated_on: "2024-05-29T20:06:50.973668Z"
 };
+
+export const changeRequests = [
+    [
+        {
+            agreement: 11,
+            agreement_id: 11,
+            budget_line_item: 25,
+            budget_line_item_id: 25,
+            created_by: 21,
+            created_by_user: {
+                full_name: "Admin Demo",
+                id: 21
+            },
+            created_on: "2024-06-07T18:58:03.630702Z",
+            display_name: "BudgetLineItemChangeRequest#1",
+            id: 1,
+            managing_division: 4,
+            managing_division_id: 4,
+            requested_change_data: {
+                amount: 250000
+            },
+            requested_change_diff: {
+                amount: {
+                    new: 250000,
+                    old: 300000
+                }
+            },
+            requested_change_info: {
+                target_display_name: "BL 25"
+            },
+            reviewed_by_id: null,
+            reviewed_on: null,
+            status: "IN_REVIEW",
+            type: "budget_line_item_change_request",
+            updated_by: 21,
+            updated_by_user: {
+                full_name: "Admin Demo",
+                id: 21
+            },
+            updated_on: "2024-06-07T18:58:03.630702Z",
+            versions: [
+                {
+                    id: 1,
+                    transaction_id: 585
+                }
+            ]
+        }
+    ]
+];
