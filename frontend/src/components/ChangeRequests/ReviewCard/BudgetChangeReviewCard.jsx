@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import ReviewCard from "./ReviewCard";
+import TermTag from "./TermTag";
 /**
  * BudgetChangeReviewCard component
  * @component
@@ -18,7 +19,26 @@ function BudgetChangeReviewCard({ agreementId, requesterName, requestDate }) {
             requesterName={requesterName}
             requestDate={requestDate}
         >
-            <p>Additional content</p>
+            <TermTag
+                label="BL ID"
+                value="12345"
+            />
+            <TermTag
+                label="BL Status"
+                value="Planned"
+            />
+            <TermTag
+                label="Change To"
+                value="Amount"
+            />
+            <TermTag
+                label="From"
+                value="$1,000.00"
+            />
+            <TermTag
+                label="To"
+                value="$2,000.00"
+            />
         </ReviewCard>
     );
 }

@@ -80,8 +80,8 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                     </div>
                 )}
             </header>
-            <section>
-                <dl className="font-12px">
+            <section className="display-flex flex-justify maxw-tablet">
+                <dl className="font-12px margin-right-4">
                     <dt className="text-base-dark">Requested By</dt>
                     <dd className="margin-0">{requesterName}</dd>
                 </dl>
@@ -101,12 +101,12 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                     to={`/agreements/approve/${agreementId}`}
                     className="text-primary font-12px"
                 >
+                    Review Agreement
                     <FontAwesomeIcon
                         icon={faEye}
-                        size="2x"
-                        className="height-2 width-2 margin-right-1 cursor-pointer"
+                        size="3x"
+                        className="height-2 width-2 margin-left-1 cursor-pointer"
                     />
-                    Review Agreement
                 </Link>
             </footer>
         </div>
