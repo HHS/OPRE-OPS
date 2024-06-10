@@ -3,9 +3,10 @@ import PropTypes from "prop-types";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faXmark, faEye } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
+import { Link } from "react-router-dom";
 
 /**
  * ReviewCard component
@@ -16,9 +17,10 @@ import { formatDateToMonthDayYear } from "../../../helpers/utils";
  * @param {boolean} props.actionIcons - Whether the card has action icons
  * @param {string} props.requesterName - The name of the requester
  * @param {string} props.requestDate - The date of the request
+ * @param {React.ReactNode} props.children - The children of the component
  * @returns {JSX.Element} - The rendered component
  */
-function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate }) {
+function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate, children }) {
     const [isHovered, setIsHovered] = React.useState(false);
     const agreementName = useGetAgreementName(agreementId);
     let typeLabel = "";
@@ -81,13 +83,16 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                     </div>
                 )}
             </header>
-            <dl className="font-12px margin-0 margin-top-3">
-                <dt className="margin-0 text-base-dark">Requested By</dt>
-                <dd className="margin-0">{requesterName}</dd>
-            </dl>
-            <footer>
-                <dl className="font-12px">
-                    <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
+            <section>
+                <dl className="font-12px margin-0">
+                    <dt className="margin-0 text-base-dark">Requested By</dt>
+                    <dd className="margin-0">{requesterName}</dd>
+                </dl>
+                {children}
+            </section>
+            <footer className="font-12px margin-top-2 display-flex flex-justify flex-align-center">
+                <dl>
+                    <dt className="margin-0 text-base-dark display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faClock}
                             className="height-2 width-2 margin-right-1"
@@ -95,6 +100,17 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                         {formatDateToMonthDayYear(requestDate)}
                     </dt>
                 </dl>
+                <Link
+                    to={`/agreements/approve/${agreementId}`}
+                    className="text-primary font-12px"
+                >
+                    <FontAwesomeIcon
+                        icon={faEye}
+                        size="2x"
+                        className="height-2 width-2 margin-right-1 cursor-pointer"
+                    />
+                    Review Agreement
+                </Link>
             </footer>
         </div>
     );
@@ -106,5 +122,6 @@ ReviewCard.propTypes = {
     agreementId: PropTypes.number.isRequired,
     actionIcons: PropTypes.bool.isRequired,
     requesterName: PropTypes.string.isRequired,
-    requestDate: PropTypes.string.isRequired
+    requestDate: PropTypes.string.isRequired,
+    children: PropTypes.node
 };
