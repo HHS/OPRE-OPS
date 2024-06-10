@@ -26,6 +26,10 @@ function ChangeRequestsList() {
     return changeRequests.length > 0 ? (
         <>
             {changeRequests.map(
+                /**
+                 *  @typedef {import('./ChangeRequests').ChangeRequest} ChangeRequest
+                 *  @param {ChangeRequest} changeRequest
+                 */
                 (changeRequest) =>
                     changeRequest.type === CHANGE_REQUEST_TYPES.BUDGET && (
                         <BudgetChangeReviewCard
@@ -41,7 +45,7 @@ function ChangeRequestsList() {
             <DebugCode data={changeRequests} />
         </>
     ) : (
-        <p>There are currently no changes for review</p>
+        <p className="text-center margin-top-9">There are currently no changes for review.</p>
     );
 }
 
