@@ -96,8 +96,8 @@ services:
     volumes:
       - ./frontend/src:/home/app/src
 
-  frontend-azure:
-    profiles: [azure]
+  frontend-static:
+    profiles: [static]
     build:
       context: ./frontend/
       dockerfile: Dockerfile.azure
