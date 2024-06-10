@@ -1,12 +1,12 @@
-import * as React from "react";
+import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { faCheck, faEye, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
+import * as React from "react";
+import { Link } from "react-router-dom";
+import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faXmark, faEye } from "@fortawesome/free-solid-svg-icons";
-import { faClock } from "@fortawesome/free-regular-svg-icons";
-import { formatDateToMonthDayYear } from "../../../helpers/utils";
-import { Link } from "react-router-dom";
 
 /**
  * ReviewCard component
@@ -23,10 +23,7 @@ import { Link } from "react-router-dom";
 function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate, children }) {
     const [isHovered, setIsHovered] = React.useState(false);
     const agreementName = useGetAgreementName(agreementId);
-    let typeLabel = "";
-    if (type === "budget_line_item_change_request") {
-        typeLabel = "Budget Change";
-    }
+
     return (
         <div
             className="width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter border-2px radius-lg"
@@ -36,7 +33,7 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
         >
             <header className="display-flex flex-justify">
                 <div className="display-flex">
-                    <h2 className="margin-0 font-sans-sm">{typeLabel}</h2>
+                    <h2 className="margin-0 font-sans-sm">{type}</h2>
                     <dl className="font-12px margin-0 margin-left-4">
                         <dt className="margin-0 text-base-dark">Agreement</dt>
                         <dd className="margin-0">{agreementName}</dd>
@@ -84,15 +81,15 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                 )}
             </header>
             <section>
-                <dl className="font-12px margin-0">
-                    <dt className="margin-0 text-base-dark">Requested By</dt>
+                <dl className="font-12px">
+                    <dt className="text-base-dark">Requested By</dt>
                     <dd className="margin-0">{requesterName}</dd>
                 </dl>
                 {children}
             </section>
             <footer className="font-12px margin-top-2 display-flex flex-justify flex-align-center">
                 <dl>
-                    <dt className="margin-0 text-base-dark display-flex flex-align-center">
+                    <dt className="text-base-dark display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faClock}
                             className="height-2 width-2 margin-right-1"

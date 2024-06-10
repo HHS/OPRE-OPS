@@ -1,13 +1,14 @@
 import { render, screen } from "@testing-library/react";
-import ReviewCard from "./ReviewCard";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
-import { vi } from "vitest";
 import userEvent from "@testing-library/user-event";
+import { BrowserRouter } from "react-router-dom";
+import { vi } from "vitest";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import ReviewCard from "./ReviewCard";
 
 vi.mock("../../../api/opsAPI");
 describe("ReviewCard", () => {
     const initialProps = {
-        type: "budget_line_item_change_request",
+        type: "Budget Change",
         agreementId: 1,
         actionIcons: false,
         requesterName: "Jane Doe",
@@ -15,8 +16,11 @@ describe("ReviewCard", () => {
     };
     it("should render the ReviewCard component", () => {
         useGetAgreementByIdQuery.mockReturnValue({ data: { display_name: "TBD" } });
-        render(<ReviewCard {...initialProps} />);
-
+        render(
+            <BrowserRouter>
+                <ReviewCard {...initialProps} />
+            </BrowserRouter>
+        );
         const type = screen.getByText("Budget Change");
         const agreementName = screen.getByText("TBD");
         const requesterName = screen.getByText("Jane Doe");
@@ -33,10 +37,12 @@ describe("ReviewCard", () => {
         const user = userEvent.setup();
         useGetAgreementByIdQuery.mockReturnValue({ data: { display_name: "TBD" } });
         render(
-            <ReviewCard
-                {...initialProps}
-                actionIcons={true}
-            />
+            <BrowserRouter>
+                <ReviewCard
+                    {...initialProps}
+                    actionIcons={true}
+                />
+            </BrowserRouter>
         );
         // mouse over the card
         await user.hover(screen.getByText("Budget Change"));

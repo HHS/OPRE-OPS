@@ -1,8 +1,16 @@
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import DebugCode from "../../DebugCode";
-import ReviewCard from "../ReviewCard";
+import BudgetChangeReviewCard from "../ReviewCard/BudgetChangeReviewCard";
 
 function ChangeRequestsList() {
+    const CHANGE_REQUEST_TYPES = {
+        BUDGET: "budget_line_item_change_request",
+        STATUS: "",
+        BUDGET_DELETED: "",
+        PRE_AWARD: "",
+        PRE_AWARD_REQUISITION: "",
+        AWARD_BUDGET_TEAM: ""
+    };
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
@@ -17,16 +25,19 @@ function ChangeRequestsList() {
 
     return changeRequests.length > 0 ? (
         <>
-            {changeRequests.map((changeRequest) => (
-                <ReviewCard
-                    key={changeRequest.id}
-                    type={changeRequest.type}
-                    agreementId={changeRequest.agreement_id}
-                    actionIcons={true}
-                    requestDate={changeRequest.created_on}
-                    requesterName={changeRequest.created_by_user?.full_name}
-                />
-            ))}
+            {changeRequests.map(
+                (changeRequest) =>
+                    changeRequest.type === CHANGE_REQUEST_TYPES.BUDGET && (
+                        <BudgetChangeReviewCard
+                            key={changeRequest.id}
+                            agreementId={changeRequest.agreement_id}
+                            requestDate={changeRequest.created_on}
+                            requesterName={changeRequest.created_by_user?.full_name}
+                        >
+                            <p>Additional content</p>
+                        </BudgetChangeReviewCard>
+                    )
+            )}
             <DebugCode data={changeRequests} />
         </>
     ) : (
