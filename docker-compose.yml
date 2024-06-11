@@ -105,7 +105,7 @@ services:
         VITE_BACKEND_DOMAIN: http://localhost:8080
         MODE: dev  # set this to production to create a production build
     platform: linux/amd64
-    container_name: ops-frontend-azure
+    container_name: ops-frontend-static
     ports:
       - "3000:3000"
     depends_on:
