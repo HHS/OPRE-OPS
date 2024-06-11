@@ -138,9 +138,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             if not editable:
                 return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
 
-            # determine if it can be edited directly or if a change request is required
-            directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
-
             # validate and normalize the request data
             change_data, changing_from_data = validate_and_prepare_change_data(
                 request.json,
@@ -150,13 +147,27 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 partial=False,
             )
 
+            has_status_change = "status" in change_data
+            has_non_status_change = len(change_data) > 1 if has_status_change else len(change_data) > 0
+
+            # determine if it can be edited directly or if a change request is required
+            directly_editable = not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+
+            # Status changes are not allowed with other changes
+            if has_status_change and has_non_status_change:
+                return make_response_with_headers(
+                    {"message": "When the status is changing other edits are not allowed"}, 400
+                )
+
             changed_budget_prop_keys = list(
                 set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names)
             )
-            # TODO: convert legacy status change workflows to status change requests
-            #   until then, status changes are ignored here
-            change_data.pop("status", None)
-            other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_prop_keys))
+            changed_budget_or_status_prop_keys = list(
+                set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
+            )
+
+            has_status_change = "status" in change_data
+            other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_or_status_prop_keys))
 
             direct_change_data = {
                 key: value for key, value in change_data.items() if directly_editable or key in other_changed_prop_keys
