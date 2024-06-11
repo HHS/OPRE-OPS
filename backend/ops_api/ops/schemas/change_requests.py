@@ -1,0 +1,37 @@
+from marshmallow import EXCLUDE, Schema, fields
+
+from ops_api.ops.schemas.users import SafeUserSchema
+
+
+class ChangeRequestSchema(Schema):
+    id = fields.Int(required=True)
+    type = fields.Str(required=True)
+    display_name = fields.String(required=True)
+    status = fields.String(required=True)
+    requested_change_data = fields.Dict(required=True)
+    requested_change_diff = fields.Dict(required=True)
+    managing_division_id = fields.Int(required=True, default=None, allow_none=True)
+    created_by = fields.Int(required=True)
+    created_by_user = fields.Nested(SafeUserSchema(), default=None, allow_none=True)
+    created_on = fields.DateTime(required=True)
+    reviewed_by = fields.Integer(allow_none=True)
+    reviewed_on = fields.DateTime(required=True)
+    updated_by = fields.Integer(allow_none=True)
+    updated_on = fields.DateTime(required=True)
+
+
+class AgreementChangeRequestSchema(ChangeRequestSchema):
+    agreement_id = fields.Int(required=True)
+
+
+class BudgetLineItemChangeRequestSchema(AgreementChangeRequestSchema):
+    budget_line_item_id = fields.Int(required=True)
+    has_budget_change = fields.Bool(required=True)
+    has_status_change = fields.Bool(required=True)
+
+
+# for now, there are only BudgetLineItemChangeRequests, but this sets up a way to expand the response for multiple types
+# into a single, merged schema since having extra props from other types is inconsequential where this is used
+class GenericChangeRequestResponseSchema(BudgetLineItemChangeRequestSchema):
+    class Meta:
+        unknown = EXCLUDE  # Exclude unknown fields

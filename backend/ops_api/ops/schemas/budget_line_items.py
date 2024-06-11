@@ -8,7 +8,7 @@ from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_sche
 from marshmallow_enum import EnumField
 
 from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ServicesComponent
-from ops_api.ops.schemas.users import SafeUserSchema
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
 
 def is_blank(value) -> bool:
@@ -251,23 +251,6 @@ class BLITeamMembersSchema(Schema):
     email = fields.Str(default=None, allow_none=True)
 
 
-class BudgetLineItemChangeRequestSchema(Schema):
-    class Meta:
-        unknown = EXCLUDE  # Exclude unknown fields
-
-    id = fields.Int(required=True)
-    type = fields.Str(required=True)
-    budget_line_item_id = fields.Int(required=True)
-    has_budget_change = fields.Bool(required=True)
-    has_status_change = fields.Bool(required=True)
-    requested_change_data = fields.Dict(required=True)
-    requested_change_diff = fields.Dict(required=True)
-    created_by = fields.Int(required=True)
-    created_by_user = fields.Nested(SafeUserSchema(), default=None, allow_none=True)
-    created_on = fields.DateTime(required=True)
-    managing_division_id = fields.Int(required=True, default=None, allow_none=True)
-
-
 class BudgetLineItemCANSchema(Schema):
     id = fields.Int(required=True)
     display_name = fields.Str(required=True)
@@ -288,7 +271,7 @@ class BudgetLineItemResponseSchema(Schema):
 
     id = fields.Int(required=True)
     agreement_id = fields.Int(required=True)
-    can = fields.Nested(BudgetLineItemCANSchema, required=True)
+    can = fields.Nested(BudgetLineItemCANSchema(), required=True)
     can_id = fields.Int(required=True)
     services_component_id = fields.Int(default=None, allow_none=True)
     amount = fields.Float(required=True)
@@ -307,5 +290,5 @@ class BudgetLineItemResponseSchema(Schema):
     active_workflow_current_step_id = fields.Int(default=None, allow_none=True)
     in_review = fields.Bool(required=True)
     change_requests_in_review = fields.Nested(
-        BudgetLineItemChangeRequestSchema(), many=True, default=None, allow_none=True
+        GenericChangeRequestResponseSchema(), many=True, default=None, allow_none=True
     )
