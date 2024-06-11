@@ -26,6 +26,7 @@ const MultiAuthSection = () => {
             let response;
             try {
                 response = await apiLogin(activeProvider, authCode);
+                // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 console.error("Error logging in");
                 dispatch(logout());

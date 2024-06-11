@@ -81,7 +81,6 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
     // sort Table by name on initial render
     React.useEffect(() => {
         requestSort("name");
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

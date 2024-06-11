@@ -25,11 +25,10 @@ const InfiniteScroll = ({ fetchMoreData, isLoading }) => {
 
         return () => {
             if (observerRef.current) {
-                // eslint-disable-next-line react-hooks/exhaustive-deps
                 observer.unobserve(observerRef.current);
             }
         };
-    }, [observerRef, isLoading, fetchMoreData, isFetching]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [observerRef, isLoading, fetchMoreData, isFetching]);
 
     return (
         <div

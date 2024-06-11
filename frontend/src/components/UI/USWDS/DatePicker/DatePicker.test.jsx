@@ -34,8 +34,10 @@ describe("DatePicker component", () => {
                 maxDate={maxDate}
             />
         );
+        // eslint-disable-next-line testing-library/no-debugging-utils
         screen.debug();
 
+        // eslint-disable-next-line testing-library/no-node-access
         const datePickerDiv = screen.getByRole("textbox").parentElement;
         expect(datePickerDiv).toHaveAttribute("data-min-date", minDate);
         expect(datePickerDiv).toHaveAttribute("data-max-date", maxDate);
