@@ -57,7 +57,7 @@
         "jose": "5.4.0",
         "jsdom": "24.1.0",
         "msw": "2.3.1",
-        "prettier": "3.3.1",
+        "prettier": "3.3.2",
         "redux-mock-store": "1.5.4",
         "vite": "5.2.13",
         "vite-jsconfig-paths": "2.0.1",
