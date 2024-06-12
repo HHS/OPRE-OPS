@@ -17,7 +17,15 @@ export type ChangeRequest = {
         amount: number;
     };
     requested_change_diff: {
-        amount: {
+        amount?: {
+            new: number;
+            old: number;
+        };
+        date_needed?: {
+            new: string;
+            old: string;
+        };
+        can_id?: {
             new: number;
             old: number;
         };
