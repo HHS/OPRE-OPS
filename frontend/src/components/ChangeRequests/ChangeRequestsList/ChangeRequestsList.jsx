@@ -11,6 +11,7 @@ function ChangeRequestsList() {
         PRE_AWARD_REQUISITION: "",
         AWARD_BUDGET_TEAM: ""
     };
+
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
@@ -23,11 +24,14 @@ function ChangeRequestsList() {
         return <h1>Oops, an error occurred</h1>;
     }
 
+    /**
+     *  @typedef {import('./ChangeRequests').ChangeRequest} ChangeRequest
+     *  @type {ChangeRequest[]}
+     */
     return changeRequests.length > 0 ? (
         <>
             {changeRequests.map(
                 /**
-                 *  @typedef {import('./ChangeRequests').ChangeRequest} ChangeRequest
                  *  @param {ChangeRequest} changeRequest
                  */
                 (changeRequest) =>
@@ -37,11 +41,12 @@ function ChangeRequestsList() {
                             agreementId={changeRequest.agreement_id}
                             requestDate={changeRequest.created_on}
                             requesterName={changeRequest.created_by_user?.full_name}
-                        >
-                            <p>Additional content</p>
-                        </BudgetChangeReviewCard>
+                            bliId={changeRequest.budget_line_item_id}
+                            changeTo={changeRequest.requested_change_diff}
+                        />
                     )
             )}
+
             <DebugCode data={changeRequests} />
         </>
     ) : (
