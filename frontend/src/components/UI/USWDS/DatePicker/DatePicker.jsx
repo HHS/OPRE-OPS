@@ -25,6 +25,7 @@ import IsRequiredHelper from "../../Form/IsRequiredHelper";
  * @param {boolean} [props.isRequiredNoShow=false] - If true, indicates that the date picker is required but does not visually show it.
  * @returns {JSX.Element} The rendered DatePicker component.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 function DatePicker({
     id,
     name,
@@ -143,4 +144,5 @@ DatePicker.propTypes = {
     isRequiredNoShow: PropTypes.bool
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export default React.memo(DatePicker);
