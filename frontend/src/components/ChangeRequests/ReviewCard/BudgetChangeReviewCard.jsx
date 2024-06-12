@@ -58,7 +58,7 @@ function BudgetChangeReviewCard({ agreementId, requesterName, requestDate, bliId
             />
             <TermTag
                 label="BL Status"
-                value={status}
+                bliStatus={status}
             />
             <TermTag
                 label="Change To"
@@ -80,7 +80,7 @@ BudgetChangeReviewCard.propTypes = {
     agreementId: PropTypes.number.isRequired,
     requesterName: PropTypes.string.isRequired,
     requestDate: PropTypes.string.isRequired,
-    bliId: PropTypes.string.isRequired,
+    bliId: PropTypes.number.isRequired,
     changeTo: PropTypes.object.isRequired
 };
 export default BudgetChangeReviewCard;

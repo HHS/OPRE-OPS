@@ -80,15 +80,15 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                     </div>
                 )}
             </header>
-            <section className="display-flex flex-justify maxw-tablet">
+            <section className="display-flex margin-y-1 flex-justify maxw-tablet">
                 <dl className="font-12px margin-right-4">
                     <dt className="text-base-dark">Requested By</dt>
                     <dd className="margin-0">{requesterName}</dd>
                 </dl>
                 {children}
             </section>
-            <footer className="font-12px margin-top-2 display-flex flex-justify flex-align-center">
-                <dl>
+            <footer className="font-12px display-flex flex-justify flex-align-center">
+                <dl className="margin-0">
                     <dt className="text-base-dark display-flex flex-align-center">
                         <FontAwesomeIcon
                             icon={faClock}
