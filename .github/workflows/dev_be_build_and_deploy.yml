@@ -89,12 +89,12 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
-          creds:  ${{ secrets.AZURE_CREDS }}
+          creds:  ${{ secrets.SDLC_AZURE_CREDS }}
 
       - name: Deploy Container App
         uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
         with:
-          # azureCredentials: ${{ secrets.AZURE_CREDS }}
+          # azureCredentials: ${{ secrets.SDLC_AZURE_CREDS }}
           containerAppName: opre-ops-${{ env.ENVIRONMENT }}-data-tools
           resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
           imageToDeploy: ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
@@ -109,12 +109,12 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
-          creds:  ${{ secrets.AZURE_CREDS }}
+          creds:  ${{ secrets.SDLC_AZURE_CREDS }}
 
       - name: Deploy Container App
         uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
         with:
-            # azureCredentials: ${{ secrets.AZURE_CREDS }}
+            # azureCredentials: ${{ secrets.SDLC_AZURE_CREDS }}
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-backend
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ needs.build-backend.outputs.version }}
