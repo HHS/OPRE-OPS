@@ -1,16 +1,22 @@
-FROM python:3.11-slim
-RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client=15+248 && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir --upgrade pip==22.2.2 pipenv==2022.7.24 && useradd -ms /bin/bash app
+FROM alpine:3
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/home/app
+
+RUN apk update && apk add --no-cache postgresql16-client=16.3-r0 python3=3.12.3-r1 py3-pip=24.0-r2
+
+# Create a non-root user to run the app
+RUN adduser app -D
+
 USER app
 WORKDIR /home/app
-
-ENV PYTHONPATH=/home/app
-ENV PYTHONUNBUFFERED=1
 
 # Copy the Pipfile(s) only, so that we can cache dependencies
 # in the next step
 COPY ./data_tools/Pipfile ./data_tools/Pipfile.lock /home/app/
-RUN pipenv install --dev --system --deploy
+# hadolint ignore=SC1091
+RUN python3 -m venv .venv && . .venv/bin/activate && \
+    pip3 install --no-cache-dir pipenv==2024.0.1 && pipenv install --dev --deploy
 
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.

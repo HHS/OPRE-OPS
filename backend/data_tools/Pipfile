@@ -33,4 +33,4 @@ black = {extras = ["d"], version = "==24.4.2"}
 types-all = "==1.0.0"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"

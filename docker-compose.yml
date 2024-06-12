@@ -32,9 +32,10 @@ services:
       - ENV=local
       - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
     command: >
-      bash -c "
+      /bin/sh -c "
       psql postgresql://postgres:local_password@db:5432/postgres -c 'DROP SCHEMA IF EXISTS ops CASCADE;CREATE SCHEMA ops;GRANT ALL ON SCHEMA ops TO ops;' &&
-      .local/bin/alembic upgrade head &&
+      . .venv/bin/activate &&
+      alembic upgrade head &&
       DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
@@ -64,7 +65,7 @@ services:
     container_name: ops-backend
     ports:
       - "8080:8080"
-    command: ["python", "-m", "flask", "run", "--debug", "--host=0.0.0.0", "--port=8080"]
+    command: /bin/sh -c " . .venv/bin/activate && python -m flask run --debug --host=0.0.0.0 --port=8080"
     environment:
       - JWT_PRIVATE_KEY
       - JWT_PUBLIC_KEY
