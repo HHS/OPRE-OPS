@@ -2,7 +2,7 @@ openapi: 3.0.2
 info:
   title: OPRE OPS API
   description: OPRE OPS API Specification
-  version: 0.1.1
+  version: 0.1.2
 servers:
   - url: https://localhost:8080
     description: Localhost
@@ -666,7 +666,8 @@ paths:
             examples:
               '0':
                 value: >-
-                  {"code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7", "provider":"logingov"}
+                  {"code":"fd6a4ef9-686b-4dca-84a9-f2e9c8cb44a7",
+                  "provider":"logingov"}
       responses:
         '200':
           description: OK
@@ -1608,7 +1609,9 @@ paths:
       parameters:
         - name: offset
           in: query
-          description: The number of items to skip before starting to collect the result set
+          description: >-
+            The number of items to skip before starting to collect the result
+            set
           schema:
             type: integer
             format: int32
@@ -1624,6 +1627,12 @@ paths:
             default: 10
       responses:
         '200':
+          '400':
+            description: Bad Request
+          '401':
+            description: Unauthorized
+          '500':
+            description: Internal Server Error
           description: OK
           content:
             application/json:
@@ -1631,13 +1640,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ChangeRequest'
-          '400':
-            description: Bad Request
-          '401':
-            description: Unauthorized
-          '500':
-            description: Internal Server Error
-
   /api/v1/change-request-reviews/:
     description: command object endpoint to approve or reject a change request
     post:
@@ -1654,11 +1656,10 @@ paths:
                   type: integer
                 action:
                   type: string
-                  description: 'APROVE or REJECT'
+                  description: APROVE or REJECT
             examples:
               '0':
-                value: >-
-                  {"change_request_id": 123, "action": "APPROVE"}
+                value: '{"change_request_id": 123, "action": "APPROVE"}'
       responses:
         '200':
           description: OK
@@ -1668,7 +1669,6 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
 components:
   parameters:
     created_by:
@@ -1868,20 +1868,19 @@ components:
           type: array
           items:
             type: object
-            example: [ {
-              "created_by": null,
-              "created_on": "2023-04-17T14:43:15.216759",
-              "date_joined": "2023-04-17T14:43:15.216759",
-              "division": 1,
-              "email": "chris.fortunato@example.com",
-              "first_name": "Chris",
-              "full_name": "Chris Fortunato",
-              "id": 1,
-              "last_name": "Fortunato",
-              "oidc_id": "00000000-0000-1111-a111-000000000001",
-              "updated": null,
-              "updated_on": "2023-04-17T14:43:15.216759",
-              } ]
+            example:
+              - created_by: null
+                created_on: '2023-04-17T14:43:15.216759'
+                date_joined: '2023-04-17T14:43:15.216759'
+                division: 1
+                email: chris.fortunato@example.com
+                first_name: Chris
+                full_name: Chris Fortunato
+                id: 1
+                last_name: Fortunato
+                oidc_id: 00000000-0000-1111-a111-000000000001
+                updated: null
+                updated_on: '2023-04-17T14:43:15.216759'
         origination_date:
           type: string
           example: '2022-01-01'
@@ -1917,8 +1916,7 @@ components:
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/Agreement"
-
+          - $ref: '#/components/schemas/Agreement'
     Agreement:
       type: object
       properties:
@@ -1965,11 +1963,16 @@ components:
           type: array
           items:
             type: object
-            example: [
-              { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
-              { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
-              { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
-              ]
+            example:
+              - id: 1
+                full_name: Chris Fortunato
+                email: chris.fortunato@example.com
+              - id: 2
+                full_name: Amy Madigan
+                email: Amy.Madigan@example.com
+              - id: 3
+                full_name: Ivelisse Martinez-Beck
+                email: Ivelisse.Martinez-Beck@example.com
         budget_line_items:
           $ref: '#/components/schemas/BudgetLineItems'
         project_id:
@@ -2069,7 +2072,6 @@ components:
               created_on:
                 type: string
                 format: date-time
-
         created_on:
           $ref: '#/components/parameters/created_on'
         updated_on:
@@ -2082,7 +2084,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
-
     OpsDbHistoryItem:
       type: object
       properties:
@@ -2118,8 +2119,7 @@ components:
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/BudgetLineItemChangeRequest"
-
+          - $ref: '#/components/schemas/BudgetLineItemChangeRequest'
     BudgetLineItem:
       type: object
       properties:
@@ -2158,16 +2158,21 @@ components:
           type: array
           items:
             type: object
-            example: [
-              { 'id': 1, 'full_name': 'Chris Fortunato', 'email': 'chris.fortunato@example.com' },
-              { 'id': 2, 'full_name': 'Amy Madigan', 'email': 'Amy.Madigan@example.com' },
-              { 'id': 3, 'full_name': 'Ivelisse Martinez-Beck', 'email': 'Ivelisse.Martinez-Beck@example.com' },
-              ]
+            example:
+              - id: 1
+                full_name: Chris Fortunato
+                email: chris.fortunato@example.com
+              - id: 2
+                full_name: Amy Madigan
+                email: Amy.Madigan@example.com
+              - id: 3
+                full_name: Ivelisse Martinez-Beck
+                email: Ivelisse.Martinez-Beck@example.com
         change_requests_in_review:
           type: array
           items:
             anyOf:
-              - $ref: "#/components/schemas/BudgetLineItemChangeRequest"
+              - $ref: '#/components/schemas/BudgetLineItemChangeRequest'
         clin_id:
           type: integer
           example: 1
@@ -2218,7 +2223,6 @@ components:
         - amount
         - status
         - date_needed
-
     ChangeRequest:
       type: object
       properties:
@@ -2227,10 +2231,10 @@ components:
           example: 1
         type:
           type: string
-          example: 'budget_line_item_change_request'
+          example: budget_line_item_change_request
         status:
           type: string
-          example: 'IN_REVIEW'
+          example: IN_REVIEW
         requested_change_data:
           description: JSON for the request changes
           type: object
@@ -2243,7 +2247,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         created_on:
           $ref: '#/components/parameters/created_on'
-
     BudgetLineItemChangeRequest:
       type: object
       properties:
@@ -2252,21 +2255,23 @@ components:
           example: 1
         type:
           type: string
-          example: 'budget_line_item_change_request'
+          example: budget_line_item_change_request
         budget_line_item_id:
           type: integer
           example: 1
         has_budget_change:
           type: boolean
-          example: True
+          example: true
         has_status_change:
           type: boolean
-          example: False
+          example: false
         requested_change_data:
           description: JSON for the requested updates
           type: object
         requested_change_diff:
-          description: JSON for the requested changes with new and old values at request time
+          description: >-
+            JSON for the requested changes with new and old values at request
+            time
           type: object
         managing_division_id:
           description: The division who's DD will approve/reject the change request
@@ -2278,7 +2283,6 @@ components:
           $ref: '#/components/parameters/created_by_user'
         created_on:
           $ref: '#/components/parameters/created_on'
-
     ResearchProjectRequest:
       type: object
       properties:
@@ -2316,8 +2320,10 @@ components:
           type: array
           items:
             type: object
-            example: [ { 'id': 1 }, { 'id': 2 }, { 'id': 3 } ]
-
+            example:
+              - id: 1
+              - id: 2
+              - id: 3
       required:
         - title
     Notifications:
@@ -2512,7 +2518,7 @@ components:
           type: number
           format: float
           example: 1.1
-          default: 0.0
+          default: 0
     ProductServiceCode:
       type: object
       properties:
