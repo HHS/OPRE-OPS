@@ -5,9 +5,6 @@ import { useGetAgreementByIdQuery, useGetChangeRequestsListQuery } from "../../.
 import { changeRequests } from "../../../tests/data";
 import ChangeRequestList from "./ChangeRequestsList";
 
-// import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
-
-// const mockFn = TestApplicationContext.helpers().mockFn;
 vi.mock("../../../api/opsAPI", () => ({
     useGetChangeRequestsListQuery: vi.fn(),
     useGetAgreementByIdQuery: vi.fn()
@@ -17,7 +14,7 @@ vi.mock("../../../api/opsAPI");
 describe("ChangeRequestList", () => {
     it("renders without any change requests", () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: {} });
-        useGetAgreementByIdQuery.mockReturnValue({ data: {} });
+        useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         render(
             <BrowserRouter>
                 <ChangeRequestList />
@@ -25,16 +22,16 @@ describe("ChangeRequestList", () => {
         );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
     });
-    it.todo("renders with change requests", () => {
+    it.todo("renders with change requests", async () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: changeRequests });
-        useGetAgreementByIdQuery.mockReturnValue({ data: { display_name: "Agreement Name" } });
+        useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         render(
             <BrowserRouter>
                 <ChangeRequestList />
             </BrowserRouter>
         );
         screen.debug();
-        // const heading = screen.getByRole("heading", { name: "DEBUG CODE" });
-        // expect(heading).toBeInTheDocument();
+        const heading = await screen.findByText(/agreement name/i);
+        expect(heading).toBeInTheDocument();
     });
 });
