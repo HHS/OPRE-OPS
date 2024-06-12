@@ -79,6 +79,10 @@ export const opsApi = createApi({
             query: () => `/budget-line-items/`,
             providesTags: ["BudgetLineItems"]
         }),
+        getBudgetLineItem: builder.query({
+            query: (id) => `/budget-line-items/${id}`,
+            providesTags: ["BudgetLineItems"]
+        }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
                 return {
@@ -310,6 +314,7 @@ export const {
     useDeleteAgreementMutation,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsQuery,
+    useGetBudgetLineItemQuery,
     useUpdateBudgetLineItemMutation,
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,

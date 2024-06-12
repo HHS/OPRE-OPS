@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
-import { useGetNameForCanId } from "../../../hooks/lookup.hooks";
+import { useGetNameForCanId, useGetBLIStatus } from "../../../hooks/lookup.hooks";
 import ReviewCard from "./ReviewCard";
 import TermTag from "./TermTag";
 /**
@@ -26,6 +26,7 @@ function BudgetChangeReviewCard({ agreementId, requesterName, requestDate, bliId
 
     const oldCan = useGetNameForCanId(changeTo.can_id?.old);
     const newCan = useGetNameForCanId(changeTo.can_id?.new);
+    const status = useGetBLIStatus(bliId);
 
     switch (keyName) {
         case KEY_NAMES.AMOUNT:
@@ -57,7 +58,7 @@ function BudgetChangeReviewCard({ agreementId, requesterName, requestDate, bliId
             />
             <TermTag
                 label="BL Status"
-                value="Planned"
+                value={status}
             />
             <TermTag
                 label="Change To"
