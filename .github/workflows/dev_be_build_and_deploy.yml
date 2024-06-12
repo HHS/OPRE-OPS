@@ -96,7 +96,7 @@ jobs:
         with:
           # azureCredentials: ${{ secrets.SDLC_AZURE_CREDS }}
           containerAppName: opre-ops-${{ env.ENVIRONMENT }}-data-tools
-          resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+          resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
           imageToDeploy: ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
         
   deploy-backend: 
@@ -116,5 +116,5 @@ jobs:
         with:
             # azureCredentials: ${{ secrets.SDLC_AZURE_CREDS }}
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-backend
-            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+            resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ needs.build-backend.outputs.version }}

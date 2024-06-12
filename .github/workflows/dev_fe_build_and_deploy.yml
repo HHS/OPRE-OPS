@@ -65,5 +65,5 @@ jobs:
         with:
             # azureCredentials: ${{ secrets.SDLC_AZURE_CREDS }}
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
-            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+            resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ needs.build-frontend.outputs.version }}
