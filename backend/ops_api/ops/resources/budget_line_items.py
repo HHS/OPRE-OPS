@@ -159,14 +159,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     {"message": "When the status is changing other edits are not allowed"}, 400
                 )
 
-            changed_budget_prop_keys = list(
-                set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names)
-            )
             changed_budget_or_status_prop_keys = list(
                 set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
             )
-
-            has_status_change = "status" in change_data
             other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_or_status_prop_keys))
 
             direct_change_data = {
@@ -180,10 +175,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
             change_request_ids = []
 
-            if not directly_editable and changed_budget_prop_keys:
-                # create a budget change request for each changed prop separately (for separate approvals)
-                # the 'only' schema arg limits the request to a single prop, but otherwise this can work for multiple
-                for changed_prop_key in changed_budget_prop_keys:
+            if not directly_editable and changed_budget_or_status_prop_keys:
+                # create a change request for each changed prop separately (for separate approvals)
+                # the CR model can support multiple changes in a single request,
+                # but we are limiting it to one change per request here
+                for changed_prop_key in changed_budget_or_status_prop_keys:
                     change_keys = [changed_prop_key]
                     change_request = BudgetLineItemChangeRequest()
                     change_request.budget_line_item_id = id
