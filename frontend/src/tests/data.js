@@ -244,31 +244,31 @@ export const servicesComponent = {
 export const changeRequests = [
     [
         {
-            agreement: 11,
-            agreement_id: 11,
-            budget_line_item: 25,
-            budget_line_item_id: 25,
+            agreement: 9,
+            agreement_id: 9,
+            budget_line_item: 22,
+            budget_line_item_id: 22,
             created_by: 21,
             created_by_user: {
                 full_name: "Admin Demo",
                 id: 21
             },
-            created_on: "2024-06-07T18:58:03.630702Z",
+            created_on: "2024-06-12T21:25:25.711734Z",
             display_name: "BudgetLineItemChangeRequest#1",
             id: 1,
             managing_division: 4,
             managing_division_id: 4,
             requested_change_data: {
-                amount: 250000
+                date_needed: "2045-06-13"
             },
             requested_change_diff: {
-                amount: {
-                    new: 250000,
-                    old: 300000
+                date_needed: {
+                    new: "2045-06-13",
+                    old: "2044-06-13"
                 }
             },
             requested_change_info: {
-                target_display_name: "BL 25"
+                target_display_name: "BL 22"
             },
             reviewed_by_id: null,
             reviewed_on: null,
@@ -279,11 +279,99 @@ export const changeRequests = [
                 full_name: "Admin Demo",
                 id: 21
             },
-            updated_on: "2024-06-07T18:58:03.630702Z",
+            updated_on: "2024-06-12T21:25:25.711734Z",
             versions: [
                 {
                     id: 1,
-                    transaction_id: 585
+                    transaction_id: 396
+                }
+            ]
+        },
+        {
+            agreement: 9,
+            agreement_id: 9,
+            budget_line_item: 22,
+            budget_line_item_id: 22,
+            created_by: 21,
+            created_by_user: {
+                full_name: "Admin Demo",
+                id: 21
+            },
+            created_on: "2024-06-12T21:25:25.744930Z",
+            display_name: "BudgetLineItemChangeRequest#2",
+            id: 2,
+            managing_division: 4,
+            managing_division_id: 4,
+            requested_change_data: {
+                can_id: 10
+            },
+            requested_change_diff: {
+                can_id: {
+                    new: 10,
+                    old: 13
+                }
+            },
+            requested_change_info: {
+                target_display_name: "BL 22"
+            },
+            reviewed_by_id: null,
+            reviewed_on: null,
+            status: "IN_REVIEW",
+            type: "budget_line_item_change_request",
+            updated_by: 21,
+            updated_by_user: {
+                full_name: "Admin Demo",
+                id: 21
+            },
+            updated_on: "2024-06-12T21:25:25.744930Z",
+            versions: [
+                {
+                    id: 2,
+                    transaction_id: 397
+                }
+            ]
+        },
+        {
+            agreement: 9,
+            agreement_id: 9,
+            budget_line_item: 22,
+            budget_line_item_id: 22,
+            created_by: 21,
+            created_by_user: {
+                full_name: "Admin Demo",
+                id: 21
+            },
+            created_on: "2024-06-12T21:25:25.765470Z",
+            display_name: "BudgetLineItemChangeRequest#3",
+            id: 3,
+            managing_division: 4,
+            managing_division_id: 4,
+            requested_change_data: {
+                amount: 33333
+            },
+            requested_change_diff: {
+                amount: {
+                    new: 33333,
+                    old: 300000
+                }
+            },
+            requested_change_info: {
+                target_display_name: "BL 22"
+            },
+            reviewed_by_id: null,
+            reviewed_on: null,
+            status: "IN_REVIEW",
+            type: "budget_line_item_change_request",
+            updated_by: 21,
+            updated_by_user: {
+                full_name: "Admin Demo",
+                id: 21
+            },
+            updated_on: "2024-06-12T21:25:25.765470Z",
+            versions: [
+                {
+                    id: 3,
+                    transaction_id: 398
                 }
             ]
         }
