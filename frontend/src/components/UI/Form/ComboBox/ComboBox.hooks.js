@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 const useComboBox = (data, selectedData, setSelectedData, optionText, overrideStyles, clearWhenSet) => {
+    // eslint-disable-next-line no-constant-binary-expression
     const [selectedOption, setSelectedOption] = useState(null || { value: "", label: "" });
 
     const options = data.map((item) => {

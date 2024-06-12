@@ -94,11 +94,7 @@ const useCreateBLIsAndSCs = (
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines]);
 
-    React.useEffect(
-        handleSetBudgetLineFromUrl,
-        //eslint-disable-next-line
-        [budgetLineIdFromUrl, budgetLines, tempBudgetLines]
-    );
+    React.useEffect(handleSetBudgetLineFromUrl, [budgetLineIdFromUrl, budgetLines, tempBudgetLines]);
 
     // Validation
     let res = suite.get();
