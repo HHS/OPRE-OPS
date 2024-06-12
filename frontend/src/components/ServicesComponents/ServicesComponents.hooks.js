@@ -55,7 +55,6 @@ const useServicesComponents = (agreementId) => {
         const { id } = formData;
 
         if (formData.mode === "add") {
-            // eslint-disable-next-line no-unused-vars
             addServicesComponent(newFormData)
                 .unwrap()
                 .then((fulfilled) => {
