@@ -103,7 +103,7 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
         }),
         deleteBudgetLineItem: builder.mutation({
             query: (id) => ({

@@ -11,8 +11,10 @@ describe("TermTag", () => {
         );
         const label = screen.getByText(/test label/i);
         const term = screen.getByRole("term");
+        const value = screen.getByText(/test value/i);
 
         expect(label).toBeInTheDocument();
         expect(term).toBeInTheDocument();
+        expect(value).toBeInTheDocument();
     });
 });
