@@ -106,11 +106,10 @@ We require _90%_ code coverage.
 ### End-to-end Tests
 
 Note: Currently E2E tests require you to have a local stack running for Cypress to connect to.
-This can be achieved by running the `docker-compose.e2e.yml` via `docker compose`. The separate compose file
-is used to create fake login tokens, versus the standard `docker-compose.yml`.
+This can be achieved by running the `docker-compose.yml` via `docker compose`.
 
 ```shell
-docker compose -f docker-compose.e2e.yml up
+docker compose up --build
 ```
 
 End-to-end (E2E) can be run from the `frontend` via:
