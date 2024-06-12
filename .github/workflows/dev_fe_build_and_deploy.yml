@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'cml/deploy-action-updates'
+      - 'main'
     paths:
       - 'frontend/**'
       
@@ -46,7 +46,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }}
+          image_tags: "unstable,${{ github.sha }}"
 
   deploy-frontend: 
     needs: build-frontend
