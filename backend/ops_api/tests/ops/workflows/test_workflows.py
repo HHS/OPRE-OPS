@@ -397,27 +397,3 @@ def test_change_request_list(auth_client, app):
     session.delete(change_request1)
     session.delete(change_request2)
     session.commit()
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_change_request_review_authz(auth_client, app):
-    pass
-    # session = app.db_session
-    #
-    # # create a change request
-    # change_request1 = BudgetLineItemChangeRequest()
-    # change_request1.status = ChangeRequestStatus.IN_REVIEW
-    # change_request1.budget_line_item_id = 1
-    # change_request1.agreement_id = 1
-    # change_request1.created_by = 1
-    # change_request1.managing_division_id = 1
-    # change_request1.requested_change_data = {"key": "value"}
-    # session.add(change_request1)
-    # session.commit()
-    #
-    # assert change_request1.id is not None
-    # change_request_id = change_request1.id
-    #
-    # data = {"change_request_id": change_request_id, "action": "APPROVE"}
-    # response = no_perms_auth_client.post(url_for("api.change-request-review-list"), json=data)
-    # assert response.status_code == 403
