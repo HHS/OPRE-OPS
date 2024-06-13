@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 from models import (
     Agreement,
+    AgreementChangeRequest,
     AgreementOpsDbHistory,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
@@ -45,12 +46,25 @@ def find_agreement_histories(agreement_id, limit=10, offset=0):
     return results
 
 
+def find_target_display_name(ops_db_hist: OpsDBHistory):
+    if ops_db_hist.class_name in change_request_class_names:
+        requested_change_info = ops_db_hist.event_details.get("requested_change_info", None)
+        if requested_change_info and "target_display_name" in requested_change_info:
+            return requested_change_info.get("target_display_name")
+        else:
+            if ops_db_hist.class_name == BudgetLineItemChangeRequest.__name__:
+                return f"BL {ops_db_hist.event_details.get('budget_line_item_id')}"
+            elif ops_db_hist.class_name == AgreementChangeRequest.__name__:
+                return f"Agreement#{ops_db_hist.event_details.get('agreement_id')}"
+    return ops_db_hist.event_details.get("display_name", None)
+
+
 def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
     created_by_user_full_name = ops_db_hist.created_by_user.full_name if ops_db_hist.created_by_user else None
     event_type = ops_db_hist.event_type.name
     changes = ops_db_hist.changes
     target_class_name = ops_db_hist.class_name
-    target_display_name = ops_db_hist.event_details.get("display_name", None)
+    target_display_name = find_target_display_name(ops_db_hist)
     if ops_db_hist.class_name in change_request_class_names:
         event_type = ops_db_hist.event_details.get("status", None)
         changes = ops_db_hist.event_details.get("requested_change_diff", None)
@@ -59,7 +73,6 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
             if ops_db_hist.class_name == BudgetLineItemChangeRequest.__name__
             else Agreement.__name__
         )
-        target_display_name = ops_db_hist.event_details.get("requested_change_info", {}).get("target_display_name")
 
     # TODO: After reworking the UI to use log_items, include just what's needed instead of the full to_dict()
     d = ops_db_hist.to_dict()
@@ -90,7 +103,7 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
                 "created_on": ops_db_hist.created_on.isoformat(),
             }
         )
-    else:  # if UPDATED or a ChangeRequest create log items per property change and per collection item change
+    elif changes:  # if UPDATED or a ChangeRequest create log items per property change and per collection item change
         for key, change in changes.items():
             # hiding changes with proc_shop_fee_percentage which seem confusing since it's changed by system
             if key == "proc_shop_fee_percentage":

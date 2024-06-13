@@ -138,9 +138,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             if not editable:
                 return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
 
-            # determine if it can be edited directly or if a change request is required
-            directly_editable = budget_line_item.status in [BudgetLineItemStatus.DRAFT]  # TODO: or if DD
-
             # validate and normalize the request data
             change_data, changing_from_data = validate_and_prepare_change_data(
                 request.json,
@@ -150,13 +147,22 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 partial=False,
             )
 
-            changed_budget_prop_keys = list(
-                set(change_data.keys()) & set(BudgetLineItemChangeRequest.budget_field_names)
+            has_status_change = "status" in change_data
+            has_non_status_change = len(change_data) > 1 if has_status_change else len(change_data) > 0
+
+            # determine if it can be edited directly or if a change request is required
+            directly_editable = not has_status_change and budget_line_item.status in [BudgetLineItemStatus.DRAFT]
+
+            # Status changes are not allowed with other changes
+            if has_status_change and has_non_status_change:
+                return make_response_with_headers(
+                    {"message": "When the status is changing other edits are not allowed"}, 400
+                )
+
+            changed_budget_or_status_prop_keys = list(
+                set(change_data.keys()) & (set(BudgetLineItemChangeRequest.budget_field_names + ["status"]))
             )
-            # TODO: convert legacy status change workflows to status change requests
-            #   until then, status changes are ignored here
-            change_data.pop("status", None)
-            other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_prop_keys))
+            other_changed_prop_keys = list(set(change_data.keys()) - set(changed_budget_or_status_prop_keys))
 
             direct_change_data = {
                 key: value for key, value in change_data.items() if directly_editable or key in other_changed_prop_keys
@@ -169,10 +175,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
             change_request_ids = []
 
-            if not directly_editable and changed_budget_prop_keys:
-                # create a budget change request for each changed prop separately (for separate approvals)
-                # the 'only' schema arg limits the request to a single prop, but otherwise this can work for multiple
-                for changed_prop_key in changed_budget_prop_keys:
+            if not directly_editable and changed_budget_or_status_prop_keys:
+                # create a change request for each changed prop separately (for separate approvals)
+                # the CR model can support multiple changes in a single request,
+                # but we are limiting it to one change per request here
+                for changed_prop_key in changed_budget_or_status_prop_keys:
                     change_keys = [changed_prop_key]
                     change_request = BudgetLineItemChangeRequest()
                     change_request.budget_line_item_id = id
