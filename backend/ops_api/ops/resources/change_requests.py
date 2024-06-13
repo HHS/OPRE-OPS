@@ -17,13 +17,17 @@ from ops_api.ops.utils.response import make_response_with_headers
 
 
 def review_change_request(
-    change_request_id: int, status_after_review: ChangeRequestStatus, reviewed_by_user_id: int
+    change_request_id: int,
+    status_after_review: ChangeRequestStatus,
+    reviewed_by_user_id: int,
+    reviewer_notes: str = None,
 ) -> ChangeRequest:
     session = current_app.db_session
     change_request = session.get(ChangeRequest, change_request_id)
     change_request.reviewed_by_id = reviewed_by_user_id
     change_request.reviewed_on = datetime.now()
     change_request.status = status_after_review
+    change_request.reviewer_notes = reviewer_notes
 
     # If approved, then apply the changes
     if status_after_review == ChangeRequestStatus.APPROVED:
@@ -111,6 +115,7 @@ class ChangeRequestReviewAPI(BaseListAPI):
     def post(self) -> Response:
         request_json = request.get_json()
         change_request_id = request_json.get("change_request_id")
+        reviewer_notes = request_json.get("reviewer_notes", None)
         action = request_json.get("action", "").upper()
         if action == "APPROVE":
             status_after_review = ChangeRequestStatus.APPROVED
@@ -121,6 +126,8 @@ class ChangeRequestReviewAPI(BaseListAPI):
 
         reviewed_by_user_id = current_user.id
 
-        change_request = review_change_request(change_request_id, status_after_review, reviewed_by_user_id)
+        change_request = review_change_request(
+            change_request_id, status_after_review, reviewed_by_user_id, reviewer_notes
+        )
 
         return make_response_with_headers(change_request.to_dict(), 200)

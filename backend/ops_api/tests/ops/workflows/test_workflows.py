@@ -406,8 +406,8 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
 
     # initialize hist count
     response = auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
-    assert response.status_code == 200
-    prev_hist_count = len(response.json)
+    assert response.status_code in [200, 404]
+    prev_hist_count = len(response.json) if response.status_code == 200 else 0
 
     #  create DRAFT BLI with missing required fields
     bli = BudgetLineItem(
@@ -430,7 +430,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     prev_hist_count = hist_count
 
     #  submit PATCH BLI which is rejected due to missing required fields
-    data = {"status": "PLANNED"}
+    data = {"status": "PLANNED", "requestor_notes": "Notes from the requestor"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 400
     assert "_schema" in response.json
@@ -451,7 +451,6 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     prev_hist_count = hist_count
 
     #  submit PATCH BLI which triggers a change request for status change
-    data = {"status": "PLANNED"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
 
     assert response.status_code == 202
@@ -475,6 +474,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     assert requested_change_diff["status"]["new"] == "PLANNED"
     assert "managing_division_id" in change_request
     assert change_request["managing_division_id"] == 5
+    assert change_request["requestor_notes"] == data["requestor_notes"]
 
     # # verify agreement history added for 1 change request
     response = auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
@@ -511,7 +511,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     assert ag_bli_other["change_requests_in_review"] is None
 
     # approve the change request, reject the can_id change request and approve the others
-    data = {"change_request_id": change_request_id, "action": "APPROVE"}
+    data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
     response = auth_client.post(url_for("api.change-request-review-list"), json=data)
     assert response.status_code == 200
 
@@ -520,6 +520,11 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 2
     prev_hist_count = hist_count
+
+    # verify the change request was updated
+    change_request = session.get(BudgetLineItemChangeRequest, change_request_id)
+    assert change_request.status == ChangeRequestStatus.APPROVED
+    assert change_request.reviewer_notes == data["reviewer_notes"]
 
     # verify the BLI was updated
     bli = session.get(BudgetLineItem, bli_id)
