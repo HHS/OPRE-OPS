@@ -400,13 +400,14 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     agreement_id = 1
 
     # initialize hist count
-    hists = find_agreement_histories(agreement_id, limit=100)
-    prev_hist_count = len(hists)
+    response = auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    assert response.status_code == 200
+    prev_hist_count = len(response.json)
 
     #  create DRAFT BLI with missing required fields
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
-        agreement_id=1,
+        agreement_id=agreement_id,
         status=BudgetLineItemStatus.DRAFT,
         created_by=test_user_id,
     )
@@ -414,10 +415,11 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     session.commit()
     assert bli.id is not None
     bli_id = bli.id
-    agreement_id = bli.agreement_id
+    assert agreement_id == bli.agreement_id
 
     # verify agreement history added
     response = auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    assert response.status_code == 200
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
@@ -425,9 +427,6 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     #  submit PATCH BLI which is rejected due to missing required fields
     data = {"status": "PLANNED"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
-    import json
-
-    print("~~~ response >>>", json.dumps(response.json, indent=2))
     assert response.status_code == 400
     assert "_schema" in response.json
     assert len(response.json["_schema"]) == 3
@@ -441,6 +440,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
 
     # verify agreement history added
     response = auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    assert response.status_code == 200
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
@@ -448,15 +448,11 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     #  submit PATCH BLI which triggers a change request for status change
     data = {"status": "PLANNED"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
-    import json
 
-    print("~~~ response >>>", json.dumps(response.json, indent=2))
     assert response.status_code == 202
     resp_json = response.json
-    print("~~~ resp_json >>>", json.dumps(resp_json, indent=2))
     assert "change_requests_in_review" in resp_json
     change_requests_in_review = resp_json["change_requests_in_review"]
-    print("~~~ change_requests_in_review >>>", json.dumps(change_requests_in_review, indent=2))
     assert len(change_requests_in_review) == 1
     change_request = change_requests_in_review[0]
     change_request_id = change_request["id"]
@@ -477,7 +473,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
 
     # # verify agreement history added for 1 change request
     response = auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
-    print("~~~ hist response >>>", json.dumps(response.json, indent=2))
+    assert response.status_code == 200
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
     prev_hist_count = hist_count
@@ -536,5 +532,6 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
 
     # verify agreement history added for 1 BLI delete (cascading CR deletes are not tracked)
     response = auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))
+    assert response.status_code == 200
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
