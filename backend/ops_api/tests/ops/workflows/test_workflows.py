@@ -355,6 +355,11 @@ def test_change_request_list(auth_client, app):
     response = auth_client.get(url_for("api.change-request-list"))
     assert response.status_code == 200
     assert len(response.json) == 1
+    cr1 = response.json[0]
+    assert "has_budget_change" in cr1
+    assert not cr1["has_status_change"]
+    assert "has_status_change" in cr1
+    assert not cr1["has_status_change"]
 
     # create a change request for division#2
     change_request2 = BudgetLineItemChangeRequest()
