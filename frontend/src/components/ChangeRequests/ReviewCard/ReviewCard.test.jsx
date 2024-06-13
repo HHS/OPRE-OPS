@@ -12,19 +12,21 @@ describe("ReviewCard", () => {
         agreementId: 1,
         actionIcons: false,
         requesterName: "Jane Doe",
-        requestDate: "2021-10-01"
+        requestDate: "2024-06-12T21:25:25.744930Z"
     };
     it("should render the ReviewCard component", () => {
         useGetAgreementByIdQuery.mockReturnValue({ data: { display_name: "TBD" } });
         render(
             <BrowserRouter>
-                <ReviewCard {...initialProps} />
+                <ReviewCard {...initialProps}>
+                    <p>hello</p>
+                </ReviewCard>
             </BrowserRouter>
         );
         const type = screen.getByText("Budget Change");
         const agreementName = screen.getByText("TBD");
         const requesterName = screen.getByText("Jane Doe");
-        const requestDate = screen.getByText("September 30, 2021");
+        const requestDate = screen.getByText("June 12, 2024");
         const actionIcons = screen.queryByText("icons");
 
         expect(type).toBeInTheDocument();
@@ -41,7 +43,9 @@ describe("ReviewCard", () => {
                 <ReviewCard
                     {...initialProps}
                     actionIcons={true}
-                />
+                >
+                    <p>hello</p>
+                </ReviewCard>
             </BrowserRouter>
         );
         // mouse over the card
