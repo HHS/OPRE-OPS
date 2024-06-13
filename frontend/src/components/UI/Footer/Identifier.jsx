@@ -40,7 +40,7 @@ export const Identifier = () => {
                     <ul className="usa-identifier__required-links-list">
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="https://www.hhs.gov/about/index.html/"
+                                href="https://www.hhs.gov/about/index.html"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 About HHS
@@ -48,7 +48,7 @@ export const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="src/components/UI/Footer#top"
+                                href="https://www.acf.hhs.gov/accessibility"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 Accessibility support
@@ -56,7 +56,23 @@ export const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="src/components/UI/Footer#top"
+                                href="http://www.acf.hhs.gov/"
+                                className="usa-identifier__required-link usa-link"
+                            >
+                                acf.gov
+                            </a>
+                        </li>
+                        <li className="usa-identifier__required-links-item">
+                            <a
+                                href="https://www.acf.hhs.gov/disclaimers"
+                                className="usa-identifier__required-link usa-link"
+                            >
+                                Disclaimers
+                            </a>
+                        </li>
+                        <li className="usa-identifier__required-links-item">
+                            <a
+                                href="https://www.acf.hhs.gov/foia"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 FOIA requests
@@ -64,7 +80,7 @@ export const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="src/components/UI/Footer#top"
+                                href="https://www.acf.hhs.gov/about/acf-policies/no-fear-act"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 No FEAR Act data
@@ -72,23 +88,15 @@ export const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="src/components/UI/Footer#top"
+                                href="https://www.acf.hhs.gov/opre"
                                 className="usa-identifier__required-link usa-link"
                             >
-                                Office of the Inspector General
+                                OPRE
                             </a>
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="src/components/UI/Footer#top"
-                                className="usa-identifier__required-link usa-link"
-                            >
-                                Performance reports
-                            </a>
-                        </li>
-                        <li className="usa-identifier__required-links-item">
-                            <a
-                                href="src/components/UI/Footer#top"
+                                href="https://www.acf.hhs.gov/privacy-policy"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 Privacy policy
