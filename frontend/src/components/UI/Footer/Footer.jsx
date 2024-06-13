@@ -1,5 +1,5 @@
-import { AgencyInfo } from "./AgencyInfo";
-import { Identifier } from "./Identifier";
+import AgencyInfo from "./AgencyInfo";
+import Identifier from "./Identifier";
 import { NavFooter } from "./NavFooter";
 
 const Footer = () => {

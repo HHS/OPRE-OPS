@@ -1,6 +1,6 @@
 import Logo from "../../../images/hhs-logo.jpg";
 
-export const Identifier = () => {
+const Identifier = () => {
     return (
         <div className="usa-identifier">
             <section
@@ -16,7 +16,7 @@ export const Identifier = () => {
                             <img
                                 className="usa-identifier__logo-img radius-pill"
                                 src={Logo}
-                                alt="HHS Logo"
+                                alt="U.S. Department of Health & Human Services Logo"
                             />
                         </a>
                     </div>
@@ -124,3 +124,5 @@ export const Identifier = () => {
         </div>
     );
 };
+
+export default Identifier;
