@@ -120,7 +120,12 @@ const Agreement = () => {
                     />
                     <Route
                         path="documents"
-                        element={<DocumentView />}
+                        element={
+                            <DocumentView
+                                isEditMode={isEditMode}
+                                setIsEditMode={setIsEditMode}
+                            />
+                        }
                     />
                 </Routes>
             </div>

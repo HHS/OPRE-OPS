@@ -221,3 +221,50 @@ export const agreement = {
     vendor: "Vendor 1",
     vendor_id: 1
 };
+
+export const document = {
+    testDocuments: [
+        {
+            title: "Certification of Funding",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "Independent Government Cost Estimate (ICGE)",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member 2",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "Statement of Requirements (PWS/SOO/SOW)",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "Section 508 Exception Documentatio (if applicable)",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "ITAR checklist for all IT Procurement Actions",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "COR Nomination and Certification Document",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        }
+    ]
+};
