@@ -82,6 +82,9 @@ Cypress.Commands.add("login", () => {
 Cypress.Commands.add("FakeAuth", (user) => {
     cy.session([user], async () => {
         cy.visit("/login");
+        cy.get(".usa-alert__body").should("be.visible");
+        cy.get('[data-cy="close-alert"]').click();
+        cy.get(".usa-alert__body").should("not.exist");
         cy.contains("Sign in with FakeAuth").click();
         if (user === "admin") {
             cy.contains("Admin User").click();

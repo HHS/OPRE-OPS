@@ -6,7 +6,7 @@ describe("Identifier", () => {
         render(<Identifier />);
 
         expect(screen.getByText(/department of health & human services/i)).toBeInTheDocument();
-        expect(screen.getByText(/hhs/i)).toBeInTheDocument();
+        expect(screen.getByText(/about hhs/i)).toBeInTheDocument();
         expect(screen.getByText(/opre/i)).toBeInTheDocument();
         expect(screen.getByText(/acf/i)).toBeInTheDocument();
     });
