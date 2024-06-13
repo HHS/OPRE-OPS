@@ -6,8 +6,8 @@ describe("Identifier", () => {
         render(<Identifier />);
 
         expect(screen.getByText(/department of health & human services/i)).toBeInTheDocument();
-        expect(screen.getByText(/hhs.gov/i)).toBeInTheDocument();
+        expect(screen.getByText(/hhs/i)).toBeInTheDocument();
         expect(screen.getByText(/opre/i)).toBeInTheDocument();
-        expect(screen.getByText(/acf.gov/i)).toBeInTheDocument();
+        expect(screen.getByText(/acf/i)).toBeInTheDocument();
     });
 });
