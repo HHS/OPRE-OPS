@@ -22,7 +22,17 @@ export default [
         pluginPrettierConfig
     ),
     {
-        ignores: ["**/*.md", "**/*.css", "**/*.css.map", "**/*.scss", "**/*.svg", "**/*.png", "**/*.jpg", "**/uswds/**"]
+        ignores: [
+            "**/*.md",
+            "**/*.css",
+            "**/*.css.map",
+            "**/*.scss",
+            "**/*.svg",
+            "**/*.png",
+            "**/*.jpg",
+            "**/uswds/**",
+            "**/*.d.ts"
+        ]
     },
     {
         plugins: {
