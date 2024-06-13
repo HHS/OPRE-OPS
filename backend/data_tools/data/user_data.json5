@@ -244,7 +244,7 @@
       name: "Users",
     }
   ],
-  user: [
+  ops_user: [
     { // 1
       first_name: "Chris",
       last_name: "Fortunato",
