@@ -3,7 +3,7 @@ from marshmallow import EXCLUDE, Schema, fields
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
-class ChangeRequestSchema(Schema):
+class ChangeRequestResponseSchema(Schema):
     id = fields.Int(required=True)
     type = fields.Str(required=True)
     display_name = fields.String(required=True)
@@ -20,11 +20,11 @@ class ChangeRequestSchema(Schema):
     updated_on = fields.DateTime(required=True)
 
 
-class AgreementChangeRequestSchema(ChangeRequestSchema):
+class AgreementChangeRequestResponseSchema(ChangeRequestResponseSchema):
     agreement_id = fields.Int(required=True)
 
 
-class BudgetLineItemChangeRequestSchema(AgreementChangeRequestSchema):
+class BudgetLineItemChangeRequestResponseSchema(AgreementChangeRequestResponseSchema):
     budget_line_item_id = fields.Int(required=True)
     has_budget_change = fields.Bool(required=True)
     has_status_change = fields.Bool(required=True)
@@ -32,6 +32,6 @@ class BudgetLineItemChangeRequestSchema(AgreementChangeRequestSchema):
 
 # for now, there are only BudgetLineItemChangeRequests, but this sets up a way to expand the response for multiple types
 # into a single, merged schema since having extra props from other types is inconsequential where this is used
-class GenericChangeRequestResponseSchema(BudgetLineItemChangeRequestSchema):
+class GenericChangeRequestResponseSchema(BudgetLineItemChangeRequestResponseSchema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
