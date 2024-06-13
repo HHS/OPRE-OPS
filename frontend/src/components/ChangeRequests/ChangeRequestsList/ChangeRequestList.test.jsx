@@ -1,8 +1,15 @@
 import { render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
-import { useGetAgreementByIdQuery, useGetChangeRequestsListQuery } from "../../../api/opsAPI";
-import { changeRequests } from "../../../tests/data";
+import {
+    useGetAgreementByIdQuery,
+    useGetBudgetLineItemQuery,
+    useGetCansQuery,
+    useGetChangeRequestsListQuery
+} from "../../../api/opsAPI";
+import store from "../../../store";
+import { agreement, budgetLine, changeRequests } from "../../../tests/data";
 import ChangeRequestList from "./ChangeRequestsList";
 
 vi.mock("../../../api/opsAPI", () => ({
@@ -22,16 +29,21 @@ describe("ChangeRequestList", () => {
         );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
     });
-    it.todo("renders with change requests", async () => {
+    it("renders with change requests", async () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: changeRequests });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
+        useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
+        useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
+        useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
         render(
-            <BrowserRouter>
-                <ChangeRequestList />
-            </BrowserRouter>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <ChangeRequestList />
+                </BrowserRouter>
+            </Provider>
         );
-        screen.debug();
-        const heading = await screen.findByText(/agreement name/i);
-        expect(heading).toBeInTheDocument();
+
+        const headings = await screen.findAllByText(/budget change/i);
+        expect(headings).toHaveLength(3);
     });
 });
