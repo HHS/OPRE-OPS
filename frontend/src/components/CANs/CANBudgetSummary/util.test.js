@@ -8,6 +8,6 @@ test("pending funds should be empty", async () => {
 });
 
 test("pending funds should be total_fiscal_year_funding - amount_available", async () => {
-    expect(getPendingFunds({ total_fiscal_year_funding: 10, amount_available: 1 })).toBe(9);
-    expect(getPendingFunds({ total_fiscal_year_funding: 1, amount_available: 10 })).toBe(-9);
+    expect(getPendingFunds({ total_funding: 10, amount_available: 1 })).toBe(9);
+    expect(getPendingFunds({ total_funding: 1, amount_available: 10 })).toBe(-9);
 });

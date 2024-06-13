@@ -30,6 +30,7 @@ class RequestBodySchema(Schema):
     comments = fields.Str(default=None, allow_none=True)
     proc_shop_fee_percentage = fields.Float(default=None, allow_none=True)
     services_component_id = fields.Int(default=None, allow_none=True)
+    clin_id = fields.Int(default=None, allow_none=True)
 
     def get_target_status(self, data):
         requested_status = data.get("status") if "status" in data else None
@@ -264,6 +265,7 @@ class BudgetLineItemChangeRequestSchema(Schema):
     created_by = fields.Int(required=True)
     created_by_user = fields.Nested(SafeUserSchema(), default=None, allow_none=True)
     created_on = fields.DateTime(required=True)
+    managing_division_id = fields.Int(required=True, default=None, allow_none=True)
 
 
 class BudgetLineItemCANSchema(Schema):

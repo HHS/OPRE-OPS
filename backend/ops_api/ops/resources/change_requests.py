@@ -3,9 +3,9 @@ from datetime import datetime
 
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
-from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus
+from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseListAPI
@@ -51,7 +51,30 @@ def review_change_request(
     return change_request
 
 
-# TODO: Implement the queries needed for the For Approvals page, for now it's just a placeholder
+# TODO: add more query options, for now this just returns CRs in review for
+#  the current user as a division director or deputy division director
+def find_change_requests(limit: int = 10, offset: int = 0):
+
+    current_user_id = getattr(current_user, "id", None)
+
+    stmt = (
+        select(ChangeRequest)
+        .join(Division, ChangeRequest.managing_division_id == Division.id)
+        .where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
+        .where(
+            or_(
+                Division.division_director_id == current_user_id,
+                Division.deputy_division_director_id == current_user_id,
+            )
+        )
+    )
+    stmt = stmt.limit(limit)
+    if offset:
+        stmt = stmt.offset(int(offset))
+    results = current_app.db_session.execute(stmt).all()
+    return results
+
+
 class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
@@ -60,11 +83,7 @@ class ChangeRequestListAPI(BaseListAPI):
     def get(self) -> Response:
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
-        stmt = select(ChangeRequest).where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
-        stmt = stmt.limit(limit)
-        if offset:
-            stmt = stmt.offset(int(offset))
-        results = current_app.db_session.execute(stmt).all()
+        results = find_change_requests(limit=limit, offset=offset)
         change_requests = [row[0] for row in results] if results else None
         if change_requests:
             response = make_response_with_headers([change_request.to_dict() for change_request in change_requests])

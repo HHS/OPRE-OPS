@@ -63,6 +63,7 @@ const useCreateBLIsAndSCs = (
     const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
+    const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -93,11 +94,7 @@ const useCreateBLIsAndSCs = (
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines]);
 
-    React.useEffect(
-        handleSetBudgetLineFromUrl,
-        //eslint-disable-next-line
-        [budgetLineIdFromUrl, budgetLines, tempBudgetLines]
-    );
+    React.useEffect(handleSetBudgetLineFromUrl, [budgetLineIdFromUrl, budgetLines, tempBudgetLines]);
 
     // Validation
     let res = suite.get();
@@ -259,15 +256,16 @@ const useCreateBLIsAndSCs = (
                     });
                 });
         });
-
         resetForm();
         setIsEditMode(false);
-        setAlert({
-            type: "success",
-            heading: "Budget Lines Edited",
-            message: "The budget lines have been successfully updated.",
-            redirectUrl: `/agreements/${selectedAgreement?.id}`
-        });
+        continueOverRide
+            ? continueOverRide()
+            : setAlert({
+                  type: "success",
+                  heading: "Budget Lines Edited",
+                  message: "The budget lines have been successfully updated.",
+                  redirectUrl: `/agreements/${selectedAgreement?.id}`
+              });
     };
 
     const handleAddBLI = (e) => {
@@ -408,6 +406,7 @@ const useCreateBLIsAndSCs = (
             setEnteredComments(comments);
             setIsEditing(true);
             setFinancialSnapshot({ enteredAmount: amount, needByDate: dateForScreen, selectedCanId: can_id });
+            setIsBudgetLineNotDraft(tempBudgetLines[index].status !== BLI_STATUS.DRAFT);
         }
     };
 
@@ -557,7 +556,8 @@ const useCreateBLIsAndSCs = (
         tempBudgetLines,
         handleSave,
         deletedBudgetLines,
-        budgetLinesForCards
+        budgetLinesForCards,
+        isBudgetLineNotDraft
     };
 };
 

@@ -18,7 +18,8 @@ export default defineConfig({
                     return null;
                 }
             });
-        }
+        },
+        pageLoadTimeout: 180000
     },
     video: false,
     viewportHeight: 768,

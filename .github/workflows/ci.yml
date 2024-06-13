@@ -42,6 +42,11 @@ jobs:
     secrets: inherit # https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-inputs-and-secrets-to-a-reusable-workflow
     uses: ./.github/workflows/unit_test_reusable.yml
 
+  e2e-tests:
+    name: End-to-End Tests
+    secrets: inherit # https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-inputs-and-secrets-to-a-reusable-workflow
+    uses: ./.github/workflows/e2e_test_reusable.yml
+
   codeql-analysis:
     permissions:
       actions: read

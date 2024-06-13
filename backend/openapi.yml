@@ -2168,6 +2168,9 @@ components:
           items:
             anyOf:
               - $ref: "#/components/schemas/BudgetLineItemChangeRequest"
+        clin_id:
+          type: integer
+          example: 1
         created_on:
           $ref: '#/components/parameters/created_on'
         updated_on:
@@ -2205,6 +2208,9 @@ components:
         status:
           type: string
           example: PLANNED
+        clin_id:
+          type: integer
+          example: 1
       required:
         - line_description
         - agreement_id
@@ -2262,6 +2268,10 @@ components:
         requested_change_diff:
           description: JSON for the requested changes with new and old values at request time
           type: object
+        managing_division_id:
+          description: The division who's DD will approve/reject the change request
+          type: integer
+          example: 1
         created_by:
           $ref: '#/components/parameters/created_by'
         created_by_user:
@@ -2388,9 +2398,6 @@ components:
           type: string
         display_name:
           type: string
-        clin_id:
-          type: integer
-          example: 1
         period_start:
           type: string
           example: '2023-05-06'

@@ -1,6 +1,7 @@
 # ---- Build Stage ----
 # alpine
-FROM oven/bun@sha256:80fc17015860244b1ffdaccb10eab9072d3d33bfec0751a74ad14e289d31b19d as build
+FROM oven/bun@sha256:c6a96a98c6e07efba001026b32aef3fbb25836a1d1f159d14027c9440a95bf94 as build
+RUN apt-get update && apt-get -y install unzip=6.0-26+deb11u1 --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home/bun/app
 
@@ -14,29 +15,20 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the application
-RUN bun run build
+ARG MODE
+ARG VITE_BACKEND_DOMAIN
+COPY vite-env/env.${MODE}.local .env
+RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=${MODE} bun run build --mode ${MODE}
 
 # ---- Release Stage ----
-FROM oven/bun:1-alpine as release
+FROM nginx:1.27 as release
 
-WORKDIR /home/bun/app
+COPY nginx.conf /etc/nginx/nginx.conf
+
+WORKDIR /home/ops/app
 
 # Copy built artifacts from the build stage
-COPY --from=build /home/bun/app/index.js .
 COPY --from=build /home/bun/app/build .
-COPY --from=build /home/bun/app/.env.example .env
-
-# Allow bun user to write runtime-config script to app dir
-RUN chown -R bun:bun .
-
-# Set the user and expose the necessary port
-USER bun
-
-# Install the runtime script cli package
-RUN bun install runtime-env-cra express
 
 # Expose port
 EXPOSE 3000/tcp
-
-# Entry point to run the application.
-ENTRYPOINT ["/bin/sh", "-c", "NODE_ENV=production bun run ./node_modules/.bin/runtime-env-cra && bun run index.js"]
