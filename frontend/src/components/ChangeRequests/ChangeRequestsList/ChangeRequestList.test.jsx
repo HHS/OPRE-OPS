@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
 import {
@@ -8,14 +7,10 @@ import {
     useGetCansQuery,
     useGetChangeRequestsListQuery
 } from "../../../api/opsAPI";
-import store from "../../../store";
+
 import { agreement, budgetLine, changeRequests } from "../../../tests/data";
 import ChangeRequestList from "./ChangeRequestsList";
 
-vi.mock("../../../api/opsAPI", () => ({
-    useGetChangeRequestsListQuery: vi.fn(),
-    useGetAgreementByIdQuery: vi.fn()
-}));
 vi.mock("../../../api/opsAPI");
 
 describe("ChangeRequestList", () => {
@@ -36,11 +31,9 @@ describe("ChangeRequestList", () => {
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
         useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
         render(
-            <Provider store={store}>
-                <BrowserRouter>
-                    <ChangeRequestList />
-                </BrowserRouter>
-            </Provider>
+            <BrowserRouter>
+                <ChangeRequestList />
+            </BrowserRouter>
         );
 
         const headings = await screen.findAllByText(/budget change/i);
