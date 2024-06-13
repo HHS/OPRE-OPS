@@ -12,7 +12,6 @@ export const ProjectSelectWithSummaryCard = ({
         if (setAgreementProjectId) {
             setAgreementProjectId(selectedResearchProject?.id);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedResearchProject]);
 
     const ProjectSummaryCard = ({ selectedResearchProject }) => {

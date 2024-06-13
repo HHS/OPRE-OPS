@@ -58,11 +58,13 @@ function Login() {
                                             If you are a federal employee or contractor with an HHS email, please use
                                             HHS AMS login.
                                         </p>
-                                        <p>
-                                            If you are part of the development team, or want to access the system in a
-                                            lower environment for testing purposes only, please use the FakeAuth®
-                                            login.
-                                        </p>
+                                        {!import.meta.env.PROD && (
+                                            <p>
+                                                If you are part of the development team, or want to access the system in
+                                                a lower environment for testing purposes only, please use the FakeAuth®
+                                                login.
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -75,4 +77,5 @@ function Login() {
         </div>
     );
 }
+
 export default Login;

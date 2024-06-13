@@ -7,7 +7,7 @@ on:
       - 'main'
     paths:
       - 'frontend/**'
-      
+
 env:
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
@@ -22,7 +22,7 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name:  'Automated Version Bump'
         id: version_bump
@@ -47,14 +47,17 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "unstable,${{ github.sha }},${{ steps.extract_version.outputs.version }}"
+          build_args: |
+            VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.acf.opre-ops.flexion.us
+            MODE=${{ env.ENVIRONMENT }}
 
-  deploy-frontend: 
+  deploy-frontend:
     needs: build-frontend
 
     runs-on: ubuntu-latest
-    steps: 
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
-   
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
       - name: Log in to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:

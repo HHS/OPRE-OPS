@@ -28,6 +28,7 @@ const AuthSection = () => {
                     if (!activeUser) await setActiveUser(response.access_token, dispatch);
                 }
                 navigate("/");
+                // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 console.error("Error logging in");
                 dispatch(logout());
