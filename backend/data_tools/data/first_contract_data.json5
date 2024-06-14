@@ -61,19 +61,19 @@
       service_requirement_type: "NON_SEVERABLE",
       team_members: [
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 1,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 4,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 21,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 23,
         }
       ],

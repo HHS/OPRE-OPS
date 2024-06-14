@@ -129,7 +129,7 @@ class AgreementReason(Enum):
 class AgreementTeamMembers(BaseModel):
     __tablename__ = "agreement_team_members"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), primary_key=True)
     agreement_id: Mapped[int] = mapped_column(
         ForeignKey("agreement.id"), primary_key=True
     )
@@ -176,7 +176,7 @@ class Agreement(BaseModel):
     agreement_reason: Mapped[Optional[AgreementReason]] = mapped_column(
         ENUM(AgreementReason)
     )
-    project_officer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
+    project_officer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
     project_officer: Mapped[Optional[User]] = relationship(
         User, foreign_keys=[project_officer_id]
     )
@@ -241,7 +241,7 @@ contract_support_contacts = Table(
         ForeignKey("contract_agreement.id"),
         primary_key=True,
     ),
-    Column("users_id", ForeignKey("user.id"), primary_key=True),
+    Column("users_id", ForeignKey("ops_user.id"), primary_key=True),
 )
 
 
