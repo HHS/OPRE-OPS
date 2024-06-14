@@ -4,6 +4,7 @@ import App from "../../../App";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
+import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
@@ -112,6 +113,15 @@ const Agreement = () => {
                         element={
                             <AgreementBudgetLines
                                 agreement={agreement}
+                                isEditMode={isEditMode}
+                                setIsEditMode={setIsEditMode}
+                            />
+                        }
+                    />
+                    <Route
+                        path="documents"
+                        element={
+                            <DocumentView
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                             />
