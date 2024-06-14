@@ -68,6 +68,14 @@ export const draftBudgetLineStatuses = ["DRAFT"];
  * @property {Object.<string, string>} agreementReason - Display text for agreement reasons.
  * @property {Object.<string, string>} budgetLineStatus - Display text for budget line types.
  * @property {Object.<string, string>} validation - Display text for validation errors.
+ * @property {Object.<string, string>} classNameLabels - Display text for class names.
+ * @property {Object.<string, string>} baseClassNameLabels - Display text for base class names.
+ * @property {Object.<string, string>} agreementPropertyLabels - Display text for agreement property names.
+ * @property {Object.<string, string>} budgetLineItemPropertyLabels - Display text for budget line item property names.
+ * @property {Object.<string, string>} contractType - Display text for contract types.
+ * @property {Object.<string, string>} serviceRequirementType - Display text for service requirement types.
+ * @property {Object.<string, string>} changeToTypes - Display text for change to types.
+ *
  */
 
 /**
@@ -156,12 +164,17 @@ export const codesToDisplayText = {
     serviceRequirementType: {
         SEVERABLE: "Severable",
         NON_SEVERABLE: "Non-Severable"
+    },
+    changeToTypes: {
+        amount: "Amount",
+        can_id: "CAN",
+        date_needed: "Date needed"
     }
 };
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
