@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import DocumentCollectionView from "./DocumentCollectionView";
 
-import store from "../../store";
+import store from "../../../store";
 import { Provider } from "react-redux";
 
 describe("Document Collection View", () => {

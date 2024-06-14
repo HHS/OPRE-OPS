@@ -14,7 +14,7 @@ import { faEye } from "@fortawesome/free-solid-svg-icons";
 const DocumentCard = ({ className, dataCy, document, ...rest }) => {
     const cardContainer = `bg-base-lightest border-base-lighter font-family-sans display-flex ${cssClasses.container} ${className}`;
     const icon_class_names = `${cssClasses.eyeIcon} height-3 width-3`;
-    const documentTitleClassNames = `${cssClasses.documentTitle} font-sans-3xs`;
+    const documentTitleClassNames = `${cssClasses.documentTitle} font-12px`;
     const uploaded_by_text = `Uploaded by ${document.uploaded_by} on ${document.upload_date}`;
     return (
         <div
@@ -24,8 +24,8 @@ const DocumentCard = ({ className, dataCy, document, ...rest }) => {
         >
             <div className="display-flex flex-column margin-left-4 margin-top-205">
                 <div className={documentTitleClassNames}>{document.title}</div>
-                <div className="font-sans-3xs text-bold margin-top-05">{document.filename}</div>
-                <div className="font-sans-3xs margin-top-05">
+                <div className="font-12px text-bold margin-top-05">{document.filename}</div>
+                <div className="font-12px margin-top-05">
                     <span>{uploaded_by_text}</span> <span>{document.file_size}</span>
                 </div>
             </div>

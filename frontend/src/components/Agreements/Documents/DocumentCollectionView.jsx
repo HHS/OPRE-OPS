@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import DocumentCard from "../../components/UI/DocumentCard/DocumentCard";
+import DocumentCard from "../../UI/DocumentCard/DocumentCard";
 import cssClasses from "./styles.module.css";
 
 /**

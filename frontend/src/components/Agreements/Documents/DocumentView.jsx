@@ -1,7 +1,7 @@
 import { DocumentCollectionHeader } from "./DocumentCollectionHeader";
 import DocumentCollectionView from "./DocumentCollectionView";
 import PropTypes from "prop-types";
-import { document } from "../../tests/data";
+import { document } from "../../../tests/data";
 /**
  * Renders the document collection view
  * @param {object} props - The component props.

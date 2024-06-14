@@ -4,7 +4,7 @@ import App from "../../../App";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
 import AgreementDetails from "./AgreementDetails";
 import AgreementBudgetLines from "./AgreementBudgetLines";
-import DocumentView from "../../documents/DocumentView";
+import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
