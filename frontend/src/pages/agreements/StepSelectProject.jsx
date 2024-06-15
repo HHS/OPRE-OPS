@@ -8,7 +8,7 @@ import {
     useEditAgreement,
     useSetState,
     useUpdateAgreement
-} from "../../components/Agreements/AgreementEditor/AgreementEditorContext";
+} from "../../components/Agreements/AgreementEditor/AgreementEditorContext.hooks";
 import EditModeTitle from "./EditModeTitle";
 import ConfirmationModal from "../../components/UI/Modals/ConfirmationModal";
 import useAlert from "../../hooks/use-alert.hooks";
@@ -24,6 +24,7 @@ import useAlert from "../../hooks/use-alert.hooks";
  * @param {Array.<string>} [props.wizardSteps] - The steps of the wizard. - optional
  * @param {number} [props.selectedAgreementId] - The ID of the selected agreement. - optional
  * @param {number} [props.currentStep] - The current step of the wizard. - optional
+ * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  *
  * @returns {JSX.Element} - The rendered component.
  */
@@ -33,7 +34,8 @@ export const StepSelectProject = ({
     isReviewMode,
     wizardSteps,
     currentStep,
-    selectedAgreementId
+    selectedAgreementId,
+    cancelHeading
 }) => {
     const navigate = useNavigate();
     const { selected_project: selectedResearchProject } = useEditAgreement();
@@ -62,7 +64,7 @@ export const StepSelectProject = ({
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel creating a new agreement? Your progress will not be saved.",
+            heading: cancelHeading,
             actionButtonText: "Cancel Agreement",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
@@ -91,8 +93,8 @@ export const StepSelectProject = ({
                 } else {
                     setAlert({
                         type: "success",
-                        heading: "Create New Agreement Cancelled",
-                        message: "Your agreement has been cancelled.",
+                        heading: "Agreement Edits Cancelled",
+                        message: "Your agreement edits have been cancelled.",
                         redirectUrl: "/agreements"
                     });
                 }
@@ -171,6 +173,7 @@ StepSelectProject.propTypes = {
     isReviewMode: PropTypes.bool,
     wizardSteps: PropTypes.arrayOf(PropTypes.string),
     currentStep: PropTypes.number,
-    selectedAgreementId: PropTypes.number
+    selectedAgreementId: PropTypes.number,
+    cancelHeading: PropTypes.string
 };
 export default StepSelectProject;

@@ -1,4 +1,5 @@
 """User models."""
+
 from enum import Enum, auto
 from typing import List, Optional
 
@@ -12,7 +13,7 @@ from models import BaseModel
 class UserRole(BaseModel):
     __tablename__ = "user_role"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), primary_key=True)
     role_id: Mapped[int] = mapped_column(ForeignKey("role.id"), primary_key=True)
 
     @BaseModel.display_name.getter
@@ -23,7 +24,7 @@ class UserRole(BaseModel):
 class UserGroup(BaseModel):
     __tablename__ = "user_group"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), primary_key=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("group.id"), primary_key=True)
 
     @BaseModel.display_name.getter
@@ -40,7 +41,7 @@ class UserStatus(Enum):
 class User(BaseModel):
     """Main User mod."""
 
-    __tablename__ = "user"
+    __tablename__ = "ops_user"
 
     id: Mapped[int] = BaseModel.get_pk_column()
     oidc_id: Mapped[Optional[UUID]] = mapped_column(
@@ -110,6 +111,12 @@ class User(BaseModel):
     notifications: Mapped[List["Notification"]] = relationship(
         "Notification",
         foreign_keys="Notification.recipient_id",
+    )
+
+    sessions: Mapped[List["UserSession"]] = relationship(
+        "UserSession",
+        back_populates="user",
+        foreign_keys="UserSession.user_id",
     )
 
     def get_user_id(self):

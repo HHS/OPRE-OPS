@@ -26,7 +26,7 @@ from models import (
 
 # from sqlalchemy import select
 
-# from ops_api.ops.utils.user import get_user_from_token
+# from ops_api.ops.auth.utils import get_user_from_sub
 
 PROCUREMENT_WORKFLOW_TEMPLATE_NAME = "Procurement Tracker"
 
@@ -62,7 +62,7 @@ def create_procurement_workflow(agreement_id) -> WorkflowInstance:
     user_id = None
     # TODO: How to get user when there might not be a request (in testing, etc)
     # token = verify_jwt_in_request()
-    # user = get_user_from_token(token[1])
+    # user = get_user_from_sub(token[1])
 
     workflow_template = get_procurement_workflow_template()
 

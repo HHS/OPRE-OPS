@@ -8,7 +8,7 @@ import ChangeIcons from "../ChangeIcons";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import {
@@ -17,13 +17,18 @@ import {
     totalBudgetLineFeeAmount,
     totalBudgetLineAmountPlusFees
 } from "../../../helpers/utils";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
-import { removeBorderBottomIfExpanded, changeBgColorIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import { getBudgetLineCreatedDate, canLabel, BLILabel } from "../../../helpers/budgetLines.helpers";
+import {
+    removeBorderBottomIfExpanded,
+    changeBgColorIfExpanded
+} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIRow.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
+ * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
@@ -32,7 +37,7 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
  * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
  * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
  * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
- * @returns {React.JSX.Element} The BLIRow component.
+ * @returns {JSX.Element} The BLIRow component.
  **/
 const BLIRow = ({
     budgetLine,
@@ -53,6 +58,13 @@ const BLIRow = ({
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
     const location = useLocation();
+    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
+    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    const isApprovePage = location.pathname.includes("approve");
+    const isBLIInReview = budgetLine?.in_review || false;
+    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
+
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
@@ -61,16 +73,9 @@ const BLIRow = ({
             handleSetItemForEditing={handleSetBudgetLineForEditing}
             isItemEditable={isBudgetLineEditable}
             duplicateIcon={true}
+            lockedMessage={lockedMessage}
         />
     );
-    // styles for the table row
-    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
-    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    // are you on the approve page?
-    const isApprovePage = location.pathname.includes("approve");
-    const isBLIInAnyActiveWorkflow = budgetLine?.has_active_workflow || false;
-    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const inReview = isBLIInAnyActiveWorkflow;
 
     const TableRowData = (
         <>
@@ -87,7 +92,7 @@ const BLIRow = ({
                         <span>{budgetLine?.id}</span>
                     </Tooltip>
                 ) : (
-                    budgetLine?.id
+                    BLILabel(budgetLine)
                 )}
             </th>
             <td
@@ -114,7 +119,7 @@ const BLIRow = ({
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {budgetLine?.can?.number}
+                {canLabel(budgetLine)}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
@@ -166,8 +171,9 @@ const BLIRow = ({
                     <div>{changeIcons}</div>
                 ) : (
                     <TableTag
-                        inReview={inReview}
+                        inReview={isBLIInReview}
                         status={budgetLine?.status}
+                        lockedMessage={lockedMessage}
                     />
                 )}
             </td>

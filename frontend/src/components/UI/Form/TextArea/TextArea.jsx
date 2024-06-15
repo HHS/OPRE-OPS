@@ -1,7 +1,9 @@
 import cx from "clsx";
+import PropTypes from "prop-types";
+
 /**
  * A textarea input component.
- *
+ * @component
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label=name] - The label for the input field.
@@ -10,8 +12,9 @@ import cx from "clsx";
  * @param {boolean} [props.pending=false] - Whether the input field is pending.
  * @param {string[]} [props.messages=[]] - The error messages for the input field.
  * @param {string} props.value - The value of the input field.
- * @param {int} props.maxLength - The maximum number of characters allow.
+ * @param {number} props.maxLength - The maximum number of characters allow.
  * @param {string} [props.className] - The CSS class for the input field.
+ * @param {Object} [props.textAreaStyle] - The style for the textarea.
  * @returns {JSX.Element} - The textarea input component.
  */
 export const TextArea = ({
@@ -23,7 +26,8 @@ export const TextArea = ({
     messages = [],
     value,
     maxLength,
-    className
+    className,
+    textAreaStyle = { height: "8.5rem" }
 }) => {
     if (!hintMsg && maxLength) hintMsg = `Maximum ${maxLength} characters`;
     return (
@@ -57,7 +61,7 @@ export const TextArea = ({
                     id={name}
                     name={name}
                     rows={5}
-                    style={{ height: "7rem" }}
+                    style={textAreaStyle}
                     maxLength={maxLength}
                     onChange={handleChange}
                     value={value}
@@ -75,6 +79,19 @@ export const TextArea = ({
     function handleChange(e) {
         onChange(name, e.target.value);
     }
+};
+
+TextArea.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    hintMsg: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    pending: PropTypes.bool,
+    messages: PropTypes.array,
+    value: PropTypes.string.isRequired,
+    maxLength: PropTypes.number,
+    className: PropTypes.string,
+    textAreaStyle: PropTypes.object
 };
 
 export default TextArea;

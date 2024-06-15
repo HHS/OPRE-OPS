@@ -18,7 +18,10 @@ def test_bli_history(loaded_db: Session):
     loaded_db.add(bli)
     loaded_db.commit()
 
-    stmt = select(OpsDBHistory).where(OpsDBHistory.event_type == OpsDBHistoryType.NEW)
+    stmt = select(OpsDBHistory).where(
+        and_(OpsDBHistory.event_type == OpsDBHistoryType.NEW),
+        OpsDBHistory.class_name == "BudgetLineItem",  # type: ignore
+    )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "Grant Expendeture GA999"
 
@@ -26,14 +29,20 @@ def test_bli_history(loaded_db: Session):
     loaded_db.add(bli)
     loaded_db.commit()
 
-    stmt = select(OpsDBHistory).where(OpsDBHistory.event_type == OpsDBHistoryType.UPDATED)
+    stmt = select(OpsDBHistory).where(
+        and_(OpsDBHistory.event_type == OpsDBHistoryType.UPDATED),
+        OpsDBHistory.class_name == "BudgetLineItem",  # type: ignore
+    )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
 
     loaded_db.delete(bli)
     loaded_db.commit()
 
-    stmt = select(OpsDBHistory).where(OpsDBHistory.event_type == OpsDBHistoryType.DELETED)
+    stmt = select(OpsDBHistory).where(
+        and_(OpsDBHistory.event_type == OpsDBHistoryType.DELETED),
+        OpsDBHistory.class_name == "BudgetLineItem",  # type: ignore
+    )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
 

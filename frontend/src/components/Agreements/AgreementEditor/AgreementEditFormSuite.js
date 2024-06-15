@@ -10,7 +10,7 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.name).isNotBlank();
     });
     test("serviceReqType", "This is required information", () => {
-        enforce(data.serviceReqType).notEquals("Select Service Requirement Type");
+        enforce(data.serviceReqType).notEquals("-Select Service Requirement Type-");
     });
     test("description", "This is required information", () => {
         enforce(data.description).isNotBlank();

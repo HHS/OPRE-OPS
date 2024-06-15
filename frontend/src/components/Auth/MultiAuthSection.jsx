@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { login } from "./authSlice";
+import { login, logout } from "./authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
@@ -23,8 +23,18 @@ const MultiAuthSection = () => {
                 navigate("/login");
             }
 
-            const response = await apiLogin(activeProvider, authCode);
+            let response;
+            try {
+                response = await apiLogin(activeProvider, authCode);
+                // eslint-disable-next-line no-unused-vars
+            } catch (error) {
+                console.error("Error logging in");
+                dispatch(logout());
+                navigate("/login");
+            }
+
             const access_token = response.access_token;
+            const refresh_token = response.refresh_token;
 
             if (access_token === null || access_token === undefined) {
                 console.error("API Login Failed!");
@@ -35,15 +45,9 @@ const MultiAuthSection = () => {
                 // the data within the cookie; instead will need to do additional API calls
                 // to get the data we need.
                 localStorage.setItem("access_token", access_token);
-                dispatch(login());
-
-                if (response.is_new_user) {
-                    navigate(`/user/edit/${response?.user?.id}`);
-                    return;
-                }
-
+                localStorage.setItem("refresh_token", refresh_token);
+                await dispatch(login());
                 await setActiveUser(access_token, dispatch);
-
                 navigate("/");
             }
         },
@@ -107,14 +111,16 @@ const MultiAuthSection = () => {
                         You can access your account by signing in with one of the options below.
                     </p>
                 </div>
-                <p>
-                    <button
-                        className="usa-button usa-button--outline width-full"
-                        onClick={() => handleSSOLogin("logingov")}
-                    >
-                        Sign in with Login.gov
-                    </button>
-                </p>
+                {!import.meta.env.PROD && (
+                    <p>
+                        <button
+                            className="usa-button usa-button--outline width-full"
+                            onClick={() => handleSSOLogin("logingov")}
+                        >
+                            Sign in with Login.gov
+                        </button>
+                    </p>
+                )}
                 <p>
                     <button
                         className="usa-button usa-button--outline width-full"
@@ -123,28 +129,16 @@ const MultiAuthSection = () => {
                         Sign in with HHS AMS
                     </button>
                 </p>
-                <p>
-                    <button
-                        className="usa-button usa-button--outline width-full"
-                        onClick={() => setShowModal(true)}
-                    >
-                        Sign in with FakeAuth®
-                    </button>
-                </p>
-                <div className="border-top border-base-lighter margin-top-6 padding-top-1">
+                {!import.meta.env.PROD && (
                     <p>
-                        <strong>Don&apos;t have an account?</strong>
-                    </p>
-                    <p>If you don&apos;t have an account already, sign up here:</p>
-                    <p>
-                        <a
-                            href="https://www.login.gov/help/get-started/create-your-account/"
-                            className="usa-button width-full"
+                        <button
+                            className="usa-button usa-button--outline width-full"
+                            onClick={() => setShowModal(true)}
                         >
-                            Create Login.gov account
-                        </a>
+                            Sign in with FakeAuth®
+                        </button>
                     </p>
-                </div>
+                )}
                 {showModal && (
                     <ContainerModal
                         heading="FakeAuth® User Selection"

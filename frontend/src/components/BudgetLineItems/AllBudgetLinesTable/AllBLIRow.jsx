@@ -9,12 +9,17 @@ import TextClip from "../../UI/Text/TextClip";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useTableRow } from "../../UI/TableRowExpandable/table-row.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
 import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
 import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
-import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "../../UI/TableRowExpandable/table-row.helpers";
+import {
+    changeBgColorIfExpanded,
+    removeBorderBottomIfExpanded
+} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
+
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @component
@@ -36,28 +41,24 @@ const AllBLIRow = ({
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
-    const doesBudgetLineHaveActiveWorkflow = budgetLine?.has_active_workflow;
-    const lockedMessage = doesBudgetLineHaveActiveWorkflow
-        ? "This budget line cannot be edited because it is currently In Review for a status change"
-        : "";
+    const isBudgetLineInReview = budgetLine?.in_review;
     const isBudgetLineEditable =
-        (canUserEditAgreement || isUserBudgetLineCreator) &&
-        isBudgetLineEditableFromStatus &&
-        !doesBudgetLineHaveActiveWorkflow;
+        (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus && !isBudgetLineInReview;
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const { isExpanded, setIsRowActive, isRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const serviceComponentName = useGetServicesComponentDisplayName(budgetLine?.services_component_id);
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const changeIcons = (
         <ChangeIcons
             item={budgetLine}
             handleDeleteItem={handleDeleteBudgetLine}
             handleSetItemForEditing={handleSetBudgetLineForEditing}
             isItemEditable={isBudgetLineEditable}
-            lockedMessage={lockedMessage}
             duplicateIcon={false}
+            lockedMessage={lockedMessage}
         />
     );
 
@@ -122,8 +123,9 @@ const AllBLIRow = ({
                     <div>{changeIcons}</div>
                 ) : (
                     <TableTag
+                        inReview={isBudgetLineInReview}
                         status={budgetLine?.status}
-                        inReview={budgetLine?.has_active_workflow}
+                        lockedMessage={lockedMessage}
                     />
                 )}
             </td>

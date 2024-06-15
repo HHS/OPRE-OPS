@@ -31,7 +31,7 @@ const Input = ({
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
-                className={`usa-label ${messages.length ? "usa-label--error" : null} `}
+                className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
             >
                 {label}
@@ -49,7 +49,7 @@ const Input = ({
             <input
                 id={name}
                 name={name}
-                className={`usa-input ${messages.length ? "usa-input--error" : null} `}
+                className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                 onChange={handleChange}
                 autoComplete="off"
                 autoCorrect="off"

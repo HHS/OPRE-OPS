@@ -42,7 +42,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                         handleDeleteBudgetLine={handleDeleteBudgetLine}
                         handleSetBudgetLineForEditing={() => {
                             navigate(
-                                `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}`
+                                `/agreements/${budgetLine.agreement_id}/budget-lines?mode=edit&budget-line-id=${budgetLine.id}#budget-lines-header`
                             );
                         }}
                         isReviewMode={false}

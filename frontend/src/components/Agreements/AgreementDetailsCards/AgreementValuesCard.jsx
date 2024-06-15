@@ -7,10 +7,10 @@ const { barChartColors } = constants;
 
 /**
  * A component that displays the total budget lines for an agreement.
- *
+ * @component
  * @param {Object} props - The component props.
  * @param {Array<any>} props.budgetLineItems - The budget line items for the agreement.
- * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
+ * @returns {JSX.Element} - The agreement total budget lines card component JSX.
  */
 const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
     const headerText = "Total Agreement Value";

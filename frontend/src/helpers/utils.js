@@ -68,6 +68,14 @@ export const draftBudgetLineStatuses = ["DRAFT"];
  * @property {Object.<string, string>} agreementReason - Display text for agreement reasons.
  * @property {Object.<string, string>} budgetLineStatus - Display text for budget line types.
  * @property {Object.<string, string>} validation - Display text for validation errors.
+ * @property {Object.<string, string>} classNameLabels - Display text for class names.
+ * @property {Object.<string, string>} baseClassNameLabels - Display text for base class names.
+ * @property {Object.<string, string>} agreementPropertyLabels - Display text for agreement property names.
+ * @property {Object.<string, string>} budgetLineItemPropertyLabels - Display text for budget line item property names.
+ * @property {Object.<string, string>} contractType - Display text for contract types.
+ * @property {Object.<string, string>} serviceRequirementType - Display text for service requirement types.
+ * @property {Object.<string, string>} changeToTypes - Display text for change to types.
+ *
  */
 
 /**
@@ -156,12 +164,17 @@ export const codesToDisplayText = {
     serviceRequirementType: {
         SEVERABLE: "Severable",
         NON_SEVERABLE: "Non-Severable"
+    },
+    changeToTypes: {
+        amount: "Amount",
+        can_id: "CAN",
+        date_needed: "Date needed"
     }
 };
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
@@ -261,7 +274,12 @@ export const renderField = (className, fieldName, value) => {
                 case "date_needed":
                     return formatDateNeeded(value);
                 case "amount":
-                    return "$" + value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    return new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    }).format(value);
                 case "agreement_reason":
                     return convertCodeForDisplay("agreementReason", value);
                 case "agreement_type":
@@ -304,4 +322,20 @@ export const statusToClassName = (status, styleType = "text") => {
                 return "";
         }
     }
+};
+
+export const formatDateForApi = (date) => {
+    if (date) {
+        const [month, day, year] = date.split("/");
+        return `${year}-${month}-${day}`;
+    }
+    return null;
+};
+
+export const formatDateForScreen = (date) => {
+    if (date) {
+        const [year, month, day] = date.split("-");
+        return `${month}/${day}/${year}`;
+    }
+    return null;
 };

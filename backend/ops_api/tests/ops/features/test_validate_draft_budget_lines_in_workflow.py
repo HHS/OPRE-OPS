@@ -123,8 +123,11 @@ def setup_and_teardown(loaded_db, context):
     cleanup(loaded_db, context)
 
 
-@given("I am logged in as an OPS user")
-def client(auth_client):
+@given(
+    "I am logged in as an OPS user",
+    target_fixture="bdd_client",
+)
+def bdd_client(auth_client):
     return auth_client
 
 
@@ -479,25 +482,25 @@ def bli_without_agreement(loaded_db, context):
 
 
 @when("I submit the BLI for approval")
-def submit(client, context):
+def submit(bdd_client, context):
     data = {
         "budget_line_item_ids": [context["initial_bli"].id],
         "notes": "test notes",
         "workflow_action": "DRAFT_TO_PLANNED",
     }
 
-    context["response_post"] = client.post("/api/v1/workflow-submit/", json=data)
+    context["response_post"] = bdd_client.post("/api/v1/workflow-submit/", json=data)
 
 
 @when("I submit a BLI to move to IN_REVIEW status (without an Agreement)")
-def submit_without_agreement(client, context):
+def submit_without_agreement(bdd_client, context):
     data = {
         "budget_line_item_ids": [context["initial_bli"].id],
         "notes": "test notes",
         "workflow_action": "DRAFT_TO_PLANNED",
     }
 
-    context["response_post"] = client.post("/api/v1/workflow-submit/", json=data)
+    context["response_post"] = bdd_client.post("/api/v1/workflow-submit/", json=data)
 
 
 @then("I should get an error message that the BLI's Agreement must have a valid Project")
@@ -617,7 +620,6 @@ def error_message_amount_less_than_or_equal_to_zero(context, setup_and_teardown)
     assert context["response_post"].status_code == 400
     assert context["response_post"].json == {
         "_schema": [
-            "BLI must have a valid Amount when status is not DRAFT",
             "BLI must be a valid Amount (greater than zero) when status is " "not DRAFT",
         ]
     }

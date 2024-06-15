@@ -5,8 +5,9 @@ from typing_extensions import override
 
 from models.base import BaseModel
 from models.cans import CANFiscalYear
-from ops_api.ops.base_views import BaseListAPI, handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -26,9 +27,7 @@ class CANFiscalYearItemAPI(BaseListAPI):
 
         return can_fiscal_year_query.all()
 
-    @override
     @is_authorized(PermissionType.GET, Permission.CAN)
-    @handle_api_error
     def get(self, id: int) -> Response:
         year = request.args.get("year")
         can_fiscal_year = self._get_item(id, year)
@@ -50,9 +49,7 @@ class CANFiscalYearListAPI(BaseListAPI):
 
         return can_fiscal_years_query.all()
 
-    @override
     @is_authorized(PermissionType.GET, Permission.CAN)
-    @handle_api_error
     def get(self) -> Response:
         can_id: int = cast(int, request.args.get("can_id"))
         year: int = cast(int, request.args.get("year"))

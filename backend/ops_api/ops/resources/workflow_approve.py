@@ -2,9 +2,8 @@ from datetime import date, datetime
 
 import sqlalchemy as sa
 from flask import Response, current_app, request
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import current_user
 from marshmallow import Schema, fields
-from typing_extensions import override
 
 from models.base import BaseModel
 from models.cans import Agreement, BudgetLineItem, BudgetLineItemStatus
@@ -17,11 +16,11 @@ from models.workflows import (
     WorkflowStepInstance,
     WorkflowStepStatus,
 )
-from ops_api.ops.base_views import BaseItemAPI, handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseItemAPI
 from ops_api.ops.utils.procurement_workflow_helper import create_procurement_workflow
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 ENDPOINT_STRING = "/workflow-approve"
 
@@ -42,9 +41,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
     @is_authorized(PermissionType.PATCH, Permission.WORKFLOW)
-    @handle_api_error
     def post(self) -> Response:
         # TODO: Using a dataclass schema for ApprovalSubmissionData, load data from request.json
 
@@ -52,13 +49,10 @@ class WorkflowApprovalListApi(BaseItemAPI):
         workflow_step_action = request.json.get("workflow_step_action")
         workflow_notes = request.json.get("notes")
 
-        token = verify_jwt_in_request()
-        user = get_user_from_token(token[1])
-
         workflow_step_instance = current_app.db_session.get(WorkflowStepInstance, workflow_step_id)
         if not workflow_step_instance:
             return make_response_with_headers({"message": f"No workflow step instance for {workflow_step_id=}"}, 400)
-        if user.id not in workflow_step_instance.approvers["users"]:
+        if current_user.id not in workflow_step_instance.approvers["users"]:
             return make_response_with_headers({"message": "User is not an approver for this step"}, 401)
         # TODO: Create a better principal check for users/groups/roles
 
@@ -67,7 +61,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
             workflow_step_instance.status = WorkflowStepStatus.APPROVED
             workflow_step_instance.time_completed = datetime.now()
             workflow_step_instance.notes = workflow_notes
-            workflow_step_instance.updated_by = user.id
+            workflow_step_instance.updated_by = current_user.id
 
             # If there are successor dependencies, update the workflow instance to the next step
             workflow_step_instance.workflow_instance.current_workflow_step_instance_id = (
@@ -104,7 +98,7 @@ class WorkflowApprovalListApi(BaseItemAPI):
             workflow_step_instance.status = WorkflowStepStatus.REJECTED
             workflow_step_instance.time_completed = datetime.now()
             workflow_step_instance.notes = workflow_notes
-            workflow_step_instance.updated_by = user.id
+            workflow_step_instance.updated_by = current_user.id
 
             # If there are successor dependencies, update the workflow instance to the next step
             workflow_step_instance.workflow_instance.current_workflow_step_instance_id = (

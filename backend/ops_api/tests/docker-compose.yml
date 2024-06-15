@@ -5,6 +5,7 @@ services:
     image: "postgres:16"
     platform: linux/amd64
     container_name: unit-test-db
+    command: -c 'max_connections=400'
     security_opt:
       - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
     environment:

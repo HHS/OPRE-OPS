@@ -4,12 +4,12 @@ from typing import Optional
 
 from flask import Response
 from marshmallow_enum import EnumField
-from typing_extensions import override
 
 from models.base import BaseModel
 from models.workflows import WorkflowStepInstance, WorkflowStepStatus
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 
 ENDPOINT_STRING = "/workflow-step-instance"
 
@@ -34,9 +34,7 @@ class WorkflowStepInstanceItemAPI(BaseItemAPI):
         super().__init__(model)
         # self._response_schema = desert.schema(WorkflowStepInstanceResponse)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -46,8 +44,6 @@ class WorkflowStepInstanceListAPI(BaseListAPI):
         super().__init__(model)
         # self._response_schema = desert.schema(WorkflowStepInstanceResponse)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
     def get(self) -> Response:
         return super().get()

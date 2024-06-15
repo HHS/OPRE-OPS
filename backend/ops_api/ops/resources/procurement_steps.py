@@ -2,10 +2,9 @@ from functools import partial
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import current_user, get_jwt_identity
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
-from typing_extensions import override
 
 from models import Agreement, OpsEventType
 from models.base import BaseModel
@@ -18,7 +17,10 @@ from models.workflows import (
     ProcurementStep,
     Solicitation,
 )
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.auth.exceptions import ExtraCheckError
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.procurement_steps import (
     AcquisitionPlanningRequest,
     AcquisitionPlanningResponse,
@@ -41,16 +43,12 @@ from ops_api.ops.utils.api_helpers import (
     get_change_data,
     update_and_commit_model_instance,
 )
-from ops_api.ops.utils.auth import ExtraCheckError, Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 
 def get_current_user_id():
-    token = verify_jwt_in_request()
-    user = get_user_from_token(token[1])
-    return user.id
+    return current_user.id
 
 
 # TODO: considering refactoring to DRYer along with similar code in services_component.py and budget_line_items.py
@@ -101,9 +99,7 @@ class BaseProcurementStepListAPI(BaseListAPI):
         self._request_schema = mmdc.class_schema(ProcurementStepListQuery)()
         self._response_schema_collection = mmdc.class_schema(ProcurementStepResponse)(many=True)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
     def get(self) -> Response:
         data = self._request_schema.dump(self._request_schema.load(request.args))
 
@@ -138,9 +134,7 @@ class BaseProcurementStepItemAPI(BaseItemAPI):
 
         return response
 
-    @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -174,7 +168,6 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
         extra_check=partial(step_associated_with_agreement, permission_type=PermissionType.PATCH),
         groups=["Budget Team", "Admins"],
     )
-    @handle_api_error
     def patch(self, id: int) -> Response:
         return self._update(id, "PATCH", self._patch_schema)
 

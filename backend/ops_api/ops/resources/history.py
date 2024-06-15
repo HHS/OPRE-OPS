@@ -1,10 +1,10 @@
 from flask import Response, current_app, request
 from sqlalchemy import select
-from typing_extensions import override
 
 from models.base import BaseModel
-from ops_api.ops.base_views import BaseListAPI, handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -12,9 +12,7 @@ class OpsDBHistoryListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.HISTORY)
-    @handle_api_error
     def get(self) -> Response:
         class_name = request.args.get("class_name", None)
         row_key = request.args.get("row_key", None)
@@ -29,7 +27,7 @@ class OpsDBHistoryListAPI(BaseListAPI):
             stmt = stmt.limit(int(limit))
         if offset:
             stmt = stmt.offset(int(limit))
-        stmt = stmt.order_by(self.model.created_on.desc())
+        stmt = stmt.where(self.model.class_name != "UserSession").order_by(self.model.created_on.desc())
 
         item_list = [row[0] for row in current_app.db_session.execute(stmt).all()]
 

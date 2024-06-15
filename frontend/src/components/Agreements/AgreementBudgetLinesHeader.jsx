@@ -7,11 +7,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading to display.
- * @param {string} props.details - The details to display.
+ * @param {string} [props.details] - The details to display.
  * @param {boolean} props.includeDrafts - Whether the edit mode is on.
- * @param {function} props.setIncludeDrafts - The function to set the edit mode.
- * @param {boolean} props.isEditMode - Whether the edit mode is on.
- * @param {function} props.setIsEditMode - The function to set the edit mode.
+ * @param {Function} props.setIncludeDrafts - The function to set the edit mode.
+ * @param {boolean} [props.isEditMode] - Whether the edit mode is on.
+ * @param {Function} [props.setIsEditMode] - The function to set the edit mode.
  * @param {boolean} props.isEditable - Whether the agreement is editable.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -20,14 +20,19 @@ export const AgreementBudgetLinesHeader = ({
     details,
     includeDrafts,
     setIncludeDrafts,
-    isEditMode,
-    setIsEditMode,
+    isEditMode = false,
+    setIsEditMode = () => {},
     isEditable
 }) => {
     return (
         <>
             <div className="display-flex flex-justify flex-align-center">
-                <h2 className="font-sans-lg">{heading}</h2>
+                <a
+                    href="#budget-lines-header"
+                    className="text-no-underline text-ink"
+                >
+                    <h2 className="font-sans-lg">{heading}</h2>
+                </a>
                 <div>
                     <button
                         id="toggleDraftBLIs"
@@ -67,11 +72,11 @@ export const AgreementBudgetLinesHeader = ({
 
 AgreementBudgetLinesHeader.propTypes = {
     heading: PropTypes.string.isRequired,
-    details: PropTypes.string.isRequired,
+    details: PropTypes.string,
     includeDrafts: PropTypes.bool.isRequired,
     setIncludeDrafts: PropTypes.func.isRequired,
-    isEditMode: PropTypes.bool.isRequired,
-    setIsEditMode: PropTypes.func.isRequired,
+    isEditMode: PropTypes.bool,
+    setIsEditMode: PropTypes.func,
     isEditable: PropTypes.bool.isRequired
 };
 

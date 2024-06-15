@@ -1,5 +1,4 @@
 import datetime
-from dataclasses import fields
 
 import pytest
 from pytest_bdd import given, scenario, then, when
@@ -13,7 +12,7 @@ from models import (
     ContractType,
     User,
 )
-from ops_api.ops.schemas.budget_line_items import RequestBody
+from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
 
 @pytest.fixture
@@ -33,14 +32,17 @@ def original_agreement():
     }
 
 
-@given("I am logged in as an OPS user")
-def client(auth_client):
+@given(
+    "I am logged in as an OPS user",
+    target_fixture="bdd_client",
+)
+def bdd_client(auth_client):
     yield auth_client
 
 
 @given(
     "I am logged in as an OPS user with the correct authorization but no perms",
-    target_fixture="client",
+    target_fixture="bdd_client",
 )
 def no_perms_client(no_perms_auth_client):
     yield no_perms_auth_client
@@ -165,18 +167,20 @@ def edit_bli(bli):
 
 
 @when("I submit the budget line item", target_fixture="submit_response")
-def submit(client, edited_bli):
-    field_names = {f.name for f in fields(RequestBody)} | {"agreement_id"}
+def submit(bdd_client, edited_bli):
+    field_names = {f for f in RequestBodySchema().fields.keys()} | {"agreement_id"}
     data = {k: v for k, v in edited_bli.to_dict().items() if k in field_names}
-    resp = client.put(f"/api/v1/budget-line-items/{edited_bli.id}", json=data)
+    resp = bdd_client.put(f"/api/v1/budget-line-items/{edited_bli.id}", json=data)
     return resp
 
 
 @then("I should get an error that I am not authorized")
 def invalid(submit_response):
-    assert submit_response.status_code == 401
+    assert submit_response.status_code == 403
 
 
 @then("I should get a message that it was successful")
 def success(submit_response):
-    assert submit_response.status_code == 200
+    # TODO: what should these tests do now that change requests are created and the response is 202?
+    # just changing this from 200 to 202 for now
+    assert submit_response.status_code == 202

@@ -17,7 +17,7 @@ import {
     useNavigateAgreementApprove,
     useHandleEditAgreement,
     useHandleDeleteAgreement
-} from "./agreements-table.hooks";
+} from "./AgreementsTable.hooks";
 import {
     convertCodeForDisplay,
     statusToClassName,
@@ -42,10 +42,10 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
 /**
  * Renders a row in the agreements table.
- *
+ * @component
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement object to display.
- * @returns {React.JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreement }) => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -119,7 +119,7 @@ export const AgreementTableRow = ({ agreement }) => {
             >
                 <Link
                     className="text-ink text-no-underline"
-                    to={"/agreements/" + agreement?.id}
+                    to={`/agreements/${agreement.id}`}
                 >
                     <TextClip text={agreementName} />
                 </Link>

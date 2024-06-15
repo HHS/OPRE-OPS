@@ -17,6 +17,7 @@ from models.users import User
 from models.workflows import (
     AcquisitionPlanning,
     Award,
+    ChangeRequest,
     Evaluation,
     Package,
     PackageSnapshot,
@@ -40,12 +41,12 @@ from ops_api.ops.resources.agreements import (
     AgreementReasonListAPI,
     AgreementTypeListAPI,
 )
-from ops_api.ops.resources.auth import AuthLoginAPI, AuthLogoutAPI, AuthRefreshAPI
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
+from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
 from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
 from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
@@ -78,6 +79,7 @@ from ops_api.ops.resources.workflow_instance import WorkflowInstanceItemAPI, Wor
 from ops_api.ops.resources.workflow_step_template import WorkflowStepTemplateItemAPI, WorkflowStepTemplateListAPI
 from ops_api.ops.resources.workflow_submit import WorkflowSubmisionListApi
 from ops_api.ops.resources.workflow_template import WorkflowTemplateItemAPI, WorkflowTemplateListAPI
+from ops_api.ops.utils.version import VersionAPI
 
 # AGREEMENT ENDPOINTS
 AGREEMENT_ITEM_API_VIEW_FUNC = AgreementItemAPI.as_view("agreements-item", Agreement)
@@ -92,11 +94,6 @@ AGREEMENT_TYPE_LIST_API_VIEW_FUNC = AgreementTypeListAPI.as_view("agreement-type
 # CONTRACT ENDPOINTS
 CONTRACT_ITEM_API_VIEW_FUNC = ContractItemAPI.as_view("contract-item", ContractAgreement)
 CONTRACT_LIST_API_VIEW_FUNC = ContractListAPI.as_view("contract-list", ContractListAPI)
-
-# Auth endpoints
-AUTH_LOGIN_API_VIEW_FUNC = AuthLoginAPI.as_view("auth-login", BaseModel)
-AUTH_LOGOUT_API_VIEW_FUNC = AuthLogoutAPI.as_view("auth-logout", BaseModel)
-AUTH_REFRESH_API_VIEW_FUNC = AuthRefreshAPI.as_view("auth-refresh", BaseModel)
 
 # Portfolio endpoints
 PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC = PortfolioCalculateFundingAPI.as_view(
@@ -254,3 +251,10 @@ PROCUREMENT_PRE_AWARD_ITEM_API_VIEW_FUNC = EvaluationItemAPI.as_view("procuremen
 
 # Procurement: Award ENDPOINT
 PROCUREMENT_AWARD_ITEM_API_VIEW_FUNC = AwardItemAPI.as_view("procurement-award-item", Award)
+
+# Version Endpoint View
+VERSION_API_VIEW_FUNC = VersionAPI.as_view("version_api")
+
+# Change Request ENDPOINTs
+CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-request-list", ChangeRequest)
+CHANGE_REQUEST_REVIEW_API_VIEW_FUNC = ChangeRequestReviewAPI.as_view("change-request-review-list", ChangeRequest)

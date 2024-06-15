@@ -3,7 +3,7 @@ import AgreementDetailHeader from "../../../components/Agreements/AgreementDetai
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { hasActiveWorkflow } from "../../../helpers/budgetLines.helpers";
+import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 
 /**
  * Renders the details of an agreement, including budget lines, spending, and other information.
@@ -20,11 +20,11 @@ const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer, i
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
-    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveActiveWorkflow;
+    const isAgreementInReview = hasBlIsInReview(agreement?.budget_line_items);
+    const isEditable = isAgreementEditable && canUserEditAgreement && !isAgreementInReview;
 
     return (
-        <div>
+        <article>
             <AgreementDetailHeader
                 heading="Agreement Details"
                 details=""
@@ -32,6 +32,7 @@ const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer, i
                 setIsEditMode={setIsEditMode}
                 isEditable={isEditable}
             />
+
             {isEditMode ? (
                 <AgreementDetailsEdit
                     agreement={agreement}
@@ -46,7 +47,7 @@ const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer, i
                     projectOfficer={projectOfficer}
                 />
             )}
-        </div>
+        </article>
     );
 };
 

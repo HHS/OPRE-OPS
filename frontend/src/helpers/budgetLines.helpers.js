@@ -1,5 +1,12 @@
 import { formatDateToMonthDayYear } from "./utils";
 
+export const BLI_STATUS = {
+    DRAFT: "DRAFT",
+    PLANNED: "PLANNED",
+    EXECUTING: "IN_EXECUTION",
+    OBLIGATED: "OBLIGATED"
+};
+
 /**
  * Validates if the given budget line is an object.
  * @param {Object} budgetLine - The budget line to validate.
@@ -43,14 +50,25 @@ export const getBudgetByStatus = (budgetLines, status) => {
     return budgetLines?.filter((bli) => status.includes(bli.status));
 };
 
+/**
+ * Returns an array of budget lines that are not in draft status.
+ * @param {Object[]} budgetLines - The budget lines to filter.
+ * @returns {Object[]} An array of budget lines that are not in draft status.
+ */
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIProp(budgetLines);
-    return budgetLines?.filter((bli) => bli.status !== "DRAFT" && bli.status !== "IN_REVIEW");
+    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
 };
-
+// TODO: Should we be checking for `in_review` here?
+// TODO: Are workflows deprecated?
 export const hasActiveWorkflow = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.some((bli) => bli.has_active_workflow);
+};
+
+export const hasBlIsInReview = (budgetLines) => {
+    handleBLIProp(budgetLines);
+    return budgetLines?.some((bli) => bli.in_review);
 };
 
 export const groupByServicesComponent = (budgetLines) => {
@@ -72,3 +90,30 @@ export const groupByServicesComponent = (budgetLines) => {
             return a.servicesComponentId - b.servicesComponentId;
         });
 };
+
+/**
+ * Returns whether the given budget line is permanent.
+ * @param {Object} budgetLine - The budget line to check.
+ * @returns {boolean} Whether the budget line is permanent.
+ */
+export const isBLIPermanent = (budgetLine) => {
+    handleBLIProp(budgetLine);
+
+    return budgetLine?.created_on ? true : false;
+};
+
+/**
+ * Returns the display can label of a budget line.
+ * @param {Object} budgetLine - The budget line to get the can label from.
+ * @returns {string} The can label of the budget line.
+ * canDisplayName is for temporary BLIs, can.number is for permanent BLIs
+ */
+export const canLabel = (budgetLine) =>
+    isBLIPermanent(budgetLine) ? budgetLine?.can?.display_name : budgetLine?.canDisplayName || "TBD";
+
+/**
+ * Returns display label of a budget line.
+ * @param {Object} budgetLine - The budget line to get the BLI label from.
+ * @returns {string} The BLI label of the budget line.
+ */
+export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : "TBD");

@@ -15,6 +15,15 @@ class SafeUserSchema(Schema):
     full_name = fields.String()
 
 
+# Unable to use SafeUserSchema ^ in budget_line_items due to this error:
+# marshmallow.exceptions.RegistryError: Multiple classes with name 'SafeUserSchema' were found. Please use the full, module-qualified path.
+# so I'm using this instead:
+@dataclass
+class SafeUser:
+    id: int
+    full_name: Optional[str] = None
+
+
 @dataclass(kw_only=True)
 class RequestBody:
     id: int = None

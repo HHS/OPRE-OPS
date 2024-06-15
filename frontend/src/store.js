@@ -11,6 +11,7 @@ import researchProjectSlice from "./pages/researchProjects/detail/researchProjec
 import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
 import alertSlice from "./components/UI/Alert/alertSlice";
 import { opsApi } from "./api/opsAPI";
+import { errorMiddleware } from "./errorMiddleware.js";
 
 const rootReducer = combineReducers({
     [opsApi.reducerPath]: opsApi.reducer,
@@ -30,12 +31,12 @@ const rootReducer = combineReducers({
 export const setupStore = (preloadedState = {}) => {
     return configureStore({
         reducer: rootReducer,
-        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware),
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware, errorMiddleware),
         preloadedState
     });
 };
 
 export default configureStore({
     reducer: rootReducer,
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware)
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware, errorMiddleware)
 });

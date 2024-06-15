@@ -63,7 +63,7 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("#contractType").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
     cy.get("#serviceReqType").should("contain", "Non-Severable");
-    cy.get("#serviceReqType").select("Select Service Requirement Type");
+    cy.get("#serviceReqType").select("-Select Service Requirement Type-");
     cy.get(".usa-error-message").should("contain", "This is required information");
     cy.get("[data-cy='continue-btn']").should("be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("be.disabled");
@@ -75,8 +75,8 @@ it("can create an SEVERABLE agreement", () => {
     // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
     cy.get("#agreement_reason").select("NEW_REQ");
 
     // Select Project Officer
@@ -99,12 +99,8 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("p").should("contain", "You have not added any Services Component yet.");
     cy.get("#servicesComponentSelect").select("1");
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Base Period 1");
@@ -112,10 +108,8 @@ it("can create an SEVERABLE agreement", () => {
     // Add a new budget line item
     cy.get("#allServicesComponentSelect").should("exist");
     cy.get("#allServicesComponentSelect").select("Base Period 1");
-    cy.get("#enteredMonth").select("01 - Jan");
-    cy.get("#enteredDay").type("1");
-    cy.get("#enteredYear").type("2024");
-    cy.get("#selectedCan").type("G99MVT3{enter}");
+    cy.get("#need-by-date").type("01/01/2024");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
@@ -126,8 +120,11 @@ it("can create an SEVERABLE agreement", () => {
     cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
 
     // Duplicate budget line item
-    cy.get("[id^=expand-]").click();
-    cy.get("[id^=duplicate-]").click();
+    cy.get("tbody").find("tr").first().trigger("mouseover");
+    cy.get("tbody").find("tr").first().find('[data-cy="duplicate-row"]').click();
+    cy.get("[data-cy='currency-summary-card']").contains("$2,000,000.00");
+    // close accordion to beat a11y check
+    cy.get(".usa-accordion__heading > .usa-accordion__button").click();
 
     // expand budget line and check that the "created by" name is not empty.
     cy.get("[id^=expand-]").each((_, element) => {
@@ -141,6 +138,7 @@ it("can create an SEVERABLE agreement", () => {
                 .invoke("text")
                 .then((text) => {
                     expect(text.length).to.be.at.least(1);
+                    item.click();
                 });
         }
     });
@@ -210,8 +208,8 @@ it("can create an NON-SEVERABLE agreement", () => {
     // complete the rest of the form
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
     cy.get("#agreement_reason").select("NEW_REQ");
 
     // Select Project Officer
@@ -238,24 +236,16 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#servicesComponentSelect").select("2");
     cy.get("#optional-services-component").should("not.be.disabled");
     cy.get("#servicesComponentSelect").select("1");
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Services Component 1");
     //create a new optional services component
     cy.get("#servicesComponentSelect").select("2");
     cy.get(".usa-checkbox").click();
-    cy.get("#popStartMonth").select("01 - Jan");
-    cy.get("#popStartDay").type("1");
-    cy.get("#popStartYear").type("2024");
-    cy.get("#popEndMonth").select("01 - Jan");
-    cy.get("#popEndDay").type("1");
-    cy.get("#popEndYear").type("2025");
+    cy.get("#pop-start-date").type("01/01/2024");
+    cy.get("#pop-end-date").type("01/01/2025");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Optional Services Component 2");
@@ -274,10 +264,8 @@ it("can create an NON-SEVERABLE agreement", () => {
         cy.get("option").should("contain", "OSC2");
     });
     cy.get("#allServicesComponentSelect").select("SC1");
-    cy.get("#enteredMonth").select("01 - Jan");
-    cy.get("#enteredDay").type("1");
-    cy.get("#enteredYear").type("2024");
-    cy.get("#selectedCan").type("G99MVT3{enter}");
+    cy.get("#need-by-date").type("01/01/2024");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
@@ -288,10 +276,8 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
 
     cy.get("#allServicesComponentSelect").select("SC1");
-    cy.get("#enteredMonth").select("01 - Jan");
-    cy.get("#enteredDay").type("1");
-    cy.get("#enteredYear").type("2025");
-    cy.get("#selectedCan").type("G99MVT3{enter}");
+    cy.get("#need-by-date").type("01/01/2025");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("2000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
@@ -309,10 +295,8 @@ it("can create an NON-SEVERABLE agreement", () => {
     // sc1 table should contain 2 rows
     cy.get("@sc1").next().find(".usa-table").find("tbody").find("tr").should("have.length", 2);
     cy.get("#allServicesComponentSelect").select("OSC2");
-    cy.get("#enteredMonth").select("01 - Jan");
-    cy.get("#enteredDay").type("1");
-    cy.get("#enteredYear").type("2026");
-    cy.get("#selectedCan").type("G99MVT3{enter}");
+    cy.get("#need-by-date").type("01/01/2026");
+    cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("3000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
@@ -335,6 +319,7 @@ it("can create an NON-SEVERABLE agreement", () => {
                 .invoke("text")
                 .then((text) => {
                     expect(text.length).to.be.at.least(1);
+                    item.click();
                 });
         }
     });
@@ -381,7 +366,7 @@ it("should handle cancelling out of workflow on step 2", () => {
     cy.get("#name").type("Test Agreement Title");
     cy.get("#description").type("Test Agreement Description");
     cy.get("#product_service_code_id").select("Other Scientific and Technical Consulting Services");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
+    cy.get("#procurement-shop-select").select("Government Contracting Services (GCS)");
     cy.get("#agreement_reason").select("NEW_REQ");
     // cancel out of workflow
     cy.get('[data-cy="cancel-button"]').click();

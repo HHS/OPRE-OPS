@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { dateToYearMonthDay } from "../servicesComponents.helpers";
+import { dateToYearMonthDay } from "../ServicesComponents.helpers";
 import Tag from "../../UI/Tag";
 
 /**

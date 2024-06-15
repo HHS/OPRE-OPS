@@ -37,6 +37,11 @@ def test_agreements_get_all(auth_client, loaded_db):
     assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
     assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
     assert response.json[0]["incumbent"] == "Vendor 1"
+    assert "budget_line_items" in response.json[0]
+    assert "can_id" in response.json[0]["budget_line_items"][0]
+    assert "can" in response.json[0]["budget_line_items"][0]
+    assert response.json[0]["budget_line_items"][0]["can"]["number"] is not None
+    assert response.json[0]["budget_line_items"][0]["can"]["display_name"] is not None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -46,6 +51,11 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
     assert "procurement_tracker_workflow_id" in response.json
     assert response.json["procurement_tracker_workflow_id"] is None
+    assert "budget_line_items" in response.json
+    assert "can_id" in response.json["budget_line_items"][0]
+    assert "can" in response.json["budget_line_items"][0]
+    assert response.json["budget_line_items"][0]["can"]["number"] is not None
+    assert response.json["budget_line_items"][0]["can"]["display_name"] is not None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -96,9 +106,6 @@ def test_agreements_with_project_found(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": "1"})
     assert response.status_code == 200
     assert len(response.json) == 3
-
-    print(response.json)
-
     assert response.json[0]["id"] == 1
     assert response.json[1]["id"] == 10
     assert response.json[2]["id"] == 2
@@ -263,7 +270,6 @@ def test_agreements_put_by_id_400_for_type_change(auth_client, test_contract):
             "description": "Updated Contract Description",
         },
     )
-    print(f"{response.status_code=}")
     assert response.status_code == 400
 
 
@@ -506,7 +512,7 @@ def test_get_iaa_agreement(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post(auth_client):
+def test_agreements_post(auth_client, loaded_db):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
@@ -522,7 +528,7 @@ def test_agreements_post(auth_client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_service_requirement_type(auth_client):
+def test_agreements_post_contract_with_service_requirement_type(auth_client, loaded_db):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={

@@ -20,7 +20,8 @@ export const opsApi = createApi({
         "CanFunding",
         "Notifications",
         "WorkflowStepInstance",
-        "ServicesComponents"
+        "ServicesComponents",
+        "ChangeRequests"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -78,6 +79,10 @@ export const opsApi = createApi({
             query: () => `/budget-line-items/`,
             providesTags: ["BudgetLineItems"]
         }),
+        getBudgetLineItem: builder.query({
+            query: (id) => `/budget-line-items/${id}`,
+            providesTags: ["BudgetLineItems"]
+        }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
                 return {
@@ -98,7 +103,7 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
         }),
         deleteBudgetLineItem: builder.mutation({
             query: (id) => ({
@@ -195,7 +200,15 @@ export const opsApi = createApi({
             providesTags: ["CanFunding"]
         }),
         getNotificationsByUserId: builder.query({
-            query: (id) => `/notifications/?oidc_id=${id}`,
+            query: ({ id, auth_header }) => {
+                if (!id) {
+                    return { skip: true }; // Skip the query if id is undefined
+                }
+                return {
+                    url: `/notifications/?oidc_id=${id}`,
+                    headers: { Authorization: auth_header }
+                };
+            },
             providesTags: ["Notifications"]
         }),
         dismissNotification: builder.mutation({
@@ -285,6 +298,10 @@ export const opsApi = createApi({
                 method: "DELETE"
             }),
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        getChangeRequestsList: builder.query({
+            query: () => `/change-requests/`,
+            providesTags: ["ChangeRequests"]
         })
     })
 });
@@ -297,6 +314,7 @@ export const {
     useDeleteAgreementMutation,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsQuery,
+    useGetBudgetLineItemQuery,
     useUpdateBudgetLineItemMutation,
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
@@ -329,5 +347,6 @@ export const {
     useUpdateServicesComponentMutation,
     useGetServicesComponentByIdQuery,
     useGetServicesComponentsListQuery,
-    useDeleteServicesComponentMutation
+    useDeleteServicesComponentMutation,
+    useGetChangeRequestsListQuery
 } = opsApi;

@@ -3,7 +3,7 @@ from __future__ import annotations
 from itertools import chain
 
 from flask import current_app
-from flask_jwt_extended import get_current_user
+from flask_jwt_extended import current_user
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, mapper, scoped_session, sessionmaker
 
@@ -32,10 +32,9 @@ def handle_create_update_by_attrs(session: Session) -> None:
         return
 
     try:
-        user = get_current_user()
-        user_id = getattr(user, "id", None)
-    except Exception:
-        user_id = None
+        user_id = getattr(current_user, "id", None)
+    except RuntimeError:
+        user_id = None  # current_user may not be available in some contexts
 
     for obj in session.new:
         if hasattr(obj, "created_by"):

@@ -9,11 +9,11 @@ import { useGetServicesComponentDisplayTitle } from "../../../hooks/useServicesC
  * If the servicesComponentId corresponds to a "TBD" title, the heading is set to "BLs not associated with a Services Component".
  * @component
  * @param {Object} props - The properties passed to this component.
- * @param {number} props.servicesComponentId - The ID of the services component.
- * @param {boolean} props.withMetadata - Whether to display metadata.
- * @param {string} props.periodStart - The start date of the period of performance.
- * @param {string} props.periodEnd - The end date of the period of performance.
- * @param {string} props.description - The description of the services component.
+ * @param {number} [props.servicesComponentId] - The ID of the services component.
+ * @param {boolean} [props.withMetadata] - Whether to display metadata.
+ * @param {string} [props.periodStart] - The start date of the period of performance.
+ * @param {string} [props.periodEnd] - The end date of the period of performance.
+ * @param {string} [props.description] - The description of the services component.
  * @param {React.ReactNode} props.children - The child elements to be wrapped in the Accordion.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -48,7 +48,7 @@ function ServicesComponentAccordion({
 }
 
 ServicesComponentAccordion.propTypes = {
-    servicesComponentId: PropTypes.number.isRequired,
+    servicesComponentId: PropTypes.number,
     withMetadata: PropTypes.bool,
     periodStart: PropTypes.string,
     periodEnd: PropTypes.string,

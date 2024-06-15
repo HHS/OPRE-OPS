@@ -7,10 +7,10 @@ from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
 from marshmallow import EXCLUDE, Schema
 from sqlalchemy.future import select
-from typing_extensions import Any, override
+from sqlalchemy.orm import object_session
+from typing_extensions import Any
 
 from models import (
-    CAN,
     ContractType,
     DirectAgreement,
     GrantAgreement,
@@ -29,13 +29,15 @@ from models.cans import (
     ContractAgreement,
     ServiceRequirementType,
 )
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView, handle_api_error
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.resources.agreements_constants import (
+    AGREEMENT_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -67,18 +69,20 @@ class AgreementItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self, id: int) -> Response:
         item = self._get_item(id)
-        additional_fields = add_additional_fields_to_agreement_response(item)
 
-        return self._get_item_with_try(id, additional_fields=additional_fields)
+        if item:
+            schema = AGREEMENT_RESPONSE_SCHEMAS.get(item.agreement_type)
+            serialized_agreement = schema.dump(item)
+            response = make_response_with_headers(serialized_agreement)
+        else:
+            response = make_response_with_headers({}, 404)
 
-    @override
+        return response
+
     @is_authorized(PermissionType.PUT, Permission.AGREEMENT)
-    @handle_api_error
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
 
@@ -110,9 +114,7 @@ class AgreementItemAPI(BaseItemAPI):
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
 
-    @override
     @is_authorized(PermissionType.PATCH, Permission.AGREEMENT)
-    @handle_api_error
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
 
@@ -142,13 +144,11 @@ class AgreementItemAPI(BaseItemAPI):
 
             return make_response_with_headers({"message": "Agreement updated", "id": agreement.id}, 200)
 
-    @override
     @is_authorized(
         PermissionType.DELETE,
         Permission.AGREEMENT,
         extra_check=associated_with_agreement,
     )
-    @handle_api_error
     def delete(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.DELETE_AGREEMENT) as meta:
             agreement: Agreement = self._get_item(id)
@@ -172,9 +172,7 @@ class AgreementListAPI(BaseListAPI):
     def __init__(self, model: BaseModel = Agreement):
         super().__init__(model)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         agreement_classes = [
             ContractAgreement,
@@ -188,18 +186,16 @@ class AgreementListAPI(BaseListAPI):
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
 
         agreement_response: List[dict] = []
+
         for item in result:
             for agreement in item:
-                additional_fields = add_additional_fields_to_agreement_response(agreement)
-                agreement_dict = agreement.to_dict()
-                agreement_dict.update(additional_fields)
-                agreement_response.append(agreement_dict)
+                schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement.agreement_type)
+                serialized_agreement = schema.dump(agreement)
+                agreement_response.append(serialized_agreement)
 
         return make_response_with_headers(agreement_response)
 
-    @override
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
-    @handle_api_error
     def post(self) -> Response:
         message_prefix = f"POST to {ENDPOINT_STRING}"
 
@@ -273,18 +269,14 @@ class AgreementListAPI(BaseListAPI):
 
 
 class AgreementReasonListAPI(MethodView):
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in AgreementReason]
         return make_response_with_headers(reasons)
 
 
 class AgreementTypeListAPI(MethodView):
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         return make_response_with_headers([e.name for e in AgreementType])
 
@@ -335,9 +327,16 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                     )
                 elif getattr(agreement, item) != data[item]:
                     setattr(agreement, item, data[item])
+                    # Flush the session to update the procurement_shop relationship
+                    session = object_session(agreement)
+                    session.flush()
+                    # Refresh the agreement object to update the procurement_shop relationship
+                    session.refresh(agreement)
                     for bli in agreement.budget_line_items:
                         if bli.status.value <= BudgetLineItemStatus.PLANNED.value:
-                            bli.proc_shop_fee_percentage = agreement.procurement_shop.fee
+                            bli.proc_shop_fee_percentage = (
+                                agreement.procurement_shop.fee if agreement.procurement_shop else None
+                            )
                     changed = True
 
             case "agreement_reason":
@@ -414,51 +413,6 @@ def add_vendor(data: dict, field_name: str = "vendor") -> None:
         else:
             data[f"{field_name}_id"] = vendor_obj.id
         del data[field_name]
-
-
-def add_additional_fields_to_agreement_response(agreement: Agreement) -> dict[str, Any]:
-    """
-    Add additional fields to the agreement response.
-
-    N.B. This is a temporary solution to add additional fields to the response.
-    This should be refactored to use marshmallow.
-    Also, the frontend/OpenAPI needs to be refactored to not use these fields.
-    """
-    if not agreement:
-        return {}
-
-    transformed_blis = []
-    for bli in agreement.budget_line_items:
-        transformed_bli = bli.to_dict()
-        if transformed_bli.get("amount"):
-            transformed_bli["amount"] = float(transformed_bli.get("amount"))
-        # nest the CAN object (temp needed for the frontend)
-        if transformed_bli.get("can"):
-            transformed_bli["can"] = current_app.db_session.get(CAN, transformed_bli.get("can")).to_dict()
-        # include has_active_workflow
-        transformed_bli["has_active_workflow"] = bli.has_active_workflow
-        # include active_workflow_current_step_id
-        transformed_bli["active_workflow_current_step_id"] = bli.active_workflow_current_step_id
-        transformed_blis.append(transformed_bli)
-
-    # change PS amount from string to float - this is a temporary solution in lieu of marshmallow
-    transformed_ps = agreement.procurement_shop.to_dict() if agreement.procurement_shop else {}
-    if transformed_ps:
-        transformed_ps["fee"] = float(transformed_ps.get("fee"))
-
-    return {
-        "agreement_type": agreement.agreement_type.name if agreement.agreement_type else None,
-        "agreement_reason": agreement.agreement_reason.name if agreement.agreement_reason else None,
-        "budget_line_items": transformed_blis,
-        "team_members": [tm.to_dict() for tm in agreement.team_members],
-        "project": agreement.project.to_dict() if agreement.project else None,
-        "procurement_shop": transformed_ps,
-        "product_service_code": agreement.product_service_code.to_dict() if agreement.product_service_code else None,
-        "display_name": agreement.display_name,
-        "vendor": agreement.vendor.name if hasattr(agreement, "vendor") and agreement.vendor else None,
-        "incumbent": agreement.incumbent.name if hasattr(agreement, "incumbent") and agreement.incumbent else None,
-        "procurement_tracker_workflow_id": agreement.procurement_tracker_workflow_id,
-    }
 
 
 def reject_change_of_agreement_type(old_agreement):

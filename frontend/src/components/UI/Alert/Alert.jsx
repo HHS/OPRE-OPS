@@ -1,4 +1,4 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,73 +6,93 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { setIsActive, clearState } from "./alertSlice";
 
 /**
- * A component that displays an alert.
+ * A component that displays an alert and optionally navigates after a delay.
+ * @component
  * @param {Object} props - The component props.
- * @param {React.ReactNode} [props.children] - The children to render.
- * @returns {React.JSX.Element} The JSX element to render.
- * @see {@link https://designsystem.digital.gov/components/alerts/}
+ * @param {React.ReactNode} [props.children] - The alert content.
+ * @returns {JSX.Element | null} The JSX element to render.
  */
-export const Alert = ({ children }) => {
+const Alert = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const heading = useSelector((state) => state.alert.heading);
-    const message = useSelector((state) => state.alert.message);
-    const type = useSelector((state) => state.alert.type);
-    const redirectUrl = useSelector((state) => state.alert.redirectUrl);
+    /**
+     * @type {import('../../../hooks/use-alert.hooks').AlertData}
+     */
+    const { heading, message, type, redirectUrl } = useSelector((state) => state.alert);
+    const [isFromRedirect, setIsFromRedirect] = useState(false);
+    const [isAlertVisible, setIsAlertVisible] = useState(true);
+    let waitTime = redirectUrl ? 3000 : 2000;
 
-    React.useEffect(() => {
+    // Handle navigation without blocking user interactions
+    useEffect(() => {
         if (redirectUrl) {
+            setIsFromRedirect(true);
             navigate(redirectUrl);
         }
 
-        const showAlert = async () => {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            window.scrollTo(0, 0);
-
-            await new Promise((resolve) => setTimeout(resolve, 5000));
-            dispatch(clearState());
+        return () => {
+            setIsFromRedirect(false);
         };
+    }, [navigate, redirectUrl]);
 
-        showAlert();
-    }, [navigate, dispatch, redirectUrl]);
+    // Manage alert visibility and auto-dismiss without affecting navigation
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            dispatch(clearState());
+            setIsAlertVisible(false);
+        }, waitTime);
 
-    let typeClass = null;
-    switch (type) {
-        case "success":
-            typeClass = "usa-alert--success";
-            break;
-        case "warning":
-            typeClass = "usa-alert--warning";
-            break;
-        case "error":
-            typeClass = "usa-alert--error";
-            break;
-        default:
-    }
+        return () => clearTimeout(timer);
+    }, [dispatch, waitTime]);
 
-    return (
-        <div
-            className={`grid-container usa-alert ${typeClass} margin-top-0 pin-x z-top`}
-            role="status"
-            data-cy="alert"
-        >
-            <div className="usa-alert__body display-flex flex-justify">
-                <div>
-                    <h1 className="usa-alert__heading">{heading}</h1>
-                    <p className="usa-alert__text">{message}</p>
-                    {children}
-                </div>
+    const typeClass =
+        {
+            success: "usa-alert--success",
+            warning: "usa-alert--warning",
+            error: "usa-alert--error"
+        }[type] || "";
 
-                <FontAwesomeIcon
-                    icon={faClose}
-                    className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
-                    title="close"
-                    data-position="top"
-                    onClick={() => dispatch(setIsActive(false))}
+    return isAlertVisible ? (
+        <>
+            {isFromRedirect && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(255, 255, 255, 0.6)",
+                        zIndex: 999
+                    }}
                 />
+            )}
+            <div
+                className={`grid-container usa-alert ${typeClass} margin-top-0 position-fixed pin-x z-top`}
+                role="status"
+                data-cy="alert"
+            >
+                <div className="usa-alert__body display-flex flex-justify">
+                    <div>
+                        <h1 className="usa-alert__heading">{heading}</h1>
+                        <p className="usa-alert__text">{message}</p>
+                        {children}
+                    </div>
+                    <FontAwesomeIcon
+                        icon={faClose}
+                        className="height-2 width-2 margin-right-1 cursor-pointer usa-tooltip"
+                        title="close"
+                        data-position="top"
+                        data-cy="close-alert"
+                        onClick={() => {
+                            dispatch(setIsActive(false));
+                            setIsAlertVisible(false);
+                        }}
+                    />
+                </div>
             </div>
-        </div>
-    );
+        </>
+    ) : null;
 };
 
 export default Alert;

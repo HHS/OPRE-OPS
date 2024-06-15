@@ -27,7 +27,7 @@ ALLOWED_TABLES = [
     "portfolio",
     "funding_partner",
     "funding_source",
-    "users",
+    "ops_user",
     "roles",
     "user_role",
     "groups",
@@ -71,8 +71,7 @@ ALLOWED_TABLES = [
     "procurement_acquisition_planning",
     "procurement_pre_solicitation",
     "procurement_solicitation",
-    "procurement_award"
-
+    "procurement_award",
 ]
 
 data = os.getenv("DATA")
@@ -132,14 +131,12 @@ def load_new_data(
                 data_without_associations = {
                     key: value
                     for key, value in datum.items()
-                    if not isinstance(value, list)
-                    or any([not isinstance(obj, dict) for obj in value])
+                    if not isinstance(value, list) or any([not isinstance(obj, dict) for obj in value])
                 }
                 data_with_associations = {
                     key: value
                     for key, value in datum.items()
-                    if isinstance(value, list)
-                    and all([isinstance(obj, dict) for obj in value])
+                    if isinstance(value, list) and all([isinstance(obj, dict) for obj in value])
                 }
                 with Session(conn) as session:
                     if "id" in data_without_associations:
@@ -149,18 +146,35 @@ def load_new_data(
                     session.commit()
                     insert_associated_data(data_with_associations, obj, session)
             if seq_needs_reset:
-                print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
-                stmt = (f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), coalesce(max(id),0) + 1, false) "
-                        f"FROM ops.services_component;")
-                session.execute(text(stmt))
+                with Session(conn) as session:
+                    print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
+                    stmt = (
+                        f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), coalesce(max(id),0) + 1, false) "
+                        f"FROM ops.services_component;"
+                    )
+                    session.execute(text(stmt))
+
+
+def after_user_load(conn: Connection) -> None:
+    # set DD to Dave Director and Deputy DD to Admin Demo
+    with Session(conn) as session:
+        print("Setting Division Director and Deputy Division Director...")
+        stmt = (
+            "update ops.division "
+            "  set division_director_id = (select id from ops.ops_user where email = 'dave.director@email.com') "
+            "  where division_director_id is null; "
+            "update ops.division "
+            "  set deputy_division_director_id = (select id from ops.ops_user where email = 'admin.demo@email.com') "
+            "  where deputy_division_director_id is null;"
+        )
+        session.execute(text(stmt))
+        session.commit()
 
 
 def insert_associated_data(data_with_associations, obj, session):
     for key, value in data_with_associations.items():
         for associated_id in value:
-            associated_model = BaseModel.model_lookup_by_table_name(
-                associated_id.get("tablename")
-            )
+            associated_model = BaseModel.model_lookup_by_table_name(associated_id.get("tablename"))
             associated_obj = session.get(associated_model, associated_id.get("id"))
             getattr(obj, key).append(associated_obj)
             session.add(obj)
@@ -171,6 +185,8 @@ def import_data(engine: Engine, data: dict[str, Any]) -> None:
     with engine.connect() as conn:
         load_new_data(conn, data)
         conn.commit()
+        if "ops_user" in data:
+            after_user_load(conn)
 
 
 if __name__ == "__main__":

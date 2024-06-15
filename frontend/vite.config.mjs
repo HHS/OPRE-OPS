@@ -4,7 +4,6 @@ import react from "@vitejs/plugin-react";
 import viteJsconfigPaths from "vite-jsconfig-paths";
 import svgr from "vite-plugin-svgr";
 import eslint from "vite-plugin-eslint";
-import fs from "fs/promises";
 
 export default defineConfig(({ mode }) => {
     // Load env file based on `mode` in the current working directory.
@@ -60,8 +59,18 @@ export default defineConfig(({ mode }) => {
         test: {
             globals: true,
             environment: "jsdom",
-            setupFiles: "./src/setupTests.js",
-            coverage: {}
+            setupFiles: "./src/tests/setupTests.js",
+            coverage: {
+                provider: "istanbul",
+                exclude: [
+                    "**/uswds/**",
+                    "**/node_modules/**",
+                    "**/dist/**",
+                    "**/cypress/**",
+                    "**/.{idea,git,cache,output,temp}/**",
+                    "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*"
+                ]
+            }
         },
         define: {
             "process.env": {}
@@ -70,21 +79,6 @@ export default defineConfig(({ mode }) => {
             loader: "jsx",
             include: /src\/.*\.jsx?$/,
             exclude: []
-        },
-        optimizeDeps: {
-            esbuildOptions: {
-                plugins: [
-                    {
-                        name: "load-js-files-as-jsx",
-                        setup(build) {
-                            build.onLoad({ filter: /src\/.*\.js$/ }, async (args) => ({
-                                loader: "jsx",
-                                contents: await fs.readFile(args.path, "utf8")
-                            }));
-                        }
-                    }
-                ]
-            }
         }
     };
 });

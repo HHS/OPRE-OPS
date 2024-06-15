@@ -1,8 +1,8 @@
 import CreateBudgetLineFlow from "./CreateBudgetLineFlow";
 import StepSelectProjectAndAgreement from "./StepSelectProjectAndAgreement";
 import StepCreateBudgetLines from "../../components/BudgetLineItems/CreateBLIsAndSCs";
-import StepSuccess from "./StepSuccess";
-import { useBudgetLines } from "./budgetLineContext";
+import StepSuccessAlert from "../../components/UI/Alert/StepSuccessAlert";
+import { useBudgetLines } from "./BudgetLineContext.hooks";
 
 export const CreateBudgetLine = () => {
     const {
@@ -22,10 +22,14 @@ export const CreateBudgetLine = () => {
                 selectedResearchProject={selectedProject}
                 selectedAgreement={selectedAgreement}
                 selectedProcurementShop={selectedProcurementShop}
-                existingBudgetLines={existingBudgetLines}
+                budgetLines={existingBudgetLines}
                 continueBtnText="Create Budget Lines"
             />
-            <StepSuccess />
+            <StepSuccessAlert
+                heading="Budget Lines Created"
+                message="The budget lines have been successfully created. You will be redirected to the Agreements list page."
+                link="/agreements"
+            />
         </CreateBudgetLineFlow>
     );
 };

@@ -6,7 +6,7 @@ import BLIFilterButton from "./BLIFilterButton";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
-import { useBudgetLinesList } from "./budget-lines-list.hooks";
+import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import {
     filterBudgetLineItems,
     handleFilterByUrl,

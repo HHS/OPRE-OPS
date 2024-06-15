@@ -3,12 +3,12 @@ from typing import Any
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from marshmallow import Schema
-from typing_extensions import override
 
 from models import BaseModel, User
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.users import PATCHRequestBody, POSTRequestBody, QueryParameters, UserResponse
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -19,9 +19,7 @@ class UsersItemAPI(BaseItemAPI):
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
-    @override
     @is_authorized(PermissionType.GET, Permission.USER)
-    @handle_api_error
     def get(self, id: int) -> Response:
         # token = verify_jwt_in_request()
         # Get the user from the token to see who's making the request
@@ -45,9 +43,7 @@ class UsersItemAPI(BaseItemAPI):
         #    response = make_response({}, 401)  # nosemgrep
         #    return response
 
-    @override
     @is_authorized(PermissionType.PUT, Permission.USER)
-    @handle_api_error
     def put(self, id: int) -> Response:
         old_user: User = User.query.get(id)
         if not old_user:
@@ -59,9 +55,7 @@ class UsersItemAPI(BaseItemAPI):
         # Return the updated user as a response
         return make_response_with_headers(user_dict)
 
-    @override
     @is_authorized(PermissionType.PATCH, Permission.USER)
-    @handle_api_error
     def patch(self, id: int) -> Response:
         # Update the user with the request data, and save the changes to the database
         user = update_user(request.json, id)
@@ -75,9 +69,7 @@ class UsersListAPI(BaseListAPI):
         self._post_schema = mmdc.class_schema(POSTRequestBody)()
         self._get_schema = mmdc.class_schema(QueryParameters)()
 
-    @override
     @is_authorized(PermissionType.GET, Permission.USER)
-    @handle_api_error
     def get(self) -> Response:
         oidc_id = request.args.get("oidc_id", type=str)
 
@@ -88,9 +80,7 @@ class UsersListAPI(BaseListAPI):
             response = make_response_with_headers([item.to_dict() for item in items])
         return response
 
-    @override
     @is_authorized(PermissionType.PUT, Permission.USER)
-    @handle_api_error
     def put(self, id: int) -> Response:
         # Update the user with the request data, and save the changes to the database
         user = update_user(request.json, id)

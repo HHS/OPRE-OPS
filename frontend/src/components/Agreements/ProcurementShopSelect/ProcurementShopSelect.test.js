@@ -1,5 +1,5 @@
-import { screen, render } from "@testing-library/react";
-import { vi } from "vitest";
+import { screen, render, fireEvent } from "@testing-library/react";
+import { expect, vi } from "vitest";
 import { ProcurementShopSelect } from "./ProcurementShopSelect";
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
@@ -22,6 +22,7 @@ describe("ProcurementShopSelect", () => {
                 onChangeSelectedProcurementShop={mockFn}
             />
         );
+
         expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
@@ -33,6 +34,7 @@ describe("ProcurementShopSelect", () => {
                 onChangeSelectedProcurementShop={mockFn}
             />
         );
+
         expect(screen.getByText("Oops, an error occurred")).toBeInTheDocument();
     });
 
@@ -45,6 +47,7 @@ describe("ProcurementShopSelect", () => {
             />
         );
         const select = screen.getByLabelText("Procurement Shop");
+
         expect(select.value).toBe("0");
     });
 
@@ -60,7 +63,35 @@ describe("ProcurementShopSelect", () => {
         for (const shop of sampleShops) {
             const fullShopName = `${shop.name} (${shop.abbr})`;
             const option = await screen.findByText(fullShopName);
+
             expect(option).toBeInTheDocument();
         }
+        expect(screen.getAllByRole("option")).toHaveLength(sampleShops.length + 1);
+    });
+
+    it("displays error message when shop is not GCS", () => {
+        useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
+        render(
+            <ProcurementShopSelect
+                selectedProcurementShop={sampleShops[1]}
+                onChangeSelectedProcurementShop={mockFn}
+            />
+        );
+
+        fireEvent.change(screen.getByLabelText("Procurement Shop"), { target: { value: sampleShops[0].id } });
+
+        expect(screen.getByText("GCS is the only available type for now")).toBeInTheDocument();
+    });
+
+    it("does not display error message when shop is GCS", () => {
+        useGetProcurementShopsQuery.mockReturnValue({ data: sampleShops });
+        render(
+            <ProcurementShopSelect
+                selectedProcurementShop={sampleShops[2]}
+                onChangeSelectedProcurementShop={mockFn}
+            />
+        );
+
+        expect(screen.queryByText("GCS is the only available type for now")).not.toBeInTheDocument();
     });
 });

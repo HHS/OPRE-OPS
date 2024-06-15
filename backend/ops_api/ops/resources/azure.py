@@ -5,8 +5,8 @@ from azure.storage.blob import BlobSasPermissions, generate_blob_sas
 from flask import Response, current_app
 from flask.views import MethodView
 
-from ops_api.ops.base_views import handle_api_error
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.utils.response import make_response_with_headers
 
 # Replace these with your Azure Storage Account details
@@ -32,7 +32,6 @@ def generate_sas_token(container_name, blob_name, account_name, account_key, per
 
 
 class SasToken(MethodView):
-    @handle_api_error
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
     def get(self) -> Response:
         current_app.logger.debug("Reaching out for an Azure SAS token")

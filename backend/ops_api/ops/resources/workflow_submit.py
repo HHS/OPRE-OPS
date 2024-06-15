@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 
-import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import current_user
 from marshmallow import EXCLUDE, Schema, fields
-from typing_extensions import override
 
 from models.base import BaseModel
 from models.cans import BudgetLineItem, BudgetLineItemStatus
@@ -19,11 +17,11 @@ from models.workflows import (
     WorkflowStepStatus,
     WorkflowTriggerType,
 )
-from ops_api.ops.base_views import BaseItemAPI, handle_api_error
-from ops_api.ops.schemas.budget_line_items import PATCHRequestBody
-from ops_api.ops.utils.auth import Permission, PermissionType, is_authorized
+from ops_api.ops.auth.auth_types import Permission, PermissionType
+from ops_api.ops.auth.decorators import is_authorized
+from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.user import get_user_from_token
 
 ENDPOINT_STRING = "/workflow-submit"
 
@@ -43,9 +41,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
     @is_authorized(PermissionType.POST, Permission.BLI_PACKAGE)
-    @handle_api_error
     def post(self) -> Response:
         current_app.logger.info(f"********** /approve Request: {request.json}")
 
@@ -67,9 +63,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
         if submitter_id := request.json.get("submitter_id"):
             new_package.submitter_id = submitter_id
 
-        token = verify_jwt_in_request()
-        user = get_user_from_token(token[1])
-        new_package.submitter_id = user.id
+        new_package.submitter_id = current_user.id
         new_package.notes = submission_notes
         agreement_id = None
         # Create PackageSnapshot
@@ -139,7 +133,7 @@ class WorkflowSubmisionListApi(BaseItemAPI):
 def validate_bli(bli: BudgetLineItem, pending_changes: dict):
     if bli is None:
         raise ValueError("bli is a required argument")
-    schema = mmdc.class_schema(PATCHRequestBody)()
+    schema = PATCHRequestBodySchema()
     schema.context["id"] = bli.id
     schema.context["method"] = "PATCH"
     # validate

@@ -12,7 +12,12 @@ import TeamMemberList from "../TeamMemberList";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { formatTeamMember } from "../../../api/postAgreements";
 import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
-import { useEditAgreement, useEditAgreementDispatch, useSetState, useUpdateAgreement } from "./AgreementEditorContext";
+import {
+    useEditAgreement,
+    useEditAgreementDispatch,
+    useSetState,
+    useUpdateAgreement
+} from "./AgreementEditorContext.hooks";
 import suite from "./AgreementEditFormSuite";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea/TextArea";
@@ -40,7 +45,8 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
- * @param {number} props.selectedAgreementId - The ID of the selected agreement. - optional
+ * @param {number} [props.selectedAgreementId] - The ID of the selected agreement. - optional
+ * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementEditForm = ({
@@ -50,10 +56,14 @@ export const AgreementEditForm = ({
     isReviewMode,
     isEditMode,
     setIsEditMode,
-    selectedAgreementId
+    selectedAgreementId,
+    cancelHeading
 }) => {
     // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
-    const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
+    const isCreatingAgreement = location.pathname === "/agreements/create";
+    const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
+    const isWizardMode = isCreatingAgreement || isEditingAgreement;
+
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -128,7 +138,11 @@ export const AgreementEditForm = ({
     let res = suite.get();
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
+    const shouldDisableBtn =
+        !agreementTitle ||
+        !agreementType ||
+        res.hasErrors() ||
+        (isCreatingAgreement && selectedProcurementShop.id !== 2);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -234,7 +248,7 @@ export const AgreementEditForm = ({
         await saveAgreement();
         setHasAgreementChanged(false);
         if (isEditMode && setIsEditMode) setIsEditMode(false);
-        await goToNext();
+        await goToNext({ agreement });
     };
 
     const handleDraft = async () => {
@@ -244,27 +258,22 @@ export const AgreementEditForm = ({
     };
 
     const handleCancel = () => {
-        const heading = `${
-            isWizardMode
-                ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
-                : "Are you sure you want to cancel editing? Your changes will not be saved."
-        }`;
         const actionButtonText = `${isWizardMode ? "Cancel Agreement" : "Cancel Edits"}`;
         setShowModal(true);
         setModalProps({
-            heading,
+            heading: cancelHeading ?? "Are you sure you want to cancel editing? Your changes will not be saved.",
             actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                if (selectedAgreementId && isWizardMode) {
+                if (selectedAgreementId && !isEditMode && !isReviewMode) {
                     deleteAgreement(selectedAgreementId)
                         .unwrap()
                         .then((fulfilled) => {
                             console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
                             setAlert({
                                 type: "success",
-                                heading: "Create New Agreement Cancelled",
-                                message: "Your agreement has been cancelled.",
+                                heading: "Agreement Edits Cancelled",
+                                message: "Your agreement edits have been cancelled.",
                                 redirectUrl: "/agreements"
                             });
                         })
@@ -522,7 +531,8 @@ AgreementEditForm.propTypes = {
     isReviewMode: PropTypes.bool,
     isEditMode: PropTypes.bool,
     setIsEditMode: PropTypes.func,
-    selectedAgreementId: PropTypes.number
+    selectedAgreementId: PropTypes.number,
+    cancelHeading: PropTypes.string
 };
 
 export default AgreementEditForm;

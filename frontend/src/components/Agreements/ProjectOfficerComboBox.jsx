@@ -1,7 +1,7 @@
+import PropTypes from "prop-types";
 import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
 import cx from "clsx";
-
 /**
  *  A comboBox for choosing a project officer.
  * @param {Object} props - The component props.
@@ -51,7 +51,7 @@ export const ProjectOfficerComboBox = ({
             )}
         >
             <label
-                className={` ${legendClassname} ${messages.length ? "usa-label--error" : null}`}
+                className={` ${legendClassname} ${messages.length ? "usa-label--error" : ""}`}
                 htmlFor="project-officer-combobox-input"
                 id="project-officer-label"
             >
@@ -80,6 +80,18 @@ export const ProjectOfficerComboBox = ({
             </div>
         </div>
     );
+};
+
+ProjectOfficerComboBox.propTypes = {
+    selectedProjectOfficer: PropTypes.object,
+    setSelectedProjectOfficer: PropTypes.func.isRequired,
+    messages: PropTypes.array,
+    onChange: PropTypes.func,
+    legendClassname: PropTypes.string,
+    defaultString: PropTypes.string,
+    overrideStyles: PropTypes.object,
+    className: PropTypes.string,
+    pending: PropTypes.bool
 };
 
 export default ProjectOfficerComboBox;

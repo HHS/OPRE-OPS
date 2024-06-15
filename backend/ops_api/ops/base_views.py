@@ -1,19 +1,15 @@
 from contextlib import suppress
 from enum import Enum
-from functools import wraps
 from typing import Optional
 
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
-from marshmallow import EXCLUDE, Schema, ValidationError
+from marshmallow import EXCLUDE, Schema
 from sqlalchemy import select
-from sqlalchemy.exc import PendingRollbackError
-from typing_extensions import override
 
 from models.base import BaseModel
-from ops_api.ops.utils.auth import auth_gateway
-from ops_api.ops.utils.authentication_gateway import NotActiveUserError
+from ops_api.ops.auth.authorization_providers import AuthorizationGateway, BasicAuthorizationProvider
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -26,34 +22,13 @@ def generate_validator(model: BaseModel) -> BaseModel.Validator:
         return None
 
 
-def handle_api_error(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except (KeyError, RuntimeError, PendingRollbackError) as er:
-            current_app.logger.error(er)
-            return make_response_with_headers({}, 400)
-        except ValidationError as ve:
-            current_app.logger.error(ve)
-            return make_response_with_headers(ve.normalized_messages(), 400)
-        except NotActiveUserError as e:
-            current_app.logger.error(e)
-            return make_response_with_headers({}, 403)
-        except Exception as e:
-            current_app.logger.exception(e)
-            return make_response_with_headers({}, 500)
-
-    return decorated
-
-
 class OPSMethodView(MethodView):
     init_every_request = False
 
     def __init__(self, model: BaseModel):
         self.model = model
         self.validator = generate_validator(model)
-        self.auth_gateway = auth_gateway
+        self.auth_gateway = AuthorizationGateway(BasicAuthorizationProvider())
 
     def _get_item_by_oidc(self, oidc: str):
         stmt = select(self.model).where(self.model.oidc_id == oidc).order_by(self.model.id)
@@ -129,10 +104,8 @@ class BaseItemAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
     @jwt_required()
     @error_simulator
-    @handle_api_error
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -141,17 +114,13 @@ class BaseListAPI(OPSMethodView):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
     @jwt_required()
     @error_simulator
-    @handle_api_error
     def get(self) -> Response:
         return self._get_all_items_with_try()
 
-    @override
     @jwt_required()
     @error_simulator
-    @handle_api_error
     def post(self) -> Response:
         raise NotImplementedError
 
@@ -166,10 +135,8 @@ class EnumListAPI(MethodView):
     def __init__(self, enum: Enum, **kwargs):
         super().__init__(**kwargs)
 
-    @override
     @jwt_required()
     @error_simulator
-    @handle_api_error
     def get(self) -> Response:
         enum_items = {e.name: e.value for e in self.enum}  # type: ignore [attr-defined]
         return jsonify(enum_items)

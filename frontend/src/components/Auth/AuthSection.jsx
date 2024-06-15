@@ -7,7 +7,7 @@ import { getAccessToken, getAuthorizationCode } from "./auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { User } from "../UI/Header/User";
-import { apiLogin } from "../../api/apiLogin";
+import { apiLogin, apiLogout } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
 import { setActiveUser } from "./auth";
 
@@ -19,17 +19,21 @@ const AuthSection = () => {
 
     const callBackend = useCallback(
         async (authCode) => {
-            const response = await apiLogin(authCode);
-            if (response.access_token) {
-                localStorage.setItem("access_token", response.access_token);
-                dispatch(login());
-                if (!activeUser) await setActiveUser(response.access_token, dispatch);
-                if (response.is_new_user) {
-                    navigate("/user/edit");
-                    return;
+            try {
+                const response = await apiLogin(authCode);
+                if (response.access_token) {
+                    localStorage.setItem("access_token", response.access_token);
+                    localStorage.setItem("refresh_token", response.refresh_token);
+                    dispatch(login());
+                    if (!activeUser) await setActiveUser(response.access_token, dispatch);
                 }
+                navigate("/");
+                // eslint-disable-next-line no-unused-vars
+            } catch (error) {
+                console.error("Error logging in");
+                dispatch(logout());
+                navigate("/login");
             }
-            navigate("/");
         },
         [activeUser, dispatch, navigate]
     );
@@ -74,10 +78,8 @@ const AuthSection = () => {
     }, [activeUser, callBackend, dispatch, navigate]);
 
     const logoutHandler = async () => {
-        dispatch(logout());
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("activeProvider");
-        //await apiLogout();
+        await apiLogout();
+        await dispatch(logout());
         navigate("/login");
         // TODO: ⬇ Logout from Auth Provider ⬇
         // const output = await logoutUser(localStorage.getItem("ops-state-key"));
@@ -107,7 +109,7 @@ const AuthSection = () => {
                             <User />
                         </div>
                         <div className="padding-right-205">
-                            <NotificationCenter />
+                            <NotificationCenter user={activeUser} />
                         </div>
                         <button
                             className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
