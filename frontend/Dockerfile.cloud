@@ -13,7 +13,10 @@
   COPY . .
   
   # Build the application
-  RUN bun run build
+  ARG MODE
+  ARG VITE_BACKEND_DOMAIN
+  COPY vite-env/env.${MODE}.local .env
+  RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=${MODE} bun run build --mode ${MODE}
   
   # ---- Release Stage ----
   FROM oven/bun:1-alpine as release
