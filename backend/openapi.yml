@@ -1630,7 +1630,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ChangeRequest'
+                  $ref: '#/components/schemas/GenericChangeRequest'
           '400':
             description: Bad Request
           '401':
