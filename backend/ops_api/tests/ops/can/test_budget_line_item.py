@@ -339,7 +339,6 @@ def test_put_budget_line_items(auth_client, test_bli):
         "agreement_id": 2,
         "can_id": 2,
         "amount": 200.24,
-        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }
@@ -519,7 +518,6 @@ def test_patch_budget_line_items(auth_client, loaded_db):
             "agreement_id": 2,
             "can_id": 2,
             "amount": 200.24,
-            "status": "PLANNED",
             "date_needed": "2044-01-01",
             "proc_shop_fee_percentage": 2.34,
             "services_component_id": 2,
@@ -722,7 +720,6 @@ def test_put_budget_line_item_portfolio_id_ignored(auth_client, loaded_db, test_
         "agreement_id": 2,
         "can_id": 2,
         "amount": 200.24,
-        "status": "PLANNED",
         "date_needed": "2044-01-01",
         "proc_shop_fee_percentage": 2.34,
     }

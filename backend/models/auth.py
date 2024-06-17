@@ -12,7 +12,7 @@ class UserSession(BaseModel):
 
     id: Mapped[int] = BaseModel.get_pk_column()
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("ops_user.id"), nullable=False)
     user: Mapped["User"] = relationship(
         "User", back_populates="sessions", foreign_keys=[user_id]
     )

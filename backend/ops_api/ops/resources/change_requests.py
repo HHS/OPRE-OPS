@@ -12,6 +12,7 @@ from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -75,9 +76,19 @@ def find_change_requests(limit: int = 10, offset: int = 0):
     return results
 
 
+def build_change_request_response(change_request: ChangeRequest):
+    resp = change_request.to_dict()
+    if isinstance(change_request, BudgetLineItemChangeRequest):
+        resp["has_budget_change"] = change_request.has_budget_change
+        resp["has_status_change"] = change_request.has_status_change
+    return resp
+
+
 class ChangeRequestListAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
+        self._response_schema = GenericChangeRequestResponseSchema()
+        self._response_schema_collection = GenericChangeRequestResponseSchema(many=True)
 
     @is_authorized(PermissionType.GET, Permission.CHANGE_REQUEST)
     def get(self) -> Response:
@@ -86,7 +97,7 @@ class ChangeRequestListAPI(BaseListAPI):
         results = find_change_requests(limit=limit, offset=offset)
         change_requests = [row[0] for row in results] if results else None
         if change_requests:
-            response = make_response_with_headers([change_request.to_dict() for change_request in change_requests])
+            response = make_response_with_headers(self._response_schema_collection.dump(change_requests))
         else:
             response = make_response_with_headers([], 200)
         return response

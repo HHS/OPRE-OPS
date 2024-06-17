@@ -910,7 +910,7 @@ def error_message_need_by_date_put_only(context, setup_and_teardown):
     assert context["response_put"].json == {
         "date_needed": ["Not a valid date."],
     }
-    assert context["response_patch"].status_code == 200
+    assert context["response_patch"].status_code == 202
 
 
 @then("I should get an error message that the BLI must have a Need By Date (with empty Request)")
@@ -941,7 +941,7 @@ def error_message_can_put_only(context, setup_and_teardown):
     assert context["response_put"].json == {
         "_schema": ["BLI must have a valid CAN when status is not DRAFT"],
     }
-    assert context["response_patch"].status_code == 200
+    assert context["response_patch"].status_code == 202
 
 
 @then("I should get an error message that the BLI must have an Amount")
@@ -960,7 +960,7 @@ def error_message_amount_put_only(context, setup_and_teardown):
     assert context["response_put"].json == {
         "_schema": ["BLI must have a valid Amount when status is not DRAFT"],
     }
-    assert context["response_patch"].status_code == 200
+    assert context["response_patch"].status_code == 202
 
 
 @then("I should get an error message that the BLI must have an Agreement")

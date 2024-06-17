@@ -1,18 +1,21 @@
-import store from "../../../store";
-import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
+import store from "../../../store";
 import ResearchProjectsTable from "./ResearchProjectsTable";
 import { data } from "./data";
 
 const fiscalYear = "2023";
 
-it.skip("renders without crashing", () => {
+it("renders without crashing", () => {
     render(
         <Provider store={store}>
-            <ResearchProjectsTable
-                fiscalYear={fiscalYear}
-                data={data}
-            />
+            <BrowserRouter>
+                <ResearchProjectsTable
+                    fiscalYear={fiscalYear}
+                    data={data}
+                />
+            </BrowserRouter>
         </Provider>
     );
 });

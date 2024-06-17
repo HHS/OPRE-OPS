@@ -1,10 +1,11 @@
 """initial
 
-Revision ID: 2622c803ce1f
+Revision ID: b0087bd3a00a
 Revises:
-Create Date: 2024-03-04 20:13:54.564777+00:00
+Create Date: 2024-06-13 20:35:35.605722+00:00
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -12,7 +13,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "2622c803ce1f"
+revision: str = "b0087bd3a00a"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -44,6 +45,7 @@ def upgrade() -> None:
         "LOGIN_ATTEMPT",
         "CREATE_BLI",
         "UPDATE_BLI",
+        "DELETE_BLI",
         "CREATE_PROJECT",
         "CREATE_NEW_AGREEMENT",
         "UPDATE_AGREEMENT",
@@ -102,6 +104,9 @@ def upgrade() -> None:
         "MISCELLANEOUS",
         name="agreementtype",
     ).create(op.get_bind())
+    sa.Enum("IN_REVIEW", "APPROVED", "REJECTED", name="changerequeststatus").create(
+        op.get_bind()
+    )
     sa.Enum(
         "REVIEW",
         "APPROVED",
@@ -119,7 +124,11 @@ def upgrade() -> None:
         name="workflowsteptype",
     ).create(op.get_bind())
     sa.Enum(
-        "DRAFT_TO_PLANNED", "PLANNED_TO_EXECUTING", "GENERIC", name="workflowaction"
+        "DRAFT_TO_PLANNED",
+        "PLANNED_TO_EXECUTING",
+        "GENERIC",
+        "PROCUREMENT_TRACKING",
+        name="workflowaction",
     ).create(op.get_bind())
     sa.Enum("CAN", "PROCUREMENT_SHOP", "AGREEMENT", name="workflowtriggertype").create(
         op.get_bind()
@@ -130,14 +139,14 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        "user",
+        "ops_user",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("oidc_id", sa.UUID(), nullable=True),
         sa.Column("hhs_id", sa.String(), nullable=True),
         sa.Column("email", sa.String(), nullable=False),
         sa.Column("first_name", sa.String(), nullable=True),
         sa.Column("last_name", sa.String(), nullable=True),
-        sa.Column("division", sa.Integer(), nullable=False),
+        sa.Column("division", sa.Integer(), nullable=True),
         sa.Column(
             "status",
             postgresql.ENUM(
@@ -146,18 +155,80 @@ def upgrade() -> None:
             server_default="INACTIVE",
             nullable=False,
         ),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
-        # sa.ForeignKeyConstraint(["division"], ["division.id"], name="fk_user_division"),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_user_email"), "user", ["email"], unique=False)
-    op.create_index(op.f("ix_user_oidc_id"), "user", ["oidc_id"], unique=True)
+    op.create_index(op.f("ix_ops_user_email"), "ops_user", ["email"], unique=False)
+    op.create_index(op.f("ix_ops_user_oidc_id"), "ops_user", ["oidc_id"], unique=True)
+
+    op.create_table(
+        "ops_user_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("oidc_id", sa.UUID(), autoincrement=False, nullable=True),
+        sa.Column("hhs_id", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("email", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("first_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("last_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("division", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "ACTIVE", "INACTIVE", "LOCKED", name="userstatus", create_type=False
+            ),
+            server_default="INACTIVE",
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_email"), "ops_user_version", ["email"], unique=False
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_end_transaction_id"),
+        "ops_user_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_oidc_id"),
+        "ops_user_version",
+        ["oidc_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_operation_type"),
+        "ops_user_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_transaction_id"),
+        "ops_user_version",
+        ["transaction_id"],
+        unique=False,
+    )
+
     op.create_table(
         "administrative_and_support_project_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
@@ -187,12 +258,49 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
+        "agreement_ops_db_history_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "ops_db_history_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_agreement_ops_db_history_version_end_transaction_id"),
+        "agreement_ops_db_history_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_agreement_ops_db_history_version_operation_type"),
+        "agreement_ops_db_history_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_agreement_ops_db_history_version_transaction_id"),
+        "agreement_ops_db_history_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
         "agreement_team_members_version",
         sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -236,13 +344,7 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
-        sa.Column(
-            "name",
-            sa.String(),
-            autoincrement=False,
-            nullable=True,
-            comment="In MAPS this was PROJECT.PROJECT_TITLE",
-        ),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
         sa.Column("description", sa.String(), autoincrement=False, nullable=True),
         sa.Column(
             "product_service_code_id", sa.Integer(), autoincrement=False, nullable=True
@@ -267,9 +369,10 @@ def upgrade() -> None:
             "procurement_shop_id", sa.Integer(), autoincrement=False, nullable=True
         ),
         sa.Column("notes", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -332,9 +435,10 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -379,9 +483,10 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -412,12 +517,6 @@ def upgrade() -> None:
         sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("fiscal_year", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column(
-            "total_fiscal_year_funding",
-            sa.Numeric(precision=12, scale=2),
-            autoincrement=False,
-            nullable=True,
-        ),
-        sa.Column(
             "received_funding",
             sa.Numeric(precision=12, scale=2),
             autoincrement=False,
@@ -437,9 +536,10 @@ def upgrade() -> None:
         ),
         sa.Column("can_lead", sa.String(), autoincrement=False, nullable=True),
         sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -471,9 +571,10 @@ def upgrade() -> None:
         sa.Column(
             "funding_source_id", sa.Integer(), autoincrement=False, nullable=False
         ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -505,7 +606,7 @@ def upgrade() -> None:
         sa.Column("number", sa.String(length=30), autoincrement=False, nullable=True),
         sa.Column("description", sa.String(), autoincrement=False, nullable=True),
         sa.Column("purpose", sa.String(), autoincrement=False, nullable=True),
-        sa.Column("nickname", sa.String(length=30), autoincrement=False, nullable=True),
+        sa.Column("nickname", sa.String(), autoincrement=False, nullable=True),
         sa.Column("expiration_date", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column(
             "appropriation_date", sa.DateTime(), autoincrement=False, nullable=True
@@ -531,9 +632,10 @@ def upgrade() -> None:
         sa.Column(
             "managing_portfolio_id", sa.Integer(), autoincrement=False, nullable=True
         ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -560,13 +662,91 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
-        "clin_version",
+        "change_request_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
-        sa.Column("name", sa.String(length=256), autoincrement=False, nullable=True),
-        sa.Column("source_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("type", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "IN_REVIEW",
+                "APPROVED",
+                "REJECTED",
+                name="changerequeststatus",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "requested_change_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "requested_change_diff",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "requested_change_info",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "managing_division_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("reviewed_by_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("reviewed_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "budget_line_item_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_change_request_version_end_transaction_id"),
+        "change_request_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_change_request_version_operation_type"),
+        "change_request_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_change_request_version_transaction_id"),
+        "change_request_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "clin_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("number", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("pop_start_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("pop_end_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "contract_agreement_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
         sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -605,9 +785,10 @@ def upgrade() -> None:
         sa.Column("phone_area_code", sa.String(), autoincrement=False, nullable=True),
         sa.Column("phone_number", sa.String(), autoincrement=False, nullable=True),
         sa.Column("email", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -770,26 +951,33 @@ def upgrade() -> None:
         sa.Column("abbreviation", sa.String(length=10), nullable=False),
         sa.Column("division_director_id", sa.Integer(), nullable=True),
         sa.Column("deputy_division_director_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["deputy_division_director_id"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["division_director_id"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("abbreviation"),
         sa.UniqueConstraint("name"),
     )
-    op.create_foreign_key("fk_user_division", "user", "division", ["division"], ["id"])
+    op.create_foreign_key(
+        "fk_user_division", "ops_user", "division", ["division"], ["id"]
+    )
     op.create_table(
         "division_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
@@ -806,9 +994,10 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -837,13 +1026,12 @@ def upgrade() -> None:
     op.create_table(
         "funding_partner_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
-        sa.Column("name", sa.String(length=100), autoincrement=False, nullable=True),
-        sa.Column(
-            "nickname", sa.String(length=100), autoincrement=False, nullable=True
-        ),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("nickname", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -872,13 +1060,12 @@ def upgrade() -> None:
     op.create_table(
         "funding_source_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
-        sa.Column("name", sa.String(length=100), autoincrement=False, nullable=True),
-        sa.Column(
-            "nickname", sa.String(length=100), autoincrement=False, nullable=True
-        ),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("nickname", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -937,9 +1124,10 @@ def upgrade() -> None:
         "group_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1034,9 +1222,10 @@ def upgrade() -> None:
         sa.Column("is_read", sa.Boolean(), autoincrement=False, nullable=True),
         sa.Column("expires", sa.Date(), autoincrement=False, nullable=True),
         sa.Column("recipient_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1092,9 +1281,10 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1129,6 +1319,7 @@ def upgrade() -> None:
                 "LOGIN_ATTEMPT",
                 "CREATE_BLI",
                 "UPDATE_BLI",
+                "DELETE_BLI",
                 "CREATE_PROJECT",
                 "CREATE_NEW_AGREEMENT",
                 "UPDATE_AGREEMENT",
@@ -1167,9 +1358,10 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1203,9 +1395,10 @@ def upgrade() -> None:
         sa.Column("object_type", sa.String(), autoincrement=False, nullable=True),
         sa.Column("object_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("bli_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1239,9 +1432,10 @@ def upgrade() -> None:
             "workflow_instance_id", sa.Integer(), autoincrement=False, nullable=True
         ),
         sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1271,9 +1465,10 @@ def upgrade() -> None:
         "portfolio_team_leaders_version",
         sa.Column("portfolio_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("team_lead_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1304,9 +1499,10 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("portfolio_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("url", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1351,9 +1547,10 @@ def upgrade() -> None:
         ),
         sa.Column("division_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("description", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1551,9 +1748,10 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), autoincrement=False, nullable=True),
         sa.Column("abbr", sa.String(), autoincrement=False, nullable=True),
         sa.Column("fee", sa.Float(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1618,9 +1816,10 @@ def upgrade() -> None:
         sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("workflow_step_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("type", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1653,9 +1852,10 @@ def upgrade() -> None:
         sa.Column("naics", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("support_code", sa.String(), autoincrement=False, nullable=True),
         sa.Column("description", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1685,9 +1885,10 @@ def upgrade() -> None:
         "project_cans_version",
         sa.Column("project_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1717,9 +1918,10 @@ def upgrade() -> None:
         "project_team_leaders_version",
         sa.Column("project_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("team_lead_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1763,9 +1965,10 @@ def upgrade() -> None:
         sa.Column("short_title", sa.String(), autoincrement=False, nullable=True),
         sa.Column("description", sa.Text(), autoincrement=False, nullable=True),
         sa.Column("url", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1859,9 +2062,10 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("name", sa.String(), autoincrement=False, nullable=True),
         sa.Column("permissions", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1898,13 +2102,14 @@ def upgrade() -> None:
         sa.Column("description", sa.String(), autoincrement=False, nullable=True),
         sa.Column("period_start", sa.Date(), autoincrement=False, nullable=True),
         sa.Column("period_end", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("sub_component", sa.String(), autoincrement=False, nullable=True),
         sa.Column(
             "contract_agreement_id", sa.Integer(), autoincrement=False, nullable=True
         ),
-        sa.Column("clin_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1934,9 +2139,10 @@ def upgrade() -> None:
         "shared_portfolio_cans_version",
         sa.Column("portfolio_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -1974,9 +2180,10 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("role_id", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("group_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2009,14 +2216,14 @@ def upgrade() -> None:
         sa.Column("issued_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-
     op.create_table(
         "user_group_version",
         sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("group_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2046,9 +2253,10 @@ def upgrade() -> None:
         "user_role_version",
         sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("role_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2075,26 +2283,18 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
-        "user_version",
+        "user_session_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
-        sa.Column("oidc_id", sa.UUID(), autoincrement=False, nullable=True),
-        sa.Column("hhs_id", sa.String(), autoincrement=False, nullable=True),
-        sa.Column("email", sa.String(), autoincrement=False, nullable=True),
-        sa.Column("first_name", sa.String(), autoincrement=False, nullable=True),
-        sa.Column("last_name", sa.String(), autoincrement=False, nullable=True),
-        sa.Column("division", sa.Integer(), autoincrement=False, nullable=True),
-        sa.Column(
-            "status",
-            postgresql.ENUM(
-                "ACTIVE", "INACTIVE", "LOCKED", name="userstatus", create_type=False
-            ),
-            server_default="INACTIVE",
-            autoincrement=False,
-            nullable=True,
-        ),
+        sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("is_active", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("ip_address", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("access_token", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("refresh_token", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("last_active_at", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2103,26 +2303,20 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id", "transaction_id"),
     )
     op.create_index(
-        op.f("ix_user_version_email"), "user_version", ["email"], unique=False
-    )
-    op.create_index(
-        op.f("ix_user_version_end_transaction_id"),
-        "user_version",
+        op.f("ix_user_session_version_end_transaction_id"),
+        "user_session_version",
         ["end_transaction_id"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_user_version_oidc_id"), "user_version", ["oidc_id"], unique=False
-    )
-    op.create_index(
-        op.f("ix_user_version_operation_type"),
-        "user_version",
+        op.f("ix_user_session_version_operation_type"),
+        "user_session_version",
         ["operation_type"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_user_version_transaction_id"),
-        "user_version",
+        op.f("ix_user_session_version_transaction_id"),
+        "user_session_version",
         ["transaction_id"],
         unique=False,
     )
@@ -2130,9 +2324,10 @@ def upgrade() -> None:
         "vendor_contacts_version",
         sa.Column("vendor_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("contact_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2164,9 +2359,10 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), autoincrement=False, nullable=True),
         sa.Column("duns", sa.String(), autoincrement=False, nullable=True),
         sa.Column("active", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2217,6 +2413,7 @@ def upgrade() -> None:
                 "DRAFT_TO_PLANNED",
                 "PLANNED_TO_EXECUTING",
                 "GENERIC",
+                "PROCUREMENT_TRACKING",
                 name="workflowaction",
                 create_type=False,
             ),
@@ -2229,9 +2426,10 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2265,9 +2463,10 @@ def upgrade() -> None:
         sa.Column(
             "successor_step_id", sa.Integer(), autoincrement=False, nullable=False
         ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2307,6 +2506,7 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
+        sa.Column("index", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "status",
             postgresql.ENUM(
@@ -2325,9 +2525,9 @@ def upgrade() -> None:
         sa.Column("time_started", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("time_completed", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2375,9 +2575,10 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column("index", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2407,9 +2608,10 @@ def upgrade() -> None:
         "workflow_template_version",
         sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
         sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
-        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column(
             "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
         ),
@@ -2436,20 +2638,6 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_table(
-        "clin",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("name", sa.String(length=256), nullable=False),
-        sa.Column("source_id", sa.Integer(), nullable=True),
-        sa.Column("created_on", sa.DateTime(), nullable=True),
-        sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["created_by"],
-            ["user.id"],
-        ),
-        sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_table(
         "contact",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("first_name", sa.String(), nullable=True),
@@ -2462,40 +2650,55 @@ def upgrade() -> None:
         sa.Column("phone_area_code", sa.String(), nullable=True),
         sa.Column("phone_number", sa.String(), nullable=True),
         sa.Column("email", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "funding_partner",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("name", sa.String(length=100), nullable=False),
-        sa.Column("nickname", sa.String(length=100), nullable=True),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("nickname", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "funding_source",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("name", sa.String(length=100), nullable=False),
-        sa.Column("nickname", sa.String(length=100), nullable=True),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("nickname", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2503,12 +2706,17 @@ def upgrade() -> None:
         "group",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2521,16 +2729,21 @@ def upgrade() -> None:
         sa.Column("is_read", sa.Boolean(), nullable=True),
         sa.Column("expires", sa.Date(), nullable=True),
         sa.Column("recipient_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["recipient_id"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2555,12 +2768,17 @@ def upgrade() -> None:
         sa.Column("class_name", sa.String(), nullable=True),
         sa.Column("row_key", sa.String(), nullable=True),
         sa.Column("changes", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2579,6 +2797,7 @@ def upgrade() -> None:
                 "LOGIN_ATTEMPT",
                 "CREATE_BLI",
                 "UPDATE_BLI",
+                "DELETE_BLI",
                 "CREATE_PROJECT",
                 "CREATE_NEW_AGREEMENT",
                 "UPDATE_AGREEMENT",
@@ -2612,12 +2831,17 @@ def upgrade() -> None:
         sa.Column(
             "event_details", postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2639,16 +2863,21 @@ def upgrade() -> None:
         ),
         sa.Column("division_id", sa.Integer(), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["division_id"],
             ["division.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2658,12 +2887,17 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("abbr", sa.String(), nullable=False),
         sa.Column("fee", sa.Float(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2674,12 +2908,17 @@ def upgrade() -> None:
         sa.Column("naics", sa.Integer(), nullable=True),
         sa.Column("support_code", sa.String(), nullable=True),
         sa.Column("description", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2700,12 +2939,17 @@ def upgrade() -> None:
         sa.Column("short_title", sa.String(), nullable=False),
         sa.Column("description", sa.Text(), nullable=False),
         sa.Column("url", sa.Text(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("short_title"),
@@ -2715,28 +2959,65 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("permissions", sa.String(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_role_name"), "role", ["name"], unique=False)
+    op.create_table(
+        "user_session",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("is_active", sa.Boolean(), nullable=True),
+        sa.Column("ip_address", sa.String(), nullable=False),
+        sa.Column("access_token", sa.Text(), nullable=False),
+        sa.Column("refresh_token", sa.Text(), nullable=False),
+        sa.Column("last_active_at", sa.DateTime(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
     op.create_table(
         "vendor",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("duns", sa.String(), nullable=False),
         sa.Column("active", sa.Boolean(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2744,12 +3025,17 @@ def upgrade() -> None:
         "workflow_template",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2779,12 +3065,7 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
-        sa.Column(
-            "name",
-            sa.String(),
-            nullable=False,
-            comment="In MAPS this was PROJECT.PROJECT_TITLE",
-        ),
+        sa.Column("name", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("product_service_code_id", sa.Integer(), nullable=True),
         sa.Column(
@@ -2802,12 +3083,13 @@ def upgrade() -> None:
         sa.Column("project_id", sa.Integer(), nullable=True),
         sa.Column("procurement_shop_id", sa.Integer(), nullable=True),
         sa.Column("notes", sa.Text(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["procurement_shop_id"],
@@ -2823,7 +3105,33 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["project_officer_id"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "agreement_ops_db_history",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), nullable=True),
+        sa.Column("ops_db_history_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["ops_db_history_id"], ["ops_db_history.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2833,7 +3141,7 @@ def upgrade() -> None:
         sa.Column("number", sa.String(length=30), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("purpose", sa.String(), nullable=True),
-        sa.Column("nickname", sa.String(length=30), nullable=True),
+        sa.Column("nickname", sa.String(), nullable=True),
         sa.Column("expiration_date", sa.DateTime(), nullable=True),
         sa.Column("appropriation_date", sa.DateTime(), nullable=True),
         sa.Column("appropriation_term", sa.Integer(), nullable=True),
@@ -2851,21 +3159,26 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column("authorizer_id", sa.Integer(), nullable=True),
-        sa.Column("managing_portfolio_id", sa.Integer(), nullable=True),
+        sa.Column("managing_portfolio_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["authorizer_id"],
             ["funding_partner.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["managing_portfolio_id"],
             ["portfolio.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2873,12 +3186,13 @@ def upgrade() -> None:
         "portfolio_team_leaders",
         sa.Column("portfolio_id", sa.Integer(), nullable=False),
         sa.Column("team_lead_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["portfolio_id"],
@@ -2886,7 +3200,11 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["team_lead_id"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("portfolio_id", "team_lead_id"),
     )
@@ -2895,16 +3213,21 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("portfolio_id", sa.Integer(), nullable=True),
         sa.Column("url", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["portfolio_id"],
             ["portfolio.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -2912,12 +3235,13 @@ def upgrade() -> None:
         "project_team_leaders",
         sa.Column("project_id", sa.Integer(), nullable=False),
         sa.Column("team_lead_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["project_id"],
@@ -2925,7 +3249,11 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["team_lead_id"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("project_id", "team_lead_id"),
     )
@@ -2975,20 +3303,25 @@ def upgrade() -> None:
         "user_group",
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("group_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["group_id"],
             ["group.id"],
         ),
         sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
             ["user_id"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("user_id", "group_id"),
     )
@@ -2996,20 +3329,25 @@ def upgrade() -> None:
         "user_role",
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("role_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["role_id"],
             ["role.id"],
         ),
         sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
             ["user_id"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("user_id", "role_id"),
     )
@@ -3017,16 +3355,21 @@ def upgrade() -> None:
         "vendor_contacts",
         sa.Column("vendor_id", sa.Integer(), nullable=False),
         sa.Column("contact_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["contact_id"],
             ["contact.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["vendor_id"],
@@ -3056,18 +3399,24 @@ def upgrade() -> None:
                 "DRAFT_TO_PLANNED",
                 "PLANNED_TO_EXECUTING",
                 "GENERIC",
+                "PROCUREMENT_TRACKING",
                 name="workflowaction",
                 create_type=False,
             ),
             nullable=False,
         ),
         sa.Column("current_workflow_step_instance_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["workflow_template_id"],
@@ -3094,12 +3443,17 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("index", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["workflow_template_id"],
@@ -3111,20 +3465,25 @@ def upgrade() -> None:
         "agreement_team_members",
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("agreement_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["agreement_id"],
             ["agreement.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("user_id", "agreement_id"),
     )
@@ -3132,11 +3491,6 @@ def upgrade() -> None:
         "can_fiscal_year",
         sa.Column("can_id", sa.Integer(), nullable=False),
         sa.Column("fiscal_year", sa.Integer(), nullable=False),
-        sa.Column(
-            "total_fiscal_year_funding",
-            sa.Numeric(precision=12, scale=2),
-            nullable=True,
-        ),
         sa.Column("received_funding", sa.Numeric(precision=12, scale=2), nullable=True),
         sa.Column("expected_funding", sa.Numeric(precision=12, scale=2), nullable=True),
         sa.Column(
@@ -3146,16 +3500,21 @@ def upgrade() -> None:
         ),
         sa.Column("can_lead", sa.String(), nullable=True),
         sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["can_id"],
             ["can.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("can_id", "fiscal_year"),
     )
@@ -3168,16 +3527,21 @@ def upgrade() -> None:
         sa.Column("received_amount", sa.Numeric(precision=12, scale=2), nullable=False),
         sa.Column("expected_amount", sa.Numeric(precision=12, scale=2), nullable=False),
         sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["can_id"],
             ["can.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -3185,20 +3549,25 @@ def upgrade() -> None:
         "can_funding_sources",
         sa.Column("can_id", sa.Integer(), nullable=False),
         sa.Column("funding_source_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["can_id"],
             ["can.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["funding_source_id"],
             ["funding_source.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("can_id", "funding_source_id"),
     )
@@ -3306,16 +3675,21 @@ def upgrade() -> None:
         sa.Column("submitter_id", sa.Integer(), nullable=True),
         sa.Column("workflow_instance_id", sa.Integer(), nullable=True),
         sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["submitter_id"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["workflow_instance_id"],
@@ -3327,20 +3701,25 @@ def upgrade() -> None:
         "project_cans",
         sa.Column("project_id", sa.Integer(), nullable=False),
         sa.Column("can_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["can_id"],
             ["can.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["project_id"],
             ["project.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("project_id", "can_id"),
     )
@@ -3348,20 +3727,25 @@ def upgrade() -> None:
         "shared_portfolio_cans",
         sa.Column("portfolio_id", sa.Integer(), nullable=False),
         sa.Column("can_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["can_id"],
             ["can.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["portfolio_id"],
             ["portfolio.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("portfolio_id", "can_id"),
     )
@@ -3372,12 +3756,13 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=True),
         sa.Column("role_id", sa.Integer(), nullable=True),
         sa.Column("group_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["group_id"],
@@ -3388,8 +3773,12 @@ def upgrade() -> None:
             ["role.id"],
         ),
         sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
             ["user_id"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["workflow_step_template_id"],
@@ -3402,6 +3791,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("workflow_instance_id", sa.Integer(), nullable=True),
         sa.Column("workflow_step_template_id", sa.Integer(), nullable=True),
+        sa.Column("index", sa.Integer(), nullable=True),
         sa.Column(
             "status",
             postgresql.ENUM(
@@ -3419,16 +3809,16 @@ def upgrade() -> None:
         sa.Column("time_started", sa.DateTime(), nullable=True),
         sa.Column("time_completed", sa.DateTime(), nullable=True),
         sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["updated_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["workflow_instance_id"],
@@ -3441,6 +3831,32 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
+        "clin",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("number", sa.Integer(), nullable=False),
+        sa.Column("name", sa.String(), nullable=True),
+        sa.Column("pop_start_date", sa.Date(), nullable=True),
+        sa.Column("pop_end_date", sa.Date(), nullable=True),
+        sa.Column("contract_agreement_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["contract_agreement_id"], ["contract_agreement.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("number", "contract_agreement_id"),
+    )
+    op.create_table(
         "contract_support_contacts",
         sa.Column("contract_id", sa.Integer(), nullable=False),
         sa.Column("users_id", sa.Integer(), nullable=False),
@@ -3450,7 +3866,7 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["users_id"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("contract_id", "users_id"),
     )
@@ -3460,16 +3876,21 @@ def upgrade() -> None:
         sa.Column("agreement_id", sa.Integer(), nullable=True),
         sa.Column("workflow_step_id", sa.Integer(), nullable=True),
         sa.Column("type", sa.String(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["agreement_id"],
             ["agreement.id"],
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["workflow_step_id"],
@@ -3480,40 +3901,44 @@ def upgrade() -> None:
     op.create_table(
         "services_component",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("number", sa.Integer(), nullable=True),
-        sa.Column("optional", sa.Boolean(), nullable=True),
+        sa.Column("number", sa.Integer(), nullable=False),
+        sa.Column("optional", sa.Boolean(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("period_start", sa.Date(), nullable=True),
         sa.Column("period_end", sa.Date(), nullable=True),
-        sa.Column("contract_agreement_id", sa.Integer(), nullable=True),
-        sa.Column("clin_id", sa.Integer(), nullable=True),
+        sa.Column("sub_component", sa.String(), nullable=True),
+        sa.Column("contract_agreement_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["clin_id"],
-            ["clin.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["contract_agreement_id"],
-            ["contract_agreement.id"],
+            ["contract_agreement_id"], ["contract_agreement.id"], ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint(
+            "number", "sub_component", "optional", "contract_agreement_id"
+        ),
     )
     op.create_table(
         "workflow_step_dependency",
         sa.Column("predecessor_step_id", sa.Integer(), nullable=False),
         sa.Column("successor_step_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["predecessor_step_id"],
@@ -3522,6 +3947,10 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["successor_step_id"],
             ["workflow_step_instance.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("predecessor_step_id", "successor_step_id"),
     )
@@ -3551,9 +3980,10 @@ def upgrade() -> None:
         sa.Column(
             "proc_shop_fee_percentage", sa.Numeric(precision=12, scale=5), nullable=True
         ),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["agreement_id"],
             ["agreement.id"],
@@ -3568,11 +3998,15 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["services_component_id"],
             ["services_component.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -3585,7 +4019,7 @@ def upgrade() -> None:
         sa.Column("notes", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
             ["completed_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["id"],
@@ -3605,7 +4039,7 @@ def upgrade() -> None:
         sa.Column("notes", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
             ["completed_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["id"],
@@ -3623,7 +4057,7 @@ def upgrade() -> None:
         sa.Column("target_date", sa.Date(), nullable=True),
         sa.ForeignKeyConstraint(
             ["completed_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["id"],
@@ -3641,7 +4075,7 @@ def upgrade() -> None:
         sa.Column("target_date", sa.Date(), nullable=True),
         sa.ForeignKeyConstraint(
             ["completed_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["id"],
@@ -3659,7 +4093,7 @@ def upgrade() -> None:
         sa.Column("target_date", sa.Date(), nullable=True),
         sa.ForeignKeyConstraint(
             ["completed_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["id"],
@@ -3677,11 +4111,72 @@ def upgrade() -> None:
         sa.Column("target_date", sa.Date(), nullable=True),
         sa.ForeignKeyConstraint(
             ["completed_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["id"],
             ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "change_request",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("type", sa.String(), nullable=False),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "IN_REVIEW",
+                "APPROVED",
+                "REJECTED",
+                name="changerequeststatus",
+                create_type=False,
+            ),
+            nullable=False,
+        ),
+        sa.Column(
+            "requested_change_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=False,
+        ),
+        sa.Column(
+            "requested_change_diff",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
+        sa.Column(
+            "requested_change_info",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
+        sa.Column("managing_division_id", sa.Integer(), nullable=True),
+        sa.Column("reviewed_by_id", sa.Integer(), nullable=True),
+        sa.Column("reviewed_on", sa.DateTime(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.Column("agreement_id", sa.Integer(), nullable=True),
+        sa.Column("budget_line_item_id", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(["agreement_id"], ["agreement.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["budget_line_item_id"], ["budget_line_item.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["managing_division_id"],
+            ["division.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["reviewed_by_id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -3693,19 +4188,24 @@ def upgrade() -> None:
         sa.Column("object_type", sa.String(), nullable=True),
         sa.Column("object_id", sa.Integer(), nullable=True),
         sa.Column("bli_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
         sa.Column("updated_on", sa.DateTime(), nullable=True),
-        sa.Column("created_by", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["bli_id"], ["budget_line_item.id"], ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(
             ["created_by"],
-            ["user.id"],
+            ["ops_user.id"],
         ),
         sa.ForeignKeyConstraint(
             ["package_id"],
             ["package.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -3715,6 +4215,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_table("package_snapshot")
+    op.drop_table("change_request")
     op.drop_table("procurement_solicitation")
     op.drop_table("procurement_preaward")
     op.drop_table("procurement_pre_solicitation")
@@ -3726,6 +4227,7 @@ def downgrade() -> None:
     op.drop_table("services_component")
     op.drop_table("procurement_step")
     op.drop_table("contract_support_contacts")
+    op.drop_table("clin")
     op.drop_table("workflow_step_instance")
     op.drop_table("step_approvers")
     op.drop_table("shared_portfolio_cans")
@@ -3750,10 +4252,12 @@ def downgrade() -> None:
     op.drop_table("portfolio_url")
     op.drop_table("portfolio_team_leaders")
     op.drop_table("can")
+    op.drop_table("agreement_ops_db_history")
     op.drop_table("agreement")
     op.drop_table("administrative_and_support_project")
     op.drop_table("workflow_template")
     op.drop_table("vendor")
+    op.drop_table("user_session")
     op.drop_index(op.f("ix_role_name"), table_name="role")
     op.drop_table("role")
     op.drop_table("project")
@@ -3771,7 +4275,6 @@ def downgrade() -> None:
     op.drop_table("funding_source")
     op.drop_table("funding_partner")
     op.drop_table("contact")
-    op.drop_table("clin")
     op.drop_index(
         op.f("ix_workflow_template_version_transaction_id"),
         table_name="workflow_template_version",
@@ -3856,12 +4359,19 @@ def downgrade() -> None:
         table_name="vendor_contacts_version",
     )
     op.drop_table("vendor_contacts_version")
-    op.drop_index(op.f("ix_user_version_transaction_id"), table_name="user_version")
-    op.drop_index(op.f("ix_user_version_operation_type"), table_name="user_version")
-    op.drop_index(op.f("ix_user_version_oidc_id"), table_name="user_version")
-    op.drop_index(op.f("ix_user_version_end_transaction_id"), table_name="user_version")
-    op.drop_index(op.f("ix_user_version_email"), table_name="user_version")
-    op.drop_table("user_version")
+    op.drop_index(
+        op.f("ix_user_session_version_transaction_id"),
+        table_name="user_session_version",
+    )
+    op.drop_index(
+        op.f("ix_user_session_version_operation_type"),
+        table_name="user_session_version",
+    )
+    op.drop_index(
+        op.f("ix_user_session_version_end_transaction_id"),
+        table_name="user_session_version",
+    )
+    op.drop_table("user_session_version")
     op.drop_index(
         op.f("ix_user_role_version_transaction_id"), table_name="user_role_version"
     )
@@ -3883,9 +4393,6 @@ def downgrade() -> None:
         table_name="user_group_version",
     )
     op.drop_table("user_group_version")
-    op.drop_index(op.f("ix_user_oidc_id"), table_name="user")
-    op.drop_index(op.f("ix_user_email"), table_name="user")
-    op.drop_table("user")
     op.drop_table("transaction")
     op.drop_index(
         op.f("ix_step_approvers_version_transaction_id"),
@@ -4157,6 +4664,21 @@ def downgrade() -> None:
     )
     op.drop_table("package_snapshot_version")
     op.drop_index(
+        op.f("ix_ops_user_version_transaction_id"), table_name="ops_user_version"
+    )
+    op.drop_index(
+        op.f("ix_ops_user_version_operation_type"), table_name="ops_user_version"
+    )
+    op.drop_index(op.f("ix_ops_user_version_oidc_id"), table_name="ops_user_version")
+    op.drop_index(
+        op.f("ix_ops_user_version_end_transaction_id"), table_name="ops_user_version"
+    )
+    op.drop_index(op.f("ix_ops_user_version_email"), table_name="ops_user_version")
+    op.drop_table("ops_user_version")
+    op.drop_index(op.f("ix_ops_user_oidc_id"), table_name="ops_user")
+    op.drop_index(op.f("ix_ops_user_email"), table_name="ops_user")
+    op.drop_table("ops_user")
+    op.drop_index(
         op.f("ix_ops_event_version_transaction_id"), table_name="ops_event_version"
     )
     op.drop_index(
@@ -4328,6 +4850,19 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_clin_version_operation_type"), table_name="clin_version")
     op.drop_index(op.f("ix_clin_version_end_transaction_id"), table_name="clin_version")
     op.drop_table("clin_version")
+    op.drop_index(
+        op.f("ix_change_request_version_transaction_id"),
+        table_name="change_request_version",
+    )
+    op.drop_index(
+        op.f("ix_change_request_version_operation_type"),
+        table_name="change_request_version",
+    )
+    op.drop_index(
+        op.f("ix_change_request_version_end_transaction_id"),
+        table_name="change_request_version",
+    )
+    op.drop_table("change_request_version")
     op.drop_index(op.f("ix_can_version_transaction_id"), table_name="can_version")
     op.drop_index(op.f("ix_can_version_operation_type"), table_name="can_version")
     op.drop_index(op.f("ix_can_version_end_transaction_id"), table_name="can_version")
@@ -4408,6 +4943,19 @@ def downgrade() -> None:
     )
     op.drop_table("agreement_team_members_version")
     op.drop_index(
+        op.f("ix_agreement_ops_db_history_version_transaction_id"),
+        table_name="agreement_ops_db_history_version",
+    )
+    op.drop_index(
+        op.f("ix_agreement_ops_db_history_version_operation_type"),
+        table_name="agreement_ops_db_history_version",
+    )
+    op.drop_index(
+        op.f("ix_agreement_ops_db_history_version_end_transaction_id"),
+        table_name="agreement_ops_db_history_version",
+    )
+    op.drop_table("agreement_ops_db_history_version")
+    op.drop_index(
         op.f("ix_administrative_and_support_project_version_transaction_id"),
         table_name="administrative_and_support_project_version",
     )
@@ -4428,7 +4976,11 @@ def downgrade() -> None:
         op.get_bind()
     )
     sa.Enum(
-        "DRAFT_TO_PLANNED", "PLANNED_TO_EXECUTING", "GENERIC", name="workflowaction"
+        "DRAFT_TO_PLANNED",
+        "PLANNED_TO_EXECUTING",
+        "GENERIC",
+        "PROCUREMENT_TRACKING",
+        name="workflowaction",
     ).drop(op.get_bind())
     sa.Enum(
         "APPROVAL",
@@ -4446,6 +4998,9 @@ def downgrade() -> None:
         "COMPLETE",
         name="workflowstepstatus",
     ).drop(op.get_bind())
+    sa.Enum("IN_REVIEW", "APPROVED", "REJECTED", name="changerequeststatus").drop(
+        op.get_bind()
+    )
     sa.Enum(
         "CONTRACT",
         "GRANT",
@@ -4488,6 +5043,7 @@ def downgrade() -> None:
         "LOGIN_ATTEMPT",
         "CREATE_BLI",
         "UPDATE_BLI",
+        "DELETE_BLI",
         "CREATE_PROJECT",
         "CREATE_NEW_AGREEMENT",
         "UPDATE_AGREEMENT",

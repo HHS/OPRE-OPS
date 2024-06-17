@@ -7,9 +7,9 @@ import PropTypes from "prop-types";
  * @component
  * @param {Object} props - The properties passed to the component.
  * @param {string} [props.title="DEBUG CODE"] - The title of the debug section.
- * @param {Object} props.data - The data to be displayed in the debug section.
+ * @param {Object | []} props.data - The data to be displayed in the debug section.
  *
- * @returns {JSX.Element|null} The rendered JSX element, or null if not in development mode.
+ * @returns {JSX.Element | null | boolean } The rendered JSX element, or null if not in development mode.
  *
  * @example
  * <DebugCode title="DEBUG CODE" data={data} />
@@ -30,6 +30,6 @@ function DebugCode({ title = "DEBUG CODE", data }) {
 
 DebugCode.propTypes = {
     title: PropTypes.string,
-    data: PropTypes.object
+    data: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired
 };
 export default DebugCode;

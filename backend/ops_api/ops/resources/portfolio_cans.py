@@ -1,7 +1,9 @@
-from typing import List, Optional
+from typing import Optional
 
-from flask import Response, request
+from flask import Response, current_app, request
+from sqlalchemy import select
 
+from models import CANFiscalYear
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -14,13 +16,15 @@ class PortfolioCansAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    def _get_item(self, id: int, year: Optional[int] = None) -> List[CAN]:
-        can_fiscal_year_query = self.model.query.filter(self.model.can.has(managing_portfolio_id=id))
+    def _get_item(self, id: int, year: Optional[int] = None) -> set[CAN]:
+        cfy_stmt = (
+            select(CANFiscalYear).join(CAN).where(CAN.managing_portfolio_id == id).order_by(CANFiscalYear.fiscal_year)
+        )
 
         if year:
-            can_fiscal_year_query = can_fiscal_year_query.filter_by(fiscal_year=year)
+            cfy_stmt = cfy_stmt.where(CANFiscalYear.fiscal_year == year)
 
-        return [cfy.can for cfy in can_fiscal_year_query.all()]
+        return set([cfy.can for cfy in current_app.db_session.execute(cfy_stmt).scalars().all()])
 
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:

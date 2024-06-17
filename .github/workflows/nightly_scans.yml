@@ -16,7 +16,7 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - name: Run OWASP Zap Scan on live-dev
         uses: zaproxy/action-full-scan@d2a07475d467566c9a3e3c700f31f47724aa1060 # v0.10.0
@@ -34,6 +34,6 @@ jobs:
         uses: SvanBoxel/zaproxy-to-ghas@cfc77481d74a17a4c3d6b753aa9d7abef453d501 # v1.0.2
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@2e230e8fe0ad3a14a340ad0815ddb96d599d2aff # v3
+        uses: github/codeql-action/upload-sarif@23acc5c183826b7a8a97bce3cecc52db901f8251 # v3
         with:
           sarif_file: results.sarif
