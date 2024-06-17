@@ -1,0 +1,41 @@
+# ---- Build Stage ----
+  FROM oven/bun:alpine as build
+
+  WORKDIR /home/bun/app
+  
+  # Copy only the package files first to leverage Docker cache
+  COPY package.json bun.lockb ./
+  
+  # Install dependencies
+  RUN bun install --frozen-lockfile
+  
+  # Copy the rest of the application files
+  COPY . .
+  
+  # Build the application
+  RUN bun run build
+  
+  # ---- Release Stage ----
+  FROM oven/bun:1-alpine as release
+  
+  WORKDIR /home/bun/app
+  
+  # Copy built artifacts from the build stage
+  COPY --from=build /home/bun/app/index.js .
+  COPY --from=build /home/bun/app/build .
+  COPY --from=build /home/bun/app/vite-env/env.dev.local .env
+  
+  # Allow bun user to write runtime-config script to app dir
+  RUN chown -R bun:bun .
+  
+  # Set the user and expose the necessary port
+  USER bun
+  
+  # Install the runtime script cli package
+  RUN bun install runtime-env-cra express
+  
+  # Expose port
+  EXPOSE 3000/tcp
+  
+  # Entry point to run the application.
+  ENTRYPOINT ["/bin/sh", "-c", "NODE_ENV=production bun run ./node_modules/.bin/runtime-env-cra && bun run index.js"]
