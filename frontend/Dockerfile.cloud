@@ -1,5 +1,6 @@
 # ---- Build Stage ----
-  FROM oven/bun:alpine as build
+  # latest bun:alpine
+  FROM oven/bun@sha256:7e307aa29f340ea381efaf64410e07074992b9f68607b7b09747e22ca61d6d9d as build
 
   WORKDIR /home/bun/app
   
@@ -19,7 +20,8 @@
   RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=${MODE} bun run build --mode ${MODE}
   
   # ---- Release Stage ----
-  FROM oven/bun:1-alpine as release
+  # latest bun:alpine
+  FROM oven/bun@sha256:7e307aa29f340ea381efaf64410e07074992b9f68607b7b09747e22ca61d6d9d as release
   
   WORKDIR /home/bun/app
   
