@@ -290,19 +290,49 @@ export const servicesComponent = {
 
 export const changeRequests = [
     {
-        agreement: 9,
         agreement_id: 9,
-        budget_line_item: 22,
         budget_line_item_id: 22,
         created_by: 21,
         created_by_user: {
             full_name: "Admin Demo",
             id: 21
         },
-        created_on: "2024-06-12T21:25:25.711734Z",
-        display_name: "BudgetLineItemChangeRequest#1",
-        id: 1,
-        managing_division: 4,
+        created_on: "2024-06-17T22:03:15.201945",
+        display_name: "BudgetLineItemChangeRequest#3",
+        has_budget_change: true,
+        has_status_change: false,
+        id: 3,
+        managing_division_id: 4,
+        requested_change_data: {
+            amount: 333333
+        },
+        requested_change_diff: {
+            amount: {
+                new: 333333,
+                old: 300000
+            }
+        },
+        requestor_notes: null,
+        reviewed_on: null,
+        reviewer_notes: null,
+        status: "ChangeRequestStatus.IN_REVIEW",
+        type: "budget_line_item_change_request",
+        updated_by: 21,
+        updated_on: "2024-06-17T22:03:15.201945"
+    },
+    {
+        agreement_id: 9,
+        budget_line_item_id: 22,
+        created_by: 21,
+        created_by_user: {
+            full_name: "Admin Demo",
+            id: 21
+        },
+        created_on: "2024-06-17T22:03:15.220286",
+        display_name: "BudgetLineItemChangeRequest#4",
+        has_budget_change: true,
+        has_status_change: false,
+        id: 4,
         managing_division_id: 4,
         requested_change_data: {
             date_needed: "2045-06-13"
@@ -313,40 +343,27 @@ export const changeRequests = [
                 old: "2044-06-13"
             }
         },
-        requested_change_info: {
-            target_display_name: "BL 22"
-        },
-        reviewed_by_id: null,
+        requestor_notes: null,
         reviewed_on: null,
-        status: "IN_REVIEW",
+        reviewer_notes: null,
+        status: "ChangeRequestStatus.IN_REVIEW",
         type: "budget_line_item_change_request",
         updated_by: 21,
-        updated_by_user: {
-            full_name: "Admin Demo",
-            id: 21
-        },
-        updated_on: "2024-06-12T21:25:25.711734Z",
-        versions: [
-            {
-                id: 1,
-                transaction_id: 396
-            }
-        ]
+        updated_on: "2024-06-17T22:03:15.220286"
     },
     {
-        agreement: 9,
         agreement_id: 9,
-        budget_line_item: 22,
         budget_line_item_id: 22,
         created_by: 21,
         created_by_user: {
             full_name: "Admin Demo",
             id: 21
         },
-        created_on: "2024-06-12T21:25:25.744930Z",
-        display_name: "BudgetLineItemChangeRequest#2",
-        id: 2,
-        managing_division: 4,
+        created_on: "2024-06-17T22:03:15.239904",
+        display_name: "BudgetLineItemChangeRequest#5",
+        has_budget_change: true,
+        has_status_change: false,
+        id: 5,
         managing_division_id: 4,
         requested_change_data: {
             can_id: 10
@@ -357,68 +374,74 @@ export const changeRequests = [
                 old: 13
             }
         },
-        requested_change_info: {
-            target_display_name: "BL 22"
-        },
-        reviewed_by_id: null,
+        requestor_notes: null,
         reviewed_on: null,
-        status: "IN_REVIEW",
+        reviewer_notes: null,
+        status: "ChangeRequestStatus.IN_REVIEW",
         type: "budget_line_item_change_request",
         updated_by: 21,
-        updated_by_user: {
-            full_name: "Admin Demo",
-            id: 21
-        },
-        updated_on: "2024-06-12T21:25:25.744930Z",
-        versions: [
-            {
-                id: 2,
-                transaction_id: 397
-            }
-        ]
+        updated_on: "2024-06-17T22:03:15.239904"
     },
     {
-        agreement: 9,
-        agreement_id: 9,
-        budget_line_item: 22,
-        budget_line_item_id: 22,
+        agreement_id: 1,
+        budget_line_item_id: 1,
         created_by: 21,
         created_by_user: {
             full_name: "Admin Demo",
             id: 21
         },
-        created_on: "2024-06-12T21:25:25.765470Z",
-        display_name: "BudgetLineItemChangeRequest#3",
-        id: 3,
-        managing_division: 4,
+        created_on: "2024-06-17T18:55:41.810562",
+        display_name: "BudgetLineItemChangeRequest#1",
+        has_budget_change: false,
+        has_status_change: true,
+        id: 1,
         managing_division_id: 4,
         requested_change_data: {
-            amount: 33333
+            status: "PLANNED"
         },
         requested_change_diff: {
-            amount: {
-                new: 33333,
-                old: 300000
+            status: {
+                new: "PLANNED",
+                old: "DRAFT"
             }
         },
-        requested_change_info: {
-            target_display_name: "BL 22"
-        },
-        reviewed_by_id: null,
+        requestor_notes: null,
         reviewed_on: null,
-        status: "IN_REVIEW",
+        reviewer_notes: null,
+        status: "ChangeRequestStatus.IN_REVIEW",
         type: "budget_line_item_change_request",
         updated_by: 21,
-        updated_by_user: {
+        updated_on: "2024-06-17T18:55:41.810562"
+    },
+    {
+        agreement_id: 1,
+        budget_line_item_id: 2,
+        created_by: 21,
+        created_by_user: {
             full_name: "Admin Demo",
             id: 21
         },
-        updated_on: "2024-06-12T21:25:25.765470Z",
-        versions: [
-            {
-                id: 3,
-                transaction_id: 398
+        created_on: "2024-06-17T18:55:41.826716",
+        display_name: "BudgetLineItemChangeRequest#2",
+        has_budget_change: false,
+        has_status_change: true,
+        id: 2,
+        managing_division_id: 4,
+        requested_change_data: {
+            status: "PLANNED"
+        },
+        requested_change_diff: {
+            status: {
+                new: "PLANNED",
+                old: "DRAFT"
             }
-        ]
+        },
+        requestor_notes: null,
+        reviewed_on: null,
+        reviewer_notes: null,
+        status: "ChangeRequestStatus.IN_REVIEW",
+        type: "budget_line_item_change_request",
+        updated_by: 21,
+        updated_on: "2024-06-17T18:55:41.826716"
     }
 ];

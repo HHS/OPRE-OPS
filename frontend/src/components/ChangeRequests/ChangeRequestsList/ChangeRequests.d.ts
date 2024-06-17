@@ -10,6 +10,8 @@ export type ChangeRequest = {
     };
     created_on: string;
     display_name: string;
+    has_budget_change: boolean;
+    has_status_change: boolean;
     id: number;
     managing_division: number;
     managing_division_id: number;

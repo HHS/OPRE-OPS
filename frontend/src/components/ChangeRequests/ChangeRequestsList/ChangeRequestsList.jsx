@@ -1,16 +1,9 @@
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
+import DebugCode from "../../DebugCode";
 import BudgetChangeReviewCard from "../ReviewCard/BudgetChangeReviewCard";
+import StatusChangeReviewCard from "../ReviewCard/StatusChangeReviewCard";
 
 function ChangeRequestsList() {
-    const CHANGE_REQUEST_TYPES = {
-        BUDGET: "budget_line_item_change_request",
-        STATUS: "",
-        BUDGET_DELETED: "",
-        PRE_AWARD: "",
-        PRE_AWARD_REQUISITION: "",
-        AWARD_BUDGET_TEAM: ""
-    };
-
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
@@ -33,18 +26,33 @@ function ChangeRequestsList() {
                 /**
                  *  @param {ChangeRequest} changeRequest
                  */
-                (changeRequest) =>
-                    changeRequest.type === CHANGE_REQUEST_TYPES.BUDGET && (
-                        <BudgetChangeReviewCard
-                            key={changeRequest.id}
-                            agreementId={changeRequest.agreement_id}
-                            requestDate={changeRequest.created_on}
-                            requesterName={changeRequest.created_by_user?.full_name}
-                            bliId={changeRequest.budget_line_item_id}
-                            changeTo={changeRequest.requested_change_diff}
-                        />
-                    )
+                (changeRequest) => (
+                    <>
+                        {changeRequest.has_budget_change && (
+                            <BudgetChangeReviewCard
+                                key={changeRequest.id}
+                                agreementId={changeRequest.agreement_id}
+                                requestDate={changeRequest.created_on}
+                                requesterName={changeRequest.created_by_user?.full_name}
+                                bliId={changeRequest.budget_line_item_id}
+                                changeTo={changeRequest.requested_change_diff}
+                            />
+                        )}
+                        {/* TODO: add Status Change Card */}
+                        {changeRequest.has_status_change && (
+                            <StatusChangeReviewCard
+                                key={changeRequest.id}
+                                agreementId={changeRequest.agreement_id}
+                                requestDate={changeRequest.created_on}
+                                requesterName={changeRequest.created_by_user?.full_name}
+                                bliId={changeRequest.budget_line_item_id}
+                                changeTo={changeRequest.requested_change_diff}
+                            />
+                        )}
+                    </>
+                )
             )}
+            <DebugCode data={changeRequests} />
         </>
     ) : (
         <p className="text-center margin-top-9">There are currently no changes for review.</p>
