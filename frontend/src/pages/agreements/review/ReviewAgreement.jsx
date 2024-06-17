@@ -5,7 +5,7 @@ import classnames from "vest/classnames";
 import suite from "./suite";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
-import { useAddApprovalRequestMutation } from "../../../api/opsAPI";
+import { useAddApprovalRequestMutation, useUpdateBudgetLineItemMutation } from "../../../api/opsAPI";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
@@ -30,6 +30,8 @@ import {
     selectedBudgetLinesTotal,
     getTotalBySelectedCans
 } from "./ReviewAgreement.helpers";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import DebugCode from "../../../components/DebugCode";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -58,6 +60,7 @@ export const ReviewAgreement = () => {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const [afterApproval, setAfterApproval] = useToggle(true);
     const { setAlert } = useAlert();
+    const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const {
         budgetLines,
         handleSelectBLI,
@@ -110,8 +113,27 @@ export const ReviewAgreement = () => {
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft || anyBudgetLinePlanned) {
             //Create BLI Package, and send it to approval (create a Workflow)
-            const bli_ids = getSelectedBudgetLines(budgetLines).map((bli) => bli.id);
-            const user_id = activeUser?.id;
+            const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
+            let selectedBLIsWithStatus = [];
+            // add a property to blI based on the action
+            // if the action is CHANGE_DRAFT_TO_PLANNED, set the status to PLANNED
+            // if the action is CHANGE_PLANNED_TO_EXECUTING, set the status to EXECUTING
+            switch (action) {
+                case actionOptions.CHANGE_DRAFT_TO_PLANNED:
+                    selectedBLIsWithStatus = selectedBudgetLines.map((bli) => {
+                        return { ...bli, status: BLI_STATUS.PLANNED };
+                    });
+                    break;
+                case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
+                    selectedBLIsWithStatus = selectedBudgetLines.map((bli) => {
+                        return { ...bli, status: BLI_STATUS.EXECUTING };
+                    });
+                    break;
+                default:
+                    break;
+            }
+
+            const currentUserId = activeUser?.id;
             let alertTitle = "";
             let alertMessage = "";
 
@@ -124,34 +146,66 @@ export const ReviewAgreement = () => {
                 alertMessage =
                     "The budget lines have been successfully sent to your Division Director to review. After draft budget lines are approved, they will change to Executing Status.";
             }
-            console.log("BLI Package Data:", bli_ids, user_id, notes);
+            console.log("BLI Package Data:", selectedBudgetLines, currentUserId, notes);
             console.log("THE ACTION IS:", action);
-            addApprovalRequest({
-                budget_line_item_ids: bli_ids,
-                submitter_id: user_id,
-                notes: notes,
-                workflow_action: workflowAction
-            })
-                .unwrap()
-                .then((fulfilled) => {
-                    console.log("BLI Status Updated:", fulfilled);
+            // addApprovalRequest({
+            //     budget_line_item_ids: selectedBLIs,
+            //     submitter_id: currentUserId,
+            //     notes: notes,
+            //     workflow_action: workflowAction
+            // })
+            //     .unwrap()
+            //     .then((fulfilled) => {
+            //         console.log("BLI Status Updated:", fulfilled);
+            //         setAlert({
+            //             type: "success",
+            //             heading: alertTitle,
+            //             message: alertMessage,
+            //             redirectUrl: "/agreements"
+            //         });
+            //     })
+            //     .catch((rejected) => {
+            //         console.log("Error Updating Budget Line Status");
+            //         console.dir(rejected);
+            //         setAlert({
+            //             type: "error",
+            //             heading: "Error",
+            //             message: "An error occurred. Please try again.",
+            //             redirectUrl: "/error"
+            //         });
+            //     });
+            let promises = selectedBLIsWithStatus.map((budgetLine) => {
+                const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(budgetLine);
+                return updateBudgetLineItem({ id, data: cleanExistingBLI })
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log("Updated BLI:", fulfilled);
+                    })
+                    .catch((rejected) => {
+                        console.error("Error Updating Budget Line");
+                        console.error({ rejected });
+                        throw new Error("Error Updating Budget Line");
+                    });
+            });
+            Promise.allSettled(promises).then((results) => {
+                let rejected = results.filter((result) => result.status === "rejected");
+                if (rejected.length > 0) {
+                    console.error(rejected[0].reason);
+                    setAlert({
+                        type: "error",
+                        heading: "Error Sending Agreement Edits",
+                        message: "There was an error sending your edits for approval. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                } else {
                     setAlert({
                         type: "success",
                         heading: alertTitle,
                         message: alertMessage,
                         redirectUrl: "/agreements"
                     });
-                })
-                .catch((rejected) => {
-                    console.log("Error Updating Budget Line Status");
-                    console.dir(rejected);
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred. Please try again.",
-                        redirectUrl: "/error"
-                    });
-                });
+                }
+            });
         }
     };
 
@@ -190,6 +244,7 @@ export const ReviewAgreement = () => {
                     subTitle={agreement?.name}
                 />
             )}
+
             <AgreementMetaAccordion
                 agreement={agreement}
                 instructions="Please review the agreement details below and edit any information if necessary."
@@ -311,3 +366,27 @@ export const ReviewAgreement = () => {
 };
 
 export default ReviewAgreement;
+
+const cleanBudgetLineItemForApi = (data) => {
+    const cleanData = { ...data };
+    if (data.services_component_id === 0) {
+        cleanData.services_component_id = null;
+    }
+    if (cleanData.date_needed === "--") {
+        cleanData.date_needed = null;
+    }
+    const budgetLineId = cleanData.id;
+    delete cleanData.created_by;
+    delete cleanData.created_on;
+    delete cleanData.updated_on;
+    delete cleanData.can;
+    delete cleanData.id;
+    delete cleanData.has_active_workflow;
+    delete cleanData.canDisplayName;
+    delete cleanData.versions;
+    delete cleanData.clin;
+    delete cleanData.agreement;
+    delete cleanData.financialSnapshotChanged;
+
+    return { id: budgetLineId, data: cleanData };
+};
