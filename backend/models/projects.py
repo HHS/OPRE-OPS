@@ -50,7 +50,9 @@ class ProjectTeamLeaders(BaseModel):
     __tablename__ = "project_team_leaders"
 
     project_id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
-    team_lead_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    team_lead_id: Mapped[int] = mapped_column(
+        ForeignKey("ops_user.id"), primary_key=True
+    )
 
     @BaseModel.display_name.getter
     def display_name(self):

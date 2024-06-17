@@ -225,6 +225,53 @@ export const agreement = {
     vendor_id: 1
 };
 
+export const document = {
+    testDocuments: [
+        {
+            title: "Certification of Funding",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "Independent Government Cost Estimate (ICGE)",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member 2",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "Statement of Requirements (PWS/SOO/SOW)",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "Section 508 Exception Documentatio (if applicable)",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "ITAR checklist for all IT Procurement Actions",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        },
+        {
+            title: "COR Nomination and Certification Document",
+            filename: "SOW - Child Care Contract 1.pdf",
+            uploaded_by: "Team Member",
+            upload_date: "June 26, 2023",
+            file_size: "68mb"
+        }
+    ]
+};
+
 export const servicesComponent = {
     clin_id: 1,
     contract_agreement_id: 1,
@@ -240,3 +287,138 @@ export const servicesComponent = {
     period_start: "2043-06-13,",
     updated_on: "2024-05-29T20:06:50.973668Z"
 };
+
+export const changeRequests = [
+    {
+        agreement: 9,
+        agreement_id: 9,
+        budget_line_item: 22,
+        budget_line_item_id: 22,
+        created_by: 21,
+        created_by_user: {
+            full_name: "Admin Demo",
+            id: 21
+        },
+        created_on: "2024-06-12T21:25:25.711734Z",
+        display_name: "BudgetLineItemChangeRequest#1",
+        id: 1,
+        managing_division: 4,
+        managing_division_id: 4,
+        requested_change_data: {
+            date_needed: "2045-06-13"
+        },
+        requested_change_diff: {
+            date_needed: {
+                new: "2045-06-13",
+                old: "2044-06-13"
+            }
+        },
+        requested_change_info: {
+            target_display_name: "BL 22"
+        },
+        reviewed_by_id: null,
+        reviewed_on: null,
+        status: "IN_REVIEW",
+        type: "budget_line_item_change_request",
+        updated_by: 21,
+        updated_by_user: {
+            full_name: "Admin Demo",
+            id: 21
+        },
+        updated_on: "2024-06-12T21:25:25.711734Z",
+        versions: [
+            {
+                id: 1,
+                transaction_id: 396
+            }
+        ]
+    },
+    {
+        agreement: 9,
+        agreement_id: 9,
+        budget_line_item: 22,
+        budget_line_item_id: 22,
+        created_by: 21,
+        created_by_user: {
+            full_name: "Admin Demo",
+            id: 21
+        },
+        created_on: "2024-06-12T21:25:25.744930Z",
+        display_name: "BudgetLineItemChangeRequest#2",
+        id: 2,
+        managing_division: 4,
+        managing_division_id: 4,
+        requested_change_data: {
+            can_id: 10
+        },
+        requested_change_diff: {
+            can_id: {
+                new: 10,
+                old: 13
+            }
+        },
+        requested_change_info: {
+            target_display_name: "BL 22"
+        },
+        reviewed_by_id: null,
+        reviewed_on: null,
+        status: "IN_REVIEW",
+        type: "budget_line_item_change_request",
+        updated_by: 21,
+        updated_by_user: {
+            full_name: "Admin Demo",
+            id: 21
+        },
+        updated_on: "2024-06-12T21:25:25.744930Z",
+        versions: [
+            {
+                id: 2,
+                transaction_id: 397
+            }
+        ]
+    },
+    {
+        agreement: 9,
+        agreement_id: 9,
+        budget_line_item: 22,
+        budget_line_item_id: 22,
+        created_by: 21,
+        created_by_user: {
+            full_name: "Admin Demo",
+            id: 21
+        },
+        created_on: "2024-06-12T21:25:25.765470Z",
+        display_name: "BudgetLineItemChangeRequest#3",
+        id: 3,
+        managing_division: 4,
+        managing_division_id: 4,
+        requested_change_data: {
+            amount: 33333
+        },
+        requested_change_diff: {
+            amount: {
+                new: 33333,
+                old: 300000
+            }
+        },
+        requested_change_info: {
+            target_display_name: "BL 22"
+        },
+        reviewed_by_id: null,
+        reviewed_on: null,
+        status: "IN_REVIEW",
+        type: "budget_line_item_change_request",
+        updated_by: 21,
+        updated_by_user: {
+            full_name: "Admin Demo",
+            id: 21
+        },
+        updated_on: "2024-06-12T21:25:25.765470Z",
+        versions: [
+            {
+                id: 3,
+                transaction_id: 398
+            }
+        ]
+    }
+];

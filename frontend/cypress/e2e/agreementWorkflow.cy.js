@@ -103,7 +103,7 @@ it("agreement (BLI) workflow for approval then rejection", () => {
         })
         .then(({ agreementId, bliId }) => {
             cy.visit("/agreements?filter=for-approval");
-            cy.get(":nth-child(1) > .margin-0").should("have.text", "For Approval");
+            cy.get(":nth-child(1) > .margin-0").should("have.text", "For Review");
             cy.get("tbody").children().should("have.length.at.least", 1);
             cy.get("tbody tr").first().trigger("mouseover");
             cy.get("[data-cy='go-to-approve-row']").first().should("exist");

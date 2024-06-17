@@ -14,15 +14,15 @@
       payee: "The Foundation of People Who Get Paid",
       team_members: [
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 1,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 4
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 21,
         }
       ]
@@ -143,11 +143,11 @@
       support_contacts: [],
       team_members: [
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 12,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 21,
         }
       ]
@@ -171,19 +171,19 @@
       support_contacts: [],
       team_members: [
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 1,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 4,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 21,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 23,
         }
       ],
@@ -207,11 +207,11 @@
       support_contacts: [],
       team_members: [
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 12,
         },
         {
-          "tablename": "user",
+          "tablename": "ops_user",
           "id": 21,
         }
       ]

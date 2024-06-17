@@ -172,7 +172,7 @@ class WorkflowStepInstance(BaseModel):
     notes = sa.Column(sa.String, nullable=True)
     time_started = sa.Column(sa.DateTime, nullable=True)
     time_completed = sa.Column(sa.DateTime, nullable=True)
-    updated_by = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
+    updated_by = sa.Column(sa.Integer, sa.ForeignKey("ops_user.id"), nullable=True)
     successor_dependencies = relationship(
         "WorkflowStepDependency",
         foreign_keys="WorkflowStepDependency.predecessor_step_id",
@@ -278,7 +278,7 @@ class StepApprovers(BaseModel):
     workflow_step_template_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_step_template.id")
     )
-    user_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey("ops_user.id"), nullable=True)
     role_id = sa.Column(sa.Integer, sa.ForeignKey("role.id"), nullable=True)
     group_id = sa.Column(sa.Integer, sa.ForeignKey("group.id"), nullable=True)
 
@@ -289,7 +289,7 @@ class Package(BaseModel):
     __tablename__ = "package"
 
     id = BaseModel.get_pk_column()
-    submitter_id = sa.Column(sa.Integer, sa.ForeignKey("user.id"))
+    submitter_id = sa.Column(sa.Integer, sa.ForeignKey("ops_user.id"))
     workflow_instance_id = sa.Column(
         sa.Integer, sa.ForeignKey("workflow_instance.id"), nullable=True
     )
@@ -336,7 +336,7 @@ class ProcurementStep(BaseModel):
 class Attestation(object):
     is_complete = sa.Column(sa.Boolean, nullable=False, default=False)
     actual_date = sa.Column(sa.Date, nullable=True)
-    completed_by = sa.Column(sa.Integer, sa.ForeignKey("user.id"), nullable=True)
+    completed_by = sa.Column(sa.Integer, sa.ForeignKey("ops_user.id"), nullable=True)
     notes = sa.Column(sa.String, nullable=True)
 
 
@@ -425,7 +425,7 @@ class ChangeRequest(BaseModel):
         "Division",
         passive_deletes=True,
     )
-    reviewed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
+    reviewed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
     reviewed_on: Mapped[Optional[DateTime]] = mapped_column(DateTime)
     reviewer_notes: Mapped[Optional[str]] = mapped_column(sa.String)
 

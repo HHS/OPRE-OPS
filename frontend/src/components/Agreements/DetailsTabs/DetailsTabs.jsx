@@ -33,6 +33,10 @@ const DetailsTabs = ({ hasAgreementChanged, setHasAgreementChanged, agreementId,
         {
             name: "/budget-lines",
             label: "SCs & Budget Lines"
+        },
+        {
+            name: "/documents",
+            label: "Documents"
         }
     ];
 
