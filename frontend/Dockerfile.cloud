@@ -42,4 +42,3 @@
   
   # Entry point to run the application.
   ENTRYPOINT ["/bin/sh", "-c", "NODE_ENV=production bun run ./node_modules/.bin/runtime-env-cra && bun run index.js"]
-  
