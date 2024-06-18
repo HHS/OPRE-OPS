@@ -43,14 +43,3 @@ export const useIsAgreementEditable = (agreementId) => {
 
     return isAgreementEditable;
 };
-
-/**
- * Custom hook that returns the total amount of an agreement.
- * @param {number} agreementId - The id of the agreement.
- * @returns {number} The total amount of the agreement.
- */
-export const useAgreementTotalAmount = (agreementId) => {
-    const { data: agreement } = useGetAgreementByIdQuery(agreementId);
-
-    return agreement?.total_amount ?? 0;
-};

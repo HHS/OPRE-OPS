@@ -7,6 +7,7 @@ describe("StatusChangeReviewCard", () => {
             <StatusChangeReviewCard
                 agreementId={1}
                 bliId={123}
+                key={1}
             />
         );
         expect(screen.getByRole("heading", { name: "Status Change" })).toBeInTheDocument();

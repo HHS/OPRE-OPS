@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
-import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
-import { useGetNameForCanId, useGetBLIStatus } from "../../../hooks/lookup.hooks";
+import { renderField } from "../../../helpers/utils";
+import { useGetBLITotal, useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import ReviewCard from "./ReviewCard";
 import TermTag from "./TermTag";
-import { useAgreementTotalAmount } from "../../../hooks/agreement.hooks";
+
 /**
  * BudgetChangeReviewCard component
  * @component
@@ -25,7 +25,7 @@ function StatusChangeReviewCard({ agreementId, requesterName, requestDate, bliId
     const keyName = Object.keys(changeTo)[0];
     let oldValue,
         newValue = "";
-    const totalAmount = useAgreementTotalAmount(agreementId);
+    const totalAmount = useGetBLITotal(bliId);
     const oldCan = useGetNameForCanId(changeTo.can_id?.old);
     const newCan = useGetNameForCanId(changeTo.can_id?.new);
 
@@ -67,7 +67,7 @@ function StatusChangeReviewCard({ agreementId, requesterName, requestDate, bliId
             />
             <TermTag
                 label="Total"
-                value={totalAmount}
+                value={renderField(null, "amount", totalAmount)}
             />
             <TermTag
                 label="From"
