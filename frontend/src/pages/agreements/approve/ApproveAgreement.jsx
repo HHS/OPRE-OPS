@@ -87,8 +87,8 @@ const ApproveAgreement = () => {
         return <h1>Oops, an error occurred</h1>;
     }
 
-    const budgetLinesWithActiveWorkflow = agreement?.budget_line_items.filter((bli) => bli.has_active_workflow);
-    const changeInCans = getTotalByCans(budgetLinesWithActiveWorkflow);
+    const budgetLinesInReview = agreement?.budget_line_items.filter((bli) => bli.in_review);
+    const changeInCans = getTotalByCans(budgetLinesInReview);
 
     const handleCancel = () => {
         setShowModal(true);
@@ -207,7 +207,7 @@ const ApproveAgreement = () => {
             <AgreementBLIAccordion
                 title="Review Budget Lines"
                 instructions={`This is a list of all budget lines within this agreement. The budget lines showing In Review Status need your approval to change from ${fromToText} Status.`}
-                budgetLineItems={budgetLinesWithActiveWorkflow}
+                budgetLineItems={budgetLinesInReview}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
@@ -220,14 +220,14 @@ const ApproveAgreement = () => {
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
-                selectedBudgetLines={budgetLinesWithActiveWorkflow}
+                selectedBudgetLines={budgetLinesInReview}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={action}
             />
             {action === workflowActions.DRAFT_TO_PLANNED && (
                 <AgreementChangesAccordion
-                    changeInBudgetLines={budgetLinesWithActiveWorkflow.reduce((acc, { amount }) => acc + amount, 0)}
+                    changeInBudgetLines={budgetLinesInReview.reduce((acc, { amount }) => acc + amount, 0)}
                     changeInCans={changeInCans}
                 />
             )}

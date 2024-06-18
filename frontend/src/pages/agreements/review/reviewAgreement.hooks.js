@@ -1,6 +1,7 @@
 import * as React from "react";
-import suite from "./suite";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { actionOptions } from "./ReviewAgreement.constants";
+import suite from "./suite";
 
 export const useReviewAgreement = (agreement, isSuccess) => {
     const [action, setAction] = React.useState(""); // for the action accordion
@@ -68,13 +69,13 @@ export const useReviewAgreement = (agreement, isSuccess) => {
                     return {
                         ...bli,
                         selected: false,
-                        actionable: bli.status === "DRAFT" && !bli.has_active_workflow
+                        actionable: bli.status === BLI_STATUS.DRAFT && !bli.in_review
                     };
                 case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
                     return {
                         ...bli,
                         selected: false,
-                        actionable: bli.status === "PLANNED" && !bli.has_active_workflow
+                        actionable: bli.status === BLI_STATUS.PLANNED && !bli.in_review
                     };
                 default:
                     return bli;
@@ -84,9 +85,10 @@ export const useReviewAgreement = (agreement, isSuccess) => {
     };
 
     const toggleSelectActionableBLIs = () => {
+        const BLIIsActionable = bli.actionable && !mainToggleSelected && !bli.in_review;
         const newBudgetLines = budgetLines.map((bli) => ({
             ...bli,
-            selected: bli.actionable && !mainToggleSelected
+            selected: BLIIsActionable
         }));
         setBudgetLines(newBudgetLines);
     };

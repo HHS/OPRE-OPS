@@ -111,21 +111,18 @@ export const ReviewAgreement = () => {
 
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft || anyBudgetLinePlanned) {
-            //Create BLI Package, and send it to approval (create a Workflow)
             const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
-            let selectedBLIsWithStatus = [];
-            // add a property to blI based on the action
-            // if the action is CHANGE_DRAFT_TO_PLANNED, set the status to PLANNED
-            // if the action is CHANGE_PLANNED_TO_EXECUTING, set the status to EXECUTING
+            let selectedBLIsWithStatusAndNotes = [];
+
             switch (action) {
                 case actionOptions.CHANGE_DRAFT_TO_PLANNED:
-                    selectedBLIsWithStatus = selectedBudgetLines.map((bli) => {
-                        return { ...bli, status: BLI_STATUS.PLANNED };
+                    selectedBLIsWithStatusAndNotes = selectedBudgetLines.map((bli) => {
+                        return { ...bli, status: BLI_STATUS.PLANNED, requestor_notes: notes };
                     });
                     break;
                 case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
-                    selectedBLIsWithStatus = selectedBudgetLines.map((bli) => {
-                        return { ...bli, status: BLI_STATUS.EXECUTING };
+                    selectedBLIsWithStatusAndNotes = selectedBudgetLines.map((bli) => {
+                        return { ...bli, status: BLI_STATUS.EXECUTING, requestor_notes: notes };
                     });
                     break;
                 default:
@@ -147,33 +144,8 @@ export const ReviewAgreement = () => {
             }
             console.log("BLI Package Data:", selectedBudgetLines, currentUserId, notes);
             console.log("THE ACTION IS:", action);
-            // addApprovalRequest({
-            //     budget_line_item_ids: selectedBLIs,
-            //     submitter_id: currentUserId,
-            //     notes: notes,
-            //     workflow_action: workflowAction
-            // })
-            //     .unwrap()
-            //     .then((fulfilled) => {
-            //         console.log("BLI Status Updated:", fulfilled);
-            //         setAlert({
-            //             type: "success",
-            //             heading: alertTitle,
-            //             message: alertMessage,
-            //             redirectUrl: "/agreements"
-            //         });
-            //     })
-            //     .catch((rejected) => {
-            //         console.log("Error Updating Budget Line Status");
-            //         console.dir(rejected);
-            //         setAlert({
-            //             type: "error",
-            //             heading: "Error",
-            //             message: "An error occurred. Please try again.",
-            //             redirectUrl: "/error"
-            //         });
-            //     });
-            let promises = selectedBLIsWithStatus.map((budgetLine) => {
+
+            let promises = selectedBLIsWithStatusAndNotes.map((budgetLine) => {
                 const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(budgetLine);
                 return updateBudgetLineItem({ id, data: cleanExistingBLI })
                     .unwrap()

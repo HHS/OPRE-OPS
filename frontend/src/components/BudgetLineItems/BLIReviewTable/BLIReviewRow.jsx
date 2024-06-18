@@ -89,7 +89,7 @@ const BLIReviewRow = ({
                     onChange={(e) => {
                         setSelectedBLIs(e.target.value);
                     }}
-                    disabled={!budgetLine.actionable}
+                    disabled={!budgetLine.actionable || budgetLine?.in_review}
                     checked={budgetLine?.selected}
                 />
                 <label
@@ -178,7 +178,7 @@ const BLIReviewRow = ({
                 ) : (
                     <TableTag
                         status={budgetLine?.status}
-                        inReview={budgetLine?.has_active_workflow}
+                        inReview={budgetLine?.in_review}
                     />
                 )}
             </td>
