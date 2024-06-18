@@ -85,11 +85,11 @@ export const useReviewAgreement = (agreement, isSuccess) => {
     };
 
     const toggleSelectActionableBLIs = () => {
-        const BLIIsActionable = bli.actionable && !mainToggleSelected && !bli.in_review;
         const newBudgetLines = budgetLines.map((bli) => ({
             ...bli,
-            selected: BLIIsActionable
+            selected: bli.actionable && !mainToggleSelected
         }));
+
         setBudgetLines(newBudgetLines);
     };
 

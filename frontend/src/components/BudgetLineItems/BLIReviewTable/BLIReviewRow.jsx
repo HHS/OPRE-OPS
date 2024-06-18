@@ -89,7 +89,7 @@ const BLIReviewRow = ({
                     onChange={(e) => {
                         setSelectedBLIs(e.target.value);
                     }}
-                    disabled={!budgetLine.actionable || budgetLine?.in_review}
+                    disabled={!budgetLine.actionable}
                     checked={budgetLine?.selected}
                 />
                 <label
