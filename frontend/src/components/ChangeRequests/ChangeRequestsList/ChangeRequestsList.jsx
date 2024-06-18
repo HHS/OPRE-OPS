@@ -1,7 +1,7 @@
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import DebugCode from "../../DebugCode";
-import BudgetChangeReviewCard from "../ReviewCard/BudgetChangeReviewCard";
-import StatusChangeReviewCard from "../ReviewCard/StatusChangeReviewCard";
+import BudgetChangeReviewCard from "../BudgetChangeReviewCard/BudgetChangeReviewCard";
+import StatusChangeReviewCard from "../StatusChangeReviewCard/StatusChangeReviewCard";
 
 function ChangeRequestsList() {
     const {
