@@ -27,6 +27,7 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
     return (
         <div
             className="width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter border-2px radius-lg"
+            data-cy="review-card"
             style={{ minHeight: "8.375rem" }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -88,18 +89,18 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                 {children}
             </section>
             <footer className="font-12px display-flex flex-justify flex-align-center">
-                <dl className="margin-0">
-                    <dt className="text-base-dark display-flex flex-align-center">
-                        <FontAwesomeIcon
-                            icon={faClock}
-                            className="height-2 width-2 margin-right-1"
-                        />
-                        {formatDateToMonthDayYear(requestDate)}
-                    </dt>
-                </dl>
+                <div className="text-base-dark display-flex flex-align-center">
+                    <FontAwesomeIcon
+                        icon={faClock}
+                        className="height-2 width-2 margin-right-1"
+                    />
+                    {formatDateToMonthDayYear(requestDate)}
+                </div>
+
                 <Link
                     to={`/agreements/approve/${agreementId}`}
                     className="text-primary font-12px"
+                    data-cy="approve-agreement"
                 >
                     Review Agreement
                     <FontAwesomeIcon
