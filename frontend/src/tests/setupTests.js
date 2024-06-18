@@ -4,7 +4,7 @@ import { cleanup } from "@testing-library/react";
 import ApplicationContext from "../applicationContext/ApplicationContext";
 import TestApplicationContext from "../applicationContext/TestApplicationContext";
 import { setupStore } from "../store";
-import { server } from "../helpers/mocks";
+import { server } from "./mocks";
 import { opsApi } from "../api/opsAPI";
 
 ApplicationContext.registerApplicationContext(TestApplicationContext);
