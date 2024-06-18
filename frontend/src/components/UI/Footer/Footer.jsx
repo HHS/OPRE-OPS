@@ -1,6 +1,6 @@
-import { AgencyInfo } from "./AgencyInfo";
-import { Identifier } from "./Identifier";
-import { NavFooter } from "./NavFooter";
+import AgencyInfo from "./AgencyInfo";
+import Identifier from "./Identifier";
+import NavFooter from "./NavFooter";
 
 const Footer = () => {
     const scrollToTop = () => {
