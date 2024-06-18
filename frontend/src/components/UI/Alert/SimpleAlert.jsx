@@ -7,12 +7,11 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
  * @param {Object} props - The props object.
  * @param {React.ReactNode} [props.children] - The child elements to render inside the alert. - optional
  * @param {string} props.heading - The heading text for the alert.
- * @param {string} [props.message] - The message text for the alert. - optional
- * @param {("success" | "warning" | "error")} props.type - The type of alert to display.
+ * @param {string} props.message - The message text for the alert.
+ * @param {string} props.type - The type of alert to display.
  * @param {boolean} [props.isClosable] - Whether the alert is closable. - optional
  * @param {boolean} [props.isAlertVisible] - Whether the alert is visible.
  * @param {Function} [props.setIsAlertVisible] - The function to set the alert visibility.
- * @param {string} [props.className] - The class name for the alert. - optional
  * @returns {JSX.Element | null} - The rendered alert component.
  */
 const SimpleAlert = ({
@@ -22,10 +21,9 @@ const SimpleAlert = ({
     type,
     isClosable = false,
     isAlertVisible = true,
-    setIsAlertVisible = () => {},
-    className
+    setIsAlertVisible = () => {}
 }) => {
-    let classNames = `usa-alert margin-left-neg-4 margin-right-neg-4 ${className}`;
+    let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4";
 
     switch (type) {
         case "success":
@@ -76,8 +74,7 @@ SimpleAlert.propTypes = {
     type: PropTypes.oneOf(["success", "warning", "error"]).isRequired,
     isClosable: PropTypes.bool,
     isAlertVisible: PropTypes.bool,
-    setIsAlertVisible: PropTypes.func,
-    className: PropTypes.string
+    setIsAlertVisible: PropTypes.func
 };
 
 export default SimpleAlert;
