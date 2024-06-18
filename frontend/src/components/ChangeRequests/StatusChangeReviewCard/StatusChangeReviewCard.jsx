@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { renderField } from "../../../helpers/utils";
 import { useGetBLITotal, useGetNameForCanId } from "../../../hooks/lookup.hooks";
-import ReviewCard from "../ReviewCard/ReviewCard";
+import ReviewCard from "../ReviewCard";
 import TermTag from "../TermTag";
 
 /**

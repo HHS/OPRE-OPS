@@ -1,7 +1,6 @@
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
-import DebugCode from "../../DebugCode";
-import BudgetChangeReviewCard from "../BudgetChangeReviewCard/BudgetChangeReviewCard";
-import StatusChangeReviewCard from "../StatusChangeReviewCard/StatusChangeReviewCard";
+import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
+import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
 function ChangeRequestsList() {
     const {
@@ -52,7 +51,6 @@ function ChangeRequestsList() {
                     </>
                 )
             )}
-            <DebugCode data={changeRequests} />
         </>
     ) : (
         <p className="text-center margin-top-9">There are currently no changes for review.</p>
