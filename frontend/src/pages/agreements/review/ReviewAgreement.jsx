@@ -1,36 +1,35 @@
 import { Fragment } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 import classnames from "vest/classnames";
-import suite from "./suite";
-import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
-import { useAddApprovalRequestMutation, useUpdateBudgetLineItemMutation } from "../../../api/opsAPI";
-import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
-import { convertCodeForDisplay } from "../../../helpers/utils";
-import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import useAlert from "../../../hooks/use-alert.hooks";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
-import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
-import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
-import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
-import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
-import AgreementAddInfoAccordion from "../../../components/Agreements/AgreementAddInfoAccordion";
 import App from "../../../App";
-import useToggle from "../../../hooks/useToggle";
+import { useGetAgreementByIdQuery, useUpdateBudgetLineItemMutation } from "../../../api/opsAPI";
+import AgreementActionAccordion from "../../../components/Agreements/AgreementActionAccordion";
+import AgreementAddInfoAccordion from "../../../components/Agreements/AgreementAddInfoAccordion";
+import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
+import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
+import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
+import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import TextArea from "../../../components/UI/Form/TextArea";
 import PageHeader from "../../../components/UI/PageHeader";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { convertCodeForDisplay } from "../../../helpers/utils";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import useAlert from "../../../hooks/use-alert.hooks";
+import useToggle from "../../../hooks/useToggle";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { actionOptions, workflowActions } from "./ReviewAgreement.constants";
-import useReviewAgreement from "./reviewAgreement.hooks";
 import {
     anyBudgetLinesByStatus,
     getSelectedBudgetLines,
-    selectedBudgetLinesTotal,
-    getTotalBySelectedCans
+    getTotalBySelectedCans,
+    selectedBudgetLinesTotal
 } from "./ReviewAgreement.helpers";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import useReviewAgreement from "./reviewAgreement.hooks";
+import suite from "./suite";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -51,8 +50,6 @@ export const ReviewAgreement = () => {
         refetchOnMountOrArgChange: true
     });
     const activeUser = useSelector((state) => state.auth.activeUser);
-
-    const [addApprovalRequest] = useAddApprovalRequestMutation();
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
