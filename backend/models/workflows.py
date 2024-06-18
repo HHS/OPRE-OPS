@@ -416,6 +416,7 @@ class ChangeRequest(BaseModel):
     requested_change_diff: Mapped[Optional[JSONB]] = mapped_column(JSONB)
     requested_change_info: Mapped[Optional[JSONB]] = mapped_column(JSONB)
     # BaseModel.created_by is the requestor, so there's no need for another column for that
+    requestor_notes: Mapped[Optional[str]] = mapped_column(sa.String)
 
     managing_division_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("division.id")
@@ -426,6 +427,7 @@ class ChangeRequest(BaseModel):
     )
     reviewed_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
     reviewed_on: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    reviewer_notes: Mapped[Optional[str]] = mapped_column(sa.String)
 
     __mapper_args__ = {
         "polymorphic_on": "type",
