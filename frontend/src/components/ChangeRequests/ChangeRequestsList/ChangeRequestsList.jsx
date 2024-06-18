@@ -37,7 +37,6 @@ function ChangeRequestsList() {
                                 changeTo={changeRequest.requested_change_diff}
                             />
                         )}
-                        {/* TODO: add Status Change Card */}
                         {changeRequest.has_status_change && (
                             <StatusChangeReviewCard
                                 key={changeRequest.id}

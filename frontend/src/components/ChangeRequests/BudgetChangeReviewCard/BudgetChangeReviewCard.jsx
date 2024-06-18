@@ -1,8 +1,10 @@
 import PropTypes from "prop-types";
-import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
-import { useGetNameForCanId, useGetBLIStatus } from "../../../hooks/lookup.hooks";
+import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
+import { convertCodeForDisplay } from "../../../helpers/utils";
+import { useGetBLIStatus, useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import ReviewCard from "../ReviewCard";
 import TermTag from "../TermTag";
+
 /**
  * BudgetChangeReviewCard component
  * @component
@@ -15,35 +17,13 @@ import TermTag from "../TermTag";
  * @returns {JSX.Element} - The rendered component
  */
 function BudgetChangeReviewCard({ agreementId, requesterName, requestDate, bliId, changeTo }) {
-    const KEY_NAMES = {
-        AMOUNT: "amount",
-        CAN: "can_id",
-        DATE_NEEDED: "date_needed"
-    };
     const keyName = Object.keys(changeTo)[0];
-    let oldValue,
-        newValue = "";
 
     const oldCan = useGetNameForCanId(changeTo.can_id?.old);
     const newCan = useGetNameForCanId(changeTo.can_id?.new);
     const status = useGetBLIStatus(bliId);
+    const { oldValue, newValue } = renderChangeValues(keyName, changeTo, oldCan, newCan);
 
-    switch (keyName) {
-        case KEY_NAMES.AMOUNT:
-            oldValue = renderField(keyName, "amount", changeTo.amount.old);
-            newValue = renderField(keyName, "amount", changeTo.amount.new);
-            break;
-        case KEY_NAMES.CAN:
-            oldValue = oldCan;
-            newValue = newCan;
-            break;
-        case KEY_NAMES.DATE_NEEDED:
-            oldValue = renderField(keyName, "date_needed", changeTo.date_needed.old);
-            newValue = renderField(keyName, "date_needed", changeTo.date_needed.new);
-            break;
-        default:
-            break;
-    }
     return (
         <ReviewCard
             type="Budget Change"
