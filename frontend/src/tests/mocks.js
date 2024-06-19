@@ -1,4 +1,4 @@
-import { HttpResponse, http } from "msw";
+import { http } from "msw";
 import { setupServer } from "msw/node";
 import { changeRequests } from "./data";
 
