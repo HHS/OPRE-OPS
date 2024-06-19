@@ -1,4 +1,4 @@
-import { server } from "../helpers/mocks";
+import { server } from "../tests/mocks";
 import { http } from "msw";
 import { waitFor } from "@testing-library/react";
 import { useGetAgreementsQuery } from "./opsAPI";

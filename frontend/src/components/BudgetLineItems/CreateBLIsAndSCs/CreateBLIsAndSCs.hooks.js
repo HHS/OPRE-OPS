@@ -378,6 +378,7 @@ const useCreateBLIsAndSCs = (
         delete cleanData.can;
         delete cleanData.id;
         delete cleanData.has_active_workflow;
+        delete cleanData.in_review;
         delete cleanData.canDisplayName;
         delete cleanData.versions;
         delete cleanData.clin;

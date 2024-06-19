@@ -7,6 +7,7 @@ import {
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery
 } from "../api/opsAPI";
+import { totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../helpers/utils";
 
 /**
  * This hook returns the display name given the id.
@@ -124,4 +125,24 @@ export const useGetBLIStatus = (id) => {
     }, [id, data, isSuccess]);
 
     return status;
+};
+
+/**
+ * This hook returns the total amount( plus fees) of a Budget Line Item given the id.
+ * @param {number} id - The id of the Budget Line Item.
+ * @returns {number} - The status of the Budget Line Item.
+ */
+export const useGetBLITotal = (id) => {
+    const [amount, setAmount] = React.useState(0);
+    const { data: budgetLine, isSuccess } = useGetBudgetLineItemQuery(id);
+
+    React.useEffect(() => {
+        if (isSuccess) {
+            const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
+            const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
+            setAmount(budgetLineTotalPlusFees);
+        }
+    }, [id, budgetLine, isSuccess]);
+
+    return amount;
 };
