@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-SQLAlchemy = "==2.0.30"
+SQLAlchemy = "==2.0.31"
 pandas = "==2.2.2"
 json5 = "==0.9.25"
 psycopg2-binary = "==2.9.9"
