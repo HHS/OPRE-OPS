@@ -24,6 +24,7 @@ from models import (
 from ops_api.ops.resources.agreement_history import find_agreement_histories
 
 test_user_id = 4
+test_no_perms_user_id = 7
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -545,3 +546,38 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     assert response.status_code == 200
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_change_request_review_authz(auth_client, auth_client_without_roles, no_perms_auth_client, app):
+    session = app.db_session
+
+    # create a change request
+    change_request1 = BudgetLineItemChangeRequest()
+    change_request1.status = ChangeRequestStatus.IN_REVIEW
+    change_request1.budget_line_item_id = 1
+    change_request1.agreement_id = 1
+    change_request1.created_by = 1
+    change_request1.managing_division_id = 1
+    change_request1.requested_change_data = {"key": "value"}
+    session.add(change_request1)
+    session.commit()
+
+    assert change_request1.id is not None
+    change_request_id = change_request1.id
+
+    # verify access denied for use with no permissions (no roles) and not a DD or DDD
+    data = {"change_request_id": change_request_id, "action": "APPROVE"}
+    response = no_perms_auth_client.post(url_for("api.change-request-review-list"), json=data)
+    assert response.status_code == 401  # The app is using 401 where it should be 403s
+
+    # make user a DD of the managing division
+    division: Division = session.get(Division, 1)
+    division.division_director_id = test_no_perms_user_id
+    session.add(division)
+    session.commit()
+
+    # verify access now granted
+    data = {"change_request_id": change_request_id, "action": "APPROVE"}
+    response = no_perms_auth_client.post(url_for("api.change-request-review-list"), json=data)
+    assert response.status_code == 200

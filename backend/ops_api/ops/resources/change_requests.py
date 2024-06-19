@@ -1,8 +1,9 @@
 import copy
 from datetime import datetime
+from functools import partial
 
 from flask import Response, current_app, request
-from flask_jwt_extended import current_user
+from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy import or_, select
 
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
@@ -14,6 +15,29 @@ from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.utils.response import make_response_with_headers
+
+
+def division_director_of_change_request(self) -> bool:
+    current_user_id = current_user.id
+    print(f"current_user_id: {current_user_id}")
+    request_data = request.json
+    print(f"request_data: {request_data}")
+    change_request_id = request_data.get("change_request_id", None)
+    if change_request_id is None:
+        print("change_request_id is None")
+        return False
+    change_request: ChangeRequest = current_app.db_session.get(ChangeRequest, change_request_id)
+    if not change_request or not change_request.managing_division_id:
+        print("change_request is None or managing_division_id is None")
+        return False
+    division: Division = current_app.db_session.get(Division, change_request.managing_division_id)
+    if division is None:
+        print("division is None")
+        return False
+    print(
+        f"{(division.division_director_id == current_user_id)=} or {(division.deputy_division_director_id == current_user_id)=}"
+    )
+    return division.division_director_id == current_user_id or division.deputy_division_director_id == current_user_id
 
 
 def review_change_request(
@@ -111,7 +135,15 @@ class ChangeRequestReviewAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
 
-    @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
+    @is_authorized(
+        PermissionType.POST,
+        Permission.CHANGE_REQUEST_REVIEW,
+        extra_check=partial(
+            division_director_of_change_request,
+        ),
+        groups=["Budget Team", "Admins"],
+    )
+    @jwt_required()
     def post(self) -> Response:
         request_json = request.get_json()
         change_request_id = request_json.get("change_request_id")

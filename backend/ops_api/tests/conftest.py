@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from models import OpsDBHistory, OpsEvent
 from ops_api.ops import create_app
-from tests.auth_client import AuthClient, NoPermsAuthClient
+from tests.auth_client import AuthClient, AuthClientWithoutRoles, NoPermsAuthClient
 
 
 @pytest.fixture()
@@ -45,6 +45,14 @@ def no_perms_auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
     app.testing = True
     app.test_client_class = NoPermsAuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def auth_client_without_roles(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
+    """Get the authenticated test client for flask."""
+    app.testing = True
+    app.test_client_class = AuthClientWithoutRoles
     return app.test_client()
 
 

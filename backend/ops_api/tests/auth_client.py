@@ -53,5 +53,68 @@ class NoPermsAuthClient(FlaskClient):
             division=1,
         )
         access_token = create_access_token(identity=user, additional_claims={})
+        refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
+
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
+        user_session.access_token = access_token
+        user_session.refresh_token = refresh_token
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+
+        return super().open(*args, **kwargs)
+
+
+class NoPermsAuthClientWithSession(FlaskClient):
+    """
+    A test client that creates an access token for a user with no roles or groups.
+
+    N.B. Instead of re-using a user from our test data it would be better to create
+    a new user for this purpose. This would make it clear that the user has no
+    permissions and would prevent the tests from breaking if the user's permissions
+    were changed.
+    """
+
+    def open(self, *args, **kwargs):
+        user = User(
+            id="7",
+            oidc_id="00000000-0000-1111-a111-000000000007",
+            email="unit-test-no-perms@ops-api.gov",
+            first_name="Unit",
+            last_name="Test",
+            division=1,
+        )
+        access_token = create_access_token(identity=user, additional_claims={})
+        refresh_token = create_refresh_token(identity=user)
+        kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
+
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
+        user_session.access_token = access_token
+        user_session.refresh_token = refresh_token
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+
+        return super().open(*args, **kwargs)
+
+
+class AuthClientWithoutRoles(FlaskClient):
+    def open(self, *args, **kwargs):
+        user = User(
+            id="4",
+            oidc_id="00000000-0000-1111-a111-000000000004",
+            email="unit-test@ops-api.gov",
+            first_name="Unit",
+            last_name="Test",
+            division=1,
+        )
+        access_token = create_access_token(identity=user, additional_claims={})
+        refresh_token = create_refresh_token(identity=user)
+        kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
+
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
+        user_session.access_token = access_token
+        user_session.refresh_token = refresh_token
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+
         return super().open(*args, **kwargs)
