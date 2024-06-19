@@ -1,11 +1,12 @@
 from marshmallow import EXCLUDE, Schema, fields
 
+from models import ChangeRequestType
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
 class ChangeRequestResponseSchema(Schema):
     id = fields.Int(required=True)
-    type = fields.Str(required=True)
+    change_request_type = fields.Enum(ChangeRequestType, required=True)
     display_name = fields.String(required=True)
     status = fields.String(required=True)
     requested_change_data = fields.Dict(required=True)

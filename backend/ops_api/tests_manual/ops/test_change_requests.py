@@ -6,7 +6,7 @@ import pytest
 from flask import url_for
 
 from models import Agreement, BudgetLineItem, BudgetLineItemStatus, Division
-from models.workflows import BudgetLineItemChangeRequest, ChangeRequestStatus
+from models.workflows import BudgetLineItemChangeRequest, ChangeRequestStatus, ChangeRequestType
 from ops_api.ops.resources.agreement_history import find_agreement_histories
 
 test_user_id = 4
@@ -65,7 +65,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app):
         assert "id" in change_request
         change_request_id = change_request["id"]
         change_request_ids.append(change_request_id)
-        assert change_request["type"] == "budget_line_item_change_request"
+        assert change_request["change_request_type"] == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
         assert change_request["budget_line_item_id"] == bli_id
         assert change_request["has_budget_change"] is True
         assert change_request["has_status_change"] is False
@@ -222,7 +222,7 @@ def test_budget_line_item_change_request_history(auth_client, app):
         assert "id" in change_request
         change_request_id = change_request["id"]
         change_request_ids.append(change_request_id)
-        assert change_request["type"] == "budget_line_item_change_request"
+        assert change_request["change_request_type"] == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
         assert change_request["budget_line_item_id"] == bli_id
         assert change_request["has_budget_change"] is True
         assert change_request["has_status_change"] is False
@@ -638,7 +638,7 @@ def test_budget_line_item_create_status_change_request(auth_client, app):
     assert len(change_requests_in_review) == 1
     change_request = change_requests_in_review[0]
     change_request_id = change_request["id"]
-    assert change_request["type"] == "budget_line_item_change_request"
+    assert change_request["change_request_type"] == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
     assert change_request["budget_line_item_id"] == bli_id
     assert change_request["has_budget_change"] is False
     assert change_request["has_status_change"] is True
@@ -724,7 +724,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app):
     assert len(change_requests_in_review) == 1
     change_request = change_requests_in_review[0]
     change_request_id = change_request["id"]
-    assert change_request["type"] == "budget_line_item_change_request"
+    assert change_request["change_request_type"] == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
     assert change_request["budget_line_item_id"] == bli_id
     assert change_request["has_budget_change"] is False
     assert change_request["has_status_change"] is True
