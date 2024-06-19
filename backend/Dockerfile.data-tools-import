@@ -1,9 +1,19 @@
-FROM alpine:3
+FROM alpine:3.20
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/home/app
 
-RUN apk update && apk add --no-cache postgresql16-client=16.3-r0 python3=3.12.3-r1 py3-pip=24.0-r2
+# renovate: datasource=repology depName=alpine_3_20/postgresql16-client versioning=loose
+ENV POSTGRESQL16_CLIENT_VERSION="16.3-r0"
+# renovate: datasource=repology depName=alpine_3_20/python3 versioning=loose
+ENV PYTHON3_VERSION="3.12.3-r1"
+# renovate: datasource=repology depName=alpine_3_20/py3-pip versioning=loose
+ENV PY3_PIP_VERSION="24.0-r2"
+
+RUN apk update && apk add --no-cache \
+    postgresql16-client="${POSTGRESQL16_CLIENT_VERSION}" \
+    python3="${PYTHON3_VERSION}" \
+    py3-pip="${PY3_PIP_VERSION}"
 
 # Create a non-root user to run the app
 RUN adduser app -D
