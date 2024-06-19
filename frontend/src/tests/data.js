@@ -316,7 +316,7 @@ export const changeRequests = [
         reviewed_on: null,
         reviewer_notes: null,
         status: "ChangeRequestStatus.IN_REVIEW",
-        type: "budget_line_item_change_request",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         updated_by: 21,
         updated_on: "2024-06-17T22:03:15.201945"
     },
@@ -345,9 +345,8 @@ export const changeRequests = [
         },
         requestor_notes: null,
         reviewed_on: null,
-        reviewer_notes: null,
         status: "ChangeRequestStatus.IN_REVIEW",
-        type: "budget_line_item_change_request",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         updated_by: 21,
         updated_on: "2024-06-17T22:03:15.220286"
     },
@@ -376,9 +375,8 @@ export const changeRequests = [
         },
         requestor_notes: null,
         reviewed_on: null,
-        reviewer_notes: null,
-        status: "ChangeRequestStatus.IN_REVIEW",
-        type: "budget_line_item_change_request",
+        status: "IN_REVIEW",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         updated_by: 21,
         updated_on: "2024-06-17T22:03:15.239904"
     },
@@ -407,9 +405,8 @@ export const changeRequests = [
         },
         requestor_notes: null,
         reviewed_on: null,
-        reviewer_notes: null,
         status: "ChangeRequestStatus.IN_REVIEW",
-        type: "budget_line_item_change_request",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         updated_by: 21,
         updated_on: "2024-06-17T18:55:41.810562"
     },
@@ -440,7 +437,7 @@ export const changeRequests = [
         reviewed_on: null,
         reviewer_notes: null,
         status: "ChangeRequestStatus.IN_REVIEW",
-        type: "budget_line_item_change_request",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         updated_by: 21,
         updated_on: "2024-06-17T18:55:41.826716"
     }
