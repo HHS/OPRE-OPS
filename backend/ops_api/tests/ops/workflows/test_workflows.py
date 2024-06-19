@@ -619,7 +619,7 @@ def test_status_change_request_creates_procurement_workflow(auth_client, loaded_
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_change_request_review_authz(auth_client, auth_client_without_roles, no_perms_auth_client, app):
+def test_change_request_review_authz(no_perms_auth_client, app):
     session = app.db_session
 
     # create a change request
