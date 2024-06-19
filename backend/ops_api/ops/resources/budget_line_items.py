@@ -138,9 +138,13 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             if not editable:
                 return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
 
+            # pull out requestor_notes from BLI data for change requests
+            request_data = request.json
+            requestor_notes = request_data.pop("requestor_notes", None)
+
             # validate and normalize the request data
             change_data, changing_from_data = validate_and_prepare_change_data(
-                request.json,
+                request_data,
                 budget_line_item,
                 schema,
                 ["id", "agreement_id"],
@@ -197,6 +201,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     change_request.requested_change_diff = requested_change_diff
                     requested_change_info = {"target_display_name": budget_line_item.display_name}
                     change_request.requested_change_info = requested_change_info
+                    change_request.requestor_notes = requestor_notes
                     current_app.db_session.add(change_request)
                     current_app.db_session.commit()
                     change_request_ids.append(change_request.id)
