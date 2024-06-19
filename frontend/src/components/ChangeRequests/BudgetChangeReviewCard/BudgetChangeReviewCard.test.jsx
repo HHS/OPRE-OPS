@@ -33,7 +33,10 @@ describe("BudgetChangeReviewCard", () => {
         useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
         render(
             <BrowserRouter>
-                <BudgetChangeReviewCard {...initialProps} />
+                <BudgetChangeReviewCard
+                    {...initialProps}
+                    key={1}
+                />
             </BrowserRouter>
         );
 
@@ -47,13 +50,16 @@ describe("BudgetChangeReviewCard", () => {
     it("should render an amount change", () => {
         render(
             <BrowserRouter>
-                <BudgetChangeReviewCard {...initialProps} />
+                <BudgetChangeReviewCard
+                    {...initialProps}
+                    key={1}
+                />
             </BrowserRouter>
         );
 
         expect(screen.getByText("Amount")).toBeInTheDocument();
-        expect(screen.getByText("$300,000")).toBeInTheDocument();
-        expect(screen.getByText("$333,333")).toBeInTheDocument();
+        expect(screen.getByText("$300,000.00")).toBeInTheDocument();
+        expect(screen.getByText("$333,333.00")).toBeInTheDocument();
     });
     it("should render an CAN change", async () => {
         useGetNameForCanId.mockReturnValueOnce("CAN 1").mockReturnValueOnce("CAN 2");
@@ -68,6 +74,7 @@ describe("BudgetChangeReviewCard", () => {
             <BrowserRouter>
                 <BudgetChangeReviewCard
                     {...initialProps}
+                    key={1}
                     changeTo={changeTo}
                 />
             </BrowserRouter>
@@ -92,6 +99,7 @@ describe("BudgetChangeReviewCard", () => {
             <BrowserRouter>
                 <BudgetChangeReviewCard
                     {...initialProps}
+                    key={1}
                     changeTo={changeTo}
                 />
             </BrowserRouter>

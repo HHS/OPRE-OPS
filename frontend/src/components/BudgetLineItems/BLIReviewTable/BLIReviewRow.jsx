@@ -178,7 +178,7 @@ const BLIReviewRow = ({
                 ) : (
                     <TableTag
                         status={budgetLine?.status}
-                        inReview={budgetLine?.has_active_workflow}
+                        inReview={budgetLine?.in_review}
                     />
                 )}
             </td>
