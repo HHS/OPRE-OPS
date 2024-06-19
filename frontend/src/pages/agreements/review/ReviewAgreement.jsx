@@ -114,12 +114,16 @@ export const ReviewAgreement = () => {
             switch (action) {
                 case actionOptions.CHANGE_DRAFT_TO_PLANNED:
                     selectedBLIsWithStatusAndNotes = selectedBudgetLines.map((bli) => {
-                        return { ...bli, status: BLI_STATUS.PLANNED, requestor_notes: notes };
+                        return { id: bli.id, status: BLI_STATUS.PLANNED, requestor_notes: notes };
                     });
                     break;
                 case actionOptions.CHANGE_PLANNED_TO_EXECUTING:
                     selectedBLIsWithStatusAndNotes = selectedBudgetLines.map((bli) => {
-                        return { ...bli, status: BLI_STATUS.EXECUTING, requestor_notes: notes };
+                        return {
+                            id: bli.id,
+                            status: BLI_STATUS.EXECUTING,
+                            requestor_notes: notes
+                        };
                     });
                     break;
                 default:
