@@ -3,7 +3,7 @@ import BudgetChangeReviewCard from "../ReviewCard/BudgetChangeReviewCard";
 
 function ChangeRequestsList() {
     const CHANGE_REQUEST_TYPES = {
-        BUDGET: "budget_line_item_change_request",
+        BUDGET: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         STATUS: "",
         BUDGET_DELETED: "",
         PRE_AWARD: "",
