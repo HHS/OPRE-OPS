@@ -17,6 +17,9 @@ export type ChangeRequest = {
     managing_division_id: number;
     requested_change_data: {
         amount: number;
+        date_needed: string;
+        can_id: number;
+        status: string;
     };
     requested_change_diff: {
         amount?: {
@@ -30,6 +33,10 @@ export type ChangeRequest = {
         can_id?: {
             new: number;
             old: number;
+        };
+        status?: {
+            new: string;
+            old: string;
         };
     };
     requested_change_info: {
