@@ -2225,9 +2225,9 @@ components:
         id:
           type: integer
           example: 1
-        type:
+        change_request_type:
           type: string
-          example: 'budget_line_item_change_request'
+          example: 'BUDGET_LINE_ITEM_CHANGE_REQUEST'
         status:
           type: string
           example: 'IN_REVIEW'

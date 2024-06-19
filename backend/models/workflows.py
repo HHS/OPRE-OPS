@@ -405,10 +405,20 @@ class ChangeRequestStatus(Enum):
     REJECTED = auto()
 
 
+class ChangeRequestType(Enum):
+    CHANGE_REQUEST = auto()
+    AGREEMENT_CHANGE_REQUEST = auto()
+    BUDGET_LINE_ITEM_CHANGE_REQUEST = auto()
+
+
 class ChangeRequest(BaseModel):
     __tablename__ = "change_request"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    type: Mapped[str]
+    change_request_type: Mapped[ChangeRequestType] = mapped_column(
+        ENUM(ChangeRequestType)
+    )
+
+    # agreement_type: Mapped[AgreementType] = mapped_column(ENUM(AgreementType))
     status: Mapped[ChangeRequestStatus] = mapped_column(
         ENUM(ChangeRequestStatus), nullable=False, default=ChangeRequestStatus.IN_REVIEW
     )
@@ -430,8 +440,8 @@ class ChangeRequest(BaseModel):
     reviewer_notes: Mapped[Optional[str]] = mapped_column(sa.String)
 
     __mapper_args__ = {
-        "polymorphic_on": "type",
-        "polymorphic_identity": "change_request",
+        "polymorphic_on": "change_request_type",
+        "polymorphic_identity": ChangeRequestType.CHANGE_REQUEST,
     }
 
 
@@ -446,7 +456,7 @@ class AgreementChangeRequest(ChangeRequest):
     )
 
     __mapper_args__ = {
-        "polymorphic_identity": "agreement_change_request",
+        "polymorphic_identity": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
     }
 
     budget_field_names = ["procurement_shop_id"]
@@ -470,7 +480,7 @@ class BudgetLineItemChangeRequest(AgreementChangeRequest):
     )
 
     __mapper_args__ = {
-        "polymorphic_identity": "budget_line_item_change_request",
+        "polymorphic_identity": ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST,
     }
 
     budget_field_names = ["amount", "can_id", "date_needed"]

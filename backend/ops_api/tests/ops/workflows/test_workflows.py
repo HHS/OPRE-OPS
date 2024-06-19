@@ -6,12 +6,18 @@ from flask import url_for
 
 from models import (
     AgreementChangeRequest,
+    AgreementReason,
+    AgreementType,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
     ChangeRequestStatus,
+    ChangeRequestType,
+    ContractAgreement,
+    ContractType,
     Division,
+    ServiceRequirementType,
     WorkflowAction,
     WorkflowInstance,
     WorkflowStepInstance,
@@ -22,6 +28,7 @@ from models import (
     WorkflowTriggerType,
 )
 from ops_api.ops.resources.agreement_history import find_agreement_histories
+from ops_api.ops.utils.procurement_workflow_helper import delete_procurement_workflow
 
 test_user_id = 4
 test_no_perms_user_id = 7
@@ -119,7 +126,7 @@ def test_change_request(auth_client, app):
     assert change_request.id is not None
     new_change_request_id = change_request.id
     change_request = session.get(ChangeRequest, new_change_request_id)
-    assert change_request.type == "change_request"
+    assert change_request.change_request_type == ChangeRequestType.CHANGE_REQUEST
 
     session.delete(change_request)
     session.commit()
@@ -138,7 +145,7 @@ def test_agreement_change_request(auth_client, app):
     assert change_request.id is not None
     new_change_request_id = change_request.id
     change_request = session.get(ChangeRequest, new_change_request_id)
-    assert change_request.type == "agreement_change_request"
+    assert change_request.change_request_type == ChangeRequestType.AGREEMENT_CHANGE_REQUEST
 
     session.delete(change_request)
     session.commit()
@@ -157,8 +164,8 @@ def test_budget_line_item_change_request(auth_client, app):
 
     assert change_request.id is not None
     new_change_request_id = change_request.id
-    change_request = session.get(ChangeRequest, new_change_request_id)
-    assert change_request.type == "budget_line_item_change_request"
+    change_request: ChangeRequest = session.get(ChangeRequest, new_change_request_id)
+    assert change_request.change_request_type == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST
 
     session.delete(change_request)
     session.commit()
@@ -214,7 +221,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
         assert "id" in change_request
         change_request_id = change_request["id"]
         change_request_ids.append(change_request_id)
-        assert change_request["type"] == "budget_line_item_change_request"
+        assert change_request["change_request_type"] == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
         assert change_request["budget_line_item_id"] == bli_id
         assert change_request["has_budget_change"] is True
         assert change_request["has_status_change"] is False
@@ -461,7 +468,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     assert len(change_requests_in_review) == 1
     change_request = change_requests_in_review[0]
     change_request_id = change_request["id"]
-    assert change_request["type"] == "budget_line_item_change_request"
+    assert change_request["change_request_type"] == ChangeRequestType.BUDGET_LINE_ITEM_CHANGE_REQUEST.name
     assert change_request["budget_line_item_id"] == bli_id
     assert change_request["has_budget_change"] is False
     assert change_request["has_status_change"] is True
@@ -511,7 +518,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     assert "change_requests_in_review" in ag_bli
     assert ag_bli_other["change_requests_in_review"] is None
 
-    # approve the change request, reject the can_id change request and approve the others
+    # approve the change request
     data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
     response = auth_client.post(url_for("api.change-request-review-list"), json=data)
     assert response.status_code == 200
@@ -546,6 +553,69 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     assert response.status_code == 200
     hist_count = len(response.json)
     assert hist_count == prev_hist_count + 1
+
+
+@pytest.mark.usefixtures("app_ctx", "loaded_db")
+def test_status_change_request_creates_procurement_workflow(auth_client, loaded_db):
+    # create Agreement
+    agreement = ContractAgreement(
+        name="CTXX12399",
+        description="test contract",
+        agreement_reason=AgreementReason.NEW_REQ,
+        contract_type=ContractType.FIRM_FIXED_PRICE,
+        service_requirement_type=ServiceRequirementType.SEVERABLE,
+        product_service_code_id=2,
+        agreement_type=AgreementType.CONTRACT,
+        procurement_shop_id=1,
+        project_officer_id=4,
+        project_id=1,
+        created_by=4,
+    )
+    loaded_db.add(agreement)
+    loaded_db.commit()
+    assert agreement.id is not None
+    agreement_id = agreement.id
+    assert agreement.procurement_tracker_workflow_id is None
+
+    # create DRAFT BLI
+    bli = BudgetLineItem(
+        agreement_id=agreement_id,
+        can_id=1,
+        amount=123456.78,
+        status=BudgetLineItemStatus.PLANNED,
+        date_needed=datetime.date(2043, 1, 1),
+    )
+    loaded_db.add(bli)
+    loaded_db.commit()
+    assert bli.id is not None
+    bli_id = bli.id
+    assert bli.agreement.procurement_tracker_workflow_id is None
+
+    #  submit PATCH BLI which creates change request for status change
+    data = {"status": "IN_EXECUTION"}
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    assert response.status_code == 202
+    assert "change_requests_in_review" in response.json
+    change_requests_in_review = response.json["change_requests_in_review"]
+    assert len(change_requests_in_review) == 1
+    change_request = change_requests_in_review[0]
+    change_request_id = change_request["id"]
+
+    # approve the change request
+    data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
+    response = auth_client.post(url_for("api.change-request-review-list"), json=data)
+    assert response.status_code == 200
+
+    bli = loaded_db.get(BudgetLineItem, bli_id)
+    assert bli is not None
+    assert bli.status == BudgetLineItemStatus.IN_EXECUTION
+    assert bli.agreement.procurement_tracker_workflow_id is not None
+
+    # cleanup
+    delete_procurement_workflow(bli.agreement_id)
+    loaded_db.delete(bli)
+    loaded_db.delete(agreement)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")

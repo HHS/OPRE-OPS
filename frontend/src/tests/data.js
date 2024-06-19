@@ -319,7 +319,7 @@ export const changeRequests = [
         reviewed_by_id: null,
         reviewed_on: null,
         status: "IN_REVIEW",
-        type: "budget_line_item_change_request",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         updated_by: 21,
         updated_by_user: {
             full_name: "Admin Demo",
@@ -363,7 +363,7 @@ export const changeRequests = [
         reviewed_by_id: null,
         reviewed_on: null,
         status: "IN_REVIEW",
-        type: "budget_line_item_change_request",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         updated_by: 21,
         updated_by_user: {
             full_name: "Admin Demo",
@@ -407,7 +407,7 @@ export const changeRequests = [
         reviewed_by_id: null,
         reviewed_on: null,
         status: "IN_REVIEW",
-        type: "budget_line_item_change_request",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         updated_by: 21,
         updated_by_user: {
             full_name: "Admin Demo",
