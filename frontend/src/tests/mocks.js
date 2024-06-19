@@ -1,5 +1,6 @@
-import { http } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
+import { changeRequests } from "./data";
 
 // const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
 // Adding optional runtime config.
@@ -38,6 +39,10 @@ export const handlers = [
         const { body } = req;
 
         return res(ctx.status(201), ctx.json({ id: 3, name: body.name }), ctx.delay(150));
+    }),
+
+    http.get(`${BACKEND_DOMAIN}/api/v1/change-requests/`, (req, res, ctx) => {
+        return res(ctx.status(200), ctx.json(changeRequests), ctx.delay(150));
     })
 ];
 
