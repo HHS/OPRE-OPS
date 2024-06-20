@@ -1,5 +1,4 @@
 export const budgetLine = {
-    active_workflow_current_step_id: null,
     agreement_id: 1,
     amount: 1_000_000,
     can: {
@@ -43,7 +42,6 @@ export const agreement = {
     agreement_type: "CONTRACT",
     budget_line_items: [
         {
-            active_workflow_current_step_id: null,
             agreement_id: 1,
             amount: 1_000_000,
             can: {
@@ -98,7 +96,6 @@ export const agreement = {
             updated_on: "2024-05-27T19:20:46.105099Z"
         },
         {
-            active_workflow_current_step_id: null,
             agreement_id: 1,
             amount: 1_000_000,
             can: {

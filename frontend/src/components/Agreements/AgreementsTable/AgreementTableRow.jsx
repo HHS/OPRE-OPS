@@ -1,44 +1,39 @@
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import PropTypes from "prop-types";
-import CurrencyFormat from "react-currency-format";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
-import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
-import TableRowExpandable from "../../UI/TableRowExpandable";
-import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
-import Tag from "../../UI/Tag";
-import TextClip from "../../UI/Text/TextClip";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { useIsUserAllowedToEditAgreement, useIsAgreementEditable } from "../../../hooks/agreement.hooks";
-import {
-    useNavigateAgreementReview,
-    useNavigateAgreementApprove,
-    useHandleEditAgreement,
-    useHandleDeleteAgreement
-} from "./AgreementsTable.hooks";
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PropTypes from "prop-types";
+import { useState } from "react";
+import CurrencyFormat from "react-currency-format";
+import { Link, useSearchParams } from "react-router-dom";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     convertCodeForDisplay,
     statusToClassName,
     totalBudgetLineAmountPlusFees,
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
+import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import TableRowExpandable from "../../UI/TableRowExpandable";
+import Tag from "../../UI/Tag";
+import TextClip from "../../UI/Text/TextClip";
 import {
-    getAgreementName,
-    getResearchProjectName,
-    getAgreementSubTotal,
-    getProcurementShopSubTotal,
-    getAgreementCreatedDate,
     areAllBudgetLinesInStatus,
-    isThereAnyBudgetLines,
     findNextBudgetLine,
     findNextNeedBy,
-    getBudgetLineCountsByStatus,
+    getAgreementCreatedDate,
     getAgreementDescription,
-    hasBlIsInReview
+    getAgreementName,
+    getAgreementSubTotal,
+    getBudgetLineCountsByStatus,
+    getProcurementShopSubTotal,
+    getResearchProjectName,
+    hasBlIsInReview,
+    isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
 
 /**
  * Renders a row in the agreements table.
@@ -86,7 +81,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
-    const handleGoToApprove = useNavigateAgreementApprove();
+    // const handleGoToApprove = useNavigateAgreementApprove();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 
@@ -105,8 +100,6 @@ export const AgreementTableRow = ({ agreement }) => {
             duplicateIcon={false}
             sendToReviewIcon={!forApprovalUrl}
             handleSubmitItemForApproval={handleSubmitAgreementForApproval}
-            goToApproveIcon={forApprovalUrl}
-            handleGoToApprove={handleGoToApprove}
         />
     );
 
