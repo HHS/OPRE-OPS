@@ -36,7 +36,7 @@ import {
     findNextNeedBy,
     getBudgetLineCountsByStatus,
     getAgreementDescription,
-    hasActiveWorkflow
+    hasBlIsInReview
 } from "./AgreementsTable.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 
@@ -76,11 +76,11 @@ export const AgreementTableRow = ({ agreement }) => {
     // Validations for editing/deleting an agreement
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
-    const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
-    const lockedMessage = doesAgreementHaveActiveWorkflow
+    const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
+    const lockedMessage = doesAgreementHaveBLIsInReview
         ? "This agreement cannot be edited because it is currently In Review for a status change"
         : "";
-    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveActiveWorkflow;
+    const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);

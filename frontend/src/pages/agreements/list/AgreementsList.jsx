@@ -43,7 +43,7 @@ export const AgreementsList = () => {
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
-    const forApprovalUrl = searchParams.get("filter") === "for-approval";
+    // const forApprovalUrl = searchParams.get("filter") === "for-approval";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
     if (isLoadingAgreement) {
@@ -168,16 +168,6 @@ export const AgreementsList = () => {
             });
         });
         sortedAgreements = sortAgreements(myAgreements);
-    } else if (forApprovalUrl) {
-        const myAgreements = filteredAgreements.filter((agreement) => {
-            return agreement.team_members?.some((teamMember) => {
-                return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
-            });
-        });
-        const forApprovalAgreements = myAgreements.filter((agreement) => {
-            return agreement.budget_line_items?.some((bli) => bli.has_active_workflow);
-        });
-        sortedAgreements = sortAgreements(forApprovalAgreements);
     } else {
         // all-agreements
         sortedAgreements = sortAgreements(filteredAgreements);
@@ -189,7 +179,7 @@ export const AgreementsList = () => {
         subtitle = "My Agreements";
         details = "This is a list of the agreements you are listed as a Team Member on.";
     }
-    if (forApprovalUrl || changeRequestUrl) {
+    if (changeRequestUrl) {
         subtitle = "For Review";
         details =
             "This is a list of changes within your Division that require your review and approval. This list could include requests for budget changes, status changes or actions taking place during the procurement process.";
