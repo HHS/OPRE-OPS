@@ -246,8 +246,8 @@ class AgreementListAPI(BaseListAPI):
             # TODO: add_vendor is here temporarily until we have vendor management
             # implemented in the frontend, i.e. the vendor is a drop-down instead
             # of a text field
-            add_vendor(data, "incumbent")
-            add_vendor(data, "vendor")
+            add_update_vendor(data, "incumbent")
+            add_update_vendor(data, "vendor")
 
         new_agreement = agreement_cls(**data)
 
@@ -297,8 +297,6 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
     changed = False
     for item in data:
         if item in [
-            "vendor",
-            "incumbent",
             "agreement_type",
             "versions",
             "created_by_user",  # handled by created_by
@@ -358,7 +356,14 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                 if isinstance(data[item], str):
                     setattr(agreement, item, ServiceRequirementType[data[item]])
                     changed = True
-
+            case "vendor":
+                if isinstance(data[item], str):
+                    add_update_vendor(data, "vendor", agreement)
+                    changed = True
+            case "incumbent":
+                if isinstance(data[item], str):
+                    add_update_vendor(data, "incumbent", agreement)
+                    changed = True
             case _:
                 if getattr(agreement, item) != data[item]:
                     setattr(agreement, item, data[item])
@@ -373,12 +378,6 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
 
 def update_agreement(data: dict[str, Any], agreement: Agreement):
     update_data(agreement, data)
-
-    # TODO: add_vendor is here temporarily until we have vendor management
-    # implemented in the frontend, i.e. the vendor is a drop-down instead
-    # of a text field
-    add_vendor(data, "incumbent")
-    add_vendor(data, "vendor")
 
     current_app.db_session.add(agreement)
     current_app.db_session.commit()
@@ -401,7 +400,7 @@ def get_change_data(old_agreement: Agreement, schema: Schema, partial: bool = Tr
     return change_data
 
 
-def add_vendor(data: dict, field_name: str = "vendor") -> None:
+def add_update_vendor(data: dict, field_name: str = "vendor", agreement: Agreement = None) -> None:
     vendor = data.get(field_name)
     if vendor:
         vendor_obj = current_app.db_session.scalar(select(Vendor).where(Vendor.name.ilike(vendor)))
@@ -409,10 +408,17 @@ def add_vendor(data: dict, field_name: str = "vendor") -> None:
             new_vendor = Vendor(name=vendor, duns=vendor)
             current_app.db_session.add(new_vendor)
             current_app.db_session.commit()
-            data[f"{field_name}_id"] = new_vendor.id
+            if agreement is not None:
+                setattr(agreement, f"{field_name}_id", new_vendor.id)
+            else:
+                data[f"{field_name}_id"] = new_vendor.id
         else:
-            data[f"{field_name}_id"] = vendor_obj.id
-        del data[field_name]
+            if agreement is not None:
+                setattr(agreement, f"{field_name}_id", vendor_obj.id)
+            else:
+                data[f"{field_name}_id"] = vendor_obj.id
+        if agreement is None:
+            del data[field_name]
 
 
 def reject_change_of_agreement_type(old_agreement):
