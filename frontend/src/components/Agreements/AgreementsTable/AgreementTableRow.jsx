@@ -81,7 +81,6 @@ export const AgreementTableRow = ({ agreement }) => {
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
     const handleSubmitAgreementForApproval = useNavigateAgreementReview();
-    // const handleGoToApprove = useNavigateAgreementApprove();
     const handleEditAgreement = useHandleEditAgreement();
     const { handleDeleteAgreement, modalProps, setShowModal, showModal } = useHandleDeleteAgreement();
 

@@ -1,17 +1,17 @@
+import _ from "lodash";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import _ from "lodash";
 import App from "../../../App";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
-import AgreementTabs from "./AgreementsTabs";
+import ChangeRequestsList from "../../../components/ChangeRequests/ChangeRequestsList";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
-import { useGetAgreementsQuery } from "../../../api/opsAPI";
+import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
-import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import ChangeRequestsList from "../../../components/ChangeRequests/ChangeRequestsList";
 
 /**
  * Page for the Agreements List.
@@ -43,7 +43,6 @@ export const AgreementsList = () => {
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
-    // const forApprovalUrl = searchParams.get("filter") === "for-approval";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
     if (isLoadingAgreement) {
