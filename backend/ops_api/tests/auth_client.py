@@ -53,5 +53,13 @@ class NoPermsAuthClient(FlaskClient):
             division=1,
         )
         access_token = create_access_token(identity=user, additional_claims={})
+        refresh_token = create_refresh_token(identity=user)
         kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
+
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
+        user_session.access_token = access_token
+        user_session.refresh_token = refresh_token
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+
         return super().open(*args, **kwargs)
