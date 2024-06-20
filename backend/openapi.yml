@@ -1630,7 +1630,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ChangeRequest'
+                  $ref: '#/components/schemas/GenericChangeRequest'
           '400':
             description: Bad Request
           '401':
@@ -1655,10 +1655,13 @@ paths:
                 action:
                   type: string
                   description: 'APROVE or REJECT'
+                reviewer_notes:
+                  description: optional notes from the reviewer added the change request
+                  type: string
             examples:
               '0':
                 value: >-
-                  {"change_request_id": 123, "action": "APPROVE"}
+                  {"change_request_id": 123, "action": "APPROVE", "reviewer_notes": "Looks good to me"}
       responses:
         '200':
           description: OK
@@ -2118,7 +2121,7 @@ components:
       type: array
       items:
         anyOf:
-          - $ref: "#/components/schemas/BudgetLineItemChangeRequest"
+          - $ref: "#/components/schemas/BudgetLineItem"
 
     BudgetLineItem:
       type: object
@@ -2167,7 +2170,7 @@ components:
           type: array
           items:
             anyOf:
-              - $ref: "#/components/schemas/BudgetLineItemChangeRequest"
+              - $ref: "#/components/schemas/GenericChangeRequest"
         clin_id:
           type: integer
           example: 1
@@ -2183,6 +2186,10 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
+        requestor_notes:
+          description: optional notes added to a Change Request when a PATCH is made that creates a CR
+          type: string
+          writeOnly: true
     BudgetLineItemRequest:
       type: object
       properties:
@@ -2219,15 +2226,15 @@ components:
         - status
         - date_needed
 
-    ChangeRequest:
+    GenericChangeRequest:
       type: object
       properties:
         id:
           type: integer
           example: 1
-        type:
+        change_request_type:
           type: string
-          example: 'budget_line_item_change_request'
+          example: 'BUDGET_LINE_ITEM_CHANGE_REQUEST'
         status:
           type: string
           example: 'IN_REVIEW'
@@ -2237,22 +2244,29 @@ components:
         requested_change_diff:
           description: JSON for the request changes with new and old values at request time
           type: object
+        requestor_notes:
+          description: notes from the requestor (aka submitter notes)
+          type: string
         created_by:
           $ref: '#/components/parameters/created_by'
         created_by_user:
           $ref: '#/components/parameters/created_by_user'
         created_on:
           $ref: '#/components/parameters/created_on'
-
-    BudgetLineItemChangeRequest:
-      type: object
-      properties:
-        id:
+        reviewed_by:
+          type: integer
+        reviewed_on:
+          type: string
+          format: date-time
+        reviewer_notes:
+          type: string
+        updated_by:
+          $ref: '#/components/parameters/updated_by'
+        updated_on:
+          $ref: '#/components/parameters/updated_on'
+        agreement_id:
           type: integer
           example: 1
-        type:
-          type: string
-          example: 'budget_line_item_change_request'
         budget_line_item_id:
           type: integer
           example: 1
@@ -2262,22 +2276,6 @@ components:
         has_status_change:
           type: boolean
           example: False
-        requested_change_data:
-          description: JSON for the requested updates
-          type: object
-        requested_change_diff:
-          description: JSON for the requested changes with new and old values at request time
-          type: object
-        managing_division_id:
-          description: The division who's DD will approve/reject the change request
-          type: integer
-          example: 1
-        created_by:
-          $ref: '#/components/parameters/created_by'
-        created_by_user:
-          $ref: '#/components/parameters/created_by_user'
-        created_on:
-          $ref: '#/components/parameters/created_on'
 
     ResearchProjectRequest:
       type: object

@@ -10,11 +10,16 @@ export type ChangeRequest = {
     };
     created_on: string;
     display_name: string;
+    has_budget_change: boolean;
+    has_status_change: boolean;
     id: number;
     managing_division: number;
     managing_division_id: number;
     requested_change_data: {
         amount: number;
+        date_needed: string;
+        can_id: number;
+        status: string;
     };
     requested_change_diff: {
         amount?: {
@@ -28,6 +33,10 @@ export type ChangeRequest = {
         can_id?: {
             new: number;
             old: number;
+        };
+        status?: {
+            new: string;
+            old: string;
         };
     };
     requested_change_info: {

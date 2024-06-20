@@ -1,15 +1,15 @@
-import { useParams, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Route, Routes, useParams } from "react-router-dom";
 import App from "../../../App";
-import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
-import AgreementDetails from "./AgreementDetails";
-import AgreementBudgetLines from "./AgreementBudgetLines";
-import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
-import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
+import DetailsTabs from "../../../components/Agreements/DetailsTabs";
+import DocumentView from "../../../components/Agreements/Documents/DocumentView";
+import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
+import AgreementBudgetLines from "./AgreementBudgetLines";
+import AgreementDetails from "./AgreementDetails";
 
 const Agreement = () => {
     const urlPathParams = useParams();

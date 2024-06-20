@@ -1,4 +1,5 @@
 """Base model and other useful tools for project models."""
+
 import enum
 from datetime import datetime
 from typing import Optional, cast
@@ -81,10 +82,10 @@ class BaseModel(Base):
     __abstract__ = True
 
     created_by: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("user.id"), default=None
+        ForeignKey("ops_user.id"), default=None
     )
     updated_by: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("user.id"), default=None
+        ForeignKey("ops_user.id"), default=None
     )
     created_on: Mapped[Optional[datetime]] = mapped_column(default=func.now())
     updated_on: Mapped[Optional[datetime]] = mapped_column(

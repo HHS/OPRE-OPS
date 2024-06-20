@@ -27,7 +27,7 @@ ALLOWED_TABLES = [
     "portfolio",
     "funding_partner",
     "funding_source",
-    "users",
+    "ops_user",
     "roles",
     "user_role",
     "groups",
@@ -161,10 +161,10 @@ def after_user_load(conn: Connection) -> None:
         print("Setting Division Director and Deputy Division Director...")
         stmt = (
             "update ops.division "
-            "  set division_director_id = (select id from ops.\"user\" where email = 'dave.director@email.com') "
+            "  set division_director_id = (select id from ops.ops_user where email = 'dave.director@email.com') "
             "  where division_director_id is null; "
             "update ops.division "
-            "  set deputy_division_director_id = (select id from ops.\"user\" where email = 'admin.demo@email.com') "
+            "  set deputy_division_director_id = (select id from ops.ops_user where email = 'admin.demo@email.com') "
             "  where deputy_division_director_id is null;"
         )
         session.execute(text(stmt))
@@ -185,7 +185,7 @@ def import_data(engine: Engine, data: dict[str, Any]) -> None:
     with engine.connect() as conn:
         load_new_data(conn, data)
         conn.commit()
-        if "user" in data:
+        if "ops_user" in data:
             after_user_load(conn)
 
 
