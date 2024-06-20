@@ -138,9 +138,16 @@ def upgrade() -> None:
         op.get_bind()
     )
 
+    sa.Sequence("ops_user_id_seq", start=500, increment=1).create(op.get_bind())
     op.create_table(
         "ops_user",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('ops_user_id_seq')"),
+            autoincrement=True,
+            nullable=False,
+        ),
         sa.Column("oidc_id", sa.UUID(), nullable=True),
         sa.Column("hhs_id", sa.String(), nullable=True),
         sa.Column("email", sa.String(), nullable=False),
