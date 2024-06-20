@@ -4,7 +4,7 @@ import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
-import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
+import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
