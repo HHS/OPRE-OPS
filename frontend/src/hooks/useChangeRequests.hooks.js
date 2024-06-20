@@ -1,5 +1,8 @@
 import { useGetAgreementByIdQuery, useGetCansQuery } from "../api/opsAPI";
 import { renderField } from "../helpers/utils";
+/**
+ * @typedef {import ('../components/ChangeRequests/ChangeRequestsList/ChangeRequests.d.ts').ChangeRequest} ChangeRequest
+ */
 
 /**
  * Custom hook that returns the change requests for an agreement.
@@ -35,6 +38,7 @@ export const useChangeRequestsForTooltip = (budgetLine) => {
  * Get change requests from budget lines.
  * @param {Object[]} budgetLines - The budget lines.
  * @param {Object[]} cans - The cans.
+ *
  * @returns {string[]} The change requests messages.
  */
 function getChangeRequestsFromBudgetLines(budgetLines, cans) {
@@ -49,25 +53,35 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
 
     if (changeRequestsFromBudgetLines?.length > 0) {
         changeRequestsFromBudgetLines.forEach((budgetLine) => {
-            budgetLine.change_requests_in_review.forEach((changeRequest) => {
-                let bliId = `BL ${budgetLine.id}`;
-                if (changeRequest?.requested_change_data?.amount) {
-                    changeRequestsMessages.add(
-                        `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
-                    );
-                }
-                if (changeRequest?.requested_change_data?.date_needed) {
-                    changeRequestsMessages.add(
-                        `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
-                    );
-                }
-                if (changeRequest?.requested_change_data?.can_id) {
-                    let matchingCan = cans?.find((can) => can.id === changeRequest.requested_change_data.can_id);
-                    let canName = matchingCan?.display_name || "TBD";
+            budgetLine.change_requests_in_review.forEach(
+                /**
+                 * @param {ChangeRequest} changeRequest
+                 */
+                (changeRequest) => {
+                    let bliId = `BL ${budgetLine.id}`;
+                    if (changeRequest?.requested_change_data?.amount) {
+                        changeRequestsMessages.add(
+                            `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                        );
+                    }
+                    if (changeRequest?.requested_change_data?.date_needed) {
+                        changeRequestsMessages.add(
+                            `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                        );
+                    }
+                    if (changeRequest?.requested_change_data?.can_id) {
+                        let matchingCan = cans?.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                        let canName = matchingCan?.display_name || "TBD";
 
-                    changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
+                        changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
+                    }
+                    if (changeRequest?.requested_change_data?.status) {
+                        changeRequestsMessages.add(
+                            `${bliId} Status: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
+                        );
+                    }
                 }
-            });
+            );
         });
     }
     return Array.from(changeRequestsMessages);
@@ -75,7 +89,7 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
 
 /**
  * Get change requests for tooltip.
- * @param {Object[]} changeRequests - The change requests.
+ * @param {ChangeRequest[]} changeRequests - The change requests.
  * @param {Object} budgetLine - The budget line.
  * @param {Object[]} cans - The cans.
  * @param {boolean} cansSuccess - Whether the cans were successfully fetched.
@@ -105,6 +119,11 @@ export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, ca
                 let canName = matchingCan?.display_name || "TBD";
 
                 changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
+            }
+            if (changeRequest?.requested_change_data?.status) {
+                changeRequestsMessages.push(
+                    `Status Change: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
+                );
             }
 
             return changeRequestsMessages;
