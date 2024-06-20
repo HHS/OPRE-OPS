@@ -43,12 +43,8 @@ class User(BaseModel):
 
     __tablename__ = "ops_user"
 
-    seq = Sequence("ops_user_id_seq", start=500, increment=1)
-    id: Mapped[int] = Column(
-        Integer,
-        seq,
-        server_default=seq.next_value(),
-        primary_key=True,
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("ops_user_id_seq", start=500, increment=1)
     )
     oidc_id: Mapped[Optional[UUID]] = mapped_column(
         UUID(as_uuid=True), unique=True, index=True
