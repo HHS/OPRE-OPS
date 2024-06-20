@@ -22,12 +22,12 @@ def test_notification_retrieve(loaded_db):
 
 @pytest.fixture()
 @pytest.mark.usefixtures("app_ctx")
-def notification(loaded_db):
+def notification(loaded_db, test_admin_user):
     notification = Notification(
         title="System Notification",
         message="This is a system notification",
         is_read=False,
-        recipient_id=4,  # user associated to the auth_client
+        recipient_id=test_admin_user.id,  # user associated to the auth_client
         expires=date(2031, 12, 31),
     )
 
@@ -165,7 +165,7 @@ def test_notifications_get_by_is_read(auth_client, loaded_db, notification_is_re
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_notification_get_by_id(auth_client, loaded_db):
+def test_notification_get_by_id(auth_client, loaded_db, test_user):
     response = auth_client.get("/api/v1/notifications/1")
     assert response.status_code == 200
     assert response.json["title"] == "System Notification"
@@ -173,7 +173,7 @@ def test_notification_get_by_id(auth_client, loaded_db):
     assert response.json["is_read"] is False
     assert response.json["expires"] == "2031-12-31"
     assert response.json["recipient"] is not None
-    assert response.json["recipient"]["id"] == 1
+    assert response.json["recipient"]["id"] == test_user.id
     assert response.json["recipient"]["email"] == "chris.fortunato@example.com"
     assert response.json["recipient"]["full_name"] == "Chris Fortunato"
 
@@ -188,12 +188,12 @@ def test_notification_auth(client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_notification(auth_client, notification):
+def test_put_notification(auth_client, notification, test_user):
     data = UpdateSchema(
         is_read=False,
         title="Updated Notification",
         message="This is an updated notification",
-        recipient_id=1,
+        recipient_id=test_user.id,
         expires="2041-12-31",
     )
     response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
@@ -205,7 +205,7 @@ def test_put_notification(auth_client, notification):
     assert response.json["recipient"] == {
         "email": "chris.fortunato@example.com",
         "full_name": "Chris Fortunato",
-        "id": 1,
+        "id": test_user.id,
         "oidc_id": "00000000-0000-1111-a111-000000000001",
     }
     assert response.json["is_read"] is False
@@ -213,12 +213,12 @@ def test_put_notification(auth_client, notification):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_notification_ack(auth_client, notification):
+def test_put_notification_ack(auth_client, notification, test_user):
     data = UpdateSchema(
         is_read=True,
         title="Updated Notification",
         message="This is an updated notification",
-        recipient_id=1,
+        recipient_id=test_user.id,
         expires="2041-12-31",
     )
     response = auth_client.put(f"/api/v1/notifications/{notification.id}", json=data.__dict__)
@@ -230,7 +230,7 @@ def test_put_notification_ack(auth_client, notification):
     assert response.json["recipient"] == {
         "email": "chris.fortunato@example.com",
         "full_name": "Chris Fortunato",
-        "id": 1,
+        "id": test_user.id,
         "oidc_id": "00000000-0000-1111-a111-000000000001",
     }
     assert response.json["is_read"] is True

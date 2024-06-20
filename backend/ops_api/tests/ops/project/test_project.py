@@ -38,7 +38,7 @@ def test_projects_get_by_id_404(auth_client, loaded_db):
     assert response.status_code == 404
 
 
-def test_projects_serialization(auth_client, loaded_db):
+def test_projects_serialization(auth_client, loaded_db, test_user):
     response = auth_client.get(url_for("api.projects-item", id="1"))
     assert response.status_code == 200
     assert response.json["id"] == 1
@@ -48,7 +48,7 @@ def test_projects_serialization(auth_client, loaded_db):
     assert response.json["methodologies"][0] == "SURVEY"
     assert len(response.json["populations"]) == 1
     assert response.json["populations"][0] == "POPULATION_1"
-    assert response.json["team_leaders"][0]["id"] == 1
+    assert response.json["team_leaders"][0]["id"] == test_user.id
     assert response.json["team_leaders"][0]["full_name"] == "Chris Fortunato"
 
 
@@ -115,7 +115,7 @@ def test_post_projects(auth_client):
         "origination_date": "2023-01-01",
         "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
         "populations": ["POPULATION_1", "POPULATION_2"],
-        "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
+        "team_leaders": [{"id": 500}, {"id": 501}, {"id": 502}],
     }
     response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 201
@@ -124,13 +124,13 @@ def test_post_projects(auth_client):
         {
             "email": "chris.fortunato@example.com",
             "full_name": "Chris Fortunato",
-            "id": 1,
+            "id": 500,
         },
-        {"email": "Amy.Madigan@example.com", "full_name": "Amy Madigan", "id": 2},
+        {"email": "Amy.Madigan@example.com", "full_name": "Amy Madigan", "id": 501},
         {
             "email": "Ivelisse.Martinez-Beck@example.com",
             "full_name": "Ivelisse Martinez-Beck",
-            "id": 3,
+            "id": 502,
         },
     ]
     assert [person in expected_team_leaders for person in response.json["team_leaders"]]

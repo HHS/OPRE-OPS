@@ -47,11 +47,11 @@
       description: "Test description",
       product_service_code_id: 1,
       agreement_reason: "RECOMPETE",
-      project_officer_id: 1,
+      project_officer_id: 500,
       agreement_type: "CONTRACT",
       project_id: 1,
       procurement_shop_id: 1,
-      created_by: 4,
+      created_by: 503,
       contract_number: "XXXX000000001",
       incumbent_id: 1,
       vendor_id: 1,
@@ -62,19 +62,19 @@
       team_members: [
         {
           "tablename": "ops_user",
-          "id": 1,
+          "id": 500,
         },
         {
           "tablename": "ops_user",
-          "id": 4,
+          "id": 503,
         },
         {
           "tablename": "ops_user",
-          "id": 21,
+          "id": 520,
         },
         {
           "tablename": "ops_user",
-          "id": 23,
+          "id": 522,
         }
       ],
     },

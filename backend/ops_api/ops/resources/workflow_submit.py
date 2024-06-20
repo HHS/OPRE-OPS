@@ -163,7 +163,7 @@ def create_notification_for_division_directors(agreement_id, workflow_step_insta
     #     .join(BudgetLineItem, CAN.id == BudgetLineItem.can_id)
     #     .where(BudgetLineItem.in_(budget_line_item_ids))
     # ).all()
-    division_director_ids = [21, 23]
+    division_director_ids = [520, 522]
     fe_url = current_app.config.get("OPS_FRONTEND_URL")
     approve_url = f"{fe_url}/agreements/approve/{agreement_id}?stepId={workflow_step_instance.id}"
     for division_director_id in division_director_ids:

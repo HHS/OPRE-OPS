@@ -9,7 +9,7 @@ from ops_api.ops.auth.service import _get_or_create_user_session
 class AuthClient(FlaskClient):
     def open(self, *args, **kwargs):
         user = User(
-            id="4",
+            id="503",
             oidc_id="00000000-0000-1111-a111-000000000004",
             email="unit-test@ops-api.gov",
             first_name="Unit",
@@ -45,7 +45,7 @@ class NoPermsAuthClient(FlaskClient):
 
     def open(self, *args, **kwargs):
         user = User(
-            id="7",
+            id="506",
             oidc_id="00000000-0000-1111-a111-000000000007",
             email="unit-test-no-perms@ops-api.gov",
             first_name="Unit",

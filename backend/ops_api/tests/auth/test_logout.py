@@ -9,7 +9,7 @@ from ops_api.ops.auth.utils import create_oauth_jwt
 
 
 @pytest.fixture()
-def db_with_active_user_session(loaded_db):
+def db_with_active_user_session(loaded_db, test_user):
     user = loaded_db.execute(select(User).where(User.email == "admin.demo@email.com")).scalars().one_or_none()
     active_user_session_1 = UserSession(
         user_id=user.id,
@@ -42,7 +42,7 @@ def db_with_active_user_session(loaded_db):
     )
 
     active_user_session_4 = UserSession(
-        user_id=1,
+        user_id=test_user.id,
         is_active=True,
         ip_address="31.202.194.117",
         access_token="4c17b37e698f579c79c8d70000451b",
