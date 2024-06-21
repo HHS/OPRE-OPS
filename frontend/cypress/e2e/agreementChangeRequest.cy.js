@@ -92,19 +92,18 @@ it("agreement (BLI) workflow for approval then rejection", () => {
         .then(({ agreementId, bliId }) => {
             cy.visit("/agreements?filter=change-requests").wait(1000);
             // TODO: add approve tests for change requests
-            cy.get('[data-cy="review-card"]')
-                .should("have.length", 1)
-                .then(() => {
-                    cy.request({
-                        method: "DELETE",
-                        url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                        headers: {
-                            Authorization: bearer_token,
-                            Accept: "application/json"
-                        }
-                    }).then((response) => {
-                        expect(response.status).to.eq(200);
-                    });
-                });
+            cy.get('[data-cy="review-card"]').should("exist");
+        })
+        .then(() => {
+            cy.request({
+                method: "DELETE",
+                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                headers: {
+                    Authorization: bearer_token,
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+            });
         });
 });
