@@ -2,11 +2,11 @@ name: "build-and-push"
 author: "@devops-chris"
 description: "This action simplifies pushes of Docker images to ghcr.io repository"
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
-  
+
 inputs:
   github_token: 
-     description: "Your secrets.GITHUB_TOKEN"
-     required: true
+    description: "Your secrets.GITHUB_TOKEN"
+    required: true
 
   image_name:
     description: "Image name, e.g. my-user-name/my-repo (will be lowercased)"
@@ -34,15 +34,18 @@ inputs:
   docker_io_token:
     description: "Your docker.io token created via https://hub.docker.com/settings/security"
     required: false
-  
+
   image_tags:
     description: "Image tags separated by comma, e.g. latest,1.0.0"
+    required: false
+
+  build_args:
+    description: "Build arguments to pass to the Docker build, in the format ARG_NAME=value,ARG_NAME2=value2"
     required: false
 
 runs:
   using: "composite"
   steps:
-    # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
     - name: Log in to the Container registry
       shell: bash
       env:
@@ -83,6 +86,14 @@ runs:
 
         # Split image tags by comma and iterate over them
         IFS=',' read -ra TAGS <<< "${COMMIT_TAGS}"
+
+        # Split build arguments by comma and prepare them for Docker build command
+        IFS=',' read -ra BUILD_ARGS <<< "${{ inputs.build_args }}"
+        BUILD_ARG_STRING=""
+        for ARG in "${BUILD_ARGS[@]}"; do
+          BUILD_ARG_STRING+="--build-arg ${ARG} "
+        done
+
         for TAG in "${TAGS[@]}"; do
           echo "::group::Building the Docker image: ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} from ${{ inputs.dockerfile }} in ${{ inputs.context}} context ..."
           set -x
@@ -92,6 +103,7 @@ runs:
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg BUILD_DATE=${BUILD_DATE} \
             --build-arg GITHUB_SHA=${GITHUB_SHA} \
+            ${BUILD_ARG_STRING} \
             --tag ${{ inputs.repository }}/${IMAGE_NAME}:${TAG} \
             --tag docker.io/${IMAGE_NAME}:${TAG} \
             --label org.label-schema.build-date=${BUILD_DATE} \
