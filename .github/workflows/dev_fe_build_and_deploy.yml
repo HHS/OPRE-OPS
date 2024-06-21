@@ -30,9 +30,7 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "unstable,${{ github.sha }}"
-          build_args: |
-            VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.acf.opre-ops.flexion.us
-            MODE=${{ env.ENVIRONMENT }}
+          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.acf.opre-ops.flexion.us, MODE=${{ env.ENVIRONMENT }}"
 
   deploy-frontend:
     runs-on: ubuntu-latest
