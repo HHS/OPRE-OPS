@@ -26,7 +26,7 @@ const testBli = {
     comments: "",
     can_id: 1,
     agreement_id: 11,
-    amount: 1_000_000,
+    amount: 1000000,
     status: "DRAFT",
     date_needed: "2025-1-01",
     proc_shop_fee_percentage: 0.005
@@ -41,7 +41,7 @@ afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
-// TODO: Update when we are able to test the UI for the approval process
+
 it("agreement (BLI) workflow for approval then rejection", () => {
     expect(localStorage.getItem("access_token")).to.exist;
 
@@ -81,29 +81,42 @@ it("agreement (BLI) workflow for approval then rejection", () => {
                 return { agreementId, bliId };
             });
         })
+        // submit for approval (via REST for now, maybe change to UI click through)
         .then(({ agreementId, bliId }) => {
-            cy.visit(`/agreements/${agreementId}/budget-lines`);
-            cy.get("[data-cy=bli-tab-continue-btn]").click();
-            cy.get('[type="radio"]').first().check({ force: true });
-            cy.get("#check-all").check({ force: true }).wait(1);
-            cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-            cy.get('[data-cy="send-to-approval-btn"]').click();
-        })
-        .then(({ agreementId, bliId }) => {
-            cy.visit("/agreements?filter=change-requests").wait(1000);
-            // TODO: add approve tests for change requests
-            cy.get('[data-cy="review-card"]').should("exist");
-        })
-        .then(({ agreementId, bliId }) => {
+            const workflowSubmitData = {
+                id: bliId,
+                status: "PLANNED",
+                requestor_notes: "E2E Test Notes"
+            };
             cy.request({
-                method: "DELETE",
-                url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                method: "PATCH",
+                url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                body: workflowSubmitData,
                 headers: {
                     Authorization: bearer_token,
                     Accept: "application/json"
                 }
             }).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(202);
+                return { agreementId, bliId };
             });
+        })
+        .then(({ agreementId, bliId }) => {
+            cy.visit("/agreements?filter=change-requests").wait(1000);
+            // see if there are any review cards review-card
+            cy.get("[data-cy='review-card']")
+                .should("exist")
+                .then(() => {
+                    cy.request({
+                        method: "DELETE",
+                        url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    }).then((response) => {
+                        expect(response.status).to.eq(200);
+                    });
+                });
         });
 });
