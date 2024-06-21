@@ -27,19 +27,6 @@
             href="/manifest.json"
         />
         <title>OPRE OPS</title>
-        <script>
-            (function() {
-                var script = document.createElement('script');
-                script.src = '/runtime-env.js';
-                script.onload = function() {
-                    console.log('Runtime env config injected successfully.');
-                };
-                script.onerror = function() {
-                    //console.warn('Script failed to load.');
-                };
-                document.head.appendChild(script);
-            })();
-        </script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this website.</noscript>
