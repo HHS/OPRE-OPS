@@ -29,7 +29,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }},${{ env.ENVIRONMENT }}"
+          image_tags: "unstable,${{ github.sha }}-dev,${{ env.ENVIRONMENT }}"
           build_args: |
             MODE=${{ env.ENVIRONMENT }}
 
@@ -50,4 +50,4 @@ jobs:
         with:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
-            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}-dev
