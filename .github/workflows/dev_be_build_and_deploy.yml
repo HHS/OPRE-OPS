@@ -33,42 +33,12 @@ jobs:
           image_tags: "unstable,${{ github.sha }}"
   
   build-backend:
-    outputs:
-      version: ${{ steps.extract_version.outputs.version }}
     permissions:
-      contents: write
+      contents: read
       packages: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./.github/actions/bump-and-tag 
-        
-      - name:  'Automated Version Bump'
-        id: version_bump
-        uses: ./.github/actions/bump-and-tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag-prefix: 'ops-backend-v'
-          OPENAPI_DIR: 'backend'
-
-      - name: Extract Version
-        id: extract_version
-        run: |
-          # Log the original tag output to see what is being processed
-          echo "Original newTag: ${{ steps.version_bump.outputs.newTag }}"
-          
-          # Use sed to extract the version part
-          VERSION=$(echo "${{ steps.version_bump.outputs.newTag }}" | sed -e 's/.*v\(.*\)/v\1/')
-          
-          # Log the extracted version before setting it as output
-          echo "Extracted Version: $VERSION"
-          
-          # Set the output value
-          echo "::set-output name=version::$VERSION"
 
       - name: Build and publish the Docker image for ${{ github.repository }}
         uses: ./.github/actions/build-and-push
@@ -77,7 +47,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }},${{ steps.extract_version.outputs.version }}"
+          image_tags: "unstable,${{ github.sha }}"
 
   deploy-data-tools: 
     needs: build-data-tools
@@ -89,14 +59,14 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
-          creds:  ${{ secrets.AZURE_CREDS }}
+          creds: ${{ secrets.SDLC_AZURE_CREDS }}
 
       - name: Deploy Container App
         uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
         with:
           # azureCredentials: ${{ secrets.AZURE_CREDS }}
           containerAppName: opre-ops-${{ env.ENVIRONMENT }}-data-tools
-          resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+          resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
           imageToDeploy: ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
         
   deploy-backend: 
@@ -109,12 +79,11 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
-          creds:  ${{ secrets.AZURE_CREDS }}
+          creds: ${{ secrets.SDLC_AZURE_CREDS }}
 
       - name: Deploy Container App
         uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
         with:
-            # azureCredentials: ${{ secrets.AZURE_CREDS }}
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-backend
-            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
-            imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ needs.build-backend.outputs.version }}
+            resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-backend:${{ github.sha }}

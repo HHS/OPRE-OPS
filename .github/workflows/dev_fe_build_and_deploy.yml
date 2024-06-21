@@ -16,7 +16,7 @@ env:
 jobs:
   build-frontend:
     permissions:
-      contents: write
+      contents: read
       packages: write
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +33,8 @@ jobs:
           build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.acf.opre-ops.flexion.us, MODE=${{ env.ENVIRONMENT }}"
 
   deploy-frontend:
+    needs: build-frontend
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
