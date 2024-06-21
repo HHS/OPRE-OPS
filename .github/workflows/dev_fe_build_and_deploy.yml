@@ -10,7 +10,7 @@ on:
 
 env:
   WORKING_DIR: "frontend"
-  DOCKER_FILE: "Dockerfile.env"
+  DOCKER_FILE: "Dockerfile.perenv"
   ENVIRONMENT: dev
 
 jobs:
