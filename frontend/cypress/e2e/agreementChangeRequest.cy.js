@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 
+import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
 const testAgreement = {
@@ -27,7 +28,7 @@ const testBli = {
     can_id: 1,
     agreement_id: 11,
     amount: 1000000,
-    status: "DRAFT",
+    status: BLI_STATUS.DRAFT,
     date_needed: "2025-1-01",
     proc_shop_fee_percentage: 0.005
 };
@@ -83,15 +84,15 @@ it("agreement (BLI) workflow for approval then rejection", () => {
         })
         // submit for approval (via REST for now, maybe change to UI click through)
         .then(({ agreementId, bliId }) => {
-            const workflowSubmitData = {
+            const payload = {
                 id: bliId,
-                status: "PLANNED",
-                requestor_notes: "E2E Test Notes"
+                status: BLI_STATUS.PLANNED,
+                requestor_notes: "Please approve this BLI"
             };
             cy.request({
                 method: "PATCH",
                 url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                body: workflowSubmitData,
+                body: payload,
                 headers: {
                     Authorization: bearer_token,
                     Accept: "application/json"

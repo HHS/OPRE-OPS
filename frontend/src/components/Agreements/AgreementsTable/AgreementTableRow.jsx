@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     convertCodeForDisplay,
@@ -76,7 +77,7 @@ export const AgreementTableRow = ({ agreement }) => {
         ? "This agreement cannot be edited because it is currently In Review for a status change"
         : "";
     const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
-    const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, "DRAFT");
+    const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT);
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
     // hooks
