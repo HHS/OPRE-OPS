@@ -2,18 +2,21 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Attach OPS API",
-      "type": "python",
-      "request": "attach",
-      "connect": { "host": "localhost", "port": 5678 },
-      "pathMappings": [
-        {
-          "localRoot": "${workspaceFolder}/backend",
-          "remoteRoot": "/home/app"
-        }
+      "name": "Python Debugger: Flask",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+          "FLASK_APP": "ops_api.ops:create_app()",
+          "FLASK_DEBUG": "1",
+          "FLASK_RUN_PORT": "8080",
+          "PYTHONPATH": "./backend"
+      },
+      "args": [
+          "run"
       ],
-      "justMyCode": true,
-      "preLaunchTask": "Check and Start Docker Container"
-    }
+      "jinja": true,
+      "justMyCode": true
+  }
   ]
 }
