@@ -94,7 +94,6 @@ it("agreement (BLI) workflow for approval then rejection", () => {
             // TODO: add approve tests for change requests
             cy.get('[data-cy="review-card"]')
                 .should("have.length", 1)
-
                 .then(() => {
                     cy.request({
                         method: "DELETE",
