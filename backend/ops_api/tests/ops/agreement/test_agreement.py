@@ -248,6 +248,8 @@ def test_contract(loaded_db):
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
         created_by=4,
+        vendor_id=1,
+        incumbent_id=1,
     )
 
     loaded_db.add(contract_agreement)
@@ -561,6 +563,38 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_agreements_post_contract_with_incumbent(auth_client, loaded_db):
+    response = auth_client.post(
+        "/api/v1/agreements/",
+        json={
+            "agreement_type": "CONTRACT",
+            "agreement_reason": "NEW_REQ",
+            "name": "REED TEST CONTRACT",
+            "description": "test description",
+            "product_service_code_id": 1,
+            "incumbent": "Vendor 1",
+            "project_officer_id": 1,
+            "team_members": [
+                {
+                    "id": 2,
+                    "full_name": "Amy Madigan",
+                    "email": "Amy.Madigan@example.com",
+                }
+            ],
+            "notes": "test notes",
+            "project_id": 1,
+            "procurement_shop_id": 2,
+            "contract_type": "FIRM_FIXED_PRICE",
+        },
+    )
+    assert response.status_code == 201
+    contract_id = response.json["id"]
+
+    response = auth_client.get(url_for("api.agreements-item", id=contract_id))
+    assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
     """PATCH with mimicking the e2e test"""
     response = auth_client.patch(
@@ -638,6 +672,56 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
     assert data["contract_number"] == "XXXX000000002"
     assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
     assert data["service_requirement_type"] == ServiceRequirementType.SEVERABLE.name
+    assert data["product_service_code_id"] == 2
+    assert data["agreement_type"] == AgreementType.CONTRACT.name
+    assert data["project_id"] == 1
+    assert data["created_by"] is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db, test_contract):
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={"vendor": "Vendor 2", "incumbent": "Vendor 2"},
+    )
+    assert response.status_code == 200
+
+    response = auth_client.get(
+        url_for("api.agreements-item", id=test_contract.id),
+    )
+    data = response.json
+    assert data["name"] == "CTXX12399"
+    assert data["contract_number"] == "XXXX000000002"
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert data["vendor_id"] == 2
+    assert data["vendor"] == "Vendor 2"
+    assert data["incumbent_id"] == 2
+    assert data["incumbent"] == "Vendor 2"
+    assert data["product_service_code_id"] == 2
+    assert data["agreement_type"] == AgreementType.CONTRACT.name
+    assert data["project_id"] == 1
+    assert data["created_by"] is None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, test_contract):
+    response = auth_client.patch(
+        url_for("api.agreements-item", id=test_contract.id),
+        json={"vendor": "Random Test Vendor", "incumbent": "Random Test Vendor"},
+    )
+    assert response.status_code == 200
+
+    response = auth_client.get(
+        url_for("api.agreements-item", id=test_contract.id),
+    )
+    data = response.json
+    assert data["name"] == "CTXX12399"
+    assert data["contract_number"] == "XXXX000000002"
+    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert data["vendor_id"] == 4
+    assert data["vendor"] == "Random Test Vendor"
+    assert data["incumbent_id"] == 4
+    assert data["incumbent"] == "Random Test Vendor"
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name
     assert data["project_id"] == 1
