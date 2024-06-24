@@ -35,7 +35,8 @@ describe("StatusChangeReviewCard", () => {
                 old: BLI_STATUS.DRAFT,
                 new: BLI_STATUS.PLANNED
             }
-        }
+        },
+        handleReviewChangeRequest: vi.mock
     };
     it("should render the StatusChangeReviewCard component", () => {
         render(

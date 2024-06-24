@@ -30,7 +30,8 @@ describe("ReviewCard", () => {
         agreementId: 1,
         actionIcons: false,
         requesterName: "Jane Doe",
-        requestDate: "2024-06-12T21:25:25.744930Z"
+        requestDate: "2024-06-12T21:25:25.744930Z",
+        handleReviewChangeRequest: vi.mock
     };
     it("should render the ReviewCard component", async () => {
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });

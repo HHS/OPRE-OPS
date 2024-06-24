@@ -21,7 +21,7 @@ describe("ChangeRequestList", () => {
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         render(
             <BrowserRouter>
-                <ChangeRequestList />
+                <ChangeRequestList handleReviewChangeRequest={vi.mock} />
             </BrowserRouter>
         );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
@@ -34,7 +34,7 @@ describe("ChangeRequestList", () => {
         useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
         render(
             <BrowserRouter>
-                <ChangeRequestList />
+                <ChangeRequestList handleReviewChangeRequest={vi.mock} />
             </BrowserRouter>
         );
 

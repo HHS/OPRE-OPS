@@ -15,11 +15,19 @@ import TermTag from "../TermTag";
  * @param {string} props.requestDate - The date of the request
  * @param {number} props.bliId - The budget line item ID
  * @param {Object} props.changeTo - The requested change
+ * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
  * @returns {JSX.Element} - The rendered component
  */
-function BudgetChangeReviewCard({ changeRequestId, agreementId, requesterName, requestDate, bliId, changeTo }) {
+function BudgetChangeReviewCard({
+    changeRequestId,
+    agreementId,
+    requesterName,
+    requestDate,
+    bliId,
+    changeTo,
+    handleReviewChangeRequest
+}) {
     const keyName = Object.keys(changeTo)[0];
-
     const oldCan = useGetNameForCanId(changeTo.can_id?.old);
     const newCan = useGetNameForCanId(changeTo.can_id?.new);
     const status = useGetBLIStatus(bliId);
@@ -33,6 +41,7 @@ function BudgetChangeReviewCard({ changeRequestId, agreementId, requesterName, r
             actionIcons={true}
             requesterName={requesterName}
             requestDate={requestDate}
+            handleReviewChangeRequest={handleReviewChangeRequest}
         >
             <TermTag
                 label="BL ID"
@@ -64,6 +73,7 @@ BudgetChangeReviewCard.propTypes = {
     requesterName: PropTypes.string.isRequired,
     requestDate: PropTypes.string.isRequired,
     bliId: PropTypes.number.isRequired,
-    changeTo: PropTypes.object.isRequired
+    changeTo: PropTypes.object.isRequired,
+    handleReviewChangeRequest: PropTypes.func.isRequired
 };
 export default BudgetChangeReviewCard;

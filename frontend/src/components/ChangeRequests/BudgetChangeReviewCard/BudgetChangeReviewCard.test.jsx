@@ -31,7 +31,9 @@ describe("BudgetChangeReviewCard", () => {
             }
         },
         requestDate: "2024-06-12T21:25:25.744930Z",
-        requesterName: "John Doe"
+        requesterName: "John Doe",
+        changeRequestId: 1,
+        handleReviewChangeRequest: vi.mock
     };
     it("should render the component", () => {
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });

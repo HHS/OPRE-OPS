@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import useChangeRequest from "../ChangeRequest.hooks";
 import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
 
 /**
@@ -21,12 +20,21 @@ import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
  * @param {string} props.requesterName - The name of the requester
  * @param {string} props.requestDate - The date of the request
  * @param {React.ReactNode} props.children - The children of the component
+ * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
  * @returns {JSX.Element} - The rendered component
  */
-function ReviewCard({ changeRequestId, type, agreementId, actionIcons, requesterName, requestDate, children }) {
+function ReviewCard({
+    changeRequestId,
+    type,
+    agreementId,
+    actionIcons,
+    requesterName,
+    requestDate,
+    children,
+    handleReviewChangeRequest
+}) {
     const [isHovered, setIsHovered] = React.useState(false);
     const agreementName = useGetAgreementName(agreementId);
-    const { handleReviewChangeRequest } = useChangeRequest();
 
     return (
         <div
@@ -118,7 +126,6 @@ function ReviewCard({ changeRequestId, type, agreementId, actionIcons, requester
     );
 }
 
-export default ReviewCard;
 ReviewCard.propTypes = {
     changeRequestId: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
@@ -126,5 +133,8 @@ ReviewCard.propTypes = {
     actionIcons: PropTypes.bool.isRequired,
     requesterName: PropTypes.string.isRequired,
     requestDate: PropTypes.string.isRequired,
-    children: PropTypes.node
+    children: PropTypes.node,
+    handleReviewChangeRequest: PropTypes.func.isRequired
 };
+
+export default ReviewCard;
