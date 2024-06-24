@@ -23,8 +23,9 @@ const useChangeRequest = () => {
             action,
             reviewer_notes: notes
         };
-
         setShowModal(true);
+        // TODO: make Modal heading dynamic per action
+        // TODO: make Alert message dynamic per action
         setModalProps({
             heading:
                 "Are you sure you want to approve this budget change? The agreement will be updated after your approval.",
@@ -51,7 +52,6 @@ const useChangeRequest = () => {
                     });
             }
         });
-        console.log({ payload, showModal, modalProps });
     };
     return {
         handleReviewChangeRequest,
