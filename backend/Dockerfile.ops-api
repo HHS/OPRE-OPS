@@ -1,26 +1,40 @@
-FROM python:3.11-slim
-# hadolint ignore=DL3008
-RUN apt-get update && apt-get -y install curl --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir --upgrade pip==23.0.0 pipenv==2023.2.4 && useradd -ms /bin/bash app
+FROM alpine:3.20
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/home/app
+
+# renovate: datasource=repology depName=alpine_3_20/curl versioning=loose
+ENV CURL_VERSION="8.7.1-r0"
+# renovate: datasource=repology depName=alpine_3_20/python3 versioning=loose
+ENV PYTHON3_VERSION="3.12.3-r1"
+# renovate: datasource=repology depName=alpine_3_20/py3-pip versioning=loose
+ENV PY3_PIP_VERSION="24.0-r2"
+
+RUN apk update && apk add --no-cache \
+    curl="${CURL_VERSION}" \
+    python3="${PYTHON3_VERSION}" \
+    py3-pip="${PY3_PIP_VERSION}"
+
+# Create a non-root user to run the app
+RUN adduser app -D
+
+USER app
 WORKDIR /home/app
 
 # Copy the Pipfile(s) only, so that we can cache dependencies
 # in the next step
 COPY ./ops_api/Pipfile ./ops_api/Pipfile.lock /home/app/
-RUN pipenv install --dev --system --deploy
+# hadolint ignore=SC1091
+RUN python3 -m venv .venv && . .venv/bin/activate && \
+    pip3 install --no-cache-dir pipenv==2024.0.1 && pipenv install --dev --deploy
 
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.
 COPY . /home/app
 
-RUN chown -R app:app .
-USER app
-
-ENV PYTHONPATH=/home/app
-ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=ops_api.ops
 ENV FLASK_DEBUG=true
 
 ## This is to attempt fixing the worker issues.
-CMD ["python", "-m", "gunicorn", "--timeout", "1000", "--workers", "1", "--threads", "4", "-b", ":8080", "ops_api.ops:create_app()"]
+CMD ["pipenv", "run", "python", "-m", "gunicorn", "--timeout", "1000", "--workers", "1", "--threads", "4", "-b", ":8080", "ops_api.ops:create_app()"]
 ## --timeout 1000 --workers 1 --threads 4
