@@ -14,6 +14,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     Numeric,
+    Sequence,
     String,
     Table,
     Text,
@@ -675,7 +676,9 @@ class CAN(BaseModel):
 
     __tablename__ = "can"
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("can_id_seq", start=500, increment=1)
+    )
     number: Mapped[str] = mapped_column(String(30), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String)
     purpose: Mapped[Optional[str]] = mapped_column(String, default="")

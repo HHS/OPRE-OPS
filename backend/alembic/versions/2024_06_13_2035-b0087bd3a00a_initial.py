@@ -3149,9 +3149,17 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+
+    sa.Sequence("can_id_seq", start=500, increment=1).create(op.get_bind())
     op.create_table(
         "can",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('can_id_seq')"),
+            autoincrement=True,
+            nullable=False,
+        ),
         sa.Column("number", sa.String(length=30), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("purpose", sa.String(), nullable=True),
