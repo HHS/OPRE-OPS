@@ -1,11 +1,10 @@
 export const budgetLine = {
-    active_workflow_current_step_id: null,
     agreement_id: 1,
     amount: 1_000_000,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         appropriation_term: 1,
-        authorizer_id: 26,
+        authorizer_id: 525,
         description: "Head Start Research",
         expiration_date: "2024-09-01T00:00:00.000000Z",
         id: 5,
@@ -22,7 +21,6 @@ export const budgetLine = {
     created_on: "2024-05-27T13:56:50.363964Z",
     date_needed: "2043-06-13",
     fiscal_year: 2043,
-    has_active_workflow: false,
     id: 1,
     in_review: false,
     line_description: "LI 1",
@@ -44,13 +42,12 @@ export const agreement = {
     agreement_type: "CONTRACT",
     budget_line_items: [
         {
-            active_workflow_current_step_id: null,
             agreement_id: 1,
             amount: 1_000_000,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 appropriation_term: 1,
-                authorizer_id: 26,
+                authorizer_id: 525,
                 description: "Head Start Research",
                 expiration_date: "2024-09-01T00:00:00.000000Z",
                 id: 5,
@@ -67,7 +64,6 @@ export const agreement = {
             created_on: "2024-05-27T19:20:46.105099Z",
             date_needed: "2043-06-13",
             fiscal_year: 2043,
-            has_active_workflow: false,
             id: 1,
             in_review: false,
             line_description: "LI 1",
@@ -79,34 +75,33 @@ export const agreement = {
                 {
                     email: "chris.fortunato@example.com",
                     full_name: "Chris Fortunato",
-                    id: 1
+                    id: 500
                 },
                 {
                     email: "Amelia.Popham@example.com",
                     full_name: "Amelia Popham",
-                    id: 4
+                    id: 503
                 },
                 {
                     email: "admin.demo@email.com",
                     full_name: "Admin Demo",
-                    id: 21
+                    id: 520
                 },
                 {
                     email: "dave.director@email.com",
                     full_name: "Dave Director",
-                    id: 23
+                    id: 522
                 }
             ],
             updated_on: "2024-05-27T19:20:46.105099Z"
         },
         {
-            active_workflow_current_step_id: null,
             agreement_id: 1,
             amount: 1_000_000,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 appropriation_term: 1,
-                authorizer_id: 26,
+                authorizer_id: 525,
                 description: "Head Start Research",
                 expiration_date: "2024-09-01T00:00:00.000000Z",
                 id: 5,
@@ -123,7 +118,6 @@ export const agreement = {
             created_on: "2024-05-27T19:20:46.118542Z",
             date_needed: "2043-06-13",
             fiscal_year: 2043,
-            has_active_workflow: false,
             id: 2,
             in_review: false,
             line_description: "LI 2",
@@ -135,22 +129,22 @@ export const agreement = {
                 {
                     email: "chris.fortunato@example.com",
                     full_name: "Chris Fortunato",
-                    id: 1
+                    id: 500
                 },
                 {
                     email: "Amelia.Popham@example.com",
                     full_name: "Amelia Popham",
-                    id: 4
+                    id: 503
                 },
                 {
                     email: "admin.demo@email.com",
                     full_name: "Admin Demo",
-                    id: 21
+                    id: 520
                 },
                 {
                     email: "dave.director@email.com",
                     full_name: "Dave Director",
-                    id: 23
+                    id: 522
                 }
             ],
             updated_on: "2024-05-27T19:20:46.118542Z"
@@ -158,14 +152,14 @@ export const agreement = {
     ],
     contract_number: "XXXX000000001",
     contract_type: "LABOR_HOUR",
-    created_by: 4,
+    created_by: 503,
     created_on: "2024-05-27T19:20:43.774009Z",
     delivered_status: false,
     description: "Test description",
     display_name: "Contract #1: African American Child and Family Research Center",
     id: 1,
     incumbent: "Vendor 1",
-    incumbent_id: 1,
+    incumbent_id: 500,
     name: "Contract #1: African American Child and Family Research Center",
     notes: "",
     procurement_shop: {
@@ -194,29 +188,29 @@ export const agreement = {
         url: "https://www.acf.hhs.gov/opre/project/acf-human-services-interoperability-support"
     },
     project_id: 1,
-    project_officer_id: 1,
+    project_officer_id: 500,
     service_requirement_type: "NON_SEVERABLE",
     support_contacts: [],
     team_members: [
         {
             email: "chris.fortunato@example.com",
             full_name: "Chris Fortunato",
-            id: 1
+            id: 500
         },
         {
             email: "Amelia.Popham@example.com",
             full_name: "Amelia Popham",
-            id: 4
+            id: 503
         },
         {
             email: "admin.demo@email.com",
             full_name: "Admin Demo",
-            id: 21
+            id: 520
         },
         {
             email: "dave.director@email.com",
             full_name: "Dave Director",
-            id: 23
+            id: 522
         }
     ],
     updated_by: null,
@@ -290,19 +284,49 @@ export const servicesComponent = {
 
 export const changeRequests = [
     {
-        agreement: 9,
         agreement_id: 9,
-        budget_line_item: 22,
         budget_line_item_id: 22,
-        created_by: 21,
+        created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
-            id: 21
+            id: 520
         },
-        created_on: "2024-06-12T21:25:25.711734Z",
-        display_name: "BudgetLineItemChangeRequest#1",
-        id: 1,
-        managing_division: 4,
+        created_on: "2024-06-17T22:03:15.201945",
+        display_name: "BudgetLineItemChangeRequest#3",
+        has_budget_change: true,
+        has_status_change: false,
+        id: 3,
+        managing_division_id: 4,
+        requested_change_data: {
+            amount: 333333
+        },
+        requested_change_diff: {
+            amount: {
+                new: 333333,
+                old: 300000
+            }
+        },
+        requestor_notes: null,
+        reviewed_on: null,
+        reviewer_notes: null,
+        status: "ChangeRequestStatus.IN_REVIEW",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+        updated_by: 520,
+        updated_on: "2024-06-17T22:03:15.201945"
+    },
+    {
+        agreement_id: 9,
+        budget_line_item_id: 22,
+        created_by: 520,
+        created_by_user: {
+            full_name: "Admin Demo",
+            id: 520
+        },
+        created_on: "2024-06-17T22:03:15.220286",
+        display_name: "BudgetLineItemChangeRequest#4",
+        has_budget_change: true,
+        has_status_change: false,
+        id: 4,
         managing_division_id: 4,
         requested_change_data: {
             date_needed: "2045-06-13"
@@ -313,40 +337,26 @@ export const changeRequests = [
                 old: "2044-06-13"
             }
         },
-        requested_change_info: {
-            target_display_name: "BL 22"
-        },
-        reviewed_by_id: null,
+        requestor_notes: null,
         reviewed_on: null,
-        status: "IN_REVIEW",
-        type: "budget_line_item_change_request",
-        updated_by: 21,
-        updated_by_user: {
-            full_name: "Admin Demo",
-            id: 21
-        },
-        updated_on: "2024-06-12T21:25:25.711734Z",
-        versions: [
-            {
-                id: 1,
-                transaction_id: 396
-            }
-        ]
+        status: "ChangeRequestStatus.IN_REVIEW",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+        updated_by: 520,
+        updated_on: "2024-06-17T22:03:15.220286"
     },
     {
-        agreement: 9,
         agreement_id: 9,
-        budget_line_item: 22,
         budget_line_item_id: 22,
-        created_by: 21,
+        created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
-            id: 21
+            id: 520
         },
-        created_on: "2024-06-12T21:25:25.744930Z",
-        display_name: "BudgetLineItemChangeRequest#2",
-        id: 2,
-        managing_division: 4,
+        created_on: "2024-06-17T22:03:15.239904",
+        display_name: "BudgetLineItemChangeRequest#5",
+        has_budget_change: true,
+        has_status_change: false,
+        id: 5,
         managing_division_id: 4,
         requested_change_data: {
             can_id: 10
@@ -357,68 +367,72 @@ export const changeRequests = [
                 old: 13
             }
         },
-        requested_change_info: {
-            target_display_name: "BL 22"
-        },
-        reviewed_by_id: null,
+        requestor_notes: null,
         reviewed_on: null,
         status: "IN_REVIEW",
-        type: "budget_line_item_change_request",
-        updated_by: 21,
-        updated_by_user: {
-            full_name: "Admin Demo",
-            id: 21
-        },
-        updated_on: "2024-06-12T21:25:25.744930Z",
-        versions: [
-            {
-                id: 2,
-                transaction_id: 397
-            }
-        ]
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+        updated_by: 520,
+        updated_on: "2024-06-17T22:03:15.239904"
     },
     {
-        agreement: 9,
-        agreement_id: 9,
-        budget_line_item: 22,
-        budget_line_item_id: 22,
-        created_by: 21,
+        agreement_id: 1,
+        budget_line_item_id: 1,
+        created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
-            id: 21
+            id: 520
         },
-        created_on: "2024-06-12T21:25:25.765470Z",
-        display_name: "BudgetLineItemChangeRequest#3",
-        id: 3,
-        managing_division: 4,
+        created_on: "2024-06-17T18:55:41.810562",
+        display_name: "BudgetLineItemChangeRequest#1",
+        has_budget_change: false,
+        has_status_change: true,
+        id: 1,
         managing_division_id: 4,
         requested_change_data: {
-            amount: 33333
+            status: "PLANNED"
         },
         requested_change_diff: {
-            amount: {
-                new: 33333,
-                old: 300000
+            status: {
+                new: "PLANNED",
+                old: "DRAFT"
             }
         },
-        requested_change_info: {
-            target_display_name: "BL 22"
-        },
-        reviewed_by_id: null,
+        requestor_notes: null,
         reviewed_on: null,
-        status: "IN_REVIEW",
-        type: "budget_line_item_change_request",
-        updated_by: 21,
-        updated_by_user: {
+        status: "ChangeRequestStatus.IN_REVIEW",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+        updated_by: 520,
+        updated_on: "2024-06-17T18:55:41.810562"
+    },
+    {
+        agreement_id: 1,
+        budget_line_item_id: 2,
+        created_by: 520,
+        created_by_user: {
             full_name: "Admin Demo",
-            id: 21
+            id: 520
         },
-        updated_on: "2024-06-12T21:25:25.765470Z",
-        versions: [
-            {
-                id: 3,
-                transaction_id: 398
+        created_on: "2024-06-17T18:55:41.826716",
+        display_name: "BudgetLineItemChangeRequest#2",
+        has_budget_change: false,
+        has_status_change: true,
+        id: 2,
+        managing_division_id: 4,
+        requested_change_data: {
+            status: "PLANNED"
+        },
+        requested_change_diff: {
+            status: {
+                new: "PLANNED",
+                old: "DRAFT"
             }
-        ]
+        },
+        requestor_notes: null,
+        reviewed_on: null,
+        reviewer_notes: null,
+        status: "ChangeRequestStatus.IN_REVIEW",
+        type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+        updated_by: 520,
+        updated_on: "2024-06-17T18:55:41.826716"
     }
 ];

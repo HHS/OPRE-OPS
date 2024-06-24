@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-sqlalchemy = "==2.0.30"
+sqlalchemy = "==2.0.31"
 flask = "==3.0.3"
 mypy = "==1.10.0"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.6.0"}
@@ -20,13 +20,13 @@ marshmallow-dataclass = "==8.6.1"
 sqlalchemy-continuum = "==1.4.2"
 marshmallow-sqlalchemy = "==1.0.0"
 azure-storage-blob = "==12.20.0"
-azure-identity = "==1.16.1"
+azure-identity = "==1.17.1"
 alembic = "==1.13.1"
 alembic-postgresql-enum = "==1.2.0"
 PyYAML = "==6.0.1"
 
 [dev-packages]
-flake8 = "==7.0.0"
+flake8 = "==7.1.0"
 isort = "==5.13.2"
 pytest = "==8.2.2"
 nox = "==2024.4.15"
@@ -41,4 +41,4 @@ pytest-mock = "==3.14.0"
 pytest-bdd = "==7.2.0"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"

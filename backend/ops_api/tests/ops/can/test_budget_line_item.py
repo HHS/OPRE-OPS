@@ -858,17 +858,17 @@ def test_budget_line_item_validation_create_invalid(auth_client, app):
         "name": "TEST: Agreement for BLI Validation",
         "team_members": [
             {
-                "id": 21,
+                "id": 520,
             },
             {
-                "id": 23,
+                "id": 522,
             },
         ],
         "description": "Description",
         "procurement_shop_id": 2,
         "product_service_code_id": 1,
         "project_id": 1,
-        "project_officer_id": 21,
+        "project_officer_id": 520,
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
@@ -916,17 +916,17 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app):
         "name": "TEST: Agreement for BLI Validation",
         "team_members": [
             {
-                "id": 21,
+                "id": 520,
             },
             {
-                "id": 23,
+                "id": 522,
             },
         ],
         "description": "Description",
         "procurement_shop_id": 2,
         "product_service_code_id": 1,
         "project_id": 1,
-        "project_officer_id": 21,
+        "project_officer_id": 520,
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
@@ -979,7 +979,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
         "procurement_shop_id": 2,
         "product_service_code_id": 1,
         "project_id": 1,
-        "project_officer_id": 21,
+        "project_officer_id": 520,
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
@@ -1039,7 +1039,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app):
         "procurement_shop_id": 2,
         "product_service_code_id": 1,
         "project_id": 1,
-        "project_officer_id": 21,
+        "project_officer_id": 520,
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201

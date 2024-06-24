@@ -1655,10 +1655,13 @@ paths:
                 action:
                   type: string
                   description: 'APROVE or REJECT'
+                reviewer_notes:
+                  description: optional notes from the reviewer added the change request
+                  type: string
             examples:
               '0':
                 value: >-
-                  {"change_request_id": 123, "action": "APPROVE"}
+                  {"change_request_id": 123, "action": "APPROVE", "reviewer_notes": "Looks good to me"}
       responses:
         '200':
           description: OK
@@ -2183,6 +2186,10 @@ components:
           $ref: '#/components/parameters/created_by_user'
         updated_by_user:
           $ref: '#/components/parameters/updated_by_user'
+        requestor_notes:
+          description: optional notes added to a Change Request when a PATCH is made that creates a CR
+          type: string
+          writeOnly: true
     BudgetLineItemRequest:
       type: object
       properties:
@@ -2225,9 +2232,9 @@ components:
         id:
           type: integer
           example: 1
-        type:
+        change_request_type:
           type: string
-          example: 'budget_line_item_change_request'
+          example: 'BUDGET_LINE_ITEM_CHANGE_REQUEST'
         status:
           type: string
           example: 'IN_REVIEW'

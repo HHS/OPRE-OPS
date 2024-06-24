@@ -1,8 +1,9 @@
 import copy
 from datetime import datetime
+from functools import partial
 
 from flask import Response, current_app, request
-from flask_jwt_extended import current_user
+from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy import or_, select
 
 from models import BudgetLineItem, BudgetLineItemChangeRequest, ChangeRequest, ChangeRequestStatus, Division
@@ -13,7 +14,23 @@ from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
+from ops_api.ops.utils import procurement_workflow_helper
 from ops_api.ops.utils.response import make_response_with_headers
+
+
+def division_director_of_change_request(self) -> bool:
+    current_user_id = current_user.id
+    request_data = request.json
+    change_request_id = request_data.get("change_request_id", None)
+    if change_request_id is None:
+        return False
+    change_request: ChangeRequest = current_app.db_session.get(ChangeRequest, change_request_id)
+    if not change_request or not change_request.managing_division_id:
+        return False
+    division: Division = current_app.db_session.get(Division, change_request.managing_division_id)
+    if division is None:
+        return False
+    return division.division_director_id == current_user_id or division.deputy_division_director_id == current_user_id
 
 
 def review_change_request(
@@ -28,11 +45,15 @@ def review_change_request(
     change_request.reviewed_on = datetime.now()
     change_request.status = status_after_review
     change_request.reviewer_notes = reviewer_notes
+    should_create_procurement_workflow = False
 
     # If approved, then apply the changes
     if status_after_review == ChangeRequestStatus.APPROVED:
         if isinstance(change_request, BudgetLineItemChangeRequest):
             budget_line_item = session.get(BudgetLineItem, change_request.budget_line_item_id)
+            should_create_procurement_workflow = (
+                change_request.has_status_change and change_request.requested_change_data["status"] == "IN_EXECUTION"
+            )
             # need to copy to avoid changing the original data in the ChangeRequest and triggering an update
             data = copy.deepcopy(change_request.requested_change_data)
             schema = PATCHRequestBodySchema()
@@ -43,7 +64,6 @@ def review_change_request(
                 data,
                 budget_line_item,
                 schema,
-                # ["id", "status", "agreement_id"],
                 ["id", "agreement_id"],
                 partial=False,
             )
@@ -53,6 +73,10 @@ def review_change_request(
 
     session.add(change_request)
     session.commit()
+
+    if should_create_procurement_workflow:
+        procurement_workflow_helper.create_procurement_workflow(change_request.agreement_id)
+
     return change_request
 
 
@@ -111,7 +135,15 @@ class ChangeRequestReviewAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
 
-    @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
+    @is_authorized(
+        PermissionType.POST,
+        Permission.CHANGE_REQUEST_REVIEW,
+        extra_check=partial(
+            division_director_of_change_request,
+        ),
+        groups=["Budget Team", "Admins"],
+    )
+    @jwt_required()
     def post(self) -> Response:
         request_json = request.get_json()
         change_request_id = request_json.get("change_request_id")

@@ -11,7 +11,7 @@ import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import { hasActiveWorkflow, groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
+import { groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { findPeriodStart, findPeriodEnd, findDescription } from "../../../helpers/servicesComponent.helpers";
 
 /**
@@ -28,9 +28,8 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
     const [includeDrafts, setIncludeDrafts] = useState(false);
-    const doesAgreementHaveActiveWorkflow = hasActiveWorkflow(agreement?.budget_line_items);
     const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveActiveWorkflow;
+    const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview;
     const { setAlert } = useAlert();
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     // eslint-disable-next-line no-unused-vars
