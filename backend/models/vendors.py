@@ -1,6 +1,8 @@
+from enum import Enum, auto
 from typing import List
 
 from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.base import BaseModel
@@ -17,6 +19,11 @@ class VendorContacts(BaseModel):
         return f"vendor_id={self.vendor_id};contact_id={self.contact_id}"
 
 
+class ContactType(Enum):
+    FINANCIAL = auto()
+    CONTRACT = auto()
+    CUSTOMER = auto()
+
 class Contact(BaseModel):
     __tablename__ = "contact"
 
@@ -31,6 +38,8 @@ class Contact(BaseModel):
     phone_area_code: Mapped[str] = mapped_column(String(), nullable=True)
     phone_number: Mapped[str] = mapped_column(String(), nullable=True)
     email: Mapped[str] = mapped_column(String(), nullable=True)
+    contact_type: Mapped[ContactType] = mapped_column(ENUM(ContactType), nullable=True)
+
 
     vendors: Mapped[List["Vendor"]] = relationship(
         "Vendor",
