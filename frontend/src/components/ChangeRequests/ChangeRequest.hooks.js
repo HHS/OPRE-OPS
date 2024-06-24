@@ -1,7 +1,16 @@
+import * as React from "react";
 import { useReviewChangeRequestMutation } from "../../api/opsAPI";
+import useAlert from "../../hooks/use-alert.hooks";
 
 const useChangeRequest = () => {
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({
+        heading: "",
+        actionButtonText: "",
+        handleConfirm: () => {}
+    });
     const [reviewCR] = useReviewChangeRequestMutation();
+    const { setAlert } = useAlert();
     /**
      * @param {number} id - The ID of the change request.
      * @param {string} action - The action to be performed. Either "APPROVE" or "REJECT".
@@ -15,17 +24,41 @@ const useChangeRequest = () => {
             reviewer_notes: notes
         };
 
-        reviewCR(payload)
-            .unwrap()
-            .then((fulfilled) => {
-                console.log("Review Change Request:", fulfilled);
-            })
-            .catch((rejected) => {
-                console.error("Error Reviewing Change Request:", rejected);
-            });
+        setShowModal(true);
+        setModalProps({
+            heading:
+                "Are you sure you want to approve this budget change? The agreement will be updated after your approval.",
+            actionButtonText: "Approve",
+            handleConfirm: () => {
+                reviewCR(payload)
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log("Review Change Request:", fulfilled);
+                        setAlert({
+                            type: "success",
+                            heading: "Budget Change Approved",
+                            message: `The agreement “Agreement Title” has been successfully updated.`
+                        });
+                    })
+                    .catch((rejected) => {
+                        console.error("Error Reviewing Change Request:", rejected);
+                        setAlert({
+                            type: "error",
+                            heading: "Error",
+                            message: "An error occurred. Please try again.",
+                            redirectUrl: "/error"
+                        });
+                    });
+            }
+        });
+        console.log({ payload, showModal, modalProps });
     };
     return {
-        handleReviewChangeRequest
+        handleReviewChangeRequest,
+        showModal,
+        setShowModal,
+        modalProps,
+        setModalProps
     };
 };
 
