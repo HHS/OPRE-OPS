@@ -60,8 +60,8 @@
   - [ca-03](ca/ca-03.md)
   - [ca-05](ca/ca-05.md)
   - [ca-06](ca/ca-06.md)
-  - [ca-07-01](ca/ca-07-01.md)
   - [ca-07](ca/ca-07.md)
+  - [ca-07-01](ca/ca-07-01.md)
   - [ca-07-04](ca/ca-07-04.md)
   - [ca-09](ca/ca-09.md)
 
