@@ -5,7 +5,7 @@ from models.workflows import AcquisitionPlanning, Award, Evaluation, PreAward, P
 
 TEST_AGREEMENT_ID = 1
 TEST_AGREEMENT_ID2 = 2
-TEST_CREATED_BY = 3
+TEST_CREATED_BY = 502
 
 
 @pytest.fixture()
@@ -181,7 +181,7 @@ def test_acquisition_planning_get_by_id(auth_client, loaded_db, test_acquisition
 def test_acquisition_planning_patch_by_id(auth_client, loaded_db, test_acquisition_planning):
     assert test_acquisition_planning.id is not None
 
-    patch_data = {"actual_date": "2024-10-15", "is_complete": True, "completed_by": 5}
+    patch_data = {"actual_date": "2024-10-15", "is_complete": True, "completed_by": 504}
     response = auth_client.patch(
         url_for("api.procurement-acquisition-planning-item", id=test_acquisition_planning.id),
         json=patch_data,
@@ -195,7 +195,7 @@ def test_acquisition_planning_patch_by_id(auth_client, loaded_db, test_acquisiti
     assert resp_json["agreement_id"] == 1
     assert resp_json["actual_date"] == "2024-10-15"
     assert resp_json["is_complete"]
-    assert resp_json["completed_by"] == 5
+    assert resp_json["completed_by"] == 504
 
 
 # STEP 2: PreSolicitation
@@ -245,7 +245,7 @@ def test_pre_solicitation_patch_by_id(auth_client, loaded_db, test_pre_solicitat
         "target_date": "2024-10-01",
         "actual_date": "2024-10-15",
         "is_complete": True,
-        "completed_by": 5,
+        "completed_by": 504,
     }
     response = auth_client.patch(
         url_for("api.procurement-pre-solicitation-item", id=test_pre_solicitation.id),
@@ -261,7 +261,7 @@ def test_pre_solicitation_patch_by_id(auth_client, loaded_db, test_pre_solicitat
     assert resp_json["target_date"] == "2024-10-01"
     assert resp_json["actual_date"] == "2024-10-15"
     assert resp_json["is_complete"]
-    assert resp_json["completed_by"] == 5
+    assert resp_json["completed_by"] == 504
 
 
 # STEP 3: Solicitation
@@ -311,7 +311,7 @@ def test_solicitation_patch_by_id(auth_client, loaded_db, test_solicitation):
         "target_date": "2024-10-01",
         "actual_date": "2024-10-15",
         "is_complete": True,
-        "completed_by": 5,
+        "completed_by": 504,
     }
     response = auth_client.patch(
         url_for("api.procurement-solicitation-item", id=test_solicitation.id),
@@ -327,7 +327,7 @@ def test_solicitation_patch_by_id(auth_client, loaded_db, test_solicitation):
     assert resp_json["target_date"] == "2024-10-01"
     assert resp_json["actual_date"] == "2024-10-15"
     assert resp_json["is_complete"]
-    assert resp_json["completed_by"] == 5
+    assert resp_json["completed_by"] == 504
 
 
 # STEP 4: Evaluation
@@ -377,7 +377,7 @@ def test_evaluation_patch_by_id(auth_client, loaded_db, test_evaluation):
         "target_date": "2024-10-01",
         "actual_date": "2024-10-15",
         "is_complete": True,
-        "completed_by": 5,
+        "completed_by": 504,
     }
     response = auth_client.patch(
         url_for("api.procurement-evaluation-item", id=test_evaluation.id),
@@ -393,7 +393,7 @@ def test_evaluation_patch_by_id(auth_client, loaded_db, test_evaluation):
     assert resp_json["target_date"] == "2024-10-01"
     assert resp_json["actual_date"] == "2024-10-15"
     assert resp_json["is_complete"]
-    assert resp_json["completed_by"] == 5
+    assert resp_json["completed_by"] == 504
 
 
 # STEP 5: PreAward
@@ -441,7 +441,7 @@ def test_pre_award_patch_by_id(auth_client, loaded_db, test_pre_award):
         "target_date": "2024-10-01",
         "actual_date": "2024-10-15",
         "is_complete": True,
-        "completed_by": 5,
+        "completed_by": 504,
     }
     response = auth_client.patch(url_for("api.procurement-pre-award-item", id=test_pre_award.id), json=patch_data)
     assert response.status_code == 200
@@ -454,7 +454,7 @@ def test_pre_award_patch_by_id(auth_client, loaded_db, test_pre_award):
     assert resp_json["target_date"] == "2024-10-01"
     assert resp_json["actual_date"] == "2024-10-15"
     assert resp_json["is_complete"]
-    assert resp_json["completed_by"] == 5
+    assert resp_json["completed_by"] == 504
 
 
 # STEP 6: Award
@@ -505,7 +505,7 @@ def test_award_patch_by_id(auth_client, loaded_db, test_award):
     patch_data = {
         "actual_date": "2024-10-15",
         "is_complete": True,
-        "completed_by": 5,
+        "completed_by": 504,
         "vendor": "Test Vendor",
         "vendor_type": "Test Vendor Type",
         "financial_number": "Test Financial Number",
@@ -520,7 +520,7 @@ def test_award_patch_by_id(auth_client, loaded_db, test_award):
     assert resp_json["agreement_id"] == 1
     assert resp_json["actual_date"] == "2024-10-15"
     assert resp_json["is_complete"]
-    assert resp_json["completed_by"] == 5
+    assert resp_json["completed_by"] == 504
     assert resp_json["vendor"] == "Test Vendor"
     assert resp_json["vendor_type"] == "Test Vendor Type"
     assert resp_json["financial_number"] == "Test Financial Number"

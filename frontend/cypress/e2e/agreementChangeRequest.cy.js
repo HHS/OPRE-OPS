@@ -11,13 +11,13 @@ const testAgreement = {
     project_id: 1,
     product_service_code_id: 1,
     procurement_shop_id: 1,
-    project_officer_id: 1,
+    project_officer_id: 500,
     team_members: [
         {
-            id: 21
+            id: 520
         },
         {
-            id: 5
+            id: 504
         }
     ],
     notes: "Test Notes"

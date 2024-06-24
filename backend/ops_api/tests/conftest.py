@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from models import OpsDBHistory, OpsEvent
+from models import OpsDBHistory, OpsEvent, User, Vendor
 from ops_api.ops import create_app
 from tests.auth_client import AuthClient, NoPermsAuthClient
 
@@ -124,3 +124,27 @@ def app_ctx(app: Flask) -> Generator[None, None, None]:
     """Activate the ApplicationContext for the flask app."""
     with app.app_context():
         yield
+
+
+@pytest.fixture()
+def test_user(loaded_db) -> User | None:
+    """Get a test user.
+
+    N.B. This user has an ADMIN role whose status is INACTIVE.
+    """
+    return loaded_db.get(User, 500)
+
+
+@pytest.fixture()
+def test_admin_user(loaded_db) -> User | None:
+    """Get a test admin user - also the user associated with the auth_client.
+
+    N.B. This user has an ADMIN role whose status is ACTIVE.
+    """
+    return loaded_db.get(User, 503)
+
+
+@pytest.fixture()
+def test_vendor(loaded_db) -> Vendor | None:
+    """Get a test Vendor."""
+    return loaded_db.get(Vendor, 100)
