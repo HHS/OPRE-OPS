@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
-import { useGetAgreementByIdQuery, useGetBudgetLineItemQuery, useGetCansQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetBudgetLineItemQuery,
+    useGetCansQuery,
+    useReviewChangeRequestMutation
+} from "../../../api/opsAPI";
 import { useGetAgreementName, useGetBLIStatus, useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import { agreement, budgetLine } from "../../../tests/data";
 import BudgetChangeReviewCard from "./BudgetChangeReviewCard";
@@ -15,6 +20,7 @@ vi.mock("../../../api/opsAPI");
 describe("BudgetChangeReviewCard", () => {
     useGetBLIStatus.mockReturnValue("Draft");
     useGetAgreementName.mockReturnValue("Agreement Name");
+    useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
     const initialProps = {
         agreementId: 1,
         bliId: 1,

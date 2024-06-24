@@ -2,7 +2,12 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 import { vi } from "vitest";
-import { useGetAgreementByIdQuery, useGetBudgetLineItemQuery, useGetCansQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetBudgetLineItemQuery,
+    useGetCansQuery,
+    useReviewChangeRequestMutation
+} from "../../../api/opsAPI";
 import { useGetAgreementName, useGetBLIStatus } from "../../../hooks/lookup.hooks";
 import { agreement, budgetLine } from "../../../tests/data";
 import ReviewCard from "./ReviewCard";
@@ -17,7 +22,10 @@ vi.mock("../../../hooks/lookup.hooks", () => ({
 describe("ReviewCard", () => {
     useGetBLIStatus.mockReturnValue("Draft");
     useGetAgreementName.mockReturnValue("Agreement Name");
+    useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+
     const initialProps = {
+        changeRequestId: 1,
         type: "Budget Change",
         agreementId: 1,
         actionIcons: false,
@@ -73,5 +81,4 @@ describe("ReviewCard", () => {
         expect(approveBtn).toBeInTheDocument();
         expect(declineBtn).toBeInTheDocument();
     });
-    it.todo('should render the ReviewCard component with a type of "type"');
 });

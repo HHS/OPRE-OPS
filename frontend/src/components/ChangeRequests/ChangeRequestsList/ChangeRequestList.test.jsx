@@ -5,7 +5,8 @@ import {
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery,
     useGetCansQuery,
-    useGetChangeRequestsListQuery
+    useGetChangeRequestsListQuery,
+    useReviewChangeRequestMutation
 } from "../../../api/opsAPI";
 
 import { agreement, budgetLine, changeRequests } from "../../../tests/data";
@@ -14,6 +15,7 @@ import ChangeRequestList from "./ChangeRequestsList";
 vi.mock("../../../api/opsAPI");
 
 describe("ChangeRequestList", () => {
+    useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
     it("renders without any change requests", () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: {} });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");

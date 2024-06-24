@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import { useGetAgreementByIdQuery, useGetBudgetLineItemQuery, useGetCansQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetBudgetLineItemQuery,
+    useGetCansQuery,
+    useReviewChangeRequestMutation
+} from "../../../api/opsAPI";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { useGetBLITotal } from "../../../hooks/lookup.hooks";
 import { agreement, budgetLine } from "../../../tests/data";
@@ -17,8 +22,10 @@ describe("StatusChangeReviewCard", () => {
     useGetBudgetLineItemQuery.mockReturnValue({ data: budgetLine });
     useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
     useGetBLITotal.mockReturnValue(1000000);
+    useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
 
     const initialProps = {
+        changeRequestId: 1,
         agreementId: 1,
         requesterName: "Jane Doe",
         requestDate: "2024-06-12T21:25:25.744930Z",
