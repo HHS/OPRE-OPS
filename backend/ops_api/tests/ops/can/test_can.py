@@ -50,8 +50,8 @@ def test_can_get_all(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_get_by_id(auth_client, loaded_db):
-    response = auth_client.get("/api/v1/cans/1")
+def test_can_get_by_id(auth_client, loaded_db, test_can):
+    response = auth_client.get(f"/api/v1/cans/{test_can.id}")
     assert response.status_code == 200
     assert response.json["number"] == "G99HRF2"
 
@@ -61,7 +61,7 @@ def test_can_get_portfolio_cans(auth_client, loaded_db):
     response = auth_client.get("/api/v1/cans/portfolio/1")
     assert response.status_code == 200
     assert len(response.json) == 2
-    assert response.json[0]["id"] == 2
+    assert response.json[0]["id"] == 501
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -69,7 +69,7 @@ def test_get_cans_search_filter(auth_client, loaded_db):
     response = auth_client.get("/api/v1/cans/?search=XXX8")
     assert response.status_code == 200
     assert len(response.json) == 1
-    assert response.json[0]["id"] == 13
+    assert response.json[0]["id"] == 512
 
     response = auth_client.get("/api/v1/cans/?search=G99HRF2")
     assert response.status_code == 200
