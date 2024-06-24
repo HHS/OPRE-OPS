@@ -30,6 +30,7 @@ function ChangeRequestsList() {
                         {changeRequest.has_budget_change && (
                             <BudgetChangeReviewCard
                                 key={changeRequest.id}
+                                changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
                                 requesterName={changeRequest.created_by_user?.full_name}
@@ -40,6 +41,7 @@ function ChangeRequestsList() {
                         {changeRequest.has_status_change && (
                             <StatusChangeReviewCard
                                 key={changeRequest.id}
+                                changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
                                 requesterName={changeRequest.created_by_user?.full_name}

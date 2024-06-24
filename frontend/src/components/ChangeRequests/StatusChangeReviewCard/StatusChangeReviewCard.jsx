@@ -9,6 +9,7 @@ import TermTag from "../TermTag";
  * BudgetChangeReviewCard component
  * @component
  * @param {Object} props - Properties passed to component
+ * @param {number} props.changeRequestId - The ID of the change request
  * @param {number} props.agreementId - The name of the agreement
  * @param {string} props.requesterName - The name of the requester
  * @param {string} props.requestDate - The date of the request
@@ -16,7 +17,7 @@ import TermTag from "../TermTag";
  * @param {Object} props.changeTo - The requested change
  * @returns {JSX.Element} - The rendered component
  */
-function StatusChangeReviewCard({ agreementId, requesterName, requestDate, bliId, changeTo }) {
+function StatusChangeReviewCard({ changeRequestId, agreementId, requesterName, requestDate, bliId, changeTo }) {
     const keyName = Object.keys(changeTo)[0];
     const totalAmount = useGetBLITotal(bliId);
     const oldCan = useGetNameForCanId(changeTo.can_id?.old);
@@ -25,6 +26,7 @@ function StatusChangeReviewCard({ agreementId, requesterName, requestDate, bliId
 
     return (
         <ReviewCard
+            changeRequestId={changeRequestId}
             type="Status Change"
             agreementId={agreementId}
             actionIcons={true}
@@ -56,6 +58,7 @@ function StatusChangeReviewCard({ agreementId, requesterName, requestDate, bliId
 }
 
 StatusChangeReviewCard.propTypes = {
+    changeRequestId: PropTypes.number.isRequired,
     agreementId: PropTypes.number.isRequired,
     requesterName: PropTypes.string.isRequired,
     requestDate: PropTypes.string.isRequired,

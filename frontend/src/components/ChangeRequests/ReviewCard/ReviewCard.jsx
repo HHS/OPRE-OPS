@@ -7,11 +7,14 @@ import { Link } from "react-router-dom";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import useChangeRequest from "../ChangeRequest.hooks";
+import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
 
 /**
  * ReviewCard component
  * @component
  * @param {Object} props - Properties passed to component
+ * @param {number} props.changeRequestId - The ID of the change request
  * @param {string} props.type - The type of the card
  * @param {number} props.agreementId - The name of the agreement
  * @param {boolean} props.actionIcons - Whether the card has action icons
@@ -20,9 +23,10 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @param {React.ReactNode} props.children - The children of the component
  * @returns {JSX.Element} - The rendered component
  */
-function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate, children }) {
+function ReviewCard({ changeRequestId, type, agreementId, actionIcons, requesterName, requestDate, children }) {
     const [isHovered, setIsHovered] = React.useState(false);
     const agreementName = useGetAgreementName(agreementId);
+    const { handleReviewChangeRequest } = useChangeRequest();
 
     return (
         <div
@@ -49,9 +53,9 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                             <button
                                 id="approve"
                                 aria-label="Approve"
-                                onClick={() => {
-                                    alert("Not yet implemented");
-                                }}
+                                onClick={() =>
+                                    handleReviewChangeRequest(changeRequestId, CHANGE_REQUEST_ACTION.APPROVE, null)
+                                }
                             >
                                 <FontAwesomeIcon
                                     icon={faCheck}
@@ -67,9 +71,9 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                             <button
                                 id="decline"
                                 aria-label="Decline"
-                                onClick={() => {
-                                    alert("Not yet implemented");
-                                }}
+                                onClick={() =>
+                                    handleReviewChangeRequest(changeRequestId, CHANGE_REQUEST_ACTION.REJECT, null)
+                                }
                             >
                                 <FontAwesomeIcon
                                     icon={faXmark}
@@ -116,6 +120,7 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
 
 export default ReviewCard;
 ReviewCard.propTypes = {
+    changeRequestId: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
     agreementId: PropTypes.number.isRequired,
     actionIcons: PropTypes.bool.isRequired,

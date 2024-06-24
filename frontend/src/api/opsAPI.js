@@ -302,6 +302,17 @@ export const opsApi = createApi({
         getChangeRequestsList: builder.query({
             query: () => `/change-requests/`,
             providesTags: ["ChangeRequests"]
+        }),
+        reviewChangeRequest: builder.mutation({
+            query: (body) => {
+                return {
+                    url: `/change-request-reviews/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body
+                };
+            },
+            invalidatesTags: ["ChangeRequests"]
         })
     })
 });
@@ -348,5 +359,6 @@ export const {
     useGetServicesComponentByIdQuery,
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
-    useGetChangeRequestsListQuery
+    useGetChangeRequestsListQuery,
+    useReviewChangeRequestMutation
 } = opsApi;
