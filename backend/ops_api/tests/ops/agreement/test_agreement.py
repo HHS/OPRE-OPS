@@ -238,7 +238,7 @@ def test_agreement_create_grant_agreement(loaded_db):
 
 
 @pytest.fixture()
-def test_contract(loaded_db):
+def test_contract(loaded_db, test_vendor, test_admin_user):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
@@ -247,9 +247,9 @@ def test_contract(loaded_db):
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         project_id=1,
-        created_by=4,
-        vendor_id=1,
-        incumbent_id=1,
+        created_by=test_admin_user.id,
+        vendor_id=test_vendor.id,
+        incumbent_id=test_vendor.id,
     )
 
     loaded_db.add(contract_agreement)
@@ -693,9 +693,9 @@ def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db
     assert data["name"] == "CTXX12399"
     assert data["contract_number"] == "XXXX000000002"
     assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
-    assert data["vendor_id"] == 2
+    assert data["vendor_id"] == 101
     assert data["vendor"] == "Vendor 2"
-    assert data["incumbent_id"] == 2
+    assert data["incumbent_id"] == 101
     assert data["incumbent"] == "Vendor 2"
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name
@@ -718,9 +718,9 @@ def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, tes
     assert data["name"] == "CTXX12399"
     assert data["contract_number"] == "XXXX000000002"
     assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
-    assert data["vendor_id"] == 4
+    assert data["vendor_id"] == 103
     assert data["vendor"] == "Random Test Vendor"
-    assert data["incumbent_id"] == 4
+    assert data["incumbent_id"] == 103
     assert data["incumbent"] == "Random Test Vendor"
     assert data["product_service_code_id"] == 2
     assert data["agreement_type"] == AgreementType.CONTRACT.name

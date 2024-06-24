@@ -3008,9 +3008,16 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    sa.Sequence("vendor_id_seq", start=100, increment=1).create(op.get_bind())
     op.create_table(
         "vendor",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('vendor_id_seq')"),
+            autoincrement=True,
+            nullable=False,
+        ),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("duns", sa.String(), nullable=False),
         sa.Column("active", sa.Boolean(), nullable=False),
