@@ -41,14 +41,14 @@ const agreementHistoryData = [
                 old: null
             },
             project_officer: {
-                new: 1,
+                new: 500,
                 old: null
             },
             team_members: {
                 added: [
                     {
                         full_name: "Amy Madigan",
-                        id: 2
+                        id: 501
                     }
                 ],
                 collection_of: "User",
@@ -56,7 +56,7 @@ const agreementHistoryData = [
             }
         },
         class_name: "ContractAgreement",
-        created_by: 17,
+        created_by: 516,
         created_by_user_full_name: "Steve Tekell",
         created_on: "2023-08-30T14:05:59.958722",
         event_details: {
@@ -64,7 +64,7 @@ const agreementHistoryData = [
             agreement_type: "CONTRACT",
             contract_number: null,
             contract_type: null,
-            created_by: 17,
+            created_by: 516,
             created_on: "2023-08-29T21:36:25.183870",
             delivered_status: false,
             description: "blah blah blah",
@@ -94,7 +94,7 @@ const agreementHistoryData = [
                 updated_on: "2023-08-24T16:19:01.268399"
             },
             product_service_code_id: 1,
-            project_officer_id: 1,
+            project_officer_id: 500,
             project: {
                 created_by: null,
                 created_on: "2023-08-24T16:18:48.654514",
@@ -129,7 +129,7 @@ const agreementHistoryData = [
                     first_name: "Amy",
                     full_name: "Amy Madigan",
                     hhs_id: null,
-                    id: 2,
+                    id: 501,
                     last_name: "Madigan",
                     oidc_id: "00000000-0000-1111-a111-000000000002",
                     updated_on: "2023-08-24T16:18:57.391020"
@@ -159,7 +159,7 @@ const agreementHistoryData = [
             }
         },
         class_name: "BudgetLineItem",
-        created_by: 17,
+        created_by: 516,
         created_by_user_full_name: "Steve Tekell",
         created_on: "2023-08-29T21:37:56.300512",
         event_details: {
@@ -172,7 +172,7 @@ const agreementHistoryData = [
             },
             can_id: 1,
             comments: "",
-            created_by: 17,
+            created_by: 516,
             created_on: "2023-08-29T21:36:51.385646",
             date_needed: "2023-02-02",
             id: 25,
@@ -187,7 +187,7 @@ const agreementHistoryData = [
             agreement_id: 11,
             amount: 100000.0,
             can_id: 1,
-            created_by: 17,
+            created_by: 516,
             created_on: "2023-08-29T21:36:51.385646",
             date_needed: "2023-01-01",
             id: 25,
@@ -210,7 +210,7 @@ const agreementHistoryData = [
             }
         },
         class_name: "ContractAgreement",
-        created_by: 17,
+        created_by: 516,
         created_by_user_full_name: "Steve Tekell",
         created_on: "2023-08-29T21:37:20.045738",
         event_details: {
@@ -218,7 +218,7 @@ const agreementHistoryData = [
             agreement_type: "CONTRACT",
             contract_number: null,
             contract_type: null,
-            created_by: 17,
+            created_by: 516,
             created_on: "2023-08-29T21:36:25.183870",
             delivered_status: false,
             description: "blah blah blah",
@@ -267,7 +267,7 @@ const agreementHistoryData = [
                 new: 1
             },
             created_by: {
-                new: 17
+                new: 516
             },
             date_needed: {
                 new: "2023-01-01"
@@ -280,7 +280,7 @@ const agreementHistoryData = [
             }
         },
         class_name: "BudgetLineItem",
-        created_by: 17,
+        created_by: 516,
         created_by_user_full_name: "Steve Tekell",
         created_on: "2023-08-29T21:36:51.385646",
         event_details: {
@@ -289,7 +289,7 @@ const agreementHistoryData = [
             can: null,
             can_id: 1,
             comments: "",
-            created_by: 17,
+            created_by: 516,
             created_on: "2023-08-29T21:36:51.385646",
             date_needed: "2023-01-01",
             id: 25,
@@ -309,7 +309,7 @@ const agreementHistoryData = [
                 new: "CONTRACT"
             },
             created_by: {
-                new: 17
+                new: 516
             },
             description: {
                 new: "yadda yadda yadda"
@@ -325,7 +325,7 @@ const agreementHistoryData = [
             }
         },
         class_name: "ContractAgreement",
-        created_by: 17,
+        created_by: 516,
         created_by_user_full_name: "Steve Tekell",
         created_on: "2023-08-29T21:36:25.183870",
         event_details: {
@@ -333,7 +333,7 @@ const agreementHistoryData = [
             agreement_type: "CONTRACT",
             contract_number: null,
             contract_type: null,
-            created_by: 17,
+            created_by: 516,
             created_on: "2023-08-29T21:36:25.183870",
             delivered_status: false,
             description: "yadda yadda yadda",
@@ -385,15 +385,15 @@ describe("AgreementDetails", () => {
         },
         agreement_reason: "RECOMPETE",
         incumbent: "Test Incumbent",
-        project_officer_id: 1,
+        project_officer_id: 500,
         team_members: [
             {
                 full_name: "Amy Madigan",
-                id: 2
+                id: 501
             },
             {
                 full_name: "Ivelisse Martinez-Beck",
-                id: 3
+                id: 502
             }
         ],
         budget_line_items: [
@@ -407,7 +407,7 @@ describe("AgreementDetails", () => {
 
     const projectOfficer = {
         full_name: "Chris Fortunato",
-        id: 1
+        id: 500
     };
 
     test("renders correctly", () => {

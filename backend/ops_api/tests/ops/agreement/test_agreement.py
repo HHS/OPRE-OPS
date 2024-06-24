@@ -296,8 +296,8 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "team_members": [{"id": 1}],
-            "support_contacts": [{"id": 2}, {"id": 3}],
+            "team_members": [{"id": 500}],
+            "support_contacts": [{"id": 501}, {"id": 502}],
             "notes": "Test Note",
         },
     )
@@ -310,8 +310,8 @@ def test_agreements_put_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes == "Test Note"
-    assert [m.id for m in agreement.team_members] == [1]
-    assert [m.id for m in agreement.support_contacts] == [2, 3]
+    assert [m.id for m in agreement.team_members] == [500]
+    assert [m.id for m in agreement.support_contacts] == [501, 502]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -347,7 +347,7 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
             "agreement_type": "GRANT",
             "name": "Updated Grant Name",
             "description": "Updated Grant Description",
-            "team_members": [{"id": 1}, {"id": 2}, {"id": 3}],
+            "team_members": [{"id": 500}, {"id": 501}, {"id": 502}],
         },
     )
     assert response.status_code == 200
@@ -358,7 +358,7 @@ def test_agreements_put_by_id_grant(auth_client, loaded_db):
     assert agreement.name == "Updated Grant Name"
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Grant Description"
-    assert [m.id for m in agreement.team_members] == [1, 2, 3]
+    assert [m.id for m in agreement.team_members] == [500, 501, 502]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -384,8 +384,8 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "team_members": [{"id": 1}],
-            "support_contacts": [{"id": 2}, {"id": 3}],
+            "team_members": [{"id": 500}],
+            "support_contacts": [{"id": 501}, {"id": 502}],
             "notes": "Test Note",
         },
     )
@@ -398,8 +398,8 @@ def test_agreements_patch_by_id_contract(auth_client, loaded_db, test_contract):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Contract Description"
     assert agreement.notes == "Test Note"
-    assert [m.id for m in agreement.team_members] == [1]
-    assert [m.id for m in agreement.support_contacts] == [2, 3]
+    assert [m.id for m in agreement.team_members] == [500]
+    assert [m.id for m in agreement.support_contacts] == [501, 502]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -412,8 +412,8 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
             "agreement_type": "CONTRACT",
             "name": "Updated Contract Name",
             "description": "Updated Contract Description",
-            "team_members": [{"id": 1}],
-            "support_contacts": [{"id": 2}, {"id": 3}],
+            "team_members": [{"id": 500}],
+            "support_contacts": [{"id": 501}, {"id": 502}],
             "notes": "Test Note",
         },
     )
@@ -423,8 +423,8 @@ def test_agreements_patch_by_id_contract_with_nones(auth_client, loaded_db, test
     assert test_contract.display_name == test_contract.name
     assert test_contract.description == "Updated Contract Description"
     assert test_contract.notes == "Test Note"
-    assert [m.id for m in test_contract.team_members] == [1]
-    assert [m.id for m in test_contract.support_contacts] == [2, 3]
+    assert [m.id for m in test_contract.team_members] == [500]
+    assert [m.id for m in test_contract.support_contacts] == [501, 502]
 
     # path with None/empty
     response = auth_client.patch(
@@ -454,7 +454,7 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
             "agreement_type": "GRANT",
             "name": "Updated Grant Name",
             "description": "Updated Grant Description",
-            "team_members": [{"id": 1}],
+            "team_members": [{"id": 500}],
             "notes": "Test Note",
         },
     )
@@ -467,7 +467,7 @@ def test_agreements_patch_by_id_grant(auth_client, loaded_db):
     assert agreement.display_name == agreement.name
     assert agreement.description == "Updated Grant Description"
     assert agreement.notes == "Test Note"
-    assert [m.id for m in agreement.team_members] == [1]
+    assert [m.id for m in agreement.team_members] == [500]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -540,10 +540,10 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
             "description": "test description",
             "product_service_code_id": 1,
             "incumbent": None,
-            "project_officer_id": 1,
+            "project_officer_id": 500,
             "team_members": [
                 {
-                    "id": 2,
+                    "id": 501,
                     "full_name": "Amy Madigan",
                     "email": "Amy.Madigan@example.com",
                 }
@@ -563,7 +563,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_incumbent(auth_client, loaded_db):
+def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_user):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
@@ -573,10 +573,10 @@ def test_agreements_post_contract_with_incumbent(auth_client, loaded_db):
             "description": "test description",
             "product_service_code_id": 1,
             "incumbent": "Vendor 1",
-            "project_officer_id": 1,
+            "project_officer_id": test_user.id,
             "team_members": [
                 {
-                    "id": 2,
+                    "id": 501,
                     "full_name": "Amy Madigan",
                     "email": "Amy.Madigan@example.com",
                 }
@@ -605,7 +605,7 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
             "agreement_type": "CONTRACT",
             "contract_number": None,
             "contract_type": None,
-            "created_by_user": 21,
+            "created_by_user": 520,
             "delivered_status": False,
             "description": "Test Description",
             "display_name": "Test Contract",
@@ -616,18 +616,18 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
             "po_number": None,
             "procurement_shop_id": 1,
             "product_service_code_id": 1,
-            "project_officer": 1,
-            "project_officer_id": 1,
+            "project_officer": 500,
+            "project_officer_id": 500,
             "project_id": 1,
             "support_contacts": [],
             "task_order_number": None,
             "team_members": [
                 {
-                    "id": 3,
+                    "id": 502,
                     "full_name": "Ivelisse Martinez-Beck",
                     "email": "Ivelisse.Martinez-Beck@example.com",
                 },
-                {"id": 5, "full_name": "Tia Brown", "email": "Tia.Brown@example.com"},
+                {"id": 504, "full_name": "Tia Brown", "email": "Tia.Brown@example.com"},
             ],
             "vendor": None,
             "vendor_id": None,

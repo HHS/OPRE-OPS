@@ -2,7 +2,7 @@ import { getUser, getUserByOidc } from "./getUser";
 import TestApplicationContext from "../applicationContext/TestApplicationContext";
 
 test("successfully gets a User from the backend by user_id", async () => {
-    const userId = 4;
+    const userId = 503;
     const mockBackendResponse = {
         id: userId,
         oidc_id: "00000000-0000-1111-a111-000000000004",

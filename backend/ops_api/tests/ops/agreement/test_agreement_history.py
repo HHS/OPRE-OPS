@@ -5,7 +5,7 @@ from flask import url_for
 
 from models.cans import Agreement, BudgetLineItem, BudgetLineItemStatus
 
-test_user_id = 4
+test_user_id = 503
 test_user_name = "Amelia Popham"
 
 
@@ -19,13 +19,13 @@ def test_agreement_history(auth_client, loaded_db):
         "description": "Description",
         "product_service_code_id": 1,
         "incumbent": "Vendor A",
-        "project_officer_id": 1,
+        "project_officer_id": 500,
         "team_members": [
             {
-                "id": 3,
+                "id": 502,
             },
             {
-                "id": 5,
+                "id": 504,
             },
         ],
         "notes": "New Agreement for purpose X",
@@ -118,8 +118,6 @@ def test_agreement_history(auth_client, loaded_db):
 
 def test_agreement_history_log_items(auth_client, app):
     session = app.db_session
-    agreement_id = None
-    bli = None
 
     # create agreement (using API)
     data = {
@@ -129,13 +127,13 @@ def test_agreement_history_log_items(auth_client, app):
         "description": "Description",
         "product_service_code_id": 1,
         "incumbent": "Vendor A",
-        "project_officer_id": 21,
+        "project_officer_id": 520,
         "team_members": [
             {
-                "id": 4,
+                "id": 503,
             },
             {
-                "id": 23,
+                "id": 522,
             },
         ],
         "notes": "New Agreement for purpose X",
@@ -289,8 +287,6 @@ def test_agreement_history_log_items(auth_client, app):
 
 def test_agreement_history_log_items_with_change_requests(auth_client, app):
     session = app.db_session
-    agreement_id = None
-    bli = None
 
     # create agreement (using API)
     data = {
@@ -300,14 +296,14 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
         "description": "Description",
         "product_service_code_id": 1,
         "procurement_shop_id": 2,
-        "project_officer_id": 21,
+        "project_officer_id": 520,
         "project_id": 1,
         "team_members": [
             {
-                "id": 4,
+                "id": 503,
             },
             {
-                "id": 23,
+                "id": 522,
             },
         ],
         "notes": "New Agreement for purpose X",
