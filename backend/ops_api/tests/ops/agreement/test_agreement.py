@@ -563,7 +563,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_incumbent(auth_client, loaded_db):
+def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_user):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
@@ -573,10 +573,10 @@ def test_agreements_post_contract_with_incumbent(auth_client, loaded_db):
             "description": "test description",
             "product_service_code_id": 1,
             "incumbent": "Vendor 1",
-            "project_officer_id": 1,
+            "project_officer_id": test_user.id,
             "team_members": [
                 {
-                    "id": 2,
+                    "id": 501,
                     "full_name": "Amy Madigan",
                     "email": "Amy.Madigan@example.com",
                 }
