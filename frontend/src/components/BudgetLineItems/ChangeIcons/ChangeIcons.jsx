@@ -1,10 +1,10 @@
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faClone } from "@fortawesome/free-regular-svg-icons";
+import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PropTypes from "prop-types";
+import icons from "../../../uswds/img/sprite.svg";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { DISABLED_ICON_CLASSES } from "./DisabledChangeIcons.constants";
-import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * This component displays the edit, delete, and duplicate icons for a budget line.
@@ -20,8 +20,6 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {boolean} [props.duplicateIcon] - Whether to show the duplicate icon.
  * @param {boolean} [props.sendToReviewIcon] - Whether to show the send to review icon.
  * @param {function} [props.handleSubmitItemForApproval] - The function to submit the item for approval.
- * @param {boolean} [props.goToApproveIcon] - Whether to show the go-to-approve icon.
- * @param {function} [props.handleGoToApprove] - The function to navigate to approve the item
  * @returns {JSX.Element} - The rendered component.
  **/
 
@@ -35,9 +33,7 @@ const ChangeIcons = ({
     handleDuplicateItem = () => {},
     duplicateIcon = true,
     sendToReviewIcon = false,
-    handleSubmitItemForApproval = () => {},
-    goToApproveIcon = false,
-    handleGoToApprove = () => {}
+    handleSubmitItemForApproval = () => {}
 }) => {
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
 
@@ -210,24 +206,6 @@ const ChangeIcons = ({
                                 className={`usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0 ${DISABLED_ICON_CLASSES}`}
                             >
                                 <use xlinkHref={`${icons}#send`}></use>
-                            </svg>
-                        </button>
-                    </Tooltip>
-                )}
-                {goToApproveIcon && (
-                    <Tooltip
-                        label="Go to approve"
-                        className="line-height-body-1"
-                    >
-                        <button
-                            id={`submit-for-approval-${item.id}`}
-                            title="Go to approve"
-                            aria-label="Go to approve"
-                            data-cy="go-to-approve-row"
-                            onClick={() => handleGoToApprove(item)}
-                        >
-                            <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
-                                <use xlinkHref={`${icons}#check_circle`}></use>
                             </svg>
                         </button>
                     </Tooltip>

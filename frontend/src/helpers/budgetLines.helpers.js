@@ -33,6 +33,11 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
     return budgetLine?.created_on ? formatDateToMonthDayYear(budgetLine.created_on) : formattedToday;
 };
 
+/**
+ * Returns the total amount of a budget line.
+ * @param {Object[]} budgetLines - The budget line to get the total amount from.
+ * @returns {Object | null} The total amount of the budget line.
+ */
 export const budgetLinesTotal = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.reduce((n, { amount }) => n + amount, 0);
@@ -59,18 +64,22 @@ export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
 };
-// TODO: Should we be checking for `in_review` here?
-// TODO: Are workflows deprecated?
-export const hasActiveWorkflow = (budgetLines) => {
-    handleBLIProp(budgetLines);
-    return budgetLines?.some((bli) => bli.has_active_workflow);
-};
-
+/**
+ * Returns a boolean indicating if any of the budget lines are in review.
+ * @param {Object[]} budgetLines - The budget lines to check.
+ * @returns {boolean} Whether any of the budget lines are in review.
+ */
 export const hasBlIsInReview = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.some((bli) => bli.in_review);
 };
 
+/**
+ * Returns an array of budget lines grouped by services component.
+ * @param {Object[]} budgetLines - The budget lines to group.
+ * @returns {Object[]} An array of budget lines grouped by services component.
+ 
+ */
 export const groupByServicesComponent = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines
