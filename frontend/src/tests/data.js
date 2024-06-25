@@ -1,5 +1,4 @@
 export const budgetLine = {
-    active_workflow_current_step_id: null,
     agreement_id: 1,
     amount: 1_000_000,
     can: {
@@ -22,7 +21,6 @@ export const budgetLine = {
     created_on: "2024-05-27T13:56:50.363964Z",
     date_needed: "2043-06-13",
     fiscal_year: 2043,
-    has_active_workflow: false,
     id: 1,
     in_review: false,
     line_description: "LI 1",
@@ -44,7 +42,6 @@ export const agreement = {
     agreement_type: "CONTRACT",
     budget_line_items: [
         {
-            active_workflow_current_step_id: null,
             agreement_id: 1,
             amount: 1_000_000,
             can: {
@@ -67,7 +64,6 @@ export const agreement = {
             created_on: "2024-05-27T19:20:46.105099Z",
             date_needed: "2043-06-13",
             fiscal_year: 2043,
-            has_active_workflow: false,
             id: 1,
             in_review: false,
             line_description: "LI 1",
@@ -100,7 +96,6 @@ export const agreement = {
             updated_on: "2024-05-27T19:20:46.105099Z"
         },
         {
-            active_workflow_current_step_id: null,
             agreement_id: 1,
             amount: 1_000_000,
             can: {
@@ -123,7 +118,6 @@ export const agreement = {
             created_on: "2024-05-27T19:20:46.118542Z",
             date_needed: "2043-06-13",
             fiscal_year: 2043,
-            has_active_workflow: false,
             id: 2,
             in_review: false,
             line_description: "LI 2",

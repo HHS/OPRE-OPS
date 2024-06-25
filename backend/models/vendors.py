@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import List
 
-from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy import Boolean, ForeignKey, Sequence, String
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -56,7 +56,9 @@ class Contact(BaseModel):
 class Vendor(BaseModel):
     __tablename__ = "vendor"
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("vendor_id_seq", start=100, increment=1)
+    )
     name: Mapped[str]
     duns: Mapped[str]
     active: Mapped[bool] = mapped_column(Boolean(), default=True, nullable=False)

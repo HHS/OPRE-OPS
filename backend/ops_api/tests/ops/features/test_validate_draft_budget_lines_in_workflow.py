@@ -246,7 +246,7 @@ def agreement_null_agreement_reason(loaded_db, context, test_user):
 
 
 @given("I have an Agreement with an AgreementReason = NEW_REQ and an Incumbent")
-def agreement_reason_with_incumbent(loaded_db, context, test_user):
+def agreement_reason_with_incumbent(loaded_db, context, test_user, test_vendor):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
@@ -256,7 +256,7 @@ def agreement_reason_with_incumbent(loaded_db, context, test_user):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        incumbent_id=1,
+        incumbent_id=test_vendor.id,
         project_officer_id=test_user.id,
         procurement_shop_id=1,
     )

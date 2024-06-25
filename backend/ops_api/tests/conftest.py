@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from models import OpsDBHistory, OpsEvent, User
+from models import OpsDBHistory, OpsEvent, User, Vendor
 from ops_api.ops import create_app
 from tests.auth_client import AuthClient, NoPermsAuthClient
 
@@ -142,3 +142,9 @@ def test_admin_user(loaded_db) -> User | None:
     N.B. This user has an ADMIN role whose status is ACTIVE.
     """
     return loaded_db.get(User, 503)
+
+
+@pytest.fixture()
+def test_vendor(loaded_db) -> Vendor | None:
+    """Get a test Vendor."""
+    return loaded_db.get(Vendor, 100)
