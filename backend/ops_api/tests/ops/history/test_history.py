@@ -3,15 +3,15 @@ from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from models import BudgetLineItem, BudgetLineItemStatus, OpsDBHistory, OpsDBHistoryType
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, OpsDBHistory, OpsDBHistoryType
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_bli_history(loaded_db: Session):
+def test_bli_history(loaded_db: Session, test_can: CAN):
     bli = BudgetLineItem(
         line_description="Grant Expendeture GA999",
         agreement_id=1,
-        can_id=1,
+        can_id=test_can.id,
         amount=850450.00,
         status=BudgetLineItemStatus.PLANNED,
     )
@@ -67,14 +67,14 @@ def test_bli_history_force_an_error(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_history_expanded(loaded_db: Session):
+def test_history_expanded(loaded_db: Session, test_can: CAN):
     """test the new columns for class_name, row_key to query for history of specific record
     and verify the new changes column contains the changes
     """
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=1,
-        can_id=1,
+        can_id=test_can.id,
         amount=850450.00,
         status=BudgetLineItemStatus.PLANNED,
     )

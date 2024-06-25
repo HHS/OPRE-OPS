@@ -105,7 +105,7 @@ def test_post_budget_line_items_empty_post(auth_client):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items(auth_client, test_can):
+def test_post_budget_line_items(loaded_db, auth_client, test_can):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -123,6 +123,11 @@ def test_post_budget_line_items(auth_client, test_can):
     assert response.json["amount"] == 100.12
     assert response.json["status"] == "DRAFT"
     assert response.json["services_component_id"] == 1
+
+    # cleanup
+    bli = loaded_db.get(BudgetLineItem, response.json["id"])
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -160,7 +165,7 @@ def test_post_budget_line_items_missing_agreement(auth_client, test_can):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_missing_optional_comments(auth_client, test_can):
+def test_post_budget_line_items_missing_optional_comments(loaded_db, auth_client, test_can):
     data = {
         "line_description": "LI 1",
         "agreement_id": 1,
@@ -172,6 +177,11 @@ def test_post_budget_line_items_missing_optional_comments(auth_client, test_can)
     }
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 201
+
+    # cleanup
+    bli = loaded_db.get(BudgetLineItem, response.json["id"])
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.mark.usefixtures("app_ctx")
