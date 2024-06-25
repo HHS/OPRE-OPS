@@ -35,6 +35,10 @@ function ReviewCard({
 }) {
     const [isHovered, setIsHovered] = React.useState(false);
     const agreementName = useGetAgreementName(agreementId);
+    const reviewData = {
+        agreementName,
+        type
+    };
 
     return (
         <div
@@ -62,7 +66,12 @@ function ReviewCard({
                                 id="approve"
                                 aria-label="Approve"
                                 onClick={() =>
-                                    handleReviewChangeRequest(changeRequestId, CHANGE_REQUEST_ACTION.APPROVE, null)
+                                    handleReviewChangeRequest(
+                                        changeRequestId,
+                                        CHANGE_REQUEST_ACTION.APPROVE,
+                                        null,
+                                        reviewData
+                                    )
                                 }
                             >
                                 <FontAwesomeIcon
@@ -80,7 +89,12 @@ function ReviewCard({
                                 id="decline"
                                 aria-label="Decline"
                                 onClick={() =>
-                                    handleReviewChangeRequest(changeRequestId, CHANGE_REQUEST_ACTION.REJECT, null)
+                                    handleReviewChangeRequest(
+                                        changeRequestId,
+                                        CHANGE_REQUEST_ACTION.REJECT,
+                                        null,
+                                        reviewData
+                                    )
                                 }
                             >
                                 <FontAwesomeIcon

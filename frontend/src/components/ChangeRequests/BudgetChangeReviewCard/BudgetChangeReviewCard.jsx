@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { useGetBLIStatus, useGetNameForCanId } from "../../../hooks/lookup.hooks";
+import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import ReviewCard from "../ReviewCard";
 import TermTag from "../TermTag";
 
@@ -36,7 +37,7 @@ function BudgetChangeReviewCard({
     return (
         <ReviewCard
             changeRequestId={changeRequestId}
-            type="Budget Change"
+            type={CHANGE_REQUEST_TYPES.BUDGET}
             agreementId={agreementId}
             actionIcons={true}
             requesterName={requesterName}

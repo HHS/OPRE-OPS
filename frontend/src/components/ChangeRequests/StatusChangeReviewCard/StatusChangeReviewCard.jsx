@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
 import { renderField } from "../../../helpers/utils";
 import { useGetBLITotal, useGetNameForCanId } from "../../../hooks/lookup.hooks";
+import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import ReviewCard from "../ReviewCard";
 import TermTag from "../TermTag";
 
@@ -36,7 +37,7 @@ function StatusChangeReviewCard({
     return (
         <ReviewCard
             changeRequestId={changeRequestId}
-            type="Status Change"
+            type={CHANGE_REQUEST_TYPES.STATUS}
             agreementId={agreementId}
             actionIcons={true}
             requesterName={requesterName}

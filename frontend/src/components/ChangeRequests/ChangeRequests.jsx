@@ -10,7 +10,7 @@ function ChangeRequests() {
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
-                    actionButtonText="Approve"
+                    actionButtonText={modalProps.actionButtonText}
                     handleConfirm={modalProps.handleConfirm}
                     setShowModal={setShowModal}
                 />
