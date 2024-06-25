@@ -3,7 +3,6 @@ import {
     getBudgetLineCreatedDate,
     getBudgetByStatus,
     getNonDRAFTBudgetLines,
-    hasActiveWorkflow,
     hasBlIsInReview,
     groupByServicesComponent,
     isBLIPermanent,
@@ -83,31 +82,6 @@ describe("getNonDRAFTBudgetLines", () => {
     });
     it.fails("should throw an error if no budget lines are provided", () => {
         const result = getNonDRAFTBudgetLines(null);
-        expect(result).toThrowError(/budgetLine must be an object/i);
-    });
-});
-describe("hasActiveWorkflow", () => {
-    it("should return false if none of the budget lines has an active workflow", () => {
-        const budgetLines = agreement.budget_line_items.map((bli) => ({ ...bli, has_active_workflow: false }));
-        const result = hasActiveWorkflow(budgetLines);
-
-        expect(result).toBe(false);
-    });
-    it("should return true if at least one of the budget lines has an active workflow", () => {
-        const budgetLines = agreement.budget_line_items.map((bli) => ({ ...bli, has_active_workflow: true }));
-
-        const result = hasActiveWorkflow(budgetLines);
-
-        expect(result).toBe(true);
-    });
-    it("should return false if no budget lines are provided", () => {
-        const result = hasActiveWorkflow([]);
-
-        expect(result).toBe(false);
-    });
-    it.fails("should throw an error if no budget lines are provided", () => {
-        const result = hasActiveWorkflow(null);
-
         expect(result).toThrowError(/budgetLine must be an object/i);
     });
 });
