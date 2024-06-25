@@ -43,6 +43,7 @@ function StatusChangeReviewCard({
             requesterName={requesterName}
             requestDate={requestDate}
             handleReviewChangeRequest={handleReviewChangeRequest}
+            bliToStatus={newValue}
         >
             <TermTag
                 label="BL ID"

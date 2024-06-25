@@ -14,13 +14,14 @@ import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
  * @component
  * @param {Object} props - Properties passed to component
  * @param {number} props.changeRequestId - The ID of the change request
- * @param {string} props.type - The type of the card
+ * @param {string} props.type - The type of the card (e.g. "Budget", "Status")
  * @param {number} props.agreementId - The name of the agreement
  * @param {boolean} props.actionIcons - Whether the card has action icons
  * @param {string} props.requesterName - The name of the requester
  * @param {string} props.requestDate - The date of the request
  * @param {React.ReactNode} props.children - The children of the component
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
+ * @param {string} [props.bliToStatus] - The status of the budget line item after the change
  * @returns {JSX.Element} - The rendered component
  */
 function ReviewCard({
@@ -31,13 +32,15 @@ function ReviewCard({
     requesterName,
     requestDate,
     children,
-    handleReviewChangeRequest
+    handleReviewChangeRequest,
+    bliToStatus = ""
 }) {
     const [isHovered, setIsHovered] = React.useState(false);
     const agreementName = useGetAgreementName(agreementId);
     const reviewData = {
         agreementName,
-        type
+        type,
+        bliToStatus
     };
 
     return (
@@ -148,7 +151,8 @@ ReviewCard.propTypes = {
     requesterName: PropTypes.string.isRequired,
     requestDate: PropTypes.string.isRequired,
     children: PropTypes.node,
-    handleReviewChangeRequest: PropTypes.func.isRequired
+    handleReviewChangeRequest: PropTypes.func.isRequired,
+    bliToStatus: PropTypes.string
 };
 
 export default ReviewCard;
