@@ -54,6 +54,10 @@ class CANArrangementType(Enum):
     IDDA = auto()
     MOU = auto()
 
+class CANType(Enum):
+    OPRE = auto()
+    NON_OPRE = auto()
+
 
 class CANFundingSources(BaseModel):
     __tablename__ = "can_funding_sources"
@@ -685,6 +689,12 @@ class CAN(BaseModel):
     appropriation_term: Mapped[Optional[int]] = mapped_column(Integer, default="1")
     arrangement_type: Mapped[Optional[CANArrangementType]] = mapped_column(
         sa.Enum(CANArrangementType)
+    )
+    can_type: Mapped[Optional[CANType]] = mapped_column(
+        sa.Enum(CANType)
+    )
+    division_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("division.id")
     )
 
     funding_sources: Mapped[List["FundingSource"]] = relationship(
