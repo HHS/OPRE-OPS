@@ -521,6 +521,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "can_fiscal_year_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column("fiscal_year", sa.Integer(), autoincrement=False, nullable=False),
         sa.Column(
@@ -3509,8 +3510,17 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("user_id", "agreement_id"),
     )
+
+    sa.Sequence("can_fiscal_year_id_seq", start=5000, increment=1).create(op.get_bind())
     op.create_table(
         "can_fiscal_year",
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('can_fiscal_year_id_seq')"),
+            autoincrement=True,
+            nullable=False,
+        ),
         sa.Column("can_id", sa.Integer(), nullable=False),
         sa.Column("fiscal_year", sa.Integer(), nullable=False),
         sa.Column("received_funding", sa.Numeric(precision=12, scale=2), nullable=True),
@@ -3538,7 +3548,7 @@ def upgrade() -> None:
             ["updated_by"],
             ["ops_user.id"],
         ),
-        sa.PrimaryKeyConstraint("can_id", "fiscal_year"),
+        sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "can_fiscal_year_carry_forward",
