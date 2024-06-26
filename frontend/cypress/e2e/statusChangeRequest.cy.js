@@ -26,7 +26,7 @@ const testAgreement = {
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 1,
+    can_id: 500,
     agreement_id: 11,
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,

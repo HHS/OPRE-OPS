@@ -49,4 +49,4 @@ jobs:
         with:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
-            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
