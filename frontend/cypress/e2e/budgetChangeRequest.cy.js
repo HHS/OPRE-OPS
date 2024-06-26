@@ -28,7 +28,7 @@ const testBli = {
     comments: "",
     can_id: 1,
     agreement_id: 11,
-    amount: 1_000_000,
+    amount: 1000000,
     status: BLI_STATUS.PLANNED,
     date_needed: "2025-1-01",
     proc_shop_fee_percentage: 0.005
@@ -87,7 +87,7 @@ it("BLI Budget Change", () => {
         .then(({ agreementId, bliId }) => {
             const payload = {
                 id: bliId,
-                amount: 2_000_000,
+                amount: 2000000,
                 requestor_notes: "Please approve this budget change"
             };
             cy.request({
