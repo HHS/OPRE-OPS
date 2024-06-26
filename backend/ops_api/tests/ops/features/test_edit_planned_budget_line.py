@@ -130,13 +130,13 @@ def agreement_unauthorized(loaded_db, original_agreement):
 
 
 @given("I have a budget line item in Planned status", target_fixture="bli")
-def planned_bli(loaded_db, agreement, test_user):
+def planned_bli(loaded_db, agreement, test_user, test_can):
     planned_bli = BudgetLineItem(
         agreement_id=agreement.id,
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=1.23,

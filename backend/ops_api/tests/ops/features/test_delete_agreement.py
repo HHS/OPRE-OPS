@@ -106,7 +106,7 @@ def contract_agreement_not_associated(loaded_db, test_project):
 
 
 @pytest.fixture()
-def contract_with_draft_bli(loaded_db, test_user, test_admin_user, test_project):
+def contract_with_draft_bli(loaded_db, test_user, test_admin_user, test_can, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
@@ -123,7 +123,7 @@ def contract_with_draft_bli(loaded_db, test_user, test_admin_user, test_project)
         comments="blah bleh bleh blah",
         line_description="LI Draft",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -140,7 +140,7 @@ def contract_with_draft_bli(loaded_db, test_user, test_admin_user, test_project)
 
 
 @pytest.fixture()
-def contract_with_planned_bli(loaded_db, test_user, test_admin_user, test_project):
+def contract_with_planned_bli(loaded_db, test_user, test_admin_user, test_can, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
@@ -157,7 +157,7 @@ def contract_with_planned_bli(loaded_db, test_user, test_admin_user, test_projec
         comments="blah blah bleh blah",
         line_description="LI Planned",
         amount=200.24,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=2.34,
