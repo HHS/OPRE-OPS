@@ -148,15 +148,7 @@ it("clicking the add agreement button takes you to the create agreement page", (
     cy.url().should("include", "/agreements/create");
 });
 
-it("For Review tab works using filter=for-approval", () => {
-    cy.visit("/agreements?filter=for-approval");
-    cy.get(":nth-child(1) > .margin-0").should("have.text", "For Review");
-    cy.get("tbody").children().should("have.length.at.least", 1);
-    cy.get("tbody tr").first().trigger("mouseover");
-    cy.get("[data-cy='go-to-approve-row']").first().should("exist");
-    cy.get("[data-cy='go-to-approve-row']").first().should("not.be.disabled");
-});
-it.only("Change Requests tab works", () => {
+it("Change Requests tab works", () => {
     cy.visit("/agreements?filter=change-requests");
     cy.get(":nth-child(1) > .margin-0").should("have.text", "For Review");
     cy.get(".text-center")
