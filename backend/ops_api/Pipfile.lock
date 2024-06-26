@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "01e2b1e92a7945db796e25bbe9306a0ebf77eec68df40a63b22318986ca3d697"
+            "sha256": "b45ab1cb3ec5a7c43082f9868932bca3b6f4156761f0668b7192ac7edef7dec8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -519,12 +519,12 @@
         },
         "marshmallow-dataclass": {
             "hashes": [
-                "sha256:d941137bcb480729a14810e5f10d9bb79a498fb5b57c875aad6be37e97b98a5f",
-                "sha256:dca312c841f73f8f665b4434d23b3204e8cfbf50b8cbb57bb76f41a6ee8184c8"
+                "sha256:0218008fec3fd4b5f739b2a0c6d7593bcc403308f6da953e341e4e359e268849",
+                "sha256:9e528d72b83f2b6b0f60cb29fd38781a6f7ce2155295adb1ed33289826a93c4b"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.6'",
-            "version": "==8.6.1"
+            "markers": "python_version >= '3.8'",
+            "version": "==8.7.0"
         },
         "marshmallow-enum": {
             "hashes": [
@@ -861,6 +861,14 @@
             ],
             "markers": "python_version >= '3.7'",
             "version": "==0.41.2"
+        },
+        "typeguard": {
+            "hashes": [
+                "sha256:43f55cc9953f26dae362adb973b6c9ad6b97bfffcc6757277912eddd5cfa345b",
+                "sha256:db35142d1f92fc8c1b954e5cc03b57810428f9cd4e4604647bdf5764fc5bbba9"
+            ],
+            "markers": "python_full_version >= '3.7.4'",
+            "version": "==4.0.1"
         },
         "typing-extensions": {
             "hashes": [
