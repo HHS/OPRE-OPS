@@ -171,7 +171,7 @@ def test_budget_line_item_change_request(auth_client, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, loaded_db, test_admin_user):
+def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, loaded_db, test_admin_user, test_can):
     session = app.db_session
     agreement_id = 1
 
@@ -183,7 +183,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=1,
-        can_id=1,
+        can_id=test_can.id,
         amount=111.11,
         status=BudgetLineItemStatus.PLANNED,
         created_by=test_admin_user.id,
@@ -200,7 +200,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     prev_hist_count = hist_count
 
     #  submit PATCH BLI which triggers a budget change requests
-    data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02"}
+    data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
@@ -240,16 +240,16 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
         if "can_id" in requested_change_data:
             assert can_id_change_request_id is None
             can_id_change_request_id = change_request_id
-            assert requested_change_data["can_id"] == 2
-            assert requested_change_diff["can_id"]["old"] == 1
-            assert requested_change_diff["can_id"]["new"] == 2
+            assert requested_change_data["can_id"] == 501
+            assert requested_change_diff["can_id"]["old"] == 500
+            assert requested_change_diff["can_id"]["new"] == 501
     assert can_id_change_request_id is not None
 
     # verify the BLI was not updated yet
     bli = session.get(BudgetLineItem, bli_id)
     assert str(bli.amount) == "111.11"
     assert bli.amount == Decimal("111.11")
-    assert bli.can_id == 1
+    assert bli.can_id == 500
     assert bli.date_needed is None
     assert len(bli.change_requests_in_review) == len(change_request_ids)
     assert bli.in_review is True
@@ -304,7 +304,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     # verify the BLI was updated
     bli = session.get(BudgetLineItem, bli_id)
     assert bli.amount == Decimal("222.22")
-    assert bli.can_id == 1  # can_id change request was rejected
+    assert bli.can_id == 500  # can_id change request was rejected
     assert bli.date_needed == datetime.date(2032, 2, 2)
     assert bli.change_requests_in_review is None
     assert bli.in_review is False
@@ -444,7 +444,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     assert len(response.json["_schema"]) == 3
 
     # make the BLI valid for status change
-    bli.can_id = 1
+    bli.can_id = 500
     bli.amount = 111.11
     bli.date_needed = datetime.date(2032, 2, 2)
     session.add(bli)
@@ -555,7 +555,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_status_change_request_creates_procurement_workflow(auth_client, loaded_db, test_admin_user):
+def test_status_change_request_creates_procurement_workflow(auth_client, loaded_db, test_admin_user, test_can):
     # create Agreement
     agreement = ContractAgreement(
         name="CTXX12399",
@@ -579,7 +579,7 @@ def test_status_change_request_creates_procurement_workflow(auth_client, loaded_
     # create DRAFT BLI
     bli = BudgetLineItem(
         agreement_id=agreement_id,
-        can_id=1,
+        can_id=test_can.id,
         amount=123456.78,
         status=BudgetLineItemStatus.PLANNED,
         date_needed=datetime.date(2043, 1, 1),

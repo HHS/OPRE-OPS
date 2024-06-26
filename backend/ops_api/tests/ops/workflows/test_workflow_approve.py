@@ -44,7 +44,7 @@ def test_update_blis_draft_to_planned(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user):
+def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user, test_can):
     agreement = ContractAgreement(
         name="CTXX12399",
         description="test contract",
@@ -66,7 +66,7 @@ def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user):
 
     bli = BudgetLineItem(
         agreement_id=agreement_id,
-        can_id=1,
+        can_id=test_can.id,
         amount=123456.78,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
@@ -121,7 +121,7 @@ def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user):
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_workflow_planned_to_executing(auth_client, loaded_db, test_admin_user):
+def test_workflow_planned_to_executing(auth_client, loaded_db, test_admin_user, test_can):
     agreement = ContractAgreement(
         name="CTXX12399",
         description="test contract",
@@ -143,7 +143,7 @@ def test_workflow_planned_to_executing(auth_client, loaded_db, test_admin_user):
 
     bli = BudgetLineItem(
         agreement_id=agreement_id,
-        can_id=1,
+        can_id=test_can.id,
         amount=123456.78,
         status=BudgetLineItemStatus.PLANNED,
         date_needed=datetime.date(2043, 1, 1),
