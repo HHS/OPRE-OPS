@@ -26,7 +26,7 @@ const testAgreement = {
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 1,
+    can_id: 500,
     agreement_id: 11,
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
@@ -88,7 +88,7 @@ it("BLI Budget Change", () => {
             const payload = {
                 id: bliId,
                 amount: 2000000,
-                requestor_notes: "Please approve this budget change"
+                requestor_notes: "Please approve this BLI"
             };
             cy.request({
                 method: "PATCH",
@@ -103,6 +103,7 @@ it("BLI Budget Change", () => {
                 return { agreementId, bliId };
             });
         })
+
         .then(({ agreementId, bliId }) => {
             cy.visit("/agreements?filter=change-requests").wait(1000);
             // see if there are any review cards review-card
