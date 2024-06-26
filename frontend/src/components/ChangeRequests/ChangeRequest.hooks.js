@@ -18,6 +18,7 @@ const useChangeRequest = () => {
      * @property {string} agreementName - The name of the agreement.
      * @property {string} type - The type of the change request.
      * @property {string} bliToStatus - The status of the budget line item after the change.
+     * @property {string} changeMsg - The message to display for the change.
      */
     /**
      * @param {number} id - The ID of the change request.
@@ -27,7 +28,7 @@ const useChangeRequest = () => {
      * @returns {void} - The result of the mutation.
      */
     const handleReviewChangeRequest = (id, action, notes, reviewData) => {
-        const { agreementName, type, bliToStatus } = reviewData;
+        const { agreementName, type, bliToStatus, changeMsg } = reviewData;
         const bliStatusExecuting = bliToStatus === "Executing" ? BLI_STATUS.EXECUTING : "";
         const payload = {
             change_request_id: id,
@@ -52,6 +53,7 @@ const useChangeRequest = () => {
             bliStatusExecuting === BLI_STATUS.EXECUTING &&
             action === CHANGE_REQUEST_ACTION.REJECT &&
             type === CHANGE_REQUEST_TYPES.STATUS;
+
         let heading,
             btnText,
             alertType,
@@ -62,43 +64,61 @@ const useChangeRequest = () => {
             heading = `Are you sure you want to approve this ${type.toLowerCase()}? The agreement will be updated after your approval.`;
             btnText = "Approve";
             alertType = "success";
-            alertHeading = `${type} Approved`;
-            alertMsg = `The agreement ${agreementName} has been successfully updated.`;
+            alertHeading = "Changes Approved";
+            alertMsg =
+                `The following change(s) have been updated on the ${agreementName} agreement.\n\n` +
+                `<strong>Changes Approved:</strong>\n` +
+                `${changeMsg}`;
         }
         if (BUDGET_REJECT) {
-            heading = `Are you sure you want to decline this ${type.toLowerCase()}? The agreement will remain the same as it was before the change was requested.`;
+            heading = `Are you sure you want to decline this ${type.toLowerCase()}? The agreement will remain as it was before the change was requested.`;
             btnText = "Decline";
             alertType = "error";
-            alertHeading = `${type} Declined`;
-            alertMsg = `The agreement ${agreementName} will not be updated with the requested change(s). It will remain as it was before any changes were requested.`;
+            alertHeading = "Changes Declined";
+            alertMsg =
+                `The following change(s) have been declined on the ${agreementName} agreement.\n\n` +
+                `<strong>Edits Declined:</strong>\n` +
+                `${changeMsg}`;
         }
         if (PLANNED_STATUS_APPROVE) {
-            heading = `Are you sure you want to approve these budget lines for ${bliToStatus} Status? This will subtract the amounts from the FY budget.`;
+            heading = `Are you sure you want to approve this status change to ${bliToStatus} Status? This will subtract the amounts from the FY budget.`;
             btnText = "Approve";
             alertType = "success";
-            alertHeading = `Budget Lines Approved for ${bliToStatus} Status`;
-            alertMsg = `Budget lines for Agreement ${agreementName} have been successfully approved for ${bliToStatus} Status.`;
+            alertHeading = "Changes Approved";
+            alertMsg =
+                `The following change(s) have been updated on the ${agreementName} agreement.\n\n` +
+                `<strong>Changes Approved:</strong>\n` +
+                `${changeMsg} `;
         }
         if (PLANNED_STATUS_REJECT) {
-            heading = `Are you sure you want to decline these budget lines for ${bliToStatus} Status?`;
+            heading = `Are you sure you want to decline this status change to ${bliToStatus} Status? The agreement will remain as it was before the change was requested.`;
             btnText = "Decline";
             alertType = "error";
-            alertHeading = `Budget Lines Declined for ${bliToStatus} Status`;
-            alertMsg = `Budget lines for Agreement ${agreementName} have been declined for ${bliToStatus} Status. These Budget Lines will remain in Draft Status until further action is taken.`;
+            alertHeading = "Edits Declined";
+            alertMsg =
+                `The following change(s) have been declined on the ${agreementName} agreement.\n\n` +
+                `<strong>Edits Declined:</strong>\n` +
+                `${changeMsg}`;
         }
         if (EXECUTING_STATUS_APPROVE) {
-            heading = `Are you sure you want to approve these budget lines for ${bliToStatus} Status? This will start the procurement process.`;
+            heading = `Are you sure you want to approve this status change to ${bliToStatus} Status? This will start the procurement process.`;
             btnText = "Approve";
             alertType = "success";
-            alertHeading = `Budget Lines Approved for ${bliToStatus} Status`;
-            alertMsg = `Budget lines for Agreement ${agreementName} have been successfully approved for ${bliToStatus} Status. This will start the procurement process which will be tracked through the Procurement Tracker on this Agreement.`;
+            alertHeading = "Changes Approved";
+            alertMsg =
+                `The following change(s) have been updated on the ${agreementName} agreement. \n\n` +
+                `<strong>Changes Approved:</strong>\n` +
+                `${changeMsg}`;
         }
         if (EXECUTING_STATUS_REJECT) {
-            heading = `Are you sure you want to decline these budget lines for ${bliToStatus} Status?`;
+            heading = `Are you sure you want to decline these budget lines for ${bliToStatus} Status? The agreement will remain as it was before the change was requested.`;
             btnText = "Decline";
             alertType = "error";
             alertHeading = `Budget Lines Declined for ${bliToStatus} Status`;
-            alertMsg = `Budget lines for Agreement ${agreementName} have been declined for ${bliToStatus} Status. These Budget Lines will remain in Planned Status until further action is taken.`;
+            alertMsg =
+                `The following change(s) have been declined on the ${agreementName} agreement. \n\n` +
+                `<strong>Edits Declined:</strong>\n` +
+                `${changeMsg}`;
         }
         setShowModal(true);
         setModalProps({

@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
-import { renderField } from "../../../helpers/utils";
+import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
 import { useGetBLITotal, useGetNameForCanId } from "../../../hooks/lookup.hooks";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import ReviewCard from "../ReviewCard";
@@ -33,6 +33,7 @@ function StatusChangeReviewCard({
     const oldCan = useGetNameForCanId(changeTo.can_id?.old);
     const newCan = useGetNameForCanId(changeTo.can_id?.new);
     const { oldValue, newValue } = renderChangeValues(keyName, changeTo, oldCan, newCan);
+    const changeMsg = `\u2022 BL ${bliId} ${convertCodeForDisplay("changeToTypes", keyName)}: ${oldValue} to ${newValue}`;
 
     return (
         <ReviewCard
@@ -44,6 +45,7 @@ function StatusChangeReviewCard({
             requestDate={requestDate}
             handleReviewChangeRequest={handleReviewChangeRequest}
             bliToStatus={newValue}
+            changeMsg={changeMsg}
         >
             <TermTag
                 label="BL ID"

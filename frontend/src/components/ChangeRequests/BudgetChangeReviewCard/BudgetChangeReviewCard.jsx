@@ -33,6 +33,7 @@ function BudgetChangeReviewCard({
     const newCan = useGetNameForCanId(changeTo.can_id?.new);
     const status = useGetBLIStatus(bliId);
     const { oldValue, newValue } = renderChangeValues(keyName, changeTo, oldCan, newCan);
+    const changeMsg = `\u2022 BL ${bliId} ${convertCodeForDisplay("changeToTypes", keyName)}: ${oldValue} to ${newValue}`;
 
     return (
         <ReviewCard
@@ -43,6 +44,7 @@ function BudgetChangeReviewCard({
             requesterName={requesterName}
             requestDate={requestDate}
             handleReviewChangeRequest={handleReviewChangeRequest}
+            changeMsg={changeMsg}
         >
             <TermTag
                 label="BL ID"

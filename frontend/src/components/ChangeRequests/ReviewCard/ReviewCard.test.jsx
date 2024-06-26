@@ -27,7 +27,8 @@ describe("ReviewCard", () => {
         actionIcons: false,
         requesterName: "Jane Doe",
         requestDate: "2024-06-12T21:25:25.744930Z",
-        handleReviewChangeRequest: handleReviewChangeRequestMock
+        handleReviewChangeRequest: handleReviewChangeRequestMock,
+        changeMsg: "change message"
     };
 
     beforeEach(() => {
@@ -88,7 +89,7 @@ describe("ReviewCard", () => {
             1, // changeRequestId
             "APPROVE", // CHANGE_REQUEST_ACTION.APPROVE
             null,
-            { agreementName: "Agreement Name", type: "Budget Change", bliToStatus: "" }
+            { agreementName: "Agreement Name", type: "Budget Change", bliToStatus: "", changeMsg: "change message" }
         );
 
         vi.clearAllMocks();
@@ -98,7 +99,7 @@ describe("ReviewCard", () => {
             1, // changeRequestId
             "REJECT", // CHANGE_REQUEST_ACTION.REJECT
             null,
-            { agreementName: "Agreement Name", type: "Budget Change", bliToStatus: "" }
+            { agreementName: "Agreement Name", type: "Budget Change", bliToStatus: "", changeMsg: "change message" }
         );
     });
 });

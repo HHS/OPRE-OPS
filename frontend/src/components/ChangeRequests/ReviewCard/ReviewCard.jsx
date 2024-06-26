@@ -23,6 +23,7 @@ import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
  * @param {string} [props.bliToStatus] - The status of the budget line item after the change
  * @param {boolean} [props.forceHover=false] - Whether to force hover state. needed for testing
+ * @param {string} props.changeMsg - The message to display for the change
  * @returns {JSX.Element} - The rendered component
  */
 function ReviewCard({
@@ -35,14 +36,16 @@ function ReviewCard({
     children,
     handleReviewChangeRequest,
     bliToStatus = "",
-    forceHover = false
+    forceHover = false,
+    changeMsg
 }) {
     const [isHovered, setIsHovered] = React.useState(forceHover);
     const agreementName = useGetAgreementName(agreementId);
     const reviewData = {
         agreementName,
         type,
-        bliToStatus
+        bliToStatus,
+        changeMsg
     };
 
     return (
@@ -155,7 +158,8 @@ ReviewCard.propTypes = {
     children: PropTypes.node,
     handleReviewChangeRequest: PropTypes.func.isRequired,
     bliToStatus: PropTypes.string,
-    forceHover: PropTypes.bool
+    forceHover: PropTypes.bool,
+    changeMsg: PropTypes.string.isRequired
 };
 
 export default ReviewCard;
