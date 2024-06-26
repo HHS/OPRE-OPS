@@ -44,7 +44,7 @@ def test_update_blis_draft_to_planned(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user):
+def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user, test_project):
     agreement = ContractAgreement(
         name="CTXX12399",
         description="test contract",
@@ -55,7 +55,7 @@ def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user):
         agreement_type=AgreementType.CONTRACT,
         procurement_shop_id=1,
         project_officer_id=test_admin_user.id,
-        project_id=1,
+        project_id=test_project.id,
         created_by=test_admin_user.id,
     )
     loaded_db.add(agreement)
@@ -121,7 +121,7 @@ def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user):
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_workflow_planned_to_executing(auth_client, loaded_db, test_admin_user):
+def test_workflow_planned_to_executing(auth_client, loaded_db, test_admin_user, test_project):
     agreement = ContractAgreement(
         name="CTXX12399",
         description="test contract",
@@ -132,7 +132,7 @@ def test_workflow_planned_to_executing(auth_client, loaded_db, test_admin_user):
         agreement_type=AgreementType.CONTRACT,
         procurement_shop_id=1,
         project_officer_id=test_admin_user.id,
-        project_id=1,
+        project_id=test_project.id,
         created_by=test_admin_user.id,
     )
     loaded_db.add(agreement)

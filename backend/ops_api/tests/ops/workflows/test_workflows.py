@@ -555,7 +555,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_status_change_request_creates_procurement_workflow(auth_client, loaded_db, test_admin_user):
+def test_status_change_request_creates_procurement_workflow(auth_client, loaded_db, test_admin_user, test_project):
     # create Agreement
     agreement = ContractAgreement(
         name="CTXX12399",
@@ -567,7 +567,7 @@ def test_status_change_request_creates_procurement_workflow(auth_client, loaded_
         agreement_type=AgreementType.CONTRACT,
         procurement_shop_id=1,
         project_officer_id=test_admin_user.id,
-        project_id=1,
+        project_id=test_project.id,
         created_by=test_admin_user.id,
     )
     loaded_db.add(agreement)

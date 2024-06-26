@@ -285,7 +285,7 @@ def test_agreement_history_log_items(auth_client, app):
     session.commit()
 
 
-def test_agreement_history_log_items_with_change_requests(auth_client, app):
+def test_agreement_history_log_items_with_change_requests(auth_client, app, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -297,7 +297,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
         "product_service_code_id": 1,
         "procurement_shop_id": 2,
         "project_officer_id": 520,
-        "project_id": 1,
+        "project_id": test_project.id,
         "team_members": [
             {
                 "id": 503,

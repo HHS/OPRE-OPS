@@ -19,13 +19,13 @@ TEST_CONTRACT_DATA = {
 
 
 @pytest.fixture()
-def test_contract(loaded_db):
+def test_contract(loaded_db, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
