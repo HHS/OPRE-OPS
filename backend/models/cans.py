@@ -261,11 +261,14 @@ class ContractType(Enum):
     COST_PLUS_AWARD_FEE = auto()
     HYBRID = auto()
 
+class ContractCategory(Enum):
+    RESEARCH = auto()
+    SERVICE = auto()
+
 
 class ServiceRequirementType(Enum):
     SEVERABLE = auto()
     NON_SEVERABLE = auto()
-
 
 class ContractAgreement(Agreement):
     """Contract Agreement Model"""
@@ -288,6 +291,7 @@ class ContractAgreement(Agreement):
         ENUM(AcquisitionType)
     )
     delivered_status: Mapped[bool] = mapped_column(Boolean, default=False)
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(ENUM(ContractCategory))
     contract_type: Mapped[Optional[ContractType]] = mapped_column(ENUM(ContractType))
     support_contacts: Mapped[list[User]] = relationship(
         User,
