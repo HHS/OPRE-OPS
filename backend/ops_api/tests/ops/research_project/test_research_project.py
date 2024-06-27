@@ -17,23 +17,23 @@ def test_research_projects_get_all(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_research_projects_get_by_id(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.research-projects-item", id="1"))
+def test_research_projects_get_by_id(auth_client, loaded_db, test_project):
+    response = auth_client.get(url_for("api.research-projects-item", id=test_project.id))
     assert response.status_code == 200
     assert response.json["title"] == "Human Services Interoperability Support"
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_research_projects_get_by_id_404(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.research-projects-item", id="1000"))
+    response = auth_client.get(url_for("api.research-projects-item", id="1000000"))
     assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_research_projects_serialization(auth_client, loaded_db, test_user):
-    response = auth_client.get(url_for("api.research-projects-item", id="1"))
+def test_research_projects_serialization(auth_client, loaded_db, test_user, test_project):
+    response = auth_client.get(url_for("api.research-projects-item", id=test_project.id))
     assert response.status_code == 200
-    assert response.json["id"] == 1
+    assert response.json["id"] == test_project.id
     assert response.json["title"] == "Human Services Interoperability Support"
     assert response.json["origination_date"] == "2021-01-01"
     assert len(response.json["methodologies"]) == 7
@@ -45,12 +45,12 @@ def test_research_projects_serialization(auth_client, loaded_db, test_user):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_research_projects_with_fiscal_year_found(auth_client, loaded_db):
+def test_research_projects_with_fiscal_year_found(auth_client, loaded_db, test_project):
     response = auth_client.get(url_for("api.research-projects-group", fiscal_year=2023))
     assert response.status_code == 200
     assert len(response.json) == 3
     assert response.json[0]["title"] == "Human Services Interoperability Support"
-    assert response.json[0]["id"] == 1
+    assert response.json[0]["id"] == test_project.id
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -61,12 +61,12 @@ def test_research_projects_with_fiscal_year_not_found(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db):
+def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db, test_project):
     stmt = ResearchProjectListAPI._get_query(2023)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 3
     assert result[0][0].title == "Human Services Interoperability Support"
-    assert result[0][0].id == 1
+    assert result[0][0].id == test_project.id
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -77,12 +77,12 @@ def test_get_query_for_fiscal_year_with_fiscal_year_not_found(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db):
+def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db, test_project):
     stmt = ResearchProjectListAPI._get_query(2023, 6)
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "Human Services Interoperability Support"
-    assert result[0][0].id == 1
+    assert result[0][0].id == test_project.id
 
 
 @pytest.mark.usefixtures("app_ctx")

@@ -858,7 +858,7 @@ def test_delete_budget_line_items(auth_client, loaded_db, test_can):
     assert not sc
 
 
-def test_budget_line_item_validation_create_invalid(auth_client, app, test_can):
+def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -877,7 +877,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can):
         "description": "Description",
         "procurement_shop_id": 2,
         "product_service_code_id": 1,
-        "project_id": 1,
+        "project_id": test_project.id,
         "project_officer_id": 520,
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
@@ -916,7 +916,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can):
+def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -935,7 +935,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
         "description": "Description",
         "procurement_shop_id": 2,
         "product_service_code_id": 1,
-        "project_id": 1,
+        "project_id": test_project.id,
         "project_officer_id": 520,
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
@@ -977,7 +977,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_client, app, test_can):
+def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -988,7 +988,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
         "description": "Description",
         "procurement_shop_id": 2,
         "product_service_code_id": 1,
-        "project_id": 1,
+        "project_id": test_project.id,
         "project_officer_id": 520,
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
@@ -1037,7 +1037,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, test_can):
+def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -1048,7 +1048,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
         "description": "Description",
         "procurement_shop_id": 2,
         "product_service_code_id": 1,
-        "project_id": 1,
+        "project_id": test_project.id,
         "project_officer_id": 520,
     }
     resp = auth_client.post("/api/v1/agreements/", json=data)
