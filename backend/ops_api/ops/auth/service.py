@@ -38,7 +38,9 @@ def login(code: str, provider: str) -> dict[str, Any]:
             user,
         ) = _get_token_and_user_data_from_internal_auth(user_data, current_app.config, current_app.db_session)
 
-        user_session = _get_or_create_user_session(user, access_token, refresh_token, request.remote_addr)
+        user_session = _get_or_create_user_session(
+            user, access_token, refresh_token, request.headers.get("X-Forwarded-For") or request.remote_addr
+        )
 
         la.metadata.update(
             {
