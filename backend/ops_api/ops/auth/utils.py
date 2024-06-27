@@ -186,3 +186,14 @@ def deactivate_all_user_sessions(user_sessions):
         session.last_active_at = datetime.now()
         current_app.db_session.add(session)
     current_app.db_session.commit()
+
+
+def get_request_ip_address() -> str:
+    """
+    Get the IP address from the request headers.
+    """
+    return (
+        request.headers.get("X-Forwarded-For").split(",")[0]
+        if request.headers.get("X-Forwarded-For")
+        else request.remote_addr
+    )
