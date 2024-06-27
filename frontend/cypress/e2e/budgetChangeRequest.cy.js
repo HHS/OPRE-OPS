@@ -8,7 +8,7 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "E2E Test agreementWorkflow 1",
     description: "Test Description",
-    project_id: 1,
+    project_id: 1000,
     product_service_code_id: 1,
     procurement_shop_id: 1,
     project_officer_id: 500,
@@ -106,6 +106,7 @@ it("BLI Budget Change", () => {
             // see if there are any review cards
             cy.get("[data-cy='review-card']")
                 .should("exist")
+                .contains("Budget Change")
                 .then(() => {
                     cy.request({
                         method: "DELETE",

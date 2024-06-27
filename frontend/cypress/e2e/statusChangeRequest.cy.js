@@ -95,6 +95,7 @@ it("BLI Status Change", () => {
             // see if there are any review cards
             cy.get("[data-cy='review-card']")
                 .should("exist")
+                .contains("Status Change")
                 .then(() => {
                     cy.request({
                         method: "DELETE",
