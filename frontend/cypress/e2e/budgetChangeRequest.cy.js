@@ -91,7 +91,7 @@ it("BLI Budget Change", () => {
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
             cy.get('[data-cy="send-to-approval-btn"]').click();
             cy.visit("/agreements?filter=change-requests").wait(1000);
-            // see if there are any review cards review-card
+            // see if there are any review cards
             cy.get("[data-cy='review-card']")
                 .should("exist")
                 .then(() => {
