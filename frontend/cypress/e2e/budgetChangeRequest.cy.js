@@ -26,7 +26,7 @@ const testAgreement = {
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 500,
+    can_id: 501,
     agreement_id: 11,
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
@@ -83,28 +83,13 @@ it("BLI Budget Change", () => {
                 return { agreementId, bliId };
             });
         })
-        // submit for approval (via REST for now, maybe change to UI click through)
         .then(({ agreementId, bliId }) => {
-            const payload = {
-                id: bliId,
-                amount: 2000000,
-                requestor_notes: "Please approve this BLI"
-            };
-            cy.request({
-                method: "PATCH",
-                url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                body: payload,
-                headers: {
-                    Authorization: bearer_token,
-                    Accept: "application/json"
-                }
-            }).then((response) => {
-                expect(response.status).to.eq(202);
-                return { agreementId, bliId };
-            });
-        })
-
-        .then(({ agreementId, bliId }) => {
+            cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+            cy.get('[data-cy="bli-tab-continue-btn"]').click();
+            cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
+            cy.get("#check-all").check({ force: true }).wait(1);
+            cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+            cy.get('[data-cy="send-to-approval-btn"]').click();
             cy.visit("/agreements?filter=change-requests").wait(1000);
             // see if there are any review cards review-card
             cy.get("[data-cy='review-card']")

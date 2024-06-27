@@ -1,3 +1,4 @@
+// TODO: we can probably remove this test since Change Requests have there own tests
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
