@@ -3,30 +3,31 @@ FROM alpine:3.20
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/home/app
 
-# renovate: datasource=repology depName=alpine_3_20/postgresql16-client versioning=loose
-ENV POSTGRESQL16_CLIENT_VERSION="16.3-r0"
-# renovate: datasource=repology depName=alpine_3_20/python3 versioning=loose
-ENV PYTHON3_VERSION="3.12.3-r1"
-# renovate: datasource=repology depName=alpine_3_20/py3-pip versioning=loose
-ENV PY3_PIP_VERSION="24.0-r2"
+# hadolint ignore=DL3018
+RUN apk update && apk add --no-cache python3 py3-pip
 
-RUN apk update && apk add --no-cache \
-    postgresql16-client="${POSTGRESQL16_CLIENT_VERSION}" \
-    python3="${PYTHON3_VERSION}" \
-    py3-pip="${PY3_PIP_VERSION}"
+# Copy the Pipfile(s) only, so that we can cache dependencies
+# in the next step
+COPY ./data_tools/Pipfile ./data_tools/Pipfile.lock /home/app/
+WORKDIR /home/app
+
+# hadolint ignore=DL3018
+RUN python -m venv .venv && \
+   .venv/bin/pip install --upgrade pip && \
+   apk add --update --no-cache alpine-sdk && \
+   apk add --update --no-cache postgresql16-client && \
+   apk add --update --no-cache --virtual .tmp-build-deps \
+      build-base gcc python3-dev postgresql-dev musl-dev libffi-dev openssl-dev cargo  && \
+   .venv/bin/pip install --no-cache-dir pipenv==2024.0.1 && \
+   .venv/bin/pipenv install --dev --deploy && \
+   rm -rf /tmp && rm -rf /var/cache/apk/* \
+   apk del .tmp-build-deps
 
 # Create a non-root user to run the app
 RUN adduser app -D
 
 USER app
 WORKDIR /home/app
-
-# Copy the Pipfile(s) only, so that we can cache dependencies
-# in the next step
-COPY ./data_tools/Pipfile ./data_tools/Pipfile.lock /home/app/
-# hadolint ignore=SC1091
-RUN python3 -m venv .venv && . .venv/bin/activate && \
-    pip3 install --no-cache-dir pipenv==2024.0.1 && pipenv install --dev --deploy
 
 # Now copy the rest of the app files, again to better support caching
 # of prior steps.

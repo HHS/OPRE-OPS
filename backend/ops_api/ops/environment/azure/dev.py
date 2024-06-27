@@ -18,13 +18,6 @@ SQLALCHEMY_DATABASE_URI = (
 )
 
 AUTHLIB_OAUTH_CLIENTS = {
-    "logingov": {
-        "server_metadata_url": "https://idp.int.identitysandbox.gov/.well-known/openid-configuration",
-        "user_info_url": "https://idp.int.identitysandbox.gov/api/openid_connect/userinfo",
-        "client_id": "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs_acf:opre_ops",
-        "client_kwargs": {"scope": "openid email"},
-        "redirect_uri": "http://localhost:3000",
-    },
     "hhsams": {
         "server_metadata_url": "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/.well-known/openid-configuration",
         "token_endpoint": "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/token",
