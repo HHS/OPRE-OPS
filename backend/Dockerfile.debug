@@ -36,4 +36,4 @@ COPY . /home/app
 ENV FLASK_APP=ops_api.ops
 ENV FLASK_DEBUG=true
 
-CMD ["pipenv", "run", "python", "-m", "gunicorn", "-b", ":8080", "ops_api.ops:create_app()"]
+CMD [".venv/bin/pipenv", "run", "python", "-m", "gunicorn", "-b", ":8080", "ops_api.ops:create_app()"]
