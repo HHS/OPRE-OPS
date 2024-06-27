@@ -3,7 +3,7 @@ import { testLogin } from "./utils";
 
 before(() => {
     testLogin("admin");
-    cy.visit("/research-projects/1");
+    cy.visit("/research-projects/1000");
 });
 
 afterEach(() => {

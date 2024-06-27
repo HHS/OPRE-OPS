@@ -276,7 +276,7 @@ def test_services_components_delete(auth_client, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_cascades_from_agreement(auth_client, app, loaded_db):
+def test_services_components_delete_cascades_from_agreement(auth_client, app, loaded_db, test_project):
     session = app.db_session
     ca = ContractAgreement(
         name="CTXX12399",
@@ -285,7 +285,7 @@ def test_services_components_delete_cascades_from_agreement(auth_client, app, lo
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         created_by=4,
     )
     session.add(ca)
@@ -318,7 +318,7 @@ def test_services_components_delete_cascades_from_agreement(auth_client, app, lo
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_services_components_delete_does_not_cascade_to_agreement(auth_client, app, loaded_db):
+def test_services_components_delete_does_not_cascade_to_agreement(auth_client, app, loaded_db, test_project):
     session = app.db_session
     ca = ContractAgreement(
         name="CTXX12399",
@@ -327,7 +327,7 @@ def test_services_components_delete_does_not_cascade_to_agreement(auth_client, a
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         created_by=4,
     )
     session.add(ca)
