@@ -21,7 +21,7 @@ def test_agreement_retrieve(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_get_all(auth_client, loaded_db):
+def test_agreements_get_all(auth_client, loaded_db, test_project):
     stmt = select(func.count()).select_from(Agreement)
     count = loaded_db.scalar(stmt)
 
@@ -33,7 +33,7 @@ def test_agreements_get_all(auth_client, loaded_db):
     assert response.json[0]["name"] == "Contract #1: African American Child and Family Research Center"
     assert response.json[0]["agreement_type"] == "CONTRACT"
     assert response.json[0]["contract_number"] == "XXXX000000001"
-    assert response.json[0]["project"]["id"] == 1
+    assert response.json[0]["project"]["id"] == test_project.id
     assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
     assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
     assert response.json[0]["incumbent"] == "Vendor 1"
@@ -102,8 +102,8 @@ def test_agreements_with_project_empty(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_with_project_found(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": "1"})
+def test_agreements_with_project_found(auth_client, loaded_db, test_project):
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"project_id": test_project.id})
     assert response.status_code == 200
     assert len(response.json) == 3
     assert response.json[0]["id"] == 1
@@ -148,7 +148,7 @@ def test_agreements_with_filter(auth_client, key, value, loaded_db):
 def test_agreements_with_project_not_found(auth_client, loaded_db):
     response = auth_client.get(
         url_for("api.agreements-group"),
-        query_string={"project_id": "1000"},
+        query_string={"project_id": "1000000"},
     )
     assert response.status_code == 200
     assert len(response.json) == 0
@@ -238,7 +238,7 @@ def test_agreement_create_grant_agreement(loaded_db):
 
 
 @pytest.fixture()
-def test_contract(loaded_db, test_vendor, test_admin_user):
+def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="XXXX000000002",
@@ -246,7 +246,7 @@ def test_contract(loaded_db, test_vendor, test_admin_user):
         service_requirement_type=ServiceRequirementType.NON_SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         created_by=test_admin_user.id,
         vendor_id=test_vendor.id,
         incumbent_id=test_vendor.id,
@@ -530,7 +530,7 @@ def test_agreements_post(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_service_requirement_type(auth_client, loaded_db):
+def test_agreements_post_contract_with_service_requirement_type(auth_client, loaded_db, test_project):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
@@ -549,7 +549,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
                 }
             ],
             "notes": "test notes",
-            "project_id": 1,
+            "project_id": test_project.id,
             "procurement_shop_id": 2,
             "contract_type": "FIRM_FIXED_PRICE",
             "service_requirement_type": "SEVERABLE",
@@ -563,7 +563,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_user):
+def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_user, test_project):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
@@ -582,7 +582,7 @@ def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_us
                 }
             ],
             "notes": "test notes",
-            "project_id": 1,
+            "project_id": test_project.id,
             "procurement_shop_id": 2,
             "contract_type": "FIRM_FIXED_PRICE",
         },
@@ -595,7 +595,7 @@ def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_us
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
+def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_project):
     """PATCH with mimicking the e2e test"""
     response = auth_client.patch(
         f"/api/v1/agreements/{test_contract.id}",
@@ -618,7 +618,7 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract):
             "product_service_code_id": 1,
             "project_officer": 500,
             "project_officer_id": 500,
-            "project_id": 1,
+            "project_id": test_project.id,
             "support_contacts": [],
             "task_order_number": None,
             "team_members": [
@@ -646,14 +646,14 @@ def test_agreements_get_contract_by_id(auth_client, loaded_db, test_contract):
     )
     assert response.status_code == 200
     data = response.json
-    assert data["name"] == "CTXX12399"
-    assert data["contract_number"] == "XXXX000000002"
-    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
-    assert data["service_requirement_type"] == ServiceRequirementType.NON_SEVERABLE.name
-    assert data["product_service_code_id"] == 2
-    assert data["agreement_type"] == AgreementType.CONTRACT.name
-    assert data["project_id"] == 1
-    assert data["created_by"] is None
+    assert data["name"] == test_contract.name
+    assert data["contract_number"] == test_contract.contract_number
+    assert data["contract_type"] == test_contract.contract_type.name
+    assert data["service_requirement_type"] == test_contract.service_requirement_type.name
+    assert data["product_service_code_id"] == test_contract.product_service_code_id
+    assert data["agreement_type"] == test_contract.agreement_type.name
+    assert data["project_id"] == test_contract.project_id
+    assert data["created_by"] is test_contract.created_by
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -667,15 +667,17 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
     response = auth_client.get(
         url_for("api.agreements-item", id=test_contract.id),
     )
+
+    assert response.status_code == 200
     data = response.json
-    assert data["name"] == "CTXX12399"
-    assert data["contract_number"] == "XXXX000000002"
-    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert data["name"] == test_contract.name
+    assert data["contract_number"] == test_contract.contract_number
+    assert data["contract_type"] == test_contract.contract_type.name
     assert data["service_requirement_type"] == ServiceRequirementType.SEVERABLE.name
-    assert data["product_service_code_id"] == 2
-    assert data["agreement_type"] == AgreementType.CONTRACT.name
-    assert data["project_id"] == 1
-    assert data["created_by"] is None
+    assert data["product_service_code_id"] == test_contract.product_service_code_id
+    assert data["agreement_type"] == test_contract.agreement_type.name
+    assert data["project_id"] == test_contract.project_id
+    assert data["created_by"] is test_contract.created_by
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -689,18 +691,21 @@ def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db
     response = auth_client.get(
         url_for("api.agreements-item", id=test_contract.id),
     )
+
+    assert response.status_code == 200
     data = response.json
-    assert data["name"] == "CTXX12399"
-    assert data["contract_number"] == "XXXX000000002"
-    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert data["name"] == test_contract.name
+    assert data["contract_number"] == test_contract.contract_number
+    assert data["contract_type"] == test_contract.contract_type.name
+    assert data["service_requirement_type"] == test_contract.service_requirement_type.name
+    assert data["product_service_code_id"] == test_contract.product_service_code_id
+    assert data["agreement_type"] == test_contract.agreement_type.name
+    assert data["project_id"] == test_contract.project_id
+    assert data["created_by"] is test_contract.created_by
     assert data["vendor_id"] == 101
     assert data["vendor"] == "Vendor 2"
     assert data["incumbent_id"] == 101
     assert data["incumbent"] == "Vendor 2"
-    assert data["product_service_code_id"] == 2
-    assert data["agreement_type"] == AgreementType.CONTRACT.name
-    assert data["project_id"] == 1
-    assert data["created_by"] is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -714,15 +719,17 @@ def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, tes
     response = auth_client.get(
         url_for("api.agreements-item", id=test_contract.id),
     )
+
     data = response.json
-    assert data["name"] == "CTXX12399"
-    assert data["contract_number"] == "XXXX000000002"
-    assert data["contract_type"] == ContractType.FIRM_FIXED_PRICE.name
+    assert data["name"] == test_contract.name
+    assert data["contract_number"] == test_contract.contract_number
+    assert data["contract_type"] == test_contract.contract_type.name
+    assert data["service_requirement_type"] == test_contract.service_requirement_type.name
+    assert data["product_service_code_id"] == test_contract.product_service_code_id
+    assert data["agreement_type"] == test_contract.agreement_type.name
+    assert data["project_id"] == test_contract.project_id
+    assert data["created_by"] is test_contract.created_by
     assert data["vendor_id"] == 103
     assert data["vendor"] == "Random Test Vendor"
     assert data["incumbent_id"] == 103
     assert data["incumbent"] == "Random Test Vendor"
-    assert data["product_service_code_id"] == 2
-    assert data["agreement_type"] == AgreementType.CONTRACT.name
-    assert data["project_id"] == 1
-    assert data["created_by"] is None

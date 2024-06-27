@@ -8,13 +8,13 @@ from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
 
 @pytest.fixture
-def original_agreement(test_user):
+def original_agreement(test_user, test_project):
     return {
         "name": "CTXX12399",
         "contract_number": "CT0002",
         "contract_type": ContractType.FIRM_FIXED_PRICE,
         "agreement_type": AgreementType.CONTRACT,
-        "project_id": 1,
+        "project_id": test_project.id,
         "product_service_code_id": 2,
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,

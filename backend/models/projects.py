@@ -3,7 +3,7 @@ from typing import Optional
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
-from sqlalchemy import Column, Date, ForeignKey, String, Text
+from sqlalchemy import Column, Date, ForeignKey, Sequence, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing_extensions import List
@@ -71,7 +71,9 @@ class Project(BaseModel):
         "polymorphic_on": "project_type",
     }
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("project_id_seq", start=1000, increment=1)
+    )
     project_type: Mapped[ProjectType] = mapped_column(ENUM(ProjectType), nullable=False)
     title: Mapped[str] = mapped_column(String(), nullable=False)
     short_title: Mapped[str] = mapped_column(String(), nullable=False, unique=True)

@@ -2930,9 +2930,17 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+
+    sa.Sequence("project_id_seq", start=1000, increment=1).create(op.get_bind())
     op.create_table(
         "project",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('project_id_seq')"),
+            autoincrement=True,
+            nullable=False,
+        ),
         sa.Column(
             "project_type",
             postgresql.ENUM(
