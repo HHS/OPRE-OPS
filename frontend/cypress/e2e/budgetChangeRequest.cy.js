@@ -65,7 +65,6 @@ it("BLI Budget Change", () => {
             const agreementId = response.body.id;
             return agreementId;
         })
-        // create Services Component
         // create BLI
         .then((agreementId) => {
             const bliData = { ...testBli, agreement_id: agreementId };
