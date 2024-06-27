@@ -31,8 +31,7 @@ const testBli = {
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
     date_needed: "2025-1-01",
-    proc_shop_fee_percentage: 0.005,
-    services_component_id: 1
+    proc_shop_fee_percentage: 0.005
 };
 
 beforeEach(() => {
@@ -61,7 +60,7 @@ it("BLI Budget Change", () => {
         }
     })
         .then((response) => {
-            expect(response.status).to.eq(200);
+            expect(response.status).to.eq(201);
             expect(response.body.id).to.exist;
             const agreementId = response.body.id;
             return agreementId;
@@ -69,22 +68,6 @@ it("BLI Budget Change", () => {
         // create Services Component
         // create BLI
         .then((agreementId) => {
-            cy.request({
-                method: "POST",
-                url: "http://localhost:8080/api/v1//services-components/",
-                body: {
-                    contract_agreement_id: agreementId,
-                    number: 1,
-                    optional: false
-                },
-                headers: {
-                    Authorization: bearer_token,
-                    "Content-Type": "application/json",
-                    Accept: "application/json"
-                }
-            }).then((response) => {
-                expect(response.status).to.eq(201);
-            });
             const bliData = { ...testBli, agreement_id: agreementId };
             cy.request({
                 method: "POST",
@@ -103,15 +86,23 @@ it("BLI Budget Change", () => {
         })
         .then(({ agreementId, bliId }) => {
             cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines?mode=edit`);
+            cy.get("#servicesComponentSelect").select("1");
+            cy.get("#pop-start-date").type("01/01/2024");
+            cy.get("#pop-end-date").type("01/01/2025");
+            cy.get("#description").type("This is a description.");
+            cy.get("[data-cy='add-services-component-btn']").click();
             cy.get("tbody").children().as("table-rows").should("have.length", 1);
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
             cy.get("[data-cy='edit-row']").click();
-            cy.pause();
-            // cy.get('[data-cy="bli-tab-continue-btn"]').click();
-            // cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
-            // cy.get("#check-all").check({ force: true }).wait(1);
-            // cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-            // cy.get('[data-cy="send-to-approval-btn"]').click();
+            cy.get("#allServicesComponentSelect").select("SC1");
+            cy.get("#enteredAmount").clear();
+            cy.get("#enteredAmount").type("2_222_222_222");
+
+            cy.get('[data-cy="update-budget-line"]').click();
+            cy.get('[data-cy="continue-btn"]').click();
+            cy.get('[data-cy="confirm-action"]').click();
+            cy.get('[data-cy="alert"]').should("exist");
+            cy.get('[data-cy="alert"]').contains("$2,222,222,222.00");
             cy.visit("/agreements?filter=change-requests").wait(1000);
             // see if there are any review cards
             cy.get("[data-cy='review-card']")
