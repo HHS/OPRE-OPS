@@ -1185,7 +1185,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ServicesComponentRequestPost'
       responses:
-        '201':
+        '200':
           description: Created
         '400':
           description: Bad Request
