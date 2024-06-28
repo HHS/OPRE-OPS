@@ -38,7 +38,7 @@ afterEach(() => {
 });
 
 describe("agreement review workflow", () => {
-    it("review an agreement", () => {
+    it("review status change requests at the card level", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -183,7 +183,10 @@ describe("agreement review workflow", () => {
             cy.get('[type="radio"]').first().check({ force: true });
             cy.get("#check-all").check({ force: true }).wait(1);
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-
+            cy.get('[data-cy="send-to-approval-btn"]').click();
+            cy.visit("/agreements?filter=change-requests").wait(1000);
+            // see if there are review cards, should be 2 for the status change
+            cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
             // can't delete budget line in review mode so won't click review button
 
             cy.request({
@@ -347,7 +350,7 @@ describe("agreement review workflow", () => {
             cy.visit("/agreements?filter=change-requests").wait(1000);
             // TODO: add approve tests for change requests
             // should contain 2 headings named Status Change
-            cy.get('[data-cy="review-card"]').should("have.length", 2);
+            cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
             // cy.get("tbody").children().as("table-rows").should("exist");
             // get the created agreement which is last in the table
             // cy.get("@table-rows").last().find('[data-cy="expand-row"]').click();
