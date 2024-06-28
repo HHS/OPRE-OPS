@@ -103,12 +103,50 @@ it("review Status Change DRAFT TO PLANNED", () => {
                 return { agreementId, bliId };
             });
         })
-        // submit for approval (via REST for now, maybe change to UI click through)
+        // submit PATCH CR for approval via REST
         .then(({ agreementId, bliId }) => {
             cy.visit("/agreements?filter=change-requests").wait(1000);
             // see if there are any review cards
             cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
-            cy.pause();
+            cy.get("[data-cy='review-card']").contains("Planned");
+            // hover over first card
+            cy.get("[data-cy='review-card']").first().trigger("mouseover");
+            // click on button id approve
+            cy.get("#approve").click();
+            // usa-modal__content class should exist
+            cy.get(".usa-modal__content").should("exist");
+            // should contain Are you sure you want to approve this status change to Planned Status? This will subtract the amounts from the FY budget.
+            cy.get(".usa-modal__content").contains(/status change to Planned Status\?/);
+            // click on button data-cy confirm-action
+            cy.get("[data-cy='confirm-action']").click();
+            cy.get(".usa-alert__body").contains(/changes approved/i);
+            cy.get("[data-cy='close-alert']").click();
+            cy.get("[data-cy='review-card']")
+                .should("not.exist")
+                .then(() => {
+                    cy.request({
+                        method: "DELETE",
+                        url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    }).then((response) => {
+                        expect(response.status).to.eq(200);
+                    });
+                })
+                .then(() => {
+                    cy.request({
+                        method: "DELETE",
+                        url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    }).then((response) => {
+                        expect(response.status).to.eq(200);
+                    });
+                });
         });
 });
 it.skip("review Status Change PLANNED to EXECUTING");
