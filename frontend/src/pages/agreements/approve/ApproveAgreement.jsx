@@ -93,9 +93,10 @@ const ApproveAgreement = () => {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel?",
+            heading:
+                "Are you sure you want to cancel? This will exit the review process and you can come back to it later.",
             actionButtonText: "Cancel",
-            secondaryButtonText: "Continue",
+            secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
                 navigate("/agreements");
             }
