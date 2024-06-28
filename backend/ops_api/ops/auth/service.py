@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from authlib.oauth2.rfc6749 import OAuth2Token
-from flask import current_app, request
+from flask import current_app
 from flask_jwt_extended import create_access_token, current_user, get_jwt_identity
 from sqlalchemy import select
 
@@ -16,6 +16,7 @@ from ops_api.ops.auth.utils import (
     deactivate_all_user_sessions,
     get_all_user_sessions,
     get_latest_user_session,
+    get_request_ip_address,
     is_token_expired,
 )
 from ops_api.ops.utils.events import OpsEventHandler
@@ -38,9 +39,7 @@ def login(code: str, provider: str) -> dict[str, Any]:
             user,
         ) = _get_token_and_user_data_from_internal_auth(user_data, current_app.config, current_app.db_session)
 
-        user_session = _get_or_create_user_session(
-            user, access_token, refresh_token, request.headers.get("X-Forwarded-For") or request.remote_addr
-        )
+        user_session = _get_or_create_user_session(user, access_token, refresh_token, get_request_ip_address())
 
         la.metadata.update(
             {
