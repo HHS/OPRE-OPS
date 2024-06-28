@@ -261,7 +261,7 @@ describe("Review Change Requests at Card Level", () => {
                 // });
             });
     });
-    it("review Budget Change request amount change", () => {
+    it("review Budget Change Amount change", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -330,6 +330,7 @@ describe("Review Change Requests at Card Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
+                cy.get("[data-cy='review-card']").contains("Amount");
                 cy.get("[data-cy='review-card']").contains("$2,000,000.00");
                 // hover over first card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
@@ -371,6 +372,116 @@ describe("Review Change Requests at Card Level", () => {
                     });
             });
     });
-    it.skip("review Budget Change CAN change");
+    it("review Budget Change CAN change", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const updatedBLIToPlanned = {
+                    ...testBli,
+                    status: BLI_STATUS.PLANNED
+                };
+                const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // submit PATCH CR for approval via REST
+            .then(({ agreementId, bliId }) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    body: {
+                        id: bliId,
+                        can_id: 502,
+                        requestor_notes: "Test requestor notes"
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // test interactions
+            .then(({ agreementId, bliId }) => {
+                cy.visit("/agreements?filter=change-requests").wait(1000);
+                // see if there are any review cards
+                cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
+                cy.get("[data-cy='review-card']").contains("CAN");
+                cy.get("[data-cy='review-card']").contains("G99PHS9");
+                // hover over first card
+                cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                // click on button id approve
+                cy.get("#approve").click();
+                // usa-modal__content class should exist
+                cy.get(".usa-modal__content").should("exist");
+                // Are you sure you want to approve this budget change? The agreement will be updated after your approval.
+                cy.get(".usa-modal__content").contains(/approve this budget change\?/);
+                // click on button data-cy confirm-action
+                cy.get("[data-cy='confirm-action']").click();
+                cy.get(".usa-alert__body").contains(/changes approved/i);
+                cy.get("[data-cy='close-alert']").click();
+                cy.get("[data-cy='review-card']")
+                    .should("not.exist")
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
+            });
+    });
     it.skip("review Budget Change request date change");
 });
