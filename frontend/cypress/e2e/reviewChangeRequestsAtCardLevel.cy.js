@@ -44,7 +44,73 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-it.skip("review Status Change DRAFT TO PLANNED");
+it("review Status Change DRAFT TO PLANNED", () => {
+    expect(localStorage.getItem("access_token")).to.exist;
+
+    // create test agreement
+    const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+    cy.request({
+        method: "POST",
+        url: "http://localhost:8080/api/v1/agreements/",
+        body: testAgreement,
+        headers: {
+            Authorization: bearer_token,
+            "Content-Type": "application/json",
+            Accept: "application/json"
+        }
+    })
+        .then((response) => {
+            expect(response.status).to.eq(201);
+            expect(response.body.id).to.exist;
+            const agreementId = response.body.id;
+            return agreementId;
+        })
+        // create BLI
+        .then((agreementId) => {
+            const bliData = { ...testBli, agreement_id: agreementId };
+            cy.request({
+                method: "POST",
+                url: "http://localhost:8080/api/v1/budget-line-items/",
+                body: bliData,
+                headers: {
+                    Authorization: bearer_token,
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const bliId = response.body.id;
+                return { agreementId, bliId };
+            });
+        })
+        .then(({ agreementId, bliId }) => {
+            cy.request({
+                method: "PATCH",
+                url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                body: {
+                    id: bliId,
+                    status: BLI_STATUS.PLANNED,
+                    requestor_notes: "Test requestor notes"
+                },
+                headers: {
+                    Authorization: bearer_token,
+                    Accept: "application/json"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(202);
+                expect(response.body.id).to.exist;
+                const bliId = response.body.id;
+                return { agreementId, bliId };
+            });
+        })
+        // submit for approval (via REST for now, maybe change to UI click through)
+        .then(({ agreementId, bliId }) => {
+            cy.visit("/agreements?filter=change-requests").wait(1000);
+            // see if there are any review cards
+            cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
+            cy.pause();
+        });
+});
 it.skip("review Status Change PLANNED to EXECUTING");
 it.skip("review Budget Change request amount change");
 it.skip("review Budget Change CAN change");
