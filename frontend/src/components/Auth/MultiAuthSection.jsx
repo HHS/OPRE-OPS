@@ -111,7 +111,7 @@ const MultiAuthSection = () => {
                         You can access your account by signing in with one of the options below.
                     </p>
                 </div>
-                {!import.meta.env.PROD && (
+                {import.meta.env  && ( //testing for existence of the env being set at all since we don't seem to do that for local environments
                     <p>
                         <button
                             className="usa-button usa-button--outline width-full"
