@@ -7,12 +7,9 @@ from models import AgreementChangeRequest, ChangeRequest, Division, Notification
 
 def create_notification_for_review(change_request: ChangeRequest):
     if not isinstance(change_request, AgreementChangeRequest):
-        return  # only notify for AgreementChangeRequests
+        return  # we only have messages here for Agreement related change requests for now
     agreement_id = change_request.agreement_id
     division_director_ids = set()
-    # temp dev DD IDs
-    division_director_ids.add(21)
-    division_director_ids.add(23)
     division: Division = current_app.db_session.get(Division, change_request.managing_division_id)
     if division.division_director_id:
         division_director_ids.add(division.division_director_id)
