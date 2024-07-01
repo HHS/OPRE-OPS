@@ -30,7 +30,7 @@ from ops_api.ops.schemas.budget_line_items import (
     QueryParametersSchema,
 )
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
-from ops_api.ops.utils.change_requests import create_notification_for_review
+from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -205,7 +205,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                     change_request.requestor_notes = requestor_notes
                     current_app.db_session.add(change_request)
                     current_app.db_session.commit()
-                    create_notification_for_review(change_request)
+                    create_notification_of_new_request_to_reviewer(change_request)
                     change_request_ids.append(change_request.id)
 
             bli_dict = self._response_schema.dump(budget_line_item)
