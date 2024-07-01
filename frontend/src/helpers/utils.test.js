@@ -3,7 +3,9 @@ import {
     calculatePercent,
     convertCodeForDisplay,
     fiscalYearFromDate,
-    renderField
+    renderField,
+    toSlugCase,
+    toTitleCaseFromSlug
 } from "./utils";
 
 test("current federal fiscal year is calculated correctly", () => {
@@ -47,4 +49,26 @@ test("renderField converts values correctly for display", () => {
     expect(renderField(null, "agreement_reason", null)).toEqual(null);
     expect(renderField(null, "agreement_reason", "RECOMPETE")).toEqual("Recompete");
     expect(renderField(null, "agreement_type", "CONTRACT")).toEqual("Contract");
+});
+
+test("renders slug from a string", () => {
+    expect(toSlugCase("Budget Change")).toEqual("budget-change");
+    expect(toSlugCase("Status Change")).toEqual("status-change");
+    expect(toSlugCase("Budget Change Request")).toEqual("budget-change-request");
+    expect(toSlugCase("Status Change Request")).toEqual("status-change-request");
+    expect(toSlugCase("")).toEqual("");
+    expect(toSlugCase(null)).toEqual("");
+    expect(toSlugCase(undefined)).toEqual("");
+    expect(toSlugCase(true)).toEqual("");
+});
+
+test("renders titlecase from slug", () => {
+    expect(toTitleCaseFromSlug("budget-change")).toEqual("Budget Change");
+    expect(toTitleCaseFromSlug("status-change")).toEqual("Status Change");
+    expect(toTitleCaseFromSlug("budget-change-request")).toEqual("Budget Change Request");
+    expect(toTitleCaseFromSlug("status-change-request")).toEqual("Status Change Request");
+    expect(toTitleCaseFromSlug("")).toEqual("");
+    expect(toTitleCaseFromSlug(null)).toEqual("");
+    expect(toTitleCaseFromSlug(undefined)).toEqual("");
+    expect(toTitleCaseFromSlug(true)).toEqual("");
 });

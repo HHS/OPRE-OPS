@@ -233,6 +233,7 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
         }),
+        // TODO: Delete workflow
         addApprovalRequest: builder.mutation({
             query: (body) => ({
                 url: `/workflow-submit/`,
@@ -242,6 +243,7 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
         }),
+        // TODO: Delete workflow
         addWorkflowApprove: builder.mutation({
             query: (body) => ({
                 url: `/workflow-approve/`,
@@ -251,10 +253,12 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
         }),
+        // TODO: Delete workflow
         getWorkflowInstance: builder.query({
             query: (id) => `/workflow-instance/${id}`,
             providesTags: ["WorkflowInstance"]
         }),
+        // TODO: Delete workflow
         getWorkflowStepInstance: builder.query({
             query: (id) => `/workflow-step-instance/${id}`,
             providesTags: ["WorkflowStepInstance"]
