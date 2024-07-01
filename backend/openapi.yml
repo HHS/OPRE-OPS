@@ -1020,7 +1020,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BudgetLineItemRequest'
       responses:
-        '200':
+        '202':
           description: OK
         '400':
           description: Bad Request
@@ -1654,7 +1654,7 @@ paths:
                   type: integer
                 action:
                   type: string
-                  description: 'APROVE or REJECT'
+                  description: 'APPROVE or REJECT'
                 reviewer_notes:
                   description: optional notes from the reviewer added the change request
                   type: string

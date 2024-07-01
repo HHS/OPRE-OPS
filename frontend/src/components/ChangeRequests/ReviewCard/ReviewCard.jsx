@@ -7,22 +7,46 @@ import { Link } from "react-router-dom";
 import { formatDateToMonthDayYear } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
 
 /**
  * ReviewCard component
  * @component
  * @param {Object} props - Properties passed to component
- * @param {string} props.type - The type of the card
+ * @param {number} props.changeRequestId - The ID of the change request
+ * @param {string} props.type - The type of the card (e.g. "Budget", "Status")
  * @param {number} props.agreementId - The name of the agreement
  * @param {boolean} props.actionIcons - Whether the card has action icons
  * @param {string} props.requesterName - The name of the requester
  * @param {string} props.requestDate - The date of the request
  * @param {React.ReactNode} props.children - The children of the component
+ * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
+ * @param {string} [props.bliToStatus] - The status of the budget line item after the change
+ * @param {boolean} [props.forceHover=false] - Whether to force hover state. needed for testing
+ * @param {string} props.changeMsg - The message to display for the change
  * @returns {JSX.Element} - The rendered component
  */
-function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate, children }) {
-    const [isHovered, setIsHovered] = React.useState(false);
+function ReviewCard({
+    changeRequestId,
+    type,
+    agreementId,
+    actionIcons,
+    requesterName,
+    requestDate,
+    children,
+    handleReviewChangeRequest,
+    bliToStatus = "",
+    forceHover = false,
+    changeMsg
+}) {
+    const [isHovered, setIsHovered] = React.useState(forceHover);
     const agreementName = useGetAgreementName(agreementId);
+    const reviewData = {
+        agreementName,
+        type,
+        bliToStatus,
+        changeMsg
+    };
 
     return (
         <div
@@ -40,7 +64,7 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                         <dd className="margin-0">{agreementName}</dd>
                     </dl>
                 </div>
-                {isHovered && actionIcons && (
+                {(isHovered || forceHover) && actionIcons && (
                     <div>
                         <Tooltip
                             label="Approve"
@@ -49,9 +73,14 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                             <button
                                 id="approve"
                                 aria-label="Approve"
-                                onClick={() => {
-                                    alert("Not yet implemented");
-                                }}
+                                onClick={() =>
+                                    handleReviewChangeRequest(
+                                        changeRequestId,
+                                        CHANGE_REQUEST_ACTION.APPROVE,
+                                        null,
+                                        reviewData
+                                    )
+                                }
                             >
                                 <FontAwesomeIcon
                                     icon={faCheck}
@@ -67,9 +96,14 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
                             <button
                                 id="decline"
                                 aria-label="Decline"
-                                onClick={() => {
-                                    alert("Not yet implemented");
-                                }}
+                                onClick={() =>
+                                    handleReviewChangeRequest(
+                                        changeRequestId,
+                                        CHANGE_REQUEST_ACTION.REJECT,
+                                        null,
+                                        reviewData
+                                    )
+                                }
                             >
                                 <FontAwesomeIcon
                                     icon={faXmark}
@@ -114,12 +148,18 @@ function ReviewCard({ type, agreementId, actionIcons, requesterName, requestDate
     );
 }
 
-export default ReviewCard;
 ReviewCard.propTypes = {
+    changeRequestId: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
     agreementId: PropTypes.number.isRequired,
     actionIcons: PropTypes.bool.isRequired,
     requesterName: PropTypes.string.isRequired,
     requestDate: PropTypes.string.isRequired,
-    children: PropTypes.node
+    children: PropTypes.node,
+    handleReviewChangeRequest: PropTypes.func.isRequired,
+    bliToStatus: PropTypes.string,
+    forceHover: PropTypes.bool,
+    changeMsg: PropTypes.string.isRequired
 };
+
+export default ReviewCard;
