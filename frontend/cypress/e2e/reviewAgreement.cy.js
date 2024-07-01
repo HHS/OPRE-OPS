@@ -17,14 +17,14 @@ const blData = [
 const minAgreement = {
     agreement_type: "CONTRACT",
     name: `Test Contract ${randomNumber}`,
-    project_id: 1,
+    project_id: 1000,
     procurement_shop_id: 1
 };
 
 const minAgreement2 = {
     agreement_type: "CONTRACT",
     name: `Test Contract ${randomNumber2}`,
-    project_id: 1,
+    project_id: 1000,
     procurement_shop_id: 1
 };
 
@@ -551,8 +551,8 @@ describe("agreement review CANS accordion", () => {
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.checked");
             });
-        cy.get('[data-cy="can-funding-summary-card-5"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-5"]').contains("$40,000,000.00");
+        cy.get('[data-cy="can-funding-summary-card-504"]').should("exist");
+        cy.get('[data-cy="can-funding-summary-card-504"]').contains("$40,000,000.00");
     });
 
     it("should handle after approval toggle", () => {
@@ -574,10 +574,10 @@ describe("agreement review CANS accordion", () => {
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.checked");
             });
-        cy.get('[data-cy="can-funding-summary-card-5"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-5"]').contains("5,000,000");
+        cy.get('[data-cy="can-funding-summary-card-504"]').should("exist");
+        cy.get('[data-cy="can-funding-summary-card-504"]').contains("5,000,000");
         cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
-        cy.get('[data-cy="can-funding-summary-card-5"]').contains("3,000,000");
+        cy.get('[data-cy="can-funding-summary-card-504"]').contains("3,000,000");
     });
 
     it("should handle over budget CANs", () => {
@@ -593,10 +593,10 @@ describe("agreement review CANS accordion", () => {
         cy.get("#check-all").check({ force: true }).wait(1);
         cy.wait(1);
         cy.get('[type="checkbox"]').should("have.length", 17);
-        cy.get('[data-cy="can-funding-summary-card-8"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-9"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-8"]').contains("Over Budget");
-        cy.get('[data-cy="can-funding-summary-card-9"]').contains("Over Budget");
+        cy.get('[data-cy="can-funding-summary-card-507"]').should("exist");
+        cy.get('[data-cy="can-funding-summary-card-508"]').should("exist");
+        cy.get('[data-cy="can-funding-summary-card-507"]').contains("Over Budget");
+        cy.get('[data-cy="can-funding-summary-card-508"]').contains("Over Budget");
     });
 });
 

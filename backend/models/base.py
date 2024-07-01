@@ -9,7 +9,7 @@ import sqlalchemy
 from marshmallow import fields
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Sequence, func
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, object_session, registry
 from typing_extensions import Any
 
@@ -102,13 +102,25 @@ class BaseModel(Base):
                 return model
 
     @classmethod
-    def get_pk_column(cls, column_name: str = "id"):
-        return mapped_column(
-            column_name,
-            Integer(),
-            primary_key=True,
-            nullable=False,
-            autoincrement=True,
+    def get_pk_column(
+        cls, column_name: str = "id", sequence: Sequence = None
+    ) -> Column:
+        return (
+            Column(
+                column_name,
+                Integer,
+                primary_key=True,
+                nullable=False,
+                autoincrement=True,
+            )
+            if not sequence
+            else Column(
+                column_name,
+                Integer,
+                sequence,
+                server_default=sequence.next_value(),
+                primary_key=True,
+            )
         )
 
     def to_dict(self):

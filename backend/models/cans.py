@@ -14,6 +14,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     Numeric,
+    Sequence,
     String,
     Table,
     Text,
@@ -53,6 +54,10 @@ class CANArrangementType(Enum):
     IAA = auto()
     IDDA = auto()
     MOU = auto()
+
+class CANType(Enum):
+    OPRE = auto()
+    NON_OPRE = auto()
 
 
 class CANFundingSources(BaseModel):
@@ -380,9 +385,18 @@ class CANFiscalYear(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
     __tablename__ = "can_fiscal_year"
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "can_id",
+            "fiscal_year",
+        ),
+    )
 
-    can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"), primary_key=True)
-    fiscal_year: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("can_fiscal_year_id_seq", start=5000, increment=1)
+    )
+    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"))
+    fiscal_year: Mapped[int] = mapped_column(primary_key=True)
     can: Mapped["CAN"] = relationship("CAN", lazy="joined")
     received_funding: Mapped[Optional[decimal]] = mapped_column(
         Numeric(12, 2), default=0
@@ -393,8 +407,8 @@ class CANFiscalYear(BaseModel):
     potential_additional_funding: Mapped[Optional[decimal]] = mapped_column(
         Numeric(12, 2), default=0
     )
-    can_lead: Mapped[Optional[str]] = mapped_column(String)
-    notes: Mapped[Optional[str]] = mapped_column(String, default="")
+    can_lead: Mapped[Optional[str]]
+    notes: Mapped[Optional[str]] = mapped_column(default="")
     total_funding: Mapped[decimal] = column_property(
         received_funding + expected_funding
     )
@@ -675,7 +689,9 @@ class CAN(BaseModel):
 
     __tablename__ = "can"
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("can_id_seq", start=500, increment=1)
+    )
     number: Mapped[str] = mapped_column(String(30), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String)
     purpose: Mapped[Optional[str]] = mapped_column(String, default="")
@@ -685,6 +701,12 @@ class CAN(BaseModel):
     appropriation_term: Mapped[Optional[int]] = mapped_column(Integer, default="1")
     arrangement_type: Mapped[Optional[CANArrangementType]] = mapped_column(
         sa.Enum(CANArrangementType)
+    )
+    can_type: Mapped[Optional[CANType]] = mapped_column(
+        sa.Enum(CANType)
+    )
+    division_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("division.id")
     )
 
     funding_sources: Mapped[List["FundingSource"]] = relationship(

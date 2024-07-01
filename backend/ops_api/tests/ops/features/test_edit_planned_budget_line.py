@@ -3,32 +3,24 @@ import datetime
 import pytest
 from pytest_bdd import given, scenario, then, when
 
-from models import (
-    AgreementReason,
-    AgreementType,
-    BudgetLineItem,
-    BudgetLineItemStatus,
-    ContractAgreement,
-    ContractType,
-    User,
-)
+from models import AgreementReason, AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
 from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
 
 @pytest.fixture
-def original_agreement():
+def original_agreement(test_user, test_project):
     return {
         "name": "CTXX12399",
         "contract_number": "CT0002",
         "contract_type": ContractType.FIRM_FIXED_PRICE,
         "agreement_type": AgreementType.CONTRACT,
-        "project_id": 1,
+        "project_id": test_project.id,
         "product_service_code_id": 2,
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,
-        "project_officer_id": 1,
+        "project_officer_id": test_user.id,
         "procurement_shop_id": 1,
-        "created_by": 1,
+        "created_by": test_user.id,
     }
 
 
@@ -72,8 +64,8 @@ def test_edit_planned_budget_line_unauthorized(): ...
     "I have a Contract Agreement as the original Agreement owner",
     target_fixture="agreement",
 )
-def agreement_owner(loaded_db, original_agreement):
-    original_agreement["created_by"] = 4
+def agreement_owner(loaded_db, original_agreement, test_admin_user):
+    original_agreement["created_by"] = test_admin_user.id
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -85,8 +77,8 @@ def agreement_owner(loaded_db, original_agreement):
 
 
 @given("I have a Contract Agreement as the Project Officer", target_fixture="agreement")
-def agreement_project_officer(loaded_db, original_agreement):
-    original_agreement["project_officer_id"] = 4
+def agreement_project_officer(loaded_db, original_agreement, test_admin_user):
+    original_agreement["project_officer_id"] = test_admin_user.id
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -98,10 +90,9 @@ def agreement_project_officer(loaded_db, original_agreement):
 
 
 @given("I have a Contract Agreement as a Team Member", target_fixture="agreement")
-def agreement_team_member(loaded_db, original_agreement):
-    user = loaded_db.get(User, 4)
+def agreement_team_member(loaded_db, original_agreement, test_admin_user):
     contract_agreement = ContractAgreement(**original_agreement)
-    contract_agreement.team_members = [user]
+    contract_agreement.team_members = [test_admin_user]
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
@@ -139,17 +130,17 @@ def agreement_unauthorized(loaded_db, original_agreement):
 
 
 @given("I have a budget line item in Planned status", target_fixture="bli")
-def planned_bli(loaded_db, agreement):
+def planned_bli(loaded_db, agreement, test_user, test_can):
     planned_bli = BudgetLineItem(
         agreement_id=agreement.id,
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=1.23,
-        created_by=1,
+        created_by=test_user.id,
     )
     loaded_db.add(planned_bli)
     loaded_db.commit()

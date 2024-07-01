@@ -38,15 +38,14 @@ def test_auth_post_fails_creates_event(client, loaded_db, mocker):
     assert res.status_code == 400
 
 
-def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
+def test_auth_post_succeeds_creates_event(client, loaded_db, mocker, test_user):
     # setup mocks
     mock_cm = mocker.patch("ops_api.ops.utils.events.Session")
     mock_session = mocker.MagicMock()
     mock_cm.return_value.__enter__.return_value = mock_session
 
     m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
-    user = loaded_db.get(User, 1)
-    m2.return_value = ("blah", "blah", user)
+    m2.return_value = ("blah", "blah", test_user)
 
     # test
     res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
@@ -62,11 +61,10 @@ def test_auth_post_succeeds_creates_event(client, loaded_db, mocker):
     loaded_db.commit()
 
 
-def test_login_succeeds_with_active_status(client, loaded_db, mocker):
+def test_login_succeeds_with_active_status(client, loaded_db, mocker, test_user):
     # setup mocks
     m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
-    user = loaded_db.get(User, 1)
-    m2.return_value = ("blah", "blah", user)
+    m2.return_value = ("blah", "blah", test_user)
 
     res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
     assert res.status_code == 200

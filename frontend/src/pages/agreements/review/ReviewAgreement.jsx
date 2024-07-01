@@ -353,7 +353,6 @@ const cleanBudgetLineItemForApi = (data) => {
     delete cleanData.updated_on;
     delete cleanData.can;
     delete cleanData.id;
-    delete cleanData.has_active_workflow;
     delete cleanData.canDisplayName;
     delete cleanData.versions;
     delete cleanData.clin;
