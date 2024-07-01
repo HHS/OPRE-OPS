@@ -1,23 +1,22 @@
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation } from "../../../api/opsAPI";
-import PageHeader from "../../../components/UI/PageHeader";
-import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import { useAddWorkflowApproveMutation, useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
-import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
-import { getTotalByCans } from "../review/ReviewAgreement.helpers";
+import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import TextArea from "../../../components/UI/Form/TextArea";
-import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
-import { useSearchParams } from "react-router-dom";
+import PageHeader from "../../../components/UI/PageHeader";
+import { convertCodeForDisplay, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import { workflowActions } from "../review/ReviewAgreement.constants";
+import useToggle from "../../../hooks/useToggle";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useGetWorkflowInstanceFromId, useGetWorkflowStepInstanceFromId } from "../../../hooks/workflow.hooks.js";
+import { workflowActions } from "../review/ReviewAgreement.constants";
+import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 
 const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepInstance }) => {
     const workflowBudgetLineItemIds = workflowStepInstance?.package_entities?.budget_line_item_ids;
@@ -49,6 +48,9 @@ const ApproveAgreement = () => {
     const [searchParams] = useSearchParams();
     const [workflowApprove] = useAddWorkflowApproveMutation();
     const stepId = searchParams.get("stepId");
+    let changeRequestType = "";
+    searchParams.get("type") ? (changeRequestType = searchParams.get("type")) : (changeRequestType = "TBD");
+
     const workflowStepInstance = useGetWorkflowStepInstanceFromId(stepId);
     const { workflow_instance_id: workflowInstanceId, package_entities: packageEntities } = workflowStepInstance;
     const workflowBudgetLineItemIds = packageEntities?.budget_line_item_ids;
@@ -87,6 +89,7 @@ const ApproveAgreement = () => {
         return <h1>Oops, an error occurred</h1>;
     }
 
+    // TODO: move this to a helper function
     const budgetLinesInReview = agreement?.budget_line_items.filter((bli) => bli.in_review);
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
@@ -196,7 +199,7 @@ const ApproveAgreement = () => {
                 />
             )}
             <PageHeader
-                title={`Approval for ${goToText} Status`}
+                title={`Approval for ${toTitleCaseFromSlug(changeRequestType)}`}
                 subTitle={agreement.name}
             />
             <AgreementMetaAccordion

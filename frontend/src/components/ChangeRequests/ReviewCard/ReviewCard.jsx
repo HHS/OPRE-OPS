@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { formatDateToMonthDayYear } from "../../../helpers/utils";
+import { formatDateToMonthDayYear, toSlugCase } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
@@ -21,7 +21,7 @@ import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
  * @param {string} props.requestDate - The date of the request
  * @param {React.ReactNode} props.children - The children of the component
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
- * @param {string} [props.bliToStatus] - The status of the budget line item after the change
+ * @param {string} [props.bliToStatus] - The change to result of the budget line item after the change
  * @param {boolean} [props.forceHover=false] - Whether to force hover state. needed for testing
  * @param {string} props.changeMsg - The message to display for the change
  * @returns {JSX.Element} - The rendered component
@@ -132,7 +132,7 @@ function ReviewCard({
                 </div>
 
                 <Link
-                    to={`/agreements/approve/${agreementId}`}
+                    to={`/agreements/approve/${agreementId}?type=${toSlugCase(type)}`}
                     className="text-primary font-12px"
                     data-cy="approve-agreement"
                 >
