@@ -111,7 +111,7 @@ const MultiAuthSection = () => {
                         You can access your account by signing in with one of the options below.
                     </p>
                 </div>
-                {import.meta.env  && ( //testing for existence of the env being set at all since we don't seem to do that for local environments
+                {window.location.href.includes("localhost")  && ( // login.gov is only configured to work locally at the moment
                     <p>
                         <button
                             className="usa-button usa-button--outline width-full"
