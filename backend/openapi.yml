@@ -1020,7 +1020,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BudgetLineItemRequest'
       responses:
-        '200':
+        '202':
           description: OK
         '400':
           description: Bad Request
@@ -1185,7 +1185,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ServicesComponentRequestPost'
       responses:
-        '200':
+        '201':
           description: Created
         '400':
           description: Bad Request
