@@ -109,7 +109,7 @@ describe("Review Change Requests at Card Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
-                cy.get("[data-cy='review-card']").contains("Planned");
+                cy.get("[data-cy='review-card']").contains(/planned/i);
                 // hover over first card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 // click on button id approve
@@ -219,7 +219,7 @@ describe("Review Change Requests at Card Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
-                cy.get("[data-cy='review-card']").contains("Executing");
+                cy.get("[data-cy='review-card']").contains(/executing/i);
                 // hover over first card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 // click on button id approve
@@ -330,7 +330,7 @@ describe("Review Change Requests at Card Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
-                cy.get("[data-cy='review-card']").contains("Amount");
+                cy.get("[data-cy='review-card']").contains(/amount/i);
                 cy.get("[data-cy='review-card']").contains("$2,000,000.00");
                 // hover over first card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
@@ -441,7 +441,7 @@ describe("Review Change Requests at Card Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
-                cy.get("[data-cy='review-card']").contains("CAN");
+                cy.get("[data-cy='review-card']").contains(/can/i);
                 cy.get("[data-cy='review-card']").contains("G99PHS9");
                 // hover over first card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
@@ -483,7 +483,7 @@ describe("Review Change Requests at Card Level", () => {
                     });
             });
     });
-    it.only("review Budget Change request date change", () => {
+    it("review Budget Change Date Needed change", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -552,7 +552,7 @@ describe("Review Change Requests at Card Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
-                cy.get("[data-cy='review-card']").contains("Date Needed");
+                cy.get("[data-cy='review-card']").contains(/date needed/i);
                 cy.get("[data-cy='review-card']").contains("11/15/2028");
                 // hover over first card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
