@@ -17,13 +17,23 @@ vi.mock("../../../hooks/lookup.hooks", () => ({
 describe("ReviewCard", () => {
     useGetBLIStatus.mockReturnValue("Draft");
     useGetAgreementName.mockReturnValue("Agreement Name");
+
+    const handleReviewChangeRequestMock = vi.fn();
+
     const initialProps = {
+        changeRequestId: 1,
         type: "Budget Change",
         agreementId: 1,
         actionIcons: false,
         requesterName: "Jane Doe",
-        requestDate: "2024-06-12T21:25:25.744930Z"
+        requestDate: "2024-06-12T21:25:25.744930Z",
+        handleReviewChangeRequest: handleReviewChangeRequestMock,
+        changeMsg: "change message"
     };
+
+    beforeEach(() => {
+        handleReviewChangeRequestMock.mockClear();
+    });
     it("should render the ReviewCard component", async () => {
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
@@ -48,30 +58,48 @@ describe("ReviewCard", () => {
         expect(requestDate).toBeInTheDocument();
         expect(actionIcons).not.toBeInTheDocument();
     });
-    it("should render the ReviewCard component with action icons", async () => {
+    it("should handle clicking on the action icons", async () => {
         const user = userEvent.setup();
 
         useGetAgreementName.mockReturnValue("Agreement Name");
         useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
         useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
         useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
+
         render(
             <BrowserRouter>
                 <ReviewCard
                     {...initialProps}
                     actionIcons={true}
+                    forceHover={true}
                 >
                     <p>hello</p>
                 </ReviewCard>
             </BrowserRouter>
         );
-        // mouse over the card
-        await user.hover(screen.getByText("Budget Change"));
-        const approveBtn = screen.getByRole("button", { name: /approve/i });
-        const declineBtn = screen.getByRole("button", { name: /decline/i });
 
-        expect(approveBtn).toBeInTheDocument();
-        expect(declineBtn).toBeInTheDocument();
+        // Ensure the buttons appear
+        const approveBtn = await screen.findByRole("button", { name: /approve/i });
+        const declineBtn = await screen.findByRole("button", { name: /decline/i });
+
+        // Click approve button and then expect the handleReviewChangeRequest to be called
+        await user.click(approveBtn);
+
+        expect(handleReviewChangeRequestMock).toHaveBeenCalledWith(
+            1, // changeRequestId
+            "APPROVE", // CHANGE_REQUEST_ACTION.APPROVE
+            null,
+            { agreementName: "Agreement Name", type: "Budget Change", bliToStatus: "", changeMsg: "change message" }
+        );
+
+        vi.clearAllMocks();
+        await user.click(declineBtn);
+
+        expect(handleReviewChangeRequestMock).toHaveBeenCalledWith(
+            1, // changeRequestId
+            "REJECT", // CHANGE_REQUEST_ACTION.REJECT
+            null,
+            { agreementName: "Agreement Name", type: "Budget Change", bliToStatus: "", changeMsg: "change message" }
+        );
     });
-    it.todo('should render the ReviewCard component with a type of "type"');
 });

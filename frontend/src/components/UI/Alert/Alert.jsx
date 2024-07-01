@@ -75,7 +75,11 @@ const Alert = ({ children }) => {
                 <div className="usa-alert__body display-flex flex-justify">
                     <div>
                         <h1 className="usa-alert__heading">{heading}</h1>
-                        <p className="usa-alert__text">{message}</p>
+                        <p
+                            className="usa-alert__text"
+                            style={{ whiteSpace: "pre-wrap" }}
+                            dangerouslySetInnerHTML={{ __html: message }}
+                        />
                         {children}
                     </div>
                     <FontAwesomeIcon

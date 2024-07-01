@@ -26,6 +26,10 @@ test("codes are converted for display correctly", () => {
     expect(convertCodeForDisplay("agreementType", "__foo__")).toEqual("__foo__");
     expect(convertCodeForDisplay("agreementType", "GRANT")).toEqual("Grant");
     expect(convertCodeForDisplay("agreementReason", "NEW_REQ")).toEqual("New Requirement");
+    expect(convertCodeForDisplay("changeToTypes", "amount")).toEqual("Amount");
+    expect(convertCodeForDisplay("changeToTypes", "can_id")).toEqual("CAN");
+    expect(convertCodeForDisplay("changeToTypes", "date_needed")).toEqual("Date needed");
+    expect(convertCodeForDisplay("changeToTypes", "status")).toEqual("Status");
 });
 
 test("fiscal year are calculated correctly", () => {
