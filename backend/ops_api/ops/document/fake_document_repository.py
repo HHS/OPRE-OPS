@@ -49,7 +49,3 @@ class FakeDocumentRepository(DocumentRepository):
     def get_documents_by_agreement_id(self, agreement_id):
         with self.lock:
             return [doc for doc in self.documents.values() if doc.get("agreement_id") == agreement_id]
-
-
-def generate_uuid():
-    return str(uuid.uuid4())
