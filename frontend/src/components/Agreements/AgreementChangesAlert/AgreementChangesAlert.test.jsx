@@ -1,5 +1,5 @@
-import { vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
 import AgreementChangesAlert from "./AgreementsChangesAlert";
 
 const changeRequests = ["Change Request 1", "Change Request 2"];
@@ -14,7 +14,7 @@ describe("AgreementChangesAlert", () => {
             />
         );
         const heading = screen.getByRole("heading", { name: /in review/i });
-        const message = screen.getByText(/edits pending approval/i);
+        const message = screen.getByText(/changes pending approval/i);
         expect(heading).toBeInTheDocument();
         expect(message).toBeInTheDocument();
     });

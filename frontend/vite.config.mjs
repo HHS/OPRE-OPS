@@ -62,6 +62,7 @@ export default defineConfig(({ mode }) => {
             setupFiles: "./src/tests/setupTests.js",
             coverage: {
                 provider: "istanbul",
+                reporters: ["default", "html"],
                 exclude: [
                     "**/uswds/**",
                     "**/node_modules/**",

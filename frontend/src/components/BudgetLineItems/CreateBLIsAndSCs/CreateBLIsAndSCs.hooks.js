@@ -142,7 +142,8 @@ const useCreateBLIsAndSCs = (
         if (isThereAnyBLIsFinancialSnapshotChanged) {
             setShowModal(true);
             setModalProps({
-                heading: `Agreement edits that impact the budget will need Division Director approval. Do you want to send it for approval?`,
+                heading:
+                    "Budget changes require approval from your Division Director. Do you want to send it to approval?",
                 actionButtonText: "Send to Approval",
                 secondaryButtonText: "Continue Editing",
                 handleConfirm: () => {
@@ -182,9 +183,10 @@ const useCreateBLIsAndSCs = (
                         } else {
                             setAlert({
                                 type: "success",
-                                heading: "Agreement Edits Sent to Approval",
+                                heading: "Changes Sent to Approval",
+                                //TODO: add array of Change Requests and display under the message
                                 message:
-                                    "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
+                                    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
                                 redirectUrl: `/agreements/${selectedAgreement?.id}`
                             });
                         }

@@ -1,8 +1,17 @@
+import * as React from "react";
+import PropTypes from "prop-types";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
-function ChangeRequestsList() {
+/**
+ * Change Requests List component.
+ * @component
+ * @param {Object} props
+ * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
+ * @returns {JSX.Element} - The rendered component
+ */
+function ChangeRequestsList({ handleReviewChangeRequest }) {
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
@@ -26,28 +35,32 @@ function ChangeRequestsList() {
                  *  @param {ChangeRequest} changeRequest
                  */
                 (changeRequest) => (
-                    <>
+                    <React.Fragment key={changeRequest.id}>
                         {changeRequest.has_budget_change && (
                             <BudgetChangeReviewCard
                                 key={changeRequest.id}
+                                changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
                                 requesterName={changeRequest.created_by_user?.full_name}
                                 bliId={changeRequest.budget_line_item_id}
                                 changeTo={changeRequest.requested_change_diff}
+                                handleReviewChangeRequest={handleReviewChangeRequest}
                             />
                         )}
                         {changeRequest.has_status_change && (
                             <StatusChangeReviewCard
                                 key={changeRequest.id}
+                                changeRequestId={changeRequest.id}
                                 agreementId={changeRequest.agreement_id}
                                 requestDate={changeRequest.created_on}
                                 requesterName={changeRequest.created_by_user?.full_name}
                                 bliId={changeRequest.budget_line_item_id}
                                 changeTo={changeRequest.requested_change_diff}
+                                handleReviewChangeRequest={handleReviewChangeRequest}
                             />
                         )}
-                    </>
+                    </React.Fragment>
                 )
             )}
         </>
@@ -56,4 +69,7 @@ function ChangeRequestsList() {
     );
 }
 
+ChangeRequestsList.propTypes = {
+    handleReviewChangeRequest: PropTypes.func.isRequired
+};
 export default ChangeRequestsList;
