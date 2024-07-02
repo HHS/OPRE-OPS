@@ -110,11 +110,11 @@ def test_notification_creation(loaded_db, notification):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_all(auth_client, loaded_db):
-    assert loaded_db.query(Notification).count() == 22
+    assert loaded_db.query(Notification).count() == 42
 
     response = auth_client.get("/api/v1/notifications/")
     assert response.status_code == 200
-    assert len(response.json) == 22
+    assert len(response.json) == 42
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -147,7 +147,7 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
 def test_notifications_get_by_is_read(auth_client, loaded_db, notification_is_read_is_true):
     response = auth_client.get("/api/v1/notifications/?is_read=False")
     assert response.status_code == 200
-    assert len(response.json) == 21
+    assert len(response.json) == 41
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
     assert response.json[0]["is_read"] is False
