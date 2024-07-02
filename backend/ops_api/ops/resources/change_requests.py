@@ -15,6 +15,7 @@ from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.utils import procurement_workflow_helper
+from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -73,6 +74,8 @@ def review_change_request(
 
     session.add(change_request)
     session.commit()
+
+    create_notification_of_reviews_request_to_submitter(change_request)
 
     if should_create_procurement_workflow:
         procurement_workflow_helper.create_procurement_workflow(change_request.agreement_id)
