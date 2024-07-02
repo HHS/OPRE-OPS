@@ -750,10 +750,10 @@ class CANFiscalYearFundingDetails(BaseModel):
     __tablename__ = "can_fiscal_year_funding_details"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    fund: Mapped[Optional[str]] = mapped_column(String(14))
-    allowance: Mapped[Optional[str]] = mapped_column(String(10))
-    sub_allowance: Mapped[Optional[str]] = mapped_column(String(10))
-    allotment_org: Mapped[Optional[str]] = mapped_column(String(10))
+    fund: Mapped[Optional[str]] = mapped_column(String)
+    allowance: Mapped[Optional[str]] = mapped_column(String)
+    sub_allowance: Mapped[Optional[str]] = mapped_column(String)
+    allotment_org: Mapped[Optional[str]] = mapped_column(String)
     current_fy_funding_ytd: Mapped[Optional[int]] = mapped_column(Integer)
     can_fiscal_year_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("can_fiscal_year.id")
