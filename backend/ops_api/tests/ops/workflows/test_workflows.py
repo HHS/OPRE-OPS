@@ -151,10 +151,10 @@ def test_agreement_change_request(auth_client, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_change_request(auth_client, app):
+def test_budget_line_item_change_request(auth_client, app, test_bli):
     session = app.db_session
     change_request = BudgetLineItemChangeRequest()
-    change_request.budget_line_item_id = 1
+    change_request.budget_line_item_id = test_bli.id
     change_request.agreement_id = 1
     change_request.created_by = 1
     change_request.requested_change_data = {"foo": "bar"}
@@ -325,7 +325,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_change_request_list(auth_client, app, test_user, test_admin_user):
+def test_change_request_list(auth_client, app, test_user, test_admin_user, test_bli):
     session = app.db_session
 
     # verify no change request in list to review for this user
@@ -336,7 +336,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user):
     # create a change request
     change_request1 = BudgetLineItemChangeRequest()
     change_request1.status = ChangeRequestStatus.IN_REVIEW
-    change_request1.budget_line_item_id = 1
+    change_request1.budget_line_item_id = test_bli.id
     change_request1.agreement_id = 1
     change_request1.created_by = test_user.id
     change_request1.managing_division_id = 1
@@ -371,7 +371,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user):
     # create a change request for division#2
     change_request2 = BudgetLineItemChangeRequest()
     change_request2.status = ChangeRequestStatus.IN_REVIEW
-    change_request2.budget_line_item_id = 2
+    change_request2.budget_line_item_id = 15001
     change_request2.agreement_id = 1
     change_request2.requested_change_data = {"key": "value"}
     change_request2.created_by = test_user.id
@@ -620,13 +620,13 @@ def test_status_change_request_creates_procurement_workflow(
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_change_request_review_authz(no_perms_auth_client, app, test_user):
+def test_change_request_review_authz(no_perms_auth_client, app, test_user, test_bli):
     session = app.db_session
 
     # create a change request
     change_request1 = BudgetLineItemChangeRequest()
     change_request1.status = ChangeRequestStatus.IN_REVIEW
-    change_request1.budget_line_item_id = 1
+    change_request1.budget_line_item_id = test_bli.id
     change_request1.agreement_id = 1
     change_request1.created_by = test_user.id
     change_request1.managing_division_id = 1

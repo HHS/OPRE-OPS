@@ -27,12 +27,12 @@ def test_update_blis_draft_to_planned(loaded_db):
     workflow_step_instance = Mock(spec=WorkflowStepInstance)
     workflow_step_instance.workflow_instance.workflow_status = WorkflowStepStatus.APPROVED
     workflow_step_instance.workflow_instance.workflow_action = WorkflowAction.DRAFT_TO_PLANNED
-    workflow_step_instance.package_entities = {"budget_line_item_ids": [1, 2, 3]}
+    workflow_step_instance.package_entities = {"budget_line_item_ids": [15000, 15001, 15002]}
 
     # Use loaded_db to create or mock BudgetLineItems
-    bli1 = loaded_db.get(BudgetLineItem, 1)
-    bli2 = loaded_db.get(BudgetLineItem, 2)
-    bli3 = loaded_db.get(BudgetLineItem, 3)
+    bli1 = loaded_db.get(BudgetLineItem, 15000)
+    bli2 = loaded_db.get(BudgetLineItem, 15001)
+    bli3 = loaded_db.get(BudgetLineItem, 15002)
     blis = [bli1, bli2, bli3]
 
     # Call the function

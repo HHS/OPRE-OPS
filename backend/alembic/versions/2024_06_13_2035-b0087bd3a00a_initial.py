@@ -3994,9 +3994,19 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("predecessor_step_id", "successor_step_id"),
     )
+
+    sa.Sequence("budget_line_item_id_seq", start=15000, increment=1).create(
+        op.get_bind()
+    )
     op.create_table(
         "budget_line_item",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('budget_line_item_id_seq')"),
+            autoincrement=True,
+            nullable=False,
+        ),
         sa.Column("line_description", sa.String(), nullable=True),
         sa.Column("comments", sa.Text(), nullable=True),
         sa.Column("agreement_id", sa.Integer(), nullable=True),

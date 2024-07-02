@@ -179,12 +179,12 @@
     {
       package_id: 1,
       version: 1,
-      bli_id: 23,
+      bli_id: 15022,
     },
     {
       package_id: 2,
       version: 1,
-      bli_id: 24,
+      bli_id: 15023,
     }
   ],
 
