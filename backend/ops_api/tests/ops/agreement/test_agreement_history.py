@@ -5,12 +5,12 @@ from flask import url_for
 
 from models.cans import Agreement, BudgetLineItem, BudgetLineItemStatus
 
-test_user_id = 4
+test_user_id = 503
 test_user_name = "Amelia Popham"
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreement_history(auth_client, loaded_db):
+def test_agreement_history(auth_client, loaded_db, test_can):
     # POST: create agreement
     data = {
         "agreement_type": "CONTRACT",
@@ -19,13 +19,13 @@ def test_agreement_history(auth_client, loaded_db):
         "description": "Description",
         "product_service_code_id": 1,
         "incumbent": "Vendor A",
-        "project_officer_id": 1,
+        "project_officer_id": 500,
         "team_members": [
             {
-                "id": 3,
+                "id": 502,
             },
             {
-                "id": 5,
+                "id": 504,
             },
         ],
         "notes": "New Agreement for purpose X",
@@ -56,7 +56,7 @@ def test_agreement_history(auth_client, loaded_db):
     # POST: create budget line
     data = {
         "line_description": "BLI1",
-        "can_id": 1,
+        "can_id": test_can.id,
         "agreement_id": agreement_id,
         "amount": 1000000,
         "status": "DRAFT",
@@ -116,10 +116,8 @@ def test_agreement_history(auth_client, loaded_db):
     assert len(data[5]["changes"]) == 11
 
 
-def test_agreement_history_log_items(auth_client, app):
+def test_agreement_history_log_items(auth_client, app, test_can):
     session = app.db_session
-    agreement_id = None
-    bli = None
 
     # create agreement (using API)
     data = {
@@ -129,13 +127,13 @@ def test_agreement_history_log_items(auth_client, app):
         "description": "Description",
         "product_service_code_id": 1,
         "incumbent": "Vendor A",
-        "project_officer_id": 21,
+        "project_officer_id": 520,
         "team_members": [
             {
-                "id": 4,
+                "id": 503,
             },
             {
-                "id": 23,
+                "id": 522,
             },
         ],
         "notes": "New Agreement for purpose X",
@@ -199,7 +197,7 @@ def test_agreement_history_log_items(auth_client, app):
     bli = BudgetLineItem(
         line_description="Test Experiments Workflows BLI",
         agreement_id=agreement_id,
-        can_id=1,
+        can_id=test_can.id,
         amount=111.11,
         status=BudgetLineItemStatus.DRAFT,
         created_by=test_user_id,
@@ -227,7 +225,7 @@ def test_agreement_history_log_items(auth_client, app):
     assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
 
     # update BLI
-    bli.can_id = 2
+    bli.can_id = 501
     bli.amount = 222.22
     bli.date_needed = datetime.date(2025, 2, 2)
     session.add(bli)
@@ -254,7 +252,7 @@ def test_agreement_history_log_items(auth_client, app):
         if log_item["property_key"] == "amount":
             assert log_item["change"] == {"new": 222.22, "old": 111.11}
         elif log_item["property_key"] == "can_id":
-            assert log_item["change"] == {"new": 2, "old": 1}
+            assert log_item["change"] == {"new": 501, "old": 500}
         elif log_item["property_key"] == "date_needed":
             assert log_item["change"] == {"new": "2025-02-02", "old": "2025-01-01"}
 
@@ -287,10 +285,8 @@ def test_agreement_history_log_items(auth_client, app):
     session.commit()
 
 
-def test_agreement_history_log_items_with_change_requests(auth_client, app):
+def test_agreement_history_log_items_with_change_requests(auth_client, app, test_can, test_project):
     session = app.db_session
-    agreement_id = None
-    bli = None
 
     # create agreement (using API)
     data = {
@@ -300,14 +296,14 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
         "description": "Description",
         "product_service_code_id": 1,
         "procurement_shop_id": 2,
-        "project_officer_id": 21,
-        "project_id": 1,
+        "project_officer_id": 520,
+        "project_id": test_project.id,
         "team_members": [
             {
-                "id": 4,
+                "id": 503,
             },
             {
-                "id": 23,
+                "id": 522,
             },
         ],
         "notes": "New Agreement for purpose X",
@@ -321,7 +317,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
     bli = BudgetLineItem(
         line_description="Test Experiments Workflows BLI",
         agreement_id=agreement_id,
-        can_id=1,
+        can_id=test_can.id,
         amount=111.11,
         status=BudgetLineItemStatus.PLANNED,
         created_by=test_user_id,
@@ -336,7 +332,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
     prev_hist_count = 2
 
     #  submit PATCH BLI which triggers a budget change requests
-    data = {"amount": 333.33, "can_id": 3, "date_needed": "2032-03-03"}
+    data = {"amount": 333.33, "can_id": 502, "date_needed": "2032-03-03"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     import json
 
@@ -371,7 +367,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app):
         if log_item["property_key"] == "amount":
             assert log_item["change"] == {"new": 333.33, "old": 111.11}
         elif log_item["property_key"] == "can_id":
-            assert log_item["change"] == {"new": 3, "old": 1}
+            assert log_item["change"] == {"new": 502, "old": 500}
         elif log_item["property_key"] == "date_needed":
             assert log_item["change"] == {"new": "2032-03-03", "old": "2025-01-01"}
 

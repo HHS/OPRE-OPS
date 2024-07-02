@@ -3,7 +3,7 @@
 from enum import Enum, auto
 from typing import List, Optional
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer, Sequence
 from sqlalchemy.dialects.postgresql import ENUM, UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
@@ -43,7 +43,9 @@ class User(BaseModel):
 
     __tablename__ = "ops_user"
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("ops_user_id_seq", start=500, increment=1)
+    )
     oidc_id: Mapped[Optional[UUID]] = mapped_column(
         UUID(as_uuid=True), unique=True, index=True
     )
@@ -131,7 +133,9 @@ class Role(BaseModel):
     """Main Role model."""
 
     __tablename__ = "role"
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True
+    )
 
     name: Mapped[str] = mapped_column(index=True)
     permissions: Mapped[str]
@@ -153,7 +157,9 @@ class Group(BaseModel):
     """Main Group model."""
 
     __tablename__ = "group"
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = mapped_column(
+        primary_key=True, nullable=False, autoincrement=True
+    )
     name: Mapped[str] = mapped_column(index=True)
 
     users: Mapped[List["User"]] = relationship(

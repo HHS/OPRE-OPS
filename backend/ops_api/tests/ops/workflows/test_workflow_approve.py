@@ -44,7 +44,7 @@ def test_update_blis_draft_to_planned(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_workflow_draft_to_planned(auth_client, loaded_db):
+def test_workflow_draft_to_planned(auth_client, loaded_db, test_admin_user, test_can, test_project):
     agreement = ContractAgreement(
         name="CTXX12399",
         description="test contract",
@@ -54,9 +54,9 @@ def test_workflow_draft_to_planned(auth_client, loaded_db):
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         procurement_shop_id=1,
-        project_officer_id=4,
-        project_id=1,
-        created_by=4,
+        project_officer_id=test_admin_user.id,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
     )
     loaded_db.add(agreement)
     loaded_db.commit()
@@ -66,7 +66,7 @@ def test_workflow_draft_to_planned(auth_client, loaded_db):
 
     bli = BudgetLineItem(
         agreement_id=agreement_id,
-        can_id=1,
+        can_id=test_can.id,
         amount=123456.78,
         status=BudgetLineItemStatus.DRAFT,
         date_needed=datetime.date(2043, 1, 1),
@@ -121,7 +121,7 @@ def test_workflow_draft_to_planned(auth_client, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_workflow_planned_to_executing(auth_client, loaded_db):
+def test_workflow_planned_to_executing(auth_client, loaded_db, test_admin_user, test_can, test_project):
     agreement = ContractAgreement(
         name="CTXX12399",
         description="test contract",
@@ -131,9 +131,9 @@ def test_workflow_planned_to_executing(auth_client, loaded_db):
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
         procurement_shop_id=1,
-        project_officer_id=4,
-        project_id=1,
-        created_by=4,
+        project_officer_id=test_admin_user.id,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
     )
     loaded_db.add(agreement)
     loaded_db.commit()
@@ -143,7 +143,7 @@ def test_workflow_planned_to_executing(auth_client, loaded_db):
 
     bli = BudgetLineItem(
         agreement_id=agreement_id,
-        can_id=1,
+        can_id=test_can.id,
         amount=123456.78,
         status=BudgetLineItemStatus.PLANNED,
         date_needed=datetime.date(2043, 1, 1),

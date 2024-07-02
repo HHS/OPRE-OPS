@@ -78,7 +78,7 @@ export const ConfirmationModal = ({
                 >
                     <div
                         className="usa-modal"
-                        tabIndex="-1"
+                        tabIndex={-1}
                         onClick={(e) => e.stopPropagation()}
                         ref={modalRef}
                     >

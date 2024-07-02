@@ -5,7 +5,8 @@ import {
     useGetAgreementByIdQuery,
     useGetBudgetLineItemQuery,
     useGetCansQuery,
-    useGetChangeRequestsListQuery
+    useGetChangeRequestsListQuery,
+    useReviewChangeRequestMutation
 } from "../../../api/opsAPI";
 
 import { agreement, budgetLine, changeRequests } from "../../../tests/data";
@@ -14,12 +15,13 @@ import ChangeRequestList from "./ChangeRequestsList";
 vi.mock("../../../api/opsAPI");
 
 describe("ChangeRequestList", () => {
+    useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
     it("renders without any change requests", () => {
         useGetChangeRequestsListQuery.mockReturnValue({ data: {} });
         useGetAgreementByIdQuery.mockReturnValue("Agreement Name");
         render(
             <BrowserRouter>
-                <ChangeRequestList />
+                <ChangeRequestList handleReviewChangeRequest={vi.mock} />
             </BrowserRouter>
         );
         expect(screen.getByText(/no changes/i)).toBeInTheDocument();
@@ -32,7 +34,7 @@ describe("ChangeRequestList", () => {
         useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
         render(
             <BrowserRouter>
-                <ChangeRequestList />
+                <ChangeRequestList handleReviewChangeRequest={vi.mock} />
             </BrowserRouter>
         );
 

@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 
+import { BLI_STATUS } from "../../src/helpers/budgetLines.helpers";
 import { terminalLog, testLogin } from "./utils";
 
 const testAgreement = {
@@ -7,27 +8,28 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "E2E Test agreementWorkflow 1",
     description: "Test Description",
-    project_id: 1,
+    project_id: 1000,
     product_service_code_id: 1,
     procurement_shop_id: 1,
-    project_officer_id: 1,
+    project_officer_id: 500,
     team_members: [
         {
-            id: 21
+            id: 520
         },
         {
-            id: 5
+            id: 504
         }
     ],
     notes: "Test Notes"
 };
+
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 1,
+    can_id: 501,
     agreement_id: 11,
     amount: 1000000,
-    status: "DRAFT",
+    status: BLI_STATUS.DRAFT,
     date_needed: "2025-1-01",
     proc_shop_fee_percentage: 0.005
 };
@@ -42,7 +44,7 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-it("agreement (BLI) workflow for approval then rejection", () => {
+it("BLI Status Change", () => {
     expect(localStorage.getItem("access_token")).to.exist;
 
     // create test agreement
@@ -83,45 +85,29 @@ it("agreement (BLI) workflow for approval then rejection", () => {
         })
         // submit for approval (via REST for now, maybe change to UI click through)
         .then(({ agreementId, bliId }) => {
-            const workflowSubmitData = {
-                budget_line_item_ids: [bliId],
-                workflow_action: "DRAFT_TO_PLANNED",
-                notes: "E2E Test Notes"
-            };
-            cy.request({
-                method: "POST",
-                url: "http://localhost:8080/api/v1/workflow-submit/",
-                body: workflowSubmitData,
-                headers: {
-                    Authorization: bearer_token,
-                    Accept: "application/json"
-                }
-            }).then((response) => {
-                expect(response.status).to.eq(201);
-                return { agreementId, bliId };
-            });
-        })
-        .then(({ agreementId, bliId }) => {
-            cy.visit("/agreements?filter=for-approval");
-            cy.get(":nth-child(1) > .margin-0").should("have.text", "For Review");
-            cy.get("tbody").children().should("have.length.at.least", 1);
-            cy.get("tbody tr").first().trigger("mouseover");
-            cy.get("[data-cy='go-to-approve-row']").first().should("exist");
-            cy.get("[data-cy='go-to-approve-row']").first().should("not.be.disabled");
-            cy.get("[data-cy='go-to-approve-row']").first().click();
-            cy.url().should("include", "/agreements/approve/").wait(1000);
-            cy.get("[data-cy='decline-approval-btn']").should("exist");
-            cy.get("[data-cy='decline-approval-btn']").first().should("not.be.disabled");
-            cy.get("[data-cy='decline-approval-btn']").first().click();
-            cy.get("#ops-modal-heading").should(
-                "have.text",
-                "Are you sure you want to decline these budget lines for Planned Status?"
-            );
-            // find the delete button and click
-            cy.get('[data-cy="confirm-action"]').click();
-            cy.url().should("eq", Cypress.config().baseUrl + "/agreements");
-            cy.get("h1")
+            cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+            cy.get('[data-cy="bli-tab-continue-btn"]').click();
+            cy.get('input[id="Change Draft Budget Lines to Planned Status"]').check({ force: true });
+            cy.get("#check-all").check({ force: true }).wait(1);
+            cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+            cy.get('[data-cy="send-to-approval-btn"]').click();
+            cy.visit("/agreements?filter=change-requests").wait(1000);
+            // see if there are any review cards
+            cy.get("[data-cy='review-card']")
                 .should("exist")
+                .contains("Status Change")
+                .then(() => {
+                    cy.request({
+                        method: "DELETE",
+                        url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    }).then((response) => {
+                        expect(response.status).to.eq(200);
+                    });
+                })
                 .then(() => {
                     cy.request({
                         method: "DELETE",

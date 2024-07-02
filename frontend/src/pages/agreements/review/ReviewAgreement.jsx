@@ -131,18 +131,7 @@ export const ReviewAgreement = () => {
             }
 
             const currentUserId = activeUser?.id;
-            let alertTitle = "";
-            let alertMessage = "";
 
-            if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
-                alertTitle = "Budget Lines Sent to Approval for Planned Status";
-                alertMessage =
-                    "The budget lines have been successfully sent to your Division Director to review. After draft budget lines are approved, they will change to Planned Status, and the amounts will be subtracted from the FY budget.";
-            } else if (action === actionOptions.CHANGE_PLANNED_TO_EXECUTING) {
-                alertTitle = "Budget Lines Sent to Approval for Executing Status";
-                alertMessage =
-                    "The budget lines have been successfully sent to your Division Director to review. After draft budget lines are approved, they will change to Executing Status.";
-            }
             console.log("BLI Package Data:", selectedBudgetLines, currentUserId, notes);
             console.log("THE ACTION IS:", action);
 
@@ -172,8 +161,10 @@ export const ReviewAgreement = () => {
                 } else {
                     setAlert({
                         type: "success",
-                        heading: alertTitle,
-                        message: alertMessage,
+                        heading: "Changes Sent to Approval",
+                        // TODO: add Change Requests to alert message
+                        message:
+                            "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
                         redirectUrl: "/agreements"
                     });
                 }
@@ -353,7 +344,6 @@ const cleanBudgetLineItemForApi = (data) => {
     delete cleanData.updated_on;
     delete cleanData.can;
     delete cleanData.id;
-    delete cleanData.has_active_workflow;
     delete cleanData.canDisplayName;
     delete cleanData.versions;
     delete cleanData.clin;

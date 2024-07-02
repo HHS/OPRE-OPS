@@ -60,7 +60,5 @@
             "platformAutomerge": true
         }
     ],
-
-
     "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}"
 }

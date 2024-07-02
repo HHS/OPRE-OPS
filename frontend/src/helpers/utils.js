@@ -168,7 +168,8 @@ export const codesToDisplayText = {
     changeToTypes: {
         amount: "Amount",
         can_id: "CAN",
-        date_needed: "Date needed"
+        date_needed: "Date needed",
+        status: "Status"
     }
 };
 

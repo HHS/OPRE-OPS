@@ -30,7 +30,7 @@ def test_check_user_session_decorator_with_active_session(mocker):
     # Act
     verify_jwt_in_request(optional=True)  # This is needed to set the current_user
     mock_current_user = mocker.patch("ops_api.ops.auth.decorators.current_user")
-    mock_current_user.id = 4
+    mock_current_user.id = 503
     result = dummy_function()
 
     # Assert
@@ -52,13 +52,13 @@ def test_check_user_session_decorator_without_active_session(loaded_db, mocker):
     # Act
     verify_jwt_in_request(optional=True)  # This is needed to set the current_user
     mock_current_user = mocker.patch("ops_api.ops.auth.decorators.current_user")
-    mock_current_user.id = 4
+    mock_current_user.id = 503
 
     # Assert
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
 
-    user_sessions = get_all_user_sessions(4, loaded_db)
+    user_sessions = get_all_user_sessions(503, loaded_db)
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
@@ -85,13 +85,13 @@ def test_check_user_session_token_doesnt_match(mocker, loaded_db):
     # Act
     verify_jwt_in_request(optional=True)  # This is needed to set the current_user
     mock_current_user = mocker.patch("ops_api.ops.auth.decorators.current_user")
-    mock_current_user.id = 4
+    mock_current_user.id = 503
 
     # Assert
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
 
-    user_sessions = get_all_user_sessions(4, loaded_db)
+    user_sessions = get_all_user_sessions(503, loaded_db)
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
@@ -113,13 +113,13 @@ def test_ip_address_doesnt_match(mocker, loaded_db):
     # Act
     verify_jwt_in_request(optional=True)  # This is needed to set the current_user
     mock_current_user = mocker.patch("ops_api.ops.auth.decorators.current_user")
-    mock_current_user.id = 4
+    mock_current_user.id = 503
 
     # Assert
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
 
-    user_sessions = get_all_user_sessions(4, loaded_db)
+    user_sessions = get_all_user_sessions(503, loaded_db)
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
@@ -140,13 +140,13 @@ def test_idle_timeout(mocker, loaded_db):
     # Act
     verify_jwt_in_request(optional=True)  # This is needed to set the current_user
     mock_current_user = mocker.patch("ops_api.ops.auth.decorators.current_user")
-    mock_current_user.id = 4
+    mock_current_user.id = 503
 
     # Assert
     with pytest.raises(InvalidUserSessionError):
         dummy_function()
 
-    user_sessions = get_all_user_sessions(4, loaded_db)
+    user_sessions = get_all_user_sessions(503, loaded_db)
     assert all([not user_session.is_active for user_session in user_sessions])
 
 
@@ -169,7 +169,7 @@ def test_idle_no_timeout(mocker, loaded_db):
     # Act
     verify_jwt_in_request(optional=True)  # This is needed to set the current_user
     mock_current_user = mocker.patch("ops_api.ops.auth.decorators.current_user")
-    mock_current_user.id = 4
+    mock_current_user.id = 503
 
     # Assert
     result = dummy_function()

@@ -3,15 +3,15 @@ from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from models import BudgetLineItem, BudgetLineItemStatus, OpsDBHistory, OpsDBHistoryType, User
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, OpsDBHistory, OpsDBHistoryType
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_bli_history(loaded_db: Session):
+def test_bli_history(loaded_db: Session, test_can: CAN):
     bli = BudgetLineItem(
         line_description="Grant Expendeture GA999",
         agreement_id=1,
-        can_id=1,
+        can_id=test_can.id,
         amount=850450.00,
         status=BudgetLineItemStatus.PLANNED,
     )
@@ -67,14 +67,14 @@ def test_bli_history_force_an_error(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_history_expanded(loaded_db: Session):
+def test_history_expanded(loaded_db: Session, test_can: CAN):
     """test the new columns for class_name, row_key to query for history of specific record
     and verify the new changes column contains the changes
     """
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=1,
-        can_id=1,
+        can_id=test_can.id,
         amount=850450.00,
         status=BudgetLineItemStatus.PLANNED,
     )
@@ -123,7 +123,7 @@ def test_history_expanded(loaded_db: Session):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_history_expanded_with_web_client(auth_client, loaded_db):
+def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, test_admin_user):
     """test history with new columns with edits made using an authenticated web client"""
     # POST: create agreement
     post_data = {
@@ -132,13 +132,13 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
         "name": "Contract123",
         "description": "History Test Description",
         "product_service_code_id": 1,
-        "project_officer_id": 1,
+        "project_officer_id": test_user.id,
         "team_members": [
             {
-                "id": 3,
+                "id": 502,
             },
             {
-                "id": 5,
+                "id": 504,
             },
         ],
     }
@@ -146,11 +146,6 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
     assert resp.status_code == 201
     assert "id" in resp.json
     agreement_id = resp.json["id"]
-
-    # find the ID of the auth_client test user to verify created_by was set properly
-    user_stmt = select(User).where(User.oidc_id == "00000000-0000-1111-a111-000000000004")
-    user_result = loaded_db.scalars(user_stmt).one()
-    user_id = user_result.id
 
     stmt = select(OpsDBHistory).where(
         and_(
@@ -160,7 +155,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
         )
     )
     result = loaded_db.scalars(stmt).first()
-    assert result.created_by == user_id
+    assert result.created_by == test_admin_user.id
     assert result.event_details["description"] == post_data["description"]
     assert "description" in result.changes
     assert "new" in result.changes["description"]
@@ -179,13 +174,13 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
         "notes": "Test Notes",
         "team_members": [
             {
-                "id": 2,
+                "id": 501,
             },
             {
-                "id": 3,
+                "id": 502,
             },
             {
-                "id": 4,
+                "id": 503,
             },
         ],
     }
@@ -200,7 +195,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
         )
     )
     result = loaded_db.scalars(stmt).first()
-    assert result.created_by == user_id
+    assert result.created_by == test_admin_user.id
     assert result.event_details["description"] == patch_data["description"]
     assert result.event_details["notes"] == patch_data["notes"]
     assert "description" in result.changes
@@ -231,7 +226,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db):
         )
     )
     result = loaded_db.scalars(stmt).first()
-    assert result.created_by == user_id
+    assert result.created_by == test_admin_user.id
 
     assert not result.changes
 

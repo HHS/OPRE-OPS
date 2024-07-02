@@ -33,7 +33,7 @@ afterEach(() => {
 });
 
 const userData = {
-    id: 1,
+    id: 500,
     full_name: "Test User"
 };
 
@@ -69,7 +69,7 @@ const agreement = {
 const initialState = {
     auth: {
         activeUser: {
-            id: 1,
+            id: 500,
             name: "Test User"
         }
     },

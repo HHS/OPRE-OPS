@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   unittest_db:
     image: "postgres:16"
@@ -32,8 +30,9 @@ services:
       - ENV=pytest
       - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@unittest_db:5432/postgres
     command: >
-      bash -c "
-      .local/bin/alembic upgrade head &&
+      /bin/sh -c "
+      . .venv/bin/activate &&
+      alembic upgrade head &&
       DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&

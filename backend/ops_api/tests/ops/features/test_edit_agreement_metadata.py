@@ -19,13 +19,13 @@ TEST_CONTRACT_DATA = {
 
 
 @pytest.fixture()
-def test_contract(loaded_db):
+def test_contract(loaded_db, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -37,13 +37,13 @@ def test_contract(loaded_db):
 
 
 @pytest.fixture()
-def contract_with_executing_bli(loaded_db, test_contract):
+def contract_with_executing_bli(loaded_db, test_contract, test_can):
     executing_bli = BudgetLineItem(
         agreement_id=test_contract.id,
         comments="blah blah bleh blah",
         line_description="LI Executing",
         amount=200.24,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.IN_EXECUTION,
         proc_shop_fee_percentage=2.34,
@@ -59,13 +59,13 @@ def contract_with_executing_bli(loaded_db, test_contract):
 
 
 @pytest.fixture()
-def contract_with_planned_bli(loaded_db, test_contract):
+def contract_with_planned_bli(loaded_db, test_contract, test_can):
     planned_bli = BudgetLineItem(
         agreement_id=test_contract.id,
         comments="blah blah bleh blah",
         line_description="LI Planned",
         amount=200.24,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=2.34,
