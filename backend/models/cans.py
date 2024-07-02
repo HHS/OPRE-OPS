@@ -740,3 +740,15 @@ class CAN(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
+
+class CANAppropriationDetails(BaseModel):
+    """
+
+    """
+
+    __tablename__ = "can_appropriation_details"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    appropriation_prefix: Mapped[Optional[str]] = mapped_column(String)
+    appropriation_postfix: Mapped[Optional[str]] = mapped_column(String)
+    appropriation_year: Mapped[Optional[str]] = mapped_column(String)

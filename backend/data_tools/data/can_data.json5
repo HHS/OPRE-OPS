@@ -589,5 +589,22 @@
       received_amount: 500000.0,
       expected_amount: 500000.0,
     },
+  ],
+  can_appropriation_details: [
+    {
+      appropriation_prefix: "ABCDE",
+      appropriation_postfix: "FGHIJ",
+      appropriation_year: "2024"
+    },
+    {
+      appropriation_prefix: "PREFI",
+      appropriation_postfix: "POSTF",
+      appropriation_year: "2023"
+    },
+    {
+      appropriation_prefix: "AEIOU",
+      appropriation_postfix: "ALSOY",
+      appropriation_year: "2024"
+    },
   ]
 }
