@@ -1,7 +1,7 @@
-import { DocumentCollectionHeader } from "./DocumentCollectionHeader";
-import DocumentCollectionView from "./DocumentCollectionView";
 import PropTypes from "prop-types";
 import { document } from "../../../tests/data";
+import { DocumentCollectionHeader } from "./DocumentCollectionHeader";
+import DocumentCollectionView from "./DocumentCollectionView";
 /**
  * Renders the document collection view
  * @param {object} props - The component props.
@@ -25,8 +25,8 @@ const DocumentView = ({ isEditMode, setIsEditMode }) => {
     );
 };
 
-DocumentView.PropTypes = {
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func
+DocumentView.propTypes = {
+    isEditMode: PropTypes.bool.isRequired,
+    setIsEditMode: PropTypes.func.isRequired
 };
 export default DocumentView;
