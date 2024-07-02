@@ -372,3 +372,20 @@ export function toTitleCaseFromSlug(slug) {
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
 }
+
+/**
+ * This function takes a slug and returns a lower case version of the string.
+ * @param {string} slug - The slug to convert to lower case.
+ * @returns {string} The lower case version of the slug.
+ */
+export function toLowerCaseFromSlug(slug) {
+    if (!slug) return "";
+    if (typeof slug !== "string") {
+        console.warn("toSlugCase: str must be a string");
+        return "";
+    }
+    return slug
+        .split("-")
+        .map((word) => word.charAt(0).toLowerCase() + word.slice(1))
+        .join(" ");
+}
