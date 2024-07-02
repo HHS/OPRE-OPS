@@ -6,6 +6,8 @@ from ops_api.ops.document.document_repository_factory import DocumentRepositoryF
 from ops_api.ops.document.exceptions import DocumentAlreadyExistsError, DocumentNotFoundError
 from ops_api.ops.document.fake_document_repository import FakeDocumentRepository
 
+mock_document_data = {"file_name": "Certification of Funding.pdf", "document_type": "PDF", "agreement_id": 123}
+
 
 @pytest.fixture()
 def document_repository_factory():
@@ -38,33 +40,44 @@ def repository(document_repository_factory):
 
 
 def test_add_document(repository):
-    repository.add_document("123", "Example document")
-    document = repository.get_document("123")
-    assert document == "Example document"
+    created_document = repository.add_document(mock_document_data)
+    assert "uuid" in created_document
+    assert created_document["uuid"] is not None
+    assert created_document["url"] == f"FakeDocumentRepository/{created_document['uuid']}"
+    assert repository.get_document(created_document["uuid"]) == mock_document_data
 
 
 def test_add_existing_document_raises_error(repository):
-    repository.add_document("123", "Example document")
+    repository.add_document(mock_document_data)
     with pytest.raises(DocumentAlreadyExistsError):
-        repository.add_document("123", "Example document")
+        repository.add_document(mock_document_data)
 
 
 def test_update_document(repository):
-    repository.add_document("123", "Example document")
-    repository.update_document("123", "Updated document")
-    updated_document = repository.get_document("123")
-    assert updated_document == "Updated document"
+    mock_update = "Certification of Funding V2.pdf"
+
+    created_document = repository.add_document(mock_document_data)
+    created_test_uuid = created_document["uuid"]
+
+    repository.update_document(
+        document_id=created_test_uuid,
+        document_content={"file_name": mock_update, "document_type": "PDF", "agreement_id": 123},
+    )
+
+    updated_document = repository.get_document(created_test_uuid)
+    assert updated_document["file_name"] == mock_update
 
 
 def test_update_nonexistent_document_raises_error(repository):
     with pytest.raises(DocumentNotFoundError):
-        repository.update_document("123", "Updated document")
+        repository.update_document("123", mock_document_data)
 
 
 def test_delete_document(repository):
-    repository.add_document("123", "Example document")
-    repository.delete_document("123")
-    deleted_document = repository.get_document("123")
+    created_document = repository.add_document(mock_document_data)
+    created_test_uuid = created_document["uuid"]
+    repository.delete_document(created_test_uuid)
+    deleted_document = repository.get_document(created_test_uuid)
     assert deleted_document is None
 
 
