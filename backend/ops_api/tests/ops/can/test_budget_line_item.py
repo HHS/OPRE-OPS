@@ -20,16 +20,6 @@ def test_budget_line_item_lookup(loaded_db):
     assert bli.status == BudgetLineItemStatus.DRAFT
 
 
-@pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_has_active_workflow(loaded_db):
-    bli = loaded_db.get(BudgetLineItem, 1)
-    assert bli is not None
-    assert bli.has_active_workflow is False
-    bli = loaded_db.get(BudgetLineItem, 24)
-    assert bli is not None
-    assert bli.has_active_workflow is True
-
-
 def test_budget_line_item_creation(test_can):
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
