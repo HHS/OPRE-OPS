@@ -1,11 +1,16 @@
-import * as React from "react";
 import PropTypes from "prop-types";
+import * as React from "react";
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
 import DebugCode from "../../DebugCode";
 import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
+import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
+/**
+ *  @typedef {import('../ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
+ *  @type {ChangeRequest[]}
+ */
 /**
  * A component that displays review change requests.
  * @component
@@ -17,11 +22,6 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
 function ReviewChangeRequestAccordion({ changeType, budgetLinesInReview }) {
     const changeRequestsInReview = /** @type {ChangeRequest[]} */ (getInReviewChangeRequests(budgetLinesInReview));
 
-    /**
-     *  @typedef {import('../ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
-     *  @type {ChangeRequest[]}
-     */
-
     return (
         <Accordion
             heading="Review Changes"
@@ -30,8 +30,8 @@ function ReviewChangeRequestAccordion({ changeType, budgetLinesInReview }) {
             <h3>{changeType}</h3>
             <DebugCode data={changeRequestsInReview} />
             <p>
-                {`This is a list of ${changeType}s on this agreement that need your approval. Approve or decline all
-                ${changeType}s below or go back to the For Review Tab to approve or decline each change individually.`}
+                {`This is a list of ${changeType.toLowerCase()}s on this agreement that need your approval. Approve or decline all
+                ${changeType.toLowerCase()}s below or go back to the For Review Tab to approve or decline each change individually.`}
             </p>
             {changeRequestsInReview.map(
                 /**
@@ -39,7 +39,7 @@ function ReviewChangeRequestAccordion({ changeType, budgetLinesInReview }) {
                  */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
-                        {changeRequest.has_budget_change && changeType === "budget change" && (
+                        {changeRequest.has_budget_change && changeType === CHANGE_REQUEST_TYPES.BUDGET && (
                             <BudgetChangeReviewCard
                                 key={changeRequest.id}
                                 changeRequestId={changeRequest.id}
@@ -50,9 +50,10 @@ function ReviewChangeRequestAccordion({ changeType, budgetLinesInReview }) {
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={() => {}}
                                 isCondensed={true}
+                                forceHover={true}
                             />
                         )}
-                        {changeRequest.has_status_change && changeType === "status change" && (
+                        {changeRequest.has_status_change && changeType === CHANGE_REQUEST_TYPES.STATUS && (
                             <StatusChangeReviewCard
                                 key={changeRequest.id}
                                 changeRequestId={changeRequest.id}
@@ -62,6 +63,8 @@ function ReviewChangeRequestAccordion({ changeType, budgetLinesInReview }) {
                                 bliId={changeRequest.budget_line_item_id}
                                 changeTo={changeRequest.requested_change_diff}
                                 handleReviewChangeRequest={() => {}}
+                                isCondensed={true}
+                                forceHover={true}
                             />
                         )}
                     </React.Fragment>

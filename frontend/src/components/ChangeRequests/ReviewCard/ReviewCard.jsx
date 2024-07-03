@@ -52,13 +52,19 @@ function ReviewCard({
 
     return (
         <div
-            className="width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter border-2px radius-lg"
+            className={`width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${
+                forceHover ? "bg-base-lightest border-base-lighter" : "border-base-light hover:border-base-lighter"
+            }`}
             data-cy="review-card"
             style={{ minHeight: "8.375rem" }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            {!isCondensed && (
+            {isCondensed ? (
+                <header>
+                    <h2 className="margin-0 font-sans-sm">{type}</h2>
+                </header>
+            ) : (
                 <header className="display-flex flex-justify">
                     <div className="display-flex">
                         <h2 className="margin-0 font-sans-sm">{type}</h2>

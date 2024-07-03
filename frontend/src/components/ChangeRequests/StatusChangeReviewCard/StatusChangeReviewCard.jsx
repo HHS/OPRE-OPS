@@ -17,6 +17,8 @@ import TermTag from "../TermTag";
  * @param {number} props.bliId - The budget line item ID
  * @param {Object} props.changeTo - The requested change
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
+ * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
+ * @param {boolean} [props.forceHover=false] - Whether to force hover state
  * @returns {JSX.Element} - The rendered component
  */
 function StatusChangeReviewCard({
@@ -26,7 +28,9 @@ function StatusChangeReviewCard({
     requestDate,
     bliId,
     changeTo,
-    handleReviewChangeRequest
+    handleReviewChangeRequest,
+    isCondensed = false,
+    forceHover = false
 }) {
     const keyName = Object.keys(changeTo)[0];
     const totalAmount = useGetBLITotal(bliId);
@@ -46,6 +50,8 @@ function StatusChangeReviewCard({
             handleReviewChangeRequest={handleReviewChangeRequest}
             bliToStatus={newValue}
             changeMsg={changeMsg}
+            isCondensed={isCondensed}
+            forceHover={forceHover}
         >
             <TermTag
                 label="BL ID"
@@ -78,6 +84,8 @@ StatusChangeReviewCard.propTypes = {
     requestDate: PropTypes.string.isRequired,
     bliId: PropTypes.number.isRequired,
     changeTo: PropTypes.object.isRequired,
-    handleReviewChangeRequest: PropTypes.func.isRequired
+    handleReviewChangeRequest: PropTypes.func.isRequired,
+    isCondensed: PropTypes.bool,
+    forceHover: PropTypes.bool
 };
 export default StatusChangeReviewCard;

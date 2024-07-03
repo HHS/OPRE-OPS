@@ -29,7 +29,8 @@ function BudgetChangeReviewCard({
     bliId,
     changeTo,
     handleReviewChangeRequest,
-    isCondensed = false
+    isCondensed = false,
+    forceHover = false
 }) {
     const keyName = Object.keys(changeTo)[0];
     const oldCan = useGetNameForCanId(changeTo.can_id?.old);
@@ -49,6 +50,7 @@ function BudgetChangeReviewCard({
             handleReviewChangeRequest={handleReviewChangeRequest}
             changeMsg={changeMsg}
             isCondensed={isCondensed}
+            forceHover={forceHover}
         >
             <TermTag
                 label="BL ID"
@@ -82,6 +84,7 @@ BudgetChangeReviewCard.propTypes = {
     bliId: PropTypes.number.isRequired,
     changeTo: PropTypes.object.isRequired,
     handleReviewChangeRequest: PropTypes.func.isRequired,
-    isCondensed: PropTypes.bool
+    isCondensed: PropTypes.bool,
+    forceHover: PropTypes.bool
 };
 export default BudgetChangeReviewCard;

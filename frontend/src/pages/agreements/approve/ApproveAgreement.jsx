@@ -11,7 +11,7 @@ import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/Rev
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
-import { convertCodeForDisplay, toTitleCaseFromSlug, toLowerCaseFromSlug } from "../../../helpers/utils";
+import { convertCodeForDisplay, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import useToggle from "../../../hooks/useToggle";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -204,7 +204,7 @@ const ApproveAgreement = () => {
                 subTitle={agreement.name}
             />
             <ReviewChangeRequestAccordion
-                changeType={toLowerCaseFromSlug(changeRequestType)}
+                changeType={toTitleCaseFromSlug(changeRequestType)}
                 budgetLinesInReview={budgetLinesInReview}
             />
             <AgreementMetaAccordion
