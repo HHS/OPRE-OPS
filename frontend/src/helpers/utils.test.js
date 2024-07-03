@@ -5,7 +5,8 @@ import {
     fiscalYearFromDate,
     renderField,
     toSlugCase,
-    toTitleCaseFromSlug
+    toTitleCaseFromSlug,
+    toLowerCaseFromSlug
 } from "./utils";
 
 test("current federal fiscal year is calculated correctly", () => {
@@ -71,4 +72,15 @@ test("renders titlecase from slug", () => {
     expect(toTitleCaseFromSlug(null)).toEqual("");
     expect(toTitleCaseFromSlug(undefined)).toEqual("");
     expect(toTitleCaseFromSlug(true)).toEqual("");
+});
+
+test("renders lowercase from slug", () => {
+    expect(toLowerCaseFromSlug("budget-change")).toEqual("budget change");
+    expect(toLowerCaseFromSlug("status-change")).toEqual("status change");
+    expect(toLowerCaseFromSlug("budget-change-request")).toEqual("budget change request");
+    expect(toLowerCaseFromSlug("status-change-request")).toEqual("status change request");
+    expect(toLowerCaseFromSlug("")).toEqual("");
+    expect(toLowerCaseFromSlug(null)).toEqual("");
+    expect(toLowerCaseFromSlug(undefined)).toEqual("");
+    expect(toLowerCaseFromSlug(true)).toEqual("");
 });

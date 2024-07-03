@@ -7,10 +7,11 @@ import AgreementCANReviewAccordion from "../../../components/Agreements/Agreemen
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
+import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
-import { convertCodeForDisplay, toTitleCaseFromSlug } from "../../../helpers/utils";
+import { convertCodeForDisplay, toTitleCaseFromSlug, toLowerCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import useToggle from "../../../hooks/useToggle";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -201,6 +202,10 @@ const ApproveAgreement = () => {
             <PageHeader
                 title={`Approval for ${toTitleCaseFromSlug(changeRequestType)}`}
                 subTitle={agreement.name}
+            />
+            <ReviewChangeRequestAccordion
+                changeType={toLowerCaseFromSlug(changeRequestType)}
+                budgetLinesInReview={budgetLinesInReview}
             />
             <AgreementMetaAccordion
                 instructions="Please review the agreement details below to ensure all information is correct."

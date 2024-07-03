@@ -589,5 +589,39 @@
       received_amount: 500000.0,
       expected_amount: 500000.0,
     },
+  ],
+  can_fiscal_year_funding_details: [
+    {
+      fund: "DFGBTN2024BCDS",
+      allowance: "JDI109DHAD",
+      sub_allowance: "RHI45T78F0",
+      allotment_org: "JJH45ST607",
+      current_fy_funding_ytd: 25000,
+      can_fiscal_year_id: 5001
+    },
+    {
+      fund: "FLYDIG2024RSTF",
+      allowance: "JHH939DHAD",
+      sub_allowance: "RHI45T8EX2",
+      allotment_org: "RT045ST607",
+      current_fy_funding_ytd: 38000,
+      can_fiscal_year_id: 5002
+    },
+    {
+      fund: "IMTEDG2023SEMI",
+      allowance: "JHH9JJNHAD",
+      sub_allowance: "RASTO8EX27",
+      allotment_org: "BFSIE5ST60",
+      current_fy_funding_ytd: 45899,
+      can_fiscal_year_id: 5003
+    },
+    {
+      fund: "FNCTSM2022QRTA",
+      allowance: "JH98HG3HAD",
+      sub_allowance: "RASTO8EX27",
+      allotment_org: "BFSIE5ST60",
+      current_fy_funding_ytd: 100000,
+      can_fiscal_year_id: 5004
+    }
   ]
 }

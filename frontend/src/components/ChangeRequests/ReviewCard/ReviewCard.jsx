@@ -24,6 +24,7 @@ import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
  * @param {string} [props.bliToStatus] - The change to result of the budget line item after the change
  * @param {boolean} [props.forceHover=false] - Whether to force hover state. needed for testing
  * @param {string} props.changeMsg - The message to display for the change
+ * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
  * @returns {JSX.Element} - The rendered component
  */
 function ReviewCard({
@@ -37,7 +38,8 @@ function ReviewCard({
     handleReviewChangeRequest,
     bliToStatus = "",
     forceHover = false,
-    changeMsg
+    changeMsg,
+    isCondensed = false
 }) {
     const [isHovered, setIsHovered] = React.useState(forceHover);
     const agreementName = useGetAgreementName(agreementId);
@@ -56,65 +58,67 @@ function ReviewCard({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <header className="display-flex flex-justify">
-                <div className="display-flex">
-                    <h2 className="margin-0 font-sans-sm">{type}</h2>
-                    <dl className="font-12px margin-0 margin-left-4">
-                        <dt className="margin-0 text-base-dark">Agreement</dt>
-                        <dd className="margin-0">{agreementName}</dd>
-                    </dl>
-                </div>
-                {(isHovered || forceHover) && actionIcons && (
-                    <div>
-                        <Tooltip
-                            label="Approve"
-                            position="top"
-                        >
-                            <button
-                                id="approve"
-                                aria-label="Approve"
-                                onClick={() =>
-                                    handleReviewChangeRequest(
-                                        changeRequestId,
-                                        CHANGE_REQUEST_ACTION.APPROVE,
-                                        null,
-                                        reviewData
-                                    )
-                                }
-                            >
-                                <FontAwesomeIcon
-                                    icon={faCheck}
-                                    size="2x"
-                                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
-                                />
-                            </button>
-                        </Tooltip>
-                        <Tooltip
-                            label="Decline"
-                            position="top"
-                        >
-                            <button
-                                id="decline"
-                                aria-label="Decline"
-                                onClick={() =>
-                                    handleReviewChangeRequest(
-                                        changeRequestId,
-                                        CHANGE_REQUEST_ACTION.REJECT,
-                                        null,
-                                        reviewData
-                                    )
-                                }
-                            >
-                                <FontAwesomeIcon
-                                    icon={faXmark}
-                                    size="2x"
-                                    className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
-                                />
-                            </button>
-                        </Tooltip>
+            {!isCondensed && (
+                <header className="display-flex flex-justify">
+                    <div className="display-flex">
+                        <h2 className="margin-0 font-sans-sm">{type}</h2>
+                        <dl className="font-12px margin-0 margin-left-4">
+                            <dt className="margin-0 text-base-dark">Agreement</dt>
+                            <dd className="margin-0">{agreementName}</dd>
+                        </dl>
                     </div>
-                )}
-            </header>
+                    {(isHovered || forceHover) && actionIcons && (
+                        <div>
+                            <Tooltip
+                                label="Approve"
+                                position="top"
+                            >
+                                <button
+                                    id="approve"
+                                    aria-label="Approve"
+                                    onClick={() =>
+                                        handleReviewChangeRequest(
+                                            changeRequestId,
+                                            CHANGE_REQUEST_ACTION.APPROVE,
+                                            null,
+                                            reviewData
+                                        )
+                                    }
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faCheck}
+                                        size="2x"
+                                        className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                    />
+                                </button>
+                            </Tooltip>
+                            <Tooltip
+                                label="Decline"
+                                position="top"
+                            >
+                                <button
+                                    id="decline"
+                                    aria-label="Decline"
+                                    onClick={() =>
+                                        handleReviewChangeRequest(
+                                            changeRequestId,
+                                            CHANGE_REQUEST_ACTION.REJECT,
+                                            null,
+                                            reviewData
+                                        )
+                                    }
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faXmark}
+                                        size="2x"
+                                        className="text-primary height-2 width-2 margin-right-1 cursor-pointer"
+                                    />
+                                </button>
+                            </Tooltip>
+                        </div>
+                    )}
+                </header>
+            )}
             <section className="display-flex margin-y-1 flex-justify maxw-tablet">
                 <dl className="font-12px margin-right-4">
                     <dt className="text-base-dark">Requested By</dt>
@@ -130,19 +134,20 @@ function ReviewCard({
                     />
                     {formatDateToMonthDayYear(requestDate)}
                 </div>
-
-                <Link
-                    to={`/agreements/approve/${agreementId}?type=${toSlugCase(type)}`}
-                    className="text-primary font-12px"
-                    data-cy="approve-agreement"
-                >
-                    Review Agreement
-                    <FontAwesomeIcon
-                        icon={faEye}
-                        size="3x"
-                        className="height-2 width-2 margin-left-1 cursor-pointer"
-                    />
-                </Link>
+                {!isCondensed && (
+                    <Link
+                        to={`/agreements/approve/${agreementId}?type=${toSlugCase(type)}`}
+                        className="text-primary font-12px"
+                        data-cy="approve-agreement"
+                    >
+                        Review Agreement
+                        <FontAwesomeIcon
+                            icon={faEye}
+                            size="3x"
+                            className="height-2 width-2 margin-left-1 cursor-pointer"
+                        />
+                    </Link>
+                )}
             </footer>
         </div>
     );
@@ -159,7 +164,8 @@ ReviewCard.propTypes = {
     handleReviewChangeRequest: PropTypes.func.isRequired,
     bliToStatus: PropTypes.string,
     forceHover: PropTypes.bool,
-    changeMsg: PropTypes.string.isRequired
+    changeMsg: PropTypes.string.isRequired,
+    isCondensed: PropTypes.bool
 };
 
 export default ReviewCard;
