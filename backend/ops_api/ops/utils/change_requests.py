@@ -28,13 +28,17 @@ def create_notification_of_new_request_to_reviewer(change_request: ChangeRequest
         division_director_ids.add(division.deputy_division_director_id)
     fe_url = current_app.config.get("OPS_FRONTEND_URL")
 
-    approve_url = f"{fe_url}/agreements/approve/{agreement_id}"
+    approve_url = (
+        f"{fe_url}/agreements/approve/{agreement_id}?type=status-change"
+        if change_request.has_status_change
+        else f"{fe_url}/agreements/approve/{agreement_id}?type=budget-change"
+    )
     for division_director_id in division_director_ids:
         notification = Notification(
             title="Approval Request",
             # NOTE: approve_url only renders as plain text in default react-markdown
             message=f"An Agreement Approval Request has been submitted. "
-            f"Please review and approve. \n\\\n\\[Link]({approve_url})",
+            f"Please review and approve. \n\\\n\\\n[Link]({approve_url})",
             is_read=False,
             recipient_id=division_director_id,
             expires=get_expires_date(),
