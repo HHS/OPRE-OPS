@@ -553,7 +553,7 @@ def upgrade() -> None:
         ),
         sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
         sa.Column("operation_type", sa.SmallInteger(), nullable=False),
-        sa.PrimaryKeyConstraint("can_id", "fiscal_year", "transaction_id"),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
     )
     op.create_index(
         op.f("ix_can_fiscal_year_version_end_transaction_id"),
