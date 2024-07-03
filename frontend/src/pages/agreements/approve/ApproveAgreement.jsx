@@ -11,6 +11,7 @@ import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/Rev
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
+import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
 import { convertCodeForDisplay, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import useToggle from "../../../hooks/useToggle";
@@ -91,7 +92,15 @@ const ApproveAgreement = () => {
     }
 
     // TODO: move this to a helper function
+
     const budgetLinesInReview = agreement?.budget_line_items.filter((bli) => bli.in_review);
+    /**
+     *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
+     *  @type {ChangeRequest[]}
+     */
+    const changeRequestsInReview = /** @type {ChangeRequest[]} */ (
+        getInReviewChangeRequests(agreement?.budget_line_items)
+    );
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     const handleCancel = () => {
@@ -205,7 +214,7 @@ const ApproveAgreement = () => {
             />
             <ReviewChangeRequestAccordion
                 changeType={toTitleCaseFromSlug(changeRequestType)}
-                budgetLinesInReview={budgetLinesInReview}
+                changeRequests={changeRequestsInReview}
             />
             <AgreementMetaAccordion
                 instructions="Please review the agreement details below to ensure all information is correct."

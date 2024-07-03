@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import * as React from "react";
-import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
 import DebugCode from "../../DebugCode";
 import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
@@ -16,24 +15,22 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.changeType - The type of change request.
- * @param {Object[]} props.budgetLinesInReview - The budget lines in review.
+ * @param {ChangeRequest[]} props.changeRequests - The budget lines in review.
  * @returns {JSX.Element} - The rendered component.
  */
-function ReviewChangeRequestAccordion({ changeType, budgetLinesInReview }) {
-    const changeRequestsInReview = /** @type {ChangeRequest[]} */ (getInReviewChangeRequests(budgetLinesInReview));
-
+function ReviewChangeRequestAccordion({ changeType, changeRequests }) {
     return (
         <Accordion
             heading="Review Changes"
             level={2}
         >
             <h3>{changeType}</h3>
-            <DebugCode data={changeRequestsInReview} />
+            <DebugCode data={changeRequests} />
             <p>
                 {`This is a list of ${changeType.toLowerCase()}s on this agreement that need your approval. Approve or decline all
                 ${changeType.toLowerCase()}s below or go back to the For Review Tab to approve or decline each change individually.`}
             </p>
-            {changeRequestsInReview.map(
+            {changeRequests.map(
                 /**
                  *  @param {ChangeRequest} changeRequest
                  */
@@ -76,6 +73,6 @@ function ReviewChangeRequestAccordion({ changeType, budgetLinesInReview }) {
 
 ReviewChangeRequestAccordion.propTypes = {
     changeType: PropTypes.string.isRequired,
-    budgetLinesInReview: PropTypes.array.isRequired
+    changeRequests: PropTypes.array.isRequired
 };
 export default ReviewChangeRequestAccordion;
