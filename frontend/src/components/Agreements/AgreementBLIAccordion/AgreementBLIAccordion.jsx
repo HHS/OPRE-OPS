@@ -1,12 +1,16 @@
 import PropTypes from "prop-types";
-import Accordion from "../../UI/Accordion";
-import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
-import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
-import ToggleButton from "../../UI/ToggleButton";
+import {
+    BLI_STATUS,
+    budgetLinesTotal,
+    getBudgetByStatus,
+    getNonDRAFTBudgetLines
+} from "../../../helpers/budgetLines.helpers";
 import { draftBudgetLineStatuses } from "../../../helpers/utils";
-import { budgetLinesTotal, getBudgetByStatus, getNonDRAFTBudgetLines } from "../../../helpers/budgetLines.helpers";
+import Accordion from "../../UI/Accordion";
+import ToggleButton from "../../UI/ToggleButton";
+import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
+import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
 import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.helpers";
-import { workflowActions } from "../../../pages/agreements/review/ReviewAgreement.constants";
 
 /**
  * Renders an accordion component for selecting budget lines for an agreement.
@@ -46,7 +50,7 @@ function AgreementBLIAccordion({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {action === workflowActions.DRAFT_TO_PLANNED && (
+                {action === BLI_STATUS.PLANNED && (
                     <ToggleButton
                         btnText="After Approval"
                         handleToggle={() => setAfterApproval(!afterApproval)}

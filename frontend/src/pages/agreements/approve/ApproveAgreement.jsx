@@ -11,23 +11,24 @@ import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/Rev
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
 import { convertCodeForDisplay, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import useToggle from "../../../hooks/useToggle";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { useGetWorkflowInstanceFromId, useGetWorkflowStepInstanceFromId } from "../../../hooks/workflow.hooks.js";
 import { workflowActions } from "../review/ReviewAgreement.constants";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 
-const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepInstance }) => {
-    const workflowBudgetLineItemIds = workflowStepInstance?.package_entities?.budget_line_item_ids;
+const BudgetLinesTableWithWorkflowStep = ({ agreement }) => {
+    // TODO: get BLIs IDs that are in_review
+    // const workflowBudgetLineItemIds = workflowStepInstance?.package_entities?.budget_line_item_ids;
     return (
         <BudgetLinesTable
             readOnly={true}
             budgetLines={agreement?.budget_line_items}
             isReviewMode={false}
-            workflowBudgetLineItemIds={workflowBudgetLineItemIds}
+            // workflowBudgetLineItemIds={workflowBudgetLineItemIds}
         />
     );
 };
@@ -49,19 +50,13 @@ const ApproveAgreement = () => {
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
     const [workflowApprove] = useAddWorkflowApproveMutation();
-    const stepId = searchParams.get("stepId");
+
     let changeRequestType = "";
     searchParams.get("type") ? (changeRequestType = searchParams.get("type")) : (changeRequestType = "TBD");
+    let changeToStatus = searchParams.get("to")?.toUpperCase();
 
-    const workflowStepInstance = useGetWorkflowStepInstanceFromId(stepId);
-    const { workflow_instance_id: workflowInstanceId, package_entities: packageEntities } = workflowStepInstance;
-    const workflowBudgetLineItemIds = packageEntities?.budget_line_item_ids;
-    const submittersNotes = packageEntities?.notes;
-    console.log("workflowBudgetLineItemIds", workflowBudgetLineItemIds);
-    console.log("workflowStepInstance", workflowStepInstance);
-    console.log("submittersNotes", submittersNotes);
-    const workflowInstance = useGetWorkflowInstanceFromId(workflowInstanceId);
-    const { workflow_action: action } = workflowInstance;
+    let action = changeToStatus;
+    let submittersNotes = "This is a test note";
 
     const navigate = useNavigate();
     const {
@@ -73,14 +68,13 @@ const ApproveAgreement = () => {
     });
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const [afterApproval, setAfterApproval] = useToggle(true);
-    const goToText = action === workflowActions.DRAFT_TO_PLANNED ? "Planned" : "Executing";
-    const fromToText = action === workflowActions.DRAFT_TO_PLANNED ? "Draft to Planned" : "Planned to Executing";
+
     const checkBoxText =
-        action === workflowActions.DRAFT_TO_PLANNED
+        changeToStatus === BLI_STATUS.PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
             : "I understand that approving these budget lines will start the Procurement Process";
     const approveModalHeading =
-        action === workflowActions.DRAFT_TO_PLANNED
+        changeToStatus === BLI_STATUS.PLANNED
             ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
             : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
 
@@ -147,7 +141,7 @@ const ApproveAgreement = () => {
     const handleDecline = async () => {
         setShowModal(true);
         setModalProps({
-            heading: `Are you sure you want to decline these budget lines for ${goToText} Status?`,
+            heading: `Are you sure you want to decline these budget lines for ${changeToStatus} Status?`,
             actionButtonText: "Decline",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
@@ -156,6 +150,7 @@ const ApproveAgreement = () => {
             }
         });
     };
+
     const approveStep = async () => {
         const data = {
             workflow_step_action: "APPROVE",
@@ -169,8 +164,8 @@ const ApproveAgreement = () => {
                 console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
                 setAlert({
                     type: "success",
-                    heading: `Budget Lines Approved for ${goToText} Status`,
-                    message: `Budget lines for ${agreement.name} have been successfully approved for ${goToText} Status.`
+                    heading: `Budget Lines Approved for ${changeToStatus} Status`,
+                    message: `Budget lines for ${agreement.name} have been successfully approved for ${changeToStatus} Status.`
                 });
             })
             .catch((rejected) => {
@@ -224,17 +219,14 @@ const ApproveAgreement = () => {
             />
             <AgreementBLIAccordion
                 title="Review Budget Lines"
-                instructions={`This is a list of all budget lines within this agreement. The budget lines showing In Review Status need your approval to change from ${fromToText} Status.`}
+                instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
                 budgetLineItems={budgetLinesInReview}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={action}
             >
-                <BudgetLinesTableWithWorkflowStep
-                    agreement={agreement}
-                    workflowStepInstance={workflowStepInstance}
-                />
+                <BudgetLinesTableWithWorkflowStep agreement={agreement} />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."

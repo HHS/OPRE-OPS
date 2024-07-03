@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { formatDateToMonthDayYear, toSlugCase } from "../../../helpers/utils";
 import { useGetAgreementName } from "../../../hooks/lookup.hooks";
 import Tooltip from "../../UI/USWDS/Tooltip";
-import { CHANGE_REQUEST_ACTION } from "../ChangeRequests.constants";
+import { CHANGE_REQUEST_ACTION, CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 
 /**
  * ReviewCard component
@@ -49,7 +49,10 @@ function ReviewCard({
         bliToStatus,
         changeMsg
     };
-
+    const url =
+        type === CHANGE_REQUEST_TYPES.BUDGET
+            ? `/agreements/approve/${agreementId}?type=${toSlugCase(type)}`
+            : `/agreements/approve/${agreementId}?type=${toSlugCase(type)}&to=${bliToStatus.toLowerCase()}`;
     return (
         <div
             className={`width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-2px radius-lg ${
@@ -142,7 +145,7 @@ function ReviewCard({
                 </div>
                 {!isCondensed && (
                     <Link
-                        to={`/agreements/approve/${agreementId}?type=${toSlugCase(type)}`}
+                        to={url}
                         className="text-primary font-12px"
                         data-cy="approve-agreement"
                     >
