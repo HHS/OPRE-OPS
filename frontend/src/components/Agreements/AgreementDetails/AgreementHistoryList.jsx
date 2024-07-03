@@ -87,12 +87,14 @@ const propertyLogItemTitle = (logItem) => {
     if (logItem.event_class_name === "BudgetLineItem") {
         title = `Budget Line ${propertyLabel} Edited`;
     } else if (logItem.event_class_name === "BudgetLineItemChangeRequest") {
+        // const targetLabel =  logItem.property_key === "status" ?  renderField(null, "status", logItem.change.new) : propertyLabel;
+        title = logItem.property_key === "status" ? `Status Change to ${renderField(null, "status", logItem.change.new)}` : `Budget Change to ${propertyLabel}`;
         if (logItem.event_type === "IN_REVIEW") {
-            title = `Edit to BL ${propertyLabel} In Review`;
+            title += " In Review";
         } else if (logItem.event_type === "APPROVED") {
-            title = `Edit to BL ${propertyLabel} Approved`;
+            title += "  Approved";
         } else if (logItem.event_type === "REJECTED") {
-            title = `Edit to BL ${propertyLabel} Rejected`;
+            title += "  Declined";
         } else {
             title = `${logItem.event_type} ${propertyLabel} Edited`;
         }
