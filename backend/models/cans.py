@@ -522,7 +522,9 @@ class CLIN(BaseModel):
     __tablename__ = "clin"
     __table_args__ = (sa.UniqueConstraint("number", "contract_agreement_id"),)
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("clin_id_seq", start=5000, increment=1)
+    )
     number: Mapped[int] = mapped_column(Integer)
     name: Mapped[Optional[str]] = mapped_column(String)
     pop_start_date: Mapped[Optional[date]] = mapped_column(Date)
