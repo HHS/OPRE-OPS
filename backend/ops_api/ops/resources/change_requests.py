@@ -46,6 +46,7 @@ def review_change_request(
     change_request.reviewed_on = datetime.now()
     change_request.status = status_after_review
     change_request.reviewer_notes = reviewer_notes
+    session.add(change_request)
     should_create_procurement_workflow = False
 
     # If approved, then apply the changes
@@ -72,7 +73,6 @@ def review_change_request(
             budget_line_items.update_data(budget_line_item, change_data)
             session.add(budget_line_item)
 
-    session.add(change_request)
     session.commit()
 
     create_notification_of_reviews_request_to_submitter(change_request)
