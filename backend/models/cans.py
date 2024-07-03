@@ -522,7 +522,9 @@ class CLIN(BaseModel):
     __tablename__ = "clin"
     __table_args__ = (sa.UniqueConstraint("number", "contract_agreement_id"),)
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("clin_id_seq", start=5000, increment=1)
+    )
     number: Mapped[int] = mapped_column(Integer)
     name: Mapped[Optional[str]] = mapped_column(String)
     pop_start_date: Mapped[Optional[date]] = mapped_column(Date)
@@ -613,52 +615,6 @@ class BudgetLineItem(BaseModel):
         return self.agreement.team_members if self.agreement else []
 
     @property
-    def has_active_workflow(self):
-        if object_session(self) is None:
-            return False
-        package = object_session(self).scalar(
-            select(Package)
-            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
-            .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
-            .join(
-                WorkflowStepInstance,
-                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
-            )
-            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
-        )
-        return package is not None
-
-    @property
-    def active_workflow_current_step_id(self):
-        if object_session(self) is None:
-            return None
-        # This doesn't work with the bootstrap test data since current_workflow_step_instance_id isn't set
-        # current_workflow_step_instance_id = object_session(self).scalar(
-        #     select(WorkflowInstance.current_workflow_step_instance_id)
-        #     .join(
-        #         WorkflowStepInstance,
-        #         WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
-        #     )
-        #     .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
-        #     .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
-        #     .join(self.__class__, self.id == PackageSnapshot.bli_id)
-        # )
-        # not as good as the above, but works with the bootstrap test data
-        current_workflow_step_instance_id = object_session(self).scalar(
-            select(WorkflowStepInstance.id)
-            .join(
-                WorkflowInstance,
-                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
-            )
-            .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
-            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
-            .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
-        )
-        return current_workflow_step_instance_id
-
-    @property
     def change_requests_in_review(self):
         if object_session(self) is None:
             return None
@@ -678,7 +634,7 @@ class BudgetLineItem(BaseModel):
 
     @property
     def in_review(self):
-        return self.change_requests_in_review is not None or self.has_active_workflow
+        return self.change_requests_in_review is not None
 
 
 class CAN(BaseModel):
@@ -741,3 +697,21 @@ class CAN(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
+
+
+class CANFiscalYearFundingDetails(BaseModel):
+    """
+    The details of funding for a given fiscal year for a CAN.
+    """
+
+    __tablename__ = "can_fiscal_year_funding_details"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    fund: Mapped[Optional[str]] = mapped_column(String)
+    allowance: Mapped[Optional[str]] = mapped_column(String)
+    sub_allowance: Mapped[Optional[str]] = mapped_column(String)
+    allotment_org: Mapped[Optional[str]] = mapped_column(String)
+    current_fy_funding_ytd: Mapped[Optional[int]] = mapped_column(Integer)
+    can_fiscal_year_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("can_fiscal_year.id")
+    )

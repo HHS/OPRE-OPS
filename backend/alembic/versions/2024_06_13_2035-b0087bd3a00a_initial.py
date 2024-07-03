@@ -553,7 +553,7 @@ def upgrade() -> None:
         ),
         sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
         sa.Column("operation_type", sa.SmallInteger(), nullable=False),
-        sa.PrimaryKeyConstraint("can_id", "fiscal_year", "transaction_id"),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
     )
     op.create_index(
         op.f("ix_can_fiscal_year_version_end_transaction_id"),
@@ -3870,9 +3870,16 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    sa.Sequence("clin_id_seq", start=5000, increment=1).create(op.get_bind())
     op.create_table(
         "clin",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('clin_id_seq')"),
+            autoincrement=True,
+            nullable=False,
+        ),
         sa.Column("number", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(), nullable=True),
         sa.Column("pop_start_date", sa.Date(), nullable=True),
