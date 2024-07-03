@@ -542,7 +542,9 @@ class CLIN(BaseModel):
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("budget_line_item_id_seq", start=15000, increment=1)
+    )
     line_description: Mapped[Optional[str]] = mapped_column(String)
     comments: Mapped[Optional[str]] = mapped_column(Text)
 
