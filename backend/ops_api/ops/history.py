@@ -157,9 +157,12 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
                 )
                 continue
 
+            event_details_data = obj.to_dict()
+            if hasattr(obj, "_change_request_id"):
+                event_details_data["_change_request_id"] = obj._change_request_id
             ops_db = OpsDBHistory(
                 event_type=event_type,
-                event_details=obj.to_dict(),
+                event_details=event_details_data,
                 created_by=current_user.id if current_user else None,
                 class_name=obj.__class__.__name__,
                 row_key=db_audit.row_key,

@@ -256,6 +256,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
     const allLogItems = agreementHistory.flatMap((historyItem) => historyItem.log_items);
 
     const renderHistoryLogItem = (logItem, index) => {
+        if (logItem.updated_by_change_request) return;
         return (
             <LogItem
                 key={index}
