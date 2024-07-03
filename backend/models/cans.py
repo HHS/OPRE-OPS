@@ -693,3 +693,21 @@ class CAN(BaseModel):
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
+
+
+class CANFiscalYearFundingDetails(BaseModel):
+    """
+    The details of funding for a given fiscal year for a CAN.
+    """
+
+    __tablename__ = "can_fiscal_year_funding_details"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    fund: Mapped[Optional[str]] = mapped_column(String)
+    allowance: Mapped[Optional[str]] = mapped_column(String)
+    sub_allowance: Mapped[Optional[str]] = mapped_column(String)
+    allotment_org: Mapped[Optional[str]] = mapped_column(String)
+    current_fy_funding_ytd: Mapped[Optional[int]] = mapped_column(Integer)
+    can_fiscal_year_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("can_fiscal_year.id")
+    )
