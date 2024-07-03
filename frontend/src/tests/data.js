@@ -436,3 +436,62 @@ export const changeRequests = [
         updated_on: "2024-06-17T18:55:41.826716"
     }
 ];
+
+export const canFiscalYearFundingDetails = [
+    {
+        id: 1,
+        fund: "DFGBTN2024BCDS",
+        allowance: "JDI109DHAD",
+        sub_allowance: "RHI45T78F0",
+        allotment_org: "JJH45ST607",
+        current_fy_funding_ytd: 25000,
+        can_fiscal_year_id: 5001
+    },
+    {
+        id: 2,
+        fund: "FLYDIG2024RSTF",
+        allowance: "JHH939DHAD",
+        sub_allowance: "RHI45T8EX2",
+        allotment_org: "RT045ST607",
+        current_fy_funding_ytd: 38000,
+        can_fiscal_year_id: 5002
+    },
+    {
+        id: 3,
+        fund: "IMTEDG2023SEMI",
+        allowance: "JHH9JJNHAD",
+        sub_allowance: "RASTO8EX27",
+        allotment_org: "BFSIE5ST60",
+        current_fy_funding_ytd: 45899,
+        can_fiscal_year_id: 5003
+    },
+    {
+        id: 4,
+        fund: "FNCTSM2022QRTA",
+        allowance: "JH98HG3HAD",
+        sub_allowance: "RASTO8EX27",
+        allotment_org: "BFSIE5ST60",
+        current_fy_funding_ytd: 100000,
+        can_fiscal_year_id: 5004
+    }
+  ]
+  export const canAppropriationDetails =  [
+    {
+        id: 1,
+        appropriation_prefix: "ABCDE",
+        appropriation_postfix: "FGHIJ",
+        appropriation_year: "2024"
+    },
+    {
+        id: 2,
+        appropriation_prefix: "PREFI",
+        appropriation_postfix: "POSTF",
+        appropriation_year: "2023"
+    },
+    {
+        id: 3,
+        appropriation_prefix: "AEIOU",
+        appropriation_postfix: "ALSOY",
+        appropriation_year: "2024"
+    }
+  ]
