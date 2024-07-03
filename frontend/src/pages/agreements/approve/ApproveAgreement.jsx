@@ -56,6 +56,7 @@ const ApproveAgreement = () => {
     let changeToStatus = searchParams.get("to")?.toUpperCase();
 
     let action = changeToStatus;
+    let stepId = 1; //  TODO: replace with Change Request
     let submittersNotes = "This is a test note";
 
     const navigate = useNavigate();
