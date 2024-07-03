@@ -20,11 +20,3 @@ class UnsupportedProviderError(Exception):
     """
 
     pass
-
-
-class ValidationError(Exception):
-    """
-    Exception to raise when the validation fails.
-    """
-
-    pass
