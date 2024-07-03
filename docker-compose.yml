@@ -29,23 +29,7 @@ services:
     environment:
       - ENV=local
       - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
-    command: >
-      /bin/sh -c "
-      psql postgresql://postgres:local_password@db:5432/postgres -c 'DROP SCHEMA IF EXISTS ops CASCADE;CREATE SCHEMA ops;GRANT ALL ON SCHEMA ops TO ops;' &&
-      . .venv/bin/activate &&
-      alembic upgrade head &&
-      DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/funding_partner_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/funding_source_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/research_project_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/can_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/first_contract_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
-      DATA=./data_tools/data/workflow_data.json5 python ./data_tools/src/import_static_data/import_data.py
-      "
-
+    command: /bin/sh -c "./data_tools/scripts/seed_prod_data.sh"
     volumes:
       # See below for an explanation of this volume. The same reasoning applies,
       # but in this case it's so we can run new migrations immediately without
