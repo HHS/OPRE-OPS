@@ -60,6 +60,9 @@ class CANType(Enum):
     OPRE = auto()
     NON_OPRE = auto()
 
+class CANStatus(Enum):
+    ACTIVE = auto()
+    INACTIVE = auto()
 
 class CANFundingSources(BaseModel):
     __tablename__ = "can_funding_sources"
@@ -689,6 +692,26 @@ class CAN(BaseModel):
     projects: Mapped[List["Project"]] = relationship(
         "Project", secondary="project_cans", back_populates="cans"
     )
+
+    @property
+    def status(self):
+        if object_session(self) is None:
+            return CANStatus.INACTIVE
+        current_year = date.today().year
+        can_fiscal_year = object_session(self).scalar(
+            select(CANFiscalYear).where(
+                and_(
+                    CANFiscalYear.can_id
+                    == self.id,
+                    CANFiscalYear.fiscal_year == current_year
+                )
+            )
+        )
+        if can_fiscal_year is None:
+            return CANStatus.INACTIVE
+        can_status = CANStatus.INACTIVE if can_fiscal_year.expected_funding <= 0 and self.expiration_date < datetime.now() else CANStatus.ACTIVE
+        return can_status
+
 
     @BaseModel.display_name.getter
     def display_name(self):
