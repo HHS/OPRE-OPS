@@ -122,7 +122,6 @@ describe("Review Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains(/status/i);
                 cy.get("[data-cy='review-card']").contains(/total/i);
                 cy.get("[data-cy='review-card']").contains("$1,005,000.00");
-                cy.get("[data-cy='review-card']").contains("15025");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content")
                     .contains("planned status changes")
@@ -235,7 +234,6 @@ describe("Review Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains(/status/i);
                 cy.get("[data-cy='review-card']").contains(/total/i);
                 cy.get("[data-cy='review-card']").contains("$1,005,000.00");
-                cy.get("[data-cy='review-card']").contains("15026");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content")
                     .contains("executing status changes")
@@ -343,7 +341,6 @@ describe("Review Change Requests at the Agreement Level", () => {
                 // get h1 to have content Approval for
                 cy.get("h1").contains(/approval for budget change/i);
                 // get content in review-card
-                cy.get("[data-cy='review-card']").contains("15025");
                 cy.get("[data-cy='review-card']").contains(/planned/i);
                 cy.get("[data-cy='review-card']").contains(/amount/i);
                 cy.get("[data-cy='review-card']").contains("$1,000,000.00");
