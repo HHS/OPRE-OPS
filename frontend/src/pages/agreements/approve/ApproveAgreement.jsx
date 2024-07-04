@@ -13,7 +13,7 @@ import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
-import { convertCodeForDisplay, toTitleCaseFromSlug } from "../../../helpers/utils";
+import { convertCodeForDisplay, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import useToggle from "../../../hooks/useToggle";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -37,11 +37,16 @@ const ApproveAgreement = () => {
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
 
-    let changeRequestType = searchParams.get("type") ?? "TBD";
-    let changeToStatus = searchParams.get("to")?.toUpperCase() ?? "TBD";
+    const CHANGE_REQUEST_SLUG_TYPES = {
+        STATUS: "status-change",
+        BUDGET: "budget-change"
+    };
+
+    let changeRequestType = searchParams.get("type") ?? "";
+    let changeToStatus = searchParams.get("to")?.toUpperCase() ?? "";
 
     let action = changeToStatus;
-    let submittersNotes = "This is a test note";
+    let submittersNotes = "This is a test note"; // TODO: replace with actual data
 
     const navigate = useNavigate();
     const {
@@ -82,6 +87,13 @@ const ApproveAgreement = () => {
         getInReviewChangeRequests(agreement?.budget_line_items)
     );
     const changeInCans = getTotalByCans(budgetLinesInReview);
+
+    let statusForTitle = "";
+    if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
+        const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
+        statusForTitle = `- ${renderField(null, "status", status)}`;
+    }
+    const title = `Approval for ${toTitleCaseFromSlug(changeRequestType)} ${statusForTitle}`;
 
     const handleCancel = () => {
         setShowModal(true);
@@ -150,12 +162,13 @@ const ApproveAgreement = () => {
                 />
             )}
             <PageHeader
-                title={`Approval for ${toTitleCaseFromSlug(changeRequestType)}`}
+                title={title}
                 subTitle={agreement.name}
             />
             <ReviewChangeRequestAccordion
                 changeType={toTitleCaseFromSlug(changeRequestType)}
                 changeRequests={changeRequestsInReview}
+                statusChangeTo={changeToStatus}
             />
             <AgreementMetaAccordion
                 instructions="Please review the agreement details below to ensure all information is correct."
