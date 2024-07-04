@@ -251,23 +251,22 @@ describe("Review Change Requests at the Agreement Level", () => {
                         }).then((response) => {
                             expect(response.status).to.eq(200);
                         });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
                     });
-                // TODO: unable to delete agreement?
-                // .then(() => {
-                //     cy.request({
-                //         method: "DELETE",
-                //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                //         headers: {
-                //             Authorization: bearer_token,
-                //             Accept: "application/json"
-                //         }
-                //     }).then((response) => {
-                //         expect(response.status).to.eq(200);
-                //     });
-                // });
             });
     });
-    it("review Budget Change Amount change", () => {
+    it("review Budget Change change", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
