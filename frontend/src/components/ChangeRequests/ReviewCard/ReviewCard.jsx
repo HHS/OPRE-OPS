@@ -63,11 +63,7 @@ function ReviewCard({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            {isCondensed ? (
-                <header>
-                    <h2 className="margin-0 font-sans-sm">{type}</h2>
-                </header>
-            ) : (
+            {!isCondensed && (
                 <header className="display-flex flex-justify">
                     <div className="display-flex">
                         <h2 className="margin-0 font-sans-sm">{type}</h2>
