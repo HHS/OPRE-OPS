@@ -3,7 +3,7 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import store from "../../../store";
 import ApproveAgreement from "./ApproveAgreement";
-import { useGetUserByIdQuery, useAddWorkflowApproveMutation } from "../../../api/opsAPI";
+import { useGetUserByIdQuery } from "../../../api/opsAPI";
 
 vi.mock("../../../api/opsAPI");
 describe("ApproveAgreement", () => {
@@ -14,9 +14,6 @@ describe("ApproveAgreement", () => {
             last_name: "Doe",
             email: ""
         },
-        isSuccess: true
-    });
-    useAddWorkflowApproveMutation.mockReturnValue({
         isSuccess: true
     });
 

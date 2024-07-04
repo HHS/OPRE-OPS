@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
-import { useAddWorkflowApproveMutation, useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
@@ -20,19 +20,6 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { workflowActions } from "../review/ReviewAgreement.constants";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 
-const BudgetLinesTableWithWorkflowStep = ({ agreement }) => {
-    // TODO: get BLIs IDs that are in_review
-    // const workflowBudgetLineItemIds = workflowStepInstance?.package_entities?.budget_line_item_ids;
-    return (
-        <BudgetLinesTable
-            readOnly={true}
-            budgetLines={agreement?.budget_line_items}
-            isReviewMode={false}
-            // workflowBudgetLineItemIds={workflowBudgetLineItemIds}
-        />
-    );
-};
-
 const ApproveAgreement = () => {
     const { setAlert } = useAlert();
     const urlPathParams = useParams();
@@ -49,14 +36,11 @@ const ApproveAgreement = () => {
     // @ts-ignore
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
-    const [workflowApprove] = useAddWorkflowApproveMutation();
 
-    let changeRequestType = "";
-    searchParams.get("type") ? (changeRequestType = searchParams.get("type")) : (changeRequestType = "TBD");
-    let changeToStatus = searchParams.get("to")?.toUpperCase();
+    let changeRequestType = searchParams.get("type") ?? "TBD";
+    let changeToStatus = searchParams.get("to")?.toUpperCase() ?? "TBD";
 
     let action = changeToStatus;
-    let stepId = 1; //  TODO: replace with Change Request
     let submittersNotes = "This is a test note";
 
     const navigate = useNavigate();
@@ -89,6 +73,7 @@ const ApproveAgreement = () => {
     // TODO: move this to a helper function
 
     const budgetLinesInReview = agreement?.budget_line_items.filter((bli) => bli.in_review);
+    const budgetLineIdsInReview = budgetLinesInReview.map((bli) => bli.id);
     /**
      *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
      *  @type {ChangeRequest[]}
@@ -111,32 +96,12 @@ const ApproveAgreement = () => {
         });
     };
 
-    const rejectStep = async () => {
-        const data = {
-            workflow_step_action: "REJECT",
-            workflow_step_id: stepId,
-            notes: notes
-        };
-
-        await workflowApprove(data)
-            .unwrap()
-            .then((fulfilled) => {
-                console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
-                setAlert({
-                    type: "success",
-                    heading: "Rejection Saved",
-                    message: `The rejection to change Budget Lines has been saved.`
-                });
-            })
-            .catch((rejected) => {
-                console.error(`ERROR with workflow-approve: ${JSON.stringify(rejected, null, 2)}`);
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while saving the approval.",
-                    redirectUrl: "/error"
-                });
-            });
+    const declineChangeRequest = () => {
+        setAlert({
+            type: "success",
+            heading: "Not Yet Implemented",
+            message: "Not yet implemented"
+        });
     };
 
     const handleDecline = async () => {
@@ -146,38 +111,18 @@ const ApproveAgreement = () => {
             actionButtonText: "Decline",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
-                await rejectStep();
+                await declineChangeRequest();
                 navigate("/agreements");
             }
         });
     };
 
-    const approveStep = async () => {
-        const data = {
-            workflow_step_action: "APPROVE",
-            workflow_step_id: stepId,
-            notes: notes
-        };
-
-        await workflowApprove(data)
-            .unwrap()
-            .then((fulfilled) => {
-                console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
-                setAlert({
-                    type: "success",
-                    heading: `Budget Lines Approved for ${changeToStatus} Status`,
-                    message: `Budget lines for ${agreement.name} have been successfully approved for ${changeToStatus} Status.`
-                });
-            })
-            .catch((rejected) => {
-                console.error(`ERROR with workflow-approve: ${JSON.stringify(rejected, null, 2)}`);
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while saving the approval.",
-                    redirectUrl: "/error"
-                });
-            });
+    const approveChangeRequest = () => {
+        setAlert({
+            type: "success",
+            heading: "Not Yet Implemented",
+            message: "Not yet implemented"
+        });
     };
 
     const handleApprove = async () => {
@@ -187,7 +132,7 @@ const ApproveAgreement = () => {
             actionButtonText: "Approve",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
-                await approveStep();
+                await approveChangeRequest();
                 await navigate("/agreements");
             }
         });
@@ -227,7 +172,12 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={action}
             >
-                <BudgetLinesTableWithWorkflowStep agreement={agreement} />
+                <BudgetLinesTable
+                    readOnly={true}
+                    budgetLines={agreement?.budget_line_items}
+                    isReviewMode={false}
+                    budgetLineIdsInReview={budgetLineIdsInReview}
+                />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
