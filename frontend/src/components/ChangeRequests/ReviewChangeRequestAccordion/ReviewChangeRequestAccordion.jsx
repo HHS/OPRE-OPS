@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import * as React from "react";
-import DebugCode from "../../DebugCode";
 import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
@@ -16,18 +15,17 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
  * @param {Object} props - The component props.
  * @param {string} props.changeType - The type of change request.
  * @param {ChangeRequest[]} props.changeRequests - The budget lines in review.
+ * @param {string} [props.statusChangeTo=""] - The status change to. - optional
  * @returns {JSX.Element} - The rendered component.
  */
-function ReviewChangeRequestAccordion({ changeType, changeRequests }) {
+function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChangeTo = "" }) {
     return (
         <Accordion
             heading="Review Changes"
             level={2}
         >
-            <h3>{changeType}</h3>
-            <DebugCode data={changeRequests} />
             <p>
-                {`This is a list of ${changeType.toLowerCase()}s on this agreement that need your approval. Approve or decline all
+                {`This is a list of ${statusChangeTo.toLowerCase()} ${changeType.toLowerCase()}s on this agreement that need your approval. Approve or decline all
                 ${changeType.toLowerCase()}s below or go back to the For Review Tab to approve or decline each change individually.`}
             </p>
             {changeRequests.map(
@@ -73,6 +71,7 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests }) {
 
 ReviewChangeRequestAccordion.propTypes = {
     changeType: PropTypes.string.isRequired,
-    changeRequests: PropTypes.array.isRequired
+    changeRequests: PropTypes.array.isRequired,
+    statusChangeTo: PropTypes.string
 };
 export default ReviewChangeRequestAccordion;
