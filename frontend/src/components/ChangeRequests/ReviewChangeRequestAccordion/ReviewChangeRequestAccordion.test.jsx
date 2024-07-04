@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import ReviewChangeRequestAccordion from "./ReviewChangeRequestAccordion";
+import { changeRequests } from "../../../tests/data";
 
 describe("ReviewChangesAccordion", () => {
     const initialProps = {
         changeType: "budget change",
-        budgetLinesInReview: []
+        changeRequests: changeRequests
     };
     it("should render the review accordion", () => {
         render(<ReviewChangeRequestAccordion {...initialProps} />);
