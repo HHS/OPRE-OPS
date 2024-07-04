@@ -17,7 +17,6 @@ import { convertCodeForDisplay, renderField, toTitleCaseFromSlug } from "../../.
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import useToggle from "../../../hooks/useToggle";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { workflowActions } from "../review/ReviewAgreement.constants";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 
 const ApproveAgreement = () => {
@@ -199,7 +198,7 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={action}
             />
-            {action === workflowActions.DRAFT_TO_PLANNED && (
+            {action === BLI_STATUS.PLANNED && (
                 <AgreementChangesAccordion
                     changeInBudgetLines={budgetLinesInReview.reduce((acc, { amount }) => acc + amount, 0)}
                     changeInCans={changeInCans}
