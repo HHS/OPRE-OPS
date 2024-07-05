@@ -35,7 +35,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             style={{ height: "11.375rem" }}
                             data-cy="details-notes"
                         >
-                            {agreement.notes} hello
+                            {agreement.notes}
                         </div>
                     ) : (
                         <p className="font-12px">There are currently no notes for this agreement.</p>
