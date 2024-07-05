@@ -92,7 +92,9 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
             <button
                 tabIndex={0}
                 className="sr-only"
-            ></button>
+            >
+                admin and support projects table
+            </button>
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>

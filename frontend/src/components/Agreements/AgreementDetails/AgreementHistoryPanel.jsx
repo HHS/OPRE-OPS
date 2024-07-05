@@ -37,7 +37,9 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             <button
                 tabIndex={0}
                 className="sr-only"
-            ></button>
+            >
+                agreement history
+            </button>
             <>
                 <AgreementHistoryList agreementHistory={agreementHistory} />
                 {!stopped && (

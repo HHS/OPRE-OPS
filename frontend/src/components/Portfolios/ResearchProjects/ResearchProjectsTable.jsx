@@ -84,7 +84,17 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
     }, []);
 
     return (
-        <div className="usa-table-container--scrollable">
+        <div
+            className="usa-table-container--scrollable"
+            role="region"
+            aria-live="polite"
+        >
+            <button
+                tabIndex={0}
+                className="sr-only"
+            >
+                research projects table
+            </button>
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>

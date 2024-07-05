@@ -40,7 +40,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             <button
                                 tabIndex={0}
                                 className="sr-only"
-                            ></button>
+                            >
+                                agreement notes
+                            </button>
                             {agreement.notes}
                         </div>
                     ) : (
