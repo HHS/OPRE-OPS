@@ -33,10 +33,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         <div
                             className="font-12px overflow-y-scroll force-show-scrollbars"
                             style={{ height: "11.375rem" }}
-                            tabIndex={0}
                             data-cy="details-notes"
                         >
-                            {agreement.notes}
+                            {agreement.notes} hello
                         </div>
                     ) : (
                         <p className="font-12px">There are currently no notes for this agreement.</p>

@@ -77,7 +77,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                     key={`page-item-${pagePosition}`}
                     className="usa-pagination__item usa-pagination__page-no cursor-pointer"
                 >
-                    <a
+                    <button
                         className={cx(
                             "usa-pagination__button",
                             currentPage === pageNumberArray[pagePosition] && "usa-current"
@@ -86,7 +86,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                         onClick={() => setCurrentPage(pageNumberArray[pagePosition])}
                     >
                         {pageNumberArray[pagePosition]}
-                    </a>
+                    </button>
                 </li>
             );
         }
@@ -105,7 +105,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                         currentPage === 1 && styles.hideElement
                     )}
                 >
-                    <a
+                    <button
                         className="usa-pagination__link usa-pagination__previous-page"
                         aria-label="Previous page"
                         onClick={() => setCurrentPage(currentPage - 1)}
@@ -118,14 +118,14 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                             <use xlinkHref="/assets/img/sprite.svg#navigate_before"></use>
                         </svg>
                         <span className="usa-pagination__link-text">Previous</span>
-                    </a>
+                    </button>
                 </li>
                 {pageItems}
                 <li
                     key="page-item-next"
                     className="usa-pagination__item usa-pagination__arrow cursor-pointer"
                 >
-                    <a
+                    <button
                         className={cx(
                             "usa-pagination__link usa-pagination__next-page",
                             (currentPage === totalPages || totalPages === 0) && styles.hideElement
@@ -141,7 +141,7 @@ export const PaginationNav = ({ currentPage, setCurrentPage, items = [], itemsPe
                         >
                             <use xlinkHref="/assets/img/sprite.svg#navigate_next"></use>
                         </svg>
-                    </a>
+                    </button>
                 </li>
             </ul>
         </nav>

@@ -1,14 +1,14 @@
-import globals from "globals";
+import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import pluginJs from "@eslint/js";
-import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
-import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
-import pluginReactHooksConfig from "eslint-plugin-react-hooks";
-import pluginPrettierConfig from "eslint-plugin-prettier";
-import pluginReactRefresh from "eslint-plugin-react-refresh";
-import pluginTestingLibrary from "eslint-plugin-testing-library";
-import { fixupPluginRules } from "@eslint/compat";
-import { fixupConfigRules } from "@eslint/compat";
 import pluginJestConfig from "eslint-plugin-jest";
+import pluginJsxA11y from "eslint-plugin-jsx-a11y";
+import pluginPrettierConfig from "eslint-plugin-prettier";
+import pluginReactHooksConfig from "eslint-plugin-react-hooks";
+import pluginReactRefresh from "eslint-plugin-react-refresh";
+import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
+import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
+import pluginTestingLibrary from "eslint-plugin-testing-library";
+import globals from "globals";
 
 export default [
     { languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals.browser } },
@@ -38,6 +38,11 @@ export default [
         plugins: {
             "react-refresh": pluginReactRefresh,
             "eslint-plugin-prettier": pluginPrettierConfig
+        },
+        settings: {
+            react: {
+                version: "detect"
+            }
         }
     },
     {
@@ -59,6 +64,14 @@ export default [
         rules: {
             ...pluginTestingLibrary.configs.react.rules,
             "no-undef": "off"
+        }
+    },
+    {
+        plugins: {
+            "jsx-a11y": pluginJsxA11y
+        },
+        rules: {
+            ...pluginJsxA11y.configs.recommended.rules
         }
     }
 ];
