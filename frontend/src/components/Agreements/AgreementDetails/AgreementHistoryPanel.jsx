@@ -31,7 +31,13 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             className="overflow-y-scroll force-show-scrollbars"
             style={{ height: "15rem" }}
             data-cy="agreement-history-container"
+            role="region"
+            aria-live="polite"
         >
+            <button
+                tabIndex={0}
+                className="sr-only"
+            ></button>
             <>
                 <AgreementHistoryList agreementHistory={agreementHistory} />
                 {!stopped && (

@@ -34,7 +34,13 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             className="font-12px overflow-y-scroll force-show-scrollbars"
                             style={{ height: "11.375rem" }}
                             data-cy="details-notes"
+                            role="region"
+                            aria-live="polite"
                         >
+                            <button
+                                tabIndex={0}
+                                className="sr-only"
+                            ></button>
                             {agreement.notes}
                         </div>
                     ) : (

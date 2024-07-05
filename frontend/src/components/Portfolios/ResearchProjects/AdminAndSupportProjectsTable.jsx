@@ -84,7 +84,15 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     }, []);
 
     return (
-        <div className="usa-table-container--scrollable">
+        <div
+            className="usa-table-container--scrollable"
+            role="region"
+            aria-live="polite"
+        >
+            <button
+                tabIndex={0}
+                className="sr-only"
+            ></button>
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>
