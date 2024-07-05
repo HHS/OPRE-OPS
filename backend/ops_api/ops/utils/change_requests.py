@@ -13,6 +13,7 @@ from models import (
 
 from models.cans import BudgetLineItemStatus
 
+
 def get_expires_date():
     return date(2031, 12, 31)  # what should this be?
 
@@ -29,7 +30,6 @@ def create_notification_of_new_request_to_reviewer(change_request: ChangeRequest
         division_director_ids.add(division.deputy_division_director_id)
     fe_url = current_app.config.get("OPS_FRONTEND_URL")
 
-
     approve_url = (
         f"{fe_url}/agreements/approve/{agreement_id}?type=status-change"
         if change_request.has_status_change
@@ -37,15 +37,14 @@ def create_notification_of_new_request_to_reviewer(change_request: ChangeRequest
     )
 
     if not (change_request.requested_change_data is None or change_request.requested_change_data.get("status") is None):
-       change_status = change_request.requested_change_data.get("status")
-       to_status = None
-       if change_status == BudgetLineItemStatus.PLANNED.name:
-         to_status = "planned"
-       elif change_status == BudgetLineItemStatus.IN_EXECUTION.name:
-         to_status = "executing"
-       if to_status is not None:
-         approve_url = f"{approve_url}&to={to_status}"
-
+        change_status = change_request.requested_change_data.get("status")
+        to_status = None
+        if change_status == BudgetLineItemStatus.PLANNED.name:
+            to_status = "planned"
+        elif change_status == BudgetLineItemStatus.IN_EXECUTION.name:
+            to_status = "executing"
+        if to_status is not None:
+            approve_url = f"{approve_url}&to={to_status}"
 
     for division_director_id in division_director_ids:
         notification = Notification(
