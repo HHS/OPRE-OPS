@@ -48,10 +48,6 @@ export const ConfirmationModal = ({
                     lastElement.focus();
                 }
             }
-            if (event.key === "Escape") {
-                // close the modal on Escape key press
-                setShowModal(false);
-            }
         };
 
         // add event listener for keyboard navigation
@@ -61,7 +57,7 @@ export const ConfirmationModal = ({
         return () => {
             currentModalRef.removeEventListener("keydown", handleKeydown);
         };
-    }, [setShowModal]);
+    }, []);
     return (
         <>
             <div
@@ -70,19 +66,29 @@ export const ConfirmationModal = ({
                 id="ops-modal"
                 aria-labelledby="ops-modal-heading"
                 aria-describedby="ops-modal-description"
-                onClick={() => setShowModal(false)}
             >
                 <div
                     className="usa-modal-overlay"
                     aria-controls="ops-modal"
+                    onClick={() => setShowModal(false)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                            setShowModal(false);
+                        }
+                    }}
+                    role="button"
+                    tabIndex={0}
                 >
                     <div
                         className="usa-modal"
-                        tabIndex={-1}
-                        onClick={(e) => e.stopPropagation()}
                         ref={modalRef}
                     >
-                        <div className="usa-modal__content">
+                        <div
+                            className="usa-modal__content"
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            role="presentation"
+                        >
                             <div className="usa-modal__main">
                                 <h2
                                     className="usa-modal__heading font-family-sans"

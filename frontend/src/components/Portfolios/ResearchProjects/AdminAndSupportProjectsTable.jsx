@@ -84,10 +84,7 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     }, []);
 
     return (
-        <div
-            className="usa-table-container--scrollable"
-            tabIndex="0"
-        >
+        <div className="usa-table-container--scrollable">
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>
