@@ -6,7 +6,8 @@ import {
     useGetNameForCanId,
     useGetNameForProcurementShopId,
     useGetNameForProductServiceCodeId,
-    useGetNameForResearchProjectId
+    useGetNameForResearchProjectId,
+    useGetNameForServicesComponentId
 } from "../../../hooks/lookup.hooks";
 
 const noDataMessage = "There is currently no history for this agreement.";
@@ -87,7 +88,6 @@ const propertyLogItemTitle = (logItem) => {
     if (logItem.event_class_name === "BudgetLineItem") {
         title = `Budget Line ${propertyLabel} Edited`;
     } else if (logItem.event_class_name === "BudgetLineItemChangeRequest") {
-        // const targetLabel =  logItem.property_key === "status" ?  renderField(null, "status", logItem.change.new) : propertyLabel;
         title = logItem.property_key === "status" ? `Status Change to ${renderField(null, "status", logItem.change.new)}` : `Budget Change to ${propertyLabel}`;
         if (logItem.event_type === "IN_REVIEW") {
             title += " In Review";
@@ -130,13 +130,11 @@ const LogItemMessage = ({ logItem }) => {
 
     const messageBeginning = propertyLogItemMessageBeginning(logItem);
     const shouldRenderDetails = !omitChangeDetailsFor.includes(logItem.property_key);
-    const messageAddendum = propertyLogItemMessageAddendum(logItem);
     const from = (
         <RenderProperty
             className={logItem.target_class_name}
             propertyKey={logItem.property_key}
             value={logItem.change.old}
-            // id={change.fromId}
         />
     );
     const to = (
@@ -144,9 +142,36 @@ const LogItemMessage = ({ logItem }) => {
             className={logItem.target_class_name}
             propertyKey={logItem.property_key}
             value={logItem.change.new}
-            // id={change.toId}
         />
     );
+
+    // change requests
+    if (logItem.event_class_name === "BudgetLineItemChangeRequest") {
+        const changeType = logItem.property_key === "status" ? "status" : "budget";
+        const requestedBy = logItem.changes_requested_by_user_full_name
+        if (logItem.event_type === "IN_REVIEW") {
+            return (
+                <>
+                    {requestedBy} requested a {changeType} change on {logItem.target_display_name} from {from} to {to}
+                    {" "}and it&apos;s currently In Review for approval.
+                </>
+            )
+        } else if (logItem.event_type === "APPROVED") {
+            return (
+                <>
+                    {createdBy} approved the {changeType} change on {logItem.target_display_name} from {from} to {to}
+                    {" "}as requested by {requestedBy}.
+                </>
+            )
+        } else if (logItem.event_type === "REJECTED") {
+            return (
+                <>
+                    {createdBy} declined the {changeType} change on {logItem.target_display_name} from {from} to {to}
+                    {" "}as requested by {requestedBy}.
+                </>
+            )
+        }
+    }
 
     return (
         <>
@@ -157,7 +182,7 @@ const LogItemMessage = ({ logItem }) => {
                     from {from} to {to}
                 </>
             )}{" "}
-            by {createdBy}. {messageAddendum}
+            by {createdBy}.
         </>
     );
 };
@@ -178,27 +203,14 @@ const propertyLogItemMessageBeginning = (logItem) => {
     return msg;
 };
 
-const propertyLogItemMessageAddendum = (logItem) => {
-    let msg = "";
-    if (logItem.event_class_name === "BudgetLineItemChangeRequest") {
-        if (logItem.event_type === "IN_REVIEW") {
-            msg = ` This budget change is currently In Review for approval.`;
-        } else if (logItem.event_type === "APPROVED") {
-            // TODO: change these placeholder messages when working on approvals
-            msg = ` This budget change has been approved.`;
-        } else if (logItem.event_type === "REJECTED") {
-            msg = ` This budget change has been rejected.`;
-        }
-    }
-    return msg;
-};
 
 const relations = {
     procurement_shop_id: "procurement_shop",
     product_service_code_id: "product_service_code",
     project_id: "project",
     can_id: "can",
-    project_officer_id: "project_officer"
+    project_officer_id: "project_officer",
+    services_component_id: "services_component"
 };
 
 const UserName = ({ id }) => {
@@ -226,12 +238,19 @@ const CanName = ({ id }) => {
     return <>{name}</>;
 };
 
+const ServicesComponentName = ({ id }) => {
+    const name = useGetNameForServicesComponentId(id);
+    return <>{name}</>;
+};
+
 const components = {
     project_officer_id: UserName,
     procurement_shop_id: ProcurementShopName,
     product_service_code_id: ProductServiceCodeName,
     project_id: ResearchProjectName,
-    can_id: CanName
+    can_id: CanName,
+    services_component_id: ServicesComponentName
+
 };
 
 const RenderProperty = ({ className, propertyKey, value }) => {
@@ -256,6 +275,7 @@ const AgreementHistoryList = ({ agreementHistory }) => {
     const allLogItems = agreementHistory.flatMap((historyItem) => historyItem.log_items);
 
     const renderHistoryLogItem = (logItem, index) => {
+        // remove log items for changes that were made by a change request (which has its own log item)
         if (logItem.updated_by_change_request) return;
         return (
             <LogItem

@@ -65,6 +65,7 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
     changes = ops_db_hist.changes
     target_class_name = ops_db_hist.class_name
     target_display_name = find_target_display_name(ops_db_hist)
+    changes_request_by = None
     if ops_db_hist.class_name in change_request_class_names:
         event_type = ops_db_hist.event_details.get("status", None)
         changes = ops_db_hist.event_details.get("requested_change_diff", None)
@@ -73,6 +74,7 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
             if ops_db_hist.class_name == BudgetLineItemChangeRequest.__name__
             else Agreement.__name__
         )
+        changes_request_by = ops_db_hist.event_details.get("created_by_user", None)
 
     # TODO: After reworking the UI to use log_items, include just what's needed instead of the full to_dict()
     d = ops_db_hist.to_dict()
@@ -80,6 +82,7 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
     d["event_type"] = event_type
     d["changes"] = changes
     d["target_display_name"] = target_display_name
+    changes_requested_by_user_full_name = changes_request_by.get("full_name", None) if changes_request_by else None
     acting_change_request_id = ops_db_hist.event_details.get("acting_change_request_id", None)
 
     event_props = {
@@ -91,6 +94,7 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
         "created_on": ops_db_hist.created_on.isoformat(),
         "updated_by_change_request": True if acting_change_request_id else False,
         "acting_change_request_id": acting_change_request_id,
+        "changes_requested_by_user_full_name": changes_requested_by_user_full_name,
     }
 
     # break down changes into log items which can be used to render a history log in the UI
