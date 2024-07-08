@@ -8,7 +8,7 @@ const NavFooter = () => {
                 <li className="usa-footer__primary-content">
                     <a
                         className="usa-footer__primary-link"
-                        href="#"
+                        href="/"
                     >
                         Documentation
                     </a>
@@ -16,7 +16,7 @@ const NavFooter = () => {
                 <li className="usa-footer__primary-content">
                     <a
                         className="usa-footer__primary-link"
-                        href="#"
+                        href="/"
                     >
                         Features
                     </a>
@@ -24,7 +24,7 @@ const NavFooter = () => {
                 <li className="usa-footer__primary-content">
                     <a
                         className="usa-footer__primary-link"
-                        href="#"
+                        href="/"
                     >
                         Getting Started
                     </a>
@@ -32,7 +32,7 @@ const NavFooter = () => {
                 <li className="usa-footer__primary-content">
                     <a
                         className="usa-footer__primary-link"
-                        href="#"
+                        href="/"
                     >
                         About
                     </a>

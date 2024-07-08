@@ -1,6 +1,6 @@
+import USWDS from "@uswds/uswds/js";
 import PropTypes from "prop-types";
 import React from "react";
-import USWDS from "@uswds/uswds/js";
 import styles from "./TextClip.module.scss";
 
 const { tooltip } = USWDS;
@@ -10,7 +10,7 @@ const { tooltip } = USWDS;
  * @component
  * @param {object} props - The component props.
  * @param {string} [props.text] - The text
- * @param {string} [props.maxLines] - optional (default 2), the number of lines to display, default is 2
+ * @param {number} [props.maxLines] - optional (default 2), the number of lines to display, default is 2
  * @param {number} [props.tooltipThreshold] - optional (default 50), minimum character length to add the enhanced tooltip
  * @returns {JSX.Element} - The rendered component
  **/
