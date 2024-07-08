@@ -131,7 +131,8 @@ class BaseModel(Base):
         schema = self.__marshmallow__()
         data = schema.dump(self)
         data["display_name"] = self.display_name
-        # look for and add the transient attribute that tracks the change request responsible for changes
+        # add the transient attribute that tracks the change request responsible for changes (if it exists)
+        # so that it's added to the history event details
         if hasattr(self, "acting_change_request_id"):
             data["acting_change_request_id"] = self.acting_change_request_id
 
