@@ -1,5 +1,6 @@
 import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import pluginJs from "@eslint/js";
+import pluginCypress from "eslint-plugin-cypress/flat";
 import pluginJestConfig from "eslint-plugin-jest";
 import pluginJsxA11y from "eslint-plugin-jsx-a11y";
 import pluginPrettierConfig from "eslint-plugin-prettier";
@@ -11,6 +12,7 @@ import pluginTestingLibrary from "eslint-plugin-testing-library";
 import globals from "globals";
 
 export default [
+    pluginCypress.configs.globals,
     { languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals.browser } },
     pluginJs.configs.recommended,
     { files: ["**/*.{js,ts,jsx,tsx}"], languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
@@ -72,6 +74,14 @@ export default [
         },
         rules: {
             ...pluginJsxA11y.configs.recommended.rules
+        }
+    },
+    {
+        plugins: {
+            cypress: pluginCypress
+        },
+        rules: {
+            "cypress/unsafe-to-chain-command": "error"
         }
     }
 ];
