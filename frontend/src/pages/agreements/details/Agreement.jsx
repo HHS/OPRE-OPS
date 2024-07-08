@@ -42,10 +42,6 @@ const Agreement = () => {
     let changeRequests = useChangeRequestsForAgreement(agreement?.id);
 
     useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [mode]);
-
-    useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
             const results = await getUser(id);
             setProjectOfficer(results);

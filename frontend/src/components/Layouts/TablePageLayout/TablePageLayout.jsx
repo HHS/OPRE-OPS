@@ -34,10 +34,6 @@ export const TablePageLayout = ({
     buttonText,
     buttonLink
 }) => {
-    React.useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
-
     return (
         <>
             <div className="display-flex flex-align-center flex-justify margin-bottom-205">
