@@ -30,8 +30,12 @@ const AgreementHistoryPanel = ({ agreementId }) => {
         <div
             className="overflow-y-scroll force-show-scrollbars"
             style={{ height: "15rem" }}
-            tabIndex={0}
             data-cy="agreement-history-container"
+            role="region"
+            aria-live="polite"
+            aria-label="Agreement History"
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+            tabIndex={0}
         >
             <>
                 <AgreementHistoryList agreementHistory={agreementHistory} />
