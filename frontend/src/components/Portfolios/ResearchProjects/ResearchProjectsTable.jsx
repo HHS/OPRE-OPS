@@ -1,9 +1,9 @@
 import * as React from "react";
+import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import useSortableData from "../../../hooks/use-sortable-data.hooks";
-import CurrencyFormat from "react-currency-format";
-import "./tables.scss";
 import TextClip from "../../UI/Text/TextClip";
+import "./tables.scss";
 
 const ResearchProjectsTable = ({ fiscalYear, data }) => {
     const { items: projectTableData, requestSort, sortConfig } = useSortableData(data);
@@ -86,7 +86,11 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
     return (
         <div
             className="usa-table-container--scrollable"
-            tabIndex="0"
+            role="region"
+            aria-live="polite"
+            aria-label="Research Projects Table"
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+            tabIndex={0}
         >
             <table className="usa-table usa-table--borderless width-full">
                 <thead>

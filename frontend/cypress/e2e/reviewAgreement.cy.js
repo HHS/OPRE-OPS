@@ -10,14 +10,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-describe("Review Agreement", () => {
-    it.skip("should handle status change DRAFT to PLANNED");
-    it.skip("should handle status change PLANNED to EXECUTING");
-    it.skip("should handle budget change request amount change");
-    it.skip("should handle budget change CAN change");
-    it.skip("should handle budget change request date change");
-});
-
 describe("agreement change accordion", () => {
     it("handles interactions", () => {
         cy.visit("/agreements/review/1").wait(1000);

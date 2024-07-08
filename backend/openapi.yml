@@ -1631,12 +1631,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/GenericChangeRequest'
-          '400':
-            description: Bad Request
-          '401':
-            description: Unauthorized
-          '500':
-            description: Internal Server Error
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
 
   /api/v1/change-request-reviews/:
     description: command object endpoint to approve or reject a change request
@@ -1671,7 +1671,48 @@ paths:
           description: Unauthorized
         '500':
           description: Internal Server Error
-
+  /documents/:
+    get:
+      description: Get documents by agreement id
+      parameters:
+        - name: agreement_id
+          in: query
+          description: The agreement id to filter documents
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+    post:
+      description: Create a new document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
 components:
   parameters:
     created_by:
@@ -2606,6 +2647,30 @@ components:
       allOf:
         - $ref: '#/components/schemas/ProcurementStep'
         - $ref: '#/components/schemas/Attestation'
+    DocumentRequest:
+      type: object
+      properties:
+        file_name:
+          type: string
+        document_type:
+          type: string
+        agreement_id:
+          type: integer
+          format: int32
+      required:
+        - file_name
+        - document_type
+        - agreement_id
+    DocumentResponse:
+        type: object
+        properties:
+          uuid:
+            type: string
+          url:
+            type: string
+        required:
+          - uuid
+          - url
   examples:
     CAN:
       value:
