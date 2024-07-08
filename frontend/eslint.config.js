@@ -9,8 +9,10 @@ import pluginTestingLibrary from "eslint-plugin-testing-library";
 import { fixupPluginRules } from "@eslint/compat";
 import { fixupConfigRules } from "@eslint/compat";
 import pluginJestConfig from "eslint-plugin-jest";
+import pluginCypress from "eslint-plugin-cypress/flat";
 
 export default [
+    pluginCypress.configs.globals,
     { languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: globals.browser } },
     pluginJs.configs.recommended,
     { files: ["**/*.{js,ts,jsx,tsx}"], languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } },
@@ -59,6 +61,14 @@ export default [
         rules: {
             ...pluginTestingLibrary.configs.react.rules,
             "no-undef": "off"
+        }
+    },
+    {
+        plugins: {
+            cypress: pluginCypress
+        },
+        rules: {
+            "cypress/unsafe-to-chain-command": "error"
         }
     }
 ];
