@@ -57,8 +57,8 @@ describe("agreement BLI accordion", () => {
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
-        cy.get("#1").check({ force: true });
-        cy.get("#2").check({ force: true });
+        cy.get("#15000").check({ force: true });
+        cy.get("#15001").check({ force: true });
     });
 
     it("should handle check-all and uncheck all", () => {

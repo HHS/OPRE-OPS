@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from models import CAN, OpsDBHistory, OpsEvent, Project, User, Vendor
+from models import CAN, BudgetLineItem, OpsDBHistory, OpsEvent, Project, User, Vendor
 from ops_api.ops import create_app
 from tests.auth_client import AuthClient, NoPermsAuthClient
 
@@ -160,3 +160,9 @@ def test_project(loaded_db) -> Project | None:
 def test_can(loaded_db) -> CAN | None:
     """Get a test CAN."""
     return loaded_db.get(CAN, 500)
+
+
+@pytest.fixture()
+def test_bli(loaded_db) -> BudgetLineItem | None:
+    """Get a test BudgetLineItem."""
+    return loaded_db.get(BudgetLineItem, 15000)
