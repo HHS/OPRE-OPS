@@ -88,13 +88,8 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
             className="usa-table-container--scrollable"
             role="region"
             aria-live="polite"
+            aria-label="Admin and Support Projects Table"
         >
-            <button
-                tabIndex={0}
-                className="sr-only"
-            >
-                admin and support projects table
-            </button>
             <table className="usa-table usa-table--borderless width-full">
                 <thead>
                     <tr>

@@ -33,13 +33,8 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             data-cy="agreement-history-container"
             role="region"
             aria-live="polite"
+            aria-label="Agreement History"
         >
-            <button
-                tabIndex={0}
-                className="sr-only"
-            >
-                agreement history
-            </button>
             <>
                 <AgreementHistoryList agreementHistory={agreementHistory} />
                 {!stopped && (
