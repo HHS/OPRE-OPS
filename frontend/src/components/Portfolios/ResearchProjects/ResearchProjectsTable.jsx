@@ -89,6 +89,8 @@ const ResearchProjectsTable = ({ fiscalYear, data }) => {
             role="region"
             aria-live="polite"
             aria-label="Research Projects Table"
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+            tabIndex={0}
         >
             <table className="usa-table usa-table--borderless width-full">
                 <thead>

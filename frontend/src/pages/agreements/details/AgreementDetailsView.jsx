@@ -34,6 +34,8 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             className="font-12px overflow-y-scroll force-show-scrollbars"
                             style={{ height: "11.375rem" }}
                             data-cy="details-notes"
+                            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                            tabIndex={0}
                             role="region"
                             aria-live="polite"
                             aria-label="Agreement Notes"
