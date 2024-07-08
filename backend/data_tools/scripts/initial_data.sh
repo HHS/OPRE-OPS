@@ -21,13 +21,13 @@ alembic upgrade head
 echo "Loading initial seed data..."
 if [ "$ENV" = "local" ]; then
  echo "Local environment detected. Loading seed data..."
-  for file in ./data_tools/initial_prod_seed_data/*.sql; do
+  for file in $(ls ./data_tools/initial_data/*.sql | sort -g); do
     echo "Loading $file..."
     psql postgresql://postgres:local_password@db:5432/postgres -f $file
   done
 else
   echo "Local environment detected. Loading seed data..."
-  for file in ./data_tools/initial_prod_seed_data/*.sql; do
+  for file in $(ls ./data_tools/initial_data/*.sql | sort -g); do
     echo "Loading $file..."
     psql postgresql://"$ADMIN_PGUSER":"$ADMIN_PGPASSWORD"@"$PGHOST":"$PGPORT"/"$PGDATABASE" -f $file
   done
