@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import Tag from "../../../components/UI/Tag/Tag";
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
+import Tag from "../../../components/UI/Tag/Tag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
@@ -36,13 +36,8 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             data-cy="details-notes"
                             role="region"
                             aria-live="polite"
+                            aria-label="Agreement Notes"
                         >
-                            <button
-                                tabIndex={0}
-                                className="sr-only"
-                            >
-                                agreement notes
-                            </button>
                             {agreement.notes}
                         </div>
                     ) : (
