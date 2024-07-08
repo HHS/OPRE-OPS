@@ -3,7 +3,7 @@ export const actionOptions = {
     CHANGE_PLANNED_TO_EXECUTING: "Change Planned Budget Lines to Executing Status"
 };
 
-export const workflowActions = {
+export const selectedAction = {
     DRAFT_TO_PLANNED: "DRAFT_TO_PLANNED",
     PLANNED_TO_EXECUTING: "PLANNED_TO_EXECUTING"
 };

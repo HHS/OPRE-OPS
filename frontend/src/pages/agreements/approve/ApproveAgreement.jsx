@@ -1,35 +1,23 @@
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery, useAddWorkflowApproveMutation } from "../../../api/opsAPI";
-import PageHeader from "../../../components/UI/PageHeader";
-import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { convertCodeForDisplay } from "../../../helpers/utils";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
-import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
-import { getTotalByCans } from "../review/ReviewAgreement.helpers";
+import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
+import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
-import useToggle from "../../../hooks/useToggle";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
-import { useSearchParams } from "react-router-dom";
+import PageHeader from "../../../components/UI/PageHeader";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
+import { convertCodeForDisplay, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
-import { workflowActions } from "../review/ReviewAgreement.constants";
-import { useGetWorkflowInstanceFromId, useGetWorkflowStepInstanceFromId } from "../../../hooks/workflow.hooks.js";
-
-const BudgetLinesTableWithWorkflowStep = ({ agreement, workflowStepInstance }) => {
-    const workflowBudgetLineItemIds = workflowStepInstance?.package_entities?.budget_line_item_ids;
-    return (
-        <BudgetLinesTable
-            readOnly={true}
-            budgetLines={agreement?.budget_line_items}
-            isReviewMode={false}
-            workflowBudgetLineItemIds={workflowBudgetLineItemIds}
-        />
-    );
-};
+import useToggle from "../../../hooks/useToggle";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 
 const ApproveAgreement = () => {
     const { setAlert } = useAlert();
@@ -47,17 +35,17 @@ const ApproveAgreement = () => {
     // @ts-ignore
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
-    const [workflowApprove] = useAddWorkflowApproveMutation();
-    const stepId = searchParams.get("stepId");
-    const workflowStepInstance = useGetWorkflowStepInstanceFromId(stepId);
-    const { workflow_instance_id: workflowInstanceId, package_entities: packageEntities } = workflowStepInstance;
-    const workflowBudgetLineItemIds = packageEntities?.budget_line_item_ids;
-    const submittersNotes = packageEntities?.notes;
-    console.log("workflowBudgetLineItemIds", workflowBudgetLineItemIds);
-    console.log("workflowStepInstance", workflowStepInstance);
-    console.log("submittersNotes", submittersNotes);
-    const workflowInstance = useGetWorkflowInstanceFromId(workflowInstanceId);
-    const { workflow_action: action } = workflowInstance;
+
+    const CHANGE_REQUEST_SLUG_TYPES = {
+        STATUS: "status-change",
+        BUDGET: "budget-change"
+    };
+
+    let changeRequestType = searchParams.get("type") ?? "";
+    let changeToStatus = searchParams.get("to")?.toUpperCase() ?? "";
+
+    let action = changeToStatus;
+    let submittersNotes = "This is a test note"; // TODO: replace with actual data
 
     const navigate = useNavigate();
     const {
@@ -69,14 +57,13 @@ const ApproveAgreement = () => {
     });
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const [afterApproval, setAfterApproval] = useToggle(true);
-    const goToText = action === workflowActions.DRAFT_TO_PLANNED ? "Planned" : "Executing";
-    const fromToText = action === workflowActions.DRAFT_TO_PLANNED ? "Draft to Planned" : "Planned to Executing";
+
     const checkBoxText =
-        action === workflowActions.DRAFT_TO_PLANNED
+        changeToStatus === BLI_STATUS.PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
             : "I understand that approving these budget lines will start the Procurement Process";
     const approveModalHeading =
-        action === workflowActions.DRAFT_TO_PLANNED
+        changeToStatus === BLI_STATUS.PLANNED
             ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
             : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
 
@@ -87,8 +74,25 @@ const ApproveAgreement = () => {
         return <h1>Oops, an error occurred</h1>;
     }
 
+    // TODO: move this to a helper function
+
     const budgetLinesInReview = agreement?.budget_line_items.filter((bli) => bli.in_review);
+    const budgetLineIdsInReview = budgetLinesInReview.map((bli) => bli.id);
+    /**
+     *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
+     *  @type {ChangeRequest[]}
+     */
+    const changeRequestsInReview = /** @type {ChangeRequest[]} */ (
+        getInReviewChangeRequests(agreement?.budget_line_items)
+    );
     const changeInCans = getTotalByCans(budgetLinesInReview);
+
+    let statusForTitle = "";
+    if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
+        const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
+        statusForTitle = `- ${renderField(null, "status", status)}`;
+    }
+    const title = `Approval for ${toTitleCaseFromSlug(changeRequestType)} ${statusForTitle}`;
 
     const handleCancel = () => {
         setShowModal(true);
@@ -103,72 +107,33 @@ const ApproveAgreement = () => {
         });
     };
 
-    const rejectStep = async () => {
-        const data = {
-            workflow_step_action: "REJECT",
-            workflow_step_id: stepId,
-            notes: notes
-        };
-
-        await workflowApprove(data)
-            .unwrap()
-            .then((fulfilled) => {
-                console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
-                setAlert({
-                    type: "success",
-                    heading: "Rejection Saved",
-                    message: `The rejection to change Budget Lines has been saved.`
-                });
-            })
-            .catch((rejected) => {
-                console.error(`ERROR with workflow-approve: ${JSON.stringify(rejected, null, 2)}`);
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while saving the approval.",
-                    redirectUrl: "/error"
-                });
-            });
+    const declineChangeRequest = () => {
+        setAlert({
+            type: "success",
+            heading: "Not Yet Implemented",
+            message: "Not yet implemented"
+        });
     };
 
     const handleDecline = async () => {
         setShowModal(true);
         setModalProps({
-            heading: `Are you sure you want to decline these budget lines for ${goToText} Status?`,
+            heading: `Are you sure you want to decline these budget lines for ${changeToStatus} Status?`,
             actionButtonText: "Decline",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
-                await rejectStep();
+                await declineChangeRequest();
                 navigate("/agreements");
             }
         });
     };
-    const approveStep = async () => {
-        const data = {
-            workflow_step_action: "APPROVE",
-            workflow_step_id: stepId,
-            notes: notes
-        };
 
-        await workflowApprove(data)
-            .unwrap()
-            .then((fulfilled) => {
-                console.log(`SUCCESS of workflow-approve: ${JSON.stringify(fulfilled, null, 2)}`);
-                setAlert({
-                    type: "success",
-                    heading: `Budget Lines Approved for ${goToText} Status`,
-                    message: `Budget lines for ${agreement.name} have been successfully approved for ${goToText} Status.`
-                });
-            })
-            .catch((rejected) => {
-                console.error(`ERROR with workflow-approve: ${JSON.stringify(rejected, null, 2)}`);
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while saving the approval.",
-                    redirectUrl: "/error"
-                });
-            });
+    const approveChangeRequest = () => {
+        setAlert({
+            type: "success",
+            heading: "Not Yet Implemented",
+            message: "Not yet implemented"
+        });
     };
 
     const handleApprove = async () => {
@@ -178,7 +143,7 @@ const ApproveAgreement = () => {
             actionButtonText: "Approve",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
-                await approveStep();
+                await approveChangeRequest();
                 await navigate("/agreements");
             }
         });
@@ -196,8 +161,13 @@ const ApproveAgreement = () => {
                 />
             )}
             <PageHeader
-                title={`Approval for ${goToText} Status`}
+                title={title}
                 subTitle={agreement.name}
+            />
+            <ReviewChangeRequestAccordion
+                changeType={toTitleCaseFromSlug(changeRequestType)}
+                changeRequests={changeRequestsInReview}
+                statusChangeTo={changeToStatus}
             />
             <AgreementMetaAccordion
                 instructions="Please review the agreement details below to ensure all information is correct."
@@ -207,16 +177,18 @@ const ApproveAgreement = () => {
             />
             <AgreementBLIAccordion
                 title="Review Budget Lines"
-                instructions={`This is a list of all budget lines within this agreement. The budget lines showing In Review Status need your approval to change from ${fromToText} Status.`}
+                instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
                 budgetLineItems={budgetLinesInReview}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={action}
             >
-                <BudgetLinesTableWithWorkflowStep
-                    agreement={agreement}
-                    workflowStepInstance={workflowStepInstance}
+                <BudgetLinesTable
+                    readOnly={true}
+                    budgetLines={agreement?.budget_line_items}
+                    isReviewMode={false}
+                    budgetLineIdsInReview={budgetLineIdsInReview}
                 />
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
@@ -226,7 +198,7 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={action}
             />
-            {action === workflowActions.DRAFT_TO_PLANNED && (
+            {action === BLI_STATUS.PLANNED && (
                 <AgreementChangesAccordion
                     changeInBudgetLines={budgetLinesInReview.reduce((acc, { amount }) => acc + amount, 0)}
                     changeInCans={changeInCans}

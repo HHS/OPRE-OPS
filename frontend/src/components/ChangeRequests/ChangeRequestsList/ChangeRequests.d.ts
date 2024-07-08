@@ -1,8 +1,7 @@
 export type ChangeRequest = {
-    agreement: number;
     agreement_id: number;
-    budget_line_item: number;
     budget_line_item_id: number;
+    change_request_type: string;
     created_by: number;
     created_by_user: {
         full_name: string;
@@ -13,7 +12,6 @@ export type ChangeRequest = {
     has_budget_change: boolean;
     has_status_change: boolean;
     id: number;
-    managing_division: number;
     managing_division_id: number;
     requested_change_data: {
         amount: number;
@@ -39,16 +37,10 @@ export type ChangeRequest = {
             old: string;
         };
     };
-    requested_change_info: {
-        target_display_name: string;
-    };
-    reviewed_by_id: number | null;
+    requestor_notes: string | null;
     reviewed_on: string | null;
+    reviewer_notes: string | null;
     status: string;
-    type: string;
     updated_by: number;
-    updated_by_user: {
-        full_name: string;
-        id: number;
-    };
+    updated_on: string;
 };

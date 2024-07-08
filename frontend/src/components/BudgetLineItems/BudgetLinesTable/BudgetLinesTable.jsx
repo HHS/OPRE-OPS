@@ -13,7 +13,7 @@ import "./BudgetLinesTable.scss";
  * @param {Function} [props.handleDuplicateBudgetLine] - A function to handle duplicating a budget line. - optional
  * @param {Boolean} [props.readOnly] - A flag to indicate if the table is read-only.
  * @param {Boolean} [props.isReviewMode] - A flag to indicate if the table is in review mode.
- * @param {Array<number>} [props.workflowBudgetLineItemIds] - An array of budget line item ids that are in the current workflow. - optional
+ * @param {Array<number>} [props.budgetLineIdsInReview] - an array of budget line IDs that are in review.
  * @returns {JSX.Element} - The rendered table component.
  */
 const BudgetLinesTable = ({
@@ -23,7 +23,7 @@ const BudgetLinesTable = ({
     handleDuplicateBudgetLine = () => {},
     readOnly = false,
     isReviewMode = false,
-    workflowBudgetLineItemIds = []
+    budgetLineIdsInReview = []
 }) => {
     const sortedBudgetLines = budgetLines
         .slice()
@@ -41,9 +41,7 @@ const BudgetLinesTable = ({
                     handleSetBudgetLineForEditing={handleSetBudgetLineForEditing}
                     isReviewMode={isReviewMode}
                     readOnly={readOnly}
-                    isBLIInCurrentWorkflow={
-                        workflowBudgetLineItemIds && workflowBudgetLineItemIds.includes(budgetLine.id)
-                    }
+                    isBLIInCurrentWorkflow={budgetLineIdsInReview && budgetLineIdsInReview.includes(budgetLine.id)}
                 />
             ))}
         </Table>
@@ -59,7 +57,7 @@ BudgetLinesTable.propTypes = {
     readOnly: PropTypes.bool,
     errors: PropTypes.arrayOf(PropTypes.array),
     isReviewMode: PropTypes.bool,
-    workflowBudgetLineItemIds: PropTypes.arrayOf(PropTypes.number)
+    budgetLineIdsInReview: PropTypes.arrayOf(PropTypes.number)
 };
 
 export default BudgetLinesTable;

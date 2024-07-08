@@ -51,12 +51,43 @@ describe("ReviewCard", () => {
         const requesterName = screen.getByText("Jane Doe");
         const requestDate = screen.getByText("June 12, 2024");
         const actionIcons = screen.queryByText("icons");
+        const link = screen.getByRole("link", { name: "Review Agreement" });
 
         expect(type).toBeInTheDocument();
         expect(agreementName).toBeInTheDocument();
         expect(requesterName).toBeInTheDocument();
         expect(requestDate).toBeInTheDocument();
         expect(actionIcons).not.toBeInTheDocument();
+        expect(link).toBeInTheDocument();
+    });
+    it("should render the condensed ReviewCard component", async () => {
+        useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
+        useGetBudgetLineItemQuery.mockReturnValue({ data: { budgetLine } });
+        useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
+        render(
+            <BrowserRouter>
+                <ReviewCard
+                    {...initialProps}
+                    isCondensed={true}
+                >
+                    <p>hello</p>
+                </ReviewCard>
+            </BrowserRouter>
+        );
+
+        const type = screen.queryByText("Budget Change");
+        const agreementName = screen.queryByText("Agreement Name");
+        const requesterName = screen.getByText("Jane Doe");
+        const requestDate = screen.getByText("June 12, 2024");
+        const actionIcons = screen.queryByText("icons");
+        const link = screen.queryByRole("link", { name: "Review Agreement" });
+
+        expect(type).not.toBeInTheDocument();
+        expect(agreementName).not.toBeInTheDocument();
+        expect(requesterName).toBeInTheDocument();
+        expect(requestDate).toBeInTheDocument();
+        expect(actionIcons).not.toBeInTheDocument();
+        expect(link).not.toBeInTheDocument();
     });
     it("should handle clicking on the action icons", async () => {
         const user = userEvent.setup();
