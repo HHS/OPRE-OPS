@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import Agreement from "./Agreement";
-
-import store from "../../../store";
 import { Provider } from "react-redux";
+import store from "../../../store";
+import Agreement from "./Agreement";
 
 describe("Agreement", () => {
     test("renders correctly", () => {

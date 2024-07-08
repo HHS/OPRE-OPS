@@ -1,18 +1,20 @@
 import React from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
+import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
+import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import useToggle from "../../../hooks/useToggle";
@@ -56,6 +58,8 @@ const ApproveAgreement = () => {
         refetchOnMountOrArgChange: true
     });
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items) ?? [];
     const [afterApproval, setAfterApproval] = useToggle(true);
 
     const checkBoxText =
@@ -77,7 +81,6 @@ const ApproveAgreement = () => {
     // TODO: move this to a helper function
 
     const budgetLinesInReview = agreement?.budget_line_items.filter((bli) => bli.in_review);
-    const budgetLineIdsInReview = budgetLinesInReview.map((bli) => bli.id);
     /**
      *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
      *  @type {ChangeRequest[]}
@@ -175,6 +178,7 @@ const ApproveAgreement = () => {
                 projectOfficerName={projectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
+
             <AgreementBLIAccordion
                 title="Review Budget Lines"
                 instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
@@ -184,12 +188,23 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={action}
             >
-                <BudgetLinesTable
-                    readOnly={true}
-                    budgetLines={agreement?.budget_line_items}
-                    isReviewMode={false}
-                    budgetLineIdsInReview={budgetLineIdsInReview}
-                />
+                <section className="margin-top-4">
+                    {groupedBudgetLinesByServicesComponent.map((group) => (
+                        <ServicesComponentAccordion
+                            key={group.servicesComponentId}
+                            servicesComponentId={group.servicesComponentId}
+                            withMetadata={true}
+                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                            description={findDescription(servicesComponents, group.servicesComponentId)}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                readOnly={true}
+                            />
+                        </ServicesComponentAccordion>
+                    ))}
+                </section>
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
