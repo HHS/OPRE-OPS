@@ -1,3 +1,4 @@
+import uuid
 from threading import Lock
 
 from flask import Config
@@ -12,12 +13,20 @@ class FakeDocumentRepository(DocumentRepository):
         self.documents = {}
         self.lock = Lock()
 
-    def add_document(self, document_id, document_content):
-        with self.lock:
-            if document_id in self.documents:
+    def add_document(self, document_content):
+        agreement_id = document_content.get("agreement_id")
+        document_type = document_content.get("document_type")
+
+        # Check if document already exists by agreement_id and document_type
+        for doc in self.documents.values():
+            if doc.get("agreement_id") == agreement_id and doc.get("document_type") == document_type:
                 raise DocumentAlreadyExistsError("Document already exists")
-            else:
-                self.documents[document_id] = document_content
+
+        with self.lock:
+            document_id = str(uuid.uuid4())
+            self.documents[document_id] = document_content
+
+        return {"uuid": document_id, "url": f"FakeDocumentRepository/{document_id}"}
 
     def get_document(self, document_id):
         with self.lock:
@@ -36,3 +45,7 @@ class FakeDocumentRepository(DocumentRepository):
                 del self.documents[document_id]
             else:
                 raise DocumentNotFoundError("Document not found")
+
+    def get_documents_by_agreement_id(self, agreement_id):
+        with self.lock:
+            return [doc for doc in self.documents.values() if doc.get("agreement_id") == agreement_id]
