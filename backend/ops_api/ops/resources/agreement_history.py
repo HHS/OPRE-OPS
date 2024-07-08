@@ -80,7 +80,18 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
     d["event_type"] = event_type
     d["changes"] = changes
     d["target_display_name"] = target_display_name
-    change_request_id = ops_db_hist.event_details.get("_change_request_id", None)
+    acting_change_request_id = ops_db_hist.event_details.get("acting_change_request_id", None)
+
+    event_props = {
+        "event_class_name": ops_db_hist.class_name,
+        "target_class_name": target_class_name,
+        "target_display_name": target_display_name,
+        "event_type": event_type,
+        "created_by_user_full_name": created_by_user_full_name,
+        "created_on": ops_db_hist.created_on.isoformat(),
+        "updated_by_change_request": True if acting_change_request_id else False,
+        "acting_change_request_id": acting_change_request_id,
+    }
 
     # break down changes into log items which can be used to render a history log in the UI
     log_items = []
@@ -93,55 +104,40 @@ def build_agreement_history_dict(ops_db_hist: OpsDBHistory):
         ]
         and ops_db_hist.class_name not in change_request_class_names
     ):
-        log_items.append(
-            {
-                "scope": "OBJECT",
-                "event_class_name": ops_db_hist.class_name,
-                "target_class_name": target_class_name,
-                "target_display_name": target_display_name,
-                "event_type": event_type,
-                "created_by_user_full_name": created_by_user_full_name,
-                "created_on": ops_db_hist.created_on.isoformat(),
-                "updated_by_change_request_id": change_request_id,
-            }
-        )
+        log_item = {
+            "scope": "OBJECT",
+        }
+        log_item.update(event_props)
+        log_items.append(log_item)
     elif changes:  # if UPDATED or a ChangeRequest create log items per property change and per collection item change
         for key, change in changes.items():
             # hiding changes with proc_shop_fee_percentage which seem confusing since it's changed by system
             if key == "proc_shop_fee_percentage":
                 continue
-            common_props = {
-                "event_class_name": ops_db_hist.class_name,
-                "target_class_name": target_class_name,
-                "target_display_name": target_display_name,
-                "property_key": key,
-                "event_type": event_type,
-                "created_by_user_full_name": created_by_user_full_name,
-                "created_on": ops_db_hist.created_on.isoformat(),
-                "updated_by_change_request": True if change_request_id else False,
-                "updated_by_change_request_id": change_request_id,
-            }
             if "collection_of" in change:
                 for deleted_item in change["added"]:
                     log_item = {
                         "scope": "PROPERTY_COLLECTION_ITEM",
+                        "property_key": key,
                         "change": {"added": deleted_item},
                     }
-                    log_item.update(common_props)
+                    log_item.update(event_props)
                     log_items.append(log_item)
                 for deleted_item in change["deleted"]:
                     log_item = {
                         "scope": "PROPERTY_COLLECTION_ITEM",
+                        "property_key": key,
                         "change": {"deleted": deleted_item},
                     }
-                    log_item.update(common_props)
+                    log_item.update(event_props)
                     log_items.append(log_item)
             else:
                 log_item = {
                     "scope": "PROPERTY",
+                    "property_key": key,
                     "change": change,
                 }
-                log_item.update(common_props)
+                log_item.update(event_props)
                 log_items.append(log_item)
     d["log_items"] = log_items
     return d

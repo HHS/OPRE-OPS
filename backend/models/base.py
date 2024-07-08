@@ -131,6 +131,9 @@ class BaseModel(Base):
         schema = self.__marshmallow__()
         data = schema.dump(self)
         data["display_name"] = self.display_name
+        # look for and add the transient attribute that tracks the change request responsible for changes
+        if hasattr(self, "acting_change_request_id"):
+            data["acting_change_request_id"] = self.acting_change_request_id
 
         user_schema = marshmallow.class_registry.get_class("SafeUserSchema")()
         data["created_by_user"] = (

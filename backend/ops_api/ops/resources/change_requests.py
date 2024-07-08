@@ -71,7 +71,9 @@ def review_change_request(
             )
 
             budget_line_items.update_data(budget_line_item, change_data)
-            budget_line_item._change_request_id = change_request.id
+            # add transient property to track that the BLI was changed by this CR in the history for it's update
+            budget_line_item.acting_change_request_id = change_request.id
+            budget_line_item.TEMP_acting_change_request_id = change_request.id
             session.add(budget_line_item)
 
     session.commit()
