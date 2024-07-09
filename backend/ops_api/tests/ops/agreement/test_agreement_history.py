@@ -77,9 +77,6 @@ def test_agreement_history(auth_client, loaded_db, test_can):
         "date_needed": "2043-1-1",
     }
     resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
-    import json
-
-    print(json.dumps(resp.json, indent=2))
     assert resp.status_code == 200
 
     # DELETE budget line
@@ -334,9 +331,6 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 333.33, "can_id": 502, "date_needed": "2032-03-03"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
-    import json
-
-    print(json.dumps(response.json, indent=2))
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -350,10 +344,6 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
     hist_count = len(hist_json)
     assert hist_count == prev_hist_count + 3
     prev_hist_count = hist_count
-
-    import json
-
-    print(">>>>hist json~~~", json.dumps(hist_json, indent=2))
 
     # check history and log item for the change requests which each have one property change
     for i in range(2):
@@ -389,8 +379,6 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
     hist_json = resp.json
     hist_count = len(hist_json)
     assert hist_count == prev_hist_count + 6
-
-    print(">>>>hist json2~~~", json.dumps(hist_json, indent=2))
 
     # verify log item details
     # there will be 2 log items at the same time, one for the CR approval and one for the BLI update
