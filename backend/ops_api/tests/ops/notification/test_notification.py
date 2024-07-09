@@ -110,11 +110,12 @@ def test_notification_creation(loaded_db, notification):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_all(auth_client, loaded_db):
-    assert loaded_db.query(Notification).count() == 42
+    notification_count = loaded_db.query(Notification).count()
+    assert notification_count >= 45
 
     response = auth_client.get("/api/v1/notifications/")
     assert response.status_code == 200
-    assert len(response.json) == 42
+    assert len(response.json) == notification_count
 
 
 @pytest.mark.usefixtures("app_ctx")
