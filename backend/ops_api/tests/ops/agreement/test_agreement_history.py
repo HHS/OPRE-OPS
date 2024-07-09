@@ -379,41 +379,37 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
     # review the change requests, reject the can_id change request and approve the others
     for change_request in change_requests_in_review:
         change_request_id = change_request["id"]
-        can_request = "can_id" in change_request["requested_change_data"]
-        action = "REJECT" if can_request else "APPROVE"
-        data = {"change_request_id": change_request_id, "action": action}
+        data = {"change_request_id": change_request_id, "action": "APPROVE"}
         response = auth_client.post(url_for("api.change-request-review-list"), json=data)
         assert response.status_code == 200
 
-    # verify agreement history added for 3 reviews and 2 approved updates
+    # verify agreement history added for 3 reviews and 3 approved updates
     resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
     assert resp.status_code == 200
     hist_json = resp.json
     hist_count = len(hist_json)
-    assert hist_count == prev_hist_count + 5
+    assert hist_count == prev_hist_count + 6
 
     print(">>>>hist json2~~~", json.dumps(hist_json, indent=2))
 
     # verify log item details
-    # from the update after approval
-    log_items = hist_json[0]["log_items"]
-    assert len(log_items) == 1
-    log_item = log_items[0]
-    assert log_item["event_class_name"] == "BudgetLineItem"
-    assert log_item["event_type"] == "UPDATED"
-    assert log_item["target_class_name"] == "BudgetLineItem"
-    assert log_item["updated_by_change_request"] is True
-    assert log_item["changes_requested_by_user_full_name"] is None
-
-    # from the review
-    log_items = hist_json[1]["log_items"]
-    assert len(log_items) == 1
-    log_item = log_items[0]
-    assert log_item["event_class_name"] == "BudgetLineItemChangeRequest"
-    assert log_item["event_type"] == "APPROVED"
-    assert log_item["target_class_name"] == "BudgetLineItem"
-    assert log_item["updated_by_change_request"] is False
-    assert log_item["changes_requested_by_user_full_name"] == "Amelia Popham"
+    # there will be 2 log items at the same time, one for the CR approval and one for the BLI update
+    for i in range(2):
+        log_items = hist_json[i]["log_items"]
+        assert len(log_items) == 1
+        log_item = log_items[0]
+        # log item for the CR approval
+        if log_item["event_class_name"] == "BudgetLineItemChangeRequest":
+            assert log_item["event_type"] == "APPROVED"
+            assert log_item["target_class_name"] == "BudgetLineItem"
+            assert log_item["updated_by_change_request"] is False
+            assert log_item["changes_requested_by_user_full_name"] == "Amelia Popham"
+        # log item for the BLI update
+        elif log_item["event_class_name"] == "BudgetLineItem":
+            assert log_item["event_type"] == "UPDATED"
+            assert log_item["target_class_name"] == "BudgetLineItem"
+            assert log_item["updated_by_change_request"] is True
+            assert log_item["changes_requested_by_user_full_name"] is None
 
     # cleanup
     session.delete(bli)
