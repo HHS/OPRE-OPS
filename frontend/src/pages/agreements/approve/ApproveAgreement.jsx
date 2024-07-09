@@ -95,7 +95,8 @@ const ApproveAgreement = () => {
         const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
         statusForTitle = `- ${renderField(null, "status", status)}`;
     }
-    const title = `Approval for ${toTitleCaseFromSlug(changeRequestType)} ${statusForTitle}`;
+    const changeRequestTitle = toTitleCaseFromSlug(changeRequestType);
+    const title = `Approval for ${changeRequestTitle} ${statusForTitle}`;
 
     const handleCancel = () => {
         setShowModal(true);
@@ -153,7 +154,7 @@ const ApproveAgreement = () => {
     };
 
     return (
-        <App breadCrumbName="Approve BLI Status Change">
+        <App breadCrumbName={`Approve BLI ${changeRequestTitle}`}>
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -168,7 +169,7 @@ const ApproveAgreement = () => {
                 subTitle={agreement.name}
             />
             <ReviewChangeRequestAccordion
-                changeType={toTitleCaseFromSlug(changeRequestType)}
+                changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
                 statusChangeTo={changeToStatus}
             />
