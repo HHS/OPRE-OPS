@@ -150,10 +150,13 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_by_is_read(auth_client, loaded_db, notification, notification_is_read_is_true):
-    db_count = loaded_db.query(Notification).filter(Notification.is_read is False).count()
+    db_count = loaded_db.query(Notification).filter(Notification.is_read.is_(False)).count()
+    print(f"{db_count}=")
     assert db_count > 0
     response = auth_client.get("/api/v1/notifications/?is_read=False")
     assert response.status_code == 200
+    print(f"{len(response.json)}=")
+    assert len(response.json) > 0
     assert len(response.json) == db_count
     assert response.json[0]["title"] == "System Notification"
     assert response.json[0]["message"] == "This is a system notification"
@@ -161,7 +164,7 @@ def test_notifications_get_by_is_read(auth_client, loaded_db, notification, noti
     assert response.json[0]["expires"] == "2031-12-31"
     assert response.json[0]["recipient"] is not None
 
-    db_count = loaded_db.query(Notification).filter(Notification.is_read is True).count()
+    db_count = loaded_db.query(Notification).filter(Notification.is_read.is_(True)).count()
     assert db_count > 0
     response = auth_client.get("/api/v1/notifications/?is_read=True")
     assert response.status_code == 200
