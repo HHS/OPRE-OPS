@@ -6,7 +6,6 @@ import AgreementSelect from "./AgreementSelect";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
-vi.mock("../../../api/opsAPI");
 vi.mock("../../../hooks/user.hooks");
 
 describe("AgreementSelect", () => {
