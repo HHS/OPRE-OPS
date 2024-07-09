@@ -34,34 +34,17 @@ const ApproveAgreement = () => {
         handleConfirm: () => {}
     });
 
-    // @ts-ignore
-    const agreementId = +urlPathParams.id;
-    const [searchParams] = useSearchParams();
-
     const CHANGE_REQUEST_SLUG_TYPES = {
         STATUS: "status-change",
         BUDGET: "budget-change"
     };
-
+    let submittersNotes = "This is a test note"; // TODO: replace with actual data
+    // @ts-ignore
+    const agreementId = +urlPathParams.id;
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     let changeRequestType = searchParams.get("type") ?? "";
     let changeToStatus = searchParams.get("to")?.toUpperCase() ?? "";
-
-    let action = changeToStatus;
-    let submittersNotes = "This is a test note"; // TODO: replace with actual data
-
-    const navigate = useNavigate();
-    const {
-        data: agreement,
-        error: errorAgreement,
-        isLoading: isLoadingAgreement
-    } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
-    });
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
-    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items) ?? [];
-    const [afterApproval, setAfterApproval] = useToggle(true);
-
     const checkBoxText =
         changeToStatus === BLI_STATUS.PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
@@ -70,6 +53,18 @@ const ApproveAgreement = () => {
         changeToStatus === BLI_STATUS.PLANNED
             ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
             : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
+    const [afterApproval, setAfterApproval] = useToggle(true);
+
+    const {
+        data: agreement,
+        error: errorAgreement,
+        isLoading: isLoadingAgreement
+    } = useGetAgreementByIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true
+    });
+
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
@@ -79,7 +74,7 @@ const ApproveAgreement = () => {
     }
 
     // TODO: move this to a helper function
-
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
     const budgetLinesInReview = agreement?.budget_line_items.filter((bli) => bli.in_review);
     /**
      *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
@@ -187,7 +182,7 @@ const ApproveAgreement = () => {
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                action={action}
+                action={changeToStatus}
             >
                 <section className="margin-top-4">
                     {groupedBudgetLinesByServicesComponent.map((group) => (
@@ -212,9 +207,9 @@ const ApproveAgreement = () => {
                 selectedBudgetLines={budgetLinesInReview}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                action={action}
+                action={changeToStatus}
             />
-            {action === BLI_STATUS.PLANNED && (
+            {changeToStatus === BLI_STATUS.PLANNED && (
                 <AgreementChangesAccordion
                     changeInBudgetLines={budgetLinesInReview.reduce((acc, { amount }) => acc + amount, 0)}
                     changeInCans={changeInCans}
