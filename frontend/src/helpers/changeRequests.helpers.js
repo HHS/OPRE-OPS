@@ -52,3 +52,16 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
         newValue
     };
 }
+/**
+ * Get change requests in review from budget lines.
+ * @param {Object[]} budgetLines - The budget lines.
+ *
+ * @returns {Object[]} The change requests in review.
+ */
+export function getInReviewChangeRequests(budgetLines) {
+    return budgetLines
+        .filter((budgetLine) => budgetLine.in_review)
+        .flatMap((budgetLine) =>
+            Array.isArray(budgetLine.change_requests_in_review) ? budgetLine.change_requests_in_review : []
+        );
+}

@@ -4,7 +4,6 @@ import { terminalLog, testLogin } from "./utils";
 const ALL_BLI_TOTAL = "37,467,548.00";
 const ADMIN_BLI_TOTAL = "37,466,500.00";
 const DRAFT_BLI_TOTAL = "3,000,000.00";
-const IN_REVIEW_BLI_TOTAL = "0";
 const EXECUTING_BLI_TOTAL = "16,080,000.00";
 const PLANNED_BLI_TOTAL = "15,371,500.00";
 const OBLIGATED_BLI_TOTAL = "3,016,048.00";
@@ -44,7 +43,7 @@ it("pagination on the bli table works as expected", () => {
     cy.wait(1000);
     cy.get("ul").should("have.class", "usa-pagination__list");
     cy.get("li").should("have.class", "usa-pagination__item").contains("1");
-    cy.get("a").should("have.class", "usa-current").contains("1");
+    cy.get("button").should("have.class", "usa-current").contains("1");
     cy.get("li").should("have.class", "usa-pagination__item").contains("2");
     cy.get("li").should("have.class", "usa-pagination__item").contains("Next");
     cy.get("tbody").find("tr").should("have.length", 10);
@@ -56,7 +55,7 @@ it("pagination on the bli table works as expected", () => {
 
     // go to the second page
     cy.get("li").should("have.class", "usa-pagination__item").contains("2").click();
-    cy.get("a").should("have.class", "usa-current").contains("2");
+    cy.get("button").should("have.class", "usa-current").contains("2");
     cy.get("li").should("have.class", "usa-pagination__item").contains("Previous");
     cy.get("li")
         .should("have.class", "usa-pagination__item")
@@ -66,7 +65,7 @@ it("pagination on the bli table works as expected", () => {
 
     // go back to the first page
     cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();
-    cy.get("a").should("have.class", "usa-current").contains("1");
+    cy.get("button").should("have.class", "usa-current").contains("1");
 });
 
 it("the filter button works as expected", () => {
