@@ -695,8 +695,6 @@ class CAN(BaseModel):
 
     @property
     def status(self):
-        if object_session(self) is None:
-            return CANStatus.INACTIVE
         current_year = date.today().year
         can_fiscal_year = object_session(self).scalar(
             select(CANFiscalYear).where(
@@ -709,7 +707,33 @@ class CAN(BaseModel):
         )
         if can_fiscal_year is None:
             return CANStatus.INACTIVE
-        can_status = CANStatus.INACTIVE if can_fiscal_year.expected_funding <= 0 and self.expiration_date < datetime.now() else CANStatus.ACTIVE
+        total_funding = can_fiscal_year.received_funding + can_fiscal_year.expected_funding
+         # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
+        budget_line_items = object_session(self).execute(
+            select(BudgetLineItem).where(
+                BudgetLineItem.can_id == self.id
+            )
+        ).scalars().all()
+
+        planned_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.PLANNED]
+        planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
+
+        obligated_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.OBLIGATED]
+        obligated_funding = sum([b.amount for b in obligated_budget_line_items]) or 0
+
+        in_execution_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.IN_EXECUTION]
+        in_execution_funding = sum([b.amount for b in in_execution_budget_line_items]) or 0
+        total_accounted_for = sum(
+            (
+                planned_funding,
+                obligated_funding,
+                in_execution_funding
+            )
+        ) or 0
+        available_funding = decimal(total_funding) - decimal(total_accounted_for)
+
+        is_expired = self.expiration_date.date() < date.today()
+        can_status = CANStatus.INACTIVE if available_funding <= 0 and is_expired else CANStatus.ACTIVE
         return can_status
 
 
