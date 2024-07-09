@@ -707,8 +707,7 @@ class CAN(BaseModel):
         )
         if can_fiscal_year is None:
             return CANStatus.INACTIVE
-        total_funding = can_fiscal_year.received_funding + can_fiscal_year.expected_funding
-         # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
+        # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
         budget_line_items = object_session(self).execute(
             select(BudgetLineItem).where(
                 BudgetLineItem.can_id == self.id
@@ -730,7 +729,7 @@ class CAN(BaseModel):
                 in_execution_funding
             )
         ) or 0
-        available_funding = decimal(total_funding) - decimal(total_accounted_for)
+        available_funding = can_fiscal_year.total_funding - total_accounted_for
 
         is_expired = self.expiration_date.date() < date.today()
         can_status = CANStatus.INACTIVE if available_funding <= 0 and is_expired else CANStatus.ACTIVE
