@@ -149,7 +149,7 @@ const ApproveAgreement = () => {
     };
 
     return (
-        <App breadCrumbName={`Approve BLI ${changeRequestTitle}`}>
+        <App breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}>
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
