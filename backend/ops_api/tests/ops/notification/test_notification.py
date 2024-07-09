@@ -149,8 +149,9 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_notifications_get_by_is_read(auth_client, loaded_db, notification_is_read_is_true):
+def test_notifications_get_by_is_read(auth_client, loaded_db, notification, notification_is_read_is_true):
     db_count = loaded_db.query(Notification).filter(Notification.is_read is False).count()
+    assert db_count > 0
     response = auth_client.get("/api/v1/notifications/?is_read=False")
     assert response.status_code == 200
     assert len(response.json) == db_count
