@@ -4,11 +4,13 @@ import pytest
 from sqlalchemy import func, select
 
 from models import BudgetLineItem
-from models.cans import CAN, CANArrangementType
+from models.cans import CAN, CANArrangementType, CANStatus
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_retrieve(loaded_db):
+def test_can_retrieve(loaded_db, mocker):
+    date_mock = mocker.patch("models.cans.date")
+    date_mock.today.return_value = datetime.date(2023, 8, 1)
     can = loaded_db.execute(select(CAN).where(CAN.number == "G99HRF2")).scalar_one()
 
     assert can is not None
@@ -20,6 +22,31 @@ def test_can_retrieve(loaded_db):
     assert can.authorizer_id == 26
     assert can.managing_portfolio_id == 6
     assert can.arrangement_type == CANArrangementType.OPRE_APPROPRIATION
+    assert can.status == CANStatus.ACTIVE
+    assert len(can.funding_sources) == 2
+    assert can.shared_portfolios == []
+    assert (
+        len(can.budget_line_items)
+        == loaded_db.execute(
+            select(func.count()).select_from(BudgetLineItem).where(BudgetLineItem.can_id == can.id)
+        ).scalar()
+    )
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_is_inactive(loaded_db, mocker):
+    can = loaded_db.execute(select(CAN).where(CAN.number == "G99HRF2")).scalar_one()
+
+    assert can is not None
+    assert can.number == "G99HRF2"
+    assert can.description == "Healthy Marriages Responsible Fatherhood - OPRE"
+    assert can.purpose == ""
+    assert can.nickname == "HMRF-OPRE"
+    assert can.appropriation_term == 1
+    assert can.authorizer_id == 26
+    assert can.managing_portfolio_id == 6
+    assert can.arrangement_type == CANArrangementType.OPRE_APPROPRIATION
+    assert can.status == CANStatus.INACTIVE
     assert len(can.funding_sources) == 2
     assert can.shared_portfolios == []
     assert (
