@@ -23,7 +23,7 @@ def fake_user(test_oidc):
 @pytest.mark.usefixtures("app_ctx")
 def test_is_fake_user(app, fake_user):
     assert is_fake_user(app, fake_user) is False
-    app.config["FAKE_USER_OIDC_IDS"] = [fake_user.oidc_id]
+    app.config["FAKE_USER_OIDC_IDS"] = [str(fake_user.oidc_id)]
     assert is_fake_user(app, fake_user) is True
 
 
