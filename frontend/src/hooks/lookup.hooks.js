@@ -91,6 +91,7 @@ export const useGetNameForCanId = (id) => {
     return displayName;
 };
 
+
 /**
  * This hook returns the display name of an Agreement given the id.
  * @param {number} id - The id of the Agreement.
