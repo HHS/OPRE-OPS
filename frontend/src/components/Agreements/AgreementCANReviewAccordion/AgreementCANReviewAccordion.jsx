@@ -5,7 +5,7 @@ import CANFundingCard from "../../CANs/CANFundingCard";
 import ToggleButton from "../../UI/ToggleButton";
 import Tag from "../../UI/Tag";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
-import { workflowActions } from "../../../pages/agreements/review/ReviewAgreement.constants";
+import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
 
 /**
  * Renders an accordion component for reviewing CANs.
@@ -78,7 +78,7 @@ const AgreementCANReviewAccordion = ({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {action === workflowActions.DRAFT_TO_PLANNED && (
+                {action === selectedAction.DRAFT_TO_PLANNED && (
                     <ToggleButton
                         btnText="After Approval"
                         handleToggle={() => setAfterApproval(!afterApproval)}

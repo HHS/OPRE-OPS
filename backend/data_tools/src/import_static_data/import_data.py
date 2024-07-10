@@ -73,6 +73,7 @@ ALLOWED_TABLES = [
     "procurement_solicitation",
     "procurement_award",
     "can_fiscal_year_funding_details",
+    "can_appropriation_details",
 ]
 
 data = os.getenv("DATA")

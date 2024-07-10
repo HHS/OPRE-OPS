@@ -1,6 +1,17 @@
-import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+import { useEffect, useRef, useCallback } from "react";
 
+/**
+ * A modal component that can be used to display a message or prompt the user for confirmation.
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.heading - The heading text to display in the modal.
+ * @param {string | Array<any>} [props.description=""] - The description text to display in the modal.
+ * @param {Function} [props.setShowModal=() => {}] - A function to set the visibility of the modal.
+ * @param {string} [props.cancelButtonText] - The text to display on the primary action button.
+ * @param {React.ReactNode} props.children - The child nodes to be rendered within the layout
+ * @returns {JSX.Element} - The modal component JSX.
+ */
 export const ContainerModal = ({
     heading,
     description = "",
@@ -10,44 +21,52 @@ export const ContainerModal = ({
 }) => {
     const modalRef = useRef(null);
 
-    useEffect(() => {
-        // set initial focus to the modal
-        const currentModalRef = modalRef.current;
-        currentModalRef.focus();
-
-        const handleKeydown = (event) => {
-            // get all focusable elements in the modal container
-            const focusableElements = currentModalRef.querySelectorAll(
+    const getFocusableElements = useCallback(() => {
+        if (!modalRef.current) return [];
+        return Array.from(
+            modalRef.current.querySelectorAll(
                 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
+            )
+        );
+    }, []);
+
+    const handleKeyDown = useCallback(
+        (event) => {
+            const focusableElements = getFocusableElements();
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
 
             if (event.key === "Tab") {
-                // handle focus wraparound
-                if (document.activeElement === lastElement && !event.shiftKey) {
+                if (event.shiftKey && document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement.focus();
+                } else if (!event.shiftKey && document.activeElement === lastElement) {
                     event.preventDefault();
                     firstElement.focus();
                 }
-                if (document.activeElement === firstElement && event.shiftKey) {
-                    event.preventDefault();
-                    lastElement.focus();
-                }
             }
             if (event.key === "Escape") {
-                // close the modal on Escape key press
                 setShowModal(false);
             }
-        };
+        },
+        [getFocusableElements, setShowModal]
+    );
 
-        // add event listener for keyboard navigation
-        currentModalRef.addEventListener("keydown", handleKeydown);
+    useEffect(() => {
+        const focusableElements = getFocusableElements();
+        if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+        }
 
-        // clean up the event listener when the component unmounts
+        const previouslyFocusedElement = document.activeElement;
+
+        document.addEventListener("keydown", handleKeyDown);
+
         return () => {
-            currentModalRef.removeEventListener("keydown", handleKeydown);
+            document.removeEventListener("keydown", handleKeyDown);
+            previouslyFocusedElement.focus();
         };
-    }, [setShowModal]);
+    }, [getFocusableElements, handleKeyDown]);
     return (
         <>
             <div
@@ -56,16 +75,10 @@ export const ContainerModal = ({
                 id="ops-modal"
                 aria-labelledby="ops-modal-heading"
                 aria-describedby="ops-modal-description"
-                onClick={() => setShowModal(false)}
             >
-                <div
-                    className="usa-modal-overlay"
-                    aria-controls="ops-modal"
-                >
+                <div className="usa-modal-overlay">
                     <div
                         className="usa-modal"
-                        tabIndex="-1"
-                        onClick={(e) => e.stopPropagation()}
                         ref={modalRef}
                     >
                         <div className="usa-modal__content">

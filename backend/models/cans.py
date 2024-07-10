@@ -60,6 +60,9 @@ class CANType(Enum):
     OPRE = auto()
     NON_OPRE = auto()
 
+class CANStatus(Enum):
+    ACTIVE = auto()
+    INACTIVE = auto()
 
 class CANFundingSources(BaseModel):
     __tablename__ = "can_funding_sources"
@@ -694,6 +697,49 @@ class CAN(BaseModel):
         "Project", secondary="project_cans", back_populates="cans"
     )
 
+    @property
+    def status(self):
+        current_year = date.today().year
+        can_fiscal_year = object_session(self).scalar(
+            select(CANFiscalYear).where(
+                and_(
+                    CANFiscalYear.can_id
+                    == self.id,
+                    CANFiscalYear.fiscal_year == current_year
+                )
+            )
+        )
+        if can_fiscal_year is None:
+            return CANStatus.INACTIVE
+        # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
+        budget_line_items = object_session(self).execute(
+            select(BudgetLineItem).where(
+                BudgetLineItem.can_id == self.id
+            )
+        ).scalars().all()
+
+        planned_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.PLANNED]
+        planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
+
+        obligated_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.OBLIGATED]
+        obligated_funding = sum([b.amount for b in obligated_budget_line_items]) or 0
+
+        in_execution_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.IN_EXECUTION]
+        in_execution_funding = sum([b.amount for b in in_execution_budget_line_items]) or 0
+        total_accounted_for = sum(
+            (
+                planned_funding,
+                obligated_funding,
+                in_execution_funding
+            )
+        ) or 0
+        available_funding = can_fiscal_year.total_funding - total_accounted_for
+
+        is_expired = self.expiration_date.date() < date.today()
+        can_status = CANStatus.INACTIVE if available_funding <= 0 and is_expired else CANStatus.ACTIVE
+        return can_status
+
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
@@ -715,3 +761,15 @@ class CANFiscalYearFundingDetails(BaseModel):
     can_fiscal_year_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("can_fiscal_year.id")
     )
+
+class CANAppropriationDetails(BaseModel):
+    """
+
+    """
+
+    __tablename__ = "can_appropriation_details"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    appropriation_prefix: Mapped[Optional[str]] = mapped_column(String)
+    appropriation_postfix: Mapped[Optional[str]] = mapped_column(String)
+    appropriation_year: Mapped[Optional[str]] = mapped_column(String)

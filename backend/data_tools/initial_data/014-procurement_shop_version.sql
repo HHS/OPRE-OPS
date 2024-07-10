@@ -1,0 +1,4 @@
+INSERT INTO ops.procurement_shop_version (id, name, abbr, fee, created_on, updated_on, transaction_id, end_transaction_id, operation_type) VALUES (1, 'Product Service Center', 'PSC', 0, current_timestamp, current_timestamp, 1, null, 0);
+INSERT INTO ops.procurement_shop_version (id, name, abbr, fee, created_on, updated_on, transaction_id, end_transaction_id, operation_type) VALUES (2, 'Government Contracting Services', 'GCS', 0, current_timestamp, current_timestamp, 1, null, 0);
+INSERT INTO ops.procurement_shop_version (id, name, abbr, fee, created_on, updated_on, transaction_id, end_transaction_id, operation_type) VALUES (3, 'National Institute of Health', 'NIH', 0.005, current_timestamp, current_timestamp, 1, null, 0);
+INSERT INTO ops.procurement_shop_version (id, name, abbr, fee, created_on, updated_on, transaction_id, end_transaction_id, operation_type) VALUES (4, 'Interior Business Center', 'IBC', 0.048, current_timestamp, current_timestamp, 1, null, 0);

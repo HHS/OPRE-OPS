@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import Tag from "../../../components/UI/Tag/Tag";
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
+import Tag from "../../../components/UI/Tag/Tag";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
@@ -33,8 +33,12 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         <div
                             className="font-12px overflow-y-scroll force-show-scrollbars"
                             style={{ height: "11.375rem" }}
-                            tabIndex={0}
                             data-cy="details-notes"
+                            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                            tabIndex={0}
+                            role="region"
+                            aria-live="polite"
+                            aria-label="Agreement Notes"
                         >
                             {agreement.notes}
                         </div>
