@@ -1,14 +1,14 @@
 import PropTypes from "prop-types";
-import LogItem from "../../UI/LogItem";
 import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import {
     useGetNameForCanId,
     useGetNameForProcurementShopId,
     useGetNameForProductServiceCodeId,
     useGetNameForResearchProjectId
 } from "../../../hooks/lookup.hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks.js";
+import LogItem from "../../UI/LogItem";
 
 const HISTORY_EVENT_TYPE = {
     // standard event types
