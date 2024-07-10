@@ -1,5 +1,8 @@
 from typing import Optional, TypedDict
 
+from sqlalchemy import and_, select
+from sqlalchemy.orm import object_session
+
 from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
 
 
@@ -20,31 +23,56 @@ class CanFundingSummary(TypedDict):
 
 
 def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
-    can_fiscal_year_query = CANFiscalYear.query.filter(CANFiscalYear.can.has(CAN.id == can.id))
-
-    can_fiscal_year_carry_forward_query = CANFiscalYearCarryForward.query.filter(
-        CANFiscalYearCarryForward.can.has(CAN.id == can.id)
-    )
+    can_fiscal_year_list = []
+    can_fiscal_year_carry_forward_list = []
+    session = object_session(can)
 
     if fiscal_year:
-        can_fiscal_year_query = can_fiscal_year_query.filter(CANFiscalYear.fiscal_year == fiscal_year).all()
+        can_fiscal_year_list = (
+            session.execute(
+                select(CANFiscalYear).where(
+                    and_(CANFiscalYear.can_id == can.id, CANFiscalYear.fiscal_year == fiscal_year)
+                )
+            )
+            .scalars()
+            .all()
+        )
 
-        can_fiscal_year_carry_forward_query = can_fiscal_year_carry_forward_query.filter(
-            CANFiscalYearCarryForward.to_fiscal_year == fiscal_year
-        ).all()
+        can_fiscal_year_carry_forward_list = (
+            object_session(can)
+            .execute(
+                select(CANFiscalYearCarryForward).where(
+                    and_(
+                        CANFiscalYearCarryForward.can_id == can.id,
+                        CANFiscalYearCarryForward.to_fiscal_year == fiscal_year,
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+    else:
+        can_fiscal_year_list = (
+            object_session(can).execute(select(CANFiscalYear).where(CANFiscalYear.can_id == can.id)).scalars().all()
+        )
 
-    received_funding = sum([c.received_funding for c in can_fiscal_year_query]) or 0
+        can_fiscal_year_carry_forward_list = (
+            object_session(can)
+            .execute(select(CANFiscalYearCarryForward).where(CANFiscalYearCarryForward.can_id == can.id))
+            .scalars()
+            .all()
+        )
 
-    expected_funding = sum([c.expected_funding for c in can_fiscal_year_query]) or 0
+    received_funding = sum([c.received_funding for c in can_fiscal_year_list]) or 0
+
+    expected_funding = sum([c.expected_funding for c in can_fiscal_year_list]) or 0
 
     carry_forward_data = [
         {
-            "amount": (
-                (c.received_amount if c.received_amount else 0) + (c.expected_amount if c.expected_amount else 0)
-            ),
+            "amount": c.total_amount or 0,
             "fy": c.from_fiscal_year,
         }
-        for c in can_fiscal_year_carry_forward_query
+        for c in can_fiscal_year_carry_forward_list
     ]
 
     if carry_forward_data:
@@ -60,30 +88,22 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
     total_funding = received_funding + expected_funding
 
     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
-    budget_line_items = BudgetLineItem.query.filter(BudgetLineItem.can.has(CAN.id == can.id))
-
-    planned_budget_line_items = budget_line_items.where(BudgetLineItem.status == BudgetLineItemStatus.PLANNED).all()
+    budget_line_items = (
+        object_session(can).execute(select(BudgetLineItem).where(BudgetLineItem.can_id == can.id)).scalars().all()
+    )
+    planned_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.PLANNED]
     planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
 
-    obligated_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status == BudgetLineItemStatus.OBLIGATED
-    ).all()
+    obligated_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.OBLIGATED]
     obligated_funding = sum([b.amount for b in obligated_budget_line_items]) or 0
 
-    in_execution_budget_line_items = budget_line_items.filter(
-        BudgetLineItem.status == BudgetLineItemStatus.IN_EXECUTION
-    ).all()
+    in_execution_budget_line_items = [
+        bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.IN_EXECUTION
+    ]
     in_execution_funding = sum([b.amount for b in in_execution_budget_line_items]) or 0
+    total_accounted_for = sum((planned_funding, obligated_funding, in_execution_funding)) or 0
 
-    total_accounted_for = sum(
-        (
-            planned_funding,
-            obligated_funding,
-            in_execution_funding,
-        )
-    )
-
-    available_funding = float(total_funding) - float(total_accounted_for)
+    available_funding = total_funding - total_accounted_for
 
     can_dict = can.to_dict()
     can_dict.update(

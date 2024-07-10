@@ -623,5 +623,22 @@
       current_fy_funding_ytd: 100000,
       can_fiscal_year_id: 5004
     }
+  ],
+  can_appropriation_details: [
+    {
+      appropriation_prefix: "ABCDE",
+      appropriation_postfix: "FGHIJ",
+      appropriation_year: "2024"
+    },
+    {
+      appropriation_prefix: "PREFI",
+      appropriation_postfix: "POSTF",
+      appropriation_year: "2023"
+    },
+    {
+      appropriation_prefix: "AEIOU",
+      appropriation_postfix: "ALSOY",
+      appropriation_year: "2024"
+    }
   ]
 }
