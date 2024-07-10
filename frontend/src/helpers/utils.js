@@ -151,7 +151,8 @@ export const codesToDisplayText = {
         date_needed: "Need By Date",
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
-        status: "Status"
+        status: "Status",
+        services_component: "Services Component",
     },
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
