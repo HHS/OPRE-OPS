@@ -2,7 +2,7 @@ import logging.config
 import os
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, request
+from flask import Blueprint, Flask, current_app, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
 from sqlalchemy import event
@@ -172,4 +172,5 @@ def before_request_function(app: Flask, request: request):
     if request.endpoint in all_valid_endpoints and request.method not in ["OPTIONS", "HEAD"]:
         verify_jwt_in_request()  # needed to load current_user
         if not is_unit_test() and not is_fake_user(app, current_user):
+            current_app.logger.info(f"Checking user session for {current_user.oidc_id}")
             check_user_session_function(current_user)
