@@ -10,14 +10,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-describe("Review Agreement", () => {
-    it.skip("should handle status change DRAFT to PLANNED");
-    it.skip("should handle status change PLANNED to EXECUTING");
-    it.skip("should handle budget change request amount change");
-    it.skip("should handle budget change CAN change");
-    it.skip("should handle budget change request date change");
-});
-
 describe("agreement change accordion", () => {
     it("handles interactions", () => {
         cy.visit("/agreements/review/1").wait(1000);
@@ -57,8 +49,8 @@ describe("agreement BLI accordion", () => {
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
         cy.get('[type="radio"]').should("have.length", 2);
         cy.get('[type="radio"]').first().check({ force: true });
-        cy.get("#1").check({ force: true });
-        cy.get("#2").check({ force: true });
+        cy.get("#15000").check({ force: true });
+        cy.get("#15001").check({ force: true });
     });
 
     it("should handle check-all and uncheck all", () => {

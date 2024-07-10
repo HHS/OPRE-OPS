@@ -285,7 +285,8 @@ export const servicesComponent = {
 export const changeRequests = [
     {
         agreement_id: 9,
-        budget_line_item_id: 22,
+        budget_line_item_id: 15022,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -316,7 +317,8 @@ export const changeRequests = [
     },
     {
         agreement_id: 9,
-        budget_line_item_id: 22,
+        budget_line_item_id: 15022,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -346,7 +348,8 @@ export const changeRequests = [
     },
     {
         agreement_id: 9,
-        budget_line_item_id: 22,
+        budget_line_item_id: 15022,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -376,7 +379,8 @@ export const changeRequests = [
     },
     {
         agreement_id: 1,
-        budget_line_item_id: 1,
+        budget_line_item_id: 15011,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -406,7 +410,8 @@ export const changeRequests = [
     },
     {
         agreement_id: 1,
-        budget_line_item_id: 2,
+        budget_line_item_id: 15020,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",

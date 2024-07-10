@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from ops_api.ops.auth.decorators import check_user_session_function
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
+from ops_api.ops.document import bp as documents_bp
 from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
@@ -83,6 +84,7 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
     from ops_api.ops.auth import bp as auth_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(documents_bp, url_prefix="/documents")
 
     api_bp = Blueprint("api", __name__, url_prefix=f"/api/{api_version}")
     register_api(api_bp)
