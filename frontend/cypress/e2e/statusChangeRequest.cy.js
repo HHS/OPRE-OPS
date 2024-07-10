@@ -95,7 +95,25 @@ it("BLI Status Change", () => {
             // see if there are any review cards
             cy.get("[data-cy='review-card']")
                 .should("exist")
-                .contains("Status Change")
+                .contains("Status Change");
+            // verify agreement history
+            cy.visit(`/agreements/${agreementId}`);
+            cy.get('.usa-breadcrumb__list > :nth-child(3)').should("have.text",  testAgreement.name);
+            cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+            cy.get('[data-cy="agreement-history-container"]').should("exist");
+            cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+            cy.get('[data-cy="agreement-history-list"]').should("exist");
+            cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("exist");
+            cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+            ).should("have.text", "Status Change to Planned In Review");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                "have.text",
+                `Admin Demo requested a status change on BL ${bliId} from Draft to Planned and it's currently In Review for approval.`
+            )
                 .then(() => {
                     cy.request({
                         method: "DELETE",
