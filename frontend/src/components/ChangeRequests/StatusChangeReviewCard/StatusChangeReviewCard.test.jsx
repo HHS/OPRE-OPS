@@ -51,7 +51,7 @@ describe("StatusChangeReviewCard", () => {
         expect(screen.getByRole("heading", { name: "Status Change" })).toBeInTheDocument();
         expect(screen.getByText("$1,000,000.00")).toBeInTheDocument();
     });
-    it.only("should render a status change of DRAFT to PLANNED", () => {
+    it("should render a status change of DRAFT to PLANNED", () => {
         render(
             <BrowserRouter>
                 <StatusChangeReviewCard
