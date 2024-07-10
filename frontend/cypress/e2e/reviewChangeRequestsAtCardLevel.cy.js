@@ -537,7 +537,7 @@ describe("Review Change Requests at Card Level", () => {
                     });
             });
     });
-    it("review Budget Change Date Needed change", () => {
+    it.only("review Budget Change Date Needed change", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -635,6 +635,11 @@ describe("Review Change Requests at Card Level", () => {
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                 ).contains(/Budget Change to Need By Date Approved/);
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                    "have.text",
+                    `Admin Demo approved the budget change on BL ${bliId} from 1/1/2025 to 11/15/2028 as requested by Admin Demo.`
+                );
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist")
                     .then(() => {
                         cy.request({
