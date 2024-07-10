@@ -5,7 +5,8 @@ import ReviewChangeRequestAccordion from "./ReviewChangeRequestAccordion";
 describe("ReviewChangesAccordion", () => {
     const initialProps = {
         changeType: "budget change",
-        changeRequests: changeRequests
+        changeRequests: changeRequests,
+        statusChangeTo: ""
     };
     it("should render the review accordion for budget change", () => {
         render(<ReviewChangeRequestAccordion {...initialProps} />);
