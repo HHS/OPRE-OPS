@@ -51,7 +51,7 @@ describe("StatusChangeReviewCard", () => {
         expect(screen.getByRole("heading", { name: "Status Change" })).toBeInTheDocument();
         expect(screen.getByText("$1,000,000.00")).toBeInTheDocument();
     });
-    it("should render a status change of DRAFT to PLANNED", () => {
+    it.only("should render a status change of DRAFT to PLANNED", () => {
         render(
             <BrowserRouter>
                 <StatusChangeReviewCard
@@ -60,9 +60,9 @@ describe("StatusChangeReviewCard", () => {
                 />
             </BrowserRouter>
         );
-
+        expect(screen.getByRole("heading", { name: "Status Change Planned" })).toBeInTheDocument();
         expect(screen.getByText(/draft/i)).toBeInTheDocument();
-        expect(screen.getByText(/planned/i)).toBeInTheDocument();
+        expect(screen.getByText(/planned/i, { selector: "span" })).toBeInTheDocument();
     });
     it("should render a status change of PLANNED to EXECUTING", () => {
         const changeTo = {
@@ -80,8 +80,8 @@ describe("StatusChangeReviewCard", () => {
                 />
             </BrowserRouter>
         );
-
+        expect(screen.getByRole("heading", { name: "Status Change Executing" })).toBeInTheDocument();
         expect(screen.getByText(/planned/i)).toBeInTheDocument();
-        expect(screen.getByText(/executing/i)).toBeInTheDocument();
+        expect(screen.getByText(/executing/i, { selector: "span" })).toBeInTheDocument();
     });
 });
