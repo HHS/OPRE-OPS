@@ -7,8 +7,8 @@ import {
     useGetNameForProcurementShopId,
     useGetNameForProductServiceCodeId,
     useGetNameForResearchProjectId,
-    useGetNameForServicesComponentId
 } from "../../../hooks/lookup.hooks";
+import {useGetServicesComponentDisplayName} from "../../../hooks/useServicesComponents.hooks.js";
 
 const noDataMessage = "There is currently no history for this agreement.";
 
@@ -239,7 +239,7 @@ const CanName = ({ id }) => {
 };
 
 const ServicesComponentName = ({ id }) => {
-    const name = useGetNameForServicesComponentId(id);
+    const name = useGetServicesComponentDisplayName(id);
     return <>{name}</>;
 };
 

@@ -5,7 +5,7 @@ import {
     useGetProductServiceCodesQuery,
     useGetResearchProjectsQuery,
     useGetAgreementByIdQuery,
-    useGetBudgetLineItemQuery, useGetServicesComponentByIdQuery
+    useGetBudgetLineItemQuery
 } from "../api/opsAPI";
 import { totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../helpers/utils";
 
@@ -91,23 +91,6 @@ export const useGetNameForCanId = (id) => {
     return displayName;
 };
 
-/**
- * This hook returns the display name of a Services Component given the id.
- * @param {number} id - The id of the Services Component.
- * @returns {string} - The display name of the Services Component.
- */
-export const useGetNameForServicesComponentId = (id) => {
-    const [displayName, setDisplayName] = React.useState("unknown");
-    const { data, isSuccess } = useGetServicesComponentByIdQuery(id);
-
-    React.useEffect(() => {
-        if (isSuccess) {
-            setDisplayName(data?.display_name);
-        }
-    }, [id, data, isSuccess]);
-
-    return displayName;
-};
 
 /**
  * This hook returns the display name of an Agreement given the id.
