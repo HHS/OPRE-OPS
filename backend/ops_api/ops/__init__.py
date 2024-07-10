@@ -1,6 +1,5 @@
 import logging.config
 import os
-from typing import Any, Optional
 
 from authlib.integrations.flask_client import OAuth
 from flask import Blueprint, Flask, request
@@ -40,9 +39,10 @@ def configure_logging(log_level: str = "INFO") -> None:
     )
 
 
-def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
-    is_unit_test = False if config_overrides is None else config_overrides.get("TESTING") is True
-    log_level = "INFO" if not is_unit_test else "DEBUG"
+def create_app() -> Flask:
+    from ops_api.ops.utils.core import is_unit_test
+
+    log_level = "INFO" if not is_unit_test() else "DEBUG"
     configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)
 
@@ -61,9 +61,6 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
         "SQLALCHEMY_DATABASE_URI",
         "postgresql+psycopg2://ops:ops@localhost:5432/postgres",
     )
-
-    if config_overrides is not None:
-        app.config.from_mapping(config_overrides)
 
     api_version = app.config.get("API_VERSION", "v1")
 

@@ -20,7 +20,7 @@ from ..tests.auth_client import AuthClient
 @pytest.fixture()
 def app() -> Generator[Flask, None, None]:
     """Make and return the flask app."""
-    app = create_app({"TESTING": True})
+    app = create_app()
     yield app
 
 
