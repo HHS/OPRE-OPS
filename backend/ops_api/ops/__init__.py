@@ -16,6 +16,7 @@ from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
+from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
 
 def configure_logging(log_level: str = "INFO") -> None:
@@ -170,4 +171,5 @@ def before_request_function(app: Flask, request: request):
     ]
     if request.endpoint in all_valid_endpoints and request.method not in ["OPTIONS", "HEAD"]:
         verify_jwt_in_request()  # needed to load current_user
-        check_user_session_function(current_user)
+        if not is_unit_test() and not is_fake_user(app, current_user):
+            check_user_session_function(current_user)
