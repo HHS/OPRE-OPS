@@ -56,6 +56,13 @@ To run the application using the production server configuration...
 docker compose up db data-import backend frontend-static --build
 ````
 
+To run the application using the minimal initial data set...
+
+```shell
+  docker compose --profile data-initial up --build
+```
+
+
 ## Access
 
 Whether you run the application through Docker or locally, you can access the frontend at `http://localhost:3000` and

@@ -1,12 +1,12 @@
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { vi } from "vitest";
-import AgreementSelect from "./AgreementSelect";
-import { useGetUserByIdQuery } from "../../../api/opsAPI";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import AgreementSelect from "./AgreementSelect";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
-vi.mock("../../../api/opsAPI");
+vi.mock("../../../hooks/user.hooks");
 
 describe("AgreementSelect", () => {
     const agreementsMock = [
@@ -87,7 +87,7 @@ describe("AgreementSelect", () => {
 
     it("displays the correct agreement information in the summary card", () => {
         const selectedAgreementMock = agreementsMock[0];
-        useGetUserByIdQuery.mockReturnValue({ data: { full_name: "John Doe" } });
+        useGetUserFullNameFromId.mockReturnValue("John Doe");
         render(
             <AgreementSelect
                 selectedAgreement={selectedAgreementMock}
@@ -96,7 +96,9 @@ describe("AgreementSelect", () => {
         );
 
         const summaryCard = screen.getByTestId("agreement-summary-card");
+
         expect(summaryCard).toBeInTheDocument();
+        expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
 
     it("does not display the summary card when no agreement is selected", () => {

@@ -53,7 +53,7 @@ export const Menu = () => {
                         <li className="usa-nav__submenu-item">
                             <Link to="/projects/create">Project</Link>
                             <Link to="/agreements/create">Agreement</Link>
-                            <Link to="/budget-lines/create">Budget Lines</Link>
+                            {import.meta.env.DEV && <Link to="/budget-lines/create">Budget Lines</Link>}
                         </li>
                     </ul>
                 </li>

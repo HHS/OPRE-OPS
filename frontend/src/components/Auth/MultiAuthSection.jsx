@@ -111,7 +111,7 @@ const MultiAuthSection = () => {
                         You can access your account by signing in with one of the options below.
                     </p>
                 </div>
-                {window.location.href.includes("localhost")  && ( // login.gov is only configured to work locally at the moment
+                {import.meta.env.MODE === "development" && ( // login.gov is only configured to work locally at the moment
                     <p>
                         <button
                             className="usa-button usa-button--outline width-full"
@@ -165,14 +165,6 @@ const MultiAuthSection = () => {
                             <p>
                                 <button
                                     className="usa-button  usa-button--outline width-full"
-                                    onClick={() => handleFakeAuthLogin("cor_user")}
-                                >
-                                    COR User
-                                </button>
-                            </p>
-                            <p>
-                                <button
-                                    className="usa-button  usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("basic_user")}
                                 >
                                     Basic User
@@ -184,7 +176,7 @@ const MultiAuthSection = () => {
                                     onClick={() => handleFakeAuthLogin("new_user")}
                                     disabled={true}
                                 >
-                                    New User (Registration)
+                                    New User
                                 </button>
                             </p>
                         </div>

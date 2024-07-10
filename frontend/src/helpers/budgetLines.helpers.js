@@ -81,23 +81,28 @@ export const hasBlIsInReview = (budgetLines) => {
  
  */
 export const groupByServicesComponent = (budgetLines) => {
-    handleBLIProp(budgetLines);
-    return budgetLines
-        .reduce((acc, budgetLine) => {
-            const servicesComponentId = budgetLine.services_component_id;
-            const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
-            if (index === -1) {
-                acc.push({ servicesComponentId, budgetLines: [budgetLine] });
-            } else {
-                acc[index].budgetLines.push(budgetLine);
-            }
-            return acc;
-        }, [])
-        .sort((a, b) => {
-            if (a.servicesComponentId === null) return 1;
-            if (b.servicesComponentId === null) return -1;
-            return a.servicesComponentId - b.servicesComponentId;
-        });
+    try {
+        handleBLIProp(budgetLines);
+        return budgetLines
+            .reduce((acc, budgetLine) => {
+                const servicesComponentId = budgetLine.services_component_id;
+                const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+                if (index === -1) {
+                    acc.push({ servicesComponentId, budgetLines: [budgetLine] });
+                } else {
+                    acc[index].budgetLines.push(budgetLine);
+                }
+                return acc;
+            }, [])
+            .sort((a, b) => {
+                if (a.servicesComponentId === null) return 1;
+                if (b.servicesComponentId === null) return -1;
+                return a.servicesComponentId - b.servicesComponentId;
+            });
+    } catch (error) {
+        console.error("Error in groupByServicesComponent:", error);
+        return [];
+    }
 };
 
 /**
