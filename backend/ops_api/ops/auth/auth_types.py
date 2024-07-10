@@ -24,6 +24,7 @@ class Permission(Enum):
     PORTFOLIO = auto()
     RESEARCH_PROJECT = auto()
     SERVICES_COMPONENT = auto()
+    UPLOAD_DOCUMENT = auto()
     USER = auto()
     WORKFLOW = auto()
 
