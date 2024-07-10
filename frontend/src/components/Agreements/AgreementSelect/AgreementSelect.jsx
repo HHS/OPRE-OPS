@@ -1,4 +1,4 @@
-import { useGetUserByIdQuery } from "../../../api/opsAPI";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 export const AgreementSelect = ({
     selectedProject,
@@ -33,14 +33,7 @@ export const AgreementSelect = ({
     };
 
     const AgreementSummaryCard = () => {
-        const { data: poData, error, isLoading } = useGetUserByIdQuery(selectedAgreement?.projectOfficer);
-
-        if (isLoading) {
-            return <div>Loading...</div>;
-        }
-        if (error) {
-            return <div>Oops, an error occurred</div>;
-        }
+        const projectOfficerName = useGetUserFullNameFromId(selectedAgreement?.projectOfficer);
 
         return (
             <div
@@ -81,7 +74,6 @@ export const AgreementSelect = ({
                     <div className="display-flex flex-justify margin-top-205">
                         <div className="display-flex flex-column">
                             <dl>
-                                {/* TODO: add project officer name */}
                                 <dt
                                     id="project-officer"
                                     className="margin-0 text-base-dark"
@@ -92,7 +84,7 @@ export const AgreementSelect = ({
                                     aria-labelledby="project-officer"
                                     className="text-semibold margin-0"
                                 >
-                                    {poData.full_name || "Unknown"}
+                                    {projectOfficerName}
                                 </dd>
                             </dl>
                         </div>
