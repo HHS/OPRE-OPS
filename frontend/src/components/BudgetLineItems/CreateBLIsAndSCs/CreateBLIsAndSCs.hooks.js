@@ -85,7 +85,9 @@ const useCreateBLIsAndSCs = (
     React.useEffect(() => {
         let newTempBudgetLines =
             (budgetLines && budgetLines.length > 0 ? budgetLines : null) ??
-            (formData.tempBudgetLines && formData.tempBudgetLines.length > 0 ? formData.tempBudgetLines : null) ??
+            (formData && formData.tempBudgetLines && formData.tempBudgetLines.length > 0
+                ? formData.tempBudgetLines
+                : null) ??
             [];
         setTempBudgetLines(newTempBudgetLines);
     }, [formData, budgetLines]);
