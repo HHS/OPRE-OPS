@@ -25,12 +25,6 @@ class FakeAuthProvider(AuthenticationProvider):
                 "email": "dave.director@email.com",
                 "sub": "00000000-0000-1111-a111-000000000020",
             },
-            "cor_user": {
-                "given_name": "COR",
-                "family_name": "User",
-                "email": "cor.user@email.com",
-                "sub": "00000000-0000-1111-a111-000000000021",
-            },
             "basic_user": {
                 "given_name": "User",
                 "family_name": "Demo",

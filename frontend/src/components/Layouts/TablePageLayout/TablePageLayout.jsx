@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import icons from "../../../uswds/img/sprite.svg";
@@ -34,10 +33,6 @@ export const TablePageLayout = ({
     buttonText,
     buttonLink
 }) => {
-    React.useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
-
     return (
         <>
             <div className="display-flex flex-align-center flex-justify margin-bottom-205">
