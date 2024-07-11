@@ -51,7 +51,7 @@ describe("ReviewCard", () => {
         const requesterName = screen.getByText("Jane Doe");
         const requestDate = screen.getByText("June 12, 2024");
         const actionIcons = screen.queryByText("icons");
-        const link = screen.getByRole("link", { name: "Review Agreement" });
+        const link = screen.getByRole("link", { name: "View All" });
 
         expect(type).toBeInTheDocument();
         expect(agreementName).toBeInTheDocument();
