@@ -3,7 +3,9 @@ from typing import Any
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from marshmallow import Schema
+from werkzeug.exceptions import NotFound
 
+import ops_api.ops.services.users as users_service
 from models import BaseModel, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -21,27 +23,12 @@ class UsersItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self, id: int) -> Response:
-        # token = verify_jwt_in_request()
-        # Get the user from the token to see who's making the request
-        # sub = str(token[1]["sub"])
-        oidc_id = request.args.get("oidc_id", type=str)
+        user = users_service.get_user(id, current_app.db_session)
 
-        # Grab the user, based on which ID is being queried (id or oidc_id)
-        if oidc_id:
-            response = self._get_item_by_oidc_with_try(oidc_id)
-        else:
-            response = self._get_item_with_try(id)
+        if not user:
+            raise NotFound(f"User {id} not found")
 
-        # current_app.logger.debug(f"GET User response: {response}")
-        # Users can only see their own user details
-        # Update this authZ checks once we determine additional
-        # roles that can view other users details.
-        # TODO: Need to be able to do user lookup without OIDC
-        # if sub == str(response.json["oidc_id"]):
-        return response
-        # else:
-        #    response = make_response({}, 401)  # nosemgrep
-        #    return response
+        return user.to_dict()
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
