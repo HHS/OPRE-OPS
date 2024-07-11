@@ -60,7 +60,7 @@ const ApproveAgreement = () => {
             )}
             <PageHeader
                 title={title}
-                subTitle={agreement?.name}
+                subTitle={agreement.name}
             />
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
