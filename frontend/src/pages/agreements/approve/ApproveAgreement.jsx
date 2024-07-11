@@ -40,7 +40,8 @@ const ApproveAgreement = () => {
         setAfterApproval,
         submittersNotes,
         changeToStatus,
-        statusForTitle
+        statusForTitle,
+        ACTION_TYPES
     } = useApproveAgreement();
 
     if (!agreement) {
@@ -170,7 +171,7 @@ const ApproveAgreement = () => {
                 <button
                     className="usa-button"
                     data-cy="send-to-approval-btn"
-                    onClick={handleApprove}
+                    onClick={() => handleApprove(ACTION_TYPES.APPROVE)}
                     disabled={!confirmation}
                 >
                     Approve

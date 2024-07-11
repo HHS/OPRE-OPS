@@ -8,6 +8,7 @@ import useAlert from "../../../hooks/use-alert.hooks.js";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
+
 /**
  * Custom hook for managing the approval process of an agreement
  * @typedef {Object} ApproveAgreementHookResult
@@ -35,7 +36,8 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} submittersNotes - The submitter's notes
  * @property {string} changeToStatus - The status to change to
  * @property {string} statusForTitle - The status for the title
- * @property {string} changeRequestTitle - The title of the change request
+ * @property {string} changeRequestTitle - The title of the change request,
+ * @property {{APPROVE: string, DECLINE: string, CANCEL: string}} ACTION_TYPES - The action types for approval processes
  *
  * @returns {ApproveAgreementHookResult} The data and functions for the approval process
  */
@@ -55,6 +57,12 @@ const useApproveAgreement = () => {
     const CHANGE_REQUEST_SLUG_TYPES = {
         STATUS: "status-change",
         BUDGET: "budget-change"
+    };
+
+    const ACTION_TYPES = {
+        APPROVE: "APPROVE",
+        DECLINE: "DECLINE",
+        CANCEL: "CANCEL"
     };
     let submittersNotes = "This is a test note"; // TODO: replace with actual data
     // @ts-ignore
@@ -146,22 +154,25 @@ const useApproveAgreement = () => {
         });
     };
 
-    const approveChangeRequest = () => {
-        setAlert({
-            type: "success",
-            heading: "Not Yet Implemented",
-            message: "Not yet implemented"
-        });
+    const approveChangeRequest = (action) => {
+        console.log({ action });
+        if (action === ACTION_TYPES.APPROVE) {
+            setAlert({
+                type: "success",
+                heading: "Not Yet Implemented",
+                message: "Not yet implemented"
+            });
+        }
     };
-
-    const handleApprove = async () => {
+    // TODO: refactor to handle all cases
+    const handleApprove = async (action) => {
         setShowModal(true);
         setModalProps({
             heading: approveModalHeading,
             actionButtonText: "Approve",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
-                await approveChangeRequest();
+                await approveChangeRequest(action);
                 await navigate("/agreements");
             }
         });
@@ -191,7 +202,8 @@ const useApproveAgreement = () => {
         setAfterApproval,
         submittersNotes,
         changeToStatus,
-        statusForTitle
+        statusForTitle,
+        ACTION_TYPES
     };
 };
 
