@@ -79,7 +79,7 @@ def test_get_user_by_id_same_user(auth_client, loaded_db, test_admin_user):
     assert response.json["oidc_id"] == str(test_admin_user.oidc_id)
     assert response.json["first_name"] == test_admin_user.first_name
     assert response.json["last_name"] == test_admin_user.last_name
-    assert response.json["roles"] == [role.id for role in test_admin_user.roles]
+    assert response.json["roles"] == [{"id": role.id, "name": role.name} for role in test_admin_user.roles]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -97,7 +97,7 @@ def test_get_user_by_id_admin_gets_all_user_details(auth_client, loaded_db, test
     assert response.json["oidc_id"] == str(test_user.oidc_id)
     assert response.json["first_name"] == test_user.first_name
     assert response.json["last_name"] == test_user.last_name
-    assert response.json["roles"] == [role.id for role in test_user.roles]
+    assert response.json["roles"] == [{"id": role.id, "name": role.name} for role in test_user.roles]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -108,15 +108,30 @@ def test_get_all_users(auth_client, test_user):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_safe_user(auth_client, loaded_db, new_user):
-    system_user = loaded_db.get(User, new_user.created_by)
+def test_get_safe_user_with_admin_user(auth_client, loaded_db, new_user):
     response = auth_client.get(url_for("api.users-item", id=new_user.id))
+    assert response.status_code == 200
+    assert response.json["id"] == new_user.id
+    assert response.json["status"] == new_user.status.name
+    assert response.json["display_name"] == new_user.display_name
+    assert response.json["division"] == new_user.division
+    assert response.json["email"] == new_user.email
+    assert response.json["oidc_id"] is None
+    assert response.json["first_name"] == new_user.first_name
+    assert response.json["last_name"] == new_user.last_name
+    assert response.json["roles"] == [{"id": role.id, "name": role.name} for role in new_user.roles]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_safe_user_with_regular_user(client, loaded_db, test_non_admin_user, new_user):
+    access_token = create_access_token(identity=test_non_admin_user)
+    response = client.get(
+        url_for("api.users-item", id=new_user.id), headers={"Authorization": f"Bearer {str(access_token)}"}
+    )
     assert response.status_code == 200
     user = response.json
     assert user["id"] == new_user.id
-    assert len(user["created_by_user"]) == 2
-    assert len(user["updated_by_user"]) == 2
-    assert user["created_by_user"]["id"] == system_user.id
-    assert user["created_by_user"]["full_name"] == system_user.full_name
-    assert user["updated_by_user"]["id"] == system_user.id
-    assert user["updated_by_user"]["full_name"] == system_user.full_name
+    assert user["full_name"] == new_user.full_name
+    assert "created_by" not in user
+    assert "updated_by" not in user
+    assert "oidc_id" not in user

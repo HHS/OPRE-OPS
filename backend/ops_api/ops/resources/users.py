@@ -2,6 +2,7 @@ from typing import Any
 
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
+from flask_jwt_extended import current_user
 from marshmallow import Schema
 from werkzeug.exceptions import NotFound
 
@@ -10,8 +11,9 @@ from models import BaseModel, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.users import PATCHRequestBody, POSTRequestBody, QueryParameters, UserResponse
+from ops_api.ops.schemas.users import PATCHRequestBody, POSTRequestBody, QueryParameters, SafeUserSchema, UserResponse
 from ops_api.ops.utils.response import make_response_with_headers
+from ops_api.ops.utils.users import is_admin
 
 
 class UsersItemAPI(BaseItemAPI):
@@ -23,12 +25,17 @@ class UsersItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self, id: int) -> Response:
-        user = users_service.get_user(id, current_app.db_session)
+        user: User | None = users_service.get_user(id, current_app.db_session)
 
         if not user:
             raise NotFound(f"User {id} not found")
 
-        return user.to_dict()
+        if is_admin(current_user) or user.id == current_user.id:
+            schema = self._response_schema
+        else:
+            schema = SafeUserSchema()
+
+        return make_response_with_headers(schema.dump(user))
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:

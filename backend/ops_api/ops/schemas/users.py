@@ -1,18 +1,20 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 from marshmallow import Schema, fields
 
+from models import UserStatus
+
 ENDPOINT_STRING = "/users"
 
 
 class SafeUserSchema(Schema):
-    id = fields.Integer()
-    full_name = fields.String()
+    id: int = fields.Integer(required=True)
+    full_name: str = fields.String(required=True)
 
 
 # Unable to use SafeUserSchema ^ in budget_line_items due to this error:
@@ -50,21 +52,24 @@ class QueryParameters:
     email: Optional[str] = None
 
 
-@dataclass
-class RoleResponse:
-    name: str
+class RoleResponse(Schema):
+    id: int = fields.Integer(required=True)
+    name: str = fields.String(required=True)
 
 
-@dataclass(kw_only=True)
-class UserResponse:
-    id: int
-    oidc_id: UUID
-    hhs_id: str
-    email: str
-    first_name: str
-    last_name: str
-    full_name: str
-    division: int
-    roles: list[RoleResponse] = field(default_factory=lambda: [])
-    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+class UserResponse(Schema):
+    id: int = fields.Integer(required=True)
+    oidc_id: UUID = fields.UUID(required=True)
+    hhs_id: Optional[str] = fields.String(allow_none=True)
+    email: str = fields.String(required=True)
+    first_name: Optional[str] = fields.String(allow_none=True)
+    last_name: Optional[str] = fields.String(allow_none=True)
+    full_name: Optional[str] = fields.String(allow_none=True)
+    division: Optional[int] = fields.Integer(allow_none=True)
+    status: UserStatus = fields.Enum(UserStatus, required=True)
+    roles: list[RoleResponse] = fields.List(fields.Nested(RoleResponse), default=[])
+    display_name: str = fields.String(required=True)
+    created_by: Optional[int] = fields.Integer(allow_none=True)
+    updated_by: Optional[int] = fields.Integer(allow_none=True)
+    created_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
