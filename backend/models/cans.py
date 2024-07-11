@@ -24,6 +24,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
+from typing_extensions import Any, override
 
 from models.base import BaseModel
 from models.portfolios import Portfolio
@@ -60,9 +61,11 @@ class CANType(Enum):
     OPRE = auto()
     NON_OPRE = auto()
 
+
 class CANStatus(Enum):
     ACTIVE = auto()
     INACTIVE = auto()
+
 
 class CANFundingSources(BaseModel):
     __tablename__ = "can_funding_sources"
@@ -639,6 +642,17 @@ class BudgetLineItem(BaseModel):
     def in_review(self):
         return self.change_requests_in_review is not None
 
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+        # add the transient attribute that tracks the change request responsible for changes (if it exists)
+        # so that it's added to the history event details
+        if hasattr(self, "acting_change_request_id"):
+            d.update(
+                acting_change_request_id=self.acting_change_request_id,
+            )
+        return d
+
 
 class CAN(BaseModel):
     """
@@ -656,7 +670,6 @@ class CAN(BaseModel):
     )
     number: Mapped[str] = mapped_column(String(30), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String)
-    purpose: Mapped[Optional[str]] = mapped_column(String, default="")
     nickname: Mapped[Optional[str]]
     expiration_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
     appropriation_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
@@ -707,42 +720,55 @@ class CAN(BaseModel):
         can_fiscal_year = object_session(self).scalar(
             select(CANFiscalYear).where(
                 and_(
-                    CANFiscalYear.can_id
-                    == self.id,
-                    CANFiscalYear.fiscal_year == current_year
+                    CANFiscalYear.can_id == self.id,
+                    CANFiscalYear.fiscal_year == current_year,
                 )
             )
         )
         if can_fiscal_year is None:
             return CANStatus.INACTIVE
         # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
-        budget_line_items = object_session(self).execute(
-            select(BudgetLineItem).where(
-                BudgetLineItem.can_id == self.id
-            )
-        ).scalars().all()
+        budget_line_items = (
+            object_session(self)
+            .execute(select(BudgetLineItem).where(BudgetLineItem.can_id == self.id))
+            .scalars()
+            .all()
+        )
 
-        planned_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.PLANNED]
+        planned_budget_line_items = [
+            bli
+            for bli in budget_line_items
+            if bli.status == BudgetLineItemStatus.PLANNED
+        ]
         planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
 
-        obligated_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.OBLIGATED]
+        obligated_budget_line_items = [
+            bli
+            for bli in budget_line_items
+            if bli.status == BudgetLineItemStatus.OBLIGATED
+        ]
         obligated_funding = sum([b.amount for b in obligated_budget_line_items]) or 0
 
-        in_execution_budget_line_items = [bli for bli in budget_line_items if bli.status == BudgetLineItemStatus.IN_EXECUTION]
-        in_execution_funding = sum([b.amount for b in in_execution_budget_line_items]) or 0
-        total_accounted_for = sum(
-            (
-                planned_funding,
-                obligated_funding,
-                in_execution_funding
-            )
-        ) or 0
+        in_execution_budget_line_items = [
+            bli
+            for bli in budget_line_items
+            if bli.status == BudgetLineItemStatus.IN_EXECUTION
+        ]
+        in_execution_funding = (
+            sum([b.amount for b in in_execution_budget_line_items]) or 0
+        )
+        total_accounted_for = (
+            sum((planned_funding, obligated_funding, in_execution_funding)) or 0
+        )
         available_funding = can_fiscal_year.total_funding - total_accounted_for
 
         is_expired = self.expiration_date.date() < date.today()
-        can_status = CANStatus.INACTIVE if available_funding <= 0 and is_expired else CANStatus.ACTIVE
+        can_status = (
+            CANStatus.INACTIVE
+            if available_funding <= 0 and is_expired
+            else CANStatus.ACTIVE
+        )
         return can_status
-
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -766,10 +792,9 @@ class CANFiscalYearFundingDetails(BaseModel):
         Integer, ForeignKey("can_fiscal_year.id")
     )
 
-class CANAppropriationDetails(BaseModel):
-    """
 
-    """
+class CANAppropriationDetails(BaseModel):
+    """ """
 
     __tablename__ = "can_appropriation_details"
 

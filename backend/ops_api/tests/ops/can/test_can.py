@@ -16,7 +16,6 @@ def test_can_retrieve(loaded_db, mocker):
     assert can is not None
     assert can.number == "G99HRF2"
     assert can.description == "Healthy Marriages Responsible Fatherhood - OPRE"
-    assert can.purpose == ""
     assert can.nickname == "HMRF-OPRE"
     assert can.appropriation_term == 1
     assert can.authorizer_id == 26
@@ -40,7 +39,6 @@ def test_can_is_inactive(loaded_db, mocker):
     assert can is not None
     assert can.number == "G99HRF2"
     assert can.description == "Healthy Marriages Responsible Fatherhood - OPRE"
-    assert can.purpose == ""
     assert can.nickname == "HMRF-OPRE"
     assert can.appropriation_term == 1
     assert can.authorizer_id == 26
@@ -61,7 +59,6 @@ def test_can_creation(loaded_db):
     can = CAN(
         number="G990991-X",
         description="Secondary Analyses Data On Child Care & Early Edu",
-        purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
         nickname="ABCD",
         arrangement_type=CANArrangementType.COST_SHARE,
         authorizer_id=1,
