@@ -670,7 +670,6 @@ class CAN(BaseModel):
     )
     number: Mapped[str] = mapped_column(String(30), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String)
-    purpose: Mapped[Optional[str]] = mapped_column(String, default="")
     nickname: Mapped[Optional[str]]
     expiration_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
     appropriation_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
