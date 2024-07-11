@@ -1,13 +1,15 @@
-from flask import Response, current_app, request
+from flask import Blueprint, Response, current_app, request
 
-from ops_api.ops.document import bp as documents_bp
 from ops_api.ops.document.document_gateway import DocumentGateway
 from ops_api.ops.document.schema import DocumentRequestSchema, DocumentResponseSchema, GetDocumentRequestSchema
 from ops_api.ops.document.service import DocumentService
 from ops_api.ops.utils.response import make_response_with_headers
 
+# Create Blueprint object
+documents_bp = Blueprint("documents", __name__)
 
-@documents_bp.route("/", methods=["GET"])
+
+@documents_bp.route("/documents/", methods=["GET"])
 def get_documents_by_agreement_id():
 
     # Use schema to validate request data and get agreement_id
@@ -25,7 +27,7 @@ def get_documents_by_agreement_id():
     return make_response_with_headers(data=response_data, status_code=200)
 
 
-@documents_bp.route("/", methods=["POST"])
+@documents_bp.route("/documents/", methods=["POST"])
 def create_document() -> Response:
     # Use schema to validate request data and get document data
     request_data = request.get_json()

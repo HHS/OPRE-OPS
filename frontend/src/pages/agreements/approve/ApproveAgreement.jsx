@@ -1,18 +1,20 @@
 import React from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
+import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
+import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import useToggle from "../../../hooks/useToggle";
@@ -32,32 +34,17 @@ const ApproveAgreement = () => {
         handleConfirm: () => {}
     });
 
-    // @ts-ignore
-    const agreementId = +urlPathParams.id;
-    const [searchParams] = useSearchParams();
-
     const CHANGE_REQUEST_SLUG_TYPES = {
         STATUS: "status-change",
         BUDGET: "budget-change"
     };
-
+    let submittersNotes = "This is a test note"; // TODO: replace with actual data
+    // @ts-ignore
+    const agreementId = +urlPathParams.id;
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     let changeRequestType = searchParams.get("type") ?? "";
     let changeToStatus = searchParams.get("to")?.toUpperCase() ?? "";
-
-    let action = changeToStatus;
-    let submittersNotes = "This is a test note"; // TODO: replace with actual data
-
-    const navigate = useNavigate();
-    const {
-        data: agreement,
-        error: errorAgreement,
-        isLoading: isLoadingAgreement
-    } = useGetAgreementByIdQuery(agreementId, {
-        refetchOnMountOrArgChange: true
-    });
-    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
-    const [afterApproval, setAfterApproval] = useToggle(true);
-
     const checkBoxText =
         changeToStatus === BLI_STATUS.PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
@@ -66,6 +53,18 @@ const ApproveAgreement = () => {
         changeToStatus === BLI_STATUS.PLANNED
             ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
             : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
+    const [afterApproval, setAfterApproval] = useToggle(true);
+
+    const {
+        data: agreement,
+        error: errorAgreement,
+        isLoading: isLoadingAgreement
+    } = useGetAgreementByIdQuery(agreementId, {
+        refetchOnMountOrArgChange: true
+    });
+
+    const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
     if (isLoadingAgreement) {
         return <h1>Loading...</h1>;
@@ -75,9 +74,8 @@ const ApproveAgreement = () => {
     }
 
     // TODO: move this to a helper function
-
+    const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
     const budgetLinesInReview = agreement?.budget_line_items.filter((bli) => bli.in_review);
-    const budgetLineIdsInReview = budgetLinesInReview.map((bli) => bli.id);
     /**
      *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
      *  @type {ChangeRequest[]}
@@ -92,7 +90,8 @@ const ApproveAgreement = () => {
         const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
         statusForTitle = `- ${renderField(null, "status", status)}`;
     }
-    const title = `Approval for ${toTitleCaseFromSlug(changeRequestType)} ${statusForTitle}`;
+    const changeRequestTitle = toTitleCaseFromSlug(changeRequestType);
+    const title = `Approval for ${changeRequestTitle} ${statusForTitle}`;
 
     const handleCancel = () => {
         setShowModal(true);
@@ -150,7 +149,7 @@ const ApproveAgreement = () => {
     };
 
     return (
-        <App breadCrumbName="Approve BLI Status Change">
+        <App breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}>
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -165,7 +164,7 @@ const ApproveAgreement = () => {
                 subTitle={agreement.name}
             />
             <ReviewChangeRequestAccordion
-                changeType={toTitleCaseFromSlug(changeRequestType)}
+                changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
                 statusChangeTo={changeToStatus}
             />
@@ -175,6 +174,7 @@ const ApproveAgreement = () => {
                 projectOfficerName={projectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
+
             <AgreementBLIAccordion
                 title="Review Budget Lines"
                 instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
@@ -182,23 +182,34 @@ const ApproveAgreement = () => {
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                action={action}
+                action={changeToStatus}
             >
-                <BudgetLinesTable
-                    readOnly={true}
-                    budgetLines={agreement?.budget_line_items}
-                    isReviewMode={false}
-                    budgetLineIdsInReview={budgetLineIdsInReview}
-                />
+                <section className="margin-top-4">
+                    {groupedBudgetLinesByServicesComponent.map((group) => (
+                        <ServicesComponentAccordion
+                            key={group.servicesComponentId}
+                            servicesComponentId={group.servicesComponentId}
+                            withMetadata={true}
+                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                            description={findDescription(servicesComponents, group.servicesComponentId)}
+                        >
+                            <BudgetLinesTable
+                                budgetLines={group.budgetLines}
+                                readOnly={true}
+                            />
+                        </ServicesComponentAccordion>
+                    ))}
+                </section>
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
                 selectedBudgetLines={budgetLinesInReview}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                action={action}
+                action={changeToStatus}
             />
-            {action === BLI_STATUS.PLANNED && (
+            {changeToStatus === BLI_STATUS.PLANNED && (
                 <AgreementChangesAccordion
                     changeInBudgetLines={budgetLinesInReview.reduce((acc, { amount }) => acc + amount, 0)}
                     changeInCans={changeInCans}
