@@ -697,6 +697,10 @@ class CAN(BaseModel):
         "Project", secondary="project_cans", back_populates="cans"
     )
 
+    external_authorizer_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("contact.id")
+    )
+
     @property
     def status(self):
         current_year = date.today().year
