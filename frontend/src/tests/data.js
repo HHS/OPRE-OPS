@@ -11,7 +11,6 @@ export const budgetLine = {
         managing_portfolio_id: 2,
         nickname: "HS",
         number: "G994426",
-        purpose: "",
         display_name: "G994426"
     },
     can_id: 5,
@@ -54,7 +53,6 @@ export const agreement = {
                 managing_portfolio_id: 2,
                 nickname: "HS",
                 number: "G994426",
-                purpose: "",
                 display_name: "G994426"
             },
             can_id: 5,
@@ -108,7 +106,6 @@ export const agreement = {
                 managing_portfolio_id: 2,
                 nickname: "HS",
                 number: "G994426",
-                purpose: "",
                 display_name: "G994426"
             },
             can_id: 5,
