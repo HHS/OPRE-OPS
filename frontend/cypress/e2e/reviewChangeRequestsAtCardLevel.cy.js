@@ -123,7 +123,25 @@ describe("Review Change Requests at Card Level", () => {
                 cy.get(".usa-alert__body").contains(/changes approved/i);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']")
-                    .should("not.exist")
+                    .should("not.exist");
+                // verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                cy.get('.usa-breadcrumb__list > :nth-child(3)').should("have.text",  testAgreement.name);
+                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+                cy.get('[data-cy="agreement-history-container"]').should("exist");
+                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+                cy.get('[data-cy="agreement-history-list"]').should("exist");
+                cy.get(
+                '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).contains(/Status Change to Planned Approved/);
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                    "have.text",
+                    `Admin Demo approved the status change on BL ${bliId} from Draft to Planned as requested by Admin Demo.`
+                )
                     .then(() => {
                         cy.request({
                             method: "DELETE",
@@ -345,7 +363,25 @@ describe("Review Change Requests at Card Level", () => {
                 cy.get(".usa-alert__body").contains(/changes approved/i);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']")
-                    .should("not.exist")
+                    .should("not.exist");
+                // verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                cy.get('.usa-breadcrumb__list > :nth-child(3)').should("have.text",  testAgreement.name);
+                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+                cy.get('[data-cy="agreement-history-container"]').should("exist");
+                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+                cy.get('[data-cy="agreement-history-list"]').should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).contains(/Budget Change to Amount Approved/);
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                    "have.text",
+                    `Admin Demo approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Admin Demo.`
+                )
                     .then(() => {
                         cy.request({
                             method: "DELETE",
@@ -457,6 +493,24 @@ describe("Review Change Requests at Card Level", () => {
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']")
                     .should("not.exist")
+                // verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                cy.get('.usa-breadcrumb__list > :nth-child(3)').should("have.text",  testAgreement.name);
+                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+                cy.get('[data-cy="agreement-history-container"]').should("exist");
+                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+                cy.get('[data-cy="agreement-history-list"]').should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).contains(/Budget Change to CAN Approved/);
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                    "have.text",
+                    `Admin Demo approved the budget change on BL ${bliId} from G99IA14 to G99PHS9 as requested by Admin Demo.`
+                )
                     .then(() => {
                         cy.request({
                             method: "DELETE",
@@ -567,7 +621,26 @@ describe("Review Change Requests at Card Level", () => {
                 cy.get(".usa-alert__body").contains(/changes approved/i);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']")
-                    .should("not.exist")
+                    .should("not.exist");
+                // verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                cy.get('.usa-breadcrumb__list > :nth-child(3)').should("have.text",  testAgreement.name);
+                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+                cy.get('[data-cy="agreement-history-container"]').should("exist");
+                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+                cy.get('[data-cy="agreement-history-list"]').should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).contains(/Budget Change to Need By Date Approved/);
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                    "have.text",
+                    `Admin Demo approved the budget change on BL ${bliId} from 1/1/2025 to 11/15/2028 as requested by Admin Demo.`
+                );
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist")
                     .then(() => {
                         cy.request({
                             method: "DELETE",

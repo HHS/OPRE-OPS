@@ -66,7 +66,11 @@ function ReviewCard({
             {!isCondensed && (
                 <header className="display-flex flex-justify">
                     <div className="display-flex">
-                        <h2 className="margin-0 font-sans-sm">{type}</h2>
+                        <h2 className="margin-0 font-sans-sm">
+                            {type}
+                            <br />
+                            {bliToStatus}
+                        </h2>
                         <dl className="font-12px margin-0 margin-left-4">
                             <dt className="margin-0 text-base-dark">Agreement</dt>
                             <dd className="margin-0">{agreementName}</dd>
@@ -145,7 +149,7 @@ function ReviewCard({
                         className="text-primary font-12px"
                         data-cy="approve-agreement"
                     >
-                        Review Agreement
+                        View All
                         <FontAwesomeIcon
                             icon={faEye}
                             size="3x"
