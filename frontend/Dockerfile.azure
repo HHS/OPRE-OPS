@@ -21,7 +21,10 @@ COPY vite-env/env.${MODE}.local .env
 RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=${MODE} bun run build --mode ${MODE}
 
 # ---- Release Stage ----
-FROM nginx:1.27 as release
+FROM alpine:3.20 as release
+
+# hadolint ignore=DL3018
+RUN apk update && apk add --no-cache nginx && rm -rf /var/cache/apk/*
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
@@ -32,3 +35,6 @@ COPY --from=build /home/bun/app/build .
 
 # Expose port
 EXPOSE 3000/tcp
+
+# Entry point to run the application.
+ENTRYPOINT ["/bin/sh", "-c", "/usr/sbin/nginx -g 'daemon off;'"]
