@@ -33,7 +33,6 @@ import { useReviewChangeRequestMutation } from "../../../api/opsAPI";
  * @property {Object} modalProps - The modal properties
  * @property {string} checkBoxText - The text for the confirmation checkbox
  * @property {Function} handleCancel - Function to handle cancellation
- * @property {Function} handleDecline - Function to handle decline
  * @property {Function} handleApproveChangeRequests - Function to handle approval of change requests
  * @property {string} title - The title of the approval page
  * @property {boolean} afterApproval - The after approval state
@@ -122,28 +121,7 @@ const useApproveAgreement = () => {
             actionButtonText: "Cancel",
             secondaryButtonText: "Continue Reviewing",
             handleConfirm: () => {
-                navigate("/agreements");
-            }
-        });
-    };
-
-    const declineChangeRequest = () => {
-        setAlert({
-            type: "success",
-            heading: "Not Yet Implemented",
-            message: "Not yet implemented"
-        });
-    };
-
-    const handleDecline = async () => {
-        setShowModal(true);
-        setModalProps({
-            heading: `Are you sure you want to decline these budget lines for ${changeToStatus} Status?`,
-            actionButtonText: "Decline",
-            secondaryButtonText: "Cancel",
-            handleConfirm: async () => {
-                await declineChangeRequest();
-                navigate("/agreements");
+                navigate("/agreements?filter=change-requests");
             }
         });
     };
@@ -161,7 +139,7 @@ const useApproveAgreement = () => {
             })
                 .unwrap()
                 .then((fulfilled) => {
-                    console.log(`BLI: ${action}`, fulfilled);
+                    console.log(`Change Request: ${action}`, fulfilled);
                 })
                 .catch((rejected) => {
                     console.error("Error Updating Budget Line");
@@ -188,7 +166,6 @@ const useApproveAgreement = () => {
             }
         });
     };
-    // TODO: refactor to handle all cases
     /**
      * Handles the approval of a change request
      * @param {{APPROVE: string, DECLINE: string, CANCEL: string}} action - The action to take
@@ -221,11 +198,11 @@ const useApproveAgreement = () => {
         const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
         const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
             (changeRequest) =>
-                changeRequest.has_status_change && changeRequest.requested_change_diff === BLI_STATUS.PLANNED
+                changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.PLANNED
         );
         const statusChangeRequestsToExecuting = changeRequestsInReview.filter(
             (changeRequest) =>
-                changeRequest.has_status_change && changeRequest.requested_change_diff === BLI_STATUS.EXECUTING
+                changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.EXECUTING
         );
         if (BUDGET_APPROVE || BUDGET_REJECT) {
             changeRequests = [...budgetChangeRequests];
@@ -265,7 +242,6 @@ const useApproveAgreement = () => {
         modalProps,
         checkBoxText,
         handleCancel,
-        handleDecline,
         handleApproveChangeRequests,
         title,
         changeRequestTitle,
