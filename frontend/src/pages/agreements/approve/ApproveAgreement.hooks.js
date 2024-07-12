@@ -1,6 +1,10 @@
 import * as React from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetAgreementByIdQuery, useGetServicesComponentsListQuery } from "../../../api/opsAPI";
+import {
+    CHANGE_REQUEST_ACTION,
+    CHANGE_REQUEST_SLUG_TYPES
+} from "../../../components/ChangeRequests/ChangeRequests.constants";
 import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
 import { renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
@@ -8,6 +12,7 @@ import useAlert from "../../../hooks/use-alert.hooks.js";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
+import { useReviewChangeRequestMutation } from "../../../api/opsAPI";
 
 /**
  * Custom hook for managing the approval process of an agreement
@@ -29,7 +34,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} checkBoxText - The text for the confirmation checkbox
  * @property {Function} handleCancel - Function to handle cancellation
  * @property {Function} handleDecline - Function to handle decline
- * @property {Function} handleApprove - Function to handle approval
+ * @property {Function} handleApproveChangeRequests - Function to handle approval of change requests
  * @property {string} title - The title of the approval page
  * @property {boolean} afterApproval - The after approval state
  * @property {Function} setAfterApproval - The setter for after approval state
@@ -37,13 +42,13 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} changeToStatus - The status to change to
  * @property {string} statusForTitle - The status for the title
  * @property {string} changeRequestTitle - The title of the change request,
- * @property {{APPROVE: string, DECLINE: string, CANCEL: string}} ACTION_TYPES - The action types for approval processes
  *
  * @returns {ApproveAgreementHookResult} The data and functions for the approval process
  */
 const useApproveAgreement = () => {
     const { setAlert } = useAlert();
     const urlPathParams = useParams();
+    const [reviewCR] = useReviewChangeRequestMutation();
     const [notes, setNotes] = React.useState("");
     const [confirmation, setConfirmation] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
@@ -53,17 +58,6 @@ const useApproveAgreement = () => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-
-    const CHANGE_REQUEST_SLUG_TYPES = {
-        STATUS: "status-change",
-        BUDGET: "budget-change"
-    };
-
-    const ACTION_TYPES = {
-        APPROVE: "APPROVE",
-        DECLINE: "DECLINE",
-        CANCEL: "CANCEL"
-    };
     let submittersNotes = "This is a test note"; // TODO: replace with actual data
     // @ts-ignore
     const agreementId = +urlPathParams.id;
@@ -113,8 +107,8 @@ const useApproveAgreement = () => {
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
+    const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
     if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
-        const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
         statusForTitle = `- ${renderField(null, "status", status)}`;
     }
     const changeRequestTitle = toTitleCaseFromSlug(changeRequestType);
@@ -153,19 +147,67 @@ const useApproveAgreement = () => {
             }
         });
     };
-
+    /**
+     * Handles the approval of a change request
+     * @param {{APPROVE: string, DECLINE: string, CANCEL: string}} action - The action to take
+     */
     const approveChangeRequest = (action) => {
-        console.log({ action });
-        if (action === ACTION_TYPES.APPROVE) {
-            setAlert({
-                type: "success",
-                heading: "Not Yet Implemented",
-                message: "Not yet implemented"
+        const BUDGET_APPROVE =
+            action === CHANGE_REQUEST_ACTION.APPROVE && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
+        const BUDGET_REJECT =
+            action === CHANGE_REQUEST_ACTION.REJECT && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
+        const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
+        const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
+            (changeRequest) =>
+                changeRequest.has_status_change && changeRequest.requested_change_diff === BLI_STATUS.PLANNED
+        );
+        const statusChangeRequestsToExecuting = changeRequestsInReview.filter(
+            (changeRequest) =>
+                changeRequest.has_status_change && changeRequest.requested_change_diff === BLI_STATUS.EXECUTING
+        );
+        if (BUDGET_APPROVE || BUDGET_REJECT) {
+            let promises = budgetChangeRequests.map((changeRequest) => {
+                return reviewCR({
+                    change_request_id: changeRequest.id,
+                    action,
+                    reviewer_notes: notes
+                })
+                    .unwrap()
+                    .then((fulfilled) => {
+                        console.log("BLI: approved", fulfilled);
+                    })
+                    .catch((rejected) => {
+                        console.error("Error Updating Budget Line");
+                        console.error({ rejected });
+                        throw new Error("Error Updating Budget Line");
+                    });
+            });
+            Promise.allSettled(promises).then((results) => {
+                let rejected = results.filter((result) => result.status === "rejected");
+                if (rejected.length > 0) {
+                    console.error(rejected[0].reason);
+                    setAlert({
+                        type: "error",
+                        heading: "Error Sending Agreement Edits",
+                        message: "There was an error sending your edits for approval. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                } else {
+                    setAlert({
+                        type: "success",
+                        heading: "Not Yet Implemented",
+                        message: "Not yet implemented"
+                    });
+                }
             });
         }
     };
     // TODO: refactor to handle all cases
-    const handleApprove = async (action) => {
+    /**
+     * Handles the approval of a change request
+     * @param {{APPROVE: string, DECLINE: string, CANCEL: string}} action - The action to take
+     */
+    const handleApproveChangeRequests = async (action) => {
         setShowModal(true);
         setModalProps({
             heading: approveModalHeading,
@@ -173,7 +215,7 @@ const useApproveAgreement = () => {
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
                 await approveChangeRequest(action);
-                await navigate("/agreements");
+                navigate("/agreements?filter=change-requests");
             }
         });
     };
@@ -195,15 +237,14 @@ const useApproveAgreement = () => {
         checkBoxText,
         handleCancel,
         handleDecline,
-        handleApprove,
+        handleApproveChangeRequests,
         title,
         changeRequestTitle,
         afterApproval,
         setAfterApproval,
         submittersNotes,
         changeToStatus,
-        statusForTitle,
-        ACTION_TYPES
+        statusForTitle
     };
 };
 

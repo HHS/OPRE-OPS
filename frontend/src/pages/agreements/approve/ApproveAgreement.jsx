@@ -13,6 +13,8 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useApproveAgreement from "./ApproveAgreement.hooks";
+import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
+import DebugCode from "../../../components/DebugCode";
 
 const ApproveAgreement = () => {
     const {
@@ -33,15 +35,14 @@ const ApproveAgreement = () => {
         checkBoxText,
         handleCancel,
         handleDecline,
-        handleApprove,
+        handleApproveChangeRequests,
         title,
         changeRequestTitle,
         afterApproval,
         setAfterApproval,
         submittersNotes,
         changeToStatus,
-        statusForTitle,
-        ACTION_TYPES
+        statusForTitle
     } = useApproveAgreement();
 
     if (!agreement) {
@@ -63,6 +64,7 @@ const ApproveAgreement = () => {
                 title={title}
                 subTitle={agreement.name}
             />
+            <DebugCode data={changeRequestsInReview} />
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
@@ -164,14 +166,14 @@ const ApproveAgreement = () => {
                 <button
                     className={`usa-button usa-button--outline margin-right-2`}
                     data-cy="decline-approval-btn"
-                    onClick={handleDecline}
+                    onClick={() => handleApproveChangeRequests(CHANGE_REQUEST_ACTION.REJECT)}
                 >
                     Decline
                 </button>
                 <button
                     className="usa-button"
                     data-cy="send-to-approval-btn"
-                    onClick={() => handleApprove(ACTION_TYPES.APPROVE)}
+                    onClick={() => handleApproveChangeRequests(CHANGE_REQUEST_ACTION.APPROVE)}
                     disabled={!confirmation}
                 >
                     Approve
