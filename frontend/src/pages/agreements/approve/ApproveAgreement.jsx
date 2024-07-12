@@ -34,7 +34,6 @@ const ApproveAgreement = () => {
         modalProps,
         checkBoxText,
         handleCancel,
-        handleDecline,
         handleApproveChangeRequests,
         title,
         changeRequestTitle,
