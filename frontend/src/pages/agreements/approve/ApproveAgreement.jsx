@@ -4,6 +4,7 @@ import AgreementCANReviewAccordion from "../../../components/Agreements/Agreemen
 import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
+import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -13,8 +14,6 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import useApproveAgreement from "./ApproveAgreement.hooks";
-import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
-import DebugCode from "../../../components/DebugCode";
 
 const ApproveAgreement = () => {
     const {
@@ -63,7 +62,6 @@ const ApproveAgreement = () => {
                 title={title}
                 subTitle={agreement.name}
             />
-            <DebugCode data={changeRequestsInReview} />
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
