@@ -149,13 +149,75 @@ const useApproveAgreement = () => {
     };
     /**
      * Handles the approval of a change request
+     * @param {Object[]} changeRequests - The change requests to approve
      * @param {{APPROVE: string, DECLINE: string, CANCEL: string}} action - The action to take
      */
-    const approveChangeRequest = (action) => {
+    const processChangeRequests = (changeRequests, action) => {
+        let promises = changeRequests.map((changeRequest) => {
+            return reviewCR({
+                change_request_id: changeRequest.id,
+                action,
+                reviewer_notes: notes
+            })
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log(`BLI: ${action}`, fulfilled);
+                })
+                .catch((rejected) => {
+                    console.error("Error Updating Budget Line");
+                    console.error({ rejected });
+                    throw new Error("Error Updating Budget Line");
+                });
+        });
+        Promise.allSettled(promises).then((results) => {
+            let rejected = results.filter((result) => result.status === "rejected");
+            if (rejected.length > 0) {
+                console.error(rejected[0].reason);
+                setAlert({
+                    type: "error",
+                    heading: "Error Sending Agreement Edits",
+                    message: "There was an error sending your edits for approval. Please try again.",
+                    redirectUrl: "/error"
+                });
+            } else {
+                setAlert({
+                    type: "success",
+                    heading: "Not Yet Implemented",
+                    message: "Not yet implemented"
+                });
+            }
+        });
+    };
+    // TODO: refactor to handle all cases
+    /**
+     * Handles the approval of a change request
+     * @param {{APPROVE: string, DECLINE: string, CANCEL: string}} action - The action to take
+     */
+    const handleApproveChangeRequests = async (action) => {
+        /**
+         * @type {ChangeRequest[]}
+         */
+        let changeRequests = [];
         const BUDGET_APPROVE =
             action === CHANGE_REQUEST_ACTION.APPROVE && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
         const BUDGET_REJECT =
             action === CHANGE_REQUEST_ACTION.REJECT && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
+        const PLANNED_STATUS_APPROVE =
+            changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+            status === BLI_STATUS.PLANNED &&
+            action === CHANGE_REQUEST_ACTION.APPROVE;
+        const PLANNED_STATUS_REJECT =
+            changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+            status === BLI_STATUS.PLANNED &&
+            action === CHANGE_REQUEST_ACTION.REJECT;
+        const EXECUTING_STATUS_APPROVE =
+            changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+            status === BLI_STATUS.EXECUTING &&
+            action === CHANGE_REQUEST_ACTION.APPROVE;
+        const EXECUTING_STATUS_REJECT =
+            changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+            status === BLI_STATUS.EXECUTING &&
+            action === CHANGE_REQUEST_ACTION.REJECT;
         const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
         const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
             (changeRequest) =>
@@ -166,55 +228,22 @@ const useApproveAgreement = () => {
                 changeRequest.has_status_change && changeRequest.requested_change_diff === BLI_STATUS.EXECUTING
         );
         if (BUDGET_APPROVE || BUDGET_REJECT) {
-            let promises = budgetChangeRequests.map((changeRequest) => {
-                return reviewCR({
-                    change_request_id: changeRequest.id,
-                    action,
-                    reviewer_notes: notes
-                })
-                    .unwrap()
-                    .then((fulfilled) => {
-                        console.log("BLI: approved", fulfilled);
-                    })
-                    .catch((rejected) => {
-                        console.error("Error Updating Budget Line");
-                        console.error({ rejected });
-                        throw new Error("Error Updating Budget Line");
-                    });
-            });
-            Promise.allSettled(promises).then((results) => {
-                let rejected = results.filter((result) => result.status === "rejected");
-                if (rejected.length > 0) {
-                    console.error(rejected[0].reason);
-                    setAlert({
-                        type: "error",
-                        heading: "Error Sending Agreement Edits",
-                        message: "There was an error sending your edits for approval. Please try again.",
-                        redirectUrl: "/error"
-                    });
-                } else {
-                    setAlert({
-                        type: "success",
-                        heading: "Not Yet Implemented",
-                        message: "Not yet implemented"
-                    });
-                }
-            });
+            changeRequests = [...budgetChangeRequests];
         }
-    };
-    // TODO: refactor to handle all cases
-    /**
-     * Handles the approval of a change request
-     * @param {{APPROVE: string, DECLINE: string, CANCEL: string}} action - The action to take
-     */
-    const handleApproveChangeRequests = async (action) => {
+        if (PLANNED_STATUS_APPROVE || PLANNED_STATUS_REJECT) {
+            changeRequests = [...statusChangeRequestsToPlanned];
+        }
+        if (EXECUTING_STATUS_APPROVE || EXECUTING_STATUS_REJECT) {
+            changeRequests = [...statusChangeRequestsToExecuting];
+        }
+
         setShowModal(true);
         setModalProps({
             heading: approveModalHeading,
             actionButtonText: "Approve",
             secondaryButtonText: "Cancel",
             handleConfirm: async () => {
-                await approveChangeRequest(action);
+                await processChangeRequests(changeRequests, action);
                 navigate("/agreements?filter=change-requests");
             }
         });
