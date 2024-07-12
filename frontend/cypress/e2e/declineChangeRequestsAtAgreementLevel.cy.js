@@ -43,7 +43,7 @@ afterEach(() => {
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
 });
-describe("Approve Change Requests at the Agreement Level", () => {
+describe("Decline Change Requests at the Agreement Level", () => {
     it("review Status Change DRAFT TO PLANNED", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
@@ -124,10 +124,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains("$1,005,000.00");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("planned status changes");
-                // click on checkbox with id approve-confirmation
-                cy.get(".usa-checkbox__label").click();
-                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-                cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get('[data-cy="decline-approval-btn"]').click();
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
@@ -135,15 +132,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).contains(/Status Change to Planned Approved/);
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                    "exist"
-                );
+                ).contains(/Status Change to Planned Declined/);
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
-                    .should(
-                        "have.text",
-                        `Admin Demo approved the status change on BL ${bliId} from Draft to Planned as requested by Admin Demo.`
-                    )
+                    .should("exist")
                     // TODO: add more tests
                     .then(() => {
                         cy.request({
@@ -255,10 +246,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains("$1,005,000.00");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("executing status changes");
-                // click on checkbox with id approve-confirmation
-                cy.get(".usa-checkbox__label").click();
-                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-                cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get('[data-cy="decline-approval-btn"]').click();
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
@@ -266,15 +254,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).contains(/Status Change to Executing Approved/);
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                    "exist"
-                );
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
-                    .should(
-                        "have.text",
-                        `Admin Demo approved the status change on BL ${bliId} from Planned to Executing as requested by Admin Demo.`
-                    )
+                )
+                    .contains(/Status Change to Executing Declined/)
                     // TODO: add more tests
                     .then(() => {
                         cy.request({
@@ -386,11 +367,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains("$2,000,000.00");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("budget changes");
-                // TODO: add more tests
-                // click on checkbox with id approve-confirmation
-                cy.get(".usa-checkbox__label").click();
-                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-                cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get('[data-cy="decline-approval-btn"]').click();
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
@@ -398,15 +375,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).contains(/Budget Change to Amount Approved/);
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                    "exist"
-                );
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
-                    .should(
-                        "have.text",
-                        `Admin Demo approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Admin Demo.`
-                    )
+                )
+                    .contains(/Budget Change to Amount Declined/)
                     .then(() => {
                         cy.request({
                             method: "DELETE",
