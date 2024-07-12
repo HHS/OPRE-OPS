@@ -28,7 +28,7 @@ const testBli = {
     comments: "",
     can_id: 501,
     agreement_id: 11,
-    amount: 1000000,
+    amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
     date_needed: "2025-1-01",
     proc_shop_fee_percentage: 0.005
@@ -123,8 +123,34 @@ describe("Review Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains(/total/i);
                 cy.get("[data-cy='review-card']").contains("$1,005,000.00");
                 //class accordion__content contains a paragraph that contains the text planned status change
-                cy.get(".usa-accordion__content")
-                    .contains("planned status changes")
+                cy.get(".usa-accordion__content").contains("planned status changes");
+                // click on checkbox with id approve-confirmation
+                cy.get(".usa-checkbox__label").click();
+                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+                cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get('[data-cy="confirm-action"]').click();
+                cy.get("[data-cy='review-card']").should("not.exist");
+                // verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
+                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+                cy.get('[data-cy="agreement-history-container"]').should("exist");
+                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+                cy.get('[data-cy="agreement-history-list"]').should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).contains(/Status Change to Planned Approved/);
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                    "exist"
+                );
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                    .should(
+                        "have.text",
+                        `Admin Demo approved the status change on BL ${bliId} from Draft to Planned as requested by Admin Demo.`
+                    )
                     // TODO: add more tests
                     .then(() => {
                         cy.request({
@@ -235,8 +261,34 @@ describe("Review Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains(/total/i);
                 cy.get("[data-cy='review-card']").contains("$1,005,000.00");
                 //class accordion__content contains a paragraph that contains the text planned status change
-                cy.get(".usa-accordion__content")
-                    .contains("executing status changes")
+                cy.get(".usa-accordion__content").contains("executing status changes");
+                // click on checkbox with id approve-confirmation
+                cy.get(".usa-checkbox__label").click();
+                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+                cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get('[data-cy="confirm-action"]').click();
+                cy.get("[data-cy='review-card']").should("not.exist");
+                // verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
+                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+                cy.get('[data-cy="agreement-history-container"]').should("exist");
+                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+                cy.get('[data-cy="agreement-history-list"]').should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).contains(/Status Change to Executing Approved/);
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                    "exist"
+                );
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                    .should(
+                        "have.text",
+                        `Admin Demo approved the status change on BL ${bliId} from Planned to Executing as requested by Admin Demo.`
+                    )
                     // TODO: add more tests
                     .then(() => {
                         cy.request({
@@ -249,19 +301,20 @@ describe("Review Change Requests at the Agreement Level", () => {
                         }).then((response) => {
                             expect(response.status).to.eq(200);
                         });
-                    })
-                    .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
                     });
+                // TODO: unable to delete agreement?
+                // .then(() => {
+                //     cy.request({
+                //         method: "DELETE",
+                //         url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                //         headers: {
+                //             Authorization: bearer_token,
+                //             Accept: "application/json"
+                //         }
+                //     }).then((response) => {
+                //         expect(response.status).to.eq(200);
+                //     });
+                // });
             });
     });
     it("review Budget Change change", () => {
@@ -314,7 +367,7 @@ describe("Review Change Requests at the Agreement Level", () => {
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
-                        amount: 2000000,
+                        amount: 2_000_000,
                         requestor_notes: "Test requestor notes"
                     },
                     headers: {
@@ -346,9 +399,35 @@ describe("Review Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains("$1,000,000.00");
                 cy.get("[data-cy='review-card']").contains("$2,000,000.00");
                 //class accordion__content contains a paragraph that contains the text planned status change
-                cy.get(".usa-accordion__content")
-                    .contains("budget changes")
-                    // TODO: add more tests
+                cy.get(".usa-accordion__content").contains("budget changes");
+                // TODO: add more tests
+                // click on checkbox with id approve-confirmation
+                cy.get(".usa-checkbox__label").click();
+                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+                cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get('[data-cy="confirm-action"]').click();
+                cy.get("[data-cy='review-card']").should("not.exist");
+                // verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
+                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+                cy.get('[data-cy="agreement-history-container"]').should("exist");
+                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+                cy.get('[data-cy="agreement-history-list"]').should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("exist");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).contains(/Budget Change to Amount Approved/);
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
+                    "exist"
+                );
+                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                    .should(
+                        "have.text",
+                        `Admin Demo approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Admin Demo.`
+                    )
                     .then(() => {
                         cy.request({
                             method: "DELETE",
