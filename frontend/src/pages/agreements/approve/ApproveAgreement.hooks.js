@@ -64,12 +64,13 @@ const useApproveAgreement = () => {
     const navigate = useNavigate();
     let changeRequestType = searchParams.get("type") ?? "";
     let changeToStatus = searchParams.get("to")?.toUpperCase() ?? "";
+    const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
     const checkBoxText =
-        changeToStatus === BLI_STATUS.PLANNED
+        status === BLI_STATUS.PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
             : "I understand that approving these budget lines will start the Procurement Process";
     const approveModalHeading =
-        changeToStatus === BLI_STATUS.PLANNED
+        status === BLI_STATUS.PLANNED
             ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
             : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
     const [afterApproval, setAfterApproval] = useToggle(true);
@@ -106,7 +107,7 @@ const useApproveAgreement = () => {
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
-    const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
+
     if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
         statusForTitle = `- ${renderField(null, "status", status)}`;
     }
@@ -139,7 +140,7 @@ const useApproveAgreement = () => {
             })
                 .unwrap()
                 .then((fulfilled) => {
-                    console.log(`Change Request: ${action}`, fulfilled);
+                    console.log("Change Request: updated", fulfilled);
                 })
                 .catch((rejected) => {
                     console.error("Error Updating Budget Line");
@@ -168,7 +169,7 @@ const useApproveAgreement = () => {
     };
     /**
      * Handles the approval of a change request
-     * @param {{APPROVE: string, DECLINE: string, CANCEL: string}} action - The action to take
+     * @param {'APPROVE' | 'REJECT'} action - The action to take (APPROVE or REJECT)
      */
     const handleApproveChangeRequests = async (action) => {
         /**
