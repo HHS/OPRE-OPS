@@ -132,14 +132,7 @@ describe("Review Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
-                cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
-                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
-                cy.get('[data-cy="agreement-history-container"]').should("exist");
-                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-                cy.get('[data-cy="agreement-history-list"]').should("exist");
-                cy.get(
-                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).should("exist");
+                checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                 ).contains(/Status Change to Planned Approved/);
@@ -270,14 +263,7 @@ describe("Review Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
-                cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
-                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
-                cy.get('[data-cy="agreement-history-container"]').should("exist");
-                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-                cy.get('[data-cy="agreement-history-list"]').should("exist");
-                cy.get(
-                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).should("exist");
+                checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                 ).contains(/Status Change to Executing Approved/);
@@ -409,14 +395,7 @@ describe("Review Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
-                cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
-                cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
-                cy.get('[data-cy="agreement-history-container"]').should("exist");
-                cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-                cy.get('[data-cy="agreement-history-list"]').should("exist");
-                cy.get(
-                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).should("exist");
+                checkAgreementHistory();
                 cy.get(
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                 ).contains(/Budget Change to Amount Approved/);
@@ -455,3 +434,14 @@ describe("Review Change Requests at the Agreement Level", () => {
             });
     });
 });
+
+const checkAgreementHistory = () => {
+    cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
+    cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
+    cy.get('[data-cy="agreement-history-container"]').should("exist");
+    cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
+    cy.get('[data-cy="agreement-history-list"]').should("exist");
+    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
+        "exist"
+    );
+};
