@@ -4,6 +4,14 @@ import { BLI_STATUS } from "../../helpers/budgetLines.helpers";
 import useAlert from "../../hooks/use-alert.hooks";
 import { CHANGE_REQUEST_ACTION, CHANGE_REQUEST_TYPES } from "./ChangeRequests.constants";
 
+/**
+ * Custom hook for managing the approval process of a change request
+ * @typedef {Object} ChangeRequestHookResult
+ * @property {boolean} showModal - The modal visibility state
+ * @property {function(boolean): void} setShowModal - The setter for modal visibility
+ * @property {Object} modalProps - The modal properties
+ * @property {function(Object): void} setModalProps - The setter for modal properties
+ */
 const useChangeRequest = () => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({

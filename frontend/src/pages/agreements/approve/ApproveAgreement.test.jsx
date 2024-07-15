@@ -88,7 +88,7 @@ describe("ApproveAgreement", () => {
                 <RouterProvider router={router} />
             </Provider>
         );
-        screen.debug();
+        // screen.debug();
 
         // expect(screen.getByText("Approval for Status Change - Executing")).toBeInTheDocument();
     });
