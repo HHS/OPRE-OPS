@@ -13,6 +13,7 @@ import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLin
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
 import { renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
+import { useChangeRequestsForBudgetLines } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
@@ -101,12 +102,35 @@ const useApproveAgreement = () => {
         ? groupByServicesComponent(agreement.budget_line_items)
         : [];
     const budgetLinesInReview = agreement?.budget_line_items?.filter((bli) => bli.in_review) || [];
-
     const changeRequestsInReview = /** @type {ChangeRequest[]} */ (
         getInReviewChangeRequests(agreement?.budget_line_items)
     );
+    console.log({ changeRequestsInReview });
+    // TODO: continue on making changeRequestsMessages
+    // let filteredBudgetLines = [];
+    // if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
+    //     console.log("I AM HERE");
+    //     filteredBudgetLines =
+    //         budgetLinesInReview?.filter((bli) => bli.change_requests_in_review?.has_budget_change) || [];
+    // } else if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS && status === BLI_STATUS.PLANNED) {
+    //     filteredBudgetLines =
+    //         budgetLinesInReview?.filter(
+    //             (bli) =>
+    //                 bli.change_requests_in_review?.has_status_change &&
+    //                 bli.change_requests_in_review?.requested_change_data.status === BLI_STATUS.PLANNED
+    //         ) || [];
+    // } else if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS && status === BLI_STATUS.EXECUTING) {
+    //     filteredBudgetLines =
+    //         budgetLinesInReview?.filter(
+    //             (bli) =>
+    //                 bli.change_requests_in_review?.has_status_change &&
+    //                 bli.change_requests_in_review?.requested_change_data.status === BLI_STATUS.EXECUTING
+    //         ) || [];
+    // }
+    // console.log({ filteredBudgetLines });
+    // const changeRequestsMessages = useChangeRequestsForBudgetLines(filteredBudgetLines);
+    // console.log({ changeRequestsMessages });
 
-    // const changeRequestsMessages = getChangeRequestsFromBudgetLines(agreement.budget_line_items);
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
@@ -137,8 +161,7 @@ const useApproveAgreement = () => {
         /**
          * @type {ChangeRequest[]}
          */
-        let changeRequests,
-            changeMessages = [];
+        let changeRequests = [];
         let heading,
             btnText,
             alertType,
@@ -183,7 +206,7 @@ const useApproveAgreement = () => {
             alertMsg =
                 `The following change(s) have been updated on the ${agreement.display_name} agreement.\n\n` +
                 `<strong>Changes Approved:</strong>\n` +
-                `${changeMessages}`;
+                `${changeRequestsMessages}`;
             changeRequests = [...budgetChangeRequests];
         }
 
