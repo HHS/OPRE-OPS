@@ -9,10 +9,11 @@ import TableTag from "../../UI/TableTag";
  * @param {string | number } [props.value] - The value of the term
  * @param {string} [props.bliStatus] - The status of the budget line item
  * @param {string} [props.tagStyle] - The style of the tag
+ * @param {string} [props.className] - styles classes to add to the component
  */
-function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground", bliStatus = "" }) {
+function TermTag({ label, value = "", tagStyle = "primaryDarkTextLightBackground", bliStatus = "", className = "" }) {
     return (
-        <dl className="font-12px">
+        <dl className={`font-12px ${className}`}>
             <dt className="text-base-dark">{label}</dt>
             {bliStatus && (
                 <dd className="margin-left-0 margin-top-1">
@@ -36,7 +37,8 @@ TermTag.propTypes = {
     label: PropTypes.string.isRequired,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     tagStyle: PropTypes.string,
-    bliStatus: PropTypes.string
+    bliStatus: PropTypes.string,
+    className: PropTypes.string
 };
 
 export default TermTag;

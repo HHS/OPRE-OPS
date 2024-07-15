@@ -55,22 +55,27 @@ function BudgetChangeReviewCard({
             <TermTag
                 label="BL ID"
                 value={bliId}
+                className="grid-col-1"
             />
             <TermTag
                 label="BL Status"
                 bliStatus={status}
+                className="grid-col-2"
             />
             <TermTag
                 label="Change To"
                 value={convertCodeForDisplay("changeToTypes", keyName)}
+                className="grid-col-2 margin-left-2"
             />
             <TermTag
                 label="From"
                 value={oldValue}
+                className="grid-col-2"
             />
             <TermTag
                 label="To"
                 value={newValue}
+                className="grid-col-2 margin-left-neg-2"
             />
         </ReviewCard>
     );
