@@ -414,7 +414,6 @@ class CANFiscalYear(BaseModel):
     potential_additional_funding: Mapped[Optional[decimal]] = mapped_column(
         Numeric(12, 2), default=0
     )
-    can_lead: Mapped[Optional[str]]
     notes: Mapped[Optional[str]] = mapped_column(default="")
     total_funding: Mapped[decimal] = column_property(
         received_funding + expected_funding
