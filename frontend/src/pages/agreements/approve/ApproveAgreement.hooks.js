@@ -1,6 +1,10 @@
 import * as React from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useGetAgreementByIdQuery, useGetServicesComponentsListQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementByIdQuery,
+    useGetServicesComponentsListQuery,
+    useReviewChangeRequestMutation
+} from "../../../api/opsAPI";
 import {
     CHANGE_REQUEST_ACTION,
     CHANGE_REQUEST_SLUG_TYPES
@@ -12,8 +16,11 @@ import useAlert from "../../../hooks/use-alert.hooks.js";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
-import { useReviewChangeRequestMutation } from "../../../api/opsAPI";
 
+/**
+ *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
+ *  @type {ChangeRequest[]}
+ */
 /**
  * Custom hook for managing the approval process of an agreement
  * @typedef {Object} ApproveAgreementHookResult
@@ -69,10 +76,7 @@ const useApproveAgreement = () => {
         status === BLI_STATUS.PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
             : "I understand that approving these budget lines will start the Procurement Process";
-    const approveModalHeading =
-        status === BLI_STATUS.PLANNED
-            ? "Are you sure you want to approve these budget lines for Planned Status? This will subtract the amounts from the FY budget."
-            : "Are you sure you want to approve these budget lines for Executing Status? This will start the procurement process.";
+
     const [afterApproval, setAfterApproval] = useToggle(true);
 
     const {
@@ -97,13 +101,12 @@ const useApproveAgreement = () => {
         ? groupByServicesComponent(agreement.budget_line_items)
         : [];
     const budgetLinesInReview = agreement?.budget_line_items?.filter((bli) => bli.in_review) || [];
-    /**
-     *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
-     *  @type {ChangeRequest[]}
-     */
+
     const changeRequestsInReview = /** @type {ChangeRequest[]} */ (
         getInReviewChangeRequests(agreement?.budget_line_items)
     );
+
+    // const changeRequestsMessages = getChangeRequestsFromBudgetLines(agreement.budget_line_items);
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
@@ -126,56 +129,22 @@ const useApproveAgreement = () => {
             }
         });
     };
+
     /**
-     * Handles the approval of a change request
-     * @param {Object[]} changeRequests - The change requests to approve
-     * @param {{APPROVE: string, DECLINE: string, CANCEL: string}} action - The action to take
-     */
-    const processChangeRequests = (changeRequests, action) => {
-        let promises = changeRequests.map((changeRequest) => {
-            return reviewCR({
-                change_request_id: changeRequest.id,
-                action,
-                reviewer_notes: notes
-            })
-                .unwrap()
-                .then((fulfilled) => {
-                    console.log("Change Request: updated", fulfilled);
-                })
-                .catch((rejected) => {
-                    console.error("Error Updating Budget Line");
-                    console.error({ rejected });
-                    throw new Error("Error Updating Budget Line");
-                });
-        });
-        Promise.allSettled(promises).then((results) => {
-            let rejected = results.filter((result) => result.status === "rejected");
-            if (rejected.length > 0) {
-                console.error(rejected[0].reason);
-                setAlert({
-                    type: "error",
-                    heading: "Error Sending Agreement Edits",
-                    message: "There was an error sending your edits for approval. Please try again.",
-                    redirectUrl: "/error"
-                });
-            } else {
-                setAlert({
-                    type: "success",
-                    heading: "Not Yet Implemented",
-                    message: "Not yet implemented"
-                });
-            }
-        });
-    };
-    /**
-     * Handles the approval of a change request
      * @param {'APPROVE' | 'REJECT'} action - The action to take (APPROVE or REJECT)
      */
-    const handleApproveChangeRequests = async (action) => {
+    const handleApproveChangeRequests = (action) => {
         /**
          * @type {ChangeRequest[]}
          */
-        let changeRequests = [];
+        let changeRequests,
+            changeMessages = [];
+        let heading,
+            btnText,
+            alertType,
+            alertHeading,
+            alertMsg = "";
+
         const BUDGET_APPROVE =
             action === CHANGE_REQUEST_ACTION.APPROVE && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
         const BUDGET_REJECT =
@@ -205,9 +174,22 @@ const useApproveAgreement = () => {
             (changeRequest) =>
                 changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.EXECUTING
         );
-        if (BUDGET_APPROVE || BUDGET_REJECT) {
+
+        if (BUDGET_APPROVE) {
+            heading = `Are you sure you want to approve this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will be updated after your approval.`;
+            btnText = "Approve";
+            alertType = "success";
+            alertHeading = "Changes Approved";
+            alertMsg =
+                `The following change(s) have been updated on the ${agreement.display_name} agreement.\n\n` +
+                `<strong>Changes Approved:</strong>\n` +
+                `${changeMessages}`;
             changeRequests = [...budgetChangeRequests];
         }
+
+        // if (BUDGET_APPROVE || BUDGET_REJECT) {
+        //     changeRequests = [...budgetChangeRequests];
+        // }
         if (PLANNED_STATUS_APPROVE || PLANNED_STATUS_REJECT) {
             changeRequests = [...statusChangeRequestsToPlanned];
         }
@@ -217,11 +199,44 @@ const useApproveAgreement = () => {
 
         setShowModal(true);
         setModalProps({
-            heading: approveModalHeading,
-            actionButtonText: "Approve",
+            heading,
+            actionButtonText: btnText,
             secondaryButtonText: "Cancel",
-            handleConfirm: async () => {
-                await processChangeRequests(changeRequests, action);
+            handleConfirm: () => {
+                let promises = changeRequests.map((changeRequest) => {
+                    return reviewCR({
+                        change_request_id: changeRequest.id,
+                        action,
+                        reviewer_notes: notes
+                    })
+                        .unwrap()
+                        .then((fulfilled) => {
+                            console.log("Change Request: updated", fulfilled);
+                        })
+                        .catch((rejected) => {
+                            console.error("Error Updating Budget Line");
+                            console.error({ rejected });
+                            throw new Error("Error Updating Budget Line");
+                        });
+                });
+                Promise.allSettled(promises).then((results) => {
+                    let rejected = results.filter((result) => result.status === "rejected");
+                    if (rejected.length > 0) {
+                        console.error(rejected[0].reason);
+                        setAlert({
+                            type: "error",
+                            heading: "Error Sending Agreement Edits",
+                            message: "There was an error sending your edits for approval. Please try again.",
+                            redirectUrl: "/error"
+                        });
+                    } else {
+                        setAlert({
+                            type: alertType,
+                            heading: alertHeading,
+                            message: alertMsg
+                        });
+                    }
+                });
                 navigate("/agreements?filter=change-requests");
             }
         });
