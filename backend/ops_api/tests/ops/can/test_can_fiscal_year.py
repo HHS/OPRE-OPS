@@ -14,7 +14,6 @@ def test_can_fiscal_year_lookup(loaded_db):
     assert cfy.fiscal_year == 2022
     assert cfy.total_funding == 7000000.00
     assert cfy.potential_additional_funding == 3000000.00
-    assert cfy.can_lead is None
     assert cfy.notes == ""
     assert cfy.display_name == "G99PHS9:2022"
 
@@ -27,7 +26,6 @@ def test_can_fiscal_year_create():
         received_funding=100,
         expected_funding=200,
         potential_additional_funding=100,
-        can_lead="Ralph",
         notes="all-the-notes!",
     )
     assert cfy.to_dict()["fiscal_year"] == 2023
