@@ -771,8 +771,10 @@ class CAN(BaseModel):
 
     @property
     def appropriation_term(self):
-        if self.expiration_date is None or self.appropriation_date is None:
+        if self.expiration_date is None:
             return 0
+        if self.appropriation_date is None:
+            return None
         return self.expiration_date.year - self.appropriation_date.year
 
 
