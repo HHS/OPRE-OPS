@@ -673,7 +673,6 @@ class CAN(BaseModel):
     nickname: Mapped[Optional[str]]
     expiration_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
     appropriation_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    appropriation_term: Mapped[Optional[int]] = mapped_column(Integer, default="1")
     arrangement_type: Mapped[Optional[CANArrangementType]] = mapped_column(
         sa.Enum(CANArrangementType)
     )
@@ -770,9 +769,25 @@ class CAN(BaseModel):
         )
         return can_status
 
+    @property
+    def appropriation_term(self):
+        if self.expiration_date is None:
+            return 0
+        if self.appropriation_date is None:
+            return None
+        return self.expiration_date.year - self.appropriation_date.year
+
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+        # add the appropriation_term calculated property to this dictionary
+        d["appropriation_term"] = self.appropriation_term
+        return d
 
 
 class CANFiscalYearFundingDetails(BaseModel):
