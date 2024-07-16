@@ -4,14 +4,21 @@ import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from marshmallow import Schema
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import Forbidden, NotFound
 
 import ops_api.ops.services.users as users_service
 from models import BaseModel, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.users import PATCHRequestBody, POSTRequestBody, QueryParameters, SafeUserSchema, UserResponse
+from ops_api.ops.schemas.users import (
+    PATCHRequestBody,
+    POSTRequestBody,
+    PutUserSchema,
+    QueryParameters,
+    SafeUserSchema,
+    UserResponse,
+)
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.users import is_admin
 
@@ -25,6 +32,16 @@ class UsersItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self, id: int) -> Response:
+        """
+        Get a user by ID
+
+        :param id: The ID of the user to get
+        :return: The user
+
+        Business Rules:
+        - If the user is an admin, they can get the full details of any user
+        - If the user is not an admin, they can get the full details of their own user or a safe version of another user
+        """
         user: User | None = users_service.get_user(id, current_app.db_session)
 
         if not user:
@@ -39,15 +56,22 @@ class UsersItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
-        old_user: User = User.query.get(id)
-        if not old_user:
-            raise RuntimeError("Invalid User ID")
+        request_schema = PutUserSchema()
+        user_data = request_schema.load(request.json)
 
-        user = update_user(old_user, request.json)
-        user_dict = user.to_dict()
+        user: User | None = users_service.get_user(id, current_app.db_session)
 
-        # Return the updated user as a response
-        return make_response_with_headers(user_dict)
+        if not user:
+            raise NotFound(f"User {id} not found")
+
+        if is_admin(current_user) or user.id == current_user.id:
+            schema = self._response_schema
+        else:
+            raise Forbidden("You do not have permission to update this user")
+
+        users_service.update_user(current_app.db_session, user_data)
+
+        return make_response_with_headers(schema.dump(user))
 
     @is_authorized(PermissionType.PATCH, Permission.USER)
     def patch(self, id: int) -> Response:

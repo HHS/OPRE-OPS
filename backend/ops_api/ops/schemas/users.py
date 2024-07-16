@@ -26,21 +26,26 @@ class SafeUser:
     full_name: Optional[str] = None
 
 
-@dataclass(kw_only=True)
-class RequestBody:
-    id: int = None
-    oidc_id: Optional[str] = None
-    hhs_id: Optional[str] = None
-    email: Optional[str] = None
+class RoleResponse(Schema):
+    id: int = fields.Integer(required=True)
+    name: str = fields.String(required=True)
 
 
-@dataclass(kw_only=True)
-class POSTRequestBody(RequestBody):
+class PutUserSchema(Schema):
+    id: int = fields.Integer(required=True)
+    email: Optional[str] = fields.String()
+    first_name: Optional[str] = fields.String(load_default=None)
+    last_name: Optional[str] = fields.String(load_default=None)
+    division: Optional[int] = fields.Integer(load_default=None)
+    status: Optional[UserStatus] = fields.Enum(UserStatus, load_default=UserStatus.INACTIVE)
+    roles: Optional[list[RoleResponse]] = fields.List(fields.Nested(RoleResponse), load_default=[])
+
+
+class POSTRequestBody(PutUserSchema):
     id: int  # user_id is required for POST
 
 
-@dataclass(kw_only=True)
-class PATCHRequestBody(RequestBody):
+class PATCHRequestBody(PutUserSchema):
     id: Optional[int] = None  # user_id (and all params) are optional for PATCH
 
 
@@ -50,11 +55,6 @@ class QueryParameters:
     oidc_id: Optional[str] = None
     hhs_id: Optional[str] = None
     email: Optional[str] = None
-
-
-class RoleResponse(Schema):
-    id: int = fields.Integer(required=True)
-    name: str = fields.String(required=True)
 
 
 class UserResponse(Schema):
