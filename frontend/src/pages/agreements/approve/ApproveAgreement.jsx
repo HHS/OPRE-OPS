@@ -7,6 +7,7 @@ import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTab
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
 import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -38,7 +39,7 @@ const ApproveAgreement = () => {
         changeRequestTitle,
         afterApproval,
         setAfterApproval,
-        submittersNotes,
+        requestorNoters,
         urlChangeToStatus,
         statusForTitle
     } = useApproveAgreement();
@@ -114,25 +115,28 @@ const ApproveAgreement = () => {
                     changeInCans={changeInCans}
                 />
             )}
-            <section>
-                <h2 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h2>
-                <p
-                    className="margin-top-3 text-semibold font-12px line-height-body-1"
-                    style={{ maxWidth: "25rem" }}
-                >
-                    {submittersNotes}
-                </p>
-            </section>
-            <section>
-                <h2 className="font-sans-lg text-semibold margin-top-5">Reviewer&apos;s Notes</h2>
-                <TextArea
-                    name="submitter-notes"
-                    label="Notes (optional)"
-                    maxLength={150}
-                    value={notes}
-                    onChange={(name, value) => setNotes(value)}
-                />
-            </section>
+            <Accordion
+                heading="Notes"
+                level={2}
+            >
+                <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
+                {requestorNoters && (
+                    <>
+                        <h3 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h3>
+                        <p className="maxw">{requestorNoters}</p>
+                    </>
+                )}
+                <section>
+                    <h2 className="font-sans-lg text-semibold">Reviewer&apos;s Notes</h2>
+                    <TextArea
+                        name="submitter-notes"
+                        label="Notes (optional)"
+                        maxLength={150}
+                        value={notes}
+                        onChange={(name, value) => setNotes(value)}
+                    />
+                </section>
+            </Accordion>
             <div className="usa-checkbox padding-bottom-105 margin-top-4">
                 <input
                     className="usa-checkbox__input"
@@ -173,7 +177,7 @@ const ApproveAgreement = () => {
                     onClick={() => handleApproveChangeRequests(CHANGE_REQUEST_ACTION.APPROVE)}
                     disabled={!confirmation}
                 >
-                    Approve
+                    Approve Changes
                 </button>
             </div>
         </App>

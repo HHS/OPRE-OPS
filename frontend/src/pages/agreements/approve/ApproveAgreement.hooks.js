@@ -40,12 +40,12 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {function(boolean): void} setShowModal - The setter for modal visibility
  * @property {Object} modalProps - The modal properties
  * @property {string} checkBoxText - The text for the confirmation checkbox
- * @property {Function} handleCancel - Function to handle cancellation
+ * @property {function (): void} handleCancel - Function to handle cancellation of the approval process
  * @property {Function} handleApproveChangeRequests - Function to handle approval of change requests
  * @property {string} title - The title of the approval page
  * @property {boolean} afterApproval - The after approval state
  * @property {Function} setAfterApproval - The setter for after approval state
- * @property {string} submittersNotes - The submitter's notes
+ * @property {string} requestorNoters - The submitter's notes
  * @property {string} urlChangeToStatus - The status change to from the URL
  * @property {string} statusForTitle - The status for the title
  * @property {string} changeRequestTitle - The title of the change request,
@@ -65,7 +65,6 @@ const useApproveAgreement = () => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
-    let submittersNotes = "This is a test note"; // TODO: replace with actual data
     // @ts-ignore
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
@@ -128,6 +127,10 @@ const useApproveAgreement = () => {
     const changeRequestTitle = toTitleCaseFromSlug(changeRequestType);
     const title = `Approval for ${changeRequestTitle} ${statusForTitle}`;
 
+    let requestorNoters = "";
+    if (changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
+        requestorNoters = changeRequestsInReview[0]?.requestor_notes ?? "";
+    }
     const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
     const budgetChangeBudgetLines = budgetLinesInReview.filter((bli) =>
         bli.change_requests_in_review.filter((cr) => cr.has_budget_change)
@@ -353,7 +356,7 @@ const useApproveAgreement = () => {
         changeRequestTitle,
         afterApproval,
         setAfterApproval,
-        submittersNotes,
+        requestorNoters,
         urlChangeToStatus,
         statusForTitle
     };
