@@ -222,7 +222,8 @@ const useApproveAgreement = () => {
             alertMsg =
                 `The following change(s) have been updated on the ${agreement.display_name} agreement.\n\n` +
                 `<strong>Changes Approved:</strong>\n` +
-                `${relevantMessages}`;
+                `${relevantMessages}\n\n` +
+                `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
             changeRequests = [...budgetChangeRequests];
         }
         if (BUDGET_REJECT) {
@@ -233,7 +234,8 @@ const useApproveAgreement = () => {
             alertMsg =
                 `The following change(s) have been declined on the ${agreement.display_name} agreement.\n\n` +
                 `<strong>Edits Declined:</strong>\n` +
-                `${relevantMessages}`;
+                `${relevantMessages}\n\n` +
+                `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
             changeRequests = [...budgetChangeRequests];
         }
         if (PLANNED_STATUS_APPROVE) {
@@ -244,7 +246,8 @@ const useApproveAgreement = () => {
             alertMsg =
                 `The following change(s) have been updated on the ${agreement.display_name} agreement.\n\n` +
                 `<strong>Changes Approved:</strong>\n` +
-                `${relevantMessages} `;
+                `${relevantMessages}\n\n` +
+                `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
             changeRequests = [...statusChangeRequestsToPlanned];
         }
         if (PLANNED_STATUS_REJECT) {
@@ -255,7 +258,8 @@ const useApproveAgreement = () => {
             alertMsg =
                 `The following change(s) have been declined on the ${agreement.display_name} agreement.\n\n` +
                 `<strong>Changes Declined:</strong>\n` +
-                `${relevantMessages}`;
+                `${relevantMessages}\n\n` +
+                `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
             changeRequests = [...statusChangeRequestsToPlanned];
         }
         if (EXECUTING_STATUS_APPROVE) {
@@ -266,7 +270,8 @@ const useApproveAgreement = () => {
             alertMsg =
                 `The following change(s) have been updated on the ${agreement.display_name} agreement. \n\n` +
                 `<strong>Changes Approved:</strong>\n` +
-                `${relevantMessages}`;
+                `${relevantMessages}\n\n` +
+                `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
             changeRequests = [...statusChangeRequestsToExecuting];
         }
         if (EXECUTING_STATUS_REJECT) {
@@ -277,7 +282,8 @@ const useApproveAgreement = () => {
             alertMsg =
                 `The following change(s) have been declined on the ${agreement.display_name} agreement. \n\n` +
                 `<strong>Changes Declined:</strong>\n` +
-                `${relevantMessages}`;
+                `${relevantMessages}\n\n` +
+                `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
             changeRequests = [...statusChangeRequestsToExecuting];
         }
 
