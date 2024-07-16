@@ -80,7 +80,6 @@
         "POST_USER",
         "PATCH_USER",
 
-        "GET_USERS",
         "GET_HISTORY",
 
         "GET_WORKFLOW",
@@ -109,6 +108,8 @@
         "GET_PORTFOLIO",
         "GET_RESEARCH_PROJECT",
         "GET_USER",
+        "PUT_USER",
+        "PATCH_USER",
         "GET_HISTORY",
       ],
     },
@@ -116,7 +117,6 @@
       name: "unassigned",
       permissions: [
         "GET_USER",
-        "POST_USER",
         "PUT_USER",
         "PATCH_USER",
       ],
@@ -158,8 +158,9 @@
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",
+        "PUT_USER",
+        "PATCH_USER",
 
-        "GET_USERS",
         "GET_HISTORY",
 
         "GET_WORKFLOW",
