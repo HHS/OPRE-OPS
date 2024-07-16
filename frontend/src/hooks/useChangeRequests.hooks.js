@@ -22,16 +22,23 @@ export const useChangeRequestsForAgreement = (agreementId) => {
 /**
  * Custom hook that returns the change requests for budget lines.
  * @param {Object[]} budgetLines - The budget lines.
+ * @param {string} [targetStatus] - The target status to filter change requests.
+ *
  * @returns {string} The change requests messages.
  */
-export const useChangeRequestsForBudgetLines = (budgetLines) => {
+export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus) => {
     const { data: cans, isSuccess: cansSuccess } = useGetCansQuery();
 
     if (!budgetLines || !cansSuccess) {
         return "";
     }
+    if (!targetStatus) {
+        const messages = getChangeRequestsFromBudgetLines(budgetLines, cans);
+        const formattedMessages = formatMessage(messages);
+        return formattedMessages;
+    }
 
-    const messages = getChangeRequestsFromBudgetLines(budgetLines, cans);
+    const messages = getChangeRequestsFromBudgetLinesByStatus(budgetLines, cans, targetStatus);
     const formattedMessages = formatMessage(messages);
     return formattedMessages;
 };
@@ -122,6 +129,60 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
                 : []
         );
 
+    if (changeRequestsFromBudgetLines?.length > 0) {
+        changeRequestsFromBudgetLines.forEach((budgetLine) => {
+            budgetLine.change_requests_in_review.forEach(
+                /**
+                 * @param {ChangeRequest} changeRequest
+                 */
+                (changeRequest) => {
+                    let bliId = `BL ${budgetLine.id}`;
+                    if (changeRequest?.requested_change_data?.amount) {
+                        changeRequestsMessages.add(
+                            `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                        );
+                    }
+                    if (changeRequest?.requested_change_data?.date_needed) {
+                        changeRequestsMessages.add(
+                            `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                        );
+                    }
+                    if (changeRequest?.requested_change_data?.can_id) {
+                        let matchingCan = cans?.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                        let canName = matchingCan?.display_name || "TBD";
+
+                        changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
+                    }
+                    if (changeRequest?.requested_change_data?.status) {
+                        changeRequestsMessages.add(
+                            `${bliId} Status: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
+                        );
+                    }
+                }
+            );
+        });
+    }
+    return Array.from(changeRequestsMessages);
+}
+
+/**
+ * Get change requests from budget lines.
+ * @param {Object[]} budgetLines - The budget lines.
+ * @param {Object[]} cans - The cans.
+ * @param {string} targetStatus - The target status to filter change requests.
+ * @returns {string[]} The change requests messages.
+ */
+function getChangeRequestsFromBudgetLinesByStatus(budgetLines, cans, targetStatus) {
+    let changeRequestsMessages = new Set();
+    const changeRequestsFromBudgetLines = budgetLines
+        .filter((budgetLine) => budgetLine.in_review)
+        .flatMap((budgetLine) =>
+            Array.isArray(budgetLine.change_requests_in_review)
+                ? budgetLine.change_requests_in_review
+                      .filter((cr) => cr.requested_change_data.status === targetStatus)
+                      .map((changeRequest) => ({ ...budgetLine, changeRequest }))
+                : []
+        );
     if (changeRequestsFromBudgetLines?.length > 0) {
         changeRequestsFromBudgetLines.forEach((budgetLine) => {
             budgetLine.change_requests_in_review.forEach(

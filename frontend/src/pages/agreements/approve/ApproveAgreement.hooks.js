@@ -11,7 +11,7 @@ import {
 } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import { BLI_STATUS, groupByServicesComponent } from "../../../helpers/budgetLines.helpers";
 import { getInReviewChangeRequests } from "../../../helpers/changeRequests.helpers";
-import { renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
+import { fromUpperCaseToTitleCase, renderField, toTitleCaseFromSlug } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import { useChangeRequestsForBudgetLines } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -46,7 +46,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {boolean} afterApproval - The after approval state
  * @property {Function} setAfterApproval - The setter for after approval state
  * @property {string} submittersNotes - The submitter's notes
- * @property {string} changeToStatus - The status to change to
+ * @property {string} urlChangeToStatus - The status change to from the URL
  * @property {string} statusForTitle - The status for the title
  * @property {string} changeRequestTitle - The title of the change request,
  *
@@ -70,11 +70,23 @@ const useApproveAgreement = () => {
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    let changeRequestType = searchParams.get("type") ?? "";
-    let changeToStatus = searchParams.get("to")?.toUpperCase() ?? "";
-    const status = changeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
+    /**
+     * @typeof {CHANGE_REQUEST_SLUG_TYPES.BUDGET | CHANGE_REQUEST_SLUG_TYPES.STATUS}
+     */
+    let changeRequestType = React.useMemo(() => searchParams.get("type") ?? "", [searchParams]);
+    /**
+     * @typeof {'EXECUTING' | 'PLANNED'}
+     */
+    let urlChangeToStatus = React.useMemo(() => searchParams.get("to")?.toUpperCase() ?? "", [searchParams]);
+    /**
+     * @typeof {BLI_STATUS.PLANNED | BLI_STATUS.EXECUTING}
+     */
+    const statusChangeTo = React.useMemo(
+        () => (urlChangeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED),
+        [urlChangeToStatus]
+    );
     const checkBoxText =
-        status === BLI_STATUS.PLANNED
+        statusChangeTo === BLI_STATUS.PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
             : "I understand that approving these budget lines will start the Procurement Process";
 
@@ -105,41 +117,54 @@ const useApproveAgreement = () => {
     const changeRequestsInReview = /** @type {ChangeRequest[]} */ (
         getInReviewChangeRequests(agreement?.budget_line_items)
     );
-    console.log({ changeRequestsInReview });
-    // TODO: continue on making changeRequestsMessages
-    // let filteredBudgetLines = [];
-    // if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
-    //     console.log("I AM HERE");
-    //     filteredBudgetLines =
-    //         budgetLinesInReview?.filter((bli) => bli.change_requests_in_review?.has_budget_change) || [];
-    // } else if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS && status === BLI_STATUS.PLANNED) {
-    //     filteredBudgetLines =
-    //         budgetLinesInReview?.filter(
-    //             (bli) =>
-    //                 bli.change_requests_in_review?.has_status_change &&
-    //                 bli.change_requests_in_review?.requested_change_data.status === BLI_STATUS.PLANNED
-    //         ) || [];
-    // } else if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS && status === BLI_STATUS.EXECUTING) {
-    //     filteredBudgetLines =
-    //         budgetLinesInReview?.filter(
-    //             (bli) =>
-    //                 bli.change_requests_in_review?.has_status_change &&
-    //                 bli.change_requests_in_review?.requested_change_data.status === BLI_STATUS.EXECUTING
-    //         ) || [];
-    // }
-    // console.log({ filteredBudgetLines });
-    // const changeRequestsMessages = useChangeRequestsForBudgetLines(filteredBudgetLines);
-    // console.log({ changeRequestsMessages });
 
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
 
     if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
-        statusForTitle = `- ${renderField(null, "status", status)}`;
+        statusForTitle = `- ${renderField(null, "status", statusChangeTo)}`;
     }
     const changeRequestTitle = toTitleCaseFromSlug(changeRequestType);
     const title = `Approval for ${changeRequestTitle} ${statusForTitle}`;
+
+    const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
+    const budgetChangeBudgetLines = budgetLinesInReview.filter((bli) =>
+        bli.change_requests_in_review.filter((cr) => cr.has_budget_change)
+    );
+    const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
+        (changeRequest) =>
+            changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.PLANNED
+    );
+    const statusChangeRequestsToExecuting = changeRequestsInReview.filter(
+        (changeRequest) =>
+            changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.EXECUTING
+    );
+
+    const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines);
+    const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
+    const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
+
+    const relevantMessages = React.useMemo(() => {
+        if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
+            return budgetChangeMessages;
+        }
+        if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS) {
+            if (statusChangeTo === BLI_STATUS.PLANNED) {
+                return budgetLinesToPlannedMessages;
+            }
+            if (statusChangeTo === BLI_STATUS.EXECUTING) {
+                return budgetLinesToExecutingMessages;
+            }
+        }
+        return [];
+    }, [
+        changeRequestType,
+        statusChangeTo,
+        budgetChangeMessages,
+        budgetLinesToPlannedMessages,
+        budgetLinesToExecutingMessages
+    ]);
 
     const handleCancel = () => {
         setShowModal(true);
@@ -174,29 +199,20 @@ const useApproveAgreement = () => {
             action === CHANGE_REQUEST_ACTION.REJECT && changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET;
         const PLANNED_STATUS_APPROVE =
             changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
-            status === BLI_STATUS.PLANNED &&
+            statusChangeTo === BLI_STATUS.PLANNED &&
             action === CHANGE_REQUEST_ACTION.APPROVE;
         const PLANNED_STATUS_REJECT =
             changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
-            status === BLI_STATUS.PLANNED &&
+            statusChangeTo === BLI_STATUS.PLANNED &&
             action === CHANGE_REQUEST_ACTION.REJECT;
         const EXECUTING_STATUS_APPROVE =
             changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
-            status === BLI_STATUS.EXECUTING &&
+            statusChangeTo === BLI_STATUS.EXECUTING &&
             action === CHANGE_REQUEST_ACTION.APPROVE;
         const EXECUTING_STATUS_REJECT =
             changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
-            status === BLI_STATUS.EXECUTING &&
+            statusChangeTo === BLI_STATUS.EXECUTING &&
             action === CHANGE_REQUEST_ACTION.REJECT;
-        const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
-        const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
-            (changeRequest) =>
-                changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.PLANNED
-        );
-        const statusChangeRequestsToExecuting = changeRequestsInReview.filter(
-            (changeRequest) =>
-                changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.EXECUTING
-        );
 
         if (BUDGET_APPROVE) {
             heading = `Are you sure you want to approve this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will be updated after your approval.`;
@@ -206,17 +222,62 @@ const useApproveAgreement = () => {
             alertMsg =
                 `The following change(s) have been updated on the ${agreement.display_name} agreement.\n\n` +
                 `<strong>Changes Approved:</strong>\n` +
-                `${changeRequestsMessages}`;
+                `${relevantMessages}`;
             changeRequests = [...budgetChangeRequests];
         }
-
-        // if (BUDGET_APPROVE || BUDGET_REJECT) {
-        //     changeRequests = [...budgetChangeRequests];
-        // }
-        if (PLANNED_STATUS_APPROVE || PLANNED_STATUS_REJECT) {
+        if (BUDGET_REJECT) {
+            heading = `Are you sure you want to decline this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will remain as it was before the change was requested.`;
+            btnText = "Decline";
+            alertType = "error";
+            alertHeading = "Changes Declined";
+            alertMsg =
+                `The following change(s) have been declined on the ${agreement.display_name} agreement.\n\n` +
+                `<strong>Edits Declined:</strong>\n` +
+                `${relevantMessages}`;
+            changeRequests = [...budgetChangeRequests];
+        }
+        if (PLANNED_STATUS_APPROVE) {
+            heading = `Are you sure you want to approve this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? This will subtract the amounts from the FY budget.`;
+            btnText = "Approve";
+            alertType = "success";
+            alertHeading = "Changes Approved";
+            alertMsg =
+                `The following change(s) have been updated on the ${agreement.display_name} agreement.\n\n` +
+                `<strong>Changes Approved:</strong>\n` +
+                `${relevantMessages} `;
             changeRequests = [...statusChangeRequestsToPlanned];
         }
-        if (EXECUTING_STATUS_APPROVE || EXECUTING_STATUS_REJECT) {
+        if (PLANNED_STATUS_REJECT) {
+            heading = `Are you sure you want to decline this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? The agreement will remain as it was before the change was requested.`;
+            btnText = "Decline";
+            alertType = "error";
+            alertHeading = "Changes Declined";
+            alertMsg =
+                `The following change(s) have been declined on the ${agreement.display_name} agreement.\n\n` +
+                `<strong>Changes Declined:</strong>\n` +
+                `${relevantMessages}`;
+            changeRequests = [...statusChangeRequestsToPlanned];
+        }
+        if (EXECUTING_STATUS_APPROVE) {
+            heading = `Are you sure you want to approve this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? This will start the procurement process.`;
+            btnText = "Approve";
+            alertType = "success";
+            alertHeading = "Changes Approved";
+            alertMsg =
+                `The following change(s) have been updated on the ${agreement.display_name} agreement. \n\n` +
+                `<strong>Changes Approved:</strong>\n` +
+                `${relevantMessages}`;
+            changeRequests = [...statusChangeRequestsToExecuting];
+        }
+        if (EXECUTING_STATUS_REJECT) {
+            heading = `Are you sure you want to decline these budget lines for ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? The agreement will remain as it was before the change was requested.`;
+            btnText = "Decline";
+            alertType = "error";
+            alertHeading = "Changes Declined";
+            alertMsg =
+                `The following change(s) have been declined on the ${agreement.display_name} agreement. \n\n` +
+                `<strong>Changes Declined:</strong>\n` +
+                `${relevantMessages}`;
             changeRequests = [...statusChangeRequestsToExecuting];
         }
 
@@ -256,11 +317,11 @@ const useApproveAgreement = () => {
                         setAlert({
                             type: alertType,
                             heading: alertHeading,
-                            message: alertMsg
+                            message: alertMsg,
+                            redirectUrl: "/agreements?filter=change-requests"
                         });
                     }
                 });
-                navigate("/agreements?filter=change-requests");
             }
         });
     };
@@ -287,7 +348,7 @@ const useApproveAgreement = () => {
         afterApproval,
         setAfterApproval,
         submittersNotes,
-        changeToStatus,
+        urlChangeToStatus,
         statusForTitle
     };
 };

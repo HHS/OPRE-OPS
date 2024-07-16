@@ -39,7 +39,7 @@ const ApproveAgreement = () => {
         afterApproval,
         setAfterApproval,
         submittersNotes,
-        changeToStatus,
+        urlChangeToStatus,
         statusForTitle
     } = useApproveAgreement();
 
@@ -65,7 +65,7 @@ const ApproveAgreement = () => {
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
-                statusChangeTo={changeToStatus}
+                statusChangeTo={urlChangeToStatus}
             />
             <AgreementMetaAccordion
                 instructions="Please review the agreement details below to ensure all information is correct."
@@ -81,7 +81,7 @@ const ApproveAgreement = () => {
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                action={changeToStatus}
+                action={urlChangeToStatus}
             >
                 <section className="margin-top-4">
                     {groupedBudgetLinesByServicesComponent.map((group) => (
@@ -106,9 +106,9 @@ const ApproveAgreement = () => {
                 selectedBudgetLines={budgetLinesInReview}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
-                action={changeToStatus}
+                action={urlChangeToStatus}
             />
-            {changeToStatus === BLI_STATUS.PLANNED && (
+            {urlChangeToStatus === BLI_STATUS.PLANNED && (
                 <AgreementChangesAccordion
                     changeInBudgetLines={budgetLinesInReview.reduce((acc, { amount }) => acc + amount, 0)}
                     changeInCans={changeInCans}
