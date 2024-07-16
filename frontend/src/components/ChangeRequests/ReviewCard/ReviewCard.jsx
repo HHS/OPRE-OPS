@@ -128,8 +128,11 @@ function ReviewCard({
                     )}
                 </header>
             )}
-            <section className="display-flex margin-y-1 flex-justify maxw-tablet">
-                <dl className="font-12px margin-right-4">
+            <section
+                className="display-flex flex-justify margin-y-1"
+                style={{ maxWidth: "50rem" }}
+            >
+                <dl className="font-12px grid-col-2">
                     <dt className="text-base-dark">Requested By</dt>
                     <dd className="margin-0">{requesterName}</dd>
                 </dl>

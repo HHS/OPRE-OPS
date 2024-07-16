@@ -80,6 +80,23 @@ def test_can_get_all(auth_client, loaded_db):
     assert len(response.json) == count
 
 
+def test_can_no_expiration_date(loaded_db):
+    can = CAN(
+        number="G990991-X",
+        description="Secondary Analyses Data On Child Care & Early Edu",
+        nickname="ABCD",
+        arrangement_type=CANArrangementType.COST_SHARE,
+        authorizer_id=1,
+        managing_portfolio_id=2,
+        appropriation_date=datetime.datetime(2022, 9, 30, 1, 1, 1),
+    )
+
+    serialized = can.to_dict()
+
+    assert can is not None
+    assert serialized["appropriation_term"] == 0
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_can_get_by_id(auth_client, loaded_db, test_can):
     response = auth_client.get(f"/api/v1/cans/{test_can.id}")
