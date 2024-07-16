@@ -45,16 +45,6 @@ def test_get_users_by_id_without_auth(client, test_user):
     assert response.status_code == 401
 
 
-@pytest.mark.skip("This test is failing because the endpoint is not implemented.")
-@pytest.mark.usefixtures("app_ctx")
-def test_get_someone_else_user(client, test_user, test_admin_user):
-    access_token = create_access_token(identity=test_user)
-    response = client.get(
-        url_for("api.users-item", id=test_admin_user.id), headers={"Authorization": f"Bearer {str(access_token)}"}
-    )
-    assert response.status_code == 401
-
-
 @pytest.mark.usefixtures("app_ctx")
 def test_get_all_users_without_auth(client):
     response = client.get(url_for("api.users-group"))
@@ -101,14 +91,10 @@ def test_get_user_by_id_admin_gets_all_user_details(auth_client, loaded_db, test
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_all_users(auth_client, test_user):
-    response = auth_client.get(url_for("api.users-group"))
-    assert response.status_code == 200
-    assert len(response.json) > 0
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_get_safe_user_with_admin_user(auth_client, loaded_db, new_user):
+def test_get_user_with_admin_user(auth_client, loaded_db, new_user):
+    """
+    Test that an admin user can get all user details for another user.
+    """
     response = auth_client.get(url_for("api.users-item", id=new_user.id))
     assert response.status_code == 200
     assert response.json["id"] == new_user.id
@@ -124,6 +110,9 @@ def test_get_safe_user_with_admin_user(auth_client, loaded_db, new_user):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_safe_user_with_regular_user(client, loaded_db, test_non_admin_user, new_user):
+    """
+    Test that a regular user can get a safe version of another user.
+    """
     access_token = create_access_token(identity=test_non_admin_user)
     response = client.get(
         url_for("api.users-item", id=new_user.id), headers={"Authorization": f"Bearer {str(access_token)}"}
@@ -135,3 +124,33 @@ def test_get_safe_user_with_regular_user(client, loaded_db, test_non_admin_user,
     assert "created_by" not in user
     assert "updated_by" not in user
     assert "oidc_id" not in user
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_own_user_details(client, loaded_db, test_non_admin_user):
+    """
+    Test that a regular user can get their own (full) user details.
+    """
+    access_token = create_access_token(identity=test_non_admin_user)
+    response = client.get(
+        url_for("api.users-item", id=test_non_admin_user.id), headers={"Authorization": f"Bearer {str(access_token)}"}
+    )
+    assert response.status_code == 200
+    user = response.json
+    assert user["id"] == test_non_admin_user.id
+    assert user["full_name"] == test_non_admin_user.full_name
+    assert user["display_name"] == test_non_admin_user.display_name
+    assert user["division"] == test_non_admin_user.division
+    assert user["email"] == test_non_admin_user.email
+    assert user["oidc_id"] == str(test_non_admin_user.oidc_id)
+    assert user["first_name"] == test_non_admin_user.first_name
+    assert user["last_name"] == test_non_admin_user.last_name
+    assert user["roles"] == [{"id": role.id, "name": role.name} for role in test_non_admin_user.roles]
+    assert user["status"] == test_non_admin_user.status.name
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users(auth_client, test_user):
+    response = auth_client.get(url_for("api.users-group"))
+    assert response.status_code == 200
+    assert len(response.json) > 0
