@@ -141,7 +141,7 @@ const useApproveAgreement = () => {
             changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.EXECUTING
     );
 
-    const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines);
+    const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines, null, true);
     const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
     const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
 
