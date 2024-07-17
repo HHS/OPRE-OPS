@@ -66,7 +66,7 @@ def test_put_user_unauthorized_different_user(client, loaded_db, test_non_admin_
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_with_admin_min_params(auth_client, new_user, loaded_db, test_admin_user):
+def test_put_user_min_params(auth_client, new_user, loaded_db, test_admin_user):
     original_user = new_user.to_dict()
 
     response = auth_client.put(
@@ -110,7 +110,7 @@ def test_put_user_with_admin_min_params(auth_client, new_user, loaded_db, test_a
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_with_admin_max_params(auth_client, new_user, loaded_db, test_admin_user):
+def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user):
     original_user = new_user.to_dict()
 
     response = auth_client.put(
@@ -157,3 +157,12 @@ def test_put_user_with_admin_max_params(auth_client, new_user, loaded_db, test_a
         "created_on"
     ), "should be the same as the original user"
     assert updated_user.updated_on != original_user.get("updated_on"), "should be updated"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_user_wrong_user(auth_client, new_user, loaded_db, test_admin_user):
+    response = auth_client.put(
+        url_for("api.users-item", id=new_user.id),
+        json={"id": 0, "email": "new_user@example.com"},
+    )
+    assert response.status_code == 403

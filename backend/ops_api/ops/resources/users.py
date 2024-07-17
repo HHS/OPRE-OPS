@@ -20,7 +20,7 @@ from ops_api.ops.schemas.users import (
     UserResponse,
 )
 from ops_api.ops.utils.response import make_response_with_headers
-from ops_api.ops.utils.users import is_admin
+from ops_api.ops.utils.users import is_user_admin
 
 
 class UsersItemAPI(BaseItemAPI):
@@ -42,12 +42,12 @@ class UsersItemAPI(BaseItemAPI):
         - If the user is an admin, they can get the full details of any user
         - If the user is not an admin, they can get the full details of their own user or a safe version of another user
         """
-        user: User | None = users_service.get_user(id, current_app.db_session)
+        user: User | None = users_service.get_user(current_app.db_session, id=id)
 
         if not user:
             raise NotFound(f"User {id} not found")
 
-        if is_admin(current_user) or user.id == current_user.id:
+        if is_user_admin(current_user) or user.id == current_user.id:
             schema = self._response_schema
         else:
             schema = SafeUserSchema()
@@ -62,17 +62,17 @@ class UsersItemAPI(BaseItemAPI):
         request_schema = PutUserSchema()
         user_data = request_schema.load(request.json)
 
-        user: User | None = users_service.get_user(id, current_app.db_session)
+        user: User | None = users_service.get_user(current_app.db_session, id=id)
 
         if not user:
             raise NotFound(f"User {id} not found")
 
-        if is_admin(current_user) or user.id == current_user.id:
+        if is_user_admin(current_user) or user.id == current_user.id:
             schema = self._response_schema
         else:
             raise Forbidden("You do not have permission to update this user")
 
-        updated_user = users_service.update_user(current_app.db_session, user_data)
+        updated_user = users_service.update_user(current_app.db_session, id=id, data=user_data)
 
         user_data = schema.dump(updated_user)
         user_data["roles"] = [role.name for role in updated_user.roles]

@@ -77,7 +77,6 @@
         "GET_USER",
 
         "PUT_USER",
-        "POST_USER",
         "PATCH_USER",
 
         "GET_HISTORY",
@@ -209,6 +208,12 @@
         "PATCH_CHANGE_REQUEST_REVIEW",
         "POST_CHANGE_REQUEST_REVIEW"
       ]
+    },
+    { // 5 User Admin
+      name: "USER_ADMIN",
+      permissions: [
+        "POST_USER",
+      ],
     }
   ],
   group: [
@@ -262,7 +267,7 @@
       division: 2,
       email: "Amelia.Popham@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000004",
-      roles: [{"tablename":  "role", "id": 1}],
+      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 5}],
       groups: [{"tablename":  "group", "id": 1}],
       status: "ACTIVE"
     },
