@@ -1,7 +1,8 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from werkzeug.exceptions import NotFound
 
-from models import User
+from models import Role, User
 
 
 def get_user(id: int, session: Session) -> User | None:
@@ -24,6 +25,7 @@ def update_user(session: Session, data: dict) -> User:
     if not user:
         raise NotFound(f"User {user_id} not found")
 
+    data["roles"] = [session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])]
     updated_user = User(**data)
 
     updated_user = session.merge(updated_user)

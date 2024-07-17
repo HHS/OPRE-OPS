@@ -26,11 +26,6 @@ class SafeUser:
     full_name: Optional[str] = None
 
 
-class RoleResponse(Schema):
-    id: int = fields.Integer(required=True)
-    name: str = fields.String(required=True)
-
-
 class PutUserSchema(Schema):
     id: int = fields.Integer(required=True)
     email: Optional[str] = fields.String()
@@ -38,7 +33,7 @@ class PutUserSchema(Schema):
     last_name: Optional[str] = fields.String(load_default=None)
     division: Optional[int] = fields.Integer(load_default=None)
     status: Optional[UserStatus] = fields.Enum(UserStatus, load_default=UserStatus.INACTIVE)
-    roles: Optional[list[RoleResponse]] = fields.List(fields.Nested(RoleResponse), load_default=[])
+    roles: Optional[list[str]] = fields.List(fields.String(), load_default=[])
 
 
 class POSTRequestBody(PutUserSchema):
@@ -67,7 +62,7 @@ class UserResponse(Schema):
     full_name: Optional[str] = fields.String(allow_none=True)
     division: Optional[int] = fields.Integer(allow_none=True)
     status: UserStatus = fields.Enum(UserStatus, required=True)
-    roles: list[RoleResponse] = fields.List(fields.Nested(RoleResponse), default=[])
+    roles: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
     display_name: str = fields.String(required=True)
     created_by: Optional[int] = fields.Integer(allow_none=True)
     updated_by: Optional[int] = fields.Integer(allow_none=True)

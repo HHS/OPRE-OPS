@@ -69,7 +69,7 @@ def test_get_user_by_id_same_user(auth_client, loaded_db, test_admin_user):
     assert response.json["oidc_id"] == str(test_admin_user.oidc_id)
     assert response.json["first_name"] == test_admin_user.first_name
     assert response.json["last_name"] == test_admin_user.last_name
-    assert response.json["roles"] == [{"id": role.id, "name": role.name} for role in test_admin_user.roles]
+    assert response.json["roles"] == [role.name for role in test_admin_user.roles]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -87,7 +87,7 @@ def test_get_user_by_id_admin_gets_all_user_details(auth_client, loaded_db, test
     assert response.json["oidc_id"] == str(test_user.oidc_id)
     assert response.json["first_name"] == test_user.first_name
     assert response.json["last_name"] == test_user.last_name
-    assert response.json["roles"] == [{"id": role.id, "name": role.name} for role in test_user.roles]
+    assert response.json["roles"] == [role.name for role in test_user.roles]
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -145,7 +145,7 @@ def test_own_user_details(client, loaded_db, test_non_admin_user):
     assert user["oidc_id"] == str(test_non_admin_user.oidc_id)
     assert user["first_name"] == test_non_admin_user.first_name
     assert user["last_name"] == test_non_admin_user.last_name
-    assert user["roles"] == [{"id": role.id, "name": role.name} for role in test_non_admin_user.roles]
+    assert user["roles"] == [role.name for role in test_non_admin_user.roles]
     assert user["status"] == test_non_admin_user.status.name
 
 

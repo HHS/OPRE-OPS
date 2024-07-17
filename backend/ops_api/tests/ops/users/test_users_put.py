@@ -66,37 +66,91 @@ def test_put_user_unauthorized_different_user(client, loaded_db, test_non_admin_
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_with_admin(auth_client, new_user, loaded_db, test_admin_user):
+def test_put_user_with_admin_min_params(auth_client, new_user, loaded_db, test_admin_user):
     original_user = new_user.to_dict()
 
     response = auth_client.put(
         url_for("api.users-item", id=new_user.id),
-        json={"id": new_user.id, "email": "new_user@example.com", "first_name": "New First Name"},
+        json={"id": new_user.id, "email": "new_user@example.com"},
     )
     assert response.status_code == 200
     response_data = response.json
 
     # Check that the response data matches the request data for the fields that were updated
     assert response_data["id"] == new_user.id
-    assert response_data["first_name"] == "New First Name", "should be updated"
     assert response_data["email"] == "new_user@example.com", "should be updated"
 
     # Check that the attributes auto-set by the DB are correct
     assert response_data["created_by"] == new_user.created_by
     assert response_data["updated_by"] == new_user.updated_by
-    assert response_data["created_on"] == new_user.created_on.isoformat()
-    assert response_data["updated_on"] == new_user.updated_on.isoformat()
+    assert response_data["created_on"] == f"{new_user.created_on.isoformat()}Z"
+    assert response_data["updated_on"] == f"{new_user.updated_on.isoformat()}Z"
 
     # Check that the attributes not present in the request data are set to None
+    assert response_data["first_name"] is None, "schema default"
+    assert response_data["last_name"] is None, "schema default"
     assert response_data["status"] == UserStatus.INACTIVE.name, "schema default"
     assert response_data["division"] is None, "schema default"
+    assert response_data["roles"] == [], "schema default"
 
     # Test that the user was updated in the database
     updated_user = loaded_db.get(User, new_user.id)
-    assert updated_user.first_name == "New First Name", "should be updated"
+    assert updated_user.first_name is None, "schema default"
+    assert updated_user.last_name is None, "schema default"
     assert updated_user.email == "new_user@example.com", "should be updated"
     assert updated_user.status == UserStatus.INACTIVE, "schema default"
     assert updated_user.division is None, "schema default"
+    assert updated_user.roles == [], "schema default"
+    assert updated_user.created_by == original_user.get("created_by"), "should be the same as the original user"
+    assert updated_user.updated_by == test_admin_user.id, "should be updated by the admin user"
+    assert f"{updated_user.created_on.isoformat()}Z" == original_user.get(
+        "created_on"
+    ), "should be the same as the original user"
+    assert updated_user.updated_on != original_user.get("updated_on"), "should be updated"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_user_with_admin_max_params(auth_client, new_user, loaded_db, test_admin_user):
+    original_user = new_user.to_dict()
+
+    response = auth_client.put(
+        url_for("api.users-item", id=new_user.id),
+        json={
+            "id": new_user.id,
+            "email": "new_user@example.com",
+            "first_name": "New First Name",
+            "last_name": "New Last Name",
+            "division": 1,
+            "status": UserStatus.ACTIVE.name,
+            "roles": ["admin"],
+        },
+    )
+    assert response.status_code == 200
+    response_data = response.json
+
+    # Check that the response data matches the request data for the fields that were updated
+    assert response_data["id"] == new_user.id
+    assert response_data["email"] == "new_user@example.com", "should be updated"
+    assert response_data["first_name"] == "New First Name", "should be updated"
+    assert response_data["last_name"] == "New Last Name", "should be updated"
+    assert response_data["division"] == 1, "should be updated"
+    assert response_data["status"] == UserStatus.ACTIVE.name, "should be updated"
+    assert response_data["roles"] == ["admin"], "should be updated"
+
+    # Check that the attributes auto-set by the DB are correct
+    assert response_data["created_by"] == new_user.created_by
+    assert response_data["updated_by"] == new_user.updated_by
+    assert response_data["created_on"] == f"{new_user.created_on.isoformat()}Z"
+    assert response_data["updated_on"] == f"{new_user.updated_on.isoformat()}Z"
+
+    # Test that the user was updated in the database
+    updated_user = loaded_db.get(User, new_user.id)
+    assert updated_user.email == "new_user@example.com", "should be updated"
+    assert updated_user.first_name == "New First Name", "should be updated"
+    assert updated_user.last_name == "New Last Name", "should be updated"
+    assert updated_user.division == 1, "should be updated"
+    assert updated_user.status == UserStatus.ACTIVE, "should be updated"
+    assert updated_user.roles[0].id == 1, "should be updated"
     assert updated_user.created_by == original_user.get("created_by"), "should be the same as the original user"
     assert updated_user.updated_by == test_admin_user.id, "should be updated by the admin user"
     assert f"{updated_user.created_on.isoformat()}Z" == original_user.get(

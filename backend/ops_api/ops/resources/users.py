@@ -26,7 +26,7 @@ from ops_api.ops.utils.users import is_admin
 class UsersItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(UserResponse)()
+        self._response_schema = UserResponse()
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
@@ -52,7 +52,10 @@ class UsersItemAPI(BaseItemAPI):
         else:
             schema = SafeUserSchema()
 
-        return make_response_with_headers(schema.dump(user))
+        user_data = schema.dump(user)
+        user_data["roles"] = [role.name for role in user.roles]
+
+        return make_response_with_headers(user_data)
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
@@ -69,9 +72,12 @@ class UsersItemAPI(BaseItemAPI):
         else:
             raise Forbidden("You do not have permission to update this user")
 
-        users_service.update_user(current_app.db_session, user_data)
+        updated_user = users_service.update_user(current_app.db_session, user_data)
 
-        return make_response_with_headers(schema.dump(user))
+        user_data = schema.dump(updated_user)
+        user_data["roles"] = [role.name for role in updated_user.roles]
+
+        return make_response_with_headers(user_data)
 
     @is_authorized(PermissionType.PATCH, Permission.USER)
     def patch(self, id: int) -> Response:
