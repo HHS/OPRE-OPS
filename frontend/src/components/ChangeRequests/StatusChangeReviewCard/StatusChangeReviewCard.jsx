@@ -56,22 +56,27 @@ function StatusChangeReviewCard({
             <TermTag
                 label="BL ID"
                 value={bliId}
-            />
-            <TermTag
-                label="Change To"
-                value="Status"
+                className="grid-col-1"
             />
             <TermTag
                 label="Total"
                 value={renderField(null, "amount", totalAmount)}
+                className="grid-col-2"
+            />
+            <TermTag
+                label="Change To"
+                value="Status"
+                className="grid-col-2 margin-left-2"
             />
             <TermTag
                 label="From"
                 bliStatus={oldValue}
+                className="grid-col-2"
             />
             <TermTag
                 label="To"
                 bliStatus={newValue}
+                className="grid-col-2 margin-left-neg-2"
             />
         </ReviewCard>
     );

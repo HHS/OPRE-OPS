@@ -414,7 +414,6 @@ class CANFiscalYear(BaseModel):
     potential_additional_funding: Mapped[Optional[decimal]] = mapped_column(
         Numeric(12, 2), default=0
     )
-    can_lead: Mapped[Optional[str]]
     notes: Mapped[Optional[str]] = mapped_column(default="")
     total_funding: Mapped[decimal] = column_property(
         received_funding + expected_funding
@@ -670,11 +669,9 @@ class CAN(BaseModel):
     )
     number: Mapped[str] = mapped_column(String(30), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String)
-    purpose: Mapped[Optional[str]] = mapped_column(String, default="")
     nickname: Mapped[Optional[str]]
     expiration_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
     appropriation_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    appropriation_term: Mapped[Optional[int]] = mapped_column(Integer, default="1")
     arrangement_type: Mapped[Optional[CANArrangementType]] = mapped_column(
         sa.Enum(CANArrangementType)
     )
@@ -709,6 +706,10 @@ class CAN(BaseModel):
 
     projects: Mapped[List["Project"]] = relationship(
         "Project", secondary="project_cans", back_populates="cans"
+    )
+
+    external_authorizer_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("contact.id")
     )
 
     @property
@@ -767,9 +768,25 @@ class CAN(BaseModel):
         )
         return can_status
 
+    @property
+    def appropriation_term(self):
+        if self.expiration_date is None:
+            return 0
+        if self.appropriation_date is None:
+            return None
+        return self.expiration_date.year - self.appropriation_date.year
+
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+        # add the appropriation_term calculated property to this dictionary
+        d["appropriation_term"] = self.appropriation_term
+        return d
 
 
 class CANFiscalYearFundingDetails(BaseModel):

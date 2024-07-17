@@ -1,9 +1,8 @@
 import logging.config
 import os
-from typing import Any, Optional
 
 from authlib.integrations.flask_client import OAuth
-from flask import Blueprint, Flask, request
+from flask import Blueprint, Flask, current_app, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
 from sqlalchemy import event
@@ -17,6 +16,7 @@ from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
+from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
 
 def configure_logging(log_level: str = "INFO") -> None:
@@ -40,9 +40,10 @@ def configure_logging(log_level: str = "INFO") -> None:
     )
 
 
-def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
-    is_unit_test = False if config_overrides is None else config_overrides.get("TESTING") is True
-    log_level = "INFO" if not is_unit_test else "DEBUG"
+def create_app() -> Flask:
+    from ops_api.ops.utils.core import is_unit_test
+
+    log_level = "INFO" if not is_unit_test() else "DEBUG"
     configure_logging(log_level)  # should be configured before any access to app.logger
     app = Flask(__name__)
 
@@ -61,9 +62,6 @@ def create_app(config_overrides: Optional[dict[str, Any]] = None) -> Flask:
         "SQLALCHEMY_DATABASE_URI",
         "postgresql+psycopg2://ops:ops@localhost:5432/postgres",
     )
-
-    if config_overrides is not None:
-        app.config.from_mapping(config_overrides)
 
     api_version = app.config.get("API_VERSION", "v1")
 
@@ -173,4 +171,6 @@ def before_request_function(app: Flask, request: request):
     ]
     if request.endpoint in all_valid_endpoints and request.method not in ["OPTIONS", "HEAD"]:
         verify_jwt_in_request()  # needed to load current_user
-        check_user_session_function(current_user)
+        if not is_unit_test() and not is_fake_user(app, current_user):
+            current_app.logger.info(f"Checking user session for {current_user.oidc_id}")
+            check_user_session_function(current_user)

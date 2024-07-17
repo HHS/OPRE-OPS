@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import * as React from "react";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import Accordion from "../../UI/Accordion";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
@@ -19,6 +20,7 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
  * @returns {JSX.Element} - The rendered component.
  */
 function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChangeTo = "" }) {
+    const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
     return (
         <Accordion
             heading="Review Changes"
@@ -48,20 +50,22 @@ function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChange
                                 forceHover={true}
                             />
                         )}
-                        {changeRequest.has_status_change && changeType === CHANGE_REQUEST_TYPES.STATUS && (
-                            <StatusChangeReviewCard
-                                key={changeRequest.id}
-                                changeRequestId={changeRequest.id}
-                                agreementId={changeRequest.agreement_id}
-                                requestDate={changeRequest.created_on}
-                                requesterName={changeRequest.created_by_user?.full_name}
-                                bliId={changeRequest.budget_line_item_id}
-                                changeTo={changeRequest.requested_change_diff}
-                                handleReviewChangeRequest={() => {}}
-                                isCondensed={true}
-                                forceHover={true}
-                            />
-                        )}
+                        {changeRequest.has_status_change &&
+                            changeType === CHANGE_REQUEST_TYPES.STATUS &&
+                            changeRequest.requested_change_data.status === changeRequestStatus && (
+                                <StatusChangeReviewCard
+                                    key={changeRequest.id}
+                                    changeRequestId={changeRequest.id}
+                                    agreementId={changeRequest.agreement_id}
+                                    requestDate={changeRequest.created_on}
+                                    requesterName={changeRequest.created_by_user?.full_name}
+                                    bliId={changeRequest.budget_line_item_id}
+                                    changeTo={changeRequest.requested_change_diff}
+                                    handleReviewChangeRequest={() => {}}
+                                    isCondensed={true}
+                                    forceHover={true}
+                                />
+                            )}
                     </React.Fragment>
                 )
             )}

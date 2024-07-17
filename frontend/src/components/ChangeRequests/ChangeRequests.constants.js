@@ -4,11 +4,13 @@
  *
  * @enum {string}
  * @property {string} APPROVE - Represents an approval action for a change request.
- * @property {string} REJECT - Represents a rejection action for a change request.
+ * @property {string} REJECT - Represents a rejection/declining action for a change request.
+ * @property {string} CANCEL - Represents a cancellation action for a change request.
  */
 export const CHANGE_REQUEST_ACTION = {
     APPROVE: "APPROVE",
-    REJECT: "REJECT"
+    REJECT: "REJECT",
+    CANCEL: "CANCEL"
 };
 /**
  * Enum for change request types.
@@ -20,4 +22,15 @@ export const CHANGE_REQUEST_ACTION = {
 export const CHANGE_REQUEST_TYPES = {
     BUDGET: "Budget Change",
     STATUS: "Status Change"
+};
+/**
+ * Enum for change request slug types.
+ * This object maps the types of change requests to their string representations.
+ * @enum {string}
+ * @property {string} STATUS - Represents a status change request.
+ * @property {string} BUDGET - Represents a budget change request.
+ */
+export const CHANGE_REQUEST_SLUG_TYPES = {
+    STATUS: "status-change",
+    BUDGET: "budget-change"
 };

@@ -19,7 +19,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
     assert result == {
         "available_funding": -860000.0,
         "can": {
-            "appropriation_date": None,
+            "appropriation_date": "2022-10-01T00:00:00.000000Z",
             "appropriation_term": 1,
             "arrangement_type": "OPRE_APPROPRIATION",
             "authorizer": 26,
@@ -38,11 +38,11 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
             "managing_portfolio_id": 6,
             "nickname": "HMRF-OPRE",
             "number": "G99HRF2",
-            "purpose": "",
             "projects": [],
             "shared_portfolios": [],
             "updated_by": None,
             "updated_by_user": None,
+            "external_authorizer_id": None,
         },
         "carry_forward_funding": 0,
         "carry_forward_label": "Carry-Forward",
@@ -69,7 +69,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
     assert result == {
         "available_funding": -860000.0,
         "can": {
-            "appropriation_date": None,
+            "appropriation_date": "2022-10-01T00:00:00.000000Z",
             "appropriation_term": 1,
             "arrangement_type": "OPRE_APPROPRIATION",
             "authorizer": 26,
@@ -88,11 +88,11 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
             "managing_portfolio_id": 6,
             "nickname": "HMRF-OPRE",
             "number": "G99HRF2",
-            "purpose": "",
             "projects": [],
             "shared_portfolios": [],
             "updated_by": None,
             "updated_by_user": None,
+            "external_authorizer_id": None,
         },
         "carry_forward_funding": 0,
         "carry_forward_label": "Carry-Forward",

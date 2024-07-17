@@ -16,7 +16,6 @@ def test_can_retrieve(loaded_db, mocker):
     assert can is not None
     assert can.number == "G99HRF2"
     assert can.description == "Healthy Marriages Responsible Fatherhood - OPRE"
-    assert can.purpose == ""
     assert can.nickname == "HMRF-OPRE"
     assert can.appropriation_term == 1
     assert can.authorizer_id == 26
@@ -40,7 +39,6 @@ def test_can_is_inactive(loaded_db, mocker):
     assert can is not None
     assert can.number == "G99HRF2"
     assert can.description == "Healthy Marriages Responsible Fatherhood - OPRE"
-    assert can.purpose == ""
     assert can.nickname == "HMRF-OPRE"
     assert can.appropriation_term == 1
     assert can.authorizer_id == 26
@@ -61,7 +59,6 @@ def test_can_creation(loaded_db):
     can = CAN(
         number="G990991-X",
         description="Secondary Analyses Data On Child Care & Early Edu",
-        purpose="Secondary Analyses of Child Care and Early Education Data (2022)",
         nickname="ABCD",
         arrangement_type=CANArrangementType.COST_SHARE,
         authorizer_id=1,
@@ -81,6 +78,23 @@ def test_can_get_all(auth_client, loaded_db):
     response = auth_client.get("/api/v1/cans/")
     assert response.status_code == 200
     assert len(response.json) == count
+
+
+def test_can_no_expiration_date(loaded_db):
+    can = CAN(
+        number="G990991-X",
+        description="Secondary Analyses Data On Child Care & Early Edu",
+        nickname="ABCD",
+        arrangement_type=CANArrangementType.COST_SHARE,
+        authorizer_id=1,
+        managing_portfolio_id=2,
+        appropriation_date=datetime.datetime(2022, 9, 30, 1, 1, 1),
+    )
+
+    serialized = can.to_dict()
+
+    assert can is not None
+    assert serialized["appropriation_term"] == 0
 
 
 @pytest.mark.usefixtures("app_ctx")
