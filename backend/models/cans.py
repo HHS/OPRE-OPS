@@ -581,6 +581,10 @@ class BudgetLineItem(BaseModel):
         sa.Enum(BudgetLineItemStatus)
     )
 
+    on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
+    certified: Mapped[bool] = mapped_column(Boolean, default=False)
+    closed: Mapped[bool] = mapped_column(Boolean, default=False)
+
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
 
     proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(
