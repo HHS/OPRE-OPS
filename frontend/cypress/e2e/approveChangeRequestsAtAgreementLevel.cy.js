@@ -34,6 +34,49 @@ const testBli = {
     proc_shop_fee_percentage: 0.005
 };
 
+const testBLIs = [
+    {
+        line_description: "SC1",
+        comments: "",
+        can_id: 501,
+        agreement_id: 11,
+        amount: 1_000_000,
+        status: BLI_STATUS.DRAFT,
+        date_needed: "2025-1-01",
+        proc_shop_fee_percentage: 0.005
+    },
+    {
+        line_description: "SC2",
+        comments: "",
+        can_id: 502,
+        agreement_id: 11,
+        amount: 2_000_000,
+        status: BLI_STATUS.DRAFT,
+        date_needed: "2025-1-01",
+        proc_shop_fee_percentage: 0.005
+    },
+    {
+        line_description: "SC3",
+        comments: "",
+        can_id: 503,
+        agreement_id: 11,
+        amount: 3_000_000,
+        status: BLI_STATUS.PLANNED,
+        date_needed: "2025-1-01",
+        proc_shop_fee_percentage: 0.005
+    },
+    {
+        line_description: "SC4",
+        comments: "",
+        can_id: 504,
+        agreement_id: 11,
+        amount: 4_000_000,
+        status: BLI_STATUS.PLANNED,
+        date_needed: "2025-1-01",
+        proc_shop_fee_percentage: 0.005
+    }
+];
+
 beforeEach(() => {
     testLogin("admin");
     cy.visit(`/`);
@@ -443,6 +486,136 @@ describe("Approve Change Requests at the Agreement Level", () => {
                             expect(response.status).to.eq(200);
                         });
                     });
+            });
+    });
+    it("should handle multiple change requests for the same agreement", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+
+        // Create test agreement
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                return response.body.id;
+            })
+            // Create multiple BLIs
+            .then((agreementId) => {
+                const bliPromises = testBLIs.map((bli) => {
+                    const bliData = { ...bli, agreement_id: agreementId };
+                    return cy.request({
+                        method: "POST",
+                        url: "http://localhost:8080/api/v1/budget-line-items/",
+                        body: bliData,
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    });
+                });
+
+                return cy.wrap(Promise.all(bliPromises)).then((responses) => {
+                    const bliIds = responses.map((response) => response.body.id);
+                    return { agreementId, bliIds };
+                });
+            })
+            // Submit multiple change requests
+            .then(({ agreementId, bliIds }) => {
+                const changeRequests = [
+                    { id: bliIds[0], status: BLI_STATUS.PLANNED, requestor_notes: "Status change request" },
+                    { id: bliIds[1], amount: 2_500_000, requestor_notes: "Budget change request" },
+                    { id: bliIds[2], status: BLI_STATUS.EXECUTING, requestor_notes: "Another status change request" }
+                ];
+
+                const crPromises = changeRequests.map((cr) => {
+                    return cy.request({
+                        method: "PATCH",
+                        url: `http://localhost:8080/api/v1/budget-line-items/${cr.id}`,
+                        body: cr,
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    });
+                });
+
+                return cy.wrap(Promise.all(crPromises)).then(() => ({ agreementId, bliIds }));
+            })
+            // Test interactions
+            .then(({ agreementId, bliIds }) => {
+                cy.visit("/agreements?filter=change-requests").wait(1000);
+
+                // Verify multiple review cards exist
+                cy.get("[data-cy='review-card']").should("have.length", 3);
+
+                // Approve each change request
+                cy.get("[data-cy='review-card']").each(($card, index) => {
+                    cy.wrap($card).trigger("mouseover");
+                    cy.wrap($card).find("[data-cy='approve-agreement']").click();
+
+                    cy.get(".usa-checkbox__label").click();
+                    cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled").click();
+                    cy.get('[data-cy="confirm-action"]').click();
+
+                    cy.get(".usa-alert__body").should("contain", "Changes Approved");
+                    cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+
+                    if (index < 2) {
+                        cy.visit("/agreements?filter=change-requests").wait(1000);
+                    }
+                });
+
+                // Verify all change requests are approved
+                cy.get("[data-cy='review-card']").should("not.exist");
+
+                // Verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                checkAgreementHistory();
+
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("contain", "Change");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("contain", "Change");
+                cy.get(
+                    '[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > [data-cy="log-item-title"]'
+                ).should("contain", "Change");
+
+                // Clean up
+                bliIds.forEach((bliId) => {
+                    cy.request({
+                        method: "DELETE",
+                        url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                        headers: {
+                            Authorization: bearer_token,
+                            Accept: "application/json"
+                        }
+                    }).then((response) => {
+                        expect(response.status).to.eq(200);
+                    });
+                });
+
+                cy.request({
+                    method: "DELETE",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(200);
+                });
             });
     });
 });
