@@ -81,10 +81,25 @@ class UsersItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.PATCH, Permission.USER)
     def patch(self, id: int) -> Response:
-        # Update the user with the request data, and save the changes to the database
-        user = update_user(request.json, id)
-        # Return the updated user as a response
-        return make_response_with_headers(user.to_dict())
+        request_schema = PutUserSchema(partial=True)
+        user_data = request_schema.load(request.json)
+
+        user: User | None = users_service.get_user(current_app.db_session, id=id)
+
+        if not user:
+            raise NotFound(f"User {id} not found")
+
+        if is_user_admin(current_user) or user.id == current_user.id:
+            schema = self._response_schema
+        else:
+            raise Forbidden("You do not have permission to update this user")
+
+        updated_user = users_service.update_user(current_app.db_session, id=id, data=user_data)
+
+        user_data = schema.dump(updated_user)
+        user_data["roles"] = [role.name for role in updated_user.roles]
+
+        return make_response_with_headers(user_data)
 
 
 class UsersListAPI(BaseListAPI):

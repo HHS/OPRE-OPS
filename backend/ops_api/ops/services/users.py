@@ -27,7 +27,7 @@ def update_user(session: Session, **kwargs) -> User:
     if not data:
         raise RuntimeError("No data provided to update user.")
 
-    if user_id != data.get("id"):
+    if "id" in data and user_id != data.get("id"):
         raise Forbidden("User ID does not match ID in data.")
 
     user: User | None = session.get(User, user_id)
@@ -35,7 +35,11 @@ def update_user(session: Session, **kwargs) -> User:
     if not user:
         raise NotFound(f"User {user_id} not found")
 
-    data["roles"] = [session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])]
+    if "roles" in data:
+        data["roles"] = [
+            session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])
+        ]
+    data["id"] = data.get("id", user_id)
     updated_user = User(**data)
 
     updated_user = session.merge(updated_user)

@@ -27,7 +27,7 @@ class SafeUser:
 
 
 class PutUserSchema(Schema):
-    id: int = fields.Integer(required=True)
+    id: int = fields.Integer()
     email: Optional[str] = fields.String()
     first_name: Optional[str] = fields.String(load_default=None)
     last_name: Optional[str] = fields.String(load_default=None)

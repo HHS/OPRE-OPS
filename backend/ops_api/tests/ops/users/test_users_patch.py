@@ -2,6 +2,7 @@ import pytest
 from flask import url_for
 from flask_jwt_extended import create_access_token
 
+from models import Role
 from models.users import User
 
 
@@ -37,24 +38,24 @@ def new_user(app, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_invalid_id(auth_client):
-    response = auth_client.put(url_for("api.users-item", id=9999), json={"first_name": "New First Name"})
+def test_patch_user_no_user_found(auth_client):
+    response = auth_client.patch(url_for("api.users-item", id=9999), json={"first_name": "New First Name"})
     assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_unauthorized_no_credentials(client, test_user):
-    response = client.put(url_for("api.users-item", id=test_user.id), json={"first_name": "New First Name"})
+def test_patch_user_no_auth(client, test_user):
+    response = client.patch(url_for("api.users-item", id=test_user.id), json={"first_name": "New First Name"})
     assert response.status_code == 401
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user):
+def test_patch_user_unauthorized_different_user(client, loaded_db, test_non_admin_user, test_user):
     """
     Test that a regular user cannot update another user's details.
     """
     access_token = create_access_token(identity=test_non_admin_user)
-    response = client.put(
+    response = client.patch(
         url_for("api.users-item", id=test_user.id),
         json={"id": test_user.id, "email": "new_user@example.com", "first_name": "New First Name"},
         headers={"Authorization": f"Bearer {str(access_token)}"},
@@ -63,22 +64,31 @@ def test_put_user_unauthorized_different_user(client, loaded_db, test_non_admin_
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_put_user_with_admin(auth_client, new_user, loaded_db, test_admin_user):
-    response = auth_client.put(
+def test_patch_user(auth_client, new_user, loaded_db, test_admin_user):
+    # add a couple roles to the user
+    new_user.roles.append(loaded_db.get(Role, 1))
+    new_user.roles.append(loaded_db.get(Role, 2))
+    loaded_db.commit()
+
+    original_user = new_user.to_dict()
+
+    response = auth_client.patch(
         url_for("api.users-item", id=new_user.id),
         json={"id": new_user.id, "email": "new_user@example.com", "first_name": "New First Name"},
     )
     assert response.status_code == 200
     response_data = response.json
     assert response_data["first_name"] == "New First Name"
+    assert response_data["last_name"] == original_user.get("last_name")
     assert response_data["email"] == "new_user@example.com"
     assert response_data["id"] == new_user.id
-    assert response_data["created_by"] == new_user.created_by
+    assert response_data["created_by"] == original_user.get("created_by")
     assert response_data["updated_by"] == new_user.updated_by
-    assert response_data["created_on"] == new_user.created_on.isoformat()
-    assert response_data["updated_on"] == new_user.updated_on.isoformat()
-    assert response_data["status"] == new_user.status.name
-    assert response_data["division"] == new_user.division
+    assert response_data["created_on"] == original_user.get("created_on")
+    assert response_data["updated_on"] == f"{new_user.updated_on.isoformat()}Z"
+    assert response_data["status"] == original_user.get("status")
+    assert response_data["division"] == original_user.get("division")
+    assert response_data["roles"] == ["admin", "user"]
 
     updated_user = loaded_db.get(User, new_user.id)
     assert updated_user.first_name == "New First Name"
