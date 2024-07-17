@@ -237,12 +237,7 @@ function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatu
  * @returns {string} The formatted message.
  */
 function formatMessage(changeRequestsMessages) {
-    let message = "";
-    changeRequestsMessages.forEach((changeRequestMessage, index) => {
-        if (index > 0) {
-            message += `\n`;
-        }
-        message += ` \u2022 ${changeRequestMessage}`;
-    });
-    return message;
+    return Array.from(changeRequestsMessages)
+        .map((message) => ` \u2022 ${message}`)
+        .join("\n");
 }
