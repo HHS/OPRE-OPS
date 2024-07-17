@@ -28,7 +28,7 @@ def upgrade() -> None:
         'SECTION_508_EXCEPTION_DOCUMENTATION',
         'COR_NOMINATION_AND_CERTIFICATION_DOCUMENT',
         'ADDITIONAL_DOCUMENT',
-        name='documenttypes'
+        name='documenttype'
     ).create(op.get_bind())
 
     op.create_table(
@@ -45,7 +45,7 @@ def upgrade() -> None:
                 'SECTION_508_EXCEPTION_DOCUMENTATION',
                 'COR_NOMINATION_AND_CERTIFICATION_DOCUMENT',
                 'ADDITIONAL_DOCUMENT',
-                name='documenttypes',
+                name='documenttype',
                 create_type=False),
             nullable=False),
         sa.Column('agreement_id', sa.Integer(), autoincrement=False, nullable=False),
@@ -79,6 +79,6 @@ def downgrade() -> None:
         'SECTION_508_EXCEPTION_DOCUMENTATION',
         'COR_NOMINATION_AND_CERTIFICATION_DOCUMENT',
         'ADDITIONAL_DOCUMENT',
-        name='documenttypes'
+        name='documenttype'
     ).drop(op.get_bind())
     # ### end Alembic commands ###
