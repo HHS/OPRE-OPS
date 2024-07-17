@@ -48,6 +48,11 @@ class BudgetLineItemStatus(Enum):
     IN_EXECUTION = auto()
     OBLIGATED = auto()
 
+class ModType(Enum):
+    ADMIN = auto()
+    AMOUNT_TBD = auto()
+    AS_IS = auto()
+    REPLACEMENT_AMOUNT_FINAL = auto()
 
 class CANArrangementType(Enum):
     OPRE_APPROPRIATION = auto()
@@ -577,6 +582,9 @@ class BudgetLineItem(BaseModel):
     clin: Mapped[Optional[CLIN]] = relationship(CLIN, backref="budget_line_items")
 
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
+    mod_type: Mapped[Optional[ModType]] = mapped_column(
+        sa.Enum(ModType)
+    )
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         sa.Enum(BudgetLineItemStatus)
