@@ -129,7 +129,15 @@ const useApproveAgreement = () => {
 
     let requestorNoters = "";
     if (changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
-        requestorNoters = changeRequestsInReview[0]?.requestor_notes ?? "";
+        const uniqueNotes = new Set();
+        changeRequestsInReview.forEach((request) => {
+            if (request?.requestor_notes) {
+                uniqueNotes.add(request.requestor_notes);
+            }
+        });
+        requestorNoters = Array.from(uniqueNotes)
+            .map((note) => `• ${note}`)
+            .join("\n");
     }
     const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
     const budgetChangeBudgetLines = budgetLinesInReview.filter((bli) =>

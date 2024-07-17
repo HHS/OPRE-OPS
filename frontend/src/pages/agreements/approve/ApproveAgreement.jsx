@@ -123,7 +123,12 @@ const ApproveAgreement = () => {
                 {requestorNoters && (
                     <>
                         <h3 className="font-sans-lg text-semibold">Submitter&apos;s Notes</h3>
-                        <p className="maxw">{requestorNoters}</p>
+                        <p
+                            className="maxw-mobile-lg"
+                            style={{ whiteSpace: "pre-wrap" }}
+                        >
+                            {requestorNoters}
+                        </p>
                     </>
                 )}
                 <section>
