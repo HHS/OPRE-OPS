@@ -1,11 +1,10 @@
 from datetime import date
 
-import marshmallow_dataclass as mmdc
 import pytest
 
 from models import User
 from models.notifications import Notification
-from ops_api.ops.resources.notifications import Recipient, UpdateSchema
+from ops_api.ops.resources.notifications import RecipientSchema, UpdateSchema
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -253,11 +252,11 @@ def test_put_notification_ack(auth_client, notification, test_user):
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_notification(auth_client, notification):
     response = auth_client.patch(f"/api/v1/notifications/{notification.id}", json={"is_read": False})
-    recipient = mmdc.class_schema(Recipient)()
+    recipient_schema = RecipientSchema()
     assert response.json["id"] == notification.id
     assert response.json["title"] == notification.title
     assert response.json["message"] == notification.message
-    assert response.json["recipient"] == recipient.dump(notification.recipient)
+    assert response.json["recipient"] == recipient_schema.dump(notification.recipient)
     assert response.json["is_read"] is False
     assert response.json["expires"] == notification.expires.isoformat()
 
@@ -266,11 +265,11 @@ def test_patch_notification(auth_client, notification):
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_notification_ack(auth_client, notification):
     response = auth_client.patch(f"/api/v1/notifications/{notification.id}", json={"is_read": True})
-    recipient = mmdc.class_schema(Recipient)()
+    recipient_schema = RecipientSchema()
     assert response.json["id"] == notification.id
     assert response.json["title"] == notification.title
     assert response.json["message"] == notification.message
-    assert response.json["recipient"] == recipient.dump(notification.recipient)
+    assert response.json["recipient"] == recipient_schema.dump(notification.recipient)
     assert response.json["is_read"] is True
     assert response.json["created_on"] != response.json["updated_on"]
     assert response.json["expires"] == notification.expires.isoformat()
