@@ -128,7 +128,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-checkbox__label").click();
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
                 cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get("#ops-modal-heading").contains(/approve this status change to planned status?/i);
                 cy.get('[data-cy="confirm-action"]').click();
+                cy.get(".usa-alert__body").should("contain", "Changes Approved");
+                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
@@ -259,7 +263,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-checkbox__label").click();
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
                 cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get("#ops-modal-heading").contains(/approve this status change to executing status?/i);
                 cy.get('[data-cy="confirm-action"]').click();
+                cy.get(".usa-alert__body").should("contain", "Changes Approved");
+                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
@@ -391,7 +399,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-checkbox__label").click();
                 cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
                 cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get("#ops-modal-heading").contains(/approve this budget change/i);
                 cy.get('[data-cy="confirm-action"]').click();
+                cy.get(".usa-alert__body").should("contain", "Changes Approved");
+                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
