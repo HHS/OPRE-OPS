@@ -27,13 +27,16 @@ export const budgetLine = {
     proc_shop_fee_percentage: 0,
     services_component_id: 1,
     status: "DRAFT",
+    on_hold: false,
+    certified: false,
+    closed: false,
     team_members: [
         '{email: "chris.fortunato@example.com", full_name: "…}',
         '{email: "Amelia.Popham@example.com", full_name: "Am…}',
         '{email: "admin.demo@email.com", full_name: "Admin D…}',
         '{email: "dave.director@email.com", full_name: "Dave…}'
     ],
-    updated_on: "2024-05-27T13:56:50.363964Z"
+    updated_on: "2024-05-27T13:56:50.363964Z",
 };
 
 export const agreement = {
@@ -69,6 +72,9 @@ export const agreement = {
             proc_shop_fee_percentage: 0,
             services_component_id: 1,
             status: "DRAFT",
+            on_hold: false,
+            certified: false,
+            closed: false,
             team_members: [
                 {
                     email: "chris.fortunato@example.com",
@@ -122,6 +128,9 @@ export const agreement = {
             proc_shop_fee_percentage: 0,
             services_component_id: null,
             status: "DRAFT",
+            on_hold: false,
+            certified: false,
+            closed: false,
             team_members: [
                 {
                     email: "chris.fortunato@example.com",
