@@ -64,6 +64,8 @@ const useCreateBLIsAndSCs = (
     const [groupedBudgetLinesByServicesComponent, setGroupedBudgetLinesByServicesComponent] = React.useState([]);
     const [deletedBudgetLines, setDeletedBudgetLines] = React.useState([]);
     const [isBudgetLineNotDraft, setIsBudgetLineNotDraft] = React.useState(false);
+    const [isSaving, setIsSaving] = React.useState(false);
+
     const navigate = useNavigate();
     const { setAlert } = useAlert();
     const [deleteAgreement] = useDeleteAgreementMutation();
@@ -133,66 +135,76 @@ const useCreateBLIsAndSCs = (
     const totalsForCards = (subTotal, budgetLines) =>
         subTotal + getProcurementShopSubTotal(selectedAgreement, budgetLines);
 
-    const handleSave = () => {
-        const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
-        const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
+    const handleSave = async () => {
+        try {
+            setIsSaving(true); // May use this later
+            const newBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => !("created_on" in budgetLineItem));
+            const existingBudgetLineItems = tempBudgetLines.filter((budgetLineItem) => "created_on" in budgetLineItem);
 
-        const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
-            (tempBudgetLines) => tempBudgetLines.financialSnapshotChanged
-        );
+            // Create new budget line items
+            const creationPromises = newBudgetLineItems.map((newBudgetLineItem) => {
+                const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+                return addBudgetLineItem(cleanNewBLI).unwrap();
+            });
 
-        newBudgetLineItems.forEach((newBudgetLineItem) => {
-            const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-            addBudgetLineItem(cleanNewBLI)
-                .unwrap()
-                .then((fulfilled) => {
-                    console.log("Created New BLIs:", fulfilled);
-                })
-                .catch((rejected) => {
-                    console.error("Error Creating Budget Lines");
-                    console.error({ rejected });
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred. Please try again.",
-                        redirectUrl: "/error"
-                    });
-                });
-        });
+            await Promise.all(creationPromises);
+            console.log(`${creationPromises.length} new budget lines created successfully`);
 
-        if (isThereAnyBLIsFinancialSnapshotChanged) {
+            const isThereAnyBLIsFinancialSnapshotChanged = tempBudgetLines.some(
+                (tempBudgetLine) => tempBudgetLine.financialSnapshotChanged
+            );
+
+            if (isThereAnyBLIsFinancialSnapshotChanged) {
+                await handleFinancialSnapshotChanges(existingBudgetLineItems);
+            } else {
+                await handleRegularUpdates(existingBudgetLineItems);
+            }
+
+            await handleDeletions();
+
+            resetForm();
+            setIsEditMode(false);
+            showSuccessMessage();
+        } catch (error) {
+            console.error("Error saving budget lines:", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while saving. Please try again.",
+                redirectUrl: "/error"
+            });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
+        return new Promise((resolve, reject) => {
             setShowModal(true);
             setModalProps({
                 heading:
                     "Budget changes require approval from your Division Director. Do you want to send it to approval?",
                 actionButtonText: "Send to Approval",
                 secondaryButtonText: "Continue Editing",
-                handleConfirm: () => {
-                    let promises = existingBudgetLineItems.map((existingBudgetLineItem) => {
-                        let budgetLineHasChanged =
-                            JSON.stringify(existingBudgetLineItem) !==
-                            JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
-                        if (budgetLineHasChanged) {
-                            const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
-                            return updateBudgetLineItem({ id, data: cleanExistingBLI })
-                                .unwrap()
-                                .then((fulfilled) => {
-                                    console.log("Updated BLI:", fulfilled);
-                                })
-                                .catch((rejected) => {
-                                    console.error("Error Updating Budget Line");
-                                    console.error({ rejected });
-                                    throw new Error("Error Updating Budget Line");
-                                });
-                        } else {
-                            // If no changes, return a resolved promise
-                            return Promise.resolve();
-                        }
-                    });
-                    Promise.allSettled(promises).then((results) => {
+                handleConfirm: async () => {
+                    try {
+                        const updatePromises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
+                            let budgetLineHasChanged =
+                                JSON.stringify(existingBudgetLineItem) !==
+                                JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
+                            if (budgetLineHasChanged) {
+                                const { id, data: cleanExistingBLI } =
+                                    cleanBudgetLineItemForApi(existingBudgetLineItem);
+                                return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
+                            }
+                        });
+
+                        const results = await Promise.allSettled(updatePromises);
+
                         resetForm();
                         setIsEditMode(false);
-                        let rejected = results.filter((result) => result.status === "rejected");
+
+                        const rejected = results.filter((result) => result.status === "rejected");
                         if (rejected.length > 0) {
                             console.error(rejected[0].reason);
                             setAlert({
@@ -201,77 +213,90 @@ const useCreateBLIsAndSCs = (
                                 message: "There was an error sending your edits for approval. Please try again.",
                                 redirectUrl: "/error"
                             });
+                            reject(new Error("Error sending agreement edits"));
                         } else {
                             setAlert({
                                 type: "success",
                                 heading: "Changes Sent to Approval",
-                                //TODO: add array of Change Requests and display under the message
                                 message:
                                     "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
                                 redirectUrl: `/agreements/${selectedAgreement?.id}`
                             });
+                            resolve();
                         }
-                    });
-                }
-            });
-
-            return;
-        }
-
-        existingBudgetLineItems.forEach((existingBudgetLineItem) => {
-            let budgetLineHasChanged =
-                JSON.stringify(existingBudgetLineItem) !==
-                JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
-
-            if (budgetLineHasChanged) {
-                const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
-                updateBudgetLineItem({ id, data: cleanExistingBLI })
-                    .unwrap()
-                    .then((fulfilled) => {
-                        console.log("Updated BLI:", fulfilled);
-                    })
-                    .catch((rejected) => {
-                        console.error("Error Updating Budget Line");
-                        console.error({ rejected });
+                    } catch (error) {
+                        console.error("Error updating budget lines:", error);
                         setAlert({
                             type: "error",
                             heading: "Error",
-                            message: "An error occurred. Please try again.",
+                            message: "An error occurred while updating budget lines. Please try again.",
                             redirectUrl: "/error"
                         });
-                    });
-            }
+                        reject(error);
+                    }
+                },
+                handleSecondary: () => {
+                    resolve(); // Resolve without making changes if user chooses to continue editing
+                }
+            });
         });
-
-        deletedBudgetLines.forEach((deletedBudgetLine) => {
-            deleteBudgetLineItem(deletedBudgetLine.id)
-                .unwrap()
-                .then((fulfilled) => {
-                    console.log("Deleted BLI:", fulfilled);
-                })
-                .catch((rejected) => {
-                    console.error("Error Deleting Budget Line");
-                    console.error({ rejected });
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred. Please try again.",
-                        redirectUrl: "/error"
-                    });
-                });
-        });
-        resetForm();
-        setIsEditMode(false);
-        continueOverRide
-            ? continueOverRide()
-            : setAlert({
-                  type: "success",
-                  heading: "Budget Lines Edited",
-                  message: "The budget lines have been successfully updated.",
-                  redirectUrl: `/agreements/${selectedAgreement?.id}`
-              });
     };
 
+    const handleRegularUpdates = async (existingBudgetLineItems) => {
+        try {
+            const updatePromises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
+                let budgetLineHasChanged =
+                    JSON.stringify(existingBudgetLineItem) !==
+                    JSON.stringify(budgetLines.find((bli) => bli.id === existingBudgetLineItem.id));
+
+                if (budgetLineHasChanged) {
+                    const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(existingBudgetLineItem);
+                    return updateBudgetLineItem({ id, data: cleanExistingBLI }).unwrap();
+                }
+            });
+
+            const results = await Promise.all(updatePromises);
+            console.log(`${results.filter(Boolean).length} budget lines updated successfully`);
+        } catch (error) {
+            console.error("Error updating budget lines:", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating budget lines. Please try again."
+            });
+            throw error; // Re-throw the error to be caught in handleSave
+        }
+    };
+
+    const handleDeletions = async () => {
+        try {
+            const deletionPromises = deletedBudgetLines.map((deletedBudgetLine) =>
+                deleteBudgetLineItem(deletedBudgetLine.id).unwrap()
+            );
+
+            await Promise.all(deletionPromises);
+        } catch (error) {
+            console.error("Error deleting budget lines:", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while deleting budget lines. Please try again."
+            });
+        }
+    };
+
+    const showSuccessMessage = () => {
+        if (continueOverRide) {
+            continueOverRide();
+        } else {
+            setAlert({
+                type: "success",
+                heading: "Budget Lines Saved",
+                message: "All budget lines have been successfully updated.",
+                redirectUrl: `/agreements/${selectedAgreement?.id}`
+            });
+        }
+    };
     const handleAddBLI = (e) => {
         e.preventDefault();
         const newBudgetLine = {
@@ -329,6 +354,11 @@ const useCreateBLIsAndSCs = (
             setTempBudgetLines(
                 tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payloadPlusFinances : item))
             );
+            setAlert({
+                type: "success",
+                heading: "Budget Line Updated",
+                message: "The budget line has been successfully edited."
+            });
             resetForm();
 
             return;
