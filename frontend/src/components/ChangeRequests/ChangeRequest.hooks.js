@@ -85,7 +85,7 @@ const useChangeRequest = () => {
             alertHeading = "Changes Declined";
             alertMsg =
                 `The following change(s) have been declined on the ${agreementName} agreement.\n\n` +
-                `<strong>Edits Declined:</strong>\n` +
+                `<strong>Changes Declined:</strong>\n` +
                 `${changeMsg}`;
         }
         if (PLANNED_STATUS_APPROVE) {
@@ -102,10 +102,10 @@ const useChangeRequest = () => {
             heading = `Are you sure you want to decline this status change to ${bliToStatus} Status? The agreement will remain as it was before the change was requested.`;
             btnText = "Decline";
             alertType = "error";
-            alertHeading = "Edits Declined";
+            alertHeading = "Changes Declined";
             alertMsg =
                 `The following change(s) have been declined on the ${agreementName} agreement.\n\n` +
-                `<strong>Edits Declined:</strong>\n` +
+                `<strong>Changes Declined:</strong>\n` +
                 `${changeMsg}`;
         }
         if (EXECUTING_STATUS_APPROVE) {
@@ -122,10 +122,10 @@ const useChangeRequest = () => {
             heading = `Are you sure you want to decline these budget lines for ${bliToStatus} Status? The agreement will remain as it was before the change was requested.`;
             btnText = "Decline";
             alertType = "error";
-            alertHeading = `Budget Lines Declined for ${bliToStatus} Status`;
+            alertHeading = "Changes Declined";
             alertMsg =
                 `The following change(s) have been declined on the ${agreementName} agreement. \n\n` +
-                `<strong>Edits Declined:</strong>\n` +
+                `<strong>Changes Declined:</strong>\n` +
                 `${changeMsg}`;
         }
         setShowModal(true);
