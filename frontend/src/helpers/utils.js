@@ -152,7 +152,7 @@ export const codesToDisplayText = {
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
         status: "Status",
-        services_component: "Services Component",
+        services_component: "Services Component"
     },
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
@@ -388,5 +388,22 @@ export function toLowerCaseFromSlug(slug) {
     return slug
         .split("-")
         .map((word) => word.charAt(0).toLowerCase() + word.slice(1))
+        .join(" ");
+}
+
+/**
+ * This function takes a string and returns a title case version of the string.
+ * @param {string} string - The string to convert to title case.
+ * @returns {string} The title case version of the string.
+ */
+export function fromUpperCaseToTitleCase(string) {
+    if (!string) return "";
+    if (typeof string !== "string") {
+        console.warn("fromUpperCaseToTitleCase: string must be a string");
+        return "";
+    }
+    return string
+        .split(/[-\s]/) // Split by hyphens and spaces
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
 }
