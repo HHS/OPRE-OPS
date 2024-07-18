@@ -153,7 +153,7 @@ describe("Budget Change Requests", () => {
                     });
             });
     });
-    it.skip("should handle adding a DRAFT BLI and a Budget change request", () => {
+    it("should handle adding a DRAFT BLI and a Budget change request", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
@@ -205,12 +205,18 @@ describe("Budget Change Requests", () => {
                 cy.get("#allServicesComponentSelect").select("SC1");
                 cy.get("#enteredAmount").clear();
                 cy.get("#enteredAmount").type("2_222_222_222");
-
                 cy.get('[data-cy="update-budget-line"]').click();
+                // add a DRAFT BLI
+                cy.get("#allServicesComponentSelect").select("SC1");
+                cy.get("#enteredAmount").clear();
+                cy.get("#enteredAmount").type("3_333_333_333");
+                cy.get("#add-budget-line").click();
+                cy.get("tbody").children().as("table-rows").should("have.length", 2);
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').contains("$2,222,222,222.00");
+                cy.get("tbody").children().as("table-rows").should("have.length", 2);
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
