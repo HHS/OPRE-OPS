@@ -591,7 +591,8 @@ const useCreateBLIsAndSCs = (
         handleSave,
         deletedBudgetLines,
         budgetLinesForCards,
-        isBudgetLineNotDraft
+        isBudgetLineNotDraft,
+        isSaving
     };
 };
 
