@@ -323,13 +323,29 @@ const useCreateBLIsAndSCs = (
 
     const handleEditBLI = (e) => {
         e.preventDefault();
-        const amountChanged = financialSnapshot?.enteredAmount !== enteredAmount;
-        const dateChanged = financialSnapshot?.needByDate !== needByDate;
+
+        if (!tempBudgetLines || !Array.isArray(tempBudgetLines)) {
+            console.error("tempBudgetLines is not defined or not an array");
+            return;
+        }
+
+        if (
+            budgetLineBeingEdited == null ||
+            budgetLineBeingEdited < 0 ||
+            budgetLineBeingEdited >= tempBudgetLines.length
+        ) {
+            console.error("Invalid budgetLineBeingEdited index");
+            return;
+        }
+
+        const financialSnapshot = {}; // Ensure financialSnapshot is initialized as an empty object
+        const amountChanged = financialSnapshot.enteredAmount !== enteredAmount;
+        const dateChanged = financialSnapshot.needByDate !== needByDate;
         const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
         const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
         const BLIStatusIsPlannedOrExecuting =
-            budgetLines[budgetLineBeingEdited].status === BLI_STATUS.PLANNED ||
-            budgetLines[budgetLineBeingEdited].status === BLI_STATUS.EXECUTING;
+            budgetLines[budgetLineBeingEdited]?.status === BLI_STATUS.PLANNED ||
+            budgetLines[budgetLineBeingEdited]?.status === BLI_STATUS.EXECUTING;
 
         const payload = {
             ...tempBudgetLines[budgetLineBeingEdited],
