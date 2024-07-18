@@ -1,4 +1,4 @@
-import { create, test, enforce, only, each } from "vest";
+import { create, each, enforce, only, test } from "vest";
 
 const suite = create((fieldName) => {
     only(fieldName);
