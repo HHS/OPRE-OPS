@@ -141,6 +141,25 @@ const useCreateBLIsAndSCs = (
             (tempBudgetLines) => tempBudgetLines.financialSnapshotChanged
         );
 
+        newBudgetLineItems.forEach((newBudgetLineItem) => {
+            const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
+            addBudgetLineItem(cleanNewBLI)
+                .unwrap()
+                .then((fulfilled) => {
+                    console.log("Created New BLIs:", fulfilled);
+                })
+                .catch((rejected) => {
+                    console.error("Error Creating Budget Lines");
+                    console.error({ rejected });
+                    setAlert({
+                        type: "error",
+                        heading: "Error",
+                        message: "An error occurred. Please try again.",
+                        redirectUrl: "/error"
+                    });
+                });
+        });
+
         if (isThereAnyBLIsFinancialSnapshotChanged) {
             setShowModal(true);
             setModalProps({
@@ -198,25 +217,6 @@ const useCreateBLIsAndSCs = (
 
             return;
         }
-
-        newBudgetLineItems.forEach((newBudgetLineItem) => {
-            const { data: cleanNewBLI } = cleanBudgetLineItemForApi(newBudgetLineItem);
-            addBudgetLineItem(cleanNewBLI)
-                .unwrap()
-                .then((fulfilled) => {
-                    console.log("Created New BLIs:", fulfilled);
-                })
-                .catch((rejected) => {
-                    console.error("Error Creating Budget Lines");
-                    console.error({ rejected });
-                    setAlert({
-                        type: "error",
-                        heading: "Error",
-                        message: "An error occurred. Please try again.",
-                        redirectUrl: "/error"
-                    });
-                });
-        });
 
         existingBudgetLineItems.forEach((existingBudgetLineItem) => {
             let budgetLineHasChanged =
