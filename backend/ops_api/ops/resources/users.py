@@ -7,7 +7,7 @@ from marshmallow import Schema
 from werkzeug.exceptions import Forbidden, NotFound
 
 import ops_api.ops.services.users as users_service
-from models import BaseModel, User
+from models import BaseModel, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -19,6 +19,7 @@ from ops_api.ops.schemas.users import (
     SafeUserSchema,
     UserResponse,
 )
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.users import is_user_admin
 
@@ -42,20 +43,23 @@ class UsersItemAPI(BaseItemAPI):
         - If the user is an admin, they can get the full details of any user
         - If the user is not an admin, they can get the full details of their own user or a safe version of another user
         """
-        user: User | None = users_service.get_user(current_app.db_session, id=id)
+        with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
+            user: User | None = users_service.get_user(current_app.db_session, id=id)
 
-        if not user:
-            raise NotFound(f"User {id} not found")
+            if not user:
+                raise NotFound(f"User {id} not found")
 
-        if is_user_admin(current_user) or user.id == current_user.id:
-            schema = self._response_schema
-        else:
-            schema = SafeUserSchema()
+            if is_user_admin(current_user) or user.id == current_user.id:
+                schema = self._response_schema
+            else:
+                schema = SafeUserSchema()
 
-        user_data = schema.dump(user)
-        user_data["roles"] = [role.name for role in user.roles]
+            user_data = schema.dump(user)
+            user_data["roles"] = [role.name for role in user.roles]
 
-        return make_response_with_headers(user_data)
+            meta.metadata.update({"user_details": user_data})
+
+            return make_response_with_headers(user_data)
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
