@@ -55,7 +55,7 @@ const useCreateBLIsAndSCs = (
     const [enteredComments, setEnteredComments] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
-    const [financialSnapshot, setFinancialSnapshot] = React.useState(null);
+    const [financialSnapshot, setFinancialSnapshot] = React.useState({});
     const searchParams = new URLSearchParams(location.search);
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
@@ -355,7 +355,6 @@ const useCreateBLIsAndSCs = (
             return;
         }
 
-        const financialSnapshot = {}; // Ensure financialSnapshot is initialized as an empty object
         const amountChanged = financialSnapshot.enteredAmount !== enteredAmount;
         const dateChanged = financialSnapshot.needByDate !== needByDate;
         const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
