@@ -177,7 +177,11 @@ const useCreateBLIsAndSCs = (
             setIsSaving(false);
         }
     };
-
+    /**
+     * Handle saving the budget lines with financial snapshot changes
+     * @param {Object[]} existingBudgetLineItems - The existing budget line items
+     * @returns {Promise<void>} - The promise
+     */
     const handleFinancialSnapshotChanges = async (existingBudgetLineItems) => {
         return new Promise((resolve, reject) => {
             setShowModal(true);
@@ -241,7 +245,11 @@ const useCreateBLIsAndSCs = (
             });
         });
     };
-
+    /**
+     * Handle saving the budget lines without financial snapshot changes
+     * @param {Object[]} existingBudgetLineItems - The existing budget line items
+     * @returns {Promise<void>} - The promise
+     */
     const handleRegularUpdates = async (existingBudgetLineItems) => {
         try {
             const updatePromises = existingBudgetLineItems.map(async (existingBudgetLineItem) => {
@@ -297,6 +305,11 @@ const useCreateBLIsAndSCs = (
             });
         }
     };
+    /**
+     * Handle adding a budget line
+     * @param {Event} e - The event object
+     * @returns {void}
+     */
     const handleAddBLI = (e) => {
         e.preventDefault();
         const newBudgetLine = {
@@ -320,7 +333,11 @@ const useCreateBLIsAndSCs = (
         });
         resetForm();
     };
-
+    /**
+     * Handle editing a budget line
+     * @param {Event} e - The event object
+     * @returns {void}
+     */
     const handleEditBLI = (e) => {
         e.preventDefault();
 
@@ -392,7 +409,11 @@ const useCreateBLIsAndSCs = (
         });
         resetForm();
     };
-
+    /**
+     * Handle deleting a budget line
+     * @param {string} budgetLineId - The ID of the budget line to delete
+     * @returns {void}
+     */
     const handleDeleteBudgetLine = (budgetLineId) => {
         const budgetLine = tempBudgetLines.find((bl) => bl.id === budgetLineId);
         setShowModal(true);
@@ -459,7 +480,11 @@ const useCreateBLIsAndSCs = (
             setIsBudgetLineNotDraft(tempBudgetLines[index].status !== BLI_STATUS.DRAFT);
         }
     };
-
+    /**
+     * Handle duplicating a budget line
+     * @param {string} budgetLineId - The ID of the budget line to duplicate
+     * @returns {void}
+     */
     const handleDuplicateBudgetLine = (budgetLineId) => {
         const budgetLine = tempBudgetLines.find((bl) => bl.id === budgetLineId);
         if (!budgetLine) {
