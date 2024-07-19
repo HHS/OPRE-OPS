@@ -110,6 +110,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
+                // nav element with the role navigation should contain text 1
+                cy.get('[role="navigation"]').contains("1");
                 cy.get("[data-cy='review-card']").contains(/planned/i);
                 // hover over the review card
                 cy.get("[data-cy='review-card']").trigger("mouseover");
@@ -134,7 +136,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-alert__body").should("contain", "Changes Approved");
                 cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
                 cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Draft to Planned`);
+                cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
+                // nav element should not contain the text 1
+                cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 checkAgreementHistory();
@@ -246,6 +251,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
                 cy.get("[data-cy='review-card']").contains(/executing/i);
+                cy.get('[role="navigation"]').contains("1");
                 // hover over the review card
                 cy.get("[data-cy='review-card']").trigger("mouseover");
                 // click on button data-cy approve-agreement
@@ -269,7 +275,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-alert__body").should("contain", "Changes Approved");
                 cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
                 cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Planned to Executing`);
+                cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
+                // nav element should not contain the text 1
+                cy.get('[role="navigation"]').should("not.contain", "1");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 checkAgreementHistory();
@@ -382,6 +391,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 cy.get("[data-cy='review-card']").contains(/planned/i);
+                cy.get('[role="navigation"]').contains("1");
                 // hover over the review card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 // click on button data-cy approve-agreement
@@ -405,6 +415,9 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-alert__body").should("contain", "Changes Approved");
                 cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
                 cy.get(".usa-alert__body").should("contain", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`);
+                cy.get("[data-cy='close-alert']").click();
+                // nav element should not contain the text 1
+                cy.get('[role="navigation"]').should("not.contain", "1");
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
