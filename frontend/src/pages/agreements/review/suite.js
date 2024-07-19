@@ -1,4 +1,4 @@
-import { create, test, enforce, only, each } from "vest";
+import { create, each, enforce, only, test } from "vest";
 
 const suite = create((fieldName) => {
     only(fieldName);
@@ -37,13 +37,13 @@ const suite = create((fieldName) => {
     });
     // test budget_line_items array
     each(fieldName.budget_line_items, (item) => {
-        test(`Budget line item (${item.display_name}) is missing required fields`, () => {
+        test(`Budget line item (${item.id}) is missing required fields`, () => {
             enforce(item.date_needed).isNotBlank();
             enforce(item.can_id).isNotBlank();
             enforce(item.amount).greaterThan(0);
         });
 
-        test(`Budget line item (${item.display_name}) must be in the future`, () => {
+        test(`Budget line item (${item.id}) must be in the future`, () => {
             const today = new Date().valueOf();
             const dateNeeded = new Date(item.date_needed);
             enforce(dateNeeded.getTime()).greaterThan(today);
