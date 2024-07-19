@@ -8,8 +8,8 @@
       origination_date: "01-01-2021",
       team_leaders: [
         {
-          tablename: "user",
-          id: "1"
+          "tablename": "ops_user",
+          id: "500"
         }
       ],
       methodologies: [
@@ -333,8 +333,8 @@
       url: "",
       team_leaders: [
         {
-          tablename: "user",
-          id: "1"
+          "tablename": "ops_user",
+          id: "500"
         }
       ],
     },
@@ -345,8 +345,8 @@
       url: "",
       team_leaders: [
         {
-          tablename: "user",
-          id: "1"
+          "tablename": "ops_user",
+          id: "500"
         }
       ],
     }

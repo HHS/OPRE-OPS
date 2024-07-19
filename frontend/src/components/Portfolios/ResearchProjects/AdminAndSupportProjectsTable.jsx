@@ -81,13 +81,16 @@ const AdminAndSupportProjectsTable = ({ fiscalYear, data }) => {
     // sort Table by name on initial render
     React.useEffect(() => {
         requestSort("name");
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
         <div
             className="usa-table-container--scrollable"
-            tabIndex="0"
+            role="region"
+            aria-live="polite"
+            aria-label="Admin and Support Projects Table"
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+            tabIndex={0}
         >
             <table className="usa-table usa-table--borderless width-full">
                 <thead>

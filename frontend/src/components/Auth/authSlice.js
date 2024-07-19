@@ -16,7 +16,6 @@ export const authSlice = createSlice({
             state.activeUser = null;
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
-            localStorage.removeItem("ops-state-key");
             localStorage.removeItem("activeProvider");
             Cookies.remove("access_token", { path: "/" });
         },

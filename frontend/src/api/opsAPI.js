@@ -19,8 +19,8 @@ export const opsApi = createApi({
         "Portfolios",
         "CanFunding",
         "Notifications",
-        "WorkflowStepInstance",
-        "ServicesComponents"
+        "ServicesComponents",
+        "ChangeRequests"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -78,6 +78,10 @@ export const opsApi = createApi({
             query: () => `/budget-line-items/`,
             providesTags: ["BudgetLineItems"]
         }),
+        getBudgetLineItem: builder.query({
+            query: (id) => `/budget-line-items/${id}`,
+            providesTags: ["BudgetLineItems"]
+        }),
         addBudgetLineItem: builder.mutation({
             query: (data) => {
                 return {
@@ -98,7 +102,7 @@ export const opsApi = createApi({
                     body: data
                 };
             },
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory"]
+            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "ChangeRequests"]
         }),
         deleteBudgetLineItem: builder.mutation({
             query: (id) => ({
@@ -195,10 +199,15 @@ export const opsApi = createApi({
             providesTags: ["CanFunding"]
         }),
         getNotificationsByUserId: builder.query({
-            query: ({ id, auth_header }) => ({
-                url: `/notifications/?oidc_id=${id}`,
-                headers: { Authorization: auth_header }
-            }),
+            query: ({ id, auth_header }) => {
+                if (!id) {
+                    return { skip: true }; // Skip the query if id is undefined
+                }
+                return {
+                    url: `/notifications/?oidc_id=${id}`,
+                    headers: { Authorization: auth_header }
+                };
+            },
             providesTags: ["Notifications"]
         }),
         dismissNotification: builder.mutation({
@@ -222,32 +231,6 @@ export const opsApi = createApi({
                 body
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
-        }),
-        addApprovalRequest: builder.mutation({
-            query: (body) => ({
-                url: `/workflow-submit/`,
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body
-            }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
-        }),
-        addWorkflowApprove: builder.mutation({
-            query: (body) => ({
-                url: `/workflow-approve/`,
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body
-            }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
-        }),
-        getWorkflowInstance: builder.query({
-            query: (id) => `/workflow-instance/${id}`,
-            providesTags: ["WorkflowInstance"]
-        }),
-        getWorkflowStepInstance: builder.query({
-            query: (id) => `/workflow-step-instance/${id}`,
-            providesTags: ["WorkflowStepInstance"]
         }),
         getAzureSasToken: builder.query({
             query: () => `/azure/sas-token`
@@ -288,6 +271,21 @@ export const opsApi = createApi({
                 method: "DELETE"
             }),
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
+        }),
+        getChangeRequestsList: builder.query({
+            query: () => `/change-requests/`,
+            providesTags: ["ChangeRequests"]
+        }),
+        reviewChangeRequest: builder.mutation({
+            query: (body) => {
+                return {
+                    url: `/change-request-reviews/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body
+                };
+            },
+            invalidatesTags: ["ChangeRequests"]
         })
     })
 });
@@ -300,6 +298,7 @@ export const {
     useDeleteAgreementMutation,
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsQuery,
+    useGetBudgetLineItemQuery,
     useUpdateBudgetLineItemMutation,
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
@@ -323,14 +322,12 @@ export const {
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
     useAddBliPackageMutation,
-    useAddApprovalRequestMutation,
-    useAddWorkflowApproveMutation,
-    useGetWorkflowInstanceQuery,
-    useGetWorkflowStepInstanceQuery,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,
     useUpdateServicesComponentMutation,
     useGetServicesComponentByIdQuery,
     useGetServicesComponentsListQuery,
-    useDeleteServicesComponentMutation
+    useDeleteServicesComponentMutation,
+    useGetChangeRequestsListQuery,
+    useReviewChangeRequestMutation
 } = opsApi;

@@ -34,15 +34,15 @@ def no_perm_client(no_perms_auth_client):
 
 
 @pytest.fixture()
-def contract_agreement_project_officer(loaded_db):
+def contract_agreement_project_officer(loaded_db, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
-        created_by=1,
-        project_officer_id=4,
+        project_id=test_project.id,
+        created_by=test_user.id,
+        project_officer_id=503,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -54,17 +54,16 @@ def contract_agreement_project_officer(loaded_db):
 
 
 @pytest.fixture()
-def contract_agreement_team_member(loaded_db):
-    user = loaded_db.get(User, 4)
+def contract_agreement_team_member(loaded_db, test_user, test_admin_user, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
-        created_by=1,
-        project_officer_id=1,
-        team_members=[user],
+        project_id=test_project.id,
+        created_by=test_user.id,
+        project_officer_id=test_user.id,
+        team_members=[test_admin_user],
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -78,7 +77,7 @@ def contract_agreement_team_member(loaded_db):
 
 
 @pytest.fixture()
-def contract_agreement_not_associated(loaded_db):
+def contract_agreement_not_associated(loaded_db, test_project):
     user = User(
         email="blah@example.com",
         first_name="blah",
@@ -93,7 +92,7 @@ def contract_agreement_not_associated(loaded_db):
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         created_by=user.id,
     )
     loaded_db.add(contract_agreement)
@@ -107,14 +106,14 @@ def contract_agreement_not_associated(loaded_db):
 
 
 @pytest.fixture()
-def contract_with_draft_bli(loaded_db):
+def contract_with_draft_bli(loaded_db, test_user, test_admin_user, test_can, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
-        created_by=4,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -124,11 +123,11 @@ def contract_with_draft_bli(loaded_db):
         comments="blah bleh bleh blah",
         line_description="LI Draft",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
-        created_by=1,
+        created_by=test_user.id,
     )
     loaded_db.add(draft_bli)
     loaded_db.commit()
@@ -141,14 +140,14 @@ def contract_with_draft_bli(loaded_db):
 
 
 @pytest.fixture()
-def contract_with_planned_bli(loaded_db):
+def contract_with_planned_bli(loaded_db, test_user, test_admin_user, test_can, test_project):
     contract_agreement = ContractAgreement(
         name="Feature Test Contract",
         contract_number="CT0999",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
-        created_by=4,
+        project_id=test_project.id,
+        created_by=test_admin_user.id,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -158,11 +157,11 @@ def contract_with_planned_bli(loaded_db):
         comments="blah blah bleh blah",
         line_description="LI Planned",
         amount=200.24,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=2.34,
-        created_by=1,
+        created_by=test_user.id,
     )
     loaded_db.add(planned_bli)
     loaded_db.commit()
@@ -175,13 +174,13 @@ def contract_with_planned_bli(loaded_db):
 
 
 @pytest.fixture()
-def direct_agreement(loaded_db):
+def direct_agreement(loaded_db, test_project):
     direct_agreement = DirectAgreement(
         name="Feature Test Direct",
         payee="Somebody who needs money",
         agreement_type=AgreementType.DIRECT_ALLOCATION,
-        project_id=1,
-        created_by=4,
+        project_id=test_project.id,
+        created_by=503,
     )
     loaded_db.add(direct_agreement)
     loaded_db.commit()

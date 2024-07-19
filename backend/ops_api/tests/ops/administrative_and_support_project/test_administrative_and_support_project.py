@@ -16,7 +16,7 @@ def test_administrative_and_support_projects_get_all(auth_client, loaded_db):
 
 
 def test_administrative_and_support_projects_get_by_id(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.administrative-and-support-projects-item", id="14"))
+    response = auth_client.get(url_for("api.administrative-and-support-projects-item", id="1013"))
     assert response.status_code == 200
     assert response.json["title"] == "Support Project #1"
 
@@ -26,13 +26,13 @@ def test_administrative_and_support_projects_get_by_id_404(auth_client, loaded_d
     assert response.status_code == 404
 
 
-def test_administrative_and_support_projects_serialization(auth_client, loaded_db):
-    response = auth_client.get(url_for("api.administrative-and-support-projects-item", id="14"))
+def test_administrative_and_support_projects_serialization(auth_client, loaded_db, test_user):
+    response = auth_client.get(url_for("api.administrative-and-support-projects-item", id="1013"))
     assert response.status_code == 200
-    assert response.json["id"] == 14
+    assert response.json["id"] == 1013
     assert response.json["title"] == "Support Project #1"
-    assert response.json["team_leaders"][0]["id"] == 1
-    assert response.json["team_leaders"][0]["full_name"] == "Chris Fortunato"
+    assert response.json["team_leaders"][0]["id"] == test_user.id
+    assert response.json["team_leaders"][0]["full_name"] == test_user.full_name
 
 
 def test_administrative_and_support_projects_with_fiscal_year_found(auth_client, loaded_db):
@@ -40,7 +40,7 @@ def test_administrative_and_support_projects_with_fiscal_year_found(auth_client,
     assert response.status_code == 200
     assert len(response.json) == 1
     assert response.json[0]["title"] == "Support Project #1"
-    assert response.json[0]["id"] == 14
+    assert response.json[0]["id"] == 1013
 
 
 def test_administrative_and_support_projects_with_fiscal_year_not_found(auth_client, loaded_db):
@@ -55,7 +55,7 @@ def test_get_query_for_fiscal_year_with_fiscal_year_found(loaded_db):
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "Support Project #1"
-    assert result[0][0].id == 14
+    assert result[0][0].id == 1013
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -71,7 +71,7 @@ def test_get_query_for_fiscal_year_with_portfolio_id_found(loaded_db):
     result = loaded_db.execute(stmt).fetchall()
     assert len(result) == 1
     assert result[0][0].title == "Support Project #1"
-    assert result[0][0].id == 14
+    assert result[0][0].id == 1013
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -121,7 +121,7 @@ def test_post_administrative_and_support_projects(auth_client):
         "short_title": "RP1" + uuid.uuid4().hex,
         "description": "blah blah blah",
         "url": "https://example.com",
-        "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
+        "team_leaders": [{"id": 500}, {"id": 501}, {"id": 502}],
     }
     response = auth_client.post(url_for("api.administrative-and-support-projects-group"), json=data)
     assert response.status_code == 201
@@ -130,13 +130,13 @@ def test_post_administrative_and_support_projects(auth_client):
         {
             "email": "chris.fortunato@example.com",
             "full_name": "Chris Fortunato",
-            "id": 1,
+            "id": 500,
         },
-        {"email": "Amy.Madigan@example.com", "full_name": "Amy Madigan", "id": 2},
+        {"email": "Amy.Madigan@example.com", "full_name": "Amy Madigan", "id": 501},
         {
             "email": "Ivelisse.Martinez-Beck@example.com",
             "full_name": "Ivelisse Martinez-Beck",
-            "id": 3,
+            "id": 502,
         },
     ]
 

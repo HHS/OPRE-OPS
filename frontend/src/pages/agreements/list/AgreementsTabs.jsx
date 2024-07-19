@@ -8,11 +8,8 @@ import TabsSection from "../../../components/UI/TabsSection";
  */
 export const AgreementTabs = () => {
     const location = useLocation();
-
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
-
     const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected}`;
-
     const paths = [
         {
             name: "",
@@ -23,8 +20,8 @@ export const AgreementTabs = () => {
             label: "My Agreements"
         },
         {
-            name: "?filter=for-approval",
-            label: "For Approval"
+            name: "?filter=change-requests",
+            label: "For Review"
         }
     ];
 

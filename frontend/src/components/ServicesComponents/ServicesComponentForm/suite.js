@@ -1,4 +1,4 @@
-import { create, test, enforce, only } from "vest";
+import { create, enforce, only, test } from "vest";
 
 const suite = create((data = {}, fieldName) => {
     only(fieldName); // only run the tests for the field that changed

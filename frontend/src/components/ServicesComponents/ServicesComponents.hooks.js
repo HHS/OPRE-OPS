@@ -35,7 +35,7 @@ const useServicesComponents = (agreementId) => {
                 type: "error",
                 heading: "Error",
                 message: "An error occurred. Please try again.",
-                navigateUrl: "/error"
+                redirectUrl: "/error"
             });
         }
     }, [isSuccess, error, data, setAlert]);
@@ -55,7 +55,6 @@ const useServicesComponents = (agreementId) => {
         const { id } = formData;
 
         if (formData.mode === "add") {
-            // eslint-disable-next-line no-unused-vars
             addServicesComponent(newFormData)
                 .unwrap()
                 .then((fulfilled) => {
@@ -73,7 +72,7 @@ const useServicesComponents = (agreementId) => {
                         type: "error",
                         heading: "Error",
                         message: "An error occurred. Please try again.",
-                        navigateUrl: "/error"
+                        redirectUrl: "/error"
                     });
                 });
 
@@ -97,7 +96,7 @@ const useServicesComponents = (agreementId) => {
                         type: "error",
                         heading: "Error",
                         message: "An error occurred. Please try again.",
-                        navigateUrl: "/error"
+                        redirectUrl: "/error"
                     });
                 });
 

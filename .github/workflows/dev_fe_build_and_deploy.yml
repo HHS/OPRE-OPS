@@ -7,7 +7,7 @@ on:
       - 'main'
     paths:
       - 'frontend/**'
-      
+
 env:
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
@@ -15,29 +15,12 @@ env:
 
 jobs:
   build-frontend:
-    outputs:
-      version: ${{ steps.extract_version.outputs.version }}
     permissions:
-      contents: write
+      contents: read
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-
-      - name:  'Automated Version Bump'
-        id: version_bump
-        uses:  'phips28/gh-action-bump-version@56588a3c4a1d62a068f308dfbc17f4ee55c69d41' #v11.0.4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag-prefix:  'ops-frontend-v'
-          PACKAGEJSON_DIR:  'frontend'
-
-      - name: Extract Version
-        id: extract_version
-        run: |
-          VERSION=$(echo "${{ steps.version_bump.outputs.newTag }}" | sed -e 's/.*v\(.*\)/v\1/')
-          echo "::set-output name=version::$VERSION"
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Build and publish the Docker image for ${{ github.repository }}
         uses: ./.github/actions/build-and-push
@@ -46,24 +29,24 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }},${{ steps.extract_version.outputs.version }}"
+          image_tags: "unstable,${{ github.sha }},${{ env.ENVIRONMENT }}"
+          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.acf.opre-ops.flexion.us, MODE=${{ env.ENVIRONMENT }}"
 
-  deploy-frontend: 
+  deploy-frontend:
     needs: build-frontend
 
     runs-on: ubuntu-latest
-    steps: 
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-   
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
       - name: Log in to Azure
-        uses: azure/login@6b2456866fc08b011acb422a92a4aa20e2c4de32 #v2.1.0
+        uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
-          creds:  ${{ secrets.AZURE_CREDS }}
+          creds: ${{ secrets.SDLC_AZURE_CREDS }}
 
       - name: Deploy Container App
-        uses: azure/container-apps-deploy-action@02d045129c058b13312276b50a552834cf74e2af # v2
+        uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
         with:
-            # azureCredentials: ${{ secrets.AZURE_CREDS }}
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
-            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
-            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ needs.build-frontend.outputs.version }}
+            resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}

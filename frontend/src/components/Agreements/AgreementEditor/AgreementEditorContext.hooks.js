@@ -1,11 +1,11 @@
 import { useContext } from "react";
-import { SERVICE_REQ_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
+import { AGREEMENT_TYPES, SERVICE_REQ_TYPES } from "../../ServicesComponents/ServicesComponents.constants";
 import { AgreementEditorContext, EditAgreementDispatchContext } from "./AgreementEditorContext";
 
 export const defaultState = {
     agreement: {
         id: null,
-        agreement_type: null,
+        agreement_type: AGREEMENT_TYPES.CONTRACT,
         agreement_reason: null,
         name: "",
         description: "",

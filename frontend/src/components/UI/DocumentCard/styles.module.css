@@ -1,0 +1,40 @@
+.container {
+    height: 90px;
+    width: 466px;
+    position: relative;
+    border-radius: 0.5rem;
+    border-width: 1px;
+    border-style: solid;
+    display: flex;
+    flex-direction: row;
+    margin-top: 32px;
+    row-gap: 5px;
+}
+
+.cardAccent {
+    background-color: #005EA2;
+    height: 7px;
+    position: absolute;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    bottom: 0px;
+    width: 100%;
+}
+
+.documentTitle{
+    color: #565C65;
+}
+
+.documentFilename{
+    position: relative;
+}
+.documentUploadDate{
+    position: relative;
+}
+
+.eyeIcon{
+    color: #005EA2;
+    position: absolute;
+    left: 422px;
+    top: 47px;
+}

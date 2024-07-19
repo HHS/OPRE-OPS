@@ -7,16 +7,16 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
     description: "Test Description",
-    project_id: 1,
+    project_id: 1000,
     product_service_code_id: 1,
-    procurement_shop_id: 1,
-    project_officer_id: 1,
+    procurement_shop_id: 2,
+    project_officer_id: 500,
     team_members: [
         {
-            id: 3
+            id: 502
         },
         {
-            id: 5
+            id: 504
         }
     ],
     notes: "Test Notes"
@@ -64,10 +64,10 @@ it("edit an agreement", () => {
         cy.get(
             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
         ).should("have.text", "Agreement Created");
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should("exist");
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-message"]').should(
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Agreement created by Admin Demo"
+            "Agreement created by Admin Demo."
         );
         cy.get("#edit").click();
         cy.get("#edit").should("not.exist");
@@ -102,25 +102,25 @@ it("edit an agreement", () => {
 
         cy.get(
             '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-        ).should("have.text", "Agreement Description Edited");
+        ).should("have.text", "Agreement Title Edited");
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Agreement Description changed by Admin Demo"
+            "Agreement Title changed from Test Contract to Test Edit Title by Admin Demo."
         );
-        cy.get(
-            '[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]'
-        ).should("have.text", "Agreement Title Edited");
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-children"]').should(
-            "have.text",
-            "Agreement Title changed from Test Contract to Test Edit Title by Admin Demo"
-        );
-        cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > .text-bold').should(
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
             "have.text",
             "Agreement Notes Edited"
         );
+        cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-children"]').should(
+            "have.text",
+            "Agreement Notes changed by Admin Demo."
+        );
+        cy.get(
+            '[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > [data-cy="log-item-title"]'
+        ).should("have.text", "Agreement Description Edited");
         cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Agreement Notes changed by Admin Demo"
+            "Agreement Description changed by Admin Demo."
         );
 
         cy.request({

@@ -1,46 +1,40 @@
 import datetime
-from dataclasses import fields
 
 import pytest
 from pytest_bdd import given, scenario, then, when
 
-from models import (
-    AgreementReason,
-    AgreementType,
-    BudgetLineItem,
-    BudgetLineItemStatus,
-    ContractAgreement,
-    ContractType,
-    User,
-)
-from ops_api.ops.schemas.budget_line_items import RequestBody
+from models import AgreementReason, AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
+from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
 
 @pytest.fixture
-def original_agreement():
+def original_agreement(test_user, test_project):
     return {
         "name": "CTXX12399",
         "contract_number": "CT0002",
         "contract_type": ContractType.FIRM_FIXED_PRICE,
         "agreement_type": AgreementType.CONTRACT,
-        "project_id": 1,
+        "project_id": test_project.id,
         "product_service_code_id": 2,
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,
-        "project_officer_id": 1,
+        "project_officer_id": test_user.id,
         "procurement_shop_id": 1,
-        "created_by": 1,
+        "created_by": test_user.id,
     }
 
 
-@given("I am logged in as an OPS user")
-def client(auth_client):
+@given(
+    "I am logged in as an OPS user",
+    target_fixture="bdd_client",
+)
+def bdd_client(auth_client):
     yield auth_client
 
 
 @given(
     "I am logged in as an OPS user with the correct authorization but no perms",
-    target_fixture="client",
+    target_fixture="bdd_client",
 )
 def no_perms_client(no_perms_auth_client):
     yield no_perms_auth_client
@@ -70,8 +64,8 @@ def test_edit_planned_budget_line_unauthorized(): ...
     "I have a Contract Agreement as the original Agreement owner",
     target_fixture="agreement",
 )
-def agreement_owner(loaded_db, original_agreement):
-    original_agreement["created_by"] = 4
+def agreement_owner(loaded_db, original_agreement, test_admin_user):
+    original_agreement["created_by"] = test_admin_user.id
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -83,8 +77,8 @@ def agreement_owner(loaded_db, original_agreement):
 
 
 @given("I have a Contract Agreement as the Project Officer", target_fixture="agreement")
-def agreement_project_officer(loaded_db, original_agreement):
-    original_agreement["project_officer_id"] = 4
+def agreement_project_officer(loaded_db, original_agreement, test_admin_user):
+    original_agreement["project_officer_id"] = test_admin_user.id
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -96,10 +90,9 @@ def agreement_project_officer(loaded_db, original_agreement):
 
 
 @given("I have a Contract Agreement as a Team Member", target_fixture="agreement")
-def agreement_team_member(loaded_db, original_agreement):
-    user = loaded_db.get(User, 4)
+def agreement_team_member(loaded_db, original_agreement, test_admin_user):
     contract_agreement = ContractAgreement(**original_agreement)
-    contract_agreement.team_members = [user]
+    contract_agreement.team_members = [test_admin_user]
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
@@ -137,17 +130,17 @@ def agreement_unauthorized(loaded_db, original_agreement):
 
 
 @given("I have a budget line item in Planned status", target_fixture="bli")
-def planned_bli(loaded_db, agreement):
+def planned_bli(loaded_db, agreement, test_user, test_can):
     planned_bli = BudgetLineItem(
         agreement_id=agreement.id,
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=1.23,
-        created_by=1,
+        created_by=test_user.id,
     )
     loaded_db.add(planned_bli)
     loaded_db.commit()
@@ -165,10 +158,10 @@ def edit_bli(bli):
 
 
 @when("I submit the budget line item", target_fixture="submit_response")
-def submit(client, edited_bli):
-    field_names = {f.name for f in fields(RequestBody)} | {"agreement_id"}
+def submit(bdd_client, edited_bli):
+    field_names = {f for f in RequestBodySchema().fields.keys()} | {"agreement_id"}
     data = {k: v for k, v in edited_bli.to_dict().items() if k in field_names}
-    resp = client.put(f"/api/v1/budget-line-items/{edited_bli.id}", json=data)
+    resp = bdd_client.put(f"/api/v1/budget-line-items/{edited_bli.id}", json=data)
     return resp
 
 

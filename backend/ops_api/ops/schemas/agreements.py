@@ -2,8 +2,19 @@ from marshmallow import Schema, fields
 
 from models import ContractType
 from models.cans import AgreementReason, AgreementType, ServiceRequirementType
+from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
+from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
 from ops_api.ops.schemas.product_service_code import ProductServiceCodeSchema
+from ops_api.ops.schemas.projects import Project
 from ops_api.ops.schemas.team_members import TeamMembers
+
+
+class Vendor(Schema):
+    name = fields.String(required=True)
+
+
+class Incumbent(Schema):
+    name = fields.String(required=True)
 
 
 class AgreementData(Schema):
@@ -47,19 +58,43 @@ class IaaAaAgreementData(AgreementData):
     pass
 
 
-# TODO: This can go away once we can serialize the Agreement with marshmallow
-class AgreementResponse(Schema):
+class AgreementResponse(AgreementData):
     id = fields.Integer(required=True)
-    type = fields.String(required=True)
-    name = fields.String(required=True)
-    created_by = fields.Integer(required=True)
-    description = fields.String(required=True)
+    project = fields.Nested(Project)
     product_service_code = fields.Nested(ProductServiceCodeSchema)
-    project_officer = fields.Nested(TeamMembers)
-    research_project = fields.Integer(required=True)
-    agreement_type = fields.Enum(AgreementType, required=True)
-    agreement_reason = fields.Enum(AgreementReason)
-    team_members = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)
-    budget_line_items = fields.List(fields.Integer(), default=[], allow_none=True)
-    procurement_shop = fields.Integer(allow_none=True)
-    notes = fields.String(allow_none=True)
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema), allow_none=True)
+    procurement_shop = fields.Nested(ProcurementShopSchema)
+    display_name = fields.String(required=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+
+
+class ContractAgreementResponse(AgreementResponse):
+    contract_number = fields.String(allow_none=True)
+    incumbent = fields.Pluck("Incumbent", "name")
+    incumbent_id = fields.Integer(allow_none=True)
+    vendor_id = fields.Integer(allow_none=True)
+    vendor = fields.Pluck("Vendor", "name")
+    delivered_status = fields.Bool(default=False)
+    contract_type = fields.Enum(ContractType, allow_none=True)
+    service_requirement_type = fields.Enum(ServiceRequirementType, allow_none=True)
+    support_contacts = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)
+
+
+class GrantAgreementResponse(AgreementResponse):
+    foa = fields.String(allow_none=True)
+
+
+class DirectAgreementResponse(AgreementResponse):
+    pass
+
+
+class IaaAgreementResponse(AgreementResponse):
+    iaa = fields.String(required=True)
+    pass
+
+
+class IaaAaAgreementResponse(AgreementResponse):
+    pass

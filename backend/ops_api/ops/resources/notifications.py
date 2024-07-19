@@ -11,12 +11,11 @@ from flask_jwt_extended import current_user
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
-from typing_extensions import override
 
 from models import Notification, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -83,17 +82,13 @@ class NotificationItemAPI(BaseItemAPI):
 
         return response
 
-    @override
     @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
-    @handle_api_error
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
 
         return response
 
-    @override
     @is_authorized(PermissionType.PUT, Permission.NOTIFICATION)
-    @handle_api_error
     def put(self, id: int) -> Response:
         message_prefix = f"PUT to {ENDPOINT_STRING}"
         notification_dict = self.put_notification(id, message_prefix)
@@ -127,9 +122,7 @@ class NotificationItemAPI(BaseItemAPI):
         current_app.logger.info(f"{message_prefix}: Notification Updated: {notification_dict}")
         return notification_dict
 
-    @override
     @is_authorized(PermissionType.PATCH, Permission.NOTIFICATION)
-    @handle_api_error
     def patch(self, id: int) -> Response:
         message_prefix = f"PATCH to {ENDPOINT_STRING}"
         notification_dict = self.patch_notification(id, message_prefix)
@@ -203,9 +196,7 @@ class NotificationListAPI(BaseListAPI):
         stmt = query_helper.get_stmt()
         return stmt
 
-    @override
     @is_authorized(PermissionType.GET, Permission.NOTIFICATION)
-    @handle_api_error
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
 

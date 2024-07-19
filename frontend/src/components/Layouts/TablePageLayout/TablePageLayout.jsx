@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import icons from "../../../uswds/img/sprite.svg";
@@ -13,9 +12,9 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {string} props.subtitle - The subtitle to display.
  * @param {string} props.details - The details to display.
  * @param {React.ReactNode} props.TabsSection - The tabs to display.
- * @param {React.ReactNode} props.FilterTags - The filter tags to display.
- * @param {React.ReactNode} props.FilterButton - The filter button to display.
- * @param {React.ReactNode} props.TableSection - The table to display.
+ * @param {React.ReactNode} [props.FilterTags] - The filter tags to display.
+ * @param {React.ReactNode} [props.FilterButton] - The filter button to display.
+ * @param {React.ReactNode} [props.TableSection] - The table to display.
  * @param {React.ReactNode} [props.SummaryCardsSection] - The summary cards to display.
  * @param {string} props.buttonText - The text to display on the button.
  * @param {string} props.buttonLink - The link to navigate to when the button is clicked.
@@ -27,17 +26,13 @@ export const TablePageLayout = ({
     subtitle,
     details,
     TabsSection,
-    FilterTags,
+    FilterTags = null,
     SummaryCardsSection,
-    FilterButton,
-    TableSection,
+    FilterButton = null,
+    TableSection = null,
     buttonText,
     buttonLink
 }) => {
-    React.useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
-
     return (
         <>
             <div className="display-flex flex-align-center flex-justify margin-bottom-205">
@@ -79,9 +74,9 @@ TablePageLayout.propTypes = {
     subtitle: PropTypes.string.isRequired,
     details: PropTypes.string.isRequired,
     TabsSection: PropTypes.node.isRequired,
-    FilterTags: PropTypes.node.isRequired,
-    FilterButton: PropTypes.node.isRequired,
-    TableSection: PropTypes.node.isRequired,
+    FilterTags: PropTypes.node,
+    FilterButton: PropTypes.node,
+    TableSection: PropTypes.node,
     SummaryCardsSection: PropTypes.node,
     buttonText: PropTypes.string.isRequired,
     buttonLink: PropTypes.string.isRequired

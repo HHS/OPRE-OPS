@@ -1,11 +1,10 @@
 import desert
 from flask import Response, request
-from typing_extensions import override
 
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.utils.research_project_helper import (
     GetResearchProjectFundingSummaryQueryParams,
     ResearchProjectFundingSummary,
@@ -19,9 +18,7 @@ class ResearchProjectFundingSummaryListAPI(BaseListAPI):
         super().__init__(model)
         self.get_input_schema = desert.schema(GetResearchProjectFundingSummaryQueryParams)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         portfolio_id = request.args.get("portfolioId")
         fiscal_year = request.args.get("fiscalYear")

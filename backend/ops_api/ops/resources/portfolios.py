@@ -1,12 +1,12 @@
 from flask import Response, current_app
 from sqlalchemy import select
-from typing_extensions import Any, List, override
+from typing_extensions import Any, List
 
 from models import Portfolio
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -14,9 +14,7 @@ class PortfolioItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
-    @handle_api_error
     def get(self, id: int) -> Response:
         item = self._get_item(id)
         additional_fields = add_additional_fields_to_portfolio_response(item)
@@ -28,9 +26,7 @@ class PortfolioListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
-    @handle_api_error
     def get(self) -> Response:
         result = current_app.db_session.execute(select(Portfolio)).all()
 

@@ -60,14 +60,12 @@ from ops_api.ops.views import (
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
     VERSION_API_VIEW_FUNC,
-    WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC,
     WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC,
     WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC,
     WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC,
     WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC,
     WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC,
     WORKFLOW_STEP_TEMPLATE_LIST_API_VIEW_FUNC,
-    WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC,
     WORKFLOW_TEMPLATE_ITEM_API_VIEW_FUNC,
     WORKFLOW_TEMPLATE_LIST_API_VIEW_FUNC,
 )
@@ -276,15 +274,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/notifications/<int:id>",
         view_func=NOTIFICATIONS_ITEM_API_VIEW_FUNC,
-    )
-
-    api_bp.add_url_rule(
-        "/workflow-approve/",
-        view_func=WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/workflow-submit/",
-        view_func=WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(

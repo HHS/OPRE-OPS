@@ -30,3 +30,11 @@ class AuthenticationError(Exception):
     """
 
     pass
+
+
+class InvalidUserSessionError(Exception):
+    """
+    Exception to raise when the user session is invalid.
+    """
+
+    pass

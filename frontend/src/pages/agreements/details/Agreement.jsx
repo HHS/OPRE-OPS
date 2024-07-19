@@ -1,11 +1,15 @@
-import { useParams, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Route, Routes, useParams } from "react-router-dom";
 import App from "../../../App";
-import DetailsTabs from "../../../components/Agreements/DetailsTabs/DetailsTabs";
-import AgreementDetails from "./AgreementDetails";
-import AgreementBudgetLines from "./AgreementBudgetLines";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
+import DetailsTabs from "../../../components/Agreements/DetailsTabs";
+import DocumentView from "../../../components/Agreements/Documents/DocumentView";
+import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
+import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
+import AgreementBudgetLines from "./AgreementBudgetLines";
+import AgreementDetails from "./AgreementDetails";
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -13,6 +17,7 @@ const Agreement = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [projectOfficer, setProjectOfficer] = useState({});
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
+    const [isAlertVisible, setIsAlertVisible] = useState(true);
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
@@ -23,14 +28,18 @@ const Agreement = () => {
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement
+        isLoading: isLoadingAgreement,
+        isSuccess
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
 
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [mode]);
+    let doesAgreementHaveBlIsInReview = false;
+
+    if (isSuccess) {
+        doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
+    }
+    let changeRequests = useChangeRequestsForAgreement(agreement?.id);
 
     useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
@@ -56,8 +65,20 @@ const Agreement = () => {
 
     return (
         <App breadCrumbName={agreement?.name}>
-            <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
-            <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>{agreement.project?.title}</h2>
+            {doesAgreementHaveBlIsInReview && isAlertVisible ? (
+                <AgreementChangesAlert
+                    changeRequests={changeRequests}
+                    isAlertVisible={isAlertVisible}
+                    setIsAlertVisible={setIsAlertVisible}
+                />
+            ) : (
+                <>
+                    <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>{agreement.name}</h1>
+                    <h2 className={`font-sans-3xs text-normal margin-top-1 margin-bottom-2`}>
+                        {agreement.project?.title}
+                    </h2>
+                </>
+            )}
 
             <div>
                 <section className="display-flex flex-justify margin-top-3">
@@ -88,6 +109,15 @@ const Agreement = () => {
                         element={
                             <AgreementBudgetLines
                                 agreement={agreement}
+                                isEditMode={isEditMode}
+                                setIsEditMode={setIsEditMode}
+                            />
+                        }
+                    />
+                    <Route
+                        path="documents"
+                        element={
+                            <DocumentView
                                 isEditMode={isEditMode}
                                 setIsEditMode={setIsEditMode}
                             />

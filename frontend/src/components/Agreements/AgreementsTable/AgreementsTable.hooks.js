@@ -1,29 +1,25 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import useAlert from "../../../hooks/use-alert.hooks";
 import { useDeleteAgreementMutation } from "../../../api/opsAPI";
+import useAlert from "../../../hooks/use-alert.hooks";
 
 export const useNavigateAgreementReview = () => {
     const navigate = useNavigate();
+    /**
+     * Navigates to the agreement review page.
+     * @param {number} id - The id of the agreement to review.
+     */
     return (id) => {
         navigate(`/agreements/review/${id}`);
     };
 };
 
-export const useNavigateAgreementApprove = () => {
-    const navigate = useNavigate();
-    return (agreement) => {
-        const id = agreement.id;
-        const stepId = agreement.budget_line_items.find(
-            (bli) => bli.active_workflow_current_step_id
-        )?.active_workflow_current_step_id;
-        navigate(`/agreements/approve/${id}?stepId=${stepId}`);
-    };
-};
-
 export const useHandleEditAgreement = () => {
     const navigate = useNavigate();
-
+    /**
+     * Navigates to the agreement edit page.
+     * @param {number} agreementId - The id of the agreement to edit.
+     */
     const handleEditAgreement = (agreementId) => {
         navigate(`/agreements/${agreementId}?mode=edit`);
     };

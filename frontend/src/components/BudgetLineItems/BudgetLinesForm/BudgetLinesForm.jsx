@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import CanComboBox from "../../CANs/CanComboBox";
 import TextArea from "../../UI/Form/TextArea/TextArea";
-import CurrencyInput from "./CurrencyInput";
+import CurrencyInput from "../../UI/CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import DatePicker from "../../UI/USWDS/DatePicker";
 import suite from "./suite";
@@ -14,30 +14,28 @@ import datePickerSuite from "./datePickerSuite";
 /**
  * A form for creating or editing a budget line.
  * @component
- * @param {Object} props - The component props.
- * @param {Object} props.selectedCan - The currently selected CAN.
- * @param {number} props.servicesComponentId - The selected services component ID.
- * @param {number} props.enteredAmount - The entered budget line amount.
- * @param {string|number} props.enteredMonth - The entered budget line desired award month.
- * @param {string|number} props.enteredDay - The entered budget line desired award day.
- * @param {string|number} props.enteredYear - The entered budget line desired award year.
- * @param {string} props.enteredComments - The entered budget line comments.
- * @param {boolean} props.isEditing - Whether the form is in edit mode.
- * @param {function} props.setServicesComponentId - A function to set the selected services component ID.
+ * @param {Object} props - The component props
+ * @param {number} props.agreementId - The agreement ID.
+ * @param {Object | null} props.selectedCan - The currently selected CAN.
  * @param {function} props.setSelectedCan - A function to set the selected CAN.
+ * @param {number | null} props.servicesComponentId - The selected services component ID.
+ * @param {function} props.setServicesComponentId - A function to set the selected services component ID.
+ * @param {number | null} props.enteredAmount - The entered budget line amount.
  * @param {function} props.setEnteredAmount - A function to set the entered budget line amount.
- * @param {string} props.needByDate - The entered budget line need by date.
- * @param {function} props.setNeedByDate - A function to set the entered budget line need by date.
+ * @param {string | null} props.enteredComments - The entered budget line comments.
  * @param {function} props.setEnteredComments - A function to set the entered budget line comments.
+ * @param {string | null} props.needByDate - The entered budget line need by date.
+ * @param {function} props.setNeedByDate - A function to set the entered budget line need by date.
  * @param {function} props.handleEditBLI - A function to handle editing the budget line form.
  * @param {function} props.handleAddBLI - A function to handle submitting the budget line form.
  * @param {function} props.handleResetForm - A function to handle resetting the budget line form.
+ * @param {boolean} props.isEditing - Whether the form is in edit mode.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
- * @param {number} props.agreementId - The agreement ID.
+ * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
  * @returns {JSX.Element} - The rendered component.
  */
-export const CreateBudgetLinesForm = ({
+export const BudgetLinesForm = ({
     agreementId,
     selectedCan,
     setSelectedCan,
@@ -54,7 +52,8 @@ export const CreateBudgetLinesForm = ({
     handleResetForm = () => {},
     isEditing,
     isReviewMode,
-    isEditMode
+    isEditMode,
+    isBudgetLineNotDraft = false
 }) => {
     let res = suite.get();
     let dateRes = datePickerSuite.get();
@@ -66,8 +65,8 @@ export const CreateBudgetLinesForm = ({
     });
     const MemoizedDatePicker = React.memo(DatePicker);
 
-    // validate all budgetline fields if in review mode and is editing
-    if (isReviewMode && isEditing) {
+    // validate all budget line fields if in review mode and is editing
+    if ((isReviewMode && isEditing) || (isEditing && isBudgetLineNotDraft)) {
         suite({
             servicesComponentId,
             selectedCan,
@@ -101,7 +100,9 @@ export const CreateBudgetLinesForm = ({
 
     const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
     const isFormNotValid =
-        (isEditMode && dateRes.hasErrors()) || (isReviewMode && (res.hasErrors() || !isFormComplete));
+        (isEditMode && dateRes.hasErrors()) ||
+        (isReviewMode && (res.hasErrors() || !isFormComplete)) ||
+        (isEditMode && isBudgetLineNotDraft && res.hasErrors());
 
     return (
         <form className="grid-row grid-gap margin-y-3">
@@ -189,9 +190,7 @@ export const CreateBudgetLinesForm = ({
                                 e.preventDefault();
                                 datePickerSuite.reset();
                                 handleResetForm();
-                                if (isReviewMode) {
-                                    suite.reset();
-                                }
+                                suite.reset();
                             }}
                         >
                             Cancel
@@ -224,24 +223,25 @@ export const CreateBudgetLinesForm = ({
     );
 };
 
-CreateBudgetLinesForm.propTypes = {
-    agreementId: PropTypes.number,
+BudgetLinesForm.propTypes = {
+    agreementId: PropTypes.number.isRequired,
     selectedCan: PropTypes.object,
-    setSelectedCan: PropTypes.func,
+    setSelectedCan: PropTypes.func.isRequired,
     servicesComponentId: PropTypes.number,
-    setServicesComponentId: PropTypes.func,
-    enteredAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    setEnteredAmount: PropTypes.func,
+    setServicesComponentId: PropTypes.func.isRequired,
+    enteredAmount: PropTypes.number,
+    setEnteredAmount: PropTypes.func.isRequired,
     enteredComments: PropTypes.string,
-    setEnteredComments: PropTypes.func,
+    setEnteredComments: PropTypes.func.isRequired,
     needByDate: PropTypes.string,
-    setNeedByDate: PropTypes.func,
+    setNeedByDate: PropTypes.func.isRequired,
     handleEditBLI: PropTypes.func,
     handleAddBLI: PropTypes.func,
     handleResetForm: PropTypes.func,
     isEditing: PropTypes.bool,
     isReviewMode: PropTypes.bool,
-    isEditMode: PropTypes.bool
+    isEditMode: PropTypes.bool,
+    isBudgetLineNotDraft: PropTypes.bool
 };
 
-export default CreateBudgetLinesForm;
+export default BudgetLinesForm;

@@ -44,13 +44,10 @@ def test_get_users_by_id_without_auth(client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_users_by_id_with_auth(auth_client, loaded_db):
-    user = loaded_db.get(User, "4")
-    access_token = create_access_token(identity=user)
-
-    response = auth_client.get("/api/v1/users/4", headers={"Authorization": f"Bearer {str(access_token)}"})
+def test_get_users_by_id_with_auth(auth_client, loaded_db, test_admin_user):
+    response = auth_client.get(f"/api/v1/users/{test_admin_user.id}")
     assert response.status_code == 200
-    assert response.json["id"] == 4
+    assert response.json["id"] == test_admin_user.id
     assert response.json["status"] == UserStatus.ACTIVE.name
 
 

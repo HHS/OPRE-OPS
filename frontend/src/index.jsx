@@ -189,10 +189,12 @@ const router = createBrowserRouter(
                     path="/budget-lines"
                     element={<BudgetLineItemList />}
                 />
-                <Route
-                    path="/budget-lines/create"
-                    element={<CreateBudgetLines />}
-                />
+                {import.meta.env.DEV && (
+                    <Route
+                        path="/budget-lines/create"
+                        element={<CreateBudgetLines />}
+                    />
+                )}
                 <Route
                     path="/projects/create"
                     element={<CreateProject />}

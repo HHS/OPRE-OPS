@@ -1,4 +1,5 @@
 """Portfolio models."""
+
 from enum import Enum
 from typing import List
 
@@ -24,8 +25,8 @@ class Division(BaseModel):
     name: Mapped[str] = mapped_column(String(100), unique=True)
     abbreviation: Mapped[str] = mapped_column(String(10), unique=True)
 
-    division_director_id = Column(Integer, ForeignKey("user.id"))
-    deputy_division_director_id = Column(Integer, ForeignKey("user.id"))
+    division_director_id = Column(Integer, ForeignKey("ops_user.id"))
+    deputy_division_director_id = Column(Integer, ForeignKey("ops_user.id"))
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -64,7 +65,9 @@ class PortfolioTeamLeaders(BaseModel):
     portfolio_id: Mapped[int] = mapped_column(
         ForeignKey("portfolio.id"), primary_key=True
     )
-    team_lead_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    team_lead_id: Mapped[int] = mapped_column(
+        ForeignKey("ops_user.id"), primary_key=True
+    )
 
     @BaseModel.display_name.getter
     def display_name(self):

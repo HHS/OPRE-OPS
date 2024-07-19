@@ -27,7 +27,7 @@ ALLOWED_TABLES = [
     "portfolio",
     "funding_partner",
     "funding_source",
-    "users",
+    "ops_user",
     "roles",
     "user_role",
     "groups",
@@ -72,6 +72,8 @@ ALLOWED_TABLES = [
     "procurement_pre_solicitation",
     "procurement_solicitation",
     "procurement_award",
+    "can_fiscal_year_funding_details",
+    "can_appropriation_details",
 ]
 
 data = os.getenv("DATA")
@@ -154,17 +156,21 @@ def load_new_data(
                     )
                     session.execute(text(stmt))
 
+
+def after_user_load(conn: Connection) -> None:
     # set DD to Dave Director and Deputy DD to Admin Demo
     with Session(conn) as session:
+        print("Setting Division Director and Deputy Division Director...")
         stmt = (
             "update ops.division "
-            "  set division_director_id = (select id from ops.\"user\" where email = 'dave.director@email.com') "
+            "  set division_director_id = (select id from ops.ops_user where email = 'dave.director@email.com') "
             "  where division_director_id is null; "
             "update ops.division "
-            "  set deputy_division_director_id = (select id from ops.\"user\" where email = 'admin.demo@email.com') "
+            "  set deputy_division_director_id = (select id from ops.ops_user where email = 'admin.demo@email.com') "
             "  where deputy_division_director_id is null;"
         )
         session.execute(text(stmt))
+        session.commit()
 
 
 def insert_associated_data(data_with_associations, obj, session):
@@ -181,6 +187,8 @@ def import_data(engine: Engine, data: dict[str, Any]) -> None:
     with engine.connect() as conn:
         load_new_data(conn, data)
         conn.commit()
+        if "ops_user" in data:
+            after_user_load(conn)
 
 
 if __name__ == "__main__":

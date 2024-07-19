@@ -1,16 +1,17 @@
+import _ from "lodash";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import _ from "lodash";
 import App from "../../../App";
+import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
-import AgreementTabs from "./AgreementsTabs";
+import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
-import { useGetAgreementsQuery } from "../../../api/opsAPI";
+import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
-import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 
 /**
  * Page for the Agreements List.
@@ -32,6 +33,7 @@ export const AgreementsList = () => {
             obligated: true
         }
     });
+
     // TODO: Move logic to a custom hook './useAgreementsList.hooks.js'
     const {
         data: agreements,
@@ -41,7 +43,7 @@ export const AgreementsList = () => {
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
-    const forApprovalUrl = searchParams.get("filter") === "for-approval";
+    const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
     if (isLoadingAgreement) {
         return (
@@ -165,53 +167,60 @@ export const AgreementsList = () => {
             });
         });
         sortedAgreements = sortAgreements(myAgreements);
-    } else if (forApprovalUrl) {
-        const myAgreements = filteredAgreements.filter((agreement) => {
-            return agreement.team_members?.some((teamMember) => {
-                return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
-            });
-        });
-        const forApprovalAgreements = myAgreements.filter((agreement) => {
-            return agreement.budget_line_items?.some((bli) => bli.has_active_workflow);
-        });
-        sortedAgreements = sortAgreements(forApprovalAgreements);
     } else {
         // all-agreements
         sortedAgreements = sortAgreements(filteredAgreements);
     }
 
     let subtitle = "All Agreements";
-    if (myAgreementsUrl) subtitle = "My Agreements";
-    else if (forApprovalUrl) subtitle = "For Approval";
     let details = "This is a list of all agreements across OPRE.";
-    if (myAgreementsUrl) details = "This is a list of the agreements you are listed as a Team Member on.";
-    else if (forApprovalUrl)
+    if (myAgreementsUrl) {
+        subtitle = "My Agreements";
+        details = "This is a list of the agreements you are listed as a Team Member on.";
+    }
+    if (changeRequestUrl) {
+        subtitle = "For Review";
         details =
-            "This is a list of agreements in your Division that are awaiting your approval to change budget line status. Draft budget lines are not included in the Agreement Total.";
+            "This is a list of changes within your Division that require your review and approval. This list could include requests for budget changes, status changes or actions taking place during the procurement process.";
+    }
 
     return (
         <App breadCrumbName="Agreements">
-            <TablePageLayout
-                title="Agreements"
-                subtitle={subtitle}
-                details={details}
-                buttonText="Add Agreement"
-                buttonLink="/agreements/create"
-                TabsSection={<AgreementTabs />}
-                FilterTags={
-                    <AgreementsFilterTags
-                        filters={filters}
-                        setFilters={setFilters}
-                    />
-                }
-                FilterButton={
-                    <AgreementsFilterButton
-                        filters={filters}
-                        setFilters={setFilters}
-                    />
-                }
-                TableSection={<AgreementsTable agreements={sortedAgreements} />}
-            />
+            {!changeRequestUrl && (
+                <TablePageLayout
+                    title="Agreements"
+                    subtitle={subtitle}
+                    details={details}
+                    buttonText="Add Agreement"
+                    buttonLink="/agreements/create"
+                    TabsSection={<AgreementTabs />}
+                    FilterTags={
+                        <AgreementsFilterTags
+                            filters={filters}
+                            setFilters={setFilters}
+                        />
+                    }
+                    FilterButton={
+                        <AgreementsFilterButton
+                            filters={filters}
+                            setFilters={setFilters}
+                        />
+                    }
+                    TableSection={<AgreementsTable agreements={sortedAgreements} />}
+                />
+            )}
+            {changeRequestUrl && (
+                <TablePageLayout
+                    title="Agreements"
+                    subtitle={subtitle}
+                    details={details}
+                    buttonText="Add Agreement"
+                    buttonLink="/agreements/create"
+                    TabsSection={<AgreementTabs />}
+                >
+                    <ChangeRequests />
+                </TablePageLayout>
+            )}
         </App>
     );
 };

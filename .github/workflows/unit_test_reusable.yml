@@ -6,9 +6,9 @@ jobs:
     name: Backend API Unit Tests
     runs-on: ubuntu-latest
     env:
-      JWT_PRIVATE_KEY: "__blank__"
+      JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
       - uses: ./.github/actions/setup-python
       # Stand up the system stack, to have something to poke
       - name: Run backend unit tests
@@ -21,7 +21,7 @@ jobs:
     env:
       JWT_PRIVATE_KEY: "__blank__"
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
       - uses: ./.github/actions/setup-python
       - name: Run backend unit tests
         working-directory: ./backend/data_tools/
@@ -31,61 +31,9 @@ jobs:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
       - uses: ./.github/actions/setup-javascript
       # Stand up the system stack, to have something to poke
       - name: Run frontend unit tests
         working-directory: ./frontend
         run: bun run test
-
-  e2e:
-    name: End-to-End Testing
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
-
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
-      - uses: ./.github/actions/setup-javascript
-
-      # Stand up the system stack, to have something to poke
-      - name: Launch Stack
-        uses: ./.github/actions/run-full-stack
-        env:
-          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-
-      # Install Cypress globally
-      - name: Install Cypress globally
-        run: bun install -g cypress
-
-      # Run the Cypress E2E Tests
-      - name: E2E Test
-        working-directory: frontend
-        run: bun run cypress install && bun run test:e2e
-
-      # Upload Cypress screenshots as artifact if a test fails
-      - name: Upload screenshots if failure
-        if: failure() # This step will run only if the previous step fails
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
-        with:
-          path: frontend/cypress/screenshots # Update this path based on your project structure
-          name: cypress-screenshots
-
-      # Capture logs from all services
-      - name: Capture logs
-        shell: bash
-        if: always()
-        run: | # Capture logs from all services
-          docker compose -f docker-compose.yml logs --no-color > full-stack-logs.log
-
-      # Upload logs as artifact
-      - name: Upload logs as artifact
-        if: always() # Ensure this runs, even if E2E fails
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
-        with:
-          # Set the path to the log file
-          path: full-stack-logs.log
-          # Optionally, set a name for the artifact
-          name: full-stack-logs

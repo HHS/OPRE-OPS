@@ -4,16 +4,15 @@ import subprocess
 from collections.abc import Generator
 
 import pytest
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import Flask
 from flask.testing import FlaskClient
 from pytest_docker.plugin import Services
 from sqlalchemy import create_engine, delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 
-from models import OpsDBHistory, OpsEvent
+from models import CAN, BudgetLineItem, OpsDBHistory, OpsEvent, Project, User, Vendor
 from ops_api.ops import create_app
 from tests.auth_client import AuthClient, NoPermsAuthClient
 
@@ -21,25 +20,21 @@ from tests.auth_client import AuthClient, NoPermsAuthClient
 @pytest.fixture()
 def app(db_service) -> Generator[Flask, None, None]:
     """Make and return the flask app."""
-    app = create_app({"TESTING": True})
+    app = create_app()
     yield app
 
 
 @pytest.fixture()
 def client(app: Flask, loaded_db) -> FlaskClient:  # type: ignore [type-arg]
     """Get a test client for flask."""
+    app.testing = True
+    app.test_client_class = FlaskClient
     return app.test_client()
 
 
 @pytest.fixture()
 def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = AuthClient
     return app.test_client()
@@ -48,12 +43,6 @@ def auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
 @pytest.fixture()
 def no_perms_auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    app.config.update(JWT_PRIVATE_KEY=private_key, JWT_PUBLIC_KEY=public_key)
     app.testing = True
     app.test_client_class = NoPermsAuthClient
     return app.test_client()
@@ -113,7 +102,7 @@ def docker_compose_command() -> str:
 
 
 @pytest.fixture()
-def loaded_db(app: Flask, app_ctx: None):
+def loaded_db(app: Flask, app_ctx: None, auth_client: FlaskClient) -> Session:
     """Get SQLAlchemy Session."""
 
     session = app.db_session
@@ -123,10 +112,8 @@ def loaded_db(app: Flask, app_ctx: None):
     # cleanup
     session.rollback()
 
-    stmt = delete(OpsDBHistory)
-    session.execute(stmt)
-    stmt = delete(OpsEvent)
-    session.execute(stmt)
+    session.execute(delete(OpsDBHistory))
+    session.execute(delete(OpsEvent))
 
     session.commit()
     session.close()
@@ -137,3 +124,45 @@ def app_ctx(app: Flask) -> Generator[None, None, None]:
     """Activate the ApplicationContext for the flask app."""
     with app.app_context():
         yield
+
+
+@pytest.fixture()
+def test_user(loaded_db) -> User | None:
+    """Get a test user.
+
+    N.B. This user has an ADMIN role whose status is INACTIVE.
+    """
+    return loaded_db.get(User, 500)
+
+
+@pytest.fixture()
+def test_admin_user(loaded_db) -> User | None:
+    """Get a test admin user - also the user associated with the auth_client.
+
+    N.B. This user has an ADMIN role whose status is ACTIVE.
+    """
+    return loaded_db.get(User, 503)
+
+
+@pytest.fixture()
+def test_vendor(loaded_db) -> Vendor | None:
+    """Get a test Vendor."""
+    return loaded_db.get(Vendor, 100)
+
+
+@pytest.fixture()
+def test_project(loaded_db) -> Project | None:
+    """Get a test Project."""
+    return loaded_db.get(Project, 1000)
+
+
+@pytest.fixture()
+def test_can(loaded_db) -> CAN | None:
+    """Get a test CAN."""
+    return loaded_db.get(CAN, 500)
+
+
+@pytest.fixture()
+def test_bli(loaded_db) -> BudgetLineItem | None:
+    """Get a test BudgetLineItem."""
+    return loaded_db.get(BudgetLineItem, 15000)

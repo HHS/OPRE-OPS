@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
 import BudgetLinesTable from "../BudgetLinesTable";
-import CreateBudgetLinesForm from "../BudgetLinesForm";
+import BudgetLinesForm from "../BudgetLinesForm";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import ServicesComponents from "../../ServicesComponents";
@@ -22,12 +22,13 @@ import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHea
  * @param {Object} props - The component props.
  * @param {Function} [props.goToNext] - A function to navigate to the next step in the flow. - optional
  * @param {Function} [props.goBack] - A function to navigate to the previous step in the flow. - optional
- * @param {Array<String>} props.wizardSteps - An array of objects representing the steps in the flow.
+ * @param {Object} [props.formData] - The form data.
+ * @param {string[]} props.wizardSteps - An array of objects representing the steps in the flow.
  * @param {number} props.currentStep - The index of the current step in the flow.
  * @param {Object} props.selectedResearchProject - The selected research project.
  * @param {Object} props.selectedAgreement - The selected agreement.
  * @param {Object} props.selectedProcurementShop - The selected procurement shop.
- * @param {Array<any>} props.budgetLines - The selected Agreements budget lines.
+ * @param {Object[]} props.budgetLines - The selected Agreements budget lines.
  * @param {string} props.continueBtnText - The text to display on the "Continue" button.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
@@ -35,12 +36,14 @@ import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHea
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
  * @param {"agreement" | "budgetLines" | "none"} props.workflow - The workflow type.
- * @param {Object} [props.cardData] - The card data. - optional
+ * @param {boolean} props.includeDrafts - Whether to include drafts budget lines.
+ * @param {Function} props.setIncludeDrafts - A function to set the include drafts state.
  * @returns {JSX.Element} - The rendered component.
  */
 export const CreateBLIsAndSCs = ({
     goToNext,
     goBack,
+    formData,
     wizardSteps,
     currentStep,
     selectedResearchProject = {},
@@ -54,7 +57,8 @@ export const CreateBLIsAndSCs = ({
     setIsEditMode = () => {},
     isReviewMode,
     workflow,
-    cardData = {}
+    includeDrafts,
+    setIncludeDrafts
 }) => {
     const {
         budgetLinePageErrorsExist,
@@ -85,7 +89,11 @@ export const CreateBLIsAndSCs = ({
         subTotalForCards,
         totalsForCards,
         handleCancel,
-        handleGoBack
+        handleGoBack,
+        handleSave,
+        budgetLinesForCards,
+        tempBudgetLines,
+        isBudgetLineNotDraft
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -96,7 +104,9 @@ export const CreateBLIsAndSCs = ({
         selectedAgreement,
         selectedProcurementShop,
         setIsEditMode,
-        workflow
+        workflow,
+        formData,
+        includeDrafts
     );
 
     return (
@@ -127,6 +137,7 @@ export const CreateBLIsAndSCs = ({
             }
 
             {workflow !== "none" && (
+                // this includes the agreement workflow
                 <>
                     <StepIndicator
                         steps={wizardSteps}
@@ -148,11 +159,11 @@ export const CreateBLIsAndSCs = ({
                         />
                     </div>
                     <div className="display-flex flex-justify margin-y-2">
-                        <BLIsByFYSummaryCard budgetLineItems={budgetLines} />
+                        <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                         <AgreementTotalCard
-                            total={totalsForCards}
-                            subtotal={subTotalForCards}
-                            fees={feesForCards}
+                            total={totalsForCards(subTotalForCards(tempBudgetLines), tempBudgetLines)}
+                            subtotal={subTotalForCards(tempBudgetLines)}
+                            fees={feesForCards(tempBudgetLines)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />
@@ -161,6 +172,7 @@ export const CreateBLIsAndSCs = ({
             )}
 
             {workflow === "none" && (
+                // this is the Agreement details page
                 <>
                     <ServicesComponents
                         serviceRequirementType={selectedAgreement.service_requirement_type}
@@ -169,15 +181,16 @@ export const CreateBLIsAndSCs = ({
                     />
                     <AgreementBudgetLinesHeader
                         heading="Edit Budget Lines"
-                        includeDrafts={cardData.includeDrafts}
-                        setIncludeDrafts={cardData.setIncludeDrafts}
+                        includeDrafts={includeDrafts}
+                        setIncludeDrafts={setIncludeDrafts}
+                        isEditable={false}
                     />
                     <div className="display-flex flex-justify margin-y-2">
-                        <BLIsByFYSummaryCard budgetLineItems={cardData.filteredBlis} />
+                        <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                         <AgreementTotalCard
-                            total={cardData.agreementTotal}
-                            subtotal={cardData.agreementSubtotal}
-                            fees={cardData.agreementFees}
+                            total={totalsForCards(subTotalForCards(budgetLinesForCards), budgetLinesForCards)}
+                            subtotal={subTotalForCards(budgetLinesForCards)}
+                            fees={feesForCards(budgetLinesForCards)}
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />
@@ -195,7 +208,8 @@ export const CreateBLIsAndSCs = ({
                     />
                 </>
             )}
-            <CreateBudgetLinesForm
+
+            <BudgetLinesForm
                 selectedCan={selectedCan}
                 servicesComponentId={servicesComponentId}
                 enteredAmount={enteredAmount}
@@ -213,6 +227,7 @@ export const CreateBLIsAndSCs = ({
                 isReviewMode={isReviewMode}
                 isEditMode={isEditMode}
                 agreementId={selectedAgreement.id}
+                isBudgetLineNotDraft={isBudgetLineNotDraft}
             />
             {budgetLinePageErrorsExist && (
                 <ul
@@ -272,7 +287,7 @@ export const CreateBLIsAndSCs = ({
                     <button
                         className="usa-button"
                         data-cy="continue-btn"
-                        onClick={continueOverRide ? continueOverRide : goToNext}
+                        onClick={handleSave}
                         disabled={isReviewMode && !res.isValid()}
                     >
                         {isReviewMode ? "Review" : continueBtnText}
@@ -286,6 +301,7 @@ export const CreateBLIsAndSCs = ({
 CreateBLIsAndSCs.propTypes = {
     goToNext: PropTypes.func,
     goBack: PropTypes.func,
+    formData: PropTypes.object,
     wizardSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
     currentStep: PropTypes.number.isRequired,
     selectedResearchProject: PropTypes.object,
@@ -293,13 +309,14 @@ CreateBLIsAndSCs.propTypes = {
     selectedProcurementShop: PropTypes.object,
     budgetLines: PropTypes.array,
     continueBtnText: PropTypes.string.isRequired,
-    isEditMode: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
+    isEditMode: PropTypes.bool.isRequired,
     canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
+    setIsEditMode: PropTypes.func,
+    isReviewMode: PropTypes.bool.isRequired,
     continueOverRide: PropTypes.func,
     workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
-    cardData: PropTypes.object
+    includeDrafts: PropTypes.bool.isRequired,
+    setIncludeDrafts: PropTypes.func.isRequired
 };
 
 export default CreateBLIsAndSCs;

@@ -4,20 +4,24 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { setIsActive, clearState } from "./alertSlice";
+
 /**
  * A component that displays an alert and optionally navigates after a delay.
  * @component
  * @param {Object} props - The component props.
- * @param {React.ReactNode} props.children - The alert content.
- * @returns {JSX.Element} The JSX element to render.
+ * @param {React.ReactNode} [props.children] - The alert content.
+ * @returns {JSX.Element | null} The JSX element to render.
  */
-export const Alert = ({ children }) => {
+const Alert = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    /**
+     * @type {import('../../../hooks/use-alert.hooks').AlertData}
+     */
     const { heading, message, type, redirectUrl } = useSelector((state) => state.alert);
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
-    let waitTime = redirectUrl ? 3000 : 2000;
+    let waitTime = redirectUrl ? 6000 : 2000;
 
     // Handle navigation without blocking user interactions
     useEffect(() => {
@@ -41,7 +45,6 @@ export const Alert = ({ children }) => {
         return () => clearTimeout(timer);
     }, [dispatch, waitTime]);
 
-    // Alert type CSS class mapping
     const typeClass =
         {
             success: "usa-alert--success",
@@ -72,7 +75,11 @@ export const Alert = ({ children }) => {
                 <div className="usa-alert__body display-flex flex-justify">
                     <div>
                         <h1 className="usa-alert__heading">{heading}</h1>
-                        <p className="usa-alert__text">{message}</p>
+                        <p
+                            className="usa-alert__text"
+                            style={{ whiteSpace: "pre-wrap" }}
+                            dangerouslySetInnerHTML={{ __html: message }}
+                        />
                         {children}
                     </div>
                     <FontAwesomeIcon

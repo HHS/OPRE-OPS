@@ -67,8 +67,19 @@ export default defineConfig(({ mode }) => {
         test: {
             globals: true,
             environment: "jsdom",
-            setupFiles: "./src/setupTests.js",
-            coverage: {}
+            setupFiles: "./src/tests/setupTests.js",
+            coverage: {
+                provider: "istanbul",
+                reporters: ["default", "html"],
+                exclude: [
+                    "**/uswds/**",
+                    "**/node_modules/**",
+                    "**/dist/**",
+                    "**/cypress/**",
+                    "**/.{idea,git,cache,output,temp}/**",
+                    "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*"
+                ]
+            }
         },
         define: {
             "process.env": {}

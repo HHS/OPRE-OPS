@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 it("loads", () => {
-    cy.visit("/cans/3/");
+    cy.visit("/cans/502/");
     cy.get("h1").should("contain", "G99PHS9");
 });
 
@@ -27,6 +27,6 @@ it.skip("*** SKIPPING *** get a negative value - skip for now because we are wor
 });
 
 const clickOnFiscalYearOption = (year) => {
-    cy.visit("/cans/3/");
+    cy.visit("/cans/502/");
     cy.get("[class*='fiscalYearSelector']").select(year);
 };

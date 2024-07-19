@@ -1,5 +1,5 @@
 import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Object representing a procurement shop.
@@ -27,6 +27,8 @@ export const ProcurementShopSelect = ({
     defaultString = "-Select Procurement Shop-",
     defaultToGCS = true
 }) => {
+    const [hasSelectedDefault, setHasSelectedDefault] = useState(defaultToGCS);
+
     const {
         data: procurementShops,
         error: errorProcurementShops,
@@ -55,19 +57,22 @@ export const ProcurementShopSelect = ({
             fee: procurementShops[procurementShopId - 1].fee
         };
         onChangeSelectedProcurementShop(procurementShop);
+
+        setHasSelectedDefault(procurementShop.id === 2);
     };
 
     return (
-        <fieldset className="usa-fieldset">
+        <fieldset className={`usa-fieldset ${hasSelectedDefault ? "" : "usa-form-group--error"}`}>
             <label
-                className={`usa-label margin-top-0 ${legendClassname}`}
+                className={`usa-label margin-top-0 ${legendClassname} ${hasSelectedDefault ? "" : "usa-label--error"}`}
                 htmlFor="procurement-shop-select"
             >
                 Procurement Shop
             </label>
+            {!hasSelectedDefault && <span className="usa-error-message">GCS is the only available type for now</span>}
             <div className="display-flex flex-align-center">
                 <select
-                    className="usa-select margin-top-0"
+                    className={`usa-select margin-top-1 ${hasSelectedDefault ? "" : "usa-input--error"}`}
                     name="procurement-shop-select"
                     id="procurement-shop-select"
                     onChange={handleChange}

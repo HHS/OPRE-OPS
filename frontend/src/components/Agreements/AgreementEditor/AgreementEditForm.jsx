@@ -45,7 +45,7 @@ import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
  * @param {boolean} [props.isReviewMode] - Whether the form is in review mode. - optional
  * @param {boolean} props.isEditMode - Whether the edit mode is on (in the Agreement details page) - optional.
  * @param {function} props.setIsEditMode - The function to set the edit mode (in the Agreement details page) - optional.
- * @param {number} props.selectedAgreementId - The ID of the selected agreement. - optional
+ * @param {number} [props.selectedAgreementId] - The ID of the selected agreement. - optional
  * @param {string} [props.cancelHeading] - The heading for the cancel modal. - optional
  * @returns {JSX.Element} - The rendered component.
  */
@@ -60,7 +60,10 @@ export const AgreementEditForm = ({
     cancelHeading
 }) => {
     // TODO: Add custom hook for logic below (./AgreementEditForm.hooks.js)
-    const isWizardMode = location.pathname === "/agreements/create" || location.pathname.startsWith("/agreements/edit");
+    const isCreatingAgreement = location.pathname === "/agreements/create";
+    const isEditingAgreement = location.pathname.startsWith("/agreements/edit");
+    const isWizardMode = isCreatingAgreement || isEditingAgreement;
+
     // SETTERS
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
@@ -135,7 +138,11 @@ export const AgreementEditForm = ({
     let res = suite.get();
 
     const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
-    const shouldDisableBtn = !agreementTitle || !agreementType || res.hasErrors();
+    const shouldDisableBtn =
+        !agreementTitle ||
+        !agreementType ||
+        res.hasErrors() ||
+        (isCreatingAgreement && selectedProcurementShop.id !== 2);
 
     const cn = classnames(suite.get(), {
         invalid: "usa-form-group--error",
@@ -241,7 +248,7 @@ export const AgreementEditForm = ({
         await saveAgreement();
         setHasAgreementChanged(false);
         if (isEditMode && setIsEditMode) setIsEditMode(false);
-        await goToNext();
+        await goToNext({ agreement });
     };
 
     const handleDraft = async () => {

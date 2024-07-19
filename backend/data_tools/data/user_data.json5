@@ -94,22 +94,62 @@
 
         "GET_CHANGE_REQUEST_REVIEW",
         "PATCH_CHANGE_REQUEST_REVIEW",
-        "POST_CHANGE_REQUEST_REVIEW"
+        "POST_CHANGE_REQUEST_REVIEW",
+
+        "GET_UPLOAD_DOCUMENT",
+        "POST_UPLOAD_DOCUMENT"
       ],
     },
     { // 2 User
       name: "user",
       permissions: [
         "GET_AGREEMENT",
+        "PUT_AGREEMENT",
+        "PATCH_AGREEMENT",
+        "POST_AGREEMENT",
+
         "GET_BUDGET_LINE_ITEM",
+        "PUT_BUDGET_LINE_ITEM",
+        "PATCH_BUDGET_LINE_ITEM",
+        "POST_BUDGET_LINE_ITEM",
+
         "GET_SERVICES_COMPONENT",
+        "PUT_SERVICES_COMPONENT",
+        "PATCH_SERVICES_COMPONENT",
+        "POST_SERVICES_COMPONENT",
+
+        "GET_BLI_PACKAGE",
+        "PUT_BLI_PACKAGE",
+        "PATCH_BLI_PACKAGE",
+        "POST_BLI_PACKAGE",
+
         "GET_CAN",
+
         "GET_DIVISION",
+
         "GET_NOTIFICATION",
+        "PUT_NOTIFICATION",
+        "PATCH_NOTIFICATION",
+
         "GET_PORTFOLIO",
+
         "GET_RESEARCH_PROJECT",
+        "POST_RESEARCH_PROJECT",
+
         "GET_USER",
+        "GET_USERS",
+
         "GET_HISTORY",
+
+        "GET_WORKFLOW",
+
+        "GET_CHANGE_REQUEST",
+        "PATCH_CHANGE_REQUEST",
+        "POST_CHANGE_REQUEST",
+
+        "GET_CHANGE_REQUEST_REVIEW",
+
+        "GET_UPLOAD_DOCUMENT"
       ],
     },
     { // 3 Unassigned (new user)
@@ -173,59 +213,12 @@
 
         "GET_CHANGE_REQUEST_REVIEW",
         "PATCH_CHANGE_REQUEST_REVIEW",
-        "POST_CHANGE_REQUEST_REVIEW"
+        "POST_CHANGE_REQUEST_REVIEW",
+
+        "GET_UPLOAD_DOCUMENT",
+        "POST_UPLOAD_DOCUMENT"
       ]
-    },
-    { // 5 COR User
-      name: "cor-user",
-      permissions: [
-        "GET_AGREEMENT",
-        "PUT_AGREEMENT",
-        "PATCH_AGREEMENT",
-        "POST_AGREEMENT",
-
-        "GET_BUDGET_LINE_ITEM",
-        "PUT_BUDGET_LINE_ITEM",
-        "PATCH_BUDGET_LINE_ITEM",
-        "POST_BUDGET_LINE_ITEM",
-
-        "GET_SERVICES_COMPONENT",
-        "PUT_SERVICES_COMPONENT",
-        "PATCH_SERVICES_COMPONENT",
-        "POST_SERVICES_COMPONENT",
-
-        "GET_BLI_PACKAGE",
-        "PUT_BLI_PACKAGE",
-        "PATCH_BLI_PACKAGE",
-        "POST_BLI_PACKAGE",
-
-        "GET_CAN",
-
-        "GET_DIVISION",
-
-        "GET_NOTIFICATION",
-        "PUT_NOTIFICATION",
-        "PATCH_NOTIFICATION",
-
-        "GET_PORTFOLIO",
-
-        "GET_RESEARCH_PROJECT",
-        "POST_RESEARCH_PROJECT",
-
-        "GET_USER",
-
-        "GET_USERS",
-        "GET_HISTORY",
-
-        "GET_WORKFLOW",
-
-        "GET_CHANGE_REQUEST",
-        "PATCH_CHANGE_REQUEST",
-        "POST_CHANGE_REQUEST",
-
-        "GET_CHANGE_REQUEST_REVIEW",
-      ]
-    },
+    }
   ],
   group: [
     { // 1
@@ -244,8 +237,8 @@
       name: "Users",
     }
   ],
-  user: [
-    { // 1
+  ops_user: [
+    { // 500
       first_name: "Chris",
       last_name: "Fortunato",
       division: 1,
@@ -254,7 +247,7 @@
       roles: [{"tablename":  "role", "id": 1}],
       status: "INACTIVE",
     },
-    { // 2
+    { // 501
       first_name: "Amy",
       last_name: "Madigan",
       division: 1,
@@ -263,7 +256,7 @@
       roles: [{"tablename":  "role", "id": 1}],
       status: "INACTIVE"
     },
-    { // 3
+    { // 502
       first_name: "Ivelisse",
       last_name: "Martinez-Beck",
       division: 1,
@@ -272,7 +265,7 @@
       roles: [{"tablename":  "role", "id": 2}],
       status: "INACTIVE"
     },
-    { // 4 - THIS IS USED IN THE TESTS (AUTH_CLIENT)
+    { // 503 - THIS IS USED IN THE TESTS (AUTH_CLIENT)
       first_name: "Amelia",
       last_name: "Popham",
       division: 2,
@@ -282,7 +275,7 @@
       groups: [{"tablename":  "group", "id": 1}],
       status: "ACTIVE"
     },
-    { // 5
+    { // 504
       first_name: "Tia",
       last_name: "Brown",
       division: 3,
@@ -291,7 +284,7 @@
       roles: [{"tablename":  "role", "id": 1}],
       status: "INACTIVE"
     },
-    { // 6
+    { // 505
       first_name: "Katie",
       last_name: "Pahigiannis",
       division: 3,
@@ -300,7 +293,7 @@
       roles: [{"tablename":  "role", "id": 1}],
       status: "INACTIVE"
     },
-    { // 7
+    { // 506
       first_name: "Nancy",
       last_name: "Margie",
       division: 3,
@@ -308,7 +301,7 @@
       oidc_id: "00000000-0000-1111-a111-000000000007",
       status: "INACTIVE"
     },
-    { // 8
+    { // 507
       first_name: "Nicole",
       last_name: "Deterding",
       division: 4,
@@ -316,7 +309,7 @@
       oidc_id: "00000000-0000-1111-a111-000000000008",
       status: "INACTIVE"
     },
-    { // 9
+    { // 508
       first_name: "Valeria",
       last_name: "Butler",
       division: 4,
@@ -324,7 +317,7 @@
       oidc_id: "00000000-0000-1111-a111-000000000009",
       status: "INACTIVE"
     },
-    { // 10
+    { // 509
       first_name: "Beth Ann",
       last_name: "Barnes",
       division: 4,
@@ -332,7 +325,7 @@
       oidc_id: "00000000-0000-1111-a111-000000000010",
       status: "INACTIVE"
     },
-    { // 11
+    { // 510
       first_name: "Laura",
       last_name: "Nerenberg",
       division: 4,
@@ -340,7 +333,7 @@
       oidc_id: "00000000-0000-1111-a111-000000000011",
       status: "INACTIVE"
     },
-    { // 12
+    { // 511
       first_name: "Niki",
       last_name: "Denmark",
       division: 4,
@@ -349,7 +342,7 @@
       roles: [{"tablename":  "role", "id": 1}],
       status: "INACTIVE"
     },
-    { // 13
+    { // 512
       first_name: "Tim",
       last_name: "Donaworth",
       division: 3,
@@ -360,7 +353,7 @@
       groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
-    { // 14
+    { // 513
       first_name: "John",
       last_name: "DeAngelis",
       division: 3,
@@ -370,7 +363,7 @@
       groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
-    { // 15
+    { // 514
       first_name: "Frank",
       last_name: "Pigeon",
       division: 3,
@@ -380,7 +373,7 @@
       groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
-    { // 16
+    { // 515
       first_name: "Cliff",
       last_name: "Hill",
       division: 3,
@@ -390,7 +383,7 @@
       groups: [{"tablename":  "group", "id": 2}],
       status: "INACTIVE"
     },
-    { // 17
+    { // 516
       first_name: "Steve",
       last_name: "Tekell",
       division: 3,
@@ -400,7 +393,7 @@
       groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
-    { // 18
+    { // 517
       first_name: "Jonathan",
       last_name: "Nalley",
       division: 3,
@@ -410,7 +403,7 @@
       groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
-    { // 19
+    { // 518
       first_name: "Andressa",
       last_name: "Silva",
       division: 3,
@@ -420,7 +413,7 @@
       groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
-    { // 20
+    { // 519
       first_name: "Kim",
       last_name: "Schulke",
       division: 3,
@@ -430,7 +423,7 @@
       groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
-    { // 21 User is used in E2E tests
+    { // 520 User is used in E2E tests
       first_name: "Admin",
       last_name: "Demo",
       division: 3,
@@ -439,7 +432,7 @@
       roles: [{"tablename":  "role", "id": 1}],
       status: "ACTIVE"
     },
-    { // 22
+    { // 521
       first_name: "User",
       last_name: "Demo",
       division: 3,
@@ -448,7 +441,7 @@
       roles: [{"tablename":  "role", "id": 2}],
       status: "ACTIVE"
     },
-    { // 23
+    { // 522
       first_name: "Dave",
       last_name: "Director",
       division: 1,
@@ -458,170 +451,160 @@
       groups: [{"tablename":  "group", "id": 3}],
       status: "ACTIVE"
     },
-    { // 24
-      first_name: "COR",
-      last_name: "User",
-      division: 1,
-      email: "cor.user@email.com",
-      oidc_id: "00000000-0000-1111-a111-000000000021",
-      roles: [{"tablename":  "role", "id": 5}],
-      groups: [{"tablename":  "group", "id": 4}],
-      status: "ACTIVE"
-    },
   ],
   notification: [
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 1,
+      recipient_id: 500,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 2,
+      recipient_id: 501,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 3,
+      recipient_id: 502,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 4,
+      recipient_id: 503,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 5,
+      recipient_id: 504,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 6,
+      recipient_id: 505,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 7,
+      recipient_id: 506,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 8,
+      recipient_id: 507,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 9,
+      recipient_id: 508,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 10,
+      recipient_id: 509,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 11,
+      recipient_id: 510,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 12,
+      recipient_id: 511,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 13,
+      recipient_id: 512,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 14,
+      recipient_id: 513,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 15,
+      recipient_id: 514,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 16,
+      recipient_id: 515,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 17,
+      recipient_id: 516,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 18,
+      recipient_id: 517,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 19,
+      recipient_id: 518,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 20,
+      recipient_id: 519,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
-      recipient_id: 21,
+      recipient_id: 520,
       expires: "2031-12-31"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: true,
-      recipient_id: 22,
+      recipient_id: 521,
       expires: "2031-12-31"
     }
   ],

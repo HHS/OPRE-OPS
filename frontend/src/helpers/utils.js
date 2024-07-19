@@ -68,6 +68,14 @@ export const draftBudgetLineStatuses = ["DRAFT"];
  * @property {Object.<string, string>} agreementReason - Display text for agreement reasons.
  * @property {Object.<string, string>} budgetLineStatus - Display text for budget line types.
  * @property {Object.<string, string>} validation - Display text for validation errors.
+ * @property {Object.<string, string>} classNameLabels - Display text for class names.
+ * @property {Object.<string, string>} baseClassNameLabels - Display text for base class names.
+ * @property {Object.<string, string>} agreementPropertyLabels - Display text for agreement property names.
+ * @property {Object.<string, string>} budgetLineItemPropertyLabels - Display text for budget line item property names.
+ * @property {Object.<string, string>} contractType - Display text for contract types.
+ * @property {Object.<string, string>} serviceRequirementType - Display text for service requirement types.
+ * @property {Object.<string, string>} changeToTypes - Display text for change to types.
+ *
  */
 
 /**
@@ -143,7 +151,8 @@ export const codesToDisplayText = {
         date_needed: "Need By Date",
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
-        status: "Status"
+        status: "Status",
+        services_component: "Services Component"
     },
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
@@ -156,12 +165,18 @@ export const codesToDisplayText = {
     serviceRequirementType: {
         SEVERABLE: "Severable",
         NON_SEVERABLE: "Non-Severable"
+    },
+    changeToTypes: {
+        amount: "Amount",
+        can_id: "CAN",
+        date_needed: "Date needed",
+        status: "Status"
     }
 };
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
@@ -261,7 +276,12 @@ export const renderField = (className, fieldName, value) => {
                 case "date_needed":
                     return formatDateNeeded(value);
                 case "amount":
-                    return "$" + value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    return new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(value);
                 case "agreement_reason":
                     return convertCodeForDisplay("agreementReason", value);
                 case "agreement_type":
@@ -321,3 +341,69 @@ export const formatDateForScreen = (date) => {
     }
     return null;
 };
+
+/**
+ * This function takes a string and returns a slug case version of the string.
+ * @param {string} str - The string to convert to slug case.
+ * @returns {string} The slug case version of the string.
+ */
+export function toSlugCase(str) {
+    if (!str) return "";
+    if (typeof str !== "string") {
+        console.warn("toSlugCase: str must be a string");
+        return "";
+    }
+    return str.toLowerCase().replace(/\s/g, "-");
+}
+
+/**
+ * This function takes a slug and returns a title case version of the string.
+ * @param {string} slug - The slug to convert to title case.
+ * @returns {string} The title case version of the slug.
+ 
+ */
+export function toTitleCaseFromSlug(slug) {
+    if (!slug) return "";
+    if (typeof slug !== "string") {
+        console.warn("toSlugCase: str must be a string");
+        return "";
+    }
+    return slug
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+}
+
+/**
+ * This function takes a slug and returns a lower case version of the string.
+ * @param {string} slug - The slug to convert to lower case.
+ * @returns {string} The lower case version of the slug.
+ */
+export function toLowerCaseFromSlug(slug) {
+    if (!slug) return "";
+    if (typeof slug !== "string") {
+        console.warn("toSlugCase: str must be a string");
+        return "";
+    }
+    return slug
+        .split("-")
+        .map((word) => word.charAt(0).toLowerCase() + word.slice(1))
+        .join(" ");
+}
+
+/**
+ * This function takes a string and returns a title case version of the string.
+ * @param {string} string - The string to convert to title case.
+ * @returns {string} The title case version of the string.
+ */
+export function fromUpperCaseToTitleCase(string) {
+    if (!string) return "";
+    if (typeof string !== "string") {
+        console.warn("fromUpperCaseToTitleCase: string must be a string");
+        return "";
+    }
+    return string
+        .split(/[-\s]/) // Split by hyphens and spaces
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}

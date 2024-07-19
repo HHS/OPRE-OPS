@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from flask import Response, current_app, request
 from marshmallow import fields
-from typing_extensions import override
 
 from models import ContractType
 from models.cans import ContractAgreement
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.agreements import AgreementData
 from ops_api.ops.schemas.team_members import TeamMembers
 from ops_api.ops.utils.response import make_response_with_headers
@@ -29,9 +28,7 @@ class ContractItemAPI(BaseItemAPI):
     def __init__(self, model: ContractAgreement = ContractAgreement):
         super().__init__(model)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self, id: int) -> Response:
         response = self._get_item_with_try(id)
         return response
@@ -43,9 +40,7 @@ class ContractListAPI(BaseListAPI):
         self._response_schema = ContractAgreementResponse()
         self._response_schema_collection = ContractAgreementResponse(many=True)
 
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         stmt = self._get_query(self.model, **request.args)
 

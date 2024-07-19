@@ -5,7 +5,7 @@ from flask import current_app
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_health(auth_client):
+def test_get_health(client):
     """
     test /api/v1/health/ for several scenarios
     Currently, this could work without docker/db, but it's in the session
@@ -23,7 +23,7 @@ def test_get_health(auth_client):
         mock_auth_get.return_value = mock_auth_resp
 
         # test with all checks are good
-        response = auth_client.get("/api/v1/health/")
+        response = client.get("/api/v1/health/")
         assert response.status_code == 200
         resp_json = response.json
         assert "status" in resp_json
@@ -37,7 +37,7 @@ def test_get_health(auth_client):
 
         # test with failure from db execution
         mock_execute.side_effect = Exception("Fake Error for session.execute")
-        response = auth_client.get("/api/v1/health/")
+        response = client.get("/api/v1/health/")
         resp_json = response.json
         db_conn_is_ok = resp_json.get("checks", {}).get("database_connection", {}).get("db_conn_is_ok", None)
         assert db_conn_is_ok is False
@@ -48,7 +48,7 @@ def test_get_health(auth_client):
         # test with failure from auth services check (and db OK)
         mock_auth_get.side_effect = Exception("Fake Error for auth GET")
         mock_execute.side_effect = None
-        response = auth_client.get("/api/v1/health/")
+        response = client.get("/api/v1/health/")
         resp_json = response.json
         assert 2 == resp_json.get("checks", {}).get("auth_services", {}).get("alarm_level", None)
         assert 0 == resp_json.get("checks", {}).get("database_connection", {}).get("alarm_level", None)
@@ -60,7 +60,7 @@ def test_get_health(auth_client):
         # also trip the pool stats exception (for coverage)
         with patch.object(current_app.engine.pool, "size") as mock_pool_size:
             mock_pool_size.side_effect = Exception("Fake Error for pool stats")
-            response = auth_client.get("/api/v1/health/")
+            response = client.get("/api/v1/health/")
             resp_json = response.json
             assert 2 == resp_json.get("checks", {}).get("auth_services", {}).get("alarm_level", None)
             assert 2 == resp_json.get("checks", {}).get("database_connection", {}).get("alarm_level", None)
@@ -73,7 +73,7 @@ def test_get_health(auth_client):
         mock_auth_get.side_effect = None
         mock_auth_resp.status_code = 418
 
-        response = auth_client.get("/api/v1/health/")
+        response = client.get("/api/v1/health/")
         resp_json = response.json
         assert 0 == resp_json.get("checks", {}).get("database_connection", {}).get("alarm_level", None)
         assert 1 == resp_json.get("checks", {}).get("auth_services", {}).get("alarm_level", None)

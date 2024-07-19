@@ -7,7 +7,6 @@ from flask import Response
 from flask.views import MethodView
 from marshmallow import fields
 from marshmallow_enum import EnumField
-from typing_extensions import override
 
 from models.base import BaseModel
 from models.workflows import (
@@ -19,7 +18,7 @@ from models.workflows import (
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, handle_api_error
+from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.resources.workflow_step_instance import WorkflowStepInstanceResponse
 
 ENDPOINT_STRING = "/workflow-instance"
@@ -45,36 +44,28 @@ class WorkflowInstanceResponse:
 
 # Workflows Metadata Endpoings
 class WorkflowTriggerTypeListAPI(MethodView):
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowTriggerType]
         return reasons
 
 
 class WorkflowActionListAPI(MethodView):
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowAction]
         return reasons
 
 
 class WorkflowStatusListAPI(MethodView):
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowStepStatus]
         return reasons
 
 
 class WorkflowStepDependencyListAPI(MethodView):
-    @override
     @is_authorized(PermissionType.GET, Permission.AGREEMENT)
-    @handle_api_error
     def get(self) -> Response:
         reasons = [item.name for item in WorkflowStepDependency]
         return reasons
@@ -87,9 +78,7 @@ class WorkflowInstanceItemAPI(BaseItemAPI):
         # self._response_schema = desert.schema(WorkflowInstanceResponse)
         self._response_schema = mmdc.class_schema(WorkflowInstanceResponse)()
 
-    @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
     def get(self, id: int) -> Response:
         return self._get_item_with_try(id)
 
@@ -101,8 +90,6 @@ class WorkflowInstanceListAPI(BaseListAPI):
         # self._response_schema = desert.schema(WorkflowInstanceResponse)
         self._response_schema = mmdc.class_schema(WorkflowInstanceResponse)()
 
-    @override
     @is_authorized(PermissionType.GET, Permission.WORKFLOW)
-    @handle_api_error
     def get(self) -> Response:
         return super().get()

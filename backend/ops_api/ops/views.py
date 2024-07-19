@@ -74,10 +74,8 @@ from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, Rese
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.services_component import ServicesComponentItemAPI, ServicesComponentListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
-from ops_api.ops.resources.workflow_approve import WorkflowApprovalListApi
 from ops_api.ops.resources.workflow_instance import WorkflowInstanceItemAPI, WorkflowInstanceListAPI
 from ops_api.ops.resources.workflow_step_template import WorkflowStepTemplateItemAPI, WorkflowStepTemplateListAPI
-from ops_api.ops.resources.workflow_submit import WorkflowSubmisionListApi
 from ops_api.ops.resources.workflow_template import WorkflowTemplateItemAPI, WorkflowTemplateListAPI
 from ops_api.ops.utils.version import VersionAPI
 
@@ -212,12 +210,6 @@ WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC = WorkflowStepTemplateItemAPI.as_view(
 WORKFLOW_STEP_TEMPLATE_LIST_API_VIEW_FUNC = WorkflowStepTemplateListAPI.as_view(
     "workflow-step-template-group", WorkflowStepTemplate
 )
-
-# Workflow Submission ENDPOINTS
-WORKFLOW_SUBMISSION_LIST_API_VIEW_FUNC = WorkflowSubmisionListApi.as_view("workflow-submission-list", BaseModel)
-
-# Workflow Approval ENDPOINTS
-WORKFLOW_APPROVAL_LIST_API_VIEW_FUNC = WorkflowApprovalListApi.as_view("workflow-approval-list", BaseModel)
 
 # ServicesComponent ENDPOINTS
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)

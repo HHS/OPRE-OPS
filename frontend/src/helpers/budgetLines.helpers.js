@@ -1,5 +1,12 @@
 import { formatDateToMonthDayYear } from "./utils";
 
+export const BLI_STATUS = {
+    DRAFT: "DRAFT",
+    PLANNED: "PLANNED",
+    EXECUTING: "IN_EXECUTION",
+    OBLIGATED: "OBLIGATED"
+};
+
 /**
  * Validates if the given budget line is an object.
  * @param {Object} budgetLine - The budget line to validate.
@@ -26,6 +33,11 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
     return budgetLine?.created_on ? formatDateToMonthDayYear(budgetLine.created_on) : formattedToday;
 };
 
+/**
+ * Returns the total amount of a budget line.
+ * @param {Object[]} budgetLines - The budget line to get the total amount from.
+ * @returns {Object | null} The total amount of the budget line.
+ */
 export const budgetLinesTotal = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.reduce((n, { amount }) => n + amount, 0);
@@ -43,32 +55,79 @@ export const getBudgetByStatus = (budgetLines, status) => {
     return budgetLines?.filter((bli) => status.includes(bli.status));
 };
 
+/**
+ * Returns an array of budget lines that are not in draft status.
+ * @param {Object[]} budgetLines - The budget lines to filter.
+ * @returns {Object[]} An array of budget lines that are not in draft status.
+ */
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIProp(budgetLines);
-    return budgetLines?.filter((bli) => bli.status !== "DRAFT" && bli.status !== "IN_REVIEW");
+    return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
 };
-
-export const hasActiveWorkflow = (budgetLines) => {
+/**
+ * Returns a boolean indicating if any of the budget lines are in review.
+ * @param {Object[]} budgetLines - The budget lines to check.
+ * @returns {boolean} Whether any of the budget lines are in review.
+ */
+export const hasBlIsInReview = (budgetLines) => {
     handleBLIProp(budgetLines);
-    return budgetLines?.some((bli) => bli.has_active_workflow);
+    return budgetLines?.some((bli) => bli.in_review);
 };
 
+/**
+ * Returns an array of budget lines grouped by services component.
+ * @param {Object[]} budgetLines - The budget lines to group.
+ * @returns {Object[]} An array of budget lines grouped by services component.
+ 
+ */
 export const groupByServicesComponent = (budgetLines) => {
-    handleBLIProp(budgetLines);
-    return budgetLines
-        .reduce((acc, budgetLine) => {
-            const servicesComponentId = budgetLine.services_component_id;
-            const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
-            if (index === -1) {
-                acc.push({ servicesComponentId, budgetLines: [budgetLine] });
-            } else {
-                acc[index].budgetLines.push(budgetLine);
-            }
-            return acc;
-        }, [])
-        .sort((a, b) => {
-            if (a.servicesComponentId === null) return 1;
-            if (b.servicesComponentId === null) return -1;
-            return a.servicesComponentId - b.servicesComponentId;
-        });
+    try {
+        handleBLIProp(budgetLines);
+        return budgetLines
+            .reduce((acc, budgetLine) => {
+                const servicesComponentId = budgetLine.services_component_id;
+                const index = acc.findIndex((item) => item.servicesComponentId === servicesComponentId);
+                if (index === -1) {
+                    acc.push({ servicesComponentId, budgetLines: [budgetLine] });
+                } else {
+                    acc[index].budgetLines.push(budgetLine);
+                }
+                return acc;
+            }, [])
+            .sort((a, b) => {
+                if (a.servicesComponentId === null) return 1;
+                if (b.servicesComponentId === null) return -1;
+                return a.servicesComponentId - b.servicesComponentId;
+            });
+    } catch (error) {
+        console.error("Error in groupByServicesComponent:", error);
+        return [];
+    }
 };
+
+/**
+ * Returns whether the given budget line is permanent.
+ * @param {Object} budgetLine - The budget line to check.
+ * @returns {boolean} Whether the budget line is permanent.
+ */
+export const isBLIPermanent = (budgetLine) => {
+    handleBLIProp(budgetLine);
+
+    return budgetLine?.created_on ? true : false;
+};
+
+/**
+ * Returns the display can label of a budget line.
+ * @param {Object} budgetLine - The budget line to get the can label from.
+ * @returns {string} The can label of the budget line.
+ * canDisplayName is for temporary BLIs, can.number is for permanent BLIs
+ */
+export const canLabel = (budgetLine) =>
+    isBLIPermanent(budgetLine) ? budgetLine?.can?.display_name : budgetLine?.canDisplayName || "TBD";
+
+/**
+ * Returns display label of a budget line.
+ * @param {Object} budgetLine - The budget line to get the BLI label from.
+ * @returns {string} The BLI label of the budget line.
+ */
+export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : "TBD");
