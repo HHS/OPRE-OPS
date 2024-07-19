@@ -109,12 +109,6 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
             />
-            {urlChangeToStatus === BLI_STATUS.PLANNED && (
-                <AgreementChangesAccordion
-                    changeInBudgetLines={budgetLinesInReview.reduce((acc, { amount }) => acc + amount, 0)}
-                    changeInCans={changeInCans}
-                />
-            )}
             <Accordion
                 heading="Notes"
                 level={2}
