@@ -311,7 +311,7 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer())
+    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer)
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
     )
@@ -593,6 +593,9 @@ class BudgetLineItem(BaseModel):
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
     certified: Mapped[bool] = mapped_column(Boolean, default=False)
     closed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    requisition_number: Mapped[Optional[int]] = mapped_column(Integer)
+    requisition_date: Mapped[Optional[date]] = mapped_column(Date)
 
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
 
