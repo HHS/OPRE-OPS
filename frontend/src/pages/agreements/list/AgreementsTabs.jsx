@@ -7,6 +7,9 @@ import tabStyles from "./AgreementTabs.module.css";
  * A header section of the agreements page that contains the filters.
  * @returns {JSX.Element} - The procurement shop select element.
  */
+
+/* TODO: make api call to replace hard-coded value */
+
 export const AgreementTabs = () => {
     const location = useLocation();
     const selected = `font-sans-2xs text-bold ${styles.listItemSelected}`;
@@ -38,7 +41,9 @@ export const AgreementTabs = () => {
                 >
                     {path.label}
                 </Link>
-                <span className={`position-absolute top-2 ${tabStyles.notificationCircle}`}>5</span>
+                <span className={`margin-left-neg-1 position-absolute bottom-2 ${tabStyles.notificationCircle}`}>
+                    5
+                </span>
             </>
         );
     });
