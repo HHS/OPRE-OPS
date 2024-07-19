@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import styles from "../../../components/Portfolios/PortfolioTabsSection/PortfolioTabsSection.module.scss";
 import TabsSection from "../../../components/UI/TabsSection";
+import tabStyles from "./AgreementTabs.module.css";
 
 /**
  * A header section of the agreements page that contains the filters.
@@ -29,13 +30,16 @@ export const AgreementTabs = () => {
         const queryString = `${path.name}`;
 
         return (
-            <Link
-                to={queryString}
-                className={location.search === queryString ? selected : notSelected}
-                key={queryString}
-            >
-                {path.label}
-            </Link>
+            <>
+                <Link
+                    to={queryString}
+                    className={location.search === queryString ? selected : notSelected}
+                    key={queryString}
+                >
+                    {path.label}
+                </Link>
+                <span className={`position-absolute top-2 ${tabStyles.notificationCircle}`}>5</span>
+            </>
         );
     });
 
