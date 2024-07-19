@@ -1,8 +1,8 @@
 import App from "../../../App";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
-import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import DocumentCollectionView from "../../../components/Agreements/Documents/DocumentCollectionView";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
@@ -14,6 +14,7 @@ import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
 
 const ApproveAgreement = () => {
@@ -24,7 +25,6 @@ const ApproveAgreement = () => {
         groupedBudgetLinesByServicesComponent,
         budgetLinesInReview,
         changeRequestsInReview,
-        changeInCans,
         notes,
         setNotes,
         confirmation,
@@ -41,7 +41,8 @@ const ApproveAgreement = () => {
         setAfterApproval,
         requestorNoters,
         urlChangeToStatus,
-        statusForTitle
+        statusForTitle,
+        statusChangeTo
     } = useApproveAgreement();
 
     if (!agreement) {
@@ -109,6 +110,16 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
             />
+            {statusChangeTo === BLI_STATUS.EXECUTING && (
+                <Accordion
+                    heading="Review Documents"
+                    level={2}
+                >
+                    <p className="margin-bottom-neg-2">Please review all pre-solicitation documents listed below.</p>
+                    {/* TODO: replace with real documents */}
+                    <DocumentCollectionView documents={document.testDocuments} />
+                </Accordion>
+            )}
             <Accordion
                 heading="Notes"
                 level={2}

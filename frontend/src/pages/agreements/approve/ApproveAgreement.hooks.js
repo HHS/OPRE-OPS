@@ -30,7 +30,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {Object[]} servicesComponents - The services components
  * @property {Object[]} groupedBudgetLinesByServicesComponent - The budget lines grouped by services component
  * @property {Object[]} budgetLinesInReview - The budget lines in review
- * @property {Object[]} changeRequestsInReview - The change requests in review
+ * @property {ChangeRequest[]} changeRequestsInReview - The change requests in review
  * @property {Object} changeInCans - The change in CANs
  * @property {string} notes - The reviewer notes
  * @property {Function} setNotes - The setter for reviewer notes
@@ -49,6 +49,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} urlChangeToStatus - The status change to from the URL
  * @property {string} statusForTitle - The status for the title
  * @property {string} changeRequestTitle - The title of the change request,
+ * @property {typeof CHANGE_REQUEST_SLUG_TYPES.BUDGET | typeof CHANGE_REQUEST_SLUG_TYPES.STATUS} statusChangeTo - The type of change request
  *
  * @returns {ApproveAgreementHookResult} The data and functions for the approval process
  */
@@ -366,7 +367,8 @@ const useApproveAgreement = () => {
         setAfterApproval,
         requestorNoters,
         urlChangeToStatus,
-        statusForTitle
+        statusForTitle,
+        statusChangeTo
     };
 };
 
