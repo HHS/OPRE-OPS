@@ -14,6 +14,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     Numeric,
+    Sequence,
     String,
     Table,
     Text,
@@ -23,6 +24,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, column_property, mapped_column, object_session, relationship
+from typing_extensions import Any, override
 
 from models.base import BaseModel
 from models.portfolios import Portfolio
@@ -53,6 +55,16 @@ class CANArrangementType(Enum):
     IAA = auto()
     IDDA = auto()
     MOU = auto()
+
+
+class CANType(Enum):
+    OPRE = auto()
+    NON_OPRE = auto()
+
+
+class CANStatus(Enum):
+    ACTIVE = auto()
+    INACTIVE = auto()
 
 
 class CANFundingSources(BaseModel):
@@ -294,6 +306,7 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
+    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer())
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
     )
@@ -380,9 +393,18 @@ class CANFiscalYear(BaseModel):
     """Contains the relevant financial info by fiscal year for a given CAN."""
 
     __tablename__ = "can_fiscal_year"
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "can_id",
+            "fiscal_year",
+        ),
+    )
 
-    can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"), primary_key=True)
-    fiscal_year: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("can_fiscal_year_id_seq", start=5000, increment=1)
+    )
+    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"))
+    fiscal_year: Mapped[int] = mapped_column(primary_key=True)
     can: Mapped["CAN"] = relationship("CAN", lazy="joined")
     received_funding: Mapped[Optional[decimal]] = mapped_column(
         Numeric(12, 2), default=0
@@ -393,8 +415,7 @@ class CANFiscalYear(BaseModel):
     potential_additional_funding: Mapped[Optional[decimal]] = mapped_column(
         Numeric(12, 2), default=0
     )
-    can_lead: Mapped[Optional[str]] = mapped_column(String)
-    notes: Mapped[Optional[str]] = mapped_column(String, default="")
+    notes: Mapped[Optional[str]] = mapped_column(default="")
     total_funding: Mapped[decimal] = column_property(
         received_funding + expected_funding
     )
@@ -507,7 +528,9 @@ class CLIN(BaseModel):
     __tablename__ = "clin"
     __table_args__ = (sa.UniqueConstraint("number", "contract_agreement_id"),)
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("clin_id_seq", start=5000, increment=1)
+    )
     number: Mapped[int] = mapped_column(Integer)
     name: Mapped[Optional[str]] = mapped_column(String)
     pop_start_date: Mapped[Optional[date]] = mapped_column(Date)
@@ -525,7 +548,9 @@ class CLIN(BaseModel):
 class BudgetLineItem(BaseModel):
     __tablename__ = "budget_line_item"
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("budget_line_item_id_seq", start=15000, increment=1)
+    )
     line_description: Mapped[Optional[str]] = mapped_column(String)
     comments: Mapped[Optional[str]] = mapped_column(Text)
 
@@ -556,6 +581,10 @@ class BudgetLineItem(BaseModel):
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         sa.Enum(BudgetLineItemStatus)
     )
+
+    on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
+    certified: Mapped[bool] = mapped_column(Boolean, default=False)
+    closed: Mapped[bool] = mapped_column(Boolean, default=False)
 
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
 
@@ -596,52 +625,6 @@ class BudgetLineItem(BaseModel):
         return self.agreement.team_members if self.agreement else []
 
     @property
-    def has_active_workflow(self):
-        if object_session(self) is None:
-            return False
-        package = object_session(self).scalar(
-            select(Package)
-            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
-            .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .join(WorkflowInstance, Package.workflow_instance_id == WorkflowInstance.id)
-            .join(
-                WorkflowStepInstance,
-                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
-            )
-            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
-        )
-        return package is not None
-
-    @property
-    def active_workflow_current_step_id(self):
-        if object_session(self) is None:
-            return None
-        # This doesn't work with the bootstrap test data since current_workflow_step_instance_id isn't set
-        # current_workflow_step_instance_id = object_session(self).scalar(
-        #     select(WorkflowInstance.current_workflow_step_instance_id)
-        #     .join(
-        #         WorkflowStepInstance,
-        #         WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
-        #     )
-        #     .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
-        #     .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
-        #     .join(self.__class__, self.id == PackageSnapshot.bli_id)
-        # )
-        # not as good as the above, but works with the bootstrap test data
-        current_workflow_step_instance_id = object_session(self).scalar(
-            select(WorkflowStepInstance.id)
-            .join(
-                WorkflowInstance,
-                WorkflowInstance.id == WorkflowStepInstance.workflow_instance_id,
-            )
-            .join(Package, WorkflowInstance.id == Package.workflow_instance_id)
-            .join(PackageSnapshot, Package.id == PackageSnapshot.package_id)
-            .join(self.__class__, self.id == PackageSnapshot.bli_id)
-            .where(WorkflowStepInstance.status == WorkflowStepStatus.REVIEW)
-        )
-        return current_workflow_step_instance_id
-
-    @property
     def change_requests_in_review(self):
         if object_session(self) is None:
             return None
@@ -661,7 +644,18 @@ class BudgetLineItem(BaseModel):
 
     @property
     def in_review(self):
-        return self.change_requests_in_review is not None or self.has_active_workflow
+        return self.change_requests_in_review is not None
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+        # add the transient attribute that tracks the change request responsible for changes (if it exists)
+        # so that it's added to the history event details
+        if hasattr(self, "acting_change_request_id"):
+            d.update(
+                acting_change_request_id=self.acting_change_request_id,
+            )
+        return d
 
 
 class CAN(BaseModel):
@@ -675,16 +669,20 @@ class CAN(BaseModel):
 
     __tablename__ = "can"
 
-    id: Mapped[int] = BaseModel.get_pk_column()
+    id: Mapped[int] = BaseModel.get_pk_column(
+        sequence=Sequence("can_id_seq", start=500, increment=1)
+    )
     number: Mapped[str] = mapped_column(String(30), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String)
-    purpose: Mapped[Optional[str]] = mapped_column(String, default="")
     nickname: Mapped[Optional[str]]
     expiration_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
     appropriation_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    appropriation_term: Mapped[Optional[int]] = mapped_column(Integer, default="1")
     arrangement_type: Mapped[Optional[CANArrangementType]] = mapped_column(
         sa.Enum(CANArrangementType)
+    )
+    can_type: Mapped[Optional[CANType]] = mapped_column(sa.Enum(CANType))
+    division_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("division.id")
     )
 
     funding_sources: Mapped[List["FundingSource"]] = relationship(
@@ -715,6 +713,111 @@ class CAN(BaseModel):
         "Project", secondary="project_cans", back_populates="cans"
     )
 
+    external_authorizer_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("contact.id")
+    )
+
+    @property
+    def status(self):
+        current_year = date.today().year
+        can_fiscal_year = object_session(self).scalar(
+            select(CANFiscalYear).where(
+                and_(
+                    CANFiscalYear.can_id == self.id,
+                    CANFiscalYear.fiscal_year == current_year,
+                )
+            )
+        )
+        if can_fiscal_year is None:
+            return CANStatus.INACTIVE
+        # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
+        budget_line_items = (
+            object_session(self)
+            .execute(select(BudgetLineItem).where(BudgetLineItem.can_id == self.id))
+            .scalars()
+            .all()
+        )
+
+        planned_budget_line_items = [
+            bli
+            for bli in budget_line_items
+            if bli.status == BudgetLineItemStatus.PLANNED
+        ]
+        planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
+
+        obligated_budget_line_items = [
+            bli
+            for bli in budget_line_items
+            if bli.status == BudgetLineItemStatus.OBLIGATED
+        ]
+        obligated_funding = sum([b.amount for b in obligated_budget_line_items]) or 0
+
+        in_execution_budget_line_items = [
+            bli
+            for bli in budget_line_items
+            if bli.status == BudgetLineItemStatus.IN_EXECUTION
+        ]
+        in_execution_funding = (
+            sum([b.amount for b in in_execution_budget_line_items]) or 0
+        )
+        total_accounted_for = (
+            sum((planned_funding, obligated_funding, in_execution_funding)) or 0
+        )
+        available_funding = can_fiscal_year.total_funding - total_accounted_for
+
+        is_expired = self.expiration_date.date() < date.today()
+        can_status = (
+            CANStatus.INACTIVE
+            if available_funding <= 0 and is_expired
+            else CANStatus.ACTIVE
+        )
+        return can_status
+
+    @property
+    def appropriation_term(self):
+        if self.expiration_date is None:
+            return 0
+        if self.appropriation_date is None:
+            return None
+        return self.expiration_date.year - self.appropriation_date.year
+
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
+
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+        # add the appropriation_term calculated property to this dictionary
+        d["appropriation_term"] = self.appropriation_term
+        return d
+
+
+class CANFiscalYearFundingDetails(BaseModel):
+    """
+    The details of funding for a given fiscal year for a CAN.
+    """
+
+    __tablename__ = "can_fiscal_year_funding_details"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    fund: Mapped[Optional[str]] = mapped_column(String)
+    allowance: Mapped[Optional[str]] = mapped_column(String)
+    sub_allowance: Mapped[Optional[str]] = mapped_column(String)
+    allotment_org: Mapped[Optional[str]] = mapped_column(String)
+    current_fy_funding_ytd: Mapped[Optional[int]] = mapped_column(Integer)
+    can_fiscal_year_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("can_fiscal_year.id")
+    )
+
+
+class CANAppropriationDetails(BaseModel):
+    """ """
+
+    __tablename__ = "can_appropriation_details"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    appropriation_prefix: Mapped[Optional[str]] = mapped_column(String)
+    appropriation_postfix: Mapped[Optional[str]] = mapped_column(String)
+    appropriation_year: Mapped[Optional[str]] = mapped_column(String)

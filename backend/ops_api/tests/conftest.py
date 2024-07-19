@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from models import OpsDBHistory, OpsEvent, User, Vendor
+from models import CAN, BudgetLineItem, OpsDBHistory, OpsEvent, Project, User, Vendor
 from ops_api.ops import create_app
 from tests.auth_client import AuthClient, NoPermsAuthClient
 
@@ -20,7 +20,7 @@ from tests.auth_client import AuthClient, NoPermsAuthClient
 @pytest.fixture()
 def app(db_service) -> Generator[Flask, None, None]:
     """Make and return the flask app."""
-    app = create_app({"TESTING": True})
+    app = create_app()
     yield app
 
 
@@ -148,3 +148,21 @@ def test_admin_user(loaded_db) -> User | None:
 def test_vendor(loaded_db) -> Vendor | None:
     """Get a test Vendor."""
     return loaded_db.get(Vendor, 100)
+
+
+@pytest.fixture()
+def test_project(loaded_db) -> Project | None:
+    """Get a test Project."""
+    return loaded_db.get(Project, 1000)
+
+
+@pytest.fixture()
+def test_can(loaded_db) -> CAN | None:
+    """Get a test CAN."""
+    return loaded_db.get(CAN, 500)
+
+
+@pytest.fixture()
+def test_bli(loaded_db) -> BudgetLineItem | None:
+    """Get a test BudgetLineItem."""
+    return loaded_db.get(BudgetLineItem, 15000)

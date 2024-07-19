@@ -21,7 +21,7 @@ const Alert = ({ children }) => {
     const { heading, message, type, redirectUrl } = useSelector((state) => state.alert);
     const [isFromRedirect, setIsFromRedirect] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
-    let waitTime = redirectUrl ? 3000 : 2000;
+    let waitTime = redirectUrl ? 6000 : 2000;
 
     // Handle navigation without blocking user interactions
     useEffect(() => {
@@ -75,7 +75,11 @@ const Alert = ({ children }) => {
                 <div className="usa-alert__body display-flex flex-justify">
                     <div>
                         <h1 className="usa-alert__heading">{heading}</h1>
-                        <p className="usa-alert__text">{message}</p>
+                        <p
+                            className="usa-alert__text"
+                            style={{ whiteSpace: "pre-wrap" }}
+                            dangerouslySetInnerHTML={{ __html: message }}
+                        />
                         {children}
                     </div>
                     <FontAwesomeIcon

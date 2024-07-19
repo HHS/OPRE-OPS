@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import App from "../../../App";
 import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
-import ChangeRequestsList from "../../../components/ChangeRequests/ChangeRequestsList";
+import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import AgreementsFilterButton from "./AgreementsFilterButton";
@@ -218,7 +218,7 @@ export const AgreementsList = () => {
                     buttonLink="/agreements/create"
                     TabsSection={<AgreementTabs />}
                 >
-                    <ChangeRequestsList />
+                    <ChangeRequests />
                 </TablePageLayout>
             )}
         </App>

@@ -151,7 +151,8 @@ export const codesToDisplayText = {
         date_needed: "Need By Date",
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
-        status: "Status"
+        status: "Status",
+        services_component: "Services Component"
     },
     contractType: {
         FIRM_FIXED_PRICE: "Firm Fixed Price (FFP)",
@@ -168,7 +169,8 @@ export const codesToDisplayText = {
     changeToTypes: {
         amount: "Amount",
         can_id: "CAN",
-        date_needed: "Date needed"
+        date_needed: "Date needed",
+        status: "Status"
     }
 };
 
@@ -339,3 +341,69 @@ export const formatDateForScreen = (date) => {
     }
     return null;
 };
+
+/**
+ * This function takes a string and returns a slug case version of the string.
+ * @param {string} str - The string to convert to slug case.
+ * @returns {string} The slug case version of the string.
+ */
+export function toSlugCase(str) {
+    if (!str) return "";
+    if (typeof str !== "string") {
+        console.warn("toSlugCase: str must be a string");
+        return "";
+    }
+    return str.toLowerCase().replace(/\s/g, "-");
+}
+
+/**
+ * This function takes a slug and returns a title case version of the string.
+ * @param {string} slug - The slug to convert to title case.
+ * @returns {string} The title case version of the slug.
+ 
+ */
+export function toTitleCaseFromSlug(slug) {
+    if (!slug) return "";
+    if (typeof slug !== "string") {
+        console.warn("toSlugCase: str must be a string");
+        return "";
+    }
+    return slug
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+}
+
+/**
+ * This function takes a slug and returns a lower case version of the string.
+ * @param {string} slug - The slug to convert to lower case.
+ * @returns {string} The lower case version of the slug.
+ */
+export function toLowerCaseFromSlug(slug) {
+    if (!slug) return "";
+    if (typeof slug !== "string") {
+        console.warn("toSlugCase: str must be a string");
+        return "";
+    }
+    return slug
+        .split("-")
+        .map((word) => word.charAt(0).toLowerCase() + word.slice(1))
+        .join(" ");
+}
+
+/**
+ * This function takes a string and returns a title case version of the string.
+ * @param {string} string - The string to convert to title case.
+ * @returns {string} The title case version of the string.
+ */
+export function fromUpperCaseToTitleCase(string) {
+    if (!string) return "";
+    if (typeof string !== "string") {
+        console.warn("fromUpperCaseToTitleCase: string must be a string");
+        return "";
+    }
+    return string
+        .split(/[-\s]/) // Split by hyphens and spaces
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}

@@ -1,0 +1,2 @@
+INSERT INTO ops.product_service_code (id, name, naics, support_code, description, created_on, updated_on) VALUES (1, 'Other Scientific and Technical Consulting Services', 541690, 'R410 - Research', '', current_timestamp, current_timestamp);
+INSERT INTO ops.product_service_code (id, name, naics, support_code, description, created_on, updated_on) VALUES (2, 'Convention and Trade Shows', 561920, 'R706 - Support', '', current_timestamp, current_timestamp);

@@ -7,7 +7,7 @@ const testAgreement = {
     agreement_reason: "NEW_REQ",
     name: "Test Contract",
     description: "Test Description",
-    project_id: 1,
+    project_id: 1000,
     product_service_code_id: 1,
     procurement_shop_id: 1,
     incumbent: "Test Vendor",
@@ -108,7 +108,7 @@ it("cannot edit an agreement with budget line items obligated", () => {
 
 it("cannot navigate to edit an agreement with budget line items obligated from review page", () => {
     cy.visit(`/agreements/review/7`);
-    cy.get("dd").first().should("have.text", "MIHOPE Check-In");
+    cy.get("dd").first().should("have.text", "Mother and Infant Home Visiting Program Evaluation 2");
     cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
 });
 
@@ -120,7 +120,7 @@ it("cannot edit an agreement with budget line items in executing", () => {
 
 it("cannot navigate to edit an agreement with budget line items in executing from review page", () => {
     cy.visit(`/agreements/review/2`);
-    cy.get("dd").first().should("have.text", "DIRECT ALLOCATION #2: African American Child and Family Research Center");
+    cy.get("dd").first().should("have.text", "Human Services Interoperability Support");
     cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
 });
 

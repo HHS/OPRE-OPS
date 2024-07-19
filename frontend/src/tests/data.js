@@ -11,7 +11,6 @@ export const budgetLine = {
         managing_portfolio_id: 2,
         nickname: "HS",
         number: "G994426",
-        purpose: "",
         display_name: "G994426"
     },
     can_id: 5,
@@ -28,13 +27,16 @@ export const budgetLine = {
     proc_shop_fee_percentage: 0,
     services_component_id: 1,
     status: "DRAFT",
+    on_hold: false,
+    certified: false,
+    closed: false,
     team_members: [
         '{email: "chris.fortunato@example.com", full_name: "…}',
         '{email: "Amelia.Popham@example.com", full_name: "Am…}',
         '{email: "admin.demo@email.com", full_name: "Admin D…}',
         '{email: "dave.director@email.com", full_name: "Dave…}'
     ],
-    updated_on: "2024-05-27T13:56:50.363964Z"
+    updated_on: "2024-05-27T13:56:50.363964Z",
 };
 
 export const agreement = {
@@ -54,7 +56,6 @@ export const agreement = {
                 managing_portfolio_id: 2,
                 nickname: "HS",
                 number: "G994426",
-                purpose: "",
                 display_name: "G994426"
             },
             can_id: 5,
@@ -71,6 +72,9 @@ export const agreement = {
             proc_shop_fee_percentage: 0,
             services_component_id: 1,
             status: "DRAFT",
+            on_hold: false,
+            certified: false,
+            closed: false,
             team_members: [
                 {
                     email: "chris.fortunato@example.com",
@@ -108,7 +112,6 @@ export const agreement = {
                 managing_portfolio_id: 2,
                 nickname: "HS",
                 number: "G994426",
-                purpose: "",
                 display_name: "G994426"
             },
             can_id: 5,
@@ -125,6 +128,9 @@ export const agreement = {
             proc_shop_fee_percentage: 0,
             services_component_id: null,
             status: "DRAFT",
+            on_hold: false,
+            certified: false,
+            closed: false,
             team_members: [
                 {
                     email: "chris.fortunato@example.com",
@@ -285,7 +291,8 @@ export const servicesComponent = {
 export const changeRequests = [
     {
         agreement_id: 9,
-        budget_line_item_id: 22,
+        budget_line_item_id: 15022,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -316,7 +323,8 @@ export const changeRequests = [
     },
     {
         agreement_id: 9,
-        budget_line_item_id: 22,
+        budget_line_item_id: 15022,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -346,7 +354,8 @@ export const changeRequests = [
     },
     {
         agreement_id: 9,
-        budget_line_item_id: 22,
+        budget_line_item_id: 15022,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -376,7 +385,8 @@ export const changeRequests = [
     },
     {
         agreement_id: 1,
-        budget_line_item_id: 1,
+        budget_line_item_id: 15011,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -406,7 +416,8 @@ export const changeRequests = [
     },
     {
         agreement_id: 1,
-        budget_line_item_id: 2,
+        budget_line_item_id: 15020,
+        change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
         created_by: 520,
         created_by_user: {
             full_name: "Admin Demo",
@@ -436,3 +447,62 @@ export const changeRequests = [
         updated_on: "2024-06-17T18:55:41.826716"
     }
 ];
+
+export const canFiscalYearFundingDetails = [
+    {
+        id: 1,
+        fund: "DFGBTN2024BCDS",
+        allowance: "JDI109DHAD",
+        sub_allowance: "RHI45T78F0",
+        allotment_org: "JJH45ST607",
+        current_fy_funding_ytd: 25000,
+        can_fiscal_year_id: 5001
+    },
+    {
+        id: 2,
+        fund: "FLYDIG2024RSTF",
+        allowance: "JHH939DHAD",
+        sub_allowance: "RHI45T8EX2",
+        allotment_org: "RT045ST607",
+        current_fy_funding_ytd: 38000,
+        can_fiscal_year_id: 5002
+    },
+    {
+        id: 3,
+        fund: "IMTEDG2023SEMI",
+        allowance: "JHH9JJNHAD",
+        sub_allowance: "RASTO8EX27",
+        allotment_org: "BFSIE5ST60",
+        current_fy_funding_ytd: 45899,
+        can_fiscal_year_id: 5003
+    },
+    {
+        id: 4,
+        fund: "FNCTSM2022QRTA",
+        allowance: "JH98HG3HAD",
+        sub_allowance: "RASTO8EX27",
+        allotment_org: "BFSIE5ST60",
+        current_fy_funding_ytd: 100000,
+        can_fiscal_year_id: 5004
+    }
+  ]
+  export const canAppropriationDetails =  [
+    {
+        id: 1,
+        appropriation_prefix: "ABCDE",
+        appropriation_postfix: "FGHIJ",
+        appropriation_year: "2024"
+    },
+    {
+        id: 2,
+        appropriation_prefix: "PREFI",
+        appropriation_postfix: "POSTF",
+        appropriation_year: "2023"
+    },
+    {
+        id: 3,
+        appropriation_prefix: "AEIOU",
+        appropriation_postfix: "ALSOY",
+        appropriation_year: "2024"
+    }
+  ]

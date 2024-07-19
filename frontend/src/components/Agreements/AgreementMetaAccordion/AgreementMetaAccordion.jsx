@@ -19,7 +19,7 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
 
     return (
         <Accordion
-            heading="Review Agreement Details"
+            heading="Agreement Details"
             level={2}
         >
             <p>{instructions}</p>
@@ -28,16 +28,16 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                 <div className="grid-row grid-gap">
                     <dl className="margin-0 font-12px grid-col">
                         <Term
-                            name="name"
+                            name="project"
                             label="Project"
+                            value={agreement?.project?.title}
+                        />
+                        <Term
+                            name="name"
+                            label="Agreement"
                             messages={res.getErrors("name")}
                             className={cn("name")}
                             value={agreement?.name}
-                        />
-                        <Term
-                            name="agreement"
-                            label="Agreement"
-                            value={agreement?.project?.display_name}
                         />
                         <Term
                             name="description"
@@ -150,14 +150,14 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                 <div className="grid-row grid-gap">
                     <dl className="margin-0 font-12px grid-col">
                         <Term
-                            name="name"
+                            name="project"
                             label="Project"
-                            value={agreement?.name}
+                            value={agreement?.project?.title}
                         />
                         <Term
-                            name="agreement"
+                            name="name"
                             label="Agreement"
-                            value={agreement?.project?.display_name}
+                            value={agreement?.name}
                         />
                         <Term
                             name="description"

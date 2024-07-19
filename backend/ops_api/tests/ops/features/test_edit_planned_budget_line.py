@@ -8,13 +8,13 @@ from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
 
 @pytest.fixture
-def original_agreement(test_user):
+def original_agreement(test_user, test_project):
     return {
         "name": "CTXX12399",
         "contract_number": "CT0002",
         "contract_type": ContractType.FIRM_FIXED_PRICE,
         "agreement_type": AgreementType.CONTRACT,
-        "project_id": 1,
+        "project_id": test_project.id,
         "product_service_code_id": 2,
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,
@@ -130,13 +130,13 @@ def agreement_unauthorized(loaded_db, original_agreement):
 
 
 @given("I have a budget line item in Planned status", target_fixture="bli")
-def planned_bli(loaded_db, agreement, test_user):
+def planned_bli(loaded_db, agreement, test_user, test_can):
     planned_bli = BudgetLineItem(
         agreement_id=agreement.id,
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.PLANNED,
         proc_shop_fee_percentage=1.23,

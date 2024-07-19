@@ -14,7 +14,7 @@ afterEach(() => {
 it("loads", () => {
     // beforeEach has ran...
     cy.get("h1").should("have.text", "CANs");
-    cy.get('a[href="/cans/3"]').should("exist");
+    cy.get('a[href="/cans/502"]').should("exist");
 });
 
 it("clicking on a CAN takes you to the detail page", () => {
@@ -23,6 +23,6 @@ it("clicking on a CAN takes you to the detail page", () => {
 
     cy.contains(canNumber).click();
 
-    cy.url().should("include", "/cans/3");
+    cy.url().should("include", "/cans/502");
     cy.get("h1").should("contain", canNumber);
 });

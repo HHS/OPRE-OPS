@@ -18,44 +18,14 @@ from models import (
     ContractType,
     Division,
     ServiceRequirementType,
-    WorkflowAction,
-    WorkflowInstance,
-    WorkflowStepInstance,
-    WorkflowStepStatus,
     WorkflowStepTemplate,
     WorkflowStepType,
     WorkflowTemplate,
-    WorkflowTriggerType,
 )
 from ops_api.ops.resources.agreement_history import find_agreement_histories
 from ops_api.ops.utils.procurement_workflow_helper import delete_procurement_workflow
 
 test_no_perms_user_id = 506
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_workflow_instance_retrieve(auth_client, loaded_db):
-    workflow_instance = loaded_db.get(WorkflowInstance, 1)
-
-    assert workflow_instance is not None
-    assert workflow_instance.associated_type == WorkflowTriggerType.CAN
-    assert workflow_instance.associated_id == 1
-    assert workflow_instance.workflow_template_id == 1
-    assert workflow_instance.workflow_action == WorkflowAction.DRAFT_TO_PLANNED
-    assert workflow_instance.workflow_status == WorkflowStepStatus.APPROVED
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_workflow_step_instance_retrieve(auth_client, loaded_db):
-    workflow_step_instance = loaded_db.get(WorkflowStepInstance, 1)
-
-    assert workflow_step_instance is not None
-    assert workflow_step_instance.workflow_instance_id == 1
-    assert workflow_step_instance.workflow_step_template_id == 1
-    assert workflow_step_instance.status == WorkflowStepStatus.APPROVED
-    assert workflow_step_instance.notes == "Need approved ASAP!"
-    assert workflow_step_instance.time_started is not None
-    assert workflow_step_instance.time_completed is not None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -76,22 +46,6 @@ def test_workflow_step_template_retrieve(auth_client, loaded_db):
     assert workflow_step_template.workflow_type == WorkflowStepType.APPROVAL
     assert workflow_step_template.index == 0
     assert workflow_step_template.step_approvers is not None
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_workflow_instance_by_id(auth_client):
-    response = auth_client.get("/api/v1/workflow-instance/1")
-    assert response.status_code == 200
-    assert response.json["id"] == 1
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_workflow_step_instance_by_id(auth_client):
-    response = auth_client.get("/api/v1/workflow-step-instance/1")
-    assert response.status_code == 200
-    assert response.json["id"] == 1
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -151,10 +105,10 @@ def test_agreement_change_request(auth_client, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_change_request(auth_client, app):
+def test_budget_line_item_change_request(auth_client, app, test_bli):
     session = app.db_session
     change_request = BudgetLineItemChangeRequest()
-    change_request.budget_line_item_id = 1
+    change_request.budget_line_item_id = test_bli.id
     change_request.agreement_id = 1
     change_request.created_by = 1
     change_request.requested_change_data = {"foo": "bar"}
@@ -171,7 +125,7 @@ def test_budget_line_item_change_request(auth_client, app):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, loaded_db, test_admin_user):
+def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, loaded_db, test_admin_user, test_can):
     session = app.db_session
     agreement_id = 1
 
@@ -183,7 +137,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     bli = BudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=1,
-        can_id=1,
+        can_id=test_can.id,
         amount=111.11,
         status=BudgetLineItemStatus.PLANNED,
         created_by=test_admin_user.id,
@@ -200,7 +154,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     prev_hist_count = hist_count
 
     #  submit PATCH BLI which triggers a budget change requests
-    data = {"amount": 222.22, "can_id": 2, "date_needed": "2032-02-02"}
+    data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
     response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
@@ -240,16 +194,16 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
         if "can_id" in requested_change_data:
             assert can_id_change_request_id is None
             can_id_change_request_id = change_request_id
-            assert requested_change_data["can_id"] == 2
-            assert requested_change_diff["can_id"]["old"] == 1
-            assert requested_change_diff["can_id"]["new"] == 2
+            assert requested_change_data["can_id"] == 501
+            assert requested_change_diff["can_id"]["old"] == 500
+            assert requested_change_diff["can_id"]["new"] == 501
     assert can_id_change_request_id is not None
 
     # verify the BLI was not updated yet
     bli = session.get(BudgetLineItem, bli_id)
     assert str(bli.amount) == "111.11"
     assert bli.amount == Decimal("111.11")
-    assert bli.can_id == 1
+    assert bli.can_id == 500
     assert bli.date_needed is None
     assert len(bli.change_requests_in_review) == len(change_request_ids)
     assert bli.in_review is True
@@ -304,7 +258,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
     # verify the BLI was updated
     bli = session.get(BudgetLineItem, bli_id)
     assert bli.amount == Decimal("222.22")
-    assert bli.can_id == 1  # can_id change request was rejected
+    assert bli.can_id == 500  # can_id change request was rejected
     assert bli.date_needed == datetime.date(2032, 2, 2)
     assert bli.change_requests_in_review is None
     assert bli.in_review is False
@@ -325,7 +279,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(auth_client, app, l
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_change_request_list(auth_client, app, test_user, test_admin_user):
+def test_change_request_list(auth_client, app, test_user, test_admin_user, test_bli):
     session = app.db_session
 
     # verify no change request in list to review for this user
@@ -336,7 +290,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user):
     # create a change request
     change_request1 = BudgetLineItemChangeRequest()
     change_request1.status = ChangeRequestStatus.IN_REVIEW
-    change_request1.budget_line_item_id = 1
+    change_request1.budget_line_item_id = test_bli.id
     change_request1.agreement_id = 1
     change_request1.created_by = test_user.id
     change_request1.managing_division_id = 1
@@ -371,7 +325,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user):
     # create a change request for division#2
     change_request2 = BudgetLineItemChangeRequest()
     change_request2.status = ChangeRequestStatus.IN_REVIEW
-    change_request2.budget_line_item_id = 2
+    change_request2.budget_line_item_id = 15001
     change_request2.agreement_id = 1
     change_request2.requested_change_data = {"key": "value"}
     change_request2.created_by = test_user.id
@@ -444,7 +398,7 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     assert len(response.json["_schema"]) == 3
 
     # make the BLI valid for status change
-    bli.can_id = 1
+    bli.can_id = 500
     bli.amount = 111.11
     bli.date_needed = datetime.date(2032, 2, 2)
     session.add(bli)
@@ -555,7 +509,9 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
 
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
-def test_status_change_request_creates_procurement_workflow(auth_client, loaded_db, test_admin_user):
+def test_status_change_request_creates_procurement_workflow(
+    auth_client, loaded_db, test_admin_user, test_can, test_project
+):
     # create Agreement
     agreement = ContractAgreement(
         name="CTXX12399",
@@ -567,7 +523,7 @@ def test_status_change_request_creates_procurement_workflow(auth_client, loaded_
         agreement_type=AgreementType.CONTRACT,
         procurement_shop_id=1,
         project_officer_id=test_admin_user.id,
-        project_id=1,
+        project_id=test_project.id,
         created_by=test_admin_user.id,
     )
     loaded_db.add(agreement)
@@ -579,7 +535,7 @@ def test_status_change_request_creates_procurement_workflow(auth_client, loaded_
     # create DRAFT BLI
     bli = BudgetLineItem(
         agreement_id=agreement_id,
-        can_id=1,
+        can_id=test_can.id,
         amount=123456.78,
         status=BudgetLineItemStatus.PLANNED,
         date_needed=datetime.date(2043, 1, 1),
@@ -618,13 +574,13 @@ def test_status_change_request_creates_procurement_workflow(auth_client, loaded_
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_change_request_review_authz(no_perms_auth_client, app, test_user):
+def test_change_request_review_authz(no_perms_auth_client, app, test_user, test_bli):
     session = app.db_session
 
     # create a change request
     change_request1 = BudgetLineItemChangeRequest()
     change_request1.status = ChangeRequestStatus.IN_REVIEW
-    change_request1.budget_line_item_id = 1
+    change_request1.budget_line_item_id = test_bli.id
     change_request1.agreement_id = 1
     change_request1.created_by = test_user.id
     change_request1.managing_division_id = 1

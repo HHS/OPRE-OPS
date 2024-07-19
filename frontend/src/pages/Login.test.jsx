@@ -17,6 +17,6 @@ describe("Login", () => {
         expect(screen.getByText("Portfolio Management System")).toBeInTheDocument();
         expect(screen.getByText("OPRE Portfolio Management System")).toBeInTheDocument();
         const signInOptions = screen.getAllByText(/sign in/i);
-        expect(signInOptions).toHaveLength(4);
+        expect(signInOptions).toHaveLength(3);
     });
 });

@@ -19,7 +19,6 @@ export const opsApi = createApi({
         "Portfolios",
         "CanFunding",
         "Notifications",
-        "WorkflowStepInstance",
         "ServicesComponents",
         "ChangeRequests"
     ],
@@ -233,32 +232,6 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
         }),
-        addApprovalRequest: builder.mutation({
-            query: (body) => ({
-                url: `/workflow-submit/`,
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body
-            }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
-        }),
-        addWorkflowApprove: builder.mutation({
-            query: (body) => ({
-                url: `/workflow-approve/`,
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body
-            }),
-            invalidatesTags: ["Agreements", "BudgetLineItems", "AgreementHistory", "Packages", "BliPackages"]
-        }),
-        getWorkflowInstance: builder.query({
-            query: (id) => `/workflow-instance/${id}`,
-            providesTags: ["WorkflowInstance"]
-        }),
-        getWorkflowStepInstance: builder.query({
-            query: (id) => `/workflow-step-instance/${id}`,
-            providesTags: ["WorkflowStepInstance"]
-        }),
         getAzureSasToken: builder.query({
             query: () => `/azure/sas-token`
         }),
@@ -302,6 +275,17 @@ export const opsApi = createApi({
         getChangeRequestsList: builder.query({
             query: () => `/change-requests/`,
             providesTags: ["ChangeRequests"]
+        }),
+        reviewChangeRequest: builder.mutation({
+            query: (body) => {
+                return {
+                    url: `/change-request-reviews/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body
+                };
+            },
+            invalidatesTags: ["ChangeRequests"]
         })
     })
 });
@@ -338,15 +322,12 @@ export const {
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
     useAddBliPackageMutation,
-    useAddApprovalRequestMutation,
-    useAddWorkflowApproveMutation,
-    useGetWorkflowInstanceQuery,
-    useGetWorkflowStepInstanceQuery,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,
     useUpdateServicesComponentMutation,
     useGetServicesComponentByIdQuery,
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
-    useGetChangeRequestsListQuery
+    useGetChangeRequestsListQuery,
+    useReviewChangeRequestMutation
 } = opsApi;

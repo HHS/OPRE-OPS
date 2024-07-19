@@ -176,13 +176,13 @@ def agreement_null_project(loaded_db, context, test_user):
 
 
 @given("I have an Agreement with a NULL Agreement Type")
-def agreement_null_agreement_type(loaded_db, context, test_user):
+def agreement_null_agreement_type(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
-        project_id=1,
+        project_id=test_project.id,
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -197,14 +197,14 @@ def agreement_null_agreement_type(loaded_db, context, test_user):
 
 
 @given("I have an Agreement with an empty string Description")
-def agreement_empty_description(loaded_db, context, test_user):
+def agreement_empty_description(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         description="",
         procurement_shop_id=1,
         agreement_reason=AgreementReason.NEW_REQ,
@@ -218,13 +218,13 @@ def agreement_empty_description(loaded_db, context, test_user):
 
 
 @given("I have an Agreement with a NULL Product Service Code")
-def agreement_null_product_service_code(loaded_db, context, test_user):
+def agreement_null_product_service_code(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         procurement_shop_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -238,13 +238,13 @@ def agreement_null_product_service_code(loaded_db, context, test_user):
 
 
 @given("I have an Agreement with a NULL Procurement Shop")
-def agreement_null_procurement_shop(loaded_db, context, test_user):
+def agreement_null_procurement_shop(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -258,13 +258,13 @@ def agreement_null_procurement_shop(loaded_db, context, test_user):
 
 
 @given("I have an Agreement with a NULL Agreement Reason")
-def agreement_null_agreement_reason(loaded_db, context, test_user):
+def agreement_null_agreement_reason(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         product_service_code_id=2,
         description="Using Innovative Data...",
         project_officer_id=test_user.id,
@@ -278,13 +278,13 @@ def agreement_null_agreement_reason(loaded_db, context, test_user):
 
 
 @given("I have an Agreement with an AgreementReason = NEW_REQ and an Incumbent")
-def agreement_reason_with_incumbent(loaded_db, context, test_user, test_vendor):
+def agreement_reason_with_incumbent(loaded_db, context, test_user, test_vendor, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -302,13 +302,13 @@ def agreement_reason_with_incumbent(loaded_db, context, test_user, test_vendor):
 @given(
     "I have an Agreement with an AgreementReason = RECOMPETE or LOGICAL_FOLLOW_ON and has a NULL or empty string Incumbent"
 )
-def agreement_reason_with_incumbent_required(loaded_db, context, test_user):
+def agreement_reason_with_incumbent_required(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.RECOMPETE,
@@ -323,13 +323,13 @@ def agreement_reason_with_incumbent_required(loaded_db, context, test_user):
 
 
 @given("I have an Agreement without a Project Officer")
-def agreement_null_project_officer(loaded_db, context, test_user):
+def agreement_null_project_officer(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -343,13 +343,13 @@ def agreement_null_project_officer(loaded_db, context, test_user):
 
 
 @given("I have an Agreement without any Team Members")
-def agreement_null_team_members(loaded_db, context, test_user):
+def agreement_null_team_members(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -363,13 +363,13 @@ def agreement_null_team_members(loaded_db, context, test_user):
 
 
 @given("I have a valid Agreement")
-def valid_agreement(loaded_db, context, test_user):
+def valid_agreement(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
-        project_id=1,
+        project_id=test_project.id,
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
@@ -384,13 +384,13 @@ def valid_agreement(loaded_db, context, test_user):
 
 
 @when("I have a BLI in DRAFT status")
-def bli(loaded_db, context, test_user):
+def bli(loaded_db, context, test_user, test_can):
     initial_bli_for_put = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -401,7 +401,7 @@ def bli(loaded_db, context, test_user):
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -416,13 +416,13 @@ def bli(loaded_db, context, test_user):
 
 
 @when("I have a BLI in DRAFT status without a Need By Date")
-def bli_without_need_by_date(loaded_db, context, test_user):
+def bli_without_need_by_date(loaded_db, context, test_user, test_can):
     initial_bli_for_put = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
@@ -432,7 +432,7 @@ def bli_without_need_by_date(loaded_db, context, test_user):
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
@@ -446,13 +446,13 @@ def bli_without_need_by_date(loaded_db, context, test_user):
 
 
 @when("I have a BLI in DRAFT status with a Need By Date in the past or today")
-def bli_past_need_by_date(loaded_db, context, test_user):
+def bli_past_need_by_date(loaded_db, context, test_user, test_can):
     initial_bli_for_put = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2022, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -463,7 +463,7 @@ def bli_past_need_by_date(loaded_db, context, test_user):
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2022, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -508,12 +508,12 @@ def bli_without_can(loaded_db, context, test_user):
 
 
 @when("I have a BLI in DRAFT status without an Amount")
-def bli_without_amount(loaded_db, context, test_user):
+def bli_without_amount(loaded_db, context, test_user, test_can):
     initial_bli_for_put = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -523,7 +523,7 @@ def bli_without_amount(loaded_db, context, test_user):
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -538,13 +538,13 @@ def bli_without_amount(loaded_db, context, test_user):
 
 
 @when("I have a BLI in DRAFT status with an Amount less than or equal to 0")
-def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user):
+def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, test_can):
     initial_bli_for_put = BudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
         amount=0,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -555,7 +555,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user):
         comments="blah blah",
         line_description="LI 1",
         amount=0,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -570,12 +570,12 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user):
 
 
 @when("I have a BLI in DRAFT status without an Agreement")
-def bli_without_agreement(loaded_db, context, test_user):
+def bli_without_agreement(loaded_db, context, test_user, test_can):
     initial_bli_for_put = BudgetLineItem(
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -585,7 +585,7 @@ def bli_without_agreement(loaded_db, context, test_user):
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
-        can_id=1,
+        can_id=test_can.id,
         date_needed=datetime.date(2043, 1, 1),
         status=BudgetLineItemStatus.DRAFT,
         proc_shop_fee_percentage=1.23,
@@ -605,7 +605,7 @@ def submit(bdd_client, context):
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
         "comments": "hah hah",
-        "can_id": 2,
+        "can_id": 501,
         "amount": 200.24,
         "status": "PLANNED",
         "date_needed": "2044-01-01",
@@ -629,7 +629,7 @@ def submit_without_agreement(bdd_client, context):
     data = {
         "line_description": "Updated LI 1",
         "comments": "hah hah",
-        "can_id": 2,
+        "can_id": 501,
         "amount": 200.24,
         "status": "PLANNED",
         "date_needed": "2044-01-01",
@@ -654,7 +654,7 @@ def submit_without_need_by_date(bdd_client, context):
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
         "comments": "hah hah",
-        "can_id": 2,
+        "can_id": 501,
         "amount": 200.24,
         "status": "PLANNED",
         "proc_shop_fee_percentage": 2.34,
@@ -678,7 +678,7 @@ def submit_empty_need_by_date(bdd_client, context):
         "agreement_id": context["agreement"].id,
         "line_description": "Updated LI 1",
         "comments": "hah hah",
-        "can_id": 2,
+        "can_id": 501,
         "amount": 200.24,
         "status": "PLANNED",
         "date_needed": "  ",
