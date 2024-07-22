@@ -1,6 +1,7 @@
 from .auth import *
 from .base import *
 from .cans import *
+from .document import *
 from .events import *
 from .history import *
 from .notifications import *

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from models.base import BaseModel
 
 
-class DocumentTypes(Enum):
+class DocumentType(Enum):
     CERTIFICATION_OF_FUNDING = auto()
     STATEMENT_OF_REQUIREMENTS = auto()
     ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS = auto()
@@ -24,7 +24,7 @@ class Document(BaseModel):
 
     id = BaseModel.get_pk_column()
     file_name: Mapped[str] = mapped_column(String, nullable=False)
-    document_type: Mapped[DocumentTypes] = mapped_column(ENUM(DocumentTypes), nullable=False)
+    document_type: Mapped[DocumentType] = mapped_column(ENUM(DocumentType), nullable=False)
     agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), nullable=False)
 
     @BaseModel.display_name.getter
