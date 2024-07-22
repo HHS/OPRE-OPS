@@ -4,15 +4,19 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.document import bp as documents_bp
 from ops_api.ops.document.document_gateway import DocumentGateway
-from ops_api.ops.document.schema import DocumentRequestSchema, DocumentResponseSchema, GetDocumentRequestSchema
+from ops_api.ops.document.schema import (
+    DocumentPatchRequestSchema,
+    DocumentRequestSchema,
+    DocumentResponseSchema,
+    GetDocumentRequestSchema,
+)
 from ops_api.ops.document.service import DocumentService
 from ops_api.ops.utils.response import make_response_with_headers
 
 
 @documents_bp.route("/", methods=["GET"])
 @is_authorized(PermissionType.GET, Permission.UPLOAD_DOCUMENT)
-def get_documents_by_agreement_id():
-
+def get_documents_by_agreement_id() -> Response:
     # Use schema to validate request data and get agreement_id
     request_schema = GetDocumentRequestSchema()
     request_data = request_schema.dump(request_schema.load(request.args))
@@ -44,3 +48,18 @@ def create_document() -> Response:
     response_schema = DocumentResponseSchema()
     response_data = response_schema.dump(result)
     return make_response_with_headers(data=response_data, status_code=201)
+
+
+@documents_bp.route("/", methods=["PATCH"])
+@is_authorized(PermissionType.PATCH, Permission.UPLOAD_DOCUMENT)
+def update_document_status() -> Response:
+    # Use schema to validate request data and get document
+    request_data = request.get_json()
+    request_schema = DocumentPatchRequestSchema()
+    document_data = request_schema.dump(request_schema.load(request_data))
+
+    # Call document service to update the document status
+    document_service = DocumentService(DocumentGateway(current_app.config))
+    result = document_service.update_document_status(document_data)
+
+    return make_response_with_headers(data=result, status_code=200)

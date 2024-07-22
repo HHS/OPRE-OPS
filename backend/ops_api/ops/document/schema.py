@@ -6,11 +6,17 @@ class GetDocumentRequestSchema(Schema):
 
 
 class DocumentRequestSchema(Schema):
-    file_name: str = fields.String(required=True)
-    document_type: str = fields.String(required=True)
     agreement_id: int = fields.Int(required=True)
+    document_type: str = fields.String(required=True)
+    file_name: str = fields.String(required=True)
 
 
 class DocumentResponseSchema(Schema):
-    uuid: str = fields.String(required=True)
     url: str = fields.String(required=True)
+    uuid: str = fields.String(required=True)
+
+
+class DocumentPatchRequestSchema(Schema):
+    agreement_id: int = fields.Int(required=True)
+    document_id: str = fields.String(required=True)
+    status: str = fields.String(required=True)
