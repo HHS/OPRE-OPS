@@ -97,7 +97,8 @@ const ApproveAgreement = () => {
                         >
                             <BLIDiffTable
                                 budgetLines={group.budgetLines}
-                                readOnly={true}
+                                changeType={changeRequestTitle}
+                                statusChangeTo={urlChangeToStatus}
                             />
                         </ServicesComponentAccordion>
                     ))}

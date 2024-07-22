@@ -2,7 +2,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import { BLILabel, canLabel, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { BLI_STATUS, BLILabel, canLabel, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
@@ -19,6 +19,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound } from "./BLIDiffRow.helpers";
+import { CHANGE_REQUEST_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequests.constants";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -26,10 +27,13 @@ import { addErrorClassIfNotFound } from "./BLIDiffRow.helpers";
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
-
+ * @param {string} props.changeType - The type of change request.
+ * @param {string} [props.statusChangeTo=""] - The status change to.
+ *
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIDiffRow = ({ budgetLine, isReviewMode = false }) => {
+const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChangeTo = "" }) => {
+    const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
@@ -37,8 +41,24 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false }) => {
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const isBLIInReview = budgetLine?.in_review || false;
-    console.log({ isBLIInReview });
+    const budgetChangeType = changeType === CHANGE_REQUEST_TYPES.BUDGET;
+    const isStatusChange = changeType === CHANGE_REQUEST_TYPES.STATUS;
+    let changeRequestTypes = [];
+    if (budgetChangeType) {
+        changeRequestTypes = isBLIInReview
+            ? budgetLine?.change_requests_in_review
+                  .filter((changeRequest) => changeRequest.has_budget_change)
+                  .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data))
+            : [];
+    } else if (isStatusChange) {
+        changeRequestTypes = isBLIInReview
+            ? budgetLine?.change_requests_in_review
+                  .filter((changeRequest) => changeRequest.has_status_change)
+                  .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data))
+            : [];
+    }
 
+    console.log({ changeRequestTypes });
     const TableRowData = (
         <>
             <th
@@ -56,6 +76,7 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false }) => {
                 style={bgExpandedStyles}
             >
                 {formatDateNeeded(budgetLine?.date_needed)}
+                {changeRequestTypes.includes(KEY_NAMES.DATE_NEEDED) && <span>🔴</span>}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(
@@ -71,6 +92,7 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false }) => {
                 style={bgExpandedStyles}
             >
                 {canLabel(budgetLine)}
+                {changeRequestTypes.includes(KEY_NAMES.CAN) && <span>🔴</span>}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
@@ -85,6 +107,7 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false }) => {
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
+                {changeRequestTypes.includes(KEY_NAMES.AMOUNT) && <span>🔴</span>}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -119,6 +142,7 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false }) => {
                 style={bgExpandedStyles}
             >
                 <TableTag status={budgetLine?.status} />
+                {changeRequestTypes.includes(KEY_NAMES.STATUS) && <span>🔴</span>}
             </td>
         </>
     );
@@ -174,7 +198,9 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false }) => {
 
 BLIDiffRow.propTypes = {
     budgetLine: PropTypes.object.isRequired,
-    isReviewMode: PropTypes.bool
+    isReviewMode: PropTypes.bool,
+    changeType: PropTypes.string.isRequired,
+    statusChangeTo: PropTypes.string
 };
 
 export default BLIDiffRow;
