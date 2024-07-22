@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
 
-from models import Notification, NotificationType, OpsEventType, User
+from models import AgreementChangeRequest, ChangeRequestNotification, Notification, NotificationType, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -175,12 +175,26 @@ class NotificationListAPI(BaseListAPI):
         is_read: Optional[bool] = None,
         agreement_id: Optional[int] = None,
     ):
-        stmt = (
-            select(Notification)
-            .distinct(Notification.id)
-            .join(User, Notification.recipient_id == User.id, isouter=True)
-            .order_by(Notification.id)
-        )
+        if agreement_id:
+            # only ChangeRequestNotifications are associated with an agreement
+            stmt = (
+                select(ChangeRequestNotification)
+                .distinct(ChangeRequestNotification.id)
+                .join(User, ChangeRequestNotification.recipient_id == User.id, isouter=True)
+                .join(
+                    AgreementChangeRequest,
+                    ChangeRequestNotification.change_request_id == AgreementChangeRequest.agreement_id,
+                )
+                .where(AgreementChangeRequest.agreement_id == agreement_id)
+                .order_by(ChangeRequestNotification.id)
+            )
+        else:
+            stmt = (
+                select(Notification)
+                .distinct(Notification.id)
+                .join(User, Notification.recipient_id == User.id, isouter=True)
+                .order_by(Notification.id)
+            )
 
         query_helper = QueryHelper(stmt)
 
