@@ -5,8 +5,14 @@ from werkzeug.exceptions import Forbidden, NotFound
 from models import Role, User
 
 
-def get_user(session: Session, **kwargs) -> User | None:
-    return session.get(User, kwargs.get("id"))
+def get_user(session: Session, **kwargs) -> User:
+    id = kwargs.get("id")
+    user: User | None = session.get(User, id)
+
+    if not user:
+        raise NotFound(f"User {id} not found")
+
+    return user
 
 
 def update_user(session: Session, **kwargs) -> User:
@@ -30,10 +36,7 @@ def update_user(session: Session, **kwargs) -> User:
     if "id" in data and user_id != data.get("id"):
         raise Forbidden("User ID does not match ID in data.")
 
-    user: User | None = session.get(User, user_id)
-
-    if not user:
-        raise NotFound(f"User {user_id} not found")
+    get_user(session, id=user_id)  # Ensure user exists
 
     if "roles" in data:
         data["roles"] = [

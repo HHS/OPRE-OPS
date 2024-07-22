@@ -92,3 +92,7 @@ def test_patch_user(auth_client, new_user, loaded_db, test_admin_user):
 
     updated_user = loaded_db.get(User, new_user.id)
     assert updated_user.first_name == "New First Name"
+
+
+def test_patch_user_must_be_user_admin_to_change_status():
+    raise NotImplementedError("Test not implemented")

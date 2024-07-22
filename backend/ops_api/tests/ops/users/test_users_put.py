@@ -166,3 +166,7 @@ def test_put_user_wrong_user(auth_client, new_user, loaded_db, test_admin_user):
         json={"id": 0, "email": "new_user@example.com"},
     )
     assert response.status_code == 403
+
+
+def test_put_user_must_be_user_admin_to_change_status():
+    raise NotImplementedError("Test not implemented")

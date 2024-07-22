@@ -4,7 +4,7 @@ import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from marshmallow import Schema
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import Forbidden
 
 import ops_api.ops.services.users as users_service
 from models import BaseModel, OpsEventType, User
@@ -44,10 +44,7 @@ class UsersItemAPI(BaseItemAPI):
         - If the user is not an admin, they can get the full details of their own user or a safe version of another user
         """
         with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
-            user: User | None = users_service.get_user(current_app.db_session, id=id)
-
-            if not user:
-                raise NotFound(f"User {id} not found")
+            user: User = users_service.get_user(current_app.db_session, id=id)
 
             if is_user_admin(current_user) or user.id == current_user.id:
                 schema = self._response_schema
@@ -63,47 +60,47 @@ class UsersItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
-        request_schema = PutUserSchema()
-        user_data = request_schema.load(request.json)
+        with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
+            request_schema = PutUserSchema()
+            user_data = request_schema.load(request.json)
 
-        user: User | None = users_service.get_user(current_app.db_session, id=id)
+            user: User = users_service.get_user(current_app.db_session, id=id)
 
-        if not user:
-            raise NotFound(f"User {id} not found")
+            if is_user_admin(current_user) or user.id == current_user.id:
+                schema = self._response_schema
+            else:
+                raise Forbidden("You do not have permission to update this user")
 
-        if is_user_admin(current_user) or user.id == current_user.id:
-            schema = self._response_schema
-        else:
-            raise Forbidden("You do not have permission to update this user")
+            updated_user = users_service.update_user(current_app.db_session, id=id, data=user_data)
 
-        updated_user = users_service.update_user(current_app.db_session, id=id, data=user_data)
+            user_data = schema.dump(updated_user)
+            user_data["roles"] = [role.name for role in updated_user.roles]
 
-        user_data = schema.dump(updated_user)
-        user_data["roles"] = [role.name for role in updated_user.roles]
+            meta.metadata.update({"user_details": user_data})
 
-        return make_response_with_headers(user_data)
+            return make_response_with_headers(user_data)
 
     @is_authorized(PermissionType.PATCH, Permission.USER)
     def patch(self, id: int) -> Response:
-        request_schema = PutUserSchema(partial=True)
-        user_data = request_schema.load(request.json)
+        with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
+            request_schema = PutUserSchema(partial=True)
+            user_data = request_schema.load(request.json)
 
-        user: User | None = users_service.get_user(current_app.db_session, id=id)
+            user: User = users_service.get_user(current_app.db_session, id=id)
 
-        if not user:
-            raise NotFound(f"User {id} not found")
+            if is_user_admin(current_user) or user.id == current_user.id:
+                schema = self._response_schema
+            else:
+                raise Forbidden("You do not have permission to update this user")
 
-        if is_user_admin(current_user) or user.id == current_user.id:
-            schema = self._response_schema
-        else:
-            raise Forbidden("You do not have permission to update this user")
+            updated_user = users_service.update_user(current_app.db_session, id=id, data=user_data)
 
-        updated_user = users_service.update_user(current_app.db_session, id=id, data=user_data)
+            user_data = schema.dump(updated_user)
+            user_data["roles"] = [role.name for role in updated_user.roles]
 
-        user_data = schema.dump(updated_user)
-        user_data["roles"] = [role.name for role in updated_user.roles]
+            meta.metadata.update({"user_details": user_data})
 
-        return make_response_with_headers(user_data)
+            return make_response_with_headers(user_data)
 
 
 class UsersListAPI(BaseListAPI):
