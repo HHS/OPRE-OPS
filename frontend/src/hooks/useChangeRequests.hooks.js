@@ -20,6 +20,34 @@ export const useChangeRequestsForAgreement = (agreementId) => {
 };
 
 /**
+ * Custom hook that returns the change requests for budget lines.
+ * @param {Object[]} budgetLines - The budget lines.
+ * @param {string | null} targetStatus - The target status to filter change requests.
+ * @param {boolean} [isBudgetChange] - Whether to filter for budget changes.
+ *
+ * @returns {string} The change requests messages.
+ */
+export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBudgetChange = false) => {
+    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery();
+
+    if (!budgetLines || !cansSuccess) {
+        return "";
+    }
+
+    let messages;
+    if (isBudgetChange) {
+        messages = getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, null, true);
+    } else if (targetStatus) {
+        messages = getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatus, false);
+    } else {
+        messages = getChangeRequestsFromBudgetLines(budgetLines, cans);
+    }
+
+    const formattedMessages = formatMessage(messages);
+    return formattedMessages;
+};
+
+/**
  * Custom hook that returns the change requests for a budget line.
  * @param {Object} budgetLine - The budget line.
  * @returns {string} The change requests messages.
@@ -33,6 +61,60 @@ export const useChangeRequestsForTooltip = (budgetLine) => {
     }
     return getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview);
 };
+
+/**
+ * Get change requests for tooltip.
+ * @param {ChangeRequest[]} changeRequests - The change requests.
+ * @param {Object} budgetLine - The budget line.
+ * @param {Object[]} cans - The cans.
+ * @param {boolean} cansSuccess - Whether the cans were successfully fetched.
+ * @param {boolean} isBLIInReview - Whether the budget line is in review.
+ * @returns {string} The change requests messages.
+ */
+export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview) {
+    /**
+     * @type {string[]}
+     */
+    let changeRequestsMessages = [];
+
+    if (changeRequests?.length > 0 && cansSuccess) {
+        changeRequests.forEach((changeRequest) => {
+            if (changeRequest?.requested_change_data?.amount) {
+                changeRequestsMessages.push(
+                    `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                );
+            }
+            if (changeRequest?.requested_change_data?.date_needed) {
+                changeRequestsMessages.push(
+                    `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                );
+            }
+            if (changeRequest?.requested_change_data?.can_id) {
+                let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                let canName = matchingCan?.display_name || "TBD";
+
+                changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
+            }
+            if (changeRequest?.requested_change_data?.status) {
+                changeRequestsMessages.push(
+                    `Status Change: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
+                );
+            }
+
+            return changeRequestsMessages;
+        });
+    }
+
+    let lockedMessage = "";
+
+    if (isBLIInReview) {
+        lockedMessage = "This budget line has pending edits:";
+        changeRequestsMessages.forEach((message) => {
+            lockedMessage += `\n \u2022 ${message}`;
+        });
+    }
+    return lockedMessage;
+}
 
 /**
  * Get change requests from budget lines.
@@ -88,55 +170,74 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
 }
 
 /**
- * Get change requests for tooltip.
- * @param {ChangeRequest[]} changeRequests - The change requests.
- * @param {Object} budgetLine - The budget line.
+ * Get change requests from budget lines.
+ * @param {Object[]} budgetLines - The budget lines.
  * @param {Object[]} cans - The cans.
- * @param {boolean} cansSuccess - Whether the cans were successfully fetched.
- * @param {boolean} isBLIInReview - Whether the budget line is in review.
- * @returns {string} The change requests messages.
+ * @param {string} targetStatus - The target status to filter change requests.
+ * @returns {string[]} The change requests messages.
  */
-export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview) {
-    /**
-     * @type {string[]}
-     */
-    let changeRequestsMessages = [];
+/**
+ * Get filtered change requests from budget lines.
+ * @param {Object[]} budgetLines - The budget lines.
+ * @param {Object[]} cans - The cans.
+ * @param {string | null} [targetStatus] - The target status to filter change requests.
+ * @param {boolean} [isBudgetChange] - Whether to filter for budget changes.
+ * @returns {string[]} The change requests messages.
+ */
+function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatus, isBudgetChange = false) {
+    let changeRequestsMessages = new Set();
+    const changeRequestsFromBudgetLines = budgetLines
+        .filter((budgetLine) => budgetLine.in_review)
+        .flatMap((budgetLine) =>
+            Array.isArray(budgetLine.change_requests_in_review)
+                ? budgetLine.change_requests_in_review
+                      .filter(
+                          (cr) =>
+                              (isBudgetChange && cr.has_budget_change) ||
+                              (!isBudgetChange && cr.requested_change_data.status === targetStatus)
+                      )
+                      .map((changeRequest) => ({ ...budgetLine, changeRequest }))
+                : []
+        );
 
-    if (changeRequests?.length > 0 && cansSuccess) {
-        changeRequests.forEach((changeRequest) => {
-            if (changeRequest?.requested_change_data?.amount) {
-                changeRequestsMessages.push(
-                    `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+    if (changeRequestsFromBudgetLines?.length > 0) {
+        changeRequestsFromBudgetLines.forEach((budgetLine) => {
+            let bliId = `BL ${budgetLine.id}`;
+            const changeRequest = budgetLine.changeRequest;
+
+            if (isBudgetChange && changeRequest?.requested_change_data?.amount) {
+                changeRequestsMessages.add(
+                    `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                 );
             }
-            if (changeRequest?.requested_change_data?.date_needed) {
-                changeRequestsMessages.push(
-                    `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
-                );
+            if (!isBudgetChange) {
+                if (changeRequest?.requested_change_data?.date_needed) {
+                    changeRequestsMessages.add(
+                        `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                    );
+                }
+                if (changeRequest?.requested_change_data?.can_id) {
+                    let matchingCan = cans?.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                    let canName = matchingCan?.display_name || "TBD";
+                    changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
+                }
+                if (changeRequest?.requested_change_data?.status) {
+                    changeRequestsMessages.add(
+                        `${bliId} Status: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
+                    );
+                }
             }
-            if (changeRequest?.requested_change_data?.can_id) {
-                let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
-                let canName = matchingCan?.display_name || "TBD";
-
-                changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
-            }
-            if (changeRequest?.requested_change_data?.status) {
-                changeRequestsMessages.push(
-                    `Status Change: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`
-                );
-            }
-
-            return changeRequestsMessages;
         });
     }
-
-    let lockedMessage = "";
-
-    if (isBLIInReview) {
-        lockedMessage = "This budget line has pending edits:";
-        changeRequestsMessages.forEach((message) => {
-            lockedMessage += `\n \u2022 ${message}`;
-        });
-    }
-    return lockedMessage;
+    return Array.from(changeRequestsMessages);
+}
+/**
+ * Format the message.
+ * @param {string[]} changeRequestsMessages - The change requests messages.
+ * @returns {string} The formatted message.
+ */
+function formatMessage(changeRequestsMessages) {
+    return Array.from(changeRequestsMessages)
+        .map((message) => ` \u2022 ${message}`)
+        .join("\n");
 }

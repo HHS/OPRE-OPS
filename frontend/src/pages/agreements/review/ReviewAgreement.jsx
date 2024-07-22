@@ -218,8 +218,8 @@ export const ReviewAgreement = () => {
             />
             <AgreementActionAccordion
                 setAction={handleActionChange}
-                optionOneDisabled={!anyBudgetLinesDraft}
-                optionTwoDisabled={!anyBudgetLinePlanned}
+                optionOneDisabled={!anyBudgetLinesDraft || areThereBudgetLineErrors}
+                optionTwoDisabled={!anyBudgetLinePlanned || areThereBudgetLineErrors}
             />
             <AgreementBLIAccordion
                 title="Select Budget Lines"

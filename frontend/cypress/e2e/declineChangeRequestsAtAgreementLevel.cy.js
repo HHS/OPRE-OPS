@@ -125,7 +125,11 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("planned status changes");
                 cy.get('[data-cy="decline-approval-btn"]').click();
+                cy.get("#ops-modal-heading").contains(/decline this status change to planned status?/i);
                 cy.get('[data-cy="confirm-action"]').click();
+                cy.get(".usa-alert__body").should("contain", "Changes Declined");
+                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
@@ -247,7 +251,11 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("executing status changes");
                 cy.get('[data-cy="decline-approval-btn"]').click();
+                cy.get("#ops-modal-heading").contains(/decline these budget lines for executing status/i);
                 cy.get('[data-cy="confirm-action"]').click();
+                cy.get(".usa-alert__body").should("contain", "Changes Declined");
+                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
@@ -368,7 +376,11 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("budget changes");
                 cy.get('[data-cy="decline-approval-btn"]').click();
+                cy.get("#ops-modal-heading").contains(/decline this budget change/i);
                 cy.get('[data-cy="confirm-action"]').click();
+                cy.get(".usa-alert__body").should("contain", "Changes Declined");
+                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
@@ -377,6 +389,120 @@ describe("Decline Change Requests at the Agreement Level", () => {
                     '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
                 )
                     .contains(/Budget Change to Amount Declined/)
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
+            });
+    });
+    it("handle cancelling out of approval", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const updatedBLIToPlanned = {
+                    ...testBli,
+                    status: BLI_STATUS.PLANNED
+                };
+                const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // submit PATCH CR for approval via REST
+            .then(({ agreementId, bliId }) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    body: {
+                        id: bliId,
+                        amount: 2_000_000,
+                        requestor_notes: "Test requestor notes"
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // test interactions
+            .then(({ agreementId, bliId }) => {
+                cy.visit("/agreements?filter=change-requests").wait(1000);
+                // see if there are any review cards
+                cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
+                cy.get("[data-cy='review-card']").contains(/planned/i);
+                // hover over the review card
+                cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                // click on button data-cy approve-agreement
+                cy.get("[data-cy='approve-agreement']").click();
+                // get h1 to have content Approval for
+                cy.get("h1").contains(/approval for budget change/i);
+                // get content in review-card
+                cy.get("[data-cy='review-card']").contains(/planned/i);
+                cy.get("[data-cy='review-card']").contains(/amount/i);
+                cy.get("[data-cy='review-card']").contains("$1,000,000.00");
+                cy.get("[data-cy='review-card']").contains("$2,000,000.00");
+                //class accordion__content contains a paragraph that contains the text planned status change
+                cy.get(".usa-accordion__content").contains("budget changes");
+                cy.get('[data-cy="cancel-approval-btn"]').click();
+                cy.get("#ops-modal-heading").contains(/are you sure you want to cancel/i);
+                cy.get('[data-cy="confirm-action"]').click();
+                cy.get("[data-cy='review-card']")
+                    .should("exist")
                     .then(() => {
                         cy.request({
                             method: "DELETE",
