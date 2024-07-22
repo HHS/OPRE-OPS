@@ -34,6 +34,8 @@ def upgrade() -> None:
     op.create_table(
         'document_version',
         sa.Column('id', sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column('document_id', sa.String(), nullable=False),
+        sa.Column('status', sa.String(), nullable=True),
         sa.Column('file_name', sa.String(), autoincrement=False, nullable=False),
         sa.Column(
             'document_type',
@@ -82,6 +84,8 @@ def upgrade() -> None:
     op.create_table(
         'document',
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column('document_id', sa.String(), nullable=False),
+        sa.Column('status', sa.String(), nullable=True),
         sa.Column('file_name', sa.String(), nullable=False),
         sa.Column(
             'document_type',

@@ -1,3 +1,4 @@
+import uuid
 from enum import Enum, auto
 
 from sqlalchemy import ForeignKey, String
@@ -23,9 +24,11 @@ class Document(BaseModel):
     __tablename__ = "document"
 
     id = BaseModel.get_pk_column()
-    file_name: Mapped[str] = mapped_column(String, nullable=False)
-    document_type: Mapped[DocumentType] = mapped_column(ENUM(DocumentType), nullable=False)
     agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), nullable=False)
+    document_id: Mapped[str] = mapped_column(default=str(uuid.uuid4()), nullable=False, unique=True)
+    document_type: Mapped[DocumentType] = mapped_column(ENUM(DocumentType), nullable=False)
+    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, default='', nullable=True)
 
     @BaseModel.display_name.getter
     def display_name(self):
