@@ -26,21 +26,18 @@ import { addErrorClassIfNotFound } from "./BLIDiffRow.helpers";
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
  * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
- * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
- * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
- * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
- * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
- * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
+
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIDiffRow = ({ budgetLine, isReviewMode = false, isBLIInCurrentWorkflow = false }) => {
-    const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
+const BLIDiffRow = ({ budgetLine, isReviewMode = false }) => {
+    const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const isBLIInReview = budgetLine?.in_review || false;
+    console.log({ isBLIInReview });
 
     const TableRowData = (
         <>
@@ -177,13 +174,7 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, isBLIInCurrentWorkflow =
 
 BLIDiffRow.propTypes = {
     budgetLine: PropTypes.object.isRequired,
-    canUserEditBudgetLines: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    handleSetBudgetLineForEditing: PropTypes.func,
-    handleDeleteBudgetLine: PropTypes.func,
-    handleDuplicateBudgetLine: PropTypes.func,
-    readOnly: PropTypes.bool,
-    isBLIInCurrentWorkflow: PropTypes.bool
+    isReviewMode: PropTypes.bool
 };
 
 export default BLIDiffRow;
