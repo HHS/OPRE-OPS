@@ -3,7 +3,7 @@ import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAc
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import DocumentCollectionView from "../../../components/Agreements/Documents/DocumentCollectionView";
-import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
+import BLIDiffTable from "../../../components/BudgetLineItems/BLIDiffTable";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -95,7 +95,7 @@ const ApproveAgreement = () => {
                             periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
                             description={findDescription(servicesComponents, group.servicesComponentId)}
                         >
-                            <BudgetLinesTable
+                            <BLIDiffTable
                                 budgetLines={group.budgetLines}
                                 readOnly={true}
                             />
