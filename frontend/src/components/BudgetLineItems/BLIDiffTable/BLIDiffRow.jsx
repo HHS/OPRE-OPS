@@ -11,6 +11,7 @@ import {
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { CHANGE_REQUEST_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequests.constants";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
@@ -19,7 +20,6 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { addErrorClassIfNotFound } from "./BLIDiffRow.helpers";
-import { CHANGE_REQUEST_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequests.constants";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -33,7 +33,9 @@ import { CHANGE_REQUEST_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequ
  * @returns {JSX.Element} The BLIRow component.
  **/
 const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChangeTo = "" }) => {
+    // TODO: Filter status change requests by statusChangeTo
     const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
+    console.log({ changeRequestStatus });
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
