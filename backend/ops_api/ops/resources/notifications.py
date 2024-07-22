@@ -61,6 +61,7 @@ class ListAPIRequest:
     user_id: Optional[str]
     oidc_id: Optional[str]
     is_read: Optional[bool]
+    agreement_id: Optional[int]
 
 
 class NotificationItemAPI(BaseItemAPI):
@@ -172,6 +173,7 @@ class NotificationListAPI(BaseListAPI):
         user_id: Optional[int] = None,
         oidc_id: Optional[str] = None,
         is_read: Optional[bool] = None,
+        agreement_id: Optional[int] = None,
     ):
         stmt = (
             select(Notification)
