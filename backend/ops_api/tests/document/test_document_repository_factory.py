@@ -1,3 +1,4 @@
+import uuid
 from unittest.mock import Mock
 
 import pytest
@@ -84,3 +85,19 @@ def test_delete_document(repository):
 def test_delete_nonexistent_document_raises_error(repository):
     with pytest.raises(DocumentNotFoundError):
         repository.delete_document("123")
+
+
+def test_update_existing_document(repository):
+    new_status = "Uploaded"
+    created_document = repository.add_document({"file_name": "Test.pdf", "document_type": "PDF", "agreement_id": 456})
+    document_id = created_document["uuid"]
+    repository.update_document_status(document_id, new_status)
+    updated_document = repository.get_document(document_id)
+    assert updated_document is not None
+    assert updated_document["status"] == new_status
+
+
+def test_update_nonexistent_document(repository):
+    non_existent_id = str(uuid.uuid4())
+    with pytest.raises(DocumentNotFoundError):
+        repository.update_document_status(non_existent_id, "")

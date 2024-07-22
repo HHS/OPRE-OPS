@@ -49,3 +49,10 @@ class FakeDocumentRepository(DocumentRepository):
     def get_documents_by_agreement_id(self, agreement_id):
         with self.lock:
             return [doc for doc in self.documents.values() if doc.get("agreement_id") == agreement_id]
+
+    def update_document_status(self, document_id, status):
+        with self.lock:
+            if document_id in self.documents:
+                self.documents[document_id]["status"] = status
+            else:
+                raise DocumentNotFoundError("Document not found")
