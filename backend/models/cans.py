@@ -48,6 +48,11 @@ class BudgetLineItemStatus(Enum):
     IN_EXECUTION = auto()
     OBLIGATED = auto()
 
+class ModType(Enum):
+    ADMIN = auto()
+    AMOUNT_TBD = auto()
+    AS_IS = auto()
+    REPLACEMENT_AMOUNT_FINAL = auto()
 
 class CANArrangementType(Enum):
     OPRE_APPROPRIATION = auto()
@@ -306,6 +311,7 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
+    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer())
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
     )
@@ -576,10 +582,17 @@ class BudgetLineItem(BaseModel):
     clin: Mapped[Optional[CLIN]] = relationship(CLIN, backref="budget_line_items")
 
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
+    mod_type: Mapped[Optional[ModType]] = mapped_column(
+        sa.Enum(ModType)
+    )
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         sa.Enum(BudgetLineItemStatus)
     )
+
+    on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
+    certified: Mapped[bool] = mapped_column(Boolean, default=False)
+    closed: Mapped[bool] = mapped_column(Boolean, default=False)
 
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
 

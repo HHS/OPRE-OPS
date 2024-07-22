@@ -92,7 +92,10 @@
 
         "GET_CHANGE_REQUEST_REVIEW",
         "PATCH_CHANGE_REQUEST_REVIEW",
-        "POST_CHANGE_REQUEST_REVIEW"
+        "POST_CHANGE_REQUEST_REVIEW",
+
+        "GET_UPLOAD_DOCUMENT",
+        "POST_UPLOAD_DOCUMENT"
       ],
     },
     { // 2 User
@@ -143,6 +146,8 @@
         "POST_CHANGE_REQUEST",
 
         "GET_CHANGE_REQUEST_REVIEW",
+
+        "GET_UPLOAD_DOCUMENT"
       ],
     },
     { // 3 Unassigned (new user)
@@ -206,7 +211,10 @@
 
         "GET_CHANGE_REQUEST_REVIEW",
         "PATCH_CHANGE_REQUEST_REVIEW",
-        "POST_CHANGE_REQUEST_REVIEW"
+        "POST_CHANGE_REQUEST_REVIEW",
+
+        "GET_UPLOAD_DOCUMENT",
+        "POST_UPLOAD_DOCUMENT"
       ]
     },
     { // 5 User Admin
