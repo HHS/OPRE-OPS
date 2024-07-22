@@ -1,30 +1,24 @@
-import PropTypes from "prop-types";
-import { useLocation } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import TableTag from "../../UI/TableTag";
-import ChangeIcons from "../ChangeIcons";
-import TableRowExpandable from "../../UI/TableRowExpandable";
-import Tooltip from "../../UI/USWDS/Tooltip";
-import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { BLILabel, canLabel, getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
-    totalBudgetLineFeeAmount,
-    totalBudgetLineAmountPlusFees
+    totalBudgetLineAmountPlusFees,
+    totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
-import { getBudgetLineCreatedDate, canLabel, BLILabel } from "../../../helpers/budgetLines.helpers";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
-    removeBorderBottomIfExpanded,
-    changeBgColorIfExpanded
+    changeBgColorIfExpanded,
+    removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
-import { futureDateErrorClass, addErrorClassIfNotFound } from "./BLIDiffRow.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import TableTag from "../../UI/TableTag";
+import { addErrorClassIfNotFound } from "./BLIDiffRow.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
