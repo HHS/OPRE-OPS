@@ -39,43 +39,14 @@ import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.ho
  * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIDiffRow = ({
-    budgetLine,
-    isReviewMode = false,
-    handleSetBudgetLineForEditing = () => {},
-    handleDeleteBudgetLine = () => {},
-    handleDuplicateBudgetLine = () => {},
-    readOnly = false,
-    isBLIInCurrentWorkflow = false
-}) => {
+const BLIDiffRow = ({ budgetLine, isReviewMode = false, isBLIInCurrentWorkflow = false }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
-    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
-    const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
-    const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
-    const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;
-    const location = useLocation();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    const isApprovePage = location.pathname.includes("approve");
     const isBLIInReview = budgetLine?.in_review || false;
-    const isApprovePageAndBLIIsNotInPacket = isApprovePage && !isBLIInCurrentWorkflow;
-    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
-
-    const changeIcons = (
-        <ChangeIcons
-            item={budgetLine}
-            handleDeleteItem={handleDeleteBudgetLine}
-            handleDuplicateItem={handleDuplicateBudgetLine}
-            handleSetItemForEditing={handleSetBudgetLineForEditing}
-            isItemEditable={isBudgetLineEditable}
-            duplicateIcon={true}
-            lockedMessage={lockedMessage}
-        />
-    );
 
     const TableRowData = (
         <>
@@ -84,22 +55,10 @@ const BLIDiffRow = ({
                 className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {isApprovePageAndBLIIsNotInPacket ? (
-                    <Tooltip
-                        label="This budget line was not sent for approval"
-                        position="right"
-                    >
-                        <span>{budgetLine?.id}</span>
-                    </Tooltip>
-                ) : (
-                    BLILabel(budgetLine)
-                )}
+                {BLILabel(budgetLine)}
             </th>
             <td
-                className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed),
-                    isReviewMode
-                )} ${addErrorClassIfNotFound(
+                className={`${addErrorClassIfNotFound(
                     formatDateNeeded(budgetLine?.date_needed),
                     isReviewMode
                 )} ${borderExpandedStyles}`}
@@ -108,9 +67,10 @@ const BLIDiffRow = ({
                 {formatDateNeeded(budgetLine?.date_needed)}
             </td>
             <td
-                className={`${
-                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed)), isReviewMode)
-                } ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(
+                    fiscalYearFromDate(budgetLine?.date_needed),
+                    isReviewMode
+                )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {fiscalYearFromDate(budgetLine?.date_needed)}
@@ -167,15 +127,7 @@ const BLIDiffRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                {isRowActive && !isExpanded && !readOnly ? (
-                    <div>{changeIcons}</div>
-                ) : (
-                    <TableTag
-                        inReview={isBLIInReview}
-                        status={budgetLine?.status}
-                        lockedMessage={lockedMessage}
-                    />
-                )}
+                <TableTag status={budgetLine?.status} />
             </td>
         </>
     );
@@ -193,8 +145,7 @@ const BLIDiffRow = ({
                         id={`created-by-name-${budgetLine?.id}`}
                         className="margin-0"
                     >
-                        {/* NOTE: Show logged in user name when creating BLIs */}
-                        {budgetLine?.created_by ? budgetLineCreatorName : loggedInUserFullName}
+                        {budgetLineCreatorName}
                     </dd>
                     <dt className="margin-0 text-base-dark display-flex flex-align-center margin-top-2">
                         <FontAwesomeIcon
@@ -216,7 +167,6 @@ const BLIDiffRow = ({
                         {budgetLine?.comments ? budgetLine.comments : "No notes added."}
                     </dd>
                 </dl>
-                <div className="flex-align-self-end margin-left-auto margin-bottom-1">{!readOnly && changeIcons}</div>
             </div>
         </td>
     );
@@ -227,7 +177,6 @@ const BLIDiffRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={isApprovePageAndBLIIsNotInPacket ? "text-gray-50" : ""}
         />
     );
 };
