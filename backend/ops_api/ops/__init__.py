@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ops_api.ops.auth.decorators import check_user_session_function
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
-from ops_api.ops.document.api import documents_bp
+from ops_api.ops.document import bp as documents_bp
 from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
