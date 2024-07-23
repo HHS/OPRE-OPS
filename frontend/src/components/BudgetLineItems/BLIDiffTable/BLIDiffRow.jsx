@@ -19,7 +19,7 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
-import { addErrorClassIfNotFound } from "./BLIDiffRow.helpers";
+import { addDiffClass } from "./BLIDiffRow.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -67,7 +67,10 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
             )
             .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
     };
-
+    /**
+     * Change request types
+     * @type {string[]} The change request types
+     */
     let changeRequestTypes = [];
     if (isBudgetChange) {
         changeRequestTypes = isBLIInReview ? getBudgetChangeRequests(budgetLine?.change_requests_in_review) : [];
@@ -81,39 +84,33 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
         <>
             <th
                 scope="row"
-                className={`${borderExpandedStyles}`}
+                className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
                 {BLILabel(budgetLine)}
             </th>
             <td
-                className={`${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed),
-                    isReviewMode
+                className={`${addDiffClass(
+                    changeRequestTypes.includes(KEY_NAMES.DATE_NEEDED)
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {formatDateNeeded(budgetLine?.date_needed)}
-                {changeRequestTypes.includes(KEY_NAMES.DATE_NEEDED) && <span>🔴</span>}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(
-                    fiscalYearFromDate(budgetLine?.date_needed),
-                    isReviewMode
-                )} ${borderExpandedStyles}`}
+                className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
                 {fiscalYearFromDate(budgetLine?.date_needed)}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
+                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.CAN))} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {canLabel(budgetLine)}
-                {changeRequestTypes.includes(KEY_NAMES.CAN) && <span>🔴</span>}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
+                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT))} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <CurrencyFormat
@@ -125,7 +122,6 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
-                {changeRequestTypes.includes(KEY_NAMES.AMOUNT) && <span>🔴</span>}
             </td>
             <td
                 className={borderExpandedStyles}
@@ -156,11 +152,10 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
                 />
             </td>
             <td
-                className={borderExpandedStyles}
+                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.STATUS))} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <TableTag status={budgetLine?.status} />
-                {changeRequestTypes.includes(KEY_NAMES.STATUS) && <span>🔴</span>}
             </td>
         </>
     );

@@ -14,7 +14,6 @@ export const futureDateErrorClass = (item, isReviewMode) => {
         return "";
     }
 };
-
 /**
  * Adds an error class to a table item if it is not found and the component is in review mode.
  * @param {Object} item - The item to check for existence.
@@ -27,4 +26,12 @@ export const addErrorClassIfNotFound = (item, isReviewMode) => {
     } else {
         return "";
     }
+};
+/**
+ * Adds a CSS class to a table item if it is different from the original.
+ * @param {boolean} isDiff - A flag indicating whether the item is different from the original.
+ * @returns {string} - The CSS class to apply to the table item.
+ */
+export const addDiffClass = (isDiff) => {
+    return isDiff ? "table-item-diff" : "";
 };
