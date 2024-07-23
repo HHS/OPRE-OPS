@@ -1,7 +1,7 @@
 """Adding requisition number and requisition date to BLI
 
 Revision ID: 046c78099374
-Revises: a4a04f1f868e
+Revises: f8ef3a3d90d7
 Create Date: 2024-07-19 15:05:23.462440+00:00
 
 """
@@ -13,7 +13,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision: str = '046c78099374'
-down_revision: Union[str, None] = 'a4a04f1f868e'
+down_revision: Union[str, None] = 'f8ef3a3d90d7'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
