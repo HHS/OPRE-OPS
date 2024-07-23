@@ -4,21 +4,13 @@ import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
 from marshmallow import Schema
-from werkzeug.exceptions import Forbidden
 
 import ops_api.ops.services.users as users_service
 from models import BaseModel, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.users import (
-    PATCHRequestBody,
-    POSTRequestBody,
-    PutUserSchema,
-    QueryParameters,
-    SafeUserSchema,
-    UserResponse,
-)
+from ops_api.ops.schemas.users import POSTRequestBody, PutUserSchema, QueryParameters, SafeUserSchema, UserResponse
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.users import is_user_admin
@@ -28,8 +20,6 @@ class UsersItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
         self._response_schema = UserResponse()
-        self._put_schema = mmdc.class_schema(POSTRequestBody)()
-        self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self, id: int) -> Response:
@@ -64,16 +54,11 @@ class UsersItemAPI(BaseItemAPI):
             request_schema = PutUserSchema()
             user_data = request_schema.load(request.json)
 
-            user: User = users_service.get_user(current_app.db_session, id=id)
+            updated_user = users_service.update_user(
+                current_app.db_session, id=id, data=user_data, request_user=current_user
+            )
 
-            if is_user_admin(current_user) or user.id == current_user.id:
-                schema = self._response_schema
-            else:
-                raise Forbidden("You do not have permission to update this user")
-
-            updated_user = users_service.update_user(current_app.db_session, id=id, data=user_data)
-
-            user_data = schema.dump(updated_user)
+            user_data = self._response_schema.dump(updated_user)
             user_data["roles"] = [role.name for role in updated_user.roles]
 
             meta.metadata.update({"user_details": user_data})
@@ -86,16 +71,11 @@ class UsersItemAPI(BaseItemAPI):
             request_schema = PutUserSchema(partial=True)
             user_data = request_schema.load(request.json)
 
-            user: User = users_service.get_user(current_app.db_session, id=id)
+            updated_user = users_service.update_user(
+                current_app.db_session, id=id, data=user_data, request_user=current_user
+            )
 
-            if is_user_admin(current_user) or user.id == current_user.id:
-                schema = self._response_schema
-            else:
-                raise Forbidden("You do not have permission to update this user")
-
-            updated_user = users_service.update_user(current_app.db_session, id=id, data=user_data)
-
-            user_data = schema.dump(updated_user)
+            user_data = self._response_schema.dump(updated_user)
             user_data["roles"] = [role.name for role in updated_user.roles]
 
             meta.metadata.update({"user_details": user_data})

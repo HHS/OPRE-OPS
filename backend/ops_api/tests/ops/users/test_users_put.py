@@ -168,5 +168,14 @@ def test_put_user_wrong_user(auth_client, new_user, loaded_db, test_admin_user):
     assert response.status_code == 403
 
 
-def test_put_user_must_be_user_admin_to_change_status():
-    raise NotImplementedError("Test not implemented")
+def test_put_user_must_be_user_admin_to_change_status(client, test_user, test_non_admin_user):
+    """
+    Test that a regular user cannot change their User details (including status).
+    """
+    access_token = create_access_token(identity=test_non_admin_user)
+    response = client.put(
+        url_for("api.users-item", id=test_non_admin_user.id),
+        json={"id": test_non_admin_user.id, "status": UserStatus.ACTIVE.name},
+        headers={"Authorization": f"Bearer {str(access_token)}"},
+    )
+    assert response.status_code == 403

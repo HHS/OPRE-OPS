@@ -2,7 +2,7 @@ import pytest
 from flask import url_for
 from flask_jwt_extended import create_access_token
 
-from models import Role
+from models import Role, UserStatus
 from models.users import User
 
 
@@ -74,7 +74,11 @@ def test_patch_user(auth_client, new_user, loaded_db, test_admin_user):
 
     response = auth_client.patch(
         url_for("api.users-item", id=new_user.id),
-        json={"id": new_user.id, "email": "new_user@example.com", "first_name": "New First Name"},
+        json={
+            "id": new_user.id,
+            "email": "new_user@example.com",
+            "first_name": "New First Name",
+        },
     )
     assert response.status_code == 200
     response_data = response.json
@@ -92,7 +96,26 @@ def test_patch_user(auth_client, new_user, loaded_db, test_admin_user):
 
     updated_user = loaded_db.get(User, new_user.id)
     assert updated_user.first_name == "New First Name"
+    assert updated_user.last_name == original_user.get("last_name")
+    assert updated_user.email == "new_user@example.com"
+    assert updated_user.id == new_user.id
+    assert updated_user.created_by == original_user.get("created_by")
+    assert updated_user.updated_by == new_user.updated_by
+    assert f"{updated_user.created_on.isoformat()}Z" == original_user.get("created_on")
+    assert updated_user.updated_on == new_user.updated_on
+    assert updated_user.status.name == original_user.get("status")
+    assert updated_user.division == original_user.get("division")
+    assert updated_user.roles == new_user.roles
 
 
-def test_patch_user_must_be_user_admin_to_change_status():
-    raise NotImplementedError("Test not implemented")
+def test_patch_user_must_be_user_admin_to_change_status(client, test_user, test_non_admin_user):
+    """
+    Test that a regular user cannot change their User details (including status).
+    """
+    access_token = create_access_token(identity=test_non_admin_user)
+    response = client.patch(
+        url_for("api.users-item", id=test_non_admin_user.id),
+        json={"id": test_non_admin_user.id, "status": UserStatus.ACTIVE.name},
+        headers={"Authorization": f"Bearer {str(access_token)}"},
+    )
+    assert response.status_code == 403
