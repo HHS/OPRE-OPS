@@ -2,11 +2,11 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    padding: 5px;
+    padding: 0 5px;
     border-radius: 50%;
     background-color: #b50909;
     color: white;
     font-size: 12px;
-    min-width: 25px;
-    min-height: 20px;
+    min-width: 19px;
+    min-height: 19px;
 }
