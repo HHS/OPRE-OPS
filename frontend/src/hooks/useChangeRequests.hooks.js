@@ -1,4 +1,4 @@
-import { useGetAgreementByIdQuery, useGetCansQuery } from "../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetCansQuery, useGetChangeRequestsListQuery } from "../api/opsAPI";
 import { renderField } from "../helpers/utils";
 /**
  * @typedef {import ('../components/ChangeRequests/ChangeRequestsList/ChangeRequests.d.ts').ChangeRequest} ChangeRequest
@@ -17,6 +17,16 @@ export const useChangeRequestsForAgreement = (agreementId) => {
         return [];
     }
     return getChangeRequestsFromBudgetLines(budgetLines, cans);
+};
+
+/**
+ * Custom hook that returns the total number of change requests.
+ * @returns {number} The total number of change requests.
+ */
+export const useChangeRequestTotal = () => {
+    const { data: changeRequests } = useGetChangeRequestsListQuery();
+
+    return changeRequests?.length || 0;
 };
 
 /**
