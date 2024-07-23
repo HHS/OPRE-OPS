@@ -44,22 +44,36 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
     const budgetChangeType = changeType === CHANGE_REQUEST_TYPES.BUDGET;
     const isStatusChange = changeType === CHANGE_REQUEST_TYPES.STATUS;
 
+    /**
+     * Get budget change requests
+     * @param {import("../../ChangeRequests/ChangeRequestsList/ChangeRequests").ChangeRequest[]} changeRequests - The change requests
+     * @returns {string[]} The budget change requests
+     */
+    const getBudgetChangeRequests = (changeRequests) => {
+        return changeRequests
+            .filter((changeRequest) => changeRequest.has_budget_change)
+            .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
+    };
+    /**
+     * Get status change requests
+     * @param {import("../../ChangeRequests/ChangeRequestsList/ChangeRequests").ChangeRequest[]} changeRequests - The change requests
+     * @param {string} status - The status
+     */
+    const getStatusChangeRequests = (changeRequests, status) => {
+        return changeRequests
+            .filter(
+                (changeRequest) =>
+                    changeRequest.has_status_change && changeRequest.requested_change_data.status === status
+            )
+            .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
+    };
+
     let changeRequestTypes = [];
     if (budgetChangeType) {
-        changeRequestTypes = isBLIInReview
-            ? budgetLine?.change_requests_in_review
-                  .filter((changeRequest) => changeRequest.has_budget_change)
-                  .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data))
-            : [];
+        changeRequestTypes = isBLIInReview ? getBudgetChangeRequests(budgetLine?.change_requests_in_review) : [];
     } else if (isStatusChange) {
         changeRequestTypes = isBLIInReview
-            ? budgetLine?.change_requests_in_review
-                  .filter(
-                      (changeRequest) =>
-                          changeRequest.has_status_change &&
-                          changeRequest.requested_change_data.status === changeRequestStatus
-                  )
-                  .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data))
+            ? getStatusChangeRequests(budgetLine?.change_requests_in_review, changeRequestStatus)
             : [];
     }
 
