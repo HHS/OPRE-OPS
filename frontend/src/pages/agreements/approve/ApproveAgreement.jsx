@@ -42,11 +42,19 @@ const ApproveAgreement = () => {
         requestorNoters,
         urlChangeToStatus,
         statusForTitle,
-        statusChangeTo
+        statusChangeTo,
+        errorAgreement,
+        isLoadingAgreement
     } = useApproveAgreement();
 
-    if (!agreement) {
+    if (isLoadingAgreement) {
         return <div>Loading...</div>;
+    }
+    if (errorAgreement) {
+        return <div>Something went wrong...</div>;
+    }
+    if (!agreement) {
+        return <div>No agreement data available.</div>;
     }
 
     return (

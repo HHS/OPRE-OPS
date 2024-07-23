@@ -50,6 +50,8 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} statusForTitle - The status for the title
  * @property {string} changeRequestTitle - The title of the change request,
  * @property {typeof CHANGE_REQUEST_SLUG_TYPES.BUDGET | typeof CHANGE_REQUEST_SLUG_TYPES.STATUS} statusChangeTo - The type of change request
+ * @property { Error | undefined } errorAgreement - The error state for the agreement
+ * @property {boolean} isLoadingAgreement - The loading state for the agreement
  *
  * @returns {ApproveAgreementHookResult} The data and functions for the approval process
  */
@@ -104,20 +106,13 @@ const useApproveAgreement = () => {
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
-    if (isLoadingAgreement) {
-        return <h1>Loading...</h1>;
-    }
-    if (errorAgreement) {
-        return <h1>Oops, an error occurred</h1>;
-    }
-
     const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
         ? groupByServicesComponent(agreement.budget_line_items)
         : [];
     const budgetLinesInReview = agreement?.budget_line_items?.filter((bli) => bli.in_review) || [];
-    const changeRequestsInReview = /** @type {ChangeRequest[]} */ (
-        getInReviewChangeRequests(agreement?.budget_line_items)
-    );
+    const changeRequestsInReview = agreement?.budget_line_items
+        ? getInReviewChangeRequests(agreement.budget_line_items)
+        : [];
 
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
@@ -369,7 +364,9 @@ const useApproveAgreement = () => {
         requestorNoters,
         urlChangeToStatus,
         statusForTitle,
-        statusChangeTo
+        statusChangeTo,
+        errorAgreement,
+        isLoadingAgreement
     };
 };
 
