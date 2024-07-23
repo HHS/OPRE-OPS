@@ -11,7 +11,7 @@ import styles from "./TabsSection.module.scss";
 const TabsSection = ({ links, label }) => {
     return (
         <nav
-            className={`margin-bottom-4 padding-left-1 flex-align-center flex-justify-center margin-top-2 ${styles.tabsList}`}
+            className={`margin-bottom-4 padding-left-1 flex-align-center flex-justify-center margin-top-2 position-relative ${styles.tabsList}`}
             aria-label={label}
             role={"navigation"}
         >
