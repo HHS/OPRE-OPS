@@ -44,7 +44,7 @@ def notification(loaded_db, test_admin_user):
 def change_request_notification(loaded_db, test_user, test_admin_user):
     change_request = AgreementChangeRequest()
     change_request.agreement_id = 1
-    change_request.status = ChangeRequestStatus.IN_REVIEW
+    change_request.status = ChangeRequestStatus.APPROVED
     change_request.managing_division_id = 1
     change_request.requested_change_info = {"target_display_name": "Agreement#1"}
     change_request.requested_change_data = {"something": "value"}
@@ -337,8 +337,14 @@ def test_notifications_get_by_agreement_id(
     response = auth_client.get(f"/api/v1/notifications/?agreement_id={agreement_id}&oidc_id={test_user_oidc_id}")
     assert response.status_code == 200
     assert len(response.json) == db_count
+    assert response.json[0]["notification_type"] == "CHANGE_REQUEST_NOTIFICATION"
     assert response.json[0]["title"] == "Test Change Request Notification"
     assert response.json[0]["message"] == "This is a change request notification"
     assert response.json[0]["is_read"] is False
     assert response.json[0]["expires"] == "2031-12-31"
     assert response.json[0]["recipient"] is not None
+    assert response.json[0]["change_request"] is not None
+    assert response.json[0]["change_request"]["agreement_id"] == agreement_id
+    assert response.json[0]["change_request"]["status"] == "APPROVED"
+    assert response.json[0]["change_request"]["requested_change_diff"]["something"]["old"] == "old_value"
+    assert response.json[0]["change_request"]["requested_change_diff"]["something"]["new"] == "new_value"
