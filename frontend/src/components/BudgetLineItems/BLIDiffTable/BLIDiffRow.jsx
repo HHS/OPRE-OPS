@@ -41,7 +41,7 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
     const isBLIInReview = budgetLine?.in_review || false;
-    const budgetChangeType = changeType === CHANGE_REQUEST_TYPES.BUDGET;
+    const isBudgetChange = changeType === CHANGE_REQUEST_TYPES.BUDGET;
     const isStatusChange = changeType === CHANGE_REQUEST_TYPES.STATUS;
 
     /**
@@ -69,7 +69,7 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
     };
 
     let changeRequestTypes = [];
-    if (budgetChangeType) {
+    if (isBudgetChange) {
         changeRequestTypes = isBLIInReview ? getBudgetChangeRequests(budgetLine?.change_requests_in_review) : [];
     } else if (isStatusChange) {
         changeRequestTypes = isBLIInReview
