@@ -183,7 +183,7 @@ class NotificationListAPI(BaseListAPI):
                 .join(User, ChangeRequestNotification.recipient_id == User.id, isouter=True)
                 .join(
                     AgreementChangeRequest,
-                    ChangeRequestNotification.change_request_id == AgreementChangeRequest.agreement_id,
+                    ChangeRequestNotification.change_request_id == AgreementChangeRequest.id,
                 )
                 .where(AgreementChangeRequest.agreement_id == agreement_id)
                 .order_by(ChangeRequestNotification.id)
@@ -226,6 +226,7 @@ class NotificationListAPI(BaseListAPI):
             user_id=request_data.user_id,
             oidc_id=request_data.oidc_id,
             is_read=request_data.is_read,
+            agreement_id=request_data.agreement_id,
         )
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers(self._response_schema_collection.dump([item[0] for item in result]))

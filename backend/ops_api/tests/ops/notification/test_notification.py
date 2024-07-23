@@ -2,8 +2,8 @@ from datetime import date
 
 import pytest
 
-from models import User
-from models.notifications import Notification
+from models import AgreementChangeRequest, ChangeRequestStatus, User
+from models.notifications import ChangeRequestNotification, Notification
 from ops_api.ops.resources.notifications import RecipientSchema, UpdateSchema
 
 
@@ -36,6 +36,39 @@ def notification(loaded_db, test_admin_user):
     yield notification
 
     loaded_db.delete(notification)
+    loaded_db.commit()
+
+
+@pytest.fixture()
+@pytest.mark.usefixtures("app_ctx")
+def change_request_notification(loaded_db, test_user, test_admin_user):
+    change_request = AgreementChangeRequest()
+    change_request.agreement_id = 1
+    change_request.status = ChangeRequestStatus.IN_REVIEW
+    change_request.managing_division_id = 1
+    change_request.requested_change_info = {"target_display_name": "Agreement#1"}
+    change_request.requested_change_data = {"something": "value"}
+    change_request.requested_change_diff = {"something": {"old": "old_value", "new": "new_value"}}
+    change_request.created_by = test_user.id
+    loaded_db.add(change_request)
+
+    notification = ChangeRequestNotification(
+        title="Test Change Request Notification",
+        message="This is a change request notification",
+        is_read=False,
+        recipient_id=test_user.id,
+        expires=date(2031, 12, 31),
+        change_request=change_request,
+        created_by=test_admin_user.id,
+    )
+
+    loaded_db.add(notification)
+    loaded_db.commit()
+
+    yield notification
+
+    loaded_db.delete(notification)
+    loaded_db.delete(change_request)
     loaded_db.commit()
 
 
@@ -150,11 +183,9 @@ def test_notifications_get_by_oidc_id(auth_client, loaded_db, notification):
 @pytest.mark.usefixtures("app_ctx")
 def test_notifications_get_by_is_read(auth_client, loaded_db, notification, notification_is_read_is_true):
     db_count = loaded_db.query(Notification).filter(Notification.is_read.is_(False)).count()
-    print(f"{db_count}=")
     assert db_count > 0
     response = auth_client.get("/api/v1/notifications/?is_read=False")
     assert response.status_code == 200
-    print(f"{len(response.json)}=")
     assert len(response.json) > 0
     assert len(response.json) == db_count
     assert response.json[0]["title"] == "System Notification"
@@ -284,3 +315,30 @@ def test_patch_notification_ack_must_be_user(auth_client, notification_for_anoth
         json={"is_read": True},
     )
     assert response.status_code == 400
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_notifications_get_by_agreement_id(
+    auth_client, loaded_db, notification, change_request_notification, test_user
+):
+    agreement_id = change_request_notification.change_request.agreement_id
+    test_user_oidc_id = str(change_request_notification.recipient.oidc_id)
+    db_count = (
+        loaded_db.query(ChangeRequestNotification)
+        .join(AgreementChangeRequest, ChangeRequestNotification.change_request_id == AgreementChangeRequest.id)
+        .where(AgreementChangeRequest.agreement_id == agreement_id)
+        .where(ChangeRequestNotification.recipient_id == change_request_notification.recipient_id)
+        .count()
+    )
+    assert db_count > 0
+    total_db_count = loaded_db.query(Notification).count()
+    assert total_db_count > db_count
+
+    response = auth_client.get(f"/api/v1/notifications/?agreement_id={agreement_id}&oidc_id={test_user_oidc_id}")
+    assert response.status_code == 200
+    assert len(response.json) == db_count
+    assert response.json[0]["title"] == "Test Change Request Notification"
+    assert response.json[0]["message"] == "This is a change request notification"
+    assert response.json[0]["is_read"] is False
+    assert response.json[0]["expires"] == "2031-12-31"
+    assert response.json[0]["recipient"] is not None
