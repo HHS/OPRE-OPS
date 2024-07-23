@@ -54,6 +54,10 @@ class ModType(Enum):
     AS_IS = auto()
     REPLACEMENT_AMOUNT_FINAL = auto()
 
+class ContractCategory(Enum):
+    RESEARCH = auto()
+    SERVICE = auto()
+
 class CANArrangementType(Enum):
     OPRE_APPROPRIATION = auto()
     COST_SHARE = auto()
@@ -315,6 +319,7 @@ class ContractAgreement(Agreement):
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
     )
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(ENUM(ContractCategory))
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
