@@ -50,6 +50,7 @@ function AgreementBLIAccordion({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
+                {/* TODO: Is conditionally rendering this still needed? */}
                 {action === BLI_STATUS.PLANNED && (
                     <ToggleButton
                         btnText="After Approval"
