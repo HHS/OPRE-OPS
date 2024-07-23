@@ -50,7 +50,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} statusForTitle - The status for the title
  * @property {string} changeRequestTitle - The title of the change request,
  * @property {typeof CHANGE_REQUEST_SLUG_TYPES.BUDGET | typeof CHANGE_REQUEST_SLUG_TYPES.STATUS} statusChangeTo - The type of change request
- * @property { Error | undefined } errorAgreement - The error state for the agreement
+ * @property { import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
  * @property {boolean} isLoadingAgreement - The loading state for the agreement
  *
  * @returns {ApproveAgreementHookResult} The data and functions for the approval process
