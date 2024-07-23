@@ -334,7 +334,9 @@ def test_notifications_get_by_agreement_id(
     total_db_count = loaded_db.query(Notification).count()
     assert total_db_count > db_count
 
-    response = auth_client.get(f"/api/v1/notifications/?agreement_id={agreement_id}&oidc_id={test_user_oidc_id}")
+    response = auth_client.get(
+        f"/api/v1/notifications/?agreement_id={agreement_id}&oidc_id={test_user_oidc_id}&is_read=False"
+    )
     assert response.status_code == 200
     assert len(response.json) == db_count
     assert response.json[0]["notification_type"] == "CHANGE_REQUEST_NOTIFICATION"
