@@ -33,18 +33,17 @@ import { addErrorClassIfNotFound } from "./BLIDiffRow.helpers";
  * @returns {JSX.Element} The BLIRow component.
  **/
 const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChangeTo = "" }) => {
-    // TODO: Filter status change requests by statusChangeTo
-    const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
-    console.log({ changeRequestStatus });
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
     const isBLIInReview = budgetLine?.in_review || false;
     const budgetChangeType = changeType === CHANGE_REQUEST_TYPES.BUDGET;
     const isStatusChange = changeType === CHANGE_REQUEST_TYPES.STATUS;
+
     let changeRequestTypes = [];
     if (budgetChangeType) {
         changeRequestTypes = isBLIInReview
@@ -55,12 +54,15 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
     } else if (isStatusChange) {
         changeRequestTypes = isBLIInReview
             ? budgetLine?.change_requests_in_review
-                  .filter((changeRequest) => changeRequest.has_status_change)
+                  .filter(
+                      (changeRequest) =>
+                          changeRequest.has_status_change &&
+                          changeRequest.requested_change_data.status === changeRequestStatus
+                  )
                   .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data))
             : [];
     }
 
-    console.log({ changeRequestTypes });
     const TableRowData = (
         <>
             <th
