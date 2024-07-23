@@ -26,13 +26,12 @@ import { addDiffClass } from "./BLIDiffRow.helpers";
  * @component
  * @param {Object} props - The props for the BLIRow component.
  * @param {Object} props.budgetLine - The budget line object.
- * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
  * @param {string} props.changeType - The type of change request.
  * @param {string} [props.statusChangeTo=""] - The status change to.
  *
  * @returns {JSX.Element} The BLIRow component.
  **/
-const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChangeTo = "" }) => {
+const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
@@ -198,6 +197,7 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
             </div>
         </td>
     );
+
     return (
         <TableRowExpandable
             tableRowData={TableRowData}
@@ -211,7 +211,6 @@ const BLIDiffRow = ({ budgetLine, isReviewMode = false, changeType, statusChange
 
 BLIDiffRow.propTypes = {
     budgetLine: PropTypes.object.isRequired,
-    isReviewMode: PropTypes.bool,
     changeType: PropTypes.string.isRequired,
     statusChangeTo: PropTypes.string
 };

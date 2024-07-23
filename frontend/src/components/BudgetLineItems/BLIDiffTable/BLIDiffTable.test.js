@@ -57,13 +57,8 @@ describe("PreviewTable", () => {
     test("renders rows for budget lines", async () => {
         customRender(
             <BLIDiffTable
-                canUserEditBudgetLines={false}
                 budgetLines={mockBudgetLinesOne}
-                handleSetBudgetLineForEditing={() => {}}
-                handleDeleteBudgetLine={() => {}}
-                handleDuplicateBudgetLine={() => {}}
-                isReviewMode={true}
-                readOnly={true}
+                changeType="Budget Change"
             />,
             store
         );
@@ -77,13 +72,8 @@ describe("PreviewTable", () => {
     test("status changes based on input", () => {
         customRender(
             <BLIDiffTable
-                canUserEditBudgetLines={false}
                 budgetLines={mockBudgetLines}
-                handleSetBudgetLineForEditing={() => {}}
-                handleDeleteBudgetLine={() => {}}
-                handleDuplicateBudgetLine={() => {}}
-                isReviewMode={true}
-                readOnly={true}
+                changeType="Budget Change"
             />,
             store
         );
