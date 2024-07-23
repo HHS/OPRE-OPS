@@ -85,6 +85,7 @@ const useApproveAgreement = () => {
         () => (urlChangeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED),
         [urlChangeToStatus]
     );
+
     const checkBoxText =
         statusChangeTo === BLI_STATUS.PLANNED
             ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
@@ -131,9 +132,9 @@ const useApproveAgreement = () => {
     let requestorNoters = "";
     if (changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
         const uniqueNotes = new Set();
-        changeRequestsInReview.forEach((request) => {
-            if (request?.requestor_notes) {
-                uniqueNotes.add(request.requestor_notes);
+        changeRequestsInReview.forEach((changeRequest) => {
+            if (changeRequest?.requestor_notes && changeRequest.requested_change_data.status === statusChangeTo) {
+                uniqueNotes.add(changeRequest.requestor_notes);
             }
         });
         requestorNoters = Array.from(uniqueNotes)
