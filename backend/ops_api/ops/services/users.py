@@ -54,3 +54,16 @@ def update_user(session: Session, **kwargs) -> User:
 
     session.commit()
     return updated_user
+
+
+def get_users(session: Session, **kwargs) -> list[User]:
+    stmt = select(User)
+
+    for key, value in kwargs.items():
+        stmt = stmt.where(getattr(User, key) == value)
+
+    stmt = stmt.order_by(User.id)
+
+    users = session.execute(stmt).scalars().all()
+
+    return list(users)

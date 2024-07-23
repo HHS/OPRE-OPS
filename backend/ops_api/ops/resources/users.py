@@ -11,6 +11,7 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.users import POSTRequestBody, PutUserSchema, QueryParameters, SafeUserSchema, UserResponse
+from ops_api.ops.services.users import get_users
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 from ops_api.ops.utils.users import is_user_admin
@@ -87,18 +88,31 @@ class UsersListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
         self._post_schema = mmdc.class_schema(POSTRequestBody)()
-        self._get_schema = mmdc.class_schema(QueryParameters)()
+        self._get_schema = QueryParameters()
+        self._response_schema = UserResponse(many=True)
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self) -> Response:
-        oidc_id = request.args.get("oidc_id", type=str)
+        with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
+            request_data = self._get_schema.load(request.args)
 
-        if oidc_id:
-            response = self._get_item_by_oidc_with_try(oidc_id)
-        else:
-            items = self.model.query.all()
-            response = make_response_with_headers([item.to_dict() for item in items])
-        return response
+            users = get_users(current_app.db_session, **request_data)
+
+            if is_user_admin(current_user):
+                schema = self._response_schema
+            else:
+                schema = SafeUserSchema()
+
+            user_data = schema.dump(users)
+            for user in users:
+                for data in user_data:
+                    if user.id == data["id"]:
+                        data["roles"] = [role.name for role in user.roles]
+                        break
+
+            meta.metadata.update({"user_details": user_data})
+
+            return make_response_with_headers(user_data)
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:

@@ -44,24 +44,25 @@ class PATCHRequestBody(PutUserSchema):
     id: Optional[int] = None  # user_id (and all params) are optional for PATCH
 
 
-@dataclass
-class QueryParameters:
-    id: Optional[int] = None
-    oidc_id: Optional[str] = None
-    hhs_id: Optional[str] = None
-    email: Optional[str] = None
+class QueryParameters(Schema):
+    id: Optional[int] = fields.Integer()
+    oidc_id: Optional[str] = fields.String()
+    hhs_id: Optional[str] = fields.String()
+    email: Optional[str] = fields.String()
+    status: Optional[str] = fields.String()
+    roles: Optional[list[str]] = fields.List(fields.String())
 
 
 class UserResponse(Schema):
     id: int = fields.Integer(required=True)
     oidc_id: UUID = fields.UUID(required=True)
+    status: UserStatus = fields.Enum(UserStatus, required=True)
     hhs_id: Optional[str] = fields.String(allow_none=True)
     email: str = fields.String(required=True)
     first_name: Optional[str] = fields.String(allow_none=True)
     last_name: Optional[str] = fields.String(allow_none=True)
     full_name: Optional[str] = fields.String(allow_none=True)
     division: Optional[int] = fields.Integer(allow_none=True)
-    status: UserStatus = fields.Enum(UserStatus, required=True)
     roles: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
     display_name: str = fields.String(required=True)
     created_by: Optional[int] = fields.Integer(allow_none=True)
