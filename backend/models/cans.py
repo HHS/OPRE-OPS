@@ -597,6 +597,8 @@ class BudgetLineItem(BaseModel):
     requisition_number: Mapped[Optional[int]] = mapped_column(Integer)
     requisition_date: Mapped[Optional[date]] = mapped_column(Date)
 
+    is_under_current_resolution: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
+
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
 
     proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(
