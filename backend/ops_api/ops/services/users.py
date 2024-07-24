@@ -29,6 +29,8 @@ def update_user(session: Session, **kwargs) -> User:
     N.B. One of the kwargs must be "id" to identify the user to update.
 
     N.B. kwargs.data is a dict[str, str | int | list[str]]
+
+    N.B. Only USER_ADMIN role can update users
     """
     user_id = kwargs.get("id")
     request_user = kwargs.get("request_user")
@@ -59,6 +61,14 @@ def update_user(session: Session, **kwargs) -> User:
 
 
 def get_users(session: Session, **kwargs) -> list[User]:
+    """
+    Get all users that match the given criteria.
+
+    :param session: The database session.
+    :param **kwargs: The criteria to filter the users by.
+    :return: The users that match the criteria.
+
+    """
     stmt = select(User)
 
     for key, value in kwargs.items():
@@ -75,6 +85,15 @@ def get_users(session: Session, **kwargs) -> list[User]:
 
 
 def create_user(session: Session, **kwargs) -> User:
+    """
+    Create a user with the given data.
+
+    :param session: The database session.
+    :param **kwargs: The data to create the user with.
+    :return: The created user.
+
+    N.B. Only USER_ADMIN role can create users
+    """
     data = kwargs.get("data", {})
     request_user = kwargs.get("request_user")
 

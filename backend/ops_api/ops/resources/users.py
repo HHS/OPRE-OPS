@@ -46,6 +46,16 @@ class UsersItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
+        """
+        Update a user by ID
+
+        :param id: The ID of the user to update
+        :return: The updated user
+
+        Business Rules:
+        - Only USER_ADMIN role can update users
+
+        """
         with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
             schema = UpdateUserSchema()
             user_data = schema.load(request.json)
@@ -64,6 +74,16 @@ class UsersItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.PATCH, Permission.USER)
     def patch(self, id: int) -> Response:
+        """
+        Partially update a user by ID
+
+        :param id: The ID of the user to update
+        :return: The updated user
+
+        Business Rules:
+        - Only USER_ADMIN role can update users
+
+        """
         with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
             schema = UpdateUserSchema(partial=True)
             user_data = schema.load(request.json)
@@ -87,6 +107,15 @@ class UsersListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self) -> Response:
+        """
+        Get all users
+
+        :return: All users
+
+        Business Rules:
+        - If the user is an admin, they can get the full details of all users
+        - If the user is not an admin, they can get the safe version of other users
+        """
         with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
             schema = QueryParameters()
             request_data = schema.load(request.args)
@@ -113,6 +142,15 @@ class UsersListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.USER)
     def post(self) -> Response:
+        """
+        Create a user
+
+        :return: The created user
+
+        Business Rules:
+        - Only USER_ADMIN role can create users
+
+        """
         with OpsEventHandler(OpsEventType.CREATE_USER) as meta:
             schema = CreateUserSchema(partial=True)
             user_data = schema.load(request.json)
