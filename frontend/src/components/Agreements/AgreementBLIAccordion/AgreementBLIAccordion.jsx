@@ -25,6 +25,7 @@ import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.h
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
  * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve page.
+ * @param {Object[]} [props.updatedBudgetLines=[]] - An array of updated budget lines.
  * @returns {JSX.Element} - The rendered accordion component.
  */
 function AgreementBLIAccordion({
@@ -36,7 +37,8 @@ function AgreementBLIAccordion({
     afterApproval,
     setAfterApproval,
     action,
-    isApprovePage = false
+    isApprovePage = false,
+    updatedBudgetLines = []
 }) {
     const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items);
     const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
@@ -45,27 +47,7 @@ function AgreementBLIAccordion({
     const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(agreement, budgetLinesForCards);
     const showToggle = action === BLI_STATUS.PLANNED || isApprovePage;
-
-    function createUpdatedBudgetLines(originalBudgetLines) {
-        return originalBudgetLines.map((budgetLine) => {
-            // Create a shallow copy of the budget line
-            let updatedBudgetLine = { ...budgetLine };
-
-            // If there are change requests in review, apply them
-            if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
-                budgetLine.change_requests_in_review.forEach((changeRequest) => {
-                    // Apply each requested change to the updated budget line
-                    Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
-                });
-            }
-
-            return updatedBudgetLine;
-        });
-    }
-
-    const updatedBudgetLines = createUpdatedBudgetLines(selectedBudgetLineItems);
-
-    // TODO: Cans need work
+    // TODO: Consider refactoring to be more DRY
     const diffsForCards = afterApproval ? updatedBudgetLines : selectedBudgetLineItems;
     const feesForDiffCards = getProcurementShopSubTotal(agreement, diffsForCards);
     const subTotalForDiffCards = budgetLinesTotal(diffsForCards);
@@ -125,6 +107,7 @@ AgreementBLIAccordion.propTypes = {
     afterApproval: PropTypes.bool,
     setAfterApproval: PropTypes.func,
     action: PropTypes.string,
-    isApprovePage: PropTypes.bool
+    isApprovePage: PropTypes.bool,
+    updatedBudgetLines: PropTypes.arrayOf(PropTypes.object)
 };
 export default AgreementBLIAccordion;

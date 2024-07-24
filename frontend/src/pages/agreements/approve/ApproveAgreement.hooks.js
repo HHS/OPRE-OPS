@@ -54,6 +54,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {typeof CHANGE_REQUEST_SLUG_TYPES.BUDGET | typeof CHANGE_REQUEST_SLUG_TYPES.STATUS} statusChangeTo - The type of change request
  * @property { import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
  * @property {boolean} isLoadingAgreement - The loading state for the agreement
+ * @property {Object[]} approvedBudgetLinesPreview - The updated budget lines
  *
  * @returns {ApproveAgreementHookResult} The data and functions for the approval process
  */
@@ -215,13 +216,13 @@ const useApproveAgreement = () => {
             return updatedBudgetLine;
         });
     }
-    let updatedBudgetLines = [];
+    let approvedBudgetLinesPreview = [];
     let groupedUpdatedBudgetLinesByServicesComponent = [];
 
     if (isSuccessAgreement && cans) {
-        updatedBudgetLines = createUpdatedBudgetLines(agreement?.budget_line_items, cans);
-        groupedUpdatedBudgetLinesByServicesComponent = updatedBudgetLines
-            ? groupByServicesComponent(updatedBudgetLines)
+        approvedBudgetLinesPreview = createUpdatedBudgetLines(agreement?.budget_line_items, cans);
+        groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
+            ? groupByServicesComponent(approvedBudgetLinesPreview)
             : [];
     }
 
@@ -418,7 +419,8 @@ const useApproveAgreement = () => {
         statusForTitle,
         statusChangeTo,
         errorAgreement,
-        isLoadingAgreement
+        isLoadingAgreement,
+        approvedBudgetLinesPreview
     };
 };
 

@@ -46,7 +46,8 @@ const ApproveAgreement = () => {
         statusForTitle,
         statusChangeTo,
         errorAgreement,
-        isLoadingAgreement
+        isLoadingAgreement,
+        approvedBudgetLinesPreview
     } = useApproveAgreement();
 
     if (isLoadingAgreement) {
@@ -145,6 +146,7 @@ const ApproveAgreement = () => {
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
                 isApprovePage={true}
+                updatedBudgetLines={approvedBudgetLinesPreview}
             >
                 <section className="margin-top-4">
                     {!afterApproval ? (
