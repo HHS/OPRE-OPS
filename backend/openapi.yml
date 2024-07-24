@@ -2403,6 +2403,9 @@ components:
         id:
           type: integer
           example: 1
+        notification_type:
+          type: string
+          example: "CHANGE_REQUEST_NOTIFICATION"
         title:
           type: string
           example: "Notification #1"
@@ -2415,6 +2418,8 @@ components:
         expires:
           type: string
           example: "2023-04-06"
+        change_request:
+          $ref: "#/components/schemas/GenericChangeRequest"
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
