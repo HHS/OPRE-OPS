@@ -6,7 +6,7 @@ from models import BaseModel, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.users import PutPatchUserSchema, QueryParameters, SafeUserSchema, UserResponse
+from ops_api.ops.schemas.users import CreateUserSchema, QueryParameters, SafeUserSchema, UpdateUserSchema, UserResponse
 from ops_api.ops.services.users import get_users
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -16,7 +16,6 @@ from ops_api.ops.utils.users import is_user_admin
 class UsersItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._response_schema = UserResponse()
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self, id: int) -> Response:
@@ -34,7 +33,7 @@ class UsersItemAPI(BaseItemAPI):
             user: User = users_service.get_user(current_app.db_session, id=id)
 
             if is_user_admin(current_user) or user.id == current_user.id:
-                schema = self._response_schema
+                schema = UserResponse()
             else:
                 schema = SafeUserSchema()
 
@@ -48,14 +47,15 @@ class UsersItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
-            request_schema = PutPatchUserSchema()
-            user_data = request_schema.load(request.json)
+            schema = UpdateUserSchema()
+            user_data = schema.load(request.json)
 
             updated_user = users_service.update_user(
                 current_app.db_session, id=id, data=user_data, request_user=current_user
             )
 
-            user_data = self._response_schema.dump(updated_user)
+            schema = UserResponse()
+            user_data = schema.dump(updated_user)
             user_data["roles"] = [role.name for role in updated_user.roles]
 
             meta.metadata.update({"user_details": user_data})
@@ -65,14 +65,15 @@ class UsersItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.PATCH, Permission.USER)
     def patch(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
-            request_schema = PutPatchUserSchema(partial=True)
-            user_data = request_schema.load(request.json)
+            schema = UpdateUserSchema(partial=True)
+            user_data = schema.load(request.json)
 
             updated_user = users_service.update_user(
                 current_app.db_session, id=id, data=user_data, request_user=current_user
             )
 
-            user_data = self._response_schema.dump(updated_user)
+            schema = UserResponse()
+            user_data = schema.dump(updated_user)
             user_data["roles"] = [role.name for role in updated_user.roles]
 
             meta.metadata.update({"user_details": user_data})
@@ -83,18 +84,17 @@ class UsersItemAPI(BaseItemAPI):
 class UsersListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._get_schema = QueryParameters()
-        self._response_schema = UserResponse(many=True)
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self) -> Response:
         with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
-            request_data = self._get_schema.load(request.args)
+            schema = QueryParameters()
+            request_data = schema.load(request.args)
 
             users = get_users(current_app.db_session, **request_data)
 
             if is_user_admin(current_user):
-                schema = self._response_schema
+                schema = UserResponse(many=True)
             else:
                 schema = SafeUserSchema(many=True)
 
@@ -113,4 +113,16 @@ class UsersListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.USER)
     def post(self) -> Response:
-        pass
+        with OpsEventHandler(OpsEventType.CREATE_USER) as meta:
+            schema = CreateUserSchema(partial=True)
+            user_data = schema.load(request.json)
+
+            updated_user = users_service.create_user(current_app.db_session, data=user_data, request_user=current_user)
+
+            schema = UserResponse()
+            user_data = schema.dump(updated_user)
+            user_data["roles"] = [role.name for role in updated_user.roles]
+
+            meta.metadata.update({"user_details": user_data})
+
+            return make_response_with_headers(user_data, 202)

@@ -72,3 +72,24 @@ def get_users(session: Session, **kwargs) -> list[User]:
     users = session.execute(stmt).scalars().all()
 
     return list(users)
+
+
+def create_user(session: Session, **kwargs) -> User:
+    data = kwargs.get("data", {})
+    request_user = kwargs.get("request_user")
+
+    if not data:
+        raise RuntimeError("No data provided to create user.")
+
+    if not is_user_admin(request_user):
+        raise Forbidden("You do not have permission to create a user.")
+
+    if "roles" in data:
+        data["roles"] = [
+            session.scalar(select(Role).where(Role.name == role_name)) for role_name in data.get("roles", [])
+        ]
+    new_user = User(**data)
+
+    session.add(new_user)
+    session.commit()
+    return new_user

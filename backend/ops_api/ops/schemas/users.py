@@ -9,17 +9,19 @@ from marshmallow import Schema, fields
 import ops_api.ops.schemas.custom_types as custom_types
 from models import UserStatus
 
-ENDPOINT_STRING = "/users"
 
-
-class PutPatchUserSchema(Schema):
-    id: int = fields.Integer()
-    email: Optional[str] = fields.String()
+class CreateUserSchema(Schema):
+    email: Optional[str] = fields.String(required=True)
     first_name: Optional[str] = fields.String(load_default=None)
     last_name: Optional[str] = fields.String(load_default=None)
     division: Optional[int] = fields.Integer(load_default=None)
     status: Optional[UserStatus] = fields.Enum(UserStatus, load_default=UserStatus.INACTIVE)
     roles: Optional[list[str]] = fields.List(fields.String(), load_default=[])
+
+
+class UpdateUserSchema(CreateUserSchema):
+    id: Optional[int] = fields.Integer()
+    email: Optional[str] = fields.String()
 
 
 class QueryParameters(Schema):
