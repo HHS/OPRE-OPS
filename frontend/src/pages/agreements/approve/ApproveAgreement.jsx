@@ -83,7 +83,6 @@ const ApproveAgreement = () => {
                 projectOfficerName={projectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
-
             <AgreementBLIAccordion
                 title="Review Budget Lines"
                 instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
@@ -92,6 +91,7 @@ const ApproveAgreement = () => {
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
+                isApprovePage={true}
             >
                 <section className="margin-top-4">
                     {groupedBudgetLinesByServicesComponent.map((group) => (

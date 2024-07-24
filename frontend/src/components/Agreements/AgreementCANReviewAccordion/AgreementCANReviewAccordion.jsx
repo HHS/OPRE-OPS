@@ -73,6 +73,8 @@ const AgreementCANReviewAccordion = ({
         }
     ];
 
+    const showToggle = action === selectedAction.DRAFT_TO_PLANNED || isApprovePage;
+
     return (
         <Accordion
             heading="Review CANs"
@@ -80,14 +82,13 @@ const AgreementCANReviewAccordion = ({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {action === selectedAction.DRAFT_TO_PLANNED ||
-                    (isApprovePage && (
-                        <ToggleButton
-                            btnText="After Approval"
-                            handleToggle={() => setAfterApproval(!afterApproval)}
-                            isToggleOn={afterApproval}
-                        />
-                    ))}
+                {showToggle && (
+                    <ToggleButton
+                        btnText="After Approval"
+                        handleToggle={() => setAfterApproval(!afterApproval)}
+                        isToggleOn={afterApproval}
+                    />
+                )}
             </div>
             <div
                 className="display-flex flex-wrap margin-bottom-0"

@@ -24,6 +24,7 @@ import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.h
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
+ * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve page.
  * @returns {JSX.Element} - The rendered accordion component.
  */
 function AgreementBLIAccordion({
@@ -34,7 +35,8 @@ function AgreementBLIAccordion({
     agreement,
     afterApproval,
     setAfterApproval,
-    action
+    action,
+    isApprovePage = false
 }) {
     const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items);
     const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
@@ -42,6 +44,7 @@ function AgreementBLIAccordion({
     const feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards);
     const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(agreement, budgetLinesForCards);
+    const showToggle = action === BLI_STATUS.PLANNED || isApprovePage;
 
     return (
         <Accordion
@@ -50,8 +53,7 @@ function AgreementBLIAccordion({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {/* TODO: Is conditionally rendering this still needed? */}
-                {action === BLI_STATUS.PLANNED && (
+                {showToggle && (
                     <ToggleButton
                         btnText="After Approval"
                         handleToggle={() => setAfterApproval(!afterApproval)}
@@ -81,6 +83,7 @@ AgreementBLIAccordion.propTypes = {
     agreement: PropTypes.object,
     afterApproval: PropTypes.bool,
     setAfterApproval: PropTypes.func,
-    action: PropTypes.string
+    action: PropTypes.string,
+    isApprovePage: PropTypes.bool
 };
 export default AgreementBLIAccordion;
