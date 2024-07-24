@@ -61,7 +61,7 @@ export const formatDateToMonthDayYear = (date) => {
 };
 
 // List of BLI statuses which are considered Draft, this used to include UNDER_REVIEW which no longer exists
-export const draftBudgetLineStatuses = [BLI_STATUS.DRAFT];
+export const draftBudgetLineStatuses = ["DRAFT"];
 
 /**
  * Object containing display text for various codes.
