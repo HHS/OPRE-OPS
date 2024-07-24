@@ -1,7 +1,7 @@
 """Adding contract_category
 
 Revision ID: de9beb904925
-Revises: 5438ff1a9b3b
+Revises: 151465a54d91
 Create Date: 2024-07-23 20:18:53.102203+00:00
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = 'de9beb904925'
-down_revision: Union[str, None] = '5438ff1a9b3b'
+down_revision: Union[str, None] = '151465a54d91'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
