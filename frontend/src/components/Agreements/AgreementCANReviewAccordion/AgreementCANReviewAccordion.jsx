@@ -16,6 +16,7 @@ import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
+ * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve
  * @returns {JSX.Element} The AgreementCANReviewAccordion component.
  */
 const AgreementCANReviewAccordion = ({
@@ -23,7 +24,8 @@ const AgreementCANReviewAccordion = ({
     selectedBudgetLines,
     afterApproval,
     setAfterApproval,
-    action
+    action,
+    isApprovePage = false
 }) => {
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
     if (isLoading) {
@@ -78,14 +80,14 @@ const AgreementCANReviewAccordion = ({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {/* TODO: Is conditionally rendering this still needed? */}
-                {action === selectedAction.DRAFT_TO_PLANNED && (
-                    <ToggleButton
-                        btnText="After Approval"
-                        handleToggle={() => setAfterApproval(!afterApproval)}
-                        isToggleOn={afterApproval}
-                    />
-                )}
+                {action === selectedAction.DRAFT_TO_PLANNED ||
+                    (isApprovePage && (
+                        <ToggleButton
+                            btnText="After Approval"
+                            handleToggle={() => setAfterApproval(!afterApproval)}
+                            isToggleOn={afterApproval}
+                        />
+                    ))}
             </div>
             <div
                 className="display-flex flex-wrap margin-bottom-0"
@@ -137,6 +139,7 @@ AgreementCANReviewAccordion.propTypes = {
     selectedBudgetLines: PropTypes.arrayOf(PropTypes.object),
     afterApproval: PropTypes.bool,
     setAfterApproval: PropTypes.func,
-    action: PropTypes.string
+    action: PropTypes.string,
+    isApprovePage: PropTypes.bool
 };
 export default AgreementCANReviewAccordion;

@@ -118,6 +118,7 @@ const ApproveAgreement = () => {
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
+                isApprovePage={true}
             />
             {statusChangeTo === BLI_STATUS.EXECUTING && (
                 <Accordion
