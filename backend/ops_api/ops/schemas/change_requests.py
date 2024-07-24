@@ -1,6 +1,6 @@
 from marshmallow import EXCLUDE, Schema, fields
 
-from models import ChangeRequestType
+from models import ChangeRequestStatus, ChangeRequestType
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
@@ -8,7 +8,7 @@ class ChangeRequestResponseSchema(Schema):
     id = fields.Int(required=True)
     change_request_type = fields.Enum(ChangeRequestType, required=True)
     display_name = fields.String(required=True)
-    status = fields.String(required=True)
+    status = fields.Enum(ChangeRequestStatus, required=True)
     requested_change_data = fields.Dict(required=True)
     requested_change_diff = fields.Dict(required=True)
     requestor_notes = fields.String(default=None, allow_none=True)
