@@ -284,7 +284,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Approved:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...budgetChangeRequests];
+            changeRequests = budgetChangeRequests;
         }
         if (BUDGET_REJECT) {
             heading = `Are you sure you want to decline this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will remain as it was before the change was requested.`;
@@ -296,7 +296,7 @@ const useApproveAgreement = () => {
                 `<strong>Edits Declined:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...budgetChangeRequests];
+            changeRequests = budgetChangeRequests;
         }
         if (PLANNED_STATUS_APPROVE) {
             heading = `Are you sure you want to approve this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? This will subtract the amounts from the FY budget.`;
@@ -308,7 +308,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Approved:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...statusChangeRequestsToPlanned];
+            changeRequests = statusChangeRequestsToPlanned;
         }
         if (PLANNED_STATUS_REJECT) {
             heading = `Are you sure you want to decline this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? The agreement will remain as it was before the change was requested.`;
@@ -320,7 +320,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Declined:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...statusChangeRequestsToPlanned];
+            changeRequests = statusChangeRequestsToPlanned;
         }
         if (EXECUTING_STATUS_APPROVE) {
             heading = `Are you sure you want to approve this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? This will start the procurement process.`;
@@ -332,7 +332,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Approved:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...statusChangeRequestsToExecuting];
+            changeRequests = statusChangeRequestsToExecuting;
         }
         if (EXECUTING_STATUS_REJECT) {
             heading = `Are you sure you want to decline these budget lines for ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? The agreement will remain as it was before the change was requested.`;
@@ -344,7 +344,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Declined:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...statusChangeRequestsToExecuting];
+            changeRequests = statusChangeRequestsToExecuting;
         }
 
         setShowModal(true);
