@@ -3,7 +3,8 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
     useGetServicesComponentsListQuery,
-    useReviewChangeRequestMutation
+    useReviewChangeRequestMutation,
+    useGetCansQuery
 } from "../../../api/opsAPI";
 import {
     CHANGE_REQUEST_ACTION,
@@ -105,6 +106,8 @@ const useApproveAgreement = () => {
         refetchOnMountOrArgChange: true
     });
 
+    const { data: cans } = useGetCansQuery();
+
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
@@ -175,15 +178,18 @@ const useApproveAgreement = () => {
         budgetLinesToPlannedMessages,
         budgetLinesToExecutingMessages
     ]);
+
     /**
      * @param {Object[]} originalBudgetLines - The original budget lines
+     * @param {Object[]} cans - The CAN data retrieved from the RTL Query
      * @returns {Object[]} The updated budget lines
      */
-    function createUpdatedBudgetLines(originalBudgetLines) {
+    function createUpdatedBudgetLines(originalBudgetLines, cans) {
         if (!Array.isArray(originalBudgetLines)) {
             console.error("Expected an array, received:", originalBudgetLines);
             return [];
         }
+
         return originalBudgetLines.map((budgetLine) => {
             // Create a shallow copy of the budget line
             let updatedBudgetLine = { ...budgetLine };
@@ -193,6 +199,16 @@ const useApproveAgreement = () => {
                 budgetLine.change_requests_in_review.forEach((changeRequest) => {
                     // Apply each requested change to the updated budget line
                     Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+
+                    // If there's a requested CAN change, update the CAN information
+                    if (changeRequest.requested_change_data.can_id) {
+                        const newCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                        if (newCan) {
+                            updatedBudgetLine.can = newCan;
+                        } else {
+                            console.warn(`CAN with id ${changeRequest.requested_change_data.can_id} not found.`);
+                        }
+                    }
                 });
             }
 
@@ -202,8 +218,8 @@ const useApproveAgreement = () => {
     let updatedBudgetLines = [];
     let groupedUpdatedBudgetLinesByServicesComponent = [];
 
-    if (isSuccessAgreement) {
-        updatedBudgetLines = createUpdatedBudgetLines(agreement?.budget_line_items);
+    if (isSuccessAgreement && cans) {
+        updatedBudgetLines = createUpdatedBudgetLines(agreement?.budget_line_items, cans);
         groupedUpdatedBudgetLinesByServicesComponent = updatedBudgetLines
             ? groupByServicesComponent(updatedBudgetLines)
             : [];
