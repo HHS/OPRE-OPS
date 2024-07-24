@@ -46,6 +46,31 @@ function AgreementBLIAccordion({
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(agreement, budgetLinesForCards);
     const showToggle = action === BLI_STATUS.PLANNED || isApprovePage;
 
+    function createUpdatedBudgetLines(originalBudgetLines) {
+        return originalBudgetLines.map((budgetLine) => {
+            // Create a shallow copy of the budget line
+            let updatedBudgetLine = { ...budgetLine };
+
+            // If there are change requests in review, apply them
+            if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
+                budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                    // Apply each requested change to the updated budget line
+                    Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+                });
+            }
+
+            return updatedBudgetLine;
+        });
+    }
+
+    const updatedBudgetLines = createUpdatedBudgetLines(selectedBudgetLineItems);
+
+    // TODO: Cans need work
+    const diffsForCards = afterApproval ? updatedBudgetLines : selectedBudgetLineItems;
+    const feesForDiffCards = getProcurementShopSubTotal(agreement, diffsForCards);
+    const subTotalForDiffCards = budgetLinesTotal(diffsForCards);
+    const totalsForDiffCards = subTotalForDiffCards + feesForDiffCards;
+
     return (
         <Accordion
             heading={title}
@@ -62,14 +87,30 @@ function AgreementBLIAccordion({
                 )}
             </div>
             <div className="display-flex flex-justify">
-                <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
-                <AgreementTotalCard
-                    total={totalsForCards}
-                    subtotal={subTotalForCards}
-                    fees={feesForCards}
-                    procurementShopAbbr={agreement.procurement_shop?.abbr}
-                    procurementShopFee={agreement.procurement_shop?.fee}
-                />
+                {isApprovePage && (
+                    <>
+                        <BLIsByFYSummaryCard budgetLineItems={diffsForCards} />
+                        <AgreementTotalCard
+                            total={totalsForDiffCards}
+                            subtotal={subTotalForDiffCards}
+                            fees={feesForDiffCards}
+                            procurementShopAbbr={agreement.procurement_shop?.abbr}
+                            procurementShopFee={agreement.procurement_shop?.fee}
+                        />
+                    </>
+                )}
+                {!isApprovePage && (
+                    <>
+                        <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
+                        <AgreementTotalCard
+                            total={totalsForCards}
+                            subtotal={subTotalForCards}
+                            fees={feesForCards}
+                            procurementShopAbbr={agreement.procurement_shop?.abbr}
+                            procurementShopFee={agreement.procurement_shop?.fee}
+                        />
+                    </>
+                )}
             </div>
             {children}
         </Accordion>

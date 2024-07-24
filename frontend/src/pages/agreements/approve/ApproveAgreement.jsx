@@ -1,3 +1,4 @@
+import React from "react";
 import App from "../../../App";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
@@ -23,6 +24,7 @@ const ApproveAgreement = () => {
         projectOfficerName,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
+        groupedUpdatedBudgetLinesByServicesComponent,
         budgetLinesInReview,
         changeRequestsInReview,
         notes,
@@ -56,7 +58,58 @@ const ApproveAgreement = () => {
     if (!agreement) {
         return <div>No agreement data available.</div>;
     }
+    const BeforeApprovalContent = React.memo(
+        ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestTitle, urlChangeToStatus }) => (
+            <>
+                {groupedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                    >
+                        <BLIDiffTable
+                            budgetLines={group.budgetLines}
+                            changeType={changeRequestTitle}
+                            statusChangeTo={urlChangeToStatus}
+                        />
+                    </ServicesComponentAccordion>
+                ))}
+            </>
+        )
+    );
+    BeforeApprovalContent.displayName = "BeforeApprovalContent";
 
+    const AfterApprovalContent = React.memo(
+        ({
+            groupedUpdatedBudgetLinesByServicesComponent,
+            servicesComponents,
+            changeRequestTitle,
+            urlChangeToStatus
+        }) => (
+            <>
+                {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                    >
+                        <BLIDiffTable
+                            budgetLines={group.budgetLines}
+                            changeType={changeRequestTitle}
+                            statusChangeTo={urlChangeToStatus}
+                        />
+                    </ServicesComponentAccordion>
+                ))}
+            </>
+        )
+    );
+    AfterApprovalContent.displayName = "AfterApprovalContent";
     return (
         <App breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}>
             {showModal && (
@@ -86,7 +139,7 @@ const ApproveAgreement = () => {
             <AgreementBLIAccordion
                 title="Review Budget Lines"
                 instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
-                budgetLineItems={budgetLinesInReview}
+                budgetLineItems={agreement?.budget_line_items}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
@@ -94,22 +147,21 @@ const ApproveAgreement = () => {
                 isApprovePage={true}
             >
                 <section className="margin-top-4">
-                    {groupedBudgetLinesByServicesComponent.map((group) => (
-                        <ServicesComponentAccordion
-                            key={group.servicesComponentId}
-                            servicesComponentId={group.servicesComponentId}
-                            withMetadata={true}
-                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                            description={findDescription(servicesComponents, group.servicesComponentId)}
-                        >
-                            <BLIDiffTable
-                                budgetLines={group.budgetLines}
-                                changeType={changeRequestTitle}
-                                statusChangeTo={urlChangeToStatus}
-                            />
-                        </ServicesComponentAccordion>
-                    ))}
+                    {!afterApproval ? (
+                        <BeforeApprovalContent
+                            groupedBudgetLinesByServicesComponent={groupedBudgetLinesByServicesComponent}
+                            servicesComponents={servicesComponents}
+                            changeRequestTitle={changeRequestTitle}
+                            urlChangeToStatus={urlChangeToStatus}
+                        />
+                    ) : (
+                        <AfterApprovalContent
+                            groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
+                            servicesComponents={servicesComponents}
+                            changeRequestTitle={changeRequestTitle}
+                            urlChangeToStatus={urlChangeToStatus}
+                        />
+                    )}
                 </section>
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion

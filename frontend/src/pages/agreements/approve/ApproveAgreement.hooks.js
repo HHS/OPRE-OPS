@@ -29,6 +29,7 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} projectOfficerName - The name of the project officer
  * @property {Object[]} servicesComponents - The services components
  * @property {Object[]} groupedBudgetLinesByServicesComponent - The budget lines grouped by services component
+ * @property {Object[]} groupedUpdatedBudgetLinesByServicesComponent - The updated budget lines grouped by services component
  * @property {Object[]} budgetLinesInReview - The budget lines in review
  * @property {ChangeRequest[]} changeRequestsInReview - The change requests in review
  * @property {Object} changeInCans - The change in CANs
@@ -98,7 +99,8 @@ const useApproveAgreement = () => {
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement
+        isLoading: isLoadingAgreement,
+        isSuccess: isSuccessAgreement
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
@@ -173,6 +175,39 @@ const useApproveAgreement = () => {
         budgetLinesToPlannedMessages,
         budgetLinesToExecutingMessages
     ]);
+    /**
+     * @param {Object[]} originalBudgetLines - The original budget lines
+     * @returns {Object[]} The updated budget lines
+     */
+    function createUpdatedBudgetLines(originalBudgetLines) {
+        if (!Array.isArray(originalBudgetLines)) {
+            console.error("Expected an array, received:", originalBudgetLines);
+            return [];
+        }
+        return originalBudgetLines.map((budgetLine) => {
+            // Create a shallow copy of the budget line
+            let updatedBudgetLine = { ...budgetLine };
+
+            // If there are change requests in review, apply them
+            if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
+                budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                    // Apply each requested change to the updated budget line
+                    Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+                });
+            }
+
+            return updatedBudgetLine;
+        });
+    }
+    let updatedBudgetLines = [];
+    let groupedUpdatedBudgetLinesByServicesComponent = [];
+
+    if (isSuccessAgreement) {
+        updatedBudgetLines = createUpdatedBudgetLines(agreement?.budget_line_items);
+        groupedUpdatedBudgetLinesByServicesComponent = updatedBudgetLines
+            ? groupByServicesComponent(updatedBudgetLines)
+            : [];
+    }
 
     const handleCancel = () => {
         setShowModal(true);
@@ -344,6 +379,7 @@ const useApproveAgreement = () => {
         projectOfficerName,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
+        groupedUpdatedBudgetLinesByServicesComponent,
         budgetLinesInReview,
         changeRequestsInReview,
         changeInCans,
