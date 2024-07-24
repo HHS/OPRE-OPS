@@ -122,7 +122,7 @@ class UsersListAPI(BaseListAPI):
 
             users = get_users(current_app.db_session, **request_data)
 
-            if is_user_admin(current_user):
+            if is_user_admin(current_user) or (len(users) == 1 and users[0].id == current_user.id):
                 schema = UserResponse(many=True)
             else:
                 schema = SafeUserSchema(many=True)

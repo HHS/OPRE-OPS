@@ -123,6 +123,7 @@ def test_get_safe_user_with_regular_user(client, loaded_db, test_non_admin_user,
     assert user["full_name"] == new_user.full_name
     assert "created_by" not in user
     assert "updated_by" not in user
+    assert "oidc_id" not in user
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -262,6 +263,7 @@ def test_get_all_users_safe_user(client, loaded_db, test_non_admin_user):
     assert response.json[0]["full_name"] == expected_user.full_name
     assert "status" not in response.json[0]
     assert "division" not in response.json[0]
+    assert "oidc_id" not in response.json[0]
     assert "first_name" not in response.json[0]
     assert "last_name" not in response.json[0]
     assert "roles" not in response.json[0]
