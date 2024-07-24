@@ -6,11 +6,10 @@ from models import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
     ChangeRequest,
+    ChangeRequestNotification,
     ChangeRequestStatus,
     Division,
-    Notification,
 )
-
 from models.cans import BudgetLineItemStatus
 
 
@@ -47,9 +46,9 @@ def create_notification_of_new_request_to_reviewer(change_request: ChangeRequest
             approve_url = f"{approve_url}&to={to_status}"
 
     for division_director_id in division_director_ids:
-        notification = Notification(
+        notification = ChangeRequestNotification(
+            change_request_id=change_request.id,
             title="Approval Request",
-            # NOTE: approve_url only renders as plain text in default react-markdown
             message=f"An Agreement Approval Request has been submitted. "
             f"Please review and approve. \n\\\n\\\n[Link]({approve_url})",
             is_read=False,
@@ -69,7 +68,8 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
         new_status = status_diff["new"]
         old_status = status_diff["old"]
         if change_request.status == ChangeRequestStatus.APPROVED:
-            notification = Notification(
+            notification = ChangeRequestNotification(
+                change_request_id=change_request.id,
                 title=f"Budget Lines Approved from {old_status} to {new_status} Status",
                 message=f"The budget lines you sent to your Division Director were approved from {old_status} to {new_status} status. "
                 "The amounts have been subtracted from the FY budget.",
@@ -80,7 +80,8 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
             current_app.db_session.add(notification)
             current_app.db_session.commit()
         elif change_request.status == ChangeRequestStatus.REJECTED:
-            notification = Notification(
+            notification = ChangeRequestNotification(
+                change_request_id=change_request.id,
                 title=f"Budget Lines Approved from {old_status} to {new_status} Status",
                 message=f"The budget lines you sent to your Division Director were approved from {old_status} to {new_status} status. "
                 "The amounts have been subtracted from the FY budget.",
@@ -92,7 +93,8 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
             current_app.db_session.commit()
     else:  # non-status change request
         # just a generic message for now
-        notification = Notification(
+        notification = ChangeRequestNotification(
+            change_request_id=change_request.id,
             title=f"Budget Line Change Request {change_request.status}",
             message=f"Your budget line change request has been {change_request.status}",
             is_read=False,

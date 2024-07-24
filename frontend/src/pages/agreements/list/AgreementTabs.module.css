@@ -1,0 +1,11 @@
+.notificationCircle {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #b50909;
+    color: white;
+    font-size: 12px;
+}
