@@ -459,7 +459,7 @@ class AgreementChangeRequest(ChangeRequest):
         "polymorphic_identity": ChangeRequestType.AGREEMENT_CHANGE_REQUEST,
     }
 
-    budget_field_names = ["procurement_shop_id"]
+    budget_field_names = ["awarding_entity_id"]
 
     @hybrid_property
     def has_budget_change(self):

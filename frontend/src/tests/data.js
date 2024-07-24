@@ -174,7 +174,7 @@ export const agreement = {
         id: 1,
         name: "Product Service Center"
     },
-    procurement_shop_id: 1,
+    awarding_entity_id: 1,
     procurement_tracker_workflow_id: null,
     product_service_code: {
         description: "",

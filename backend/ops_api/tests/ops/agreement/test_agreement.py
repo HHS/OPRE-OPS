@@ -82,7 +82,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert response.json["id"] == agreement.id
     assert response.json["name"] == agreement.name
     assert response.json["notes"] == agreement.notes
-    assert response.json["procurement_shop_id"] == agreement.procurement_shop_id
+    assert response.json["awarding_entity_id"] == agreement.awarding_entity_id
     assert response.json["product_service_code_id"] == agreement.product_service_code_id
     assert response.json["project_officer_id"] == agreement.project_officer_id
     assert response.json["project_id"] == agreement.project_id
@@ -129,7 +129,7 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
         ("contract_type", "LABOR_HOUR"),
         ("agreement_type", "CONTRACT"),
         ("delivered_status", False),
-        ("procurement_shop_id", 1),
+        ("awarding_entity_id", 1),
         ("project_officer_id", 1),
         ("project_id", 1),
         ("foa", "This is an FOA value"),
@@ -550,7 +550,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
             ],
             "notes": "test notes",
             "project_id": test_project.id,
-            "procurement_shop_id": 2,
+            "awarding_entity_id": 2,
             "contract_type": "FIRM_FIXED_PRICE",
             "service_requirement_type": "SEVERABLE",
         },
@@ -583,7 +583,7 @@ def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_us
             ],
             "notes": "test notes",
             "project_id": test_project.id,
-            "procurement_shop_id": 2,
+            "awarding_entity_id": 2,
             "contract_type": "FIRM_FIXED_PRICE",
         },
     )
@@ -614,7 +614,7 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
             "name": "Test Edit Title",
             "notes": "Test Notes test edit notes",
             "po_number": None,
-            "procurement_shop_id": 1,
+            "awarding_entity_id": 1,
             "product_service_code_id": 1,
             "project_officer": 500,
             "project_officer_id": 500,
