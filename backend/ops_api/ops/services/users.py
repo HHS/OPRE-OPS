@@ -1,4 +1,6 @@
-from sqlalchemy import select
+from typing import cast
+
+from sqlalchemy import ColumnElement, select
 from sqlalchemy.orm import Session
 from werkzeug.exceptions import Forbidden, NotFound
 
@@ -60,7 +62,10 @@ def get_users(session: Session, **kwargs) -> list[User]:
     stmt = select(User)
 
     for key, value in kwargs.items():
-        stmt = stmt.where(getattr(User, key) == value)
+        if key == "roles":
+            stmt = stmt.where(User.roles.any(Role.name.in_(value)))
+        else:
+            stmt = stmt.where(cast(ColumnElement[bool], getattr(User, key)) == value)
 
     stmt = stmt.order_by(User.id)
 

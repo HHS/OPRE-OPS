@@ -151,11 +151,10 @@ def test_own_user_details(client, loaded_db, test_non_admin_user):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_all_users(auth_client, loaded_db):
-    expected_user = loaded_db.get(User, 500)
-
     response = auth_client.get(url_for("api.users-group"))
     assert response.status_code == 200
     assert len(response.json) > 1
+    expected_user = loaded_db.get(User, 500)
     assert response.json[0]["id"] == expected_user.id
     assert response.json[0]["status"] == expected_user.status.name
     assert response.json[0]["display_name"] == expected_user.display_name
@@ -165,3 +164,124 @@ def test_get_all_users(auth_client, loaded_db):
     assert response.json[0]["first_name"] == expected_user.first_name
     assert response.json[0]["last_name"] == expected_user.last_name
     assert response.json[0]["roles"] == [role.name for role in expected_user.roles]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_id(auth_client, loaded_db):
+    response = auth_client.get(url_for("api.users-group", id=500))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    expected_user = loaded_db.get(User, 500)
+    assert response.json[0]["id"] == expected_user.id
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_oidc(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(url_for("api.users-group", oidc_id=expected_user.oidc_id))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["oidc_id"] == str(expected_user.oidc_id)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_hhs_id(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(url_for("api.users-group", hhs_id=expected_user.hhs_id))
+    assert response.status_code == 200
+    assert len(response.json) > 1
+    assert response.json[0]["hhs_id"] == expected_user.hhs_id
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_email(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(url_for("api.users-group", email=expected_user.email))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["email"] == expected_user.email
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_status(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(url_for("api.users-group", status=expected_user.status.name))
+    assert response.status_code == 200
+    assert len(response.json) > 1
+    assert response.json[0]["status"] == expected_user.status.name
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_role(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(url_for("api.users-group", roles=[role.name for role in expected_user.roles]))
+    assert response.status_code == 200
+    assert len(response.json) > 1
+    assert response.json[0]["roles"] == [role.name for role in expected_user.roles]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_division(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(url_for("api.users-group", division=expected_user.division))
+    assert response.status_code == 200
+    assert len(response.json) > 1
+    assert response.json[0]["division"] == expected_user.division
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_first_name(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(url_for("api.users-group", first_name=expected_user.first_name))
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["first_name"] == expected_user.first_name
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_last_name(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(
+        url_for(
+            "api.users-group",
+            last_name=expected_user.last_name,
+        )
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["last_name"] == expected_user.last_name
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_safe_user(client, loaded_db, test_non_admin_user):
+    access_token = create_access_token(identity=test_non_admin_user)
+    response = client.get(url_for("api.users-group"), headers={"Authorization": f"Bearer {str(access_token)}"})
+    assert response.status_code == 200
+    assert len(response.json) > 1
+    expected_user = loaded_db.get(User, 500)
+    assert response.json[0]["id"] == expected_user.id
+    assert response.json[0]["full_name"] == expected_user.full_name
+    assert "status" not in response.json[0]
+    assert "division" not in response.json[0]
+    assert "oidc_id" not in response.json[0]
+    assert "first_name" not in response.json[0]
+    assert "last_name" not in response.json[0]
+    assert "roles" not in response.json[0]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_get_all_users_by_multiple_filters(auth_client, loaded_db):
+    expected_user = loaded_db.get(User, 500)
+    response = auth_client.get(
+        url_for(
+            "api.users-group",
+            first_name=expected_user.first_name,
+            last_name=expected_user.last_name,
+            division=expected_user.division,
+        )
+    )
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["first_name"] == expected_user.first_name
+    assert response.json[0]["last_name"] == expected_user.last_name
+    assert response.json[0]["division"] == expected_user.division

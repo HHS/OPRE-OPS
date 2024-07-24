@@ -1,32 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 from marshmallow import Schema, fields
 
+import ops_api.ops.schemas.custom_types as custom_types
 from models import UserStatus
 
 ENDPOINT_STRING = "/users"
 
 
-class SafeUserSchema(Schema):
-    id: int = fields.Integer(required=True)
-    full_name: str = fields.String(required=True)
-
-
-# Unable to use SafeUserSchema ^ in budget_line_items due to this error:
-# marshmallow.exceptions.RegistryError: Multiple classes with name 'SafeUserSchema' were found. Please use the full, module-qualified path.
-# so I'm using this instead:
-@dataclass
-class SafeUser:
-    id: int
-    full_name: Optional[str] = None
-
-
-class PutUserSchema(Schema):
+class PutPatchUserSchema(Schema):
     id: int = fields.Integer()
     email: Optional[str] = fields.String()
     first_name: Optional[str] = fields.String(load_default=None)
@@ -36,21 +22,16 @@ class PutUserSchema(Schema):
     roles: Optional[list[str]] = fields.List(fields.String(), load_default=[])
 
 
-class POSTRequestBody(PutUserSchema):
-    id: int  # user_id is required for POST
-
-
-class PATCHRequestBody(PutUserSchema):
-    id: Optional[int] = None  # user_id (and all params) are optional for PATCH
-
-
 class QueryParameters(Schema):
     id: Optional[int] = fields.Integer()
     oidc_id: Optional[str] = fields.String()
     hhs_id: Optional[str] = fields.String()
     email: Optional[str] = fields.String()
     status: Optional[str] = fields.String()
-    roles: Optional[list[str]] = fields.List(fields.String())
+    division: Optional[int] = fields.Integer()
+    first_name: Optional[str] = fields.String()
+    last_name: Optional[str] = fields.String()
+    roles: Optional[list[str]] = custom_types.List(fields.String())
 
 
 class UserResponse(Schema):
@@ -69,3 +50,8 @@ class UserResponse(Schema):
     updated_by: Optional[int] = fields.Integer(allow_none=True)
     created_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+
+
+class SafeUserSchema(Schema):
+    id: int = fields.Integer(required=True)
+    full_name: Optional[str] = fields.String()

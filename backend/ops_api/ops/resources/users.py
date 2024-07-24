@@ -1,16 +1,12 @@
-from typing import Any
-
-import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
-from marshmallow import Schema
 
 import ops_api.ops.services.users as users_service
 from models import BaseModel, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.users import POSTRequestBody, PutUserSchema, QueryParameters, SafeUserSchema, UserResponse
+from ops_api.ops.schemas.users import PutPatchUserSchema, QueryParameters, SafeUserSchema, UserResponse
 from ops_api.ops.services.users import get_users
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
@@ -52,7 +48,7 @@ class UsersItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
-            request_schema = PutUserSchema()
+            request_schema = PutPatchUserSchema()
             user_data = request_schema.load(request.json)
 
             updated_user = users_service.update_user(
@@ -69,7 +65,7 @@ class UsersItemAPI(BaseItemAPI):
     @is_authorized(PermissionType.PATCH, Permission.USER)
     def patch(self, id: int) -> Response:
         with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
-            request_schema = PutUserSchema(partial=True)
+            request_schema = PutPatchUserSchema(partial=True)
             user_data = request_schema.load(request.json)
 
             updated_user = users_service.update_user(
@@ -87,7 +83,6 @@ class UsersItemAPI(BaseItemAPI):
 class UsersListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._post_schema = mmdc.class_schema(POSTRequestBody)()
         self._get_schema = QueryParameters()
         self._response_schema = UserResponse(many=True)
 
@@ -101,49 +96,21 @@ class UsersListAPI(BaseListAPI):
             if is_user_admin(current_user):
                 schema = self._response_schema
             else:
-                schema = SafeUserSchema()
+                schema = SafeUserSchema(many=True)
 
             user_data = schema.dump(users)
-            for user in users:
-                for data in user_data:
-                    if user.id == data["id"]:
-                        data["roles"] = [role.name for role in user.roles]
-                        break
+
+            if not isinstance(schema, SafeUserSchema):
+                for user in users:
+                    for data in user_data:
+                        if user.id == data["id"]:
+                            data["roles"] = [role.name for role in user.roles]
+                            break
 
             meta.metadata.update({"user_details": user_data})
 
             return make_response_with_headers(user_data)
 
-    @is_authorized(PermissionType.PUT, Permission.USER)
-    def put(self, id: int) -> Response:
-        # Update the user with the request data, and save the changes to the database
-        user = update_user(request.json, id)
-
-        # Return the updated user as a response
-        return make_response_with_headers(user.to_dict())
-
-
-def update_data(user: User, data: dict[str, Any]) -> None:
-    for item in data:
-        current_app.logger.debug(f"Updating user with item: {user} {item} {getattr(user, item)} {data[item]}")
-        setattr(user, item, data[item])
-    current_app.logger.debug(f"Updated user (setattr): {user.to_dict()}")
-    return user
-
-
-def update_user(user: User, data: dict[str, Any]) -> User:
-    user = update_data(user, data)
-    current_app.db_session.add(user)
-    current_app.db_session.commit()
-    return user
-
-
-def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json))
-    data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
-    return data
-
-
-def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json))
-    return data
+    @is_authorized(PermissionType.POST, Permission.USER)
+    def post(self) -> Response:
+        pass
