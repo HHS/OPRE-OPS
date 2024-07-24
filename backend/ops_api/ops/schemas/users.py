@@ -57,3 +57,8 @@ class UserResponse(Schema):
 class SafeUserSchema(Schema):
     id: int = fields.Integer(required=True)
     full_name: Optional[str] = fields.String()
+
+    # TODO: I would rather not include these fields but removing them will break the frontend.
+    # TODO: Need to fix the frontend so that it doesn't rely on these fields.
+    email: Optional[str] = fields.String()
+    oidc_id: Optional[UUID] = fields.UUID()
