@@ -91,11 +91,21 @@ const useApproveAgreement = () => {
         [urlChangeToStatus]
     );
 
-    const checkBoxText =
-        statusChangeTo === BLI_STATUS.PLANNED
-            ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
-            : "I understand that approving these budget lines will start the Procurement Process";
-
+    let checkBoxText;
+    switch (changeRequestType) {
+        case CHANGE_REQUEST_SLUG_TYPES.BUDGET:
+            checkBoxText = "I understand that approving this budget change will affect my CANs balance(s)";
+            break;
+        case CHANGE_REQUEST_SLUG_TYPES.STATUS:
+            checkBoxText =
+                statusChangeTo === BLI_STATUS.PLANNED
+                    ? "I understand that approving budget lines for Planned Status will subtract the amounts from the FY budget"
+                    : "I understand that approving budget lines for Executing Status will start the Procurement Process";
+            break;
+        default:
+            checkBoxText = "";
+            break;
+    }
     const [afterApproval, setAfterApproval] = useToggle(true);
 
     const {
