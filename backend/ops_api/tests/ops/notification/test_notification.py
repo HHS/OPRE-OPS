@@ -163,6 +163,7 @@ def test_notifications_get_by_user_id(auth_client, loaded_db, notification):
     assert response.json[0]["is_read"] is False
     assert response.json[0]["expires"] == "2031-12-31"
     assert response.json[0]["recipient"]["id"] == user_id
+    assert response.json[0]["notification_type"] == "NOTIFICATION"
 
 
 @pytest.mark.usefixtures("app_ctx")
