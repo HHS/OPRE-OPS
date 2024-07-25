@@ -179,21 +179,19 @@ class NotificationListAPI(BaseListAPI):
             # only ChangeRequestNotifications are associated with an agreement
             stmt = (
                 select(ChangeRequestNotification)
-                .distinct(ChangeRequestNotification.id)
                 .join(User, ChangeRequestNotification.recipient_id == User.id, isouter=True)
                 .join(
                     AgreementChangeRequest,
                     ChangeRequestNotification.change_request_id == AgreementChangeRequest.id,
                 )
                 .where(AgreementChangeRequest.agreement_id == agreement_id)
-                .order_by(ChangeRequestNotification.id)
+                .order_by(ChangeRequestNotification.created_on.desc())
             )
         else:
             stmt = (
                 select(Notification)
-                .distinct(Notification.id)
                 .join(User, Notification.recipient_id == User.id, isouter=True)
-                .order_by(Notification.id)
+                .order_by(Notification.created_on.desc())
             )
 
         query_helper = QueryHelper(stmt)
