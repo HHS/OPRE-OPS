@@ -36,7 +36,7 @@ export const budgetLine = {
         '{email: "admin.demo@email.com", full_name: "Admin D…}',
         '{email: "dave.director@email.com", full_name: "Dave…}'
     ],
-    updated_on: "2024-05-27T13:56:50.363964Z",
+    updated_on: "2024-05-27T13:56:50.363964Z"
 };
 
 export const agreement = {
@@ -485,8 +485,8 @@ export const canFiscalYearFundingDetails = [
         current_fy_funding_ytd: 100000,
         can_fiscal_year_id: 5004
     }
-  ]
-  export const canAppropriationDetails =  [
+];
+export const canAppropriationDetails = [
     {
         id: 1,
         appropriation_prefix: "ABCDE",
@@ -505,4 +505,80 @@ export const canFiscalYearFundingDetails = [
         appropriation_postfix: "ALSOY",
         appropriation_year: "2024"
     }
-  ]
+];
+
+export const budgetLineWithBudgetChangeRequest = {
+    agreement_id: 9,
+    amount: 300000,
+    can: {
+        appropriation_date: "2022-10-01T00:00:00.000000Z",
+        appropriation_term: 1,
+        authorizer_id: 26,
+        description: "Example CAN",
+        display_name: "G99XXX8",
+        expiration_date: "2023-09-01T00:00:00.000000Z",
+        id: 512,
+        managing_portfolio_id: 3,
+        nickname: "",
+        number: "G99XXX8"
+    },
+    can_id: 512,
+    change_requests_in_review: [
+        {
+            agreement_id: 9,
+            budget_line_item_id: 15021,
+            change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+            created_by: 520,
+            created_by_user: {
+                full_name: "Admin Demo",
+                id: 520
+            },
+            created_on: "2024-07-25T19:23:51.439463",
+            display_name: "BudgetLineItemChangeRequest#1",
+            has_budget_change: true,
+            has_status_change: false,
+            id: 1,
+            managing_division_id: 4,
+            requested_change_data: {
+                amount: 333333
+            },
+            requested_change_diff: {
+                amount: {
+                    new: 333333,
+                    old: 300000
+                }
+            },
+            requestor_notes: null,
+            reviewed_on: null,
+            reviewer_notes: null,
+            status: "IN_REVIEW",
+            updated_by: 520,
+            updated_on: "2024-07-25T19:23:51.439463"
+        }
+    ],
+    comments: "",
+    created_by: null,
+    created_on: "2024-07-25T19:18:59.295017",
+    date_needed: "2044-06-13",
+    fiscal_year: 2044,
+    id: 15021,
+    in_review: true,
+    line_description: "SC3",
+    portfolio_id: 3,
+    proc_shop_fee_percentage: 0.005,
+    services_component_id: 6,
+    status: "PLANNED",
+    team_members: [
+        {
+            email: "Niki.Denmark@example.com",
+            full_name: "Niki Denmark",
+            id: 511
+        },
+        {
+            email: "admin.demo@email.com",
+            full_name: "Admin Demo",
+            id: 520
+        }
+    ],
+    updated_on: "2024-07-25T19:23:51.075970"
+};
