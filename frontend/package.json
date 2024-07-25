@@ -30,7 +30,7 @@
         "react-select": "5.8.0",
         "sass": "1.77.8",
         "sass-loader": "14.2.1",
-        "vest": "5.3.0"
+        "vest": "5.4.0"
     },
     "devDependencies": {
         "@eslint/compat": "1.1.1",
