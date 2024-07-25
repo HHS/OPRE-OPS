@@ -40,14 +40,16 @@ function AgreementBLIAccordion({
     isApprovePage = false,
     updatedBudgetLines = []
 }) {
+    const showToggle = action === BLI_STATUS.PLANNED || isApprovePage;
+    // NOTE: data for ReviewAgreement page is different from ApproveAgreement page
+    // ReviewAgreement data
     const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items);
     const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
     const budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
     const feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards);
     const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(agreement, budgetLinesForCards);
-    const showToggle = action === BLI_STATUS.PLANNED || isApprovePage;
-    // TODO: Consider refactoring to be more DRY
+    // NOTE: data for ApproveAgreement page
     const diffsForCards = afterApproval ? updatedBudgetLines : selectedBudgetLineItems;
     const feesForDiffCards = getProcurementShopSubTotal(agreement, diffsForCards);
     const subTotalForDiffCards = budgetLinesTotal(diffsForCards);
