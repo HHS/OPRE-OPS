@@ -1,4 +1,6 @@
 /*Placeholder CSS to stub out space on the page.*/
-.container {
-    height: 1000px;
+
+.centeredItem {
+    align-items: center;
+    display: flex;
 }

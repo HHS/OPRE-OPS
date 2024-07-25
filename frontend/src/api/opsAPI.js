@@ -20,7 +20,8 @@ export const opsApi = createApi({
         "CanFunding",
         "Notifications",
         "ServicesComponents",
-        "ChangeRequests"
+        "ChangeRequests",
+        "Divisions"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -286,6 +287,10 @@ export const opsApi = createApi({
                 };
             },
             invalidatesTags: ["ChangeRequests"]
+        }),
+        getDivisions: builder.query({
+            query: () => `/divisions/`,
+            providesTags: ["Divisions"]
         })
     })
 });
@@ -329,5 +334,6 @@ export const {
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
     useGetChangeRequestsListQuery,
-    useReviewChangeRequestMutation
+    useReviewChangeRequestMutation,
+    useGetDivisionsQuery
 } = opsApi;
