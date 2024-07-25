@@ -192,22 +192,26 @@ const useApproveAgreement = () => {
         }
 
         return originalBudgetLines.map((budgetLine) => {
-            // Create a shallow copy of the budget line
             let updatedBudgetLine = { ...budgetLine };
 
-            // If there are change requests in review, apply them
             if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
                 budgetLine.change_requests_in_review.forEach((changeRequest) => {
-                    // Apply each requested change to the updated budget line
-                    Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+                    // Only apply changes based on the changeRequestType
+                    if (
+                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && changeRequest.has_budget_change) ||
+                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+                            changeRequest.has_status_change &&
+                            changeRequest.requested_change_data.status === statusChangeTo)
+                    ) {
+                        Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
 
-                    // If there's a requested CAN change, update the CAN information
-                    if (changeRequest.requested_change_data.can_id) {
-                        const newCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
-                        if (newCan) {
-                            updatedBudgetLine.can = newCan;
-                        } else {
-                            console.warn(`CAN with id ${changeRequest.requested_change_data.can_id} not found.`);
+                        if (changeRequest.requested_change_data.can_id) {
+                            const newCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                            if (newCan) {
+                                updatedBudgetLine.can = newCan;
+                            } else {
+                                console.warn(`CAN with id ${changeRequest.requested_change_data.can_id} not found.`);
+                            }
                         }
                     }
                 });
