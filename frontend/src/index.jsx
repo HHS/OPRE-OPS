@@ -33,6 +33,7 @@ import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList"
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import ApproveAgreement from "./pages/agreements/approve";
 import VersionPage from "./pages/version/VersionPage";
+import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -254,6 +255,10 @@ const router = createBrowserRouter(
                             </Link>
                         )
                     }}
+                />
+                <Route
+                    path="/user-admin"
+                    element={<UserAdmin />}
                 />
             </Route>
             {/* END PROTECTED ROUTES */}
