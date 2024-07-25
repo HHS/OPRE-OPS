@@ -19,7 +19,7 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
-import { addDiffClass } from "./BLIDiffRow.helpers";
+import { addDiffClass, getChangeRequestTypes } from "./BLIDiffRow.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -42,42 +42,13 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const isBLIInReview = budgetLine?.in_review || false;
     const isBudgetChange = changeType === CHANGE_REQUEST_TYPES.BUDGET;
     const isStatusChange = changeType === CHANGE_REQUEST_TYPES.STATUS;
-
-    /**
-     * Get budget change requests
-     * @param {import("../../ChangeRequests/ChangeRequestsList/ChangeRequests").ChangeRequest[]} changeRequests - The change requests
-     * @returns {string[]} The budget change requests
-     */
-    const getBudgetChangeRequests = (changeRequests) => {
-        return changeRequests
-            .filter((changeRequest) => changeRequest.has_budget_change)
-            .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
-    };
-    /**
-     * Get status change requests
-     * @param {import("../../ChangeRequests/ChangeRequestsList/ChangeRequests").ChangeRequest[]} changeRequests - The change requests
-     * @param {string} status - The status
-     */
-    const getStatusChangeRequests = (changeRequests, status) => {
-        return changeRequests
-            .filter(
-                (changeRequest) =>
-                    changeRequest.has_status_change && changeRequest.requested_change_data.status === status
-            )
-            .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
-    };
-    /**
-     * Change request types
-     * @type {string[]} The change request types
-     */
-    let changeRequestTypes = [];
-    if (isBudgetChange) {
-        changeRequestTypes = isBLIInReview ? getBudgetChangeRequests(budgetLine?.change_requests_in_review) : [];
-    } else if (isStatusChange) {
-        changeRequestTypes = isBLIInReview
-            ? getStatusChangeRequests(budgetLine?.change_requests_in_review, changeRequestStatus)
-            : [];
-    }
+    const changeRequestTypes = getChangeRequestTypes(
+        isBudgetChange,
+        isBLIInReview,
+        budgetLine,
+        isStatusChange,
+        changeRequestStatus
+    );
 
     const TableRowData = (
         <>

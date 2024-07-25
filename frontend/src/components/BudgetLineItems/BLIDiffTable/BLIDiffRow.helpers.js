@@ -1,33 +1,4 @@
 /**
- * Returns a CSS class name indicating whether the given budget line item's date is in the future or not.
- * @param {Date} item - The budget line item's date.
- * @param {boolean} isReviewMode - Whether the table is in review mode or not.
- * @returns {string} - The CSS class name to apply to the table item.
- */
-export const futureDateErrorClass = (item, isReviewMode) => {
-    const today = new Date().valueOf();
-    const dateNeeded = new Date(item).valueOf();
-
-    if (isReviewMode && dateNeeded < today) {
-        return "table-item-error";
-    } else {
-        return "";
-    }
-};
-/**
- * Adds an error class to a table item if it is not found and the component is in review mode.
- * @param {Object} item - The item to check for existence.
- * @param {boolean} isReviewMode - A flag indicating whether the component is in review mode.
- * @returns {string} - The CSS class to apply to the table item.
- */
-export const addErrorClassIfNotFound = (item, isReviewMode) => {
-    if (isReviewMode && !item) {
-        return "table-item-error";
-    } else {
-        return "";
-    }
-};
-/**
  * Adds a CSS class to a table item if it is different from the original.
  * @param {boolean} isDiff - A flag indicating whether the item is different from the original.
  * @returns {string} - The CSS class to apply to the table item.
@@ -35,3 +6,50 @@ export const addErrorClassIfNotFound = (item, isReviewMode) => {
 export const addDiffClass = (isDiff) => {
     return isDiff ? "table-item-diff" : "";
 };
+/**
+ * Get budget change requests
+ * @param {import("../../ChangeRequests/ChangeRequestsList/ChangeRequests").ChangeRequest[]} changeRequests - The change requests
+ * @returns {string[]} The budget change requests
+ */
+const getBudgetChangeRequests = (changeRequests) => {
+    return changeRequests
+        .filter((changeRequest) => changeRequest.has_budget_change)
+        .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
+};
+/**
+ * Get status change requests
+ * @param {import("../../ChangeRequests/ChangeRequestsList/ChangeRequests").ChangeRequest[]} changeRequests - The change requests
+ * @param {string} status - The status
+ * @returns {string[]} The status change requests
+ */
+const getStatusChangeRequests = (changeRequests, status) => {
+    return changeRequests
+        .filter(
+            (changeRequest) => changeRequest.has_status_change && changeRequest.requested_change_data.status === status
+        )
+        .flatMap((changeRequest) => Object.keys(changeRequest.requested_change_data));
+};
+/**
+ * Get change request types
+ * @param {boolean} isBudgetChange - Flag indicating whether the change request is a budget change
+ * @param {boolean} isBLIInReview - Flag indicating whether the budget line item is in review
+ * @param {Object} budgetLine - The budget line item
+ * @param {boolean} isStatusChange - Flag indicating whether the change request is a status change
+ * @param {string} changeRequestStatus - The change request status
+ * @returns {string[]} The change request types
+ */
+export function getChangeRequestTypes(isBudgetChange, isBLIInReview, budgetLine, isStatusChange, changeRequestStatus) {
+    /**
+     * Change request types
+     * @type {string[]} The change request types
+     */
+    if (isBudgetChange && isBLIInReview) {
+        return getBudgetChangeRequests(budgetLine?.change_requests_in_review);
+    }
+
+    if (isStatusChange && isBLIInReview) {
+        return getStatusChangeRequests(budgetLine?.change_requests_in_review, changeRequestStatus);
+    }
+
+    return [];
+}
