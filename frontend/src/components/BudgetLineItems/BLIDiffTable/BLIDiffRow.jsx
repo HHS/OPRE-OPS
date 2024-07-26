@@ -50,6 +50,14 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
         changeRequestStatus
     );
 
+    if (!budgetLine) {
+        return (
+            <tr>
+                <td colSpan={9}>Error: Budget line is not present</td>
+            </tr>
+        );
+    }
+
     const TableRowData = (
         <>
             <th
