@@ -15,8 +15,10 @@ class NotificationType(Enum):
 
 class Notification(BaseModel):
     __tablename__ = "notification"
-    notification_type: Mapped[NotificationType] = mapped_column(ENUM(NotificationType))
     id: Mapped[int] = BaseModel.get_pk_column()
+    notification_type: Mapped[NotificationType] = mapped_column(
+        ENUM(NotificationType), default=NotificationType.NOTIFICATION, nullable=False
+    )
     title: Mapped[Optional[str]] = mapped_column(String)
     message: Mapped[Optional[str]] = mapped_column(String)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False)

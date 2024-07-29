@@ -12,7 +12,7 @@
         "@nivo/bar": "0.87.0",
         "@nivo/core": "0.87.0",
         "@nivo/pie": "0.87.0",
-        "@reduxjs/toolkit": "2.2.6",
+        "@reduxjs/toolkit": "2.2.7",
         "@uswds/uswds": "3.8.1",
         "axios": "1.7.2",
         "clsx": "2.1.1",
@@ -30,7 +30,7 @@
         "react-select": "5.8.0",
         "sass": "1.77.8",
         "sass-loader": "14.2.1",
-        "vest": "5.3.0"
+        "vest": "5.4.0"
     },
     "devDependencies": {
         "@eslint/compat": "1.1.1",
@@ -50,7 +50,7 @@
         "cypress-localstorage-commands": "2.2.6",
         "eslint": "9.x",
         "eslint-config-prettier": "9.1.0",
-        "eslint-plugin-cypress": "3.3.0",
+        "eslint-plugin-cypress": "3.4.0",
         "eslint-plugin-import": "2.29.1",
         "eslint-plugin-jest": "28.6.0",
         "eslint-plugin-jsx-a11y": "6.9.0",
@@ -66,7 +66,7 @@
         "msw": "2.3.4",
         "prettier": "3.3.3",
         "redux-mock-store": "1.5.4",
-        "vite": "5.3.4",
+        "vite": "5.3.5",
         "vite-jsconfig-paths": "2.0.1",
         "vite-plugin-babel-macros": "1.0.6",
         "vite-plugin-eslint": "1.8.1",
