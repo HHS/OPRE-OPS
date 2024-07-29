@@ -111,6 +111,7 @@ const ApproveAgreement = () => {
         )
     );
     AfterApprovalContent.displayName = "AfterApprovalContent";
+
     return (
         <App breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}>
             {showModal && (
