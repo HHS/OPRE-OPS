@@ -77,10 +77,8 @@
         "GET_USER",
 
         "PUT_USER",
-        "POST_USER",
         "PATCH_USER",
 
-        "GET_USERS",
         "GET_HISTORY",
 
         "GET_WORKFLOW",
@@ -137,8 +135,8 @@
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",
-        "GET_USERS",
-
+        "PUT_USER",
+        "PATCH_USER",
         "GET_HISTORY",
 
         "GET_WORKFLOW",
@@ -156,7 +154,6 @@
       name: "unassigned",
       permissions: [
         "GET_USER",
-        "POST_USER",
         "PUT_USER",
         "PATCH_USER",
       ],
@@ -198,8 +195,9 @@
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",
+        "PUT_USER",
+        "PATCH_USER",
 
-        "GET_USERS",
         "GET_HISTORY",
 
         "GET_WORKFLOW",
@@ -218,6 +216,12 @@
         "GET_UPLOAD_DOCUMENT",
         "POST_UPLOAD_DOCUMENT"
       ]
+    },
+    { // 5 User Admin
+      name: "USER_ADMIN",
+      permissions: [
+        "POST_USER",
+      ],
     }
   ],
   group: [
@@ -271,7 +275,7 @@
       division: 2,
       email: "Amelia.Popham@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000004",
-      roles: [{"tablename":  "role", "id": 1}],
+      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 5}],
       groups: [{"tablename":  "group", "id": 1}],
       status: "ACTIVE"
     },
