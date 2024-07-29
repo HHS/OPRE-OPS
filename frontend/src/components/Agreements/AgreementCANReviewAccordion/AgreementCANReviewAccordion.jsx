@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
-import Accordion from "../../UI/Accordion";
-import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
-import CANFundingCard from "../../CANs/CANFundingCard";
-import ToggleButton from "../../UI/ToggleButton";
-import Tag from "../../UI/Tag";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
+import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
+import CANFundingCard from "../../CANs/CANFundingCard";
+import Accordion from "../../UI/Accordion";
+import Tag from "../../UI/Tag";
+import ToggleButton from "../../UI/ToggleButton";
 
 /**
  * Renders an accordion component for reviewing CANs.
@@ -16,6 +16,7 @@ import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
+ * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve
  * @returns {JSX.Element} The AgreementCANReviewAccordion component.
  */
 const AgreementCANReviewAccordion = ({
@@ -23,7 +24,8 @@ const AgreementCANReviewAccordion = ({
     selectedBudgetLines,
     afterApproval,
     setAfterApproval,
-    action
+    action,
+    isApprovePage = false
 }) => {
     const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
     if (isLoading) {
@@ -32,7 +34,7 @@ const AgreementCANReviewAccordion = ({
     if (error) {
         return <div>An error occurred loading Portfolio data</div>;
     }
-
+    // TODO: Will need to handle Budget Change - amount requests in the future and also CAN changes
     const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
         const canId = budgetLine?.can?.id;
         if (!acc[canId]) {
@@ -71,6 +73,8 @@ const AgreementCANReviewAccordion = ({
         }
     ];
 
+    const showToggle = action === selectedAction.DRAFT_TO_PLANNED || isApprovePage;
+
     return (
         <Accordion
             heading="Review CANs"
@@ -78,7 +82,7 @@ const AgreementCANReviewAccordion = ({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {action === selectedAction.DRAFT_TO_PLANNED && (
+                {showToggle && (
                     <ToggleButton
                         btnText="After Approval"
                         handleToggle={() => setAfterApproval(!afterApproval)}
@@ -136,6 +140,7 @@ AgreementCANReviewAccordion.propTypes = {
     selectedBudgetLines: PropTypes.arrayOf(PropTypes.object),
     afterApproval: PropTypes.bool,
     setAfterApproval: PropTypes.func,
-    action: PropTypes.string
+    action: PropTypes.string,
+    isApprovePage: PropTypes.bool
 };
 export default AgreementCANReviewAccordion;

@@ -12,6 +12,7 @@ from models import (
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ChangeRequest,
+    ChangeRequestNotification,
     ChangeRequestStatus,
     ChangeRequestType,
     ContractAgreement,
@@ -475,6 +476,16 @@ def test_budget_line_item_patch_with_status_change_requests(auth_client, app, lo
     data = {"change_request_id": change_request_id, "action": "APPROVE", "reviewer_notes": "Notes from the reviewer"}
     response = auth_client.post(url_for("api.change-request-review-list"), json=data)
     assert response.status_code == 200
+
+    # query Notification to find the ChangeRequestNotification for the approval sent to the submitter
+    notification = (
+        loaded_db.query(ChangeRequestNotification)
+        .filter_by(change_request_id=change_request_id, recipient_id=change_request["created_by"])
+        .first()
+    )
+    assert notification is not None
+    print(notification.message)
+    assert notification.change_request.id == change_request_id
 
     # verify agreement history added for 1 review and 1 update
     response = auth_client.get(url_for("api.agreement-history-group", id=agreement_id, limit=100))

@@ -54,6 +54,10 @@ class ModType(Enum):
     AS_IS = auto()
     REPLACEMENT_AMOUNT_FINAL = auto()
 
+class ContractCategory(Enum):
+    RESEARCH = auto()
+    SERVICE = auto()
+
 class CANArrangementType(Enum):
     OPRE_APPROPRIATION = auto()
     COST_SHARE = auto()
@@ -311,10 +315,11 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer())
+    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer)
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
     )
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(ENUM(ContractCategory))
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
@@ -593,6 +598,11 @@ class BudgetLineItem(BaseModel):
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
     certified: Mapped[bool] = mapped_column(Boolean, default=False)
     closed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    requisition_number: Mapped[Optional[int]] = mapped_column(Integer)
+    requisition_date: Mapped[Optional[date]] = mapped_column(Date)
+
+    is_under_current_resolution: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
 
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
 

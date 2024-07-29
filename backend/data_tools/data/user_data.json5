@@ -77,10 +77,8 @@
         "GET_USER",
 
         "PUT_USER",
-        "POST_USER",
         "PATCH_USER",
 
-        "GET_USERS",
         "GET_HISTORY",
 
         "GET_WORKFLOW",
@@ -137,8 +135,8 @@
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",
-        "GET_USERS",
-
+        "PUT_USER",
+        "PATCH_USER",
         "GET_HISTORY",
 
         "GET_WORKFLOW",
@@ -156,7 +154,6 @@
       name: "unassigned",
       permissions: [
         "GET_USER",
-        "POST_USER",
         "PUT_USER",
         "PATCH_USER",
       ],
@@ -198,8 +195,9 @@
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",
+        "PUT_USER",
+        "PATCH_USER",
 
-        "GET_USERS",
         "GET_HISTORY",
 
         "GET_WORKFLOW",
@@ -218,6 +216,12 @@
         "GET_UPLOAD_DOCUMENT",
         "POST_UPLOAD_DOCUMENT"
       ]
+    },
+    { // 5 User Admin
+      name: "USER_ADMIN",
+      permissions: [
+        "POST_USER",
+      ],
     }
   ],
   group: [
@@ -271,7 +275,7 @@
       division: 2,
       email: "Amelia.Popham@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000004",
-      roles: [{"tablename":  "role", "id": 1}],
+      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 5}],
       groups: [{"tablename":  "group", "id": 1}],
       status: "ACTIVE"
     },
@@ -458,154 +462,176 @@
       message: "This is a system notification",
       is_read: false,
       recipient_id: 500,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 501,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 502,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 503,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 504,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 505,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 506,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 507,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 508,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 509,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 510,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 511,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 512,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 513,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 514,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 515,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 516,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 517,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 518,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 519,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: false,
       recipient_id: 520,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     },
     {
       title: "System Notification",
       message: "This is a system notification",
       is_read: true,
       recipient_id: 521,
-      expires: "2031-12-31"
+      expires: "2031-12-31",
+      notification_type: "NOTIFICATION"
     }
   ],
 }

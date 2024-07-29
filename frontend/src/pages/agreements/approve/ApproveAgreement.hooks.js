@@ -3,7 +3,8 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
     useGetServicesComponentsListQuery,
-    useReviewChangeRequestMutation
+    useReviewChangeRequestMutation,
+    useGetCansQuery
 } from "../../../api/opsAPI";
 import {
     CHANGE_REQUEST_ACTION,
@@ -29,8 +30,9 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} projectOfficerName - The name of the project officer
  * @property {Object[]} servicesComponents - The services components
  * @property {Object[]} groupedBudgetLinesByServicesComponent - The budget lines grouped by services component
+ * @property {Object[]} groupedUpdatedBudgetLinesByServicesComponent - The updated budget lines grouped by services component
  * @property {Object[]} budgetLinesInReview - The budget lines in review
- * @property {Object[]} changeRequestsInReview - The change requests in review
+ * @property {ChangeRequest[]} changeRequestsInReview - The change requests in review
  * @property {Object} changeInCans - The change in CANs
  * @property {string} notes - The reviewer notes
  * @property {Function} setNotes - The setter for reviewer notes
@@ -49,6 +51,10 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {string} urlChangeToStatus - The status change to from the URL
  * @property {string} statusForTitle - The status for the title
  * @property {string} changeRequestTitle - The title of the change request,
+ * @property {typeof CHANGE_REQUEST_SLUG_TYPES.BUDGET | typeof CHANGE_REQUEST_SLUG_TYPES.STATUS} statusChangeTo - The type of change request
+ * @property { import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
+ * @property {boolean} isLoadingAgreement - The loading state for the agreement
+ * @property {Object[]} approvedBudgetLinesPreview - The updated budget lines
  *
  * @returns {ApproveAgreementHookResult} The data and functions for the approval process
  */
@@ -84,38 +90,45 @@ const useApproveAgreement = () => {
         () => (urlChangeToStatus === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED),
         [urlChangeToStatus]
     );
-    const checkBoxText =
-        statusChangeTo === BLI_STATUS.PLANNED
-            ? "I understand that approving these budget lines will subtract the amounts from the FY budget"
-            : "I understand that approving these budget lines will start the Procurement Process";
 
+    let checkBoxText;
+    switch (changeRequestType) {
+        case CHANGE_REQUEST_SLUG_TYPES.BUDGET:
+            checkBoxText = "I understand that approving this budget change will affect my CANs balance(s)";
+            break;
+        case CHANGE_REQUEST_SLUG_TYPES.STATUS:
+            checkBoxText =
+                statusChangeTo === BLI_STATUS.PLANNED
+                    ? "I understand that approving budget lines for Planned Status will subtract the amounts from the FY budget"
+                    : "I understand that approving budget lines for Executing Status will start the Procurement Process";
+            break;
+        default:
+            checkBoxText = "";
+            break;
+    }
     const [afterApproval, setAfterApproval] = useToggle(true);
 
     const {
         data: agreement,
         error: errorAgreement,
-        isLoading: isLoadingAgreement
+        isLoading: isLoadingAgreement,
+        isSuccess: isSuccessAgreement
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
 
+    const { data: cans } = useGetCansQuery();
+
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
-
-    if (isLoadingAgreement) {
-        return <h1>Loading...</h1>;
-    }
-    if (errorAgreement) {
-        return <h1>Oops, an error occurred</h1>;
-    }
 
     const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
         ? groupByServicesComponent(agreement.budget_line_items)
         : [];
     const budgetLinesInReview = agreement?.budget_line_items?.filter((bli) => bli.in_review) || [];
-    const changeRequestsInReview = /** @type {ChangeRequest[]} */ (
-        getInReviewChangeRequests(agreement?.budget_line_items)
-    );
+    const changeRequestsInReview = agreement?.budget_line_items
+        ? getInReviewChangeRequests(agreement.budget_line_items)
+        : [];
 
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
@@ -130,9 +143,9 @@ const useApproveAgreement = () => {
     let requestorNoters = "";
     if (changeRequestType !== CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
         const uniqueNotes = new Set();
-        changeRequestsInReview.forEach((request) => {
-            if (request?.requestor_notes) {
-                uniqueNotes.add(request.requestor_notes);
+        changeRequestsInReview.forEach((changeRequest) => {
+            if (changeRequest?.requestor_notes && changeRequest.requested_change_data.status === statusChangeTo) {
+                uniqueNotes.add(changeRequest.requestor_notes);
             }
         });
         requestorNoters = Array.from(uniqueNotes)
@@ -176,6 +189,56 @@ const useApproveAgreement = () => {
         budgetLinesToPlannedMessages,
         budgetLinesToExecutingMessages
     ]);
+
+    /**
+     * @param {Object[]} originalBudgetLines - The original budget lines
+     * @param {Object[]} cans - The CAN data retrieved from the RTL Query
+     * @returns {Object[]} The updated budget lines
+     */
+    function createUpdatedBudgetLines(originalBudgetLines, cans) {
+        if (!Array.isArray(originalBudgetLines)) {
+            console.error("Expected an array, received:", originalBudgetLines);
+            return [];
+        }
+
+        return originalBudgetLines.map((budgetLine) => {
+            let updatedBudgetLine = { ...budgetLine };
+
+            if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
+                budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                    // Only apply changes based on the changeRequestType
+                    if (
+                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && changeRequest.has_budget_change) ||
+                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+                            changeRequest.has_status_change &&
+                            changeRequest.requested_change_data.status === statusChangeTo)
+                    ) {
+                        Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
+
+                        if (changeRequest.requested_change_data.can_id) {
+                            const newCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
+                            if (newCan) {
+                                updatedBudgetLine.can = newCan;
+                            } else {
+                                console.warn(`CAN with id ${changeRequest.requested_change_data.can_id} not found.`);
+                            }
+                        }
+                    }
+                });
+            }
+
+            return updatedBudgetLine;
+        });
+    }
+    let approvedBudgetLinesPreview = [];
+    let groupedUpdatedBudgetLinesByServicesComponent = [];
+
+    if (isSuccessAgreement && cans) {
+        approvedBudgetLinesPreview = createUpdatedBudgetLines(agreement?.budget_line_items, cans);
+        groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
+            ? groupByServicesComponent(approvedBudgetLinesPreview)
+            : [];
+    }
 
     const handleCancel = () => {
         setShowModal(true);
@@ -235,7 +298,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Approved:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...budgetChangeRequests];
+            changeRequests = budgetChangeRequests;
         }
         if (BUDGET_REJECT) {
             heading = `Are you sure you want to decline this ${toTitleCaseFromSlug(changeRequestType).toLowerCase()}? The agreement will remain as it was before the change was requested.`;
@@ -247,7 +310,7 @@ const useApproveAgreement = () => {
                 `<strong>Edits Declined:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...budgetChangeRequests];
+            changeRequests = budgetChangeRequests;
         }
         if (PLANNED_STATUS_APPROVE) {
             heading = `Are you sure you want to approve this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? This will subtract the amounts from the FY budget.`;
@@ -259,7 +322,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Approved:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...statusChangeRequestsToPlanned];
+            changeRequests = statusChangeRequestsToPlanned;
         }
         if (PLANNED_STATUS_REJECT) {
             heading = `Are you sure you want to decline this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? The agreement will remain as it was before the change was requested.`;
@@ -271,7 +334,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Declined:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...statusChangeRequestsToPlanned];
+            changeRequests = statusChangeRequestsToPlanned;
         }
         if (EXECUTING_STATUS_APPROVE) {
             heading = `Are you sure you want to approve this status change to ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? This will start the procurement process.`;
@@ -283,7 +346,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Approved:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...statusChangeRequestsToExecuting];
+            changeRequests = statusChangeRequestsToExecuting;
         }
         if (EXECUTING_STATUS_REJECT) {
             heading = `Are you sure you want to decline these budget lines for ${fromUpperCaseToTitleCase(urlChangeToStatus)} Status? The agreement will remain as it was before the change was requested.`;
@@ -295,7 +358,7 @@ const useApproveAgreement = () => {
                 `<strong>Changes Declined:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
-            changeRequests = [...statusChangeRequestsToExecuting];
+            changeRequests = statusChangeRequestsToExecuting;
         }
 
         setShowModal(true);
@@ -347,6 +410,7 @@ const useApproveAgreement = () => {
         projectOfficerName,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
+        groupedUpdatedBudgetLinesByServicesComponent,
         budgetLinesInReview,
         changeRequestsInReview,
         changeInCans,
@@ -366,7 +430,11 @@ const useApproveAgreement = () => {
         setAfterApproval,
         requestorNoters,
         urlChangeToStatus,
-        statusForTitle
+        statusForTitle,
+        statusChangeTo,
+        errorAgreement,
+        isLoadingAgreement,
+        approvedBudgetLinesPreview
     };
 };
 
