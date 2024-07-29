@@ -104,7 +104,9 @@ export async function setActiveUser(token, dispatch) {
     const userId = decodedJwt["sub"];
     const userDetails = await getUserByOidc(userId);
 
-    dispatch(setUserDetails(userDetails));
+    if (userDetails.length !== 0) {
+        dispatch(setUserDetails(userDetails.pop()));
+    }
 }
 
 /**

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from werkzeug.exceptions import UnsupportedMediaType
 
 from models.events import OpsEvent, OpsEventStatus, OpsEventType
+from ops_api.ops.auth.utils import get_request_ip_address
 
 
 class OpsEventHandler:
@@ -19,7 +20,7 @@ class OpsEventHandler:
             {
                 "request.values": request.values,
                 "request.headers": {k: v for k, v in request.headers},
-                "request.remote_addr": request.remote_addr,
+                "request.remote_addr": get_request_ip_address(),
                 "request.remote_user": request.remote_user,
             }
         )
