@@ -223,7 +223,7 @@ function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatu
                 }
                 if (changeRequest?.requested_change_data?.date_needed) {
                     changeRequestsMessages.add(
-                        `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                        `${bliId} Date Needed: ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                     );
                 }
                 if (changeRequest?.requested_change_data?.can_id) {
