@@ -4,6 +4,7 @@ services:
     profiles:
       - ''  # This is the default profile, which is used for development
       - data-initial  # This profile is used to initialize the database with initial data
+      - data-demo  # This profile is used to initialize the database with demo data
     image: "postgres:16"
     platform: linux/amd64
     container_name: ops-db
@@ -170,6 +171,72 @@ services:
       - ENV=local
       - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
     command: /bin/sh -c "./data_tools/scripts/initial_data.sh"
+    volumes:
+      - ./backend/ops_api:/home/app/ops_api
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # The following services are used to initialize the database with demo data using the data-demo profile.
+
+  frontend-demo:
+    profiles:
+      - data-demo
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    environment:
+      - REACT_APP_BACKEND_DOMAIN=http://localhost:8080
+      - VITE_BACKEND_DOMAIN=http://localhost:8080
+    platform: linux/amd64
+    container_name: ops-frontend-demo
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend-demo
+    volumes:
+      - ./frontend/src:/home/app/src
+
+  backend-demo:
+    profiles:
+      - data-demo
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile.ops-api
+    platform: linux/amd64
+    container_name: ops-backend-demo
+    ports:
+      - "8080:8080"
+    command: /bin/sh -c " . .venv/bin/activate && python -m flask run --debug --host=0.0.0.0 --port=8080"
+    environment:
+      - JWT_PRIVATE_KEY
+      - JWT_PUBLIC_KEY
+      - OPS_CONFIG=environment/local/container.py
+    volumes:
+      - ./backend/ops_api/ops:/home/app/ops_api/ops
+    depends_on:
+      db:
+        condition: service_healthy
+      data-demo:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  data-demo:
+    profiles:
+      - data-demo
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile.data-tools
+    platform: linux/amd64
+    container_name: ops-data-demo
+    environment:
+      - ENV=local
+      - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
+    command: /bin/sh -c "./data_tools/scripts/import_test_data.sh && ./data_tools/scripts/demo_data.sh"
     volumes:
       - ./backend/ops_api:/home/app/ops_api
     depends_on:
