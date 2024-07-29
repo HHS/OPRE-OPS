@@ -27,20 +27,10 @@ from sqlalchemy.orm import Mapped, column_property, mapped_column, object_sessio
 from typing_extensions import Any, override
 
 from models.base import BaseModel
+from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestStatus
 from models.portfolios import Portfolio
 from models.procurement_tracker import ProcurementTracker
 from models.users import User
-from models.workflows import (
-    BudgetLineItemChangeRequest,
-    ChangeRequestStatus,
-    Package,
-    PackageSnapshot,
-    WorkflowAction,
-    WorkflowInstance,
-    WorkflowStepInstance,
-    WorkflowStepStatus,
-    WorkflowTriggerType,
-)
 
 
 class BudgetLineItemStatus(Enum):
