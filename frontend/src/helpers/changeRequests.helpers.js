@@ -1,5 +1,5 @@
+import { KEY_NAMES } from "../components/ChangeRequests/ChangeRequests.constants";
 import { renderField } from "./utils";
-
 /**
  * @typedef {Object} RenderedChangeValues
  * @property {string} oldValue - The old value
@@ -18,13 +18,6 @@ import { renderField } from "./utils";
 export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") {
     let oldValue,
         newValue = "";
-
-    const KEY_NAMES = {
-        AMOUNT: "amount",
-        CAN: "can_id",
-        DATE_NEEDED: "date_needed",
-        STATUS: "status"
-    };
 
     switch (keyName) {
         case KEY_NAMES.AMOUNT:
