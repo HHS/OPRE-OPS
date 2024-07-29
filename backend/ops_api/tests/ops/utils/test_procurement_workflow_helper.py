@@ -1,20 +1,15 @@
 import pytest
 from sqlalchemy import select
 
-from models import (
+from models import Agreement, Package, PackageSnapshot, WorkflowAction, WorkflowInstance, WorkflowTemplate
+from models.procurement_tracker import (
     AcquisitionPlanning,
-    Agreement,
     Award,
     Evaluation,
-    Package,
-    PackageSnapshot,
     PreAward,
     PreSolicitation,
     ProcurementStep,
     Solicitation,
-    WorkflowAction,
-    WorkflowInstance,
-    WorkflowTemplate,
 )
 from ops_api.ops.utils.procurement_workflow_helper import (
     create_procurement_workflow,

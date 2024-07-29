@@ -1,32 +1,33 @@
-from datetime import datetime
-
 from flask import current_app
+from flask_jwt_extended import current_user
 from sqlalchemy import select
 
 # from flask_jwt_extended import verify_jwt_in_request
-from models import (
+from models import Agreement, Package, PackageSnapshot, WorkflowInstance, WorkflowTemplate
+from models.procurement_tracker import (
     AcquisitionPlanning,
-    Agreement,
     Award,
     Evaluation,
-    Package,
-    PackageSnapshot,
     PreAward,
     PreSolicitation,
     ProcurementStep,
+    ProcurementTracker,
     Solicitation,
-    WorkflowAction,
-    WorkflowInstance,
-    WorkflowStepInstance,
-    WorkflowStepStatus,
-    WorkflowStepTemplate,
-    WorkflowTemplate,
-    WorkflowTriggerType,
 )
 
 # from sqlalchemy import select
 
 # from ops_api.ops.auth.utils import get_user_from_sub
+
+procurement_step_classes = [
+    AcquisitionPlanning,
+    PreSolicitation,
+    Solicitation,
+    Evaluation,
+    PreAward,
+    Award,
+]
+
 
 PROCUREMENT_WORKFLOW_TEMPLATE_NAME = "Procurement Tracker"
 
@@ -49,79 +50,32 @@ def get_procurement_workflow_template() -> WorkflowTemplate:
     return procurement_workflow_template
 
 
-def create_procurement_workflow(agreement_id) -> WorkflowInstance:
+def create_procurement_workflow(agreement_id) -> ProcurementTracker:
     session = current_app.db_session
     agreement = session.get(Agreement, agreement_id)
     if not agreement:
         raise ValueError("Invalid Agreement ID")
 
     # if it already exists, just return it
-    if agreement.procurement_tracker_workflow_id:
-        return session.get(WorkflowInstance, agreement.procurement_tracker_workflow_id)
+    if agreement.procurement_tracker_id:
+        return session.get(ProcurementTracker, agreement.procurement_tracker_id)
 
-    user_id = None
-    # TODO: How to get user when there might not be a request (in testing, etc)
-    # token = verify_jwt_in_request()
-    # user = get_user_from_sub(token[1])
+    user_id = current_user.id
 
-    workflow_template = get_procurement_workflow_template()
-
-    workflow_instance = WorkflowInstance()
-    workflow_instance.workflow_template_id = workflow_template.id
-    workflow_instance.associated_id = agreement_id
-    workflow_instance.associated_type = WorkflowTriggerType.AGREEMENT
-    workflow_instance.workflow_action = WorkflowAction.PROCUREMENT_TRACKING
-    workflow_instance.created_by = user_id
-
-    session.add(workflow_instance)
-    # This fails since no ID before save
-    # assert workflow_instance.id is not None
+    procurement_tracker = ProcurementTracker(agreement_id=agreement_id)
+    session.add(procurement_tracker)
     session.commit()
-    assert workflow_instance.id
 
-    # package and snapshot
-    package = Package()
-    package.submitter_id = user_id
-    package.workflow_instance_id = workflow_instance.id
-    # package.notes = ""
-    session.add(package)
-    session.commit()
-    assert package.id
-    package_snapshot = PackageSnapshot()
-    package_snapshot.package_id = package.id
-    package_snapshot.object_type = "AGREEMENT"
-    package_snapshot.object_id = agreement_id
-    session.add(package_snapshot)
-    session.commit()
-    assert package_snapshot.id
-
-    workflow_step_template: WorkflowStepTemplate
-    for workflow_step_template in workflow_template.steps:
-        # workflow step
-        workflow_step_instance = WorkflowStepInstance()
-        workflow_step_instance.workflow_instance_id = workflow_instance.id
-        workflow_step_instance.workflow_step_template_id = workflow_step_template.id
-        workflow_step_instance.index = workflow_step_template.index
-        workflow_step_instance.status = WorkflowStepStatus.REVIEW  # ???
-        # workflow_step_instance.notes = ""
-        workflow_step_instance.time_started = datetime.now()
-        workflow_step_instance.created_by = user_id
-        session.add(workflow_step_instance)
+    for procurement_step_class in procurement_step_classes:
+        proc_step = procurement_step_class()
+        proc_step.agreement_id = agreement_id
+        proc_step.procurement_tracker = procurement_tracker
+        proc_step.created_by = user_id
+        session.add(proc_step)
         session.commit()
-        assert workflow_step_instance.id
+        assert proc_step.id
 
-        # procurement step
-        procurement_step_class = workflow_step_to_procurement_class_map.get(workflow_step_template.name, None)
-        if procurement_step_class is not None:
-            proc_step: ProcurementStep = procurement_step_class()
-            proc_step.agreement_id = agreement_id
-            proc_step.workflow_step_id = workflow_step_instance.id
-            proc_step.created_by = user_id
-            session.add(proc_step)
-            session.commit()
-            assert proc_step.id
-
-    return workflow_instance
+    return procurement_tracker
 
 
 def delete_procurement_workflow(agreement_id):

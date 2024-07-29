@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from models import Agreement, OpsEventType
 from models.base import BaseModel
-from models.workflows import (
+from models.procurement_tracker import (
     AcquisitionPlanning,
     Award,
     Evaluation,

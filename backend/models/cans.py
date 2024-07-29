@@ -28,6 +28,7 @@ from typing_extensions import Any, override
 
 from models.base import BaseModel
 from models.portfolios import Portfolio
+from models.procurement_tracker import ProcurementTracker
 from models.users import User
 from models.workflows import (
     BudgetLineItemChangeRequest,
@@ -48,15 +49,18 @@ class BudgetLineItemStatus(Enum):
     IN_EXECUTION = auto()
     OBLIGATED = auto()
 
+
 class ModType(Enum):
     ADMIN = auto()
     AMOUNT_TBD = auto()
     AS_IS = auto()
     REPLACEMENT_AMOUNT_FINAL = auto()
 
+
 class ContractCategory(Enum):
     RESEARCH = auto()
     SERVICE = auto()
+
 
 class CANArrangementType(Enum):
     OPRE_APPROPRIATION = auto()
@@ -238,20 +242,20 @@ class Agreement(BaseModel):
     }
 
     @property
-    def procurement_tracker_workflow_id(self):
+    def procurement_tracker_id(self):
         if object_session(self) is None:
             return False
-        workflow_id = object_session(self).scalar(
-            select(WorkflowInstance.id).where(
-                and_(
-                    WorkflowInstance.workflow_action
-                    == WorkflowAction.PROCUREMENT_TRACKING,
-                    WorkflowInstance.associated_type == WorkflowTriggerType.AGREEMENT,
-                    WorkflowInstance.associated_id == self.id,
-                )
+        tracker_id = object_session(self).scalar(
+            select(ProcurementTracker.id).where(
+                ProcurementTracker.agreement_id == self.id
             )
         )
-        return workflow_id
+        return tracker_id
+
+    # TODO: remove this property, just using procurement_tracker_id until refactorings are complete
+    @property
+    def procurement_tracker_workflow_id(self):
+        return self.procurement_tracker_id
 
 
 contract_support_contacts = Table(
@@ -319,7 +323,9 @@ class ContractAgreement(Agreement):
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
     )
-    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(ENUM(ContractCategory))
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(
+        ENUM(ContractCategory)
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
@@ -587,9 +593,7 @@ class BudgetLineItem(BaseModel):
     clin: Mapped[Optional[CLIN]] = relationship(CLIN, backref="budget_line_items")
 
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
-    mod_type: Mapped[Optional[ModType]] = mapped_column(
-        sa.Enum(ModType)
-    )
+    mod_type: Mapped[Optional[ModType]] = mapped_column(sa.Enum(ModType))
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         sa.Enum(BudgetLineItemStatus)
@@ -602,7 +606,9 @@ class BudgetLineItem(BaseModel):
     requisition_number: Mapped[Optional[int]] = mapped_column(Integer)
     requisition_date: Mapped[Optional[date]] = mapped_column(Date)
 
-    is_under_current_resolution: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
+    is_under_current_resolution: Mapped[Optional[bool]] = mapped_column(
+        Boolean, default=False
+    )
 
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
 
@@ -798,7 +804,6 @@ class CAN(BaseModel):
         if self.appropriation_date is None:
             return None
         return self.expiration_date.year - self.appropriation_date.year
-
 
     @BaseModel.display_name.getter
     def display_name(self):
