@@ -27,10 +27,6 @@ from ops_api.ops.views import (
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
     OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
-    PACKAGE_ITEM_API_VIEW_FUNC,
-    PACKAGE_LIST_API_VIEW_FUNC,
-    PACKAGE_SNAPSHOT_ITEM_API_VIEW_FUNC,
-    PACKAGE_SNAPSHOT_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -124,23 +120,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/budget-line-items/",
         view_func=BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
-    )
-
-    api_bp.add_url_rule(
-        "/packages/<int:id>",
-        view_func=PACKAGE_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/packages/",
-        view_func=PACKAGE_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/package-snapshots/<int:id>",
-        view_func=PACKAGE_SNAPSHOT_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/package-snapshots/",
-        view_func=PACKAGE_SNAPSHOT_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
