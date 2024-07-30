@@ -242,11 +242,6 @@ class Agreement(BaseModel):
         )
         return tracker_id
 
-    # TODO: remove this property, just using procurement_tracker_id until refactorings are complete
-    @property
-    def procurement_tracker_workflow_id(self):
-        return self.procurement_tracker_id
-
 
 contract_support_contacts = Table(
     "contract_support_contacts",

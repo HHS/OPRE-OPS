@@ -158,7 +158,6 @@ def test_acquisition_planning_get_by_id(auth_client, loaded_db, test_acquisition
         "notes",
         "type",
         "updated_on",
-        "workflow_step_id",
     ]
     for key in keys:
         assert key in resp_json
@@ -218,7 +217,6 @@ def test_pre_solicitation_get_by_id(auth_client, loaded_db, test_pre_solicitatio
         "target_date",
         "type",
         "updated_on",
-        "workflow_step_id",
     ]
     for key in keys:
         assert key in resp_json
@@ -284,7 +282,6 @@ def test_solicitation_get_by_id(auth_client, loaded_db, test_solicitation):
         "target_date",
         "type",
         "updated_on",
-        "workflow_step_id",
     ]
     for key in keys:
         assert key in resp_json
@@ -350,7 +347,6 @@ def test_evaluation_get_by_id(auth_client, loaded_db, test_evaluation):
         "target_date",
         "type",
         "updated_on",
-        "workflow_step_id",
     ]
     for key in keys:
         assert key in resp_json
@@ -416,7 +412,6 @@ def test_pre_award_get_by_id(auth_client, loaded_db, test_pre_award):
         "target_date",
         "type",
         "updated_on",
-        "workflow_step_id",
     ]
     for key in keys:
         assert key in resp_json
@@ -479,7 +474,6 @@ def test_award_get_by_id(auth_client, loaded_db, test_award):
         "updated_on",
         "vendor",
         "vendor_type",
-        "workflow_step_id",
     ]
     for key in keys:
         assert key in resp_json

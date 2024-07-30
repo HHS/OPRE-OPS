@@ -17,7 +17,7 @@ def test_agreement_retrieve(loaded_db):
     assert agreement.display_name == agreement.name
     assert agreement.id == 1
     assert agreement.agreement_type.name == "CONTRACT"
-    assert agreement.procurement_tracker_workflow_id is None
+    assert agreement.procurement_tracker_id is None
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -49,8 +49,8 @@ def test_agreements_get_by_id(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=1))
     assert response.status_code == 200
     assert response.json["name"] == "Contract #1: African American Child and Family Research Center"
-    assert "procurement_tracker_workflow_id" in response.json
-    assert response.json["procurement_tracker_workflow_id"] is None
+    assert "procurement_tracker_id" in response.json
+    assert response.json["procurement_tracker_id"] is None
     assert "budget_line_items" in response.json
     assert "can_id" in response.json["budget_line_items"][0]
     assert "can" in response.json["budget_line_items"][0]

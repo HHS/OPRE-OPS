@@ -2041,7 +2041,7 @@ components:
         project_officer_id:
           type: integer
           example: 1
-        procurement_tracker_workflow_id:
+        procurement_tracker_id:
           type: integer
           example: 1
         created_on:

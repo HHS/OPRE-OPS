@@ -501,7 +501,7 @@ def test_status_change_request_creates_procurement_workflow(
     loaded_db.commit()
     assert agreement.id is not None
     agreement_id = agreement.id
-    assert agreement.procurement_tracker_workflow_id is None
+    assert agreement.procurement_tracker_id is None
 
     # create DRAFT BLI
     bli = BudgetLineItem(
@@ -515,7 +515,7 @@ def test_status_change_request_creates_procurement_workflow(
     loaded_db.commit()
     assert bli.id is not None
     bli_id = bli.id
-    assert bli.agreement.procurement_tracker_workflow_id is None
+    assert bli.agreement.procurement_tracker_id is None
 
     #  submit PATCH BLI which creates change request for status change
     data = {"status": "IN_EXECUTION"}
@@ -535,7 +535,7 @@ def test_status_change_request_creates_procurement_workflow(
     bli = loaded_db.get(BudgetLineItem, bli_id)
     assert bli is not None
     assert bli.status == BudgetLineItemStatus.IN_EXECUTION
-    assert bli.agreement.procurement_tracker_workflow_id is not None
+    assert bli.agreement.procurement_tracker_id is not None
 
     # cleanup
     delete_procurement_tracker(bli.agreement_id)

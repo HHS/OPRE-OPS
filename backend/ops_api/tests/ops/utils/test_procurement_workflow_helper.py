@@ -58,7 +58,7 @@
 #     assert package_snapshot.object_id == test_agreement_id
 #
 #     agreement = loaded_db.get(Agreement, test_agreement_id)
-#     assert agreement.procurement_tracker_workflow_id == workflow_instance.id
+#     assert agreement.procurement_tracker_id == workflow_instance.id
 #     workflow_instance = loaded_db.get(WorkflowInstance, workflow_instance.id)
 #     assert workflow_instance.workflow_action == WorkflowAction.PROCUREMENT_TRACKING
 #
@@ -87,7 +87,7 @@
 #
 #     # verify removal
 #     agreement = loaded_db.get(Agreement, test_agreement_id)
-#     assert agreement.procurement_tracker_workflow_id is None
+#     assert agreement.procurement_tracker_id is None
 #     stmt = select(Package).where(Package.workflow_instance_id == workflow_instance_id)
 #     package_results = loaded_db.execute(stmt).all()
 #     assert len(package_results) == 0
