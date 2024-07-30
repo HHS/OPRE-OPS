@@ -44,12 +44,24 @@ const AgreementCANReviewAccordion = ({
                 count: 0 // not used but handy for debugging
             };
         }
-        acc[canId].pendingAmount +=
-            budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage);
+        if (budgetLine?.change_requests_in_review?.length > 0) {
+            budgetLine.change_requests_in_review.forEach((changeRequest) => {
+                if (changeRequest?.has_budget_change) {
+                    acc[canId].pendingAmount +=
+                        changeRequest.requested_change_diff?.amount?.new -
+                        changeRequest.requested_change_diff?.amount?.old;
+                }
+            });
+        } else {
+            acc[canId].pendingAmount +=
+                budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage);
+        }
+
         acc[canId].count += 1;
         return acc;
     }, {});
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
+    // console.log({ cansWithPendingAmount });
 
     let canPortfolios = [];
     selectedBudgetLines.forEach((budgetLine) => {
@@ -109,7 +121,7 @@ const AgreementCANReviewAccordion = ({
             </div>
             <div className="margin-top-3">
                 <span className="text-base-dark font-12px">Portfolios:</span>
-                {canPortfolios.length > 0 &&
+                {canPortfolios?.length > 0 &&
                     canPortfolios.map((portfolio) => (
                         <Tag
                             key={portfolio.id}
