@@ -1,7 +1,5 @@
 from flask import current_app
-from flask_jwt_extended import current_user
 
-# from flask_jwt_extended import verify_jwt_in_request
 from models import Agreement
 from models.procurement_tracker import (
     AcquisitionPlanning,
@@ -12,10 +10,6 @@ from models.procurement_tracker import (
     ProcurementTracker,
     Solicitation,
 )
-
-# from sqlalchemy import select
-
-# from ops_api.ops.auth.utils import get_user_from_sub
 
 procurement_step_classes = [
     AcquisitionPlanning,
@@ -37,7 +31,9 @@ def create_procurement_tracker(agreement_id) -> ProcurementTracker:
     if agreement.procurement_tracker_id:
         return session.get(ProcurementTracker, agreement.procurement_tracker_id)
 
-    user_id = current_user.id
+    # TODO: How to get user when there might not be a request (in testing, etc)
+    user_id = None
+    # user_id = current_user.id
 
     procurement_tracker = ProcurementTracker(agreement_id=agreement_id)
     session.add(procurement_tracker)
