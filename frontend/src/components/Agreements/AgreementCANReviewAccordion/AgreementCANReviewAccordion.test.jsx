@@ -80,10 +80,10 @@ describe("AgreementCANReview", () => {
             </Provider>
         );
         const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
-        const totalSpendingCardAfterApproval1 = screen.getByText(/9,800,000/i);
-        const remainingBudgetCardAfterApproval1 = screen.getByText(/14,200,000/i);
-        const totalSpendingCardAfterApproval2 = screen.getByText(/400,500/i);
-        const remainingBudgetCardAfterApproval2 = screen.getByText(/1,879,500/i);
+        const totalSpendingCardAfterApproval1 = screen.getByText(/9,800,500/i);
+        const remainingBudgetCardAfterApproval1 = screen.getByText(/14,199,500/i);
+        const totalSpendingCardAfterApproval2 = screen.getByText(/401,000/i);
+        const remainingBudgetCardAfterApproval2 = screen.getByText(/1,879,000/i);
 
         expect(toggleAfterApproval).toBeInTheDocument();
         expect(totalSpendingCardAfterApproval1).toBeInTheDocument();
@@ -91,7 +91,25 @@ describe("AgreementCANReview", () => {
         expect(totalSpendingCardAfterApproval2).toBeInTheDocument();
         expect(remainingBudgetCardAfterApproval2).toBeInTheDocument();
     });
-    it.todo("should render from approve page with budget change to CAN");
+    it.todo("should render from approve page with budget change to CAN", async () => {
+        const mockSetAfterApproval = vi.fn();
+        useGetCanFundingSummaryQuery
+            .mockReturnValueOnce({ data: canFundingCardData })
+            .mockReturnValueOnce({ data: canFundingCardData2 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    action=""
+                    afterApproval={false}
+                    instructions="budget change to CAN"
+                    isApprovePage={true}
+                    selectedBudgetLines={selectedBudgetLinesToCans}
+                    setAfterApproval={mockSetAfterApproval}
+                />
+            </Provider>
+        );
+        screen.debug();
+    });
     it.todo("should render from approve page with budget change to amount and CAN");
     it.todo("should render from approve page with status change to PLANNED");
     it.todo("should render from approve page with status change to EXECUTING");
@@ -1177,5 +1195,126 @@ const selectedBudgetLinesToAmount = [
             }
         ],
         updated_on: "2024-07-30T21:05:39.693127"
+    }
+];
+
+const selectedBudgetLinesToCans = [
+    {
+        agreement_id: 9,
+        amount: 300000,
+        can: {
+            appropriation_date: "2022-10-01T00:00:00.000000Z",
+            appropriation_term: 1,
+            authorizer_id: 26,
+            description: "Example CAN",
+            display_name: "G99XXX8",
+            expiration_date: "2023-09-01T00:00:00.000000Z",
+            id: 512,
+            managing_portfolio_id: 3,
+            nickname: "",
+            number: "G99XXX8"
+        },
+        can_id: 512,
+        change_requests_in_review: null,
+        comments: "",
+        created_by: null,
+        created_on: "2024-07-30T20:27:23.655910",
+        date_needed: "2044-06-13",
+        fiscal_year: 2044,
+        id: 15021,
+        in_review: false,
+        line_description: "SC3",
+        portfolio_id: 3,
+        proc_shop_fee_percentage: 0.005,
+        services_component_id: 6,
+        status: "PLANNED",
+        team_members: [
+            {
+                email: "Niki.Denmark@example.com",
+                full_name: "Niki Denmark",
+                id: 511
+            },
+            {
+                email: "admin.demo@email.com",
+                full_name: "Admin Demo",
+                id: 520
+            }
+        ],
+        updated_on: "2024-07-30T22:27:22.626774"
+    },
+    {
+        agreement_id: 9,
+        amount: 700000,
+        can: {
+            appropriation_date: "2023-10-01T00:00:00.000000Z",
+            appropriation_term: 1,
+            authorizer_id: 26,
+            description: "Social Science Research and Development",
+            display_name: "G99PHS9",
+            expiration_date: "2024-09-01T00:00:00.000000Z",
+            id: 502,
+            managing_portfolio_id: 8,
+            nickname: "SSRD",
+            number: "G99PHS9"
+        },
+        can_id: 502,
+        change_requests_in_review: [
+            {
+                agreement_id: 9,
+                budget_line_item_id: 15020,
+                change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+                created_by: 520,
+                created_by_user: {
+                    full_name: "Admin Demo",
+                    id: 520
+                },
+                created_on: "2024-07-30T22:33:16.130507",
+                display_name: "BudgetLineItemChangeRequest#6",
+                has_budget_change: true,
+                has_status_change: false,
+                id: 6,
+                managing_division_id: 6,
+                requested_change_data: {
+                    can_id: 512
+                },
+                requested_change_diff: {
+                    can_id: {
+                        new: 512,
+                        old: 502
+                    }
+                },
+                requestor_notes: null,
+                reviewed_on: null,
+                reviewer_notes: null,
+                status: "IN_REVIEW",
+                updated_by: 520,
+                updated_on: "2024-07-30T22:33:16.130507"
+            }
+        ],
+        comments: "",
+        created_by: null,
+        created_on: "2024-07-30T20:27:23.646229",
+        date_needed: "2043-06-13",
+        fiscal_year: 2043,
+        id: 15020,
+        in_review: true,
+        line_description: "SC2",
+        portfolio_id: 8,
+        proc_shop_fee_percentage: 0.005,
+        services_component_id: 6,
+        status: "PLANNED",
+        team_members: [
+            {
+                email: "Niki.Denmark@example.com",
+                full_name: "Niki Denmark",
+                id: 511
+            },
+            {
+                email: "admin.demo@email.com",
+                full_name: "Admin Demo",
+                id: 520
+            }
+        ],
+        updated_on: "2024-07-30T22:33:16.102621"
     }
 ];

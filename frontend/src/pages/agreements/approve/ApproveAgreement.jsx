@@ -25,7 +25,7 @@ const ApproveAgreement = () => {
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
-        budgetLinesInReview,
+        // budgetLinesInReview,
         changeRequestsInReview,
         notes,
         setNotes,
@@ -169,7 +169,8 @@ const ApproveAgreement = () => {
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
-                selectedBudgetLines={budgetLinesInReview}
+                // selectedBudgetLines={budgetLinesInReview}
+                selectedBudgetLines={agreement.budget_line_items}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
