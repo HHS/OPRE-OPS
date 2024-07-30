@@ -31,10 +31,6 @@ def create_procurement_tracker(agreement_id) -> ProcurementTracker:
     if agreement.procurement_tracker_id:
         return session.get(ProcurementTracker, agreement.procurement_tracker_id)
 
-    # TODO: How to get user when there might not be a request (in testing, etc)
-    user_id = None
-    # user_id = current_user.id
-
     procurement_tracker = ProcurementTracker(agreement_id=agreement_id)
     session.add(procurement_tracker)
     session.commit()
@@ -43,7 +39,6 @@ def create_procurement_tracker(agreement_id) -> ProcurementTracker:
         proc_step = procurement_step_class()
         proc_step.agreement_id = agreement_id
         proc_step.procurement_tracker = procurement_tracker
-        proc_step.created_by = user_id
         session.add(proc_step)
         session.commit()
         assert proc_step.id
