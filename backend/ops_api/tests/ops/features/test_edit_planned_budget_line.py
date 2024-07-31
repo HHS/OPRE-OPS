@@ -19,7 +19,7 @@ def original_agreement(test_user, test_project):
         "description": "Using Innovative Data...",
         "agreement_reason": AgreementReason.NEW_REQ,
         "project_officer_id": test_user.id,
-        "procurement_shop_id": 1,
+        "awarding_entity_id": 1,
         "created_by": test_user.id,
     }
 

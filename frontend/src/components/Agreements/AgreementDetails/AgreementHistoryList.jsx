@@ -226,7 +226,7 @@ const propertyLogItemMessageBeginning = (logItem) => {
 };
 
 const relations = {
-    procurement_shop_id: "procurement_shop",
+    awarding_entity_id: "procurement_shop",
     product_service_code_id: "product_service_code",
     project_id: "project",
     can_id: "can",
@@ -266,7 +266,7 @@ const ServicesComponentName = ({ id }) => {
 
 const components = {
     project_officer_id: UserName,
-    procurement_shop_id: ProcurementShopName,
+    awarding_entity_id: ProcurementShopName,
     product_service_code_id: ProductServiceCodeName,
     project_id: ResearchProjectName,
     can_id: CanName,

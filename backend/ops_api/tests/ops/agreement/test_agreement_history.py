@@ -292,7 +292,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
         "name": "TEST: Agreement history with change requests",
         "description": "Description",
         "product_service_code_id": 1,
-        "procurement_shop_id": 2,
+        "awarding_entity_id": 2,
         "project_officer_id": 520,
         "project_id": test_project.id,
         "team_members": [

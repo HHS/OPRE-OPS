@@ -2005,7 +2005,7 @@ components:
           $ref: "#/components/schemas/ProductServiceCode"
         procurement_shop:
           $ref: "#/components/schemas/ProcurementShop"
-        procurement_shop_id:
+        awarding_entity_id:
           type: integer
           example: 1
         notes:
