@@ -102,7 +102,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 />
             </td>
             <td
-                className={borderExpandedStyles}
+                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT))} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <CurrencyFormat
@@ -116,7 +116,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 />
             </td>
             <td
-                className={borderExpandedStyles}
+                className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.AMOUNT))} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <CurrencyFormat
