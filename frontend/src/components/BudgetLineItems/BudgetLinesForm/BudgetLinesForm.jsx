@@ -141,7 +141,7 @@ export const BudgetLinesForm = ({
                 <MemoizedDatePicker
                     id="need-by-date"
                     name="needByDate"
-                    label="Need by Date"
+                    label="Obligate by Date"
                     hint="mm/dd/yyyy"
                     messages={[...(res.getErrors("needByDate") || []), ...(dateRes.getErrors("needByDate") || [])]}
                     className={cn("needByDate")}
