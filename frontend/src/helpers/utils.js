@@ -1,3 +1,5 @@
+import { BLI_STATUS } from "./budgetLines.helpers";
+
 export const getCurrentFiscalYear = (today = new Date()) => {
     const currentMonth = today.getMonth();
 
@@ -293,18 +295,22 @@ export const renderField = (className, fieldName, value) => {
             }
     }
 };
-
+/**
+ * @param {string} status - The status to convert to a class name.
+ * @param {string} styleType - The style type to apply. This parameter is optional.
+ * @returns {string} The class name for the status.
+ */
 export const statusToClassName = (status, styleType = "text") => {
     // status color as foreground text
     if (styleType === "text") {
         switch (status) {
-            case "DRAFT":
+            case BLI_STATUS.DRAFT:
                 return "text-brand-neutral-lighter";
-            case "PLANNED":
+            case BLI_STATUS.PLANNED:
                 return "text-brand-data-viz-primary-11";
-            case "IN_EXECUTION":
+            case BLI_STATUS.EXECUTING:
                 return "text-brand-data-viz-primary-8";
-            case "OBLIGATED":
+            case BLI_STATUS.OBLIGATED:
                 return "text-brand-data-viz-primary-6";
             default:
                 return "";
@@ -312,13 +318,13 @@ export const statusToClassName = (status, styleType = "text") => {
     } else {
         // tag style with status color as the background and contrasting text
         switch (status) {
-            case "DRAFT":
+            case BLI_STATUS.DRAFT:
                 return "bg-brand-neutral-lighter";
-            case "PLANNED":
+            case BLI_STATUS.PLANNED:
                 return "bg-brand-data-viz-primary-11 text-white";
-            case "IN_EXECUTION":
+            case BLI_STATUS.EXECUTING:
                 return "bg-brand-data-viz-primary-8";
-            case "OBLIGATED":
+            case BLI_STATUS.OBLIGATED:
                 return "bg-brand-data-viz-primary-6 text-white";
             default:
                 return "";

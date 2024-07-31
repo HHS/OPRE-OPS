@@ -1,70 +1,59 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 from marshmallow import Schema, fields
 
-ENDPOINT_STRING = "/users"
+import ops_api.ops.schemas.custom_types as custom_types
+from models import UserStatus
+
+
+class CreateUserSchema(Schema):
+    email: Optional[str] = fields.String(required=True)
+    first_name: Optional[str] = fields.String(load_default=None)
+    last_name: Optional[str] = fields.String(load_default=None)
+    division: Optional[int] = fields.Integer(load_default=None)
+    status: Optional[UserStatus] = fields.Enum(UserStatus, load_default=UserStatus.INACTIVE)
+    roles: Optional[list[str]] = fields.List(fields.String(), load_default=[])
+
+
+class UpdateUserSchema(CreateUserSchema):
+    id: Optional[int] = fields.Integer()
+    email: Optional[str] = fields.String()
+
+
+class QueryParameters(Schema):
+    id: Optional[int] = fields.Integer()
+    oidc_id: Optional[str] = fields.String()
+    hhs_id: Optional[str] = fields.String()
+    email: Optional[str] = fields.String()
+    status: Optional[str] = fields.String()
+    division: Optional[int] = fields.Integer()
+    first_name: Optional[str] = fields.String()
+    last_name: Optional[str] = fields.String()
+    roles: Optional[list[str]] = custom_types.List(fields.String())
+
+
+class UserResponse(Schema):
+    id: int = fields.Integer(required=True)
+    oidc_id: UUID = fields.UUID(required=True)
+    status: UserStatus = fields.Enum(UserStatus, required=True)
+    hhs_id: Optional[str] = fields.String(allow_none=True)
+    email: str = fields.String(required=True)
+    first_name: Optional[str] = fields.String(allow_none=True)
+    last_name: Optional[str] = fields.String(allow_none=True)
+    full_name: Optional[str] = fields.String(allow_none=True)
+    division: Optional[int] = fields.Integer(allow_none=True)
+    roles: Optional[list[str]] = fields.List(fields.String(), dump_default=[])
+    display_name: str = fields.String(required=True)
+    created_by: Optional[int] = fields.Integer(allow_none=True)
+    updated_by: Optional[int] = fields.Integer(allow_none=True)
+    created_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on: Optional[datetime] = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
 
 
 class SafeUserSchema(Schema):
-    id = fields.Integer()
-    full_name = fields.String()
-
-
-# Unable to use SafeUserSchema ^ in budget_line_items due to this error:
-# marshmallow.exceptions.RegistryError: Multiple classes with name 'SafeUserSchema' were found. Please use the full, module-qualified path.
-# so I'm using this instead:
-@dataclass
-class SafeUser:
-    id: int
-    full_name: Optional[str] = None
-
-
-@dataclass(kw_only=True)
-class RequestBody:
-    id: int = None
-    oidc_id: Optional[str] = None
-    hhs_id: Optional[str] = None
-    email: Optional[str] = None
-
-
-@dataclass(kw_only=True)
-class POSTRequestBody(RequestBody):
-    id: int  # user_id is required for POST
-
-
-@dataclass(kw_only=True)
-class PATCHRequestBody(RequestBody):
-    id: Optional[int] = None  # user_id (and all params) are optional for PATCH
-
-
-@dataclass
-class QueryParameters:
-    id: Optional[int] = None
-    oidc_id: Optional[str] = None
-    hhs_id: Optional[str] = None
-    email: Optional[str] = None
-
-
-@dataclass
-class RoleResponse:
-    name: str
-
-
-@dataclass(kw_only=True)
-class UserResponse:
-    id: int
-    oidc_id: UUID
-    hhs_id: str
-    email: str
-    first_name: str
-    last_name: str
-    full_name: str
-    division: int
-    roles: list[RoleResponse] = field(default_factory=lambda: [])
-    created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    updated_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
+    id: int = fields.Integer(required=True)
+    full_name: Optional[str] = fields.String()

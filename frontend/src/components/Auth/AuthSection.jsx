@@ -106,7 +106,7 @@ const AuthSection = () => {
                 <div>
                     <div className="display-flex flex-align-center">
                         <div className="padding-right-1">
-                            <User />
+                            <User user={activeUser} />
                         </div>
                         <div className="padding-right-205">
                             <NotificationCenter user={activeUser} />

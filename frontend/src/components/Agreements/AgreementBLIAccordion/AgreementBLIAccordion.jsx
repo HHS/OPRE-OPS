@@ -24,6 +24,8 @@ import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.h
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
+ * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve page.
+ * @param {Object[]} [props.updatedBudgetLines=[]] - An array of updated budget lines.
  * @returns {JSX.Element} - The rendered accordion component.
  */
 function AgreementBLIAccordion({
@@ -34,14 +36,24 @@ function AgreementBLIAccordion({
     agreement,
     afterApproval,
     setAfterApproval,
-    action
+    action,
+    isApprovePage = false,
+    updatedBudgetLines = []
 }) {
+    const showToggle = action === BLI_STATUS.PLANNED || isApprovePage;
+    // NOTE: data for ReviewAgreement page is different from ApproveAgreement page
+    // ReviewAgreement data
     const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items);
     const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
     const budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
     const feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards);
     const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
     const totalsForCards = subTotalForCards + getProcurementShopSubTotal(agreement, budgetLinesForCards);
+    // NOTE: data for ApproveAgreement page
+    const diffsForCards = afterApproval ? updatedBudgetLines : selectedBudgetLineItems;
+    const feesForDiffCards = getProcurementShopSubTotal(agreement, diffsForCards);
+    const subTotalForDiffCards = budgetLinesTotal(diffsForCards);
+    const totalsForDiffCards = subTotalForDiffCards + feesForDiffCards;
 
     return (
         <Accordion
@@ -50,7 +62,7 @@ function AgreementBLIAccordion({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {action === BLI_STATUS.PLANNED && (
+                {showToggle && (
                     <ToggleButton
                         btnText="After Approval"
                         handleToggle={() => setAfterApproval(!afterApproval)}
@@ -59,14 +71,30 @@ function AgreementBLIAccordion({
                 )}
             </div>
             <div className="display-flex flex-justify">
-                <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
-                <AgreementTotalCard
-                    total={totalsForCards}
-                    subtotal={subTotalForCards}
-                    fees={feesForCards}
-                    procurementShopAbbr={agreement.procurement_shop?.abbr}
-                    procurementShopFee={agreement.procurement_shop?.fee}
-                />
+                {isApprovePage && (
+                    <>
+                        <BLIsByFYSummaryCard budgetLineItems={diffsForCards} />
+                        <AgreementTotalCard
+                            total={totalsForDiffCards}
+                            subtotal={subTotalForDiffCards}
+                            fees={feesForDiffCards}
+                            procurementShopAbbr={agreement.procurement_shop?.abbr}
+                            procurementShopFee={agreement.procurement_shop?.fee}
+                        />
+                    </>
+                )}
+                {!isApprovePage && (
+                    <>
+                        <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
+                        <AgreementTotalCard
+                            total={totalsForCards}
+                            subtotal={subTotalForCards}
+                            fees={feesForCards}
+                            procurementShopAbbr={agreement.procurement_shop?.abbr}
+                            procurementShopFee={agreement.procurement_shop?.fee}
+                        />
+                    </>
+                )}
             </div>
             {children}
         </Accordion>
@@ -80,6 +108,8 @@ AgreementBLIAccordion.propTypes = {
     agreement: PropTypes.object,
     afterApproval: PropTypes.bool,
     setAfterApproval: PropTypes.func,
-    action: PropTypes.string
+    action: PropTypes.string,
+    isApprovePage: PropTypes.bool,
+    updatedBudgetLines: PropTypes.arrayOf(PropTypes.object)
 };
 export default AgreementBLIAccordion;
