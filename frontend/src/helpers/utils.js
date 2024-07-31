@@ -150,7 +150,7 @@ export const codesToDisplayText = {
         amount: "Amount",
         can: "CAN",
         comments: "Notes",
-        date_needed: "Need By Date",
+        date_needed: "Obligate Date",
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
         status: "Status",
