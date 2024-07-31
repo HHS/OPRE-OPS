@@ -34,6 +34,13 @@ export const handlers = [
 
     http.get(`http://localhost:8000/api/v1/change-requests/`, (req, res, ctx) => {
         return res(ctx.status(200), ctx.json(changeRequests), ctx.delay(150));
+    }),
+
+    http.get(`http://localhost:8000/auth/roles/`, () => {
+        return HttpResponse.json([
+            { id: 1, name: "Admin" },
+            { id: 2, name: "User" }
+        ]);
     })
 ];
 

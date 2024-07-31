@@ -1,8 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessToken } from "../components/Auth/auth";
 
-// const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
-// Adding optional runtime config.
 const BACKEND_DOMAIN =
     window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN ||
     import.meta.env.VITE_BACKEND_DOMAIN ||
