@@ -41,7 +41,6 @@ function AgreementBLIAccordion({
     updatedBudgetLines = []
 }) {
     const showToggle = action === BLI_STATUS.PLANNED || isApprovePage;
-
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
     // Use the same logic for both !isApprovePage and isDraftToPlanned scenarios
