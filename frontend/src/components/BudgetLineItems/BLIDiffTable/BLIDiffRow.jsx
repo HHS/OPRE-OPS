@@ -19,7 +19,7 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
-import { addDiffClass, getChangeRequestTypes } from "./BLIDiffRow.helpers";
+import { addDiffClass, doesDateNeededChangeFY, getChangeRequestTypes } from "./BLIDiffRow.helpers";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -76,7 +76,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 {formatDateNeeded(budgetLine?.date_needed)}
             </td>
             <td
-                className={borderExpandedStyles}
+                className={`${addDiffClass(doesDateNeededChangeFY(budgetLine))} borderExpandedStyles`}
                 style={bgExpandedStyles}
             >
                 {fiscalYearFromDate(budgetLine?.date_needed)}
