@@ -80,6 +80,11 @@ const AgreementCANReviewAccordion = ({
                 (feeAmount - totalBudgetLineFeeAmount(currentAmount, budgetLine.proc_shop_fee_percentage));
         }
 
+        if (!isApprovePage) {
+            acc[currentCanId].pendingAmount +=
+                budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage);
+        }
+
         acc[currentCanId].count += 1;
 
         return acc;
