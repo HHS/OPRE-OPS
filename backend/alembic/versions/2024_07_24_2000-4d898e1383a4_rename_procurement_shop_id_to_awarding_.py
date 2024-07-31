@@ -1,7 +1,7 @@
 """Rename procurement_shop_id to awarding_entity_id
 
 Revision ID: 4d898e1383a4
-Revises: de9beb904925
+Revises: c98733f2a098
 Create Date: 2024-07-24 20:00:42.211808+00:00
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '4d898e1383a4'
-down_revision: Union[str, None] = 'de9beb904925'
+down_revision: Union[str, None] = 'c98733f2a098'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
