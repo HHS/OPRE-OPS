@@ -492,7 +492,7 @@ def test_status_change_request_creates_procurement_workflow(
         service_requirement_type=ServiceRequirementType.SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
         project_officer_id=test_admin_user.id,
         project_id=test_project.id,
         created_by=test_admin_user.id,

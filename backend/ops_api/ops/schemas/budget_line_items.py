@@ -114,7 +114,7 @@ class RequestBodySchema(Schema):
     def validate_agreement_procurement_shop(self, data, **kwargs):
         if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
-            if bli and bli.agreement_id and not bli.agreement.procurement_shop_id:
+            if bli and bli.agreement_id and not bli.agreement.awarding_entity_id:
                 raise ValidationError("BLI's Agreement must have a ProcurementShop when status is not DRAFT")
 
     @validates_schema

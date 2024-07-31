@@ -216,7 +216,7 @@ class Agreement(BaseModel):
         cascade="all, delete",
     )
 
-    procurement_shop_id: Mapped[Optional[int]] = mapped_column(
+    awarding_entity_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("procurement_shop.id")
     )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
