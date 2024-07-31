@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useGetPortfoliosQuery } from "../../../api/opsAPI";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
 import CANFundingCard from "../../CANs/CANFundingCard";
@@ -34,7 +35,7 @@ const AgreementCANReviewAccordion = ({
     if (error) {
         return <div>An error occurred loading Portfolio data</div>;
     }
-    // TODO: Will need to handle Budget Change - amount requests in the future and also CAN changes
+
     const cansWithPendingAmountMap = selectedBudgetLines.reduce((acc, budgetLine) => {
         const currentCanId = budgetLine.can.id;
         let newCanId = currentCanId;
@@ -79,8 +80,8 @@ const AgreementCANReviewAccordion = ({
                 amountChange +
                 (feeAmount - totalBudgetLineFeeAmount(currentAmount, budgetLine.proc_shop_fee_percentage));
         }
-
-        if (!isApprovePage) {
+        // If the action is PLANNED, add the amount to the pending amount just like the Review page
+        if (!isApprovePage || action === BLI_STATUS.PLANNED) {
             acc[currentCanId].pendingAmount +=
                 budgetLine.amount + totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage);
         }
@@ -90,7 +91,6 @@ const AgreementCANReviewAccordion = ({
         return acc;
     }, {});
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
-    // console.log({ cansWithPendingAmount });
 
     let canPortfolios = [];
     selectedBudgetLines.forEach((budgetLine) => {
