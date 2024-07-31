@@ -543,7 +543,7 @@ describe("Review Change Requests at Card Level", () => {
                     });
             });
     });
-    it.only("review Budget Change ObligateBy Needed change", () => {
+    it("review Budget Change ObligateBy Needed change", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
         // create test agreement
