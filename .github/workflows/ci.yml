@@ -77,3 +77,6 @@ jobs:
       - name: Lint frontend
         working-directory: ./frontend
         run: bun lint
+
+      - name: Lint OpenAPI
+        uses: ./.github/workflows/openapi_linter.yml

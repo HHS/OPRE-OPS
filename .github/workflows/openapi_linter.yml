@@ -1,0 +1,16 @@
+on:
+  workflow_call:
+
+jobs:
+  openapi-linter:
+    name: Run Vacuum Linter on OpenAPI spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - name: Install Vacuum
+        run: curl -fsSL https://quobix.com/scripts/install_vacuum.sh | sh > /dev/null
+        shell: bash
+      - name: Lint OpenAPI
+        working-directory: ./backend
+        run: vacuum lint openapi.yaml
+        shell: bash
