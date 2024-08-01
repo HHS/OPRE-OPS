@@ -9,27 +9,21 @@ from models.cans import (
     ProductServiceCode,
     ServicesComponent,
 )
+from models.change_requests import ChangeRequest
 from models.history import OpsDBHistory
 from models.portfolios import Division, Portfolio, PortfolioStatus
 from models.procurement_shops import ProcurementShop
-from models.projects import ResearchProject, ResearchType
-from models.users import User
-from models.workflows import (
+from models.procurement_tracker import (
     AcquisitionPlanning,
     Award,
-    ChangeRequest,
     Evaluation,
-    Package,
-    PackageSnapshot,
     PreAward,
     PreSolicitation,
     ProcurementStep,
     Solicitation,
-    WorkflowInstance,
-    WorkflowStepInstance,
-    WorkflowStepTemplate,
-    WorkflowTemplate,
 )
+from models.projects import ResearchProject, ResearchType
+from models.users import User
 from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
     AdministrativeAndSupportProjectListAPI,
@@ -52,7 +46,6 @@ from ops_api.ops.resources.divisions import DivisionsItemAPI, DivisionsListAPI
 from ops_api.ops.resources.health_check import HealthCheckAPI
 from ops_api.ops.resources.history import OpsDBHistoryListAPI
 from ops_api.ops.resources.notifications import NotificationItemAPI, NotificationListAPI
-from ops_api.ops.resources.package import PackageItemAPI, PackageListAPI, PackageSnapshotItemAPI, PackageSnapshotListAPI
 from ops_api.ops.resources.portfolio_calculate_funding import PortfolioCalculateFundingAPI
 from ops_api.ops.resources.portfolio_cans import PortfolioCansAPI
 from ops_api.ops.resources.portfolio_funding_summary import PortfolioFundingSummaryItemAPI
@@ -74,9 +67,6 @@ from ops_api.ops.resources.research_projects import ResearchProjectItemAPI, Rese
 from ops_api.ops.resources.research_type import ResearchTypeListAPI
 from ops_api.ops.resources.services_component import ServicesComponentItemAPI, ServicesComponentListAPI
 from ops_api.ops.resources.users import UsersItemAPI, UsersListAPI
-from ops_api.ops.resources.workflow_instance import WorkflowInstanceItemAPI, WorkflowInstanceListAPI
-from ops_api.ops.resources.workflow_step_template import WorkflowStepTemplateItemAPI, WorkflowStepTemplateListAPI
-from ops_api.ops.resources.workflow_template import WorkflowTemplateItemAPI, WorkflowTemplateListAPI
 from ops_api.ops.utils.version import VersionAPI
 
 # AGREEMENT ENDPOINTS
@@ -114,12 +104,6 @@ CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC = CANFiscalYearListAPI.as_view("can-fiscal-ye
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
 BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
 
-# PACKAGE ENDPOINTS
-PACKAGE_ITEM_API_VIEW_FUNC = PackageItemAPI.as_view("package-item", Package)
-PACKAGE_LIST_API_VIEW_FUNC = PackageListAPI.as_view("package-group", Package)
-
-PACKAGE_SNAPSHOT_ITEM_API_VIEW_FUNC = PackageSnapshotItemAPI.as_view("package-snapshot-item", PackageSnapshot)
-PACKAGE_SNAPSHOT_LIST_API_VIEW_FUNC = PackageSnapshotListAPI.as_view("package-snapshot-group", PackageSnapshot)
 
 # PRODUCT SERVICE CODES ENDPOINTS
 PRODUCT_SERVICE_CODE_ITEM_API_VIEW_FUNC = ProductServiceCodeItemAPI.as_view(
@@ -188,28 +172,6 @@ OPS_DB_HISTORY_LIST_API_VIEW_FUNC = OpsDBHistoryListAPI.as_view("ops-db-history-
 # NOTIFICATIONS ENDPOINTS
 NOTIFICATIONS_ITEM_API_VIEW_FUNC = NotificationItemAPI.as_view("notifications-item", Notification)
 NOTIFICATIONS_LIST_API_VIEW_FUNC = NotificationListAPI.as_view("notifications-group", Notification)
-
-# WORKFLOW INSTANCE ENDPOINTS
-WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC = WorkflowInstanceItemAPI.as_view("workflow-instance-item", WorkflowInstance)
-WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC = WorkflowInstanceListAPI.as_view("workflow-instance-group", WorkflowInstance)
-
-# WORKFLOW STEP INSTANCE ENDPOINTS
-WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC = WorkflowInstanceItemAPI.as_view(
-    "workflow-step-instance-item", WorkflowStepInstance
-)
-WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC = WorkflowInstanceListAPI.as_view(
-    "workflow-step-instance-group", WorkflowStepInstance
-)
-
-WORKFLOW_TEMPLATE_LIST_API_VIEW_FUNC = WorkflowTemplateListAPI.as_view("workflow-template-group", WorkflowTemplate)
-WORKFLOW_TEMPLATE_ITEM_API_VIEW_FUNC = WorkflowTemplateItemAPI.as_view("workflow-template-item", WorkflowTemplate)
-
-WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC = WorkflowStepTemplateItemAPI.as_view(
-    "workflow-step-template-item", WorkflowStepTemplate
-)
-WORKFLOW_STEP_TEMPLATE_LIST_API_VIEW_FUNC = WorkflowStepTemplateListAPI.as_view(
-    "workflow-step-template-group", WorkflowStepTemplate
-)
 
 # ServicesComponent ENDPOINTS
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)

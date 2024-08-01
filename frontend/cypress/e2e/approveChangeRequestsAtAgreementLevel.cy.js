@@ -10,7 +10,7 @@ const testAgreement = {
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
-    procurement_shop_id: 1,
+    awarding_entity_id: 1,
     project_officer_id: 500,
     team_members: [
         {

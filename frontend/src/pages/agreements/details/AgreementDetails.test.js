@@ -82,7 +82,7 @@ const agreementHistoryData = [
                 name: "Government Contracting Services",
                 updated_on: "2023-08-24T16:19:01.268399"
             },
-            procurement_shop_id: 2,
+            awarding_entity_id: 2,
             product_service_code: {
                 created_by: null,
                 created_on: "2023-08-24T16:19:01.268399",
@@ -236,7 +236,7 @@ const agreementHistoryData = [
                 name: "Government Contracting Services",
                 updated_on: "2023-08-24T16:19:01.268399"
             },
-            procurement_shop_id: 2,
+            awarding_entity_id: 2,
             product_service_code: null,
             product_service_code_id: null,
             project_officer_id: null,
@@ -317,7 +317,7 @@ const agreementHistoryData = [
             name: {
                 new: "Demo Contract Title"
             },
-            procurement_shop_id: {
+            awarding_entity_id: {
                 new: 2
             },
             project_id: {
@@ -343,7 +343,7 @@ const agreementHistoryData = [
             notes: "",
             number: "",
             procurement_shop: null,
-            procurement_shop_id: 2,
+            awarding_entity_id: 2,
             product_service_code: null,
             product_service_code_id: null,
             project_officer_id: null,

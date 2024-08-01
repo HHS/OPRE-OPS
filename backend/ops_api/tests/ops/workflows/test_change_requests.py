@@ -19,51 +19,11 @@ from models import (
     ContractType,
     Division,
     ServiceRequirementType,
-    WorkflowStepTemplate,
-    WorkflowStepType,
-    WorkflowTemplate,
 )
 from ops_api.ops.resources.agreement_history import find_agreement_histories
-from ops_api.ops.utils.procurement_workflow_helper import delete_procurement_workflow
+from ops_api.ops.utils.procurement_tracker_helper import delete_procurement_tracker
 
 test_no_perms_user_id = 506
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_workflow_template_retrieve(auth_client, loaded_db):
-    workflow_template = loaded_db.get(WorkflowTemplate, 1)
-
-    assert workflow_template is not None
-    assert workflow_template.name == "Basic Approval"
-    assert workflow_template.steps is not None
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_workflow_step_template_retrieve(auth_client, loaded_db):
-    workflow_step_template = loaded_db.get(WorkflowStepTemplate, 1)
-
-    assert workflow_step_template is not None
-    assert workflow_step_template.name == "Initial Review"
-    assert workflow_step_template.workflow_type == WorkflowStepType.APPROVAL
-    assert workflow_step_template.index == 0
-    assert workflow_step_template.step_approvers is not None
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_workflow_template_by_id(auth_client):
-    response = auth_client.get("/api/v1/workflow-template/1")
-    assert response.status_code == 200
-    assert response.json["id"] == 1
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_get_workflow_step_template_by_id(auth_client):
-    response = auth_client.get("/api/v1/workflow-step-template/1")
-    assert response.status_code == 200
-    assert response.json["id"] == 1
-
 
 # ---=== CHANGE REQUESTS ===---
 
@@ -532,7 +492,7 @@ def test_status_change_request_creates_procurement_workflow(
         service_requirement_type=ServiceRequirementType.SEVERABLE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
         project_officer_id=test_admin_user.id,
         project_id=test_project.id,
         created_by=test_admin_user.id,
@@ -541,7 +501,7 @@ def test_status_change_request_creates_procurement_workflow(
     loaded_db.commit()
     assert agreement.id is not None
     agreement_id = agreement.id
-    assert agreement.procurement_tracker_workflow_id is None
+    assert agreement.procurement_tracker_id is None
 
     # create DRAFT BLI
     bli = BudgetLineItem(
@@ -555,7 +515,7 @@ def test_status_change_request_creates_procurement_workflow(
     loaded_db.commit()
     assert bli.id is not None
     bli_id = bli.id
-    assert bli.agreement.procurement_tracker_workflow_id is None
+    assert bli.agreement.procurement_tracker_id is None
 
     #  submit PATCH BLI which creates change request for status change
     data = {"status": "IN_EXECUTION"}
@@ -575,10 +535,10 @@ def test_status_change_request_creates_procurement_workflow(
     bli = loaded_db.get(BudgetLineItem, bli_id)
     assert bli is not None
     assert bli.status == BudgetLineItemStatus.IN_EXECUTION
-    assert bli.agreement.procurement_tracker_workflow_id is not None
+    assert bli.agreement.procurement_tracker_id is not None
 
     # cleanup
-    delete_procurement_workflow(bli.agreement_id)
+    delete_procurement_tracker(bli.agreement_id)
     loaded_db.delete(bli)
     loaded_db.delete(agreement)
     loaded_db.commit()
