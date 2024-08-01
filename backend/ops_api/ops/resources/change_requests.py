@@ -14,7 +14,7 @@ from ops_api.ops.resources import budget_line_items
 from ops_api.ops.resources.budget_line_items import validate_and_prepare_change_data
 from ops_api.ops.schemas.budget_line_items import PATCHRequestBodySchema
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
-from ops_api.ops.utils import procurement_workflow_helper
+from ops_api.ops.utils import procurement_tracker_helper
 from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -47,13 +47,13 @@ def review_change_request(
     change_request.status = status_after_review
     change_request.reviewer_notes = reviewer_notes
     session.add(change_request)
-    should_create_procurement_workflow = False
+    should_create_procurement_tracker = False
 
     # If approved, then apply the changes
     if status_after_review == ChangeRequestStatus.APPROVED:
         if isinstance(change_request, BudgetLineItemChangeRequest):
             budget_line_item = session.get(BudgetLineItem, change_request.budget_line_item_id)
-            should_create_procurement_workflow = (
+            should_create_procurement_tracker = (
                 change_request.has_status_change and change_request.requested_change_data["status"] == "IN_EXECUTION"
             )
             # need to copy to avoid changing the original data in the ChangeRequest and triggering an update
@@ -79,8 +79,8 @@ def review_change_request(
 
     create_notification_of_reviews_request_to_submitter(change_request)
 
-    if should_create_procurement_workflow:
-        procurement_workflow_helper.create_procurement_workflow(change_request.agreement_id)
+    if should_create_procurement_tracker:
+        procurement_tracker_helper.create_procurement_tracker(change_request.agreement_id)
 
     return change_request
 

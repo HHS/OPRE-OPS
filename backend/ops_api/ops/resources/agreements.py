@@ -316,7 +316,7 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
                 tmp_support_contacts = _get_user_list(data[item])
                 agreement.support_contacts = tmp_support_contacts if tmp_support_contacts else []
 
-            case "procurement_shop_id":
+            case "awarding_entity_id":
                 if any(
                     [bli.status.value >= BudgetLineItemStatus.IN_EXECUTION.value for bli in agreement.budget_line_items]
                 ):
