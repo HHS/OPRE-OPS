@@ -612,7 +612,7 @@ describe("Review Change Requests at Card Level", () => {
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
-                cy.get("[data-cy='review-card']").contains(/date needed/i);
+                cy.get("[data-cy='review-card']").contains(/obligate by date/i);
                 cy.get("[data-cy='review-card']").contains("11/15/2028");
                 // hover over first card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
