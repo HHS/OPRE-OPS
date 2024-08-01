@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { changeRequests } from "./data";
+import { changeRequests, divisions, roles } from "./data";
 
 export const handlers = [
     http.get(`http://localhost:8000/api/v1/agreements/`, () => {
@@ -37,10 +37,11 @@ export const handlers = [
     }),
 
     http.get(`http://localhost:8000/auth/roles/`, () => {
-        return HttpResponse.json([
-            { id: 1, name: "Admin" },
-            { id: 2, name: "User" }
-        ]);
+        return HttpResponse.json(roles);
+    }),
+
+    http.get(`http://localhost:8000/api/v1/divisions/`, () => {
+        return HttpResponse.json(divisions);
     })
 ];
 

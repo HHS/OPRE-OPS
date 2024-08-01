@@ -36,7 +36,7 @@ export const budgetLine = {
         '{email: "admin.demo@email.com", full_name: "Admin D…}',
         '{email: "dave.director@email.com", full_name: "Dave…}'
     ],
-    updated_on: "2024-05-27T13:56:50.363964Z",
+    updated_on: "2024-05-27T13:56:50.363964Z"
 };
 
 export const agreement = {
@@ -485,8 +485,8 @@ export const canFiscalYearFundingDetails = [
         current_fy_funding_ytd: 100000,
         can_fiscal_year_id: 5004
     }
-  ]
-  export const canAppropriationDetails =  [
+];
+export const canAppropriationDetails = [
     {
         id: 1,
         appropriation_prefix: "ABCDE",
@@ -505,4 +505,90 @@ export const canFiscalYearFundingDetails = [
         appropriation_postfix: "ALSOY",
         appropriation_year: "2024"
     }
-  ]
+];
+
+export const roles = [
+    {
+        id: 1,
+        name: "admin"
+    },
+    {
+        id: 2,
+        name: "user"
+    },
+    {
+        id: 3,
+        name: "unassigned"
+    },
+    {
+        id: 4,
+        name: "division-director"
+    },
+    {
+        id: 5,
+        name: "USER_ADMIN"
+    },
+    {
+        id: 6,
+        name: "BUDGET_TEAM"
+    }
+];
+
+export const divisions = [
+    {
+        abbreviation: "CC",
+        deputy_division_director_id: 520,
+        display_name: "Child Care",
+        division_director_id: 522,
+        id: 1,
+        name: "Child Care"
+    },
+    {
+        abbreviation: "DEI",
+        deputy_division_director_id: 520,
+        display_name: "Division of Economic Independence",
+        division_director_id: 522,
+        id: 2,
+        name: "Division of Economic Independence"
+    },
+    {
+        abbreviation: "OD",
+        deputy_division_director_id: 520,
+        display_name: "Office of the Director",
+        division_director_id: 522,
+        id: 3,
+        name: "Office of the Director"
+    },
+    {
+        abbreviation: "DFCD",
+        deputy_division_director_id: 520,
+        display_name: "Division of Child and Family Development",
+        division_director_id: 522,
+        id: 4,
+        name: "Division of Child and Family Development"
+    },
+    {
+        abbreviation: "DFS",
+        deputy_division_director_id: 520,
+        display_name: "Division of Family Strengthening",
+        division_director_id: 522,
+        id: 5,
+        name: "Division of Family Strengthening"
+    },
+    {
+        abbreviation: "DDI",
+        deputy_division_director_id: 520,
+        display_name: "Division of Data and Improvement",
+        division_director_id: 522,
+        id: 6,
+        name: "Division of Data and Improvement"
+    },
+    {
+        abbreviation: "OTHER",
+        deputy_division_director_id: 520,
+        display_name: "Non-OPRE Division",
+        division_director_id: 522,
+        id: 7,
+        name: "Non-OPRE Division"
+    }
+];
