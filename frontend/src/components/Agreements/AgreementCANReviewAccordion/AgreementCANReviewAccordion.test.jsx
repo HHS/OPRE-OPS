@@ -281,7 +281,59 @@ describe("AgreementCANReview", () => {
         expect(totalSpendingCardAfterApproval2).toBeInTheDocument();
         expect(remainingBudgetCardAfterApproval2).toBeInTheDocument();
     });
-    it.todo("should render from approve page with status change to PLANNED");
+    it("should render from approve page with status change to PLANNED", async () => {
+        const user = userEvent.setup();
+        const mockSetAfterApproval = vi.fn(); // Create a mock function
+        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    {...initialProps}
+                    action="PLANNED"
+                    selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
+                    afterApproval={false}
+                    setAfterApproval={mockSetAfterApproval}
+                    isApprovePage={true}
+                />
+            </Provider>
+        );
+
+        const headingCard = screen.getByRole("heading", { name: "G994426 (1 Year) CAN Total Budget" });
+        const toggle = screen.getByRole("button", {
+            name: "Off (Drafts excluded) After Approval"
+        });
+        const totalSpendingCardBeforeApproval = screen.getByText("$ 3,000,000");
+        const remainingBudgetCardBeforeApproval = screen.getByText("$ 37,000,000");
+
+        expect(headingCard).toBeInTheDocument();
+        expect(toggle).toBeInTheDocument();
+        expect(totalSpendingCardBeforeApproval).toBeInTheDocument();
+        expect(remainingBudgetCardBeforeApproval).toBeInTheDocument();
+
+        await user.click(toggle);
+        expect(mockSetAfterApproval).toHaveBeenCalled();
+        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    {...initialProps}
+                    action="PLANNED"
+                    selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
+                    afterApproval={true}
+                    setAfterApproval={mockSetAfterApproval}
+                    isApprovePage={true}
+                />
+            </Provider>
+        );
+
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
+        const totalSpendingCardAfterApproval1 = screen.getByText("$ 5,000,000");
+        const remainingBudgetCardAfterApproval1 = screen.getByText("$ 35,000,000");
+
+        expect(toggleAfterApproval).toBeInTheDocument();
+        expect(totalSpendingCardAfterApproval1).toBeInTheDocument();
+        expect(remainingBudgetCardAfterApproval1).toBeInTheDocument();
+    });
     it.todo("should render from approve page with status change to EXECUTING");
 });
 
