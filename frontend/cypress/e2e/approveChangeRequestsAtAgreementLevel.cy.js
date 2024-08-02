@@ -45,6 +45,191 @@ afterEach(() => {
 });
 
 describe("Approve Change Requests at the Agreement Level", () => {
+    it("review Budget Change change", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const updatedBLIToPlanned = {
+                    ...testBli,
+                    status: BLI_STATUS.PLANNED
+                };
+                const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // submit PATCH CR for approval via REST
+            .then(({ agreementId, bliId }) => {
+                cy.request({
+                    method: "PATCH",
+                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    body: {
+                        id: bliId,
+                        amount: 2_000_000,
+                        can_id: 502,
+                        date_needed: "2025-09-15",
+                        requestor_notes: "Test requestor notes"
+                    },
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(202);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            // test interactions
+            .then(({ agreementId, bliId }) => {
+                cy.visit("/agreements?filter=change-requests").wait(1000);
+                // see if there are any review cards
+                cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
+                cy.get("[data-cy='review-card']").contains(/planned/i);
+                // cy.get('[role="navigation"]').contains("3");
+                // hover over the review card
+                cy.get("[data-cy='review-card']").first().trigger("mouseover");
+                // click on button data-cy approve-agreement
+                cy.get("[data-cy='approve-agreement']").first().click();
+                // get h1 to have content Approval for
+                cy.get("h1").contains(/approval for budget change/i);
+                // get content in review-cards
+                cy.get("[data-cy='review-card']").contains(/planned/i);
+                cy.get("[data-cy='review-card']").contains(/amount/i);
+                cy.get("[data-cy='review-card']").contains("$1,000,000.00");
+                cy.get("[data-cy='review-card']").contains("$2,000,000.00");
+                // next card
+                cy.get("[data-cy='review-card']").contains(/can/i);
+                cy.get("[data-cy='review-card']").contains("G99IA14");
+                cy.get("[data-cy='review-card']").contains("G99PHS9");
+                // next card
+                cy.get("[data-cy='review-card']").contains(/obligate by date/i);
+                cy.get("[data-cy='review-card']").contains("1/1/2025");
+                cy.get("[data-cy='review-card']").contains("9/15/2025");
+                //class accordion__content contains a paragraph that contains the text planned status change
+                cy.get(".usa-accordion__content").contains("budget changes");
+                // section BLs not associated with a Services Component should have a table
+                cy.get(".usa-table").should("exist");
+                // table should contains a table item  with text PLANNED and css class table-item-diff
+                cy.get(".table-item-diff").contains("$2,000,000.00");
+                cy.get(".table-item-diff").contains("G99PHS9");
+                cy.get(".table-item-diff").contains("9/15/2025");
+                cy.get('[data-cy="can-funding-summary-card-501"]').should("exist");
+                // and contain $ 7,995,000 and $ 2,205,000
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$10,200,000");
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 5,995,000");
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 4,205,000");
+                // and contain $ 11,710,000 and $ 12,290,000
+                cy.get('[data-cy="can-funding-summary-card-502"]').should("exist");
+                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$24,200,000");
+                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 11,710,000");
+                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 12,290,000");
+                cy.get('[data-cy="button-toggle-After Approval"]').click();
+                cy.pause();
+                cy.get(".table-item-diff").contains("1,000,000.00");
+                cy.get(".table-item-diff").contains("G99IA14");
+                cy.get(".table-item-diff").contains("1/1/2025");
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 7,000,000");
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 3,200,000");
+                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 9,700,000");
+                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 14,300,000");
+                // TODO: add more tests
+                // click on checkbox with id approve-confirmation
+                cy.get(".usa-checkbox__label").click();
+                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+                cy.get('[data-cy="send-to-approval-btn"]').click();
+                cy.get("#ops-modal-heading").contains(/approve this budget change/i);
+                cy.get('[data-cy="confirm-action"]').click();
+                cy.get(".usa-alert__body").should("contain", "Changes Approved");
+                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body")
+                    .should("include.text", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`)
+                    .and("include.text", `BL ${bliId} Obligate By Date: 1/1/2025 to 9/15/2025`)
+                    .and("include.text", `BL ${bliId} CAN: G99IA14 to G99PHS9`);
+                cy.get("[data-cy='close-alert']").click();
+                // nav element should not contain the text 1
+                cy.get('[role="navigation"]').should("not.contain", "1");
+                cy.get("[data-cy='review-card']").should("not.exist");
+                // verify agreement history
+                cy.visit(`/agreements/${agreementId}`);
+                checkAgreementHistory();
+
+                // In your test
+                cy.get('[data-cy="agreement-history-list"]').should("exist");
+
+                checkHistoryItem(
+                    /Budget Change to Amount Approved/,
+                    `Admin Demo approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Admin Demo.`
+                )
+                    .then(() => {
+                        return checkHistoryItem(
+                            /Budget Change to CAN Approved/,
+                            `Admin Demo approved the budget change on BL ${bliId} from G99IA14 to G99PHS9 as requested by Admin Demo.`
+                        );
+                    })
+                    .then(() => {
+                        return checkHistoryItem(
+                            /Budget Change to Obligate Date Approved/,
+                            `Admin Demo approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Admin Demo.`
+                        );
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    })
+                    .then(() => {
+                        cy.request({
+                            method: "DELETE",
+                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                            headers: {
+                                Authorization: bearer_token,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                        });
+                    });
+            });
+    });
     it("review Status Change DRAFT TO PLANNED", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
@@ -331,188 +516,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 //         expect(response.status).to.eq(200);
                 //     });
                 // });
-            });
-    });
-    it("review Budget Change change", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
-
-        // create test agreement
-        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-        cy.request({
-            method: "POST",
-            url: "http://localhost:8080/api/v1/agreements/",
-            body: testAgreement,
-            headers: {
-                Authorization: bearer_token,
-                "Content-Type": "application/json",
-                Accept: "application/json"
-            }
-        })
-            .then((response) => {
-                expect(response.status).to.eq(201);
-                expect(response.body.id).to.exist;
-                const agreementId = response.body.id;
-                return agreementId;
-            })
-            // create BLI
-            .then((agreementId) => {
-                const updatedBLIToPlanned = {
-                    ...testBli,
-                    status: BLI_STATUS.PLANNED
-                };
-                const bliData = { ...updatedBLIToPlanned, agreement_id: agreementId };
-                cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/budget-line-items/",
-                    body: bliData,
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(201);
-                    expect(response.body.id).to.exist;
-                    const bliId = response.body.id;
-                    return { agreementId, bliId };
-                });
-            })
-            // submit PATCH CR for approval via REST
-            .then(({ agreementId, bliId }) => {
-                cy.request({
-                    method: "PATCH",
-                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                    body: {
-                        id: bliId,
-                        amount: 2_000_000,
-                        can_id: 502,
-                        date_needed: "2025-09-15",
-                        requestor_notes: "Test requestor notes"
-                    },
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(202);
-                    expect(response.body.id).to.exist;
-                    const bliId = response.body.id;
-                    return { agreementId, bliId };
-                });
-            })
-            // test interactions
-            .then(({ agreementId, bliId }) => {
-                cy.visit("/agreements?filter=change-requests").wait(1000);
-                // see if there are any review cards
-                cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
-                cy.get("[data-cy='review-card']").contains(/planned/i);
-                // cy.get('[role="navigation"]').contains("3");
-                // hover over the review card
-                cy.get("[data-cy='review-card']").first().trigger("mouseover");
-                // click on button data-cy approve-agreement
-                cy.get("[data-cy='approve-agreement']").first().click();
-                // get h1 to have content Approval for
-                cy.get("h1").contains(/approval for budget change/i);
-                // get content in review-cards
-                cy.get("[data-cy='review-card']").contains(/planned/i);
-                cy.get("[data-cy='review-card']").contains(/amount/i);
-                cy.get("[data-cy='review-card']").contains("$1,000,000.00");
-                cy.get("[data-cy='review-card']").contains("$2,000,000.00");
-                // next card
-                cy.get("[data-cy='review-card']").contains(/can/i);
-                cy.get("[data-cy='review-card']").contains("G99IA14");
-                cy.get("[data-cy='review-card']").contains("G99PHS9");
-                // next card
-                cy.get("[data-cy='review-card']").contains(/obligate by date/i);
-                cy.get("[data-cy='review-card']").contains("1/1/2025");
-                cy.get("[data-cy='review-card']").contains("9/15/2025");
-                //class accordion__content contains a paragraph that contains the text planned status change
-                cy.get(".usa-accordion__content").contains("budget changes");
-                // section BLs not associated with a Services Component should have a table
-                cy.get(".usa-table").should("exist");
-                // table should contains a table item  with text PLANNED and css class table-item-diff
-                cy.get(".table-item-diff").contains("$2,000,000.00");
-                cy.get(".table-item-diff").contains("G99PHS9");
-                cy.get(".table-item-diff").contains("9/15/2025");
-                cy.get('[data-cy="can-funding-summary-card-501"]').should("exist");
-                // and contain $ 7,995,000 and $ 2,205,000
-                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 5,995,000");
-                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 4,205,000");
-                // and contain $ 11,710,000 and $ 12,290,000
-                cy.get('[data-cy="can-funding-summary-card-502"]').should("exist");
-                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 11,710,000");
-                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 12,290,000");
-                cy.get('[data-cy="button-toggle-After Approval"]').click().wait(1000);
-                cy.get(".table-item-diff").contains("1,000,000.00");
-                cy.get(".table-item-diff").contains("G99IA14");
-                cy.get(".table-item-diff").contains("1/1/2025");
-                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 7,000,000");
-                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 3,200,000");
-                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 9,700,000");
-                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 14,300,000");
-                // TODO: add more tests
-                // click on checkbox with id approve-confirmation
-                cy.get(".usa-checkbox__label").click();
-                cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
-                cy.get('[data-cy="send-to-approval-btn"]').click();
-                cy.get("#ops-modal-heading").contains(/approve this budget change/i);
-                cy.get('[data-cy="confirm-action"]').click();
-                cy.get(".usa-alert__body").should("contain", "Changes Approved");
-                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
-                cy.get(".usa-alert__body")
-                    .should("include.text", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`)
-                    .and("include.text", `BL ${bliId} Obligate By Date: 1/1/2025 to 9/15/2025`)
-                    .and("include.text", `BL ${bliId} CAN: G99IA14 to G99PHS9`);
-                cy.get("[data-cy='close-alert']").click();
-                // nav element should not contain the text 1
-                cy.get('[role="navigation"]').should("not.contain", "1");
-                cy.get("[data-cy='review-card']").should("not.exist");
-                // verify agreement history
-                cy.visit(`/agreements/${agreementId}`);
-                checkAgreementHistory();
-
-                // In your test
-                cy.get('[data-cy="agreement-history-list"]').should("exist");
-
-                checkHistoryItem(
-                    /Budget Change to Amount Approved/,
-                    `Admin Demo approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Admin Demo.`
-                )
-                    .then(() => {
-                        return checkHistoryItem(
-                            /Budget Change to CAN Approved/,
-                            `Admin Demo approved the budget change on BL ${bliId} from G99IA14 to G99PHS9 as requested by Admin Demo.`
-                        );
-                    })
-                    .then(() => {
-                        return checkHistoryItem(
-                            /Budget Change to Obligate Date Approved/,
-                            `Admin Demo approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Admin Demo.`
-                        );
-                    })
-                    .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
-                    })
-                    .then(() => {
-                        cy.request({
-                            method: "DELETE",
-                            url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
-                            headers: {
-                                Authorization: bearer_token,
-                                Accept: "application/json"
-                            }
-                        }).then((response) => {
-                            expect(response.status).to.eq(200);
-                        });
-                    });
             });
     });
 });
