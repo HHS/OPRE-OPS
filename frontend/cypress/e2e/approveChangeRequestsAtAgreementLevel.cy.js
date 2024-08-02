@@ -152,7 +152,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 4,205,000");
                 // and contain $ 11,710,000 and $ 12,290,000
                 cy.get('[data-cy="can-funding-summary-card-502"]').should("exist");
-                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$24,200,000");
+                cy.get('[data-cy="can-funding-summary-card-502"]').contains("$24,000,000");
                 cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 11,710,000");
                 cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 12,290,000");
                 cy.get('[data-cy="button-toggle-After Approval"]').click();
