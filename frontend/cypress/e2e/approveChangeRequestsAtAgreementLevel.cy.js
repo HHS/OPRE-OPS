@@ -156,7 +156,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 11,710,000");
                 cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 12,290,000");
                 cy.get('[data-cy="button-toggle-After Approval"]').click();
-                cy.pause();
                 cy.get(".table-item-diff").contains("1,000,000.00");
                 cy.get(".table-item-diff").contains("G99IA14");
                 cy.get(".table-item-diff").contains("1/1/2025");
