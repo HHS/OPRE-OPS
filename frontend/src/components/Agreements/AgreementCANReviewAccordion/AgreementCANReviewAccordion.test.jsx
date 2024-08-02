@@ -9,9 +9,6 @@ vi.mock("../../../api/opsAPI");
 
 describe("AgreementCANReview", () => {
     useGetPortfoliosQuery.mockReturnValue({ data: canData });
-    useGetCanFundingSummaryQuery
-        .mockReturnValueOnce({ data: canFundingCardData })
-        .mockReturnValueOnce({ data: canFundingCardData2 });
     const initialProps = {
         instructions: "instructions",
         selectedBudgetLines: selectedBudgetLines,
@@ -20,7 +17,7 @@ describe("AgreementCANReview", () => {
         action: "PLANNED_TO_EXECUTING",
         isApprovePage: false
     };
-    it("should render from review page", () => {
+    it("should render from review page for PLANNED_TO_EXECUTING BLIS", () => {
         useGetCanFundingSummaryQuery
             .mockReturnValueOnce({ data: canFundingCardData })
             .mockReturnValueOnce({ data: canFundingCardData2 });
@@ -29,6 +26,68 @@ describe("AgreementCANReview", () => {
                 <AgreementCANReviewAccordion {...initialProps} />
             </Provider>
         );
+
+        const headingCard1 = screen.getByRole("heading", { name: "G99PHS9 (1 Year) CAN Total Budget" });
+        const headingCard2 = screen.getByRole("heading", { name: "G99XXX8 (1 Year) CAN Total Budget" });
+        const totalSpendingCard1 = screen.getByText(/10,403,500/i);
+        const remainingBudgetCard1 = screen.getByText(/13,596,500/i);
+        const totalSpendingCard2 = screen.getByText(/602,000/i);
+        const remainingBudgetCard2 = screen.getByText(/1,678,000/i);
+
+        expect(headingCard1).toBeInTheDocument();
+        expect(headingCard2).toBeInTheDocument();
+        expect(totalSpendingCard1).toBeInTheDocument();
+        expect(remainingBudgetCard1).toBeInTheDocument();
+        expect(totalSpendingCard2).toBeInTheDocument();
+        expect(remainingBudgetCard2).toBeInTheDocument();
+    });
+    it("should render from review page for DRAFT_TO_PLANNED BLIS", async () => {
+        const user = userEvent.setup();
+        const mockSetAfterApproval = vi.fn(); // Create a mock function
+        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    {...initialProps}
+                    action="DRAFT_TO_PLANNED"
+                    selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
+                    afterApproval={false}
+                    setAfterApproval={mockSetAfterApproval}
+                />
+            </Provider>
+        );
+
+        const headingCard = screen.getByRole("heading", { name: "G994426 (1 Year) CAN Total Budget" });
+        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
+        const totalSpendingCardBeforeApproval = screen.getByText("$ 3,000,000");
+        const remainingBudgetCardBeforeApproval = screen.getByText("$ 37,000,000");
+
+        expect(headingCard).toBeInTheDocument();
+        expect(toggle).toBeInTheDocument();
+        expect(totalSpendingCardBeforeApproval).toBeInTheDocument();
+        expect(remainingBudgetCardBeforeApproval).toBeInTheDocument();
+
+        await user.click(toggle);
+        expect(mockSetAfterApproval).toHaveBeenCalled();
+        useGetCanFundingSummaryQuery.mockReturnValueOnce({ data: canFundingCard_G994426 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    {...initialProps}
+                    action="DRAFT_TO_PLANNED"
+                    selectedBudgetLines={selectedBudgetLinesDRAFT_TO_PLANNED}
+                    afterApproval={true}
+                />
+            </Provider>
+        );
+
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
+        const totalSpendingCardAfterApproval1 = screen.getByText("$ 5,000,000");
+        const remainingBudgetCardAfterApproval1 = screen.getByText("$ 35,000,000");
+
+        expect(toggleAfterApproval).toBeInTheDocument();
+        expect(totalSpendingCardAfterApproval1).toBeInTheDocument();
+        expect(remainingBudgetCardAfterApproval1).toBeInTheDocument();
     });
     it("should render from approve page with budget change to amount", async () => {
         const user = userEvent.setup();
@@ -67,6 +126,9 @@ describe("AgreementCANReview", () => {
 
         await user.click(toggle);
         expect(mockSetAfterApproval).toHaveBeenCalled();
+        useGetCanFundingSummaryQuery
+            .mockReturnValueOnce({ data: canFundingCardData })
+            .mockReturnValueOnce({ data: canFundingCardData2 });
         render(
             <Provider store={store}>
                 <AgreementCANReviewAccordion
@@ -108,7 +170,6 @@ describe("AgreementCANReview", () => {
                 />
             </Provider>
         );
-        screen.debug();
     });
     it.todo("should render from approve page with budget change to amount and CAN");
     it.todo("should render from approve page with status change to PLANNED");
@@ -1045,6 +1106,53 @@ const canFundingCardData2 = {
     total_funding: "2280000.00"
 };
 
+const canFundingCard_G994426 = {
+    available_funding: "37000000.00",
+    can: {
+        appropriation_date: "2023-10-01T00:00:00.000000Z",
+        appropriation_term: 1,
+        arrangement_type: "OPRE_APPROPRIATION",
+        authorizer: 26,
+        authorizer_id: 26,
+        budget_line_items: [15000, 15001, 15012, 15022, 15023],
+        can_type: null,
+        created_by: null,
+        created_by_user: null,
+        created_on: "2024-08-02T13:45:56.155989Z",
+        description: "Head Start Research",
+        display_name: "G994426",
+        division_id: 4,
+        expiration_date: "2024-09-01T00:00:00.000000Z",
+        external_authorizer_id: null,
+        funding_sources: [26],
+        id: 504,
+        managing_portfolio: 2,
+        managing_portfolio_id: 2,
+        nickname: "HS",
+        number: "G994426",
+        projects: [],
+        shared_portfolios: [],
+        updated_by: null,
+        updated_by_user: null,
+        updated_on: "2024-08-02T13:45:56.155989Z",
+        versions: [
+            {
+                id: 504,
+                transaction_id: 212
+            }
+        ]
+    },
+    carry_forward_funding: 0,
+    carry_forward_label: "Carry-Forward",
+    expected_funding: "16000000.00",
+    expiration_date: "09/01/2024",
+    in_execution_funding: "2000000.00",
+    obligated_funding: 0,
+    planned_funding: "1000000.00",
+    received_funding: "24000000.00",
+    total_funding: "40000000.00"
+};
+
 const selectedBudgetLinesToAmount = [
     {
         agreement_id: 9,
@@ -1316,5 +1424,118 @@ const selectedBudgetLinesToCans = [
             }
         ],
         updated_on: "2024-07-30T22:33:16.102621"
+    }
+];
+
+const selectedBudgetLinesDRAFT_TO_PLANNED = [
+    {
+        agreement_id: 1,
+        amount: 1000000,
+        can: {
+            appropriation_date: "2023-10-01T00:00:00.000000Z",
+            appropriation_term: 1,
+            authorizer_id: 26,
+            description: "Head Start Research",
+            display_name: "G994426",
+            expiration_date: "2024-09-01T00:00:00.000000Z",
+            id: 504,
+            managing_portfolio_id: 2,
+            nickname: "HS",
+            number: "G994426"
+        },
+        can_id: 504,
+        change_requests_in_review: null,
+        comments: "",
+        created_by: null,
+        created_on: "2024-08-02T13:46:05.462783",
+        date_needed: "2043-06-13",
+        fiscal_year: 2043,
+        id: 15000,
+        in_review: false,
+        line_description: "LI 1",
+        portfolio_id: 2,
+        proc_shop_fee_percentage: 0,
+        services_component_id: 1,
+        status: "DRAFT",
+        team_members: [
+            {
+                email: "chris.fortunato@example.com",
+                full_name: "Chris Fortunato",
+                id: 500
+            },
+            {
+                email: "Amelia.Popham@example.com",
+                full_name: "Amelia Popham",
+                id: 503
+            },
+            {
+                email: "admin.demo@email.com",
+                full_name: "Admin Demo",
+                id: 520
+            },
+            {
+                email: "dave.director@email.com",
+                full_name: "Dave Director",
+                id: 522
+            }
+        ],
+        updated_on: "2024-08-02T13:46:05.462783",
+        selected: true,
+        actionable: true
+    },
+    {
+        agreement_id: 1,
+        amount: 1000000,
+        can: {
+            appropriation_date: "2023-10-01T00:00:00.000000Z",
+            appropriation_term: 1,
+            authorizer_id: 26,
+            description: "Head Start Research",
+            display_name: "G994426",
+            expiration_date: "2024-09-01T00:00:00.000000Z",
+            id: 504,
+            managing_portfolio_id: 2,
+            nickname: "HS",
+            number: "G994426"
+        },
+        can_id: 504,
+        change_requests_in_review: null,
+        comments: "",
+        created_by: null,
+        created_on: "2024-08-02T13:46:05.478582",
+        date_needed: "2043-06-13",
+        fiscal_year: 2043,
+        id: 15001,
+        in_review: false,
+        line_description: "LI 2",
+        portfolio_id: 2,
+        proc_shop_fee_percentage: 0,
+        services_component_id: null,
+        status: "DRAFT",
+        team_members: [
+            {
+                email: "chris.fortunato@example.com",
+                full_name: "Chris Fortunato",
+                id: 500
+            },
+            {
+                email: "Amelia.Popham@example.com",
+                full_name: "Amelia Popham",
+                id: 503
+            },
+            {
+                email: "admin.demo@email.com",
+                full_name: "Admin Demo",
+                id: 520
+            },
+            {
+                email: "dave.director@email.com",
+                full_name: "Dave Director",
+                id: 522
+            }
+        ],
+        updated_on: "2024-08-02T13:46:05.478582",
+        selected: true,
+        actionable: true
     }
 ];
