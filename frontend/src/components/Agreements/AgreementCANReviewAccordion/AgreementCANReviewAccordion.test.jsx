@@ -217,7 +217,70 @@ describe("AgreementCANReview", () => {
         expect(totalSpendingCardAfterApproval2).toBeInTheDocument();
         expect(remainingBudgetCardAfterApproval2).toBeInTheDocument();
     });
-    it.todo("should render from approve page with budget change to amount and CAN");
+    it("should render from approve page with budget change to amount and CAN", async () => {
+        const mockSetAfterApproval = vi.fn();
+        const user = userEvent.setup();
+        useGetCanFundingSummaryQuery
+            .mockReturnValueOnce({ data: canFundingCardData })
+            .mockReturnValueOnce({ data: canFundingCardData2 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    action=""
+                    afterApproval={false}
+                    instructions="budget change to CAN"
+                    isApprovePage={true}
+                    selectedBudgetLines={selectedBudgetLines_CAN_and_AMT}
+                    setAfterApproval={mockSetAfterApproval}
+                />
+            </Provider>
+        );
+
+        const toggle = screen.getByRole("button", { name: "Off (Drafts excluded) After Approval" });
+        const headingCard1 = screen.getByRole("heading", { name: "G99PHS9 (1 Year) CAN Total Budget" });
+        const headingCard2 = screen.getByRole("heading", { name: "G99XXX8 (1 Year) CAN Total Budget" });
+        const totalSpendingCard1 = screen.getByText(/9,700,000/i);
+        const remainingBudgetCard1 = screen.getByText(/14,300,000/i);
+        const totalSpendingCard2 = screen.getByText(/300,500/i);
+        const remainingBudgetCard2 = screen.getByText(/1,979,500/i);
+
+        expect(toggle).toBeInTheDocument();
+        expect(headingCard1).toBeInTheDocument();
+        expect(headingCard2).toBeInTheDocument();
+        expect(totalSpendingCard1).toBeInTheDocument();
+        expect(remainingBudgetCard1).toBeInTheDocument();
+        expect(totalSpendingCard2).toBeInTheDocument();
+        expect(remainingBudgetCard2).toBeInTheDocument();
+
+        await user.click(toggle);
+        expect(mockSetAfterApproval).toHaveBeenCalled();
+        useGetCanFundingSummaryQuery
+            .mockReturnValueOnce({ data: canFundingCardData })
+            .mockReturnValueOnce({ data: canFundingCardData2 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    action=""
+                    afterApproval={true}
+                    instructions="budget change to CAN"
+                    isApprovePage={true}
+                    selectedBudgetLines={selectedBudgetLines_CAN_and_AMT}
+                    setAfterApproval={mockSetAfterApproval}
+                />
+            </Provider>
+        );
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
+        const totalSpendingCardAfterApproval1 = screen.getByText(/8,996,500/i);
+        const remainingBudgetCardAfterApproval1 = screen.getByText(/15,003,500/i);
+        const totalSpendingCardAfterApproval2 = screen.getByText(/1,104,500/i);
+        const remainingBudgetCardAfterApproval2 = screen.getByText(/1,175,500/i);
+
+        expect(toggleAfterApproval).toBeInTheDocument();
+        expect(totalSpendingCardAfterApproval1).toBeInTheDocument();
+        expect(remainingBudgetCardAfterApproval1).toBeInTheDocument();
+        expect(totalSpendingCardAfterApproval2).toBeInTheDocument();
+        expect(remainingBudgetCardAfterApproval2).toBeInTheDocument();
+    });
     it.todo("should render from approve page with status change to PLANNED");
     it.todo("should render from approve page with status change to EXECUTING");
 });
@@ -1583,5 +1646,157 @@ const selectedBudgetLinesDRAFT_TO_PLANNED = [
         updated_on: "2024-08-02T13:46:05.478582",
         selected: true,
         actionable: true
+    }
+];
+
+const selectedBudgetLines_CAN_and_AMT = [
+    {
+        agreement_id: 9,
+        amount: 300000,
+        can: {
+            appropriation_date: "2022-10-01T00:00:00.000000Z",
+            appropriation_term: 1,
+            authorizer_id: 26,
+            description: "Example CAN",
+            display_name: "G99XXX8",
+            expiration_date: "2023-09-01T00:00:00.000000Z",
+            id: 512,
+            managing_portfolio_id: 3,
+            nickname: "",
+            number: "G99XXX8"
+        },
+        can_id: 512,
+        change_requests_in_review: null,
+        comments: "",
+        created_by: null,
+        created_on: "2024-08-02T13:46:05.685553",
+        date_needed: "2044-06-13",
+        fiscal_year: 2044,
+        id: 15021,
+        in_review: false,
+        line_description: "SC3",
+        portfolio_id: 3,
+        proc_shop_fee_percentage: 0.005,
+        services_component_id: 6,
+        status: "PLANNED",
+        team_members: [
+            {
+                email: "Niki.Denmark@example.com",
+                full_name: "Niki Denmark",
+                id: 511
+            },
+            {
+                email: "admin.demo@email.com",
+                full_name: "Admin Demo",
+                id: 520
+            }
+        ],
+        updated_on: "2024-08-02T13:46:05.685553"
+    },
+    {
+        agreement_id: 9,
+        amount: 700000,
+        can: {
+            appropriation_date: "2023-10-01T00:00:00.000000Z",
+            appropriation_term: 1,
+            authorizer_id: 26,
+            description: "Social Science Research and Development",
+            display_name: "G99PHS9",
+            expiration_date: "2024-09-01T00:00:00.000000Z",
+            id: 502,
+            managing_portfolio_id: 8,
+            nickname: "SSRD",
+            number: "G99PHS9"
+        },
+        can_id: 502,
+        change_requests_in_review: [
+            {
+                agreement_id: 9,
+                budget_line_item_id: 15020,
+                change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+                created_by: 520,
+                created_by_user: {
+                    full_name: "Admin Demo",
+                    id: 520
+                },
+                created_on: "2024-08-02T14:49:14.036675",
+                display_name: "BudgetLineItemChangeRequest#2",
+                has_budget_change: true,
+                has_status_change: false,
+                id: 2,
+                managing_division_id: 6,
+                requested_change_data: {
+                    can_id: 512
+                },
+                requested_change_diff: {
+                    can_id: {
+                        new: 512,
+                        old: 502
+                    }
+                },
+                requestor_notes: null,
+                reviewed_on: null,
+                reviewer_notes: null,
+                status: "IN_REVIEW",
+                updated_by: 520,
+                updated_on: "2024-08-02T14:49:14.036675"
+            },
+            {
+                agreement_id: 9,
+                budget_line_item_id: 15020,
+                change_request_type: "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+                created_by: 520,
+                created_by_user: {
+                    full_name: "Admin Demo",
+                    id: 520
+                },
+                created_on: "2024-08-02T14:49:14.076041",
+                display_name: "BudgetLineItemChangeRequest#3",
+                has_budget_change: true,
+                has_status_change: false,
+                id: 3,
+                managing_division_id: 6,
+                requested_change_data: {
+                    amount: 800000
+                },
+                requested_change_diff: {
+                    amount: {
+                        new: 800000,
+                        old: 700000
+                    }
+                },
+                requestor_notes: null,
+                reviewed_on: null,
+                reviewer_notes: null,
+                status: "IN_REVIEW",
+                updated_by: 520,
+                updated_on: "2024-08-02T14:49:14.076041"
+            }
+        ],
+        comments: "",
+        created_by: null,
+        created_on: "2024-08-02T13:46:05.675655",
+        date_needed: "2043-06-13",
+        fiscal_year: 2043,
+        id: 15020,
+        in_review: true,
+        line_description: "SC2",
+        portfolio_id: 8,
+        proc_shop_fee_percentage: 0.005,
+        services_component_id: 6,
+        status: "PLANNED",
+        team_members: [
+            {
+                email: "Niki.Denmark@example.com",
+                full_name: "Niki Denmark",
+                id: 511
+            },
+            {
+                email: "admin.demo@email.com",
+                full_name: "Admin Demo",
+                id: 520
+            }
+        ],
+        updated_on: "2024-08-02T14:49:14.006540"
     }
 ];
