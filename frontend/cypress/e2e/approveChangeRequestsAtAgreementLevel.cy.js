@@ -473,7 +473,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     })
                     .then(() => {
                         return checkHistoryItem(
-                            /Budget Change to Need By Date/,
+                            /Budget Change to Obligate Date/,
                             `Admin Demo approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Admin Demo.`
                         );
                     })
