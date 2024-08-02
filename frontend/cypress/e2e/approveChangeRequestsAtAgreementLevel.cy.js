@@ -422,7 +422,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains("G99IA14");
                 cy.get("[data-cy='review-card']").contains("G99PHS9");
                 // next card
-                cy.get("[data-cy='review-card']").contains(/date needed/i);
+                cy.get("[data-cy='review-card']").contains(/obligate by date/i);
                 cy.get("[data-cy='review-card']").contains("1/1/2025");
                 cy.get("[data-cy='review-card']").contains("9/15/2025");
                 //class accordion__content contains a paragraph that contains the text planned status change
@@ -448,7 +448,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
                 cy.get(".usa-alert__body")
                     .should("include.text", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`)
-                    .and("include.text", `BL ${bliId} Date Needed: 1/1/2025 to 9/15/2025`)
+                    .and("include.text", `BL ${bliId} Obligate By Date: 1/1/2025 to 9/15/2025`)
                     .and("include.text", `BL ${bliId} CAN: G99IA14 to G99PHS9`);
                 cy.get("[data-cy='close-alert']").click();
                 // nav element should not contain the text 1
