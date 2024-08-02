@@ -334,7 +334,71 @@ describe("AgreementCANReview", () => {
         expect(totalSpendingCardAfterApproval1).toBeInTheDocument();
         expect(remainingBudgetCardAfterApproval1).toBeInTheDocument();
     });
-    it.todo("should render from approve page with status change to EXECUTING");
+    it("should render from approve page with status change to EXECUTING", async () => {
+        const user = userEvent.setup();
+        const mockSetAfterApproval = vi.fn(); // Create a mock function
+        useGetCanFundingSummaryQuery
+            .mockReturnValueOnce({ data: canFundingCardData })
+            .mockReturnValueOnce({ data: canFundingCardData2 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    {...initialProps}
+                    action="EXECUTING"
+                    selectedBudgetLines={selectedBudgetLines}
+                    afterApproval={false}
+                    setAfterApproval={mockSetAfterApproval}
+                    isApprovePage={true}
+                />
+            </Provider>
+        );
+
+        const headingCard1 = screen.getByRole("heading", { name: "G99PHS9 (1 Year) CAN Total Budget" });
+        const headingCard2 = screen.getByRole("heading", { name: "G99XXX8 (1 Year) CAN Total Budget" });
+        const totalSpendingCard1 = screen.getByText(/9,700,000/i);
+        const remainingBudgetCard1 = screen.getByText(/14,300,000/i);
+        const totalSpendingCard2 = screen.getByText(/300,500/i);
+        const remainingBudgetCard2 = screen.getByText(/1,979,500/i);
+        const toggle = screen.getByRole("button", {
+            name: "Off (Drafts excluded) After Approval"
+        });
+
+        expect(headingCard1).toBeInTheDocument();
+        expect(headingCard2).toBeInTheDocument();
+        expect(totalSpendingCard1).toBeInTheDocument();
+        expect(remainingBudgetCard1).toBeInTheDocument();
+        expect(totalSpendingCard2).toBeInTheDocument();
+        expect(remainingBudgetCard2).toBeInTheDocument();
+
+        await user.click(toggle);
+        expect(mockSetAfterApproval).toHaveBeenCalled();
+        useGetCanFundingSummaryQuery
+            .mockReturnValueOnce({ data: canFundingCardData })
+            .mockReturnValueOnce({ data: canFundingCardData2 });
+        render(
+            <Provider store={store}>
+                <AgreementCANReviewAccordion
+                    {...initialProps}
+                    action="EXECUTING"
+                    selectedBudgetLines={selectedBudgetLines}
+                    afterApproval={true}
+                    setAfterApproval={mockSetAfterApproval}
+                    isApprovePage={true}
+                />
+            </Provider>
+        );
+
+        const toggleAfterApproval = screen.getByRole("button", { name: "On (Drafts included) After Approval" });
+
+        //NOTE: The total spending and remaining budget values are the same as the initial render
+        expect(toggleAfterApproval).toBeInTheDocument();
+        expect(headingCard1).toBeInTheDocument();
+        expect(headingCard2).toBeInTheDocument();
+        expect(totalSpendingCard1).toBeInTheDocument();
+        expect(remainingBudgetCard1).toBeInTheDocument();
+        expect(totalSpendingCard2).toBeInTheDocument();
+        expect(remainingBudgetCard2).toBeInTheDocument();
+    });
 });
 
 const selectedBudgetLines = [
