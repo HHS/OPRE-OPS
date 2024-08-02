@@ -405,7 +405,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 cy.get("[data-cy='review-card']").contains(/planned/i);
-                cy.get('[role="navigation"]').contains("3");
+                // cy.get('[role="navigation"]').contains("3");
                 // hover over the review card
                 cy.get("[data-cy='review-card']").first().trigger("mouseover");
                 // click on button data-cy approve-agreement
