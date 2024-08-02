@@ -435,8 +435,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".table-item-diff").contains("9/15/2025");
                 cy.get('[data-cy="can-funding-summary-card-501"]').should("exist");
                 // and contain $ 7,995,000 and $ 2,205,000
-                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 7,000,000");
-                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 3,200,000");
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 5,995,000");
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 4,205,000");
                 cy.get('[data-cy="can-funding-summary-card-502"]').should("exist");
                 // and contain $ 11,710,000 and $ 12,290,000
                 cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 9,700,000");
@@ -445,8 +445,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".table-item-diff").contains("1,000,000.00");
                 cy.get(".table-item-diff").contains("G99IA14");
                 cy.get(".table-item-diff").contains("1/1/2025");
-                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 5,995,000");
-                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 4,205,000");
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 7,000,000");
+                cy.get('[data-cy="can-funding-summary-card-501"]').contains("$ 3,200,000");
                 cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 11,710,000");
                 cy.get('[data-cy="can-funding-summary-card-502"]').contains("$ 12,290,000");
                 // TODO: add more tests
