@@ -10,6 +10,10 @@ import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
+import { useGetNotificationsByUserIdAndAgreementIdQuery } from "../../../api/opsAPI";
+import { getAccessToken } from "../../../components/Auth/auth";
+import { jwtDecode } from "jwt-decode";
+
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -33,9 +37,19 @@ const Agreement = () => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
-
     let doesAgreementHaveBlIsInReview = false;
+    const access_token = getAccessToken();
+    let oidc_userId = "";
+    let auth_header = "";
+    if (access_token) {
+        auth_header = `Bearer ${access_token}`;
+        const decodedJwt = jwtDecode(access_token);
+        oidc_userId = decodedJwt["sub"];
+    }
 
+    const data = useGetNotificationsByUserIdAndAgreementIdQuery({ user_oidc_id: oidc_userId, agreement_id: agreementId, auth_header });
+
+    console.log(data);
     if (isSuccess) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     }
