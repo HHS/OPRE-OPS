@@ -19,7 +19,7 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
 
     return (
         <Accordion
-            heading="Agreement Details"
+            heading="Review Agreement Details"
             level={2}
         >
             <p>{instructions}</p>
