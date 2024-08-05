@@ -4,6 +4,7 @@ import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
+import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
@@ -47,9 +48,13 @@ const Agreement = () => {
         oidc_userId = decodedJwt["sub"];
     }
 
-    const data = useGetNotificationsByUserIdAndAgreementIdQuery({ user_oidc_id: oidc_userId, agreement_id: agreementId, auth_header });
+    let agreement_response_list = []
+    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({ user_oidc_id: oidc_userId, agreement_id: agreementId, auth_header });
+    if (query_response){
+        agreement_response_list = query_response.data
+    }
 
-    console.log(data);
+    console.log(agreement_response_list);
     if (isSuccess) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     }
@@ -94,6 +99,13 @@ const Agreement = () => {
                 </>
             )}
 
+            {agreement_response_list && agreement_response_list.length > 0 && (
+                <AgreementChangesResponseAlert
+                    changeRequests={agreement_response_list}
+                    isAlertVisible={isAlertVisible}
+                    setIsAlertVisible={setIsAlertVisible}
+                />
+            )}
             <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs
