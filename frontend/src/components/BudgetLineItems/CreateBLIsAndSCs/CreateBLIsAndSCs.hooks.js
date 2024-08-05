@@ -1,3 +1,4 @@
+import cryptoRandomString from "crypto-random-string";
 import PropTypes from "prop-types";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -331,7 +332,7 @@ const useCreateBLIsAndSCs = (
     const handleAddBLI = (e) => {
         e.preventDefault();
         const newBudgetLine = {
-            id: crypto.randomUUID(),
+            id: cryptoRandomString({ length: 10 }),
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
@@ -518,7 +519,7 @@ const useCreateBLIsAndSCs = (
             proc_shop_fee_percentage
         } = budgetLine;
         const payload = {
-            id: crypto.randomUUID(),
+            id: cryptoRandomString({ length: 10 }),
             services_component_id,
             comments,
             can_id,
