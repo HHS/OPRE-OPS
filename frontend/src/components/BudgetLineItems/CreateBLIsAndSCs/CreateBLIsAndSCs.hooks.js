@@ -169,7 +169,7 @@ const useCreateBLIsAndSCs = (
 
             resetForm();
             setIsEditMode(false);
-            showSuccessMessage();
+            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
             console.error("Error saving budget lines:", error);
             setAlert({
@@ -298,9 +298,22 @@ const useCreateBLIsAndSCs = (
         }
     };
 
-    const showSuccessMessage = () => {
+    /**
+     * Show the success message
+     * @param {boolean} isThereAnyBLIsFinancialSnapshotChanged - Flag to indicate if there are financial snapshot changes
+     * @returns {void}
+     */
+    const showSuccessMessage = (isThereAnyBLIsFinancialSnapshotChanged) => {
         if (continueOverRide) {
             continueOverRide();
+        } else if (isThereAnyBLIsFinancialSnapshotChanged) {
+            setAlert({
+                type: "success",
+                heading: "Changes Sent to Approval",
+                message:
+                    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                redirectUrl: `/agreements/${selectedAgreement?.id}`
+            });
         } else {
             setAlert({
                 type: "success",

@@ -435,6 +435,7 @@ describe("AgreementDetails", () => {
                         projectOfficer={projectOfficer}
                         isEditMode={false}
                         setIsEditMode={mockFn}
+                        setHasAgreementChanged={mockFn}
                     />
                 </Router>
             </Provider>
