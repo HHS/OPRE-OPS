@@ -23,6 +23,8 @@ const Agreement = () => {
     const [projectOfficer, setProjectOfficer] = useState({});
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
+    const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
+    const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
@@ -102,8 +104,10 @@ const Agreement = () => {
             {agreement_response_list && agreement_response_list.length > 0 && (
                 <AgreementChangesResponseAlert
                     changeRequests={agreement_response_list}
-                    isAlertVisible={isAlertVisible}
-                    setIsAlertVisible={setIsAlertVisible}
+                    isApproveAlertVisible={isApproveAlertVisible}
+                    isDeclineAlertVisible={isDeclinedAlertVisible}
+                    setIsApproveAlertVisible={setIsApproveAlertVisible}
+                    setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
                 />
             )}
             <div>

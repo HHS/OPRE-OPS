@@ -8,11 +8,13 @@ import { renderField } from "../../../helpers/utils";
  * @component
  * @param {Object} props - The component props.
  * @param {Object[]} props.changeRequests - The change requests.
- * @param {boolean} props.isAlertVisible - Whether the alert is visible.
- * @param {Function} props.setIsAlertVisible - The function to set the alert visibility.
+ * @param {boolean} props.isApproveAlertVisible - Whether the approval alert is visible.
+ * @param {boolean} props.isDeclineAlertVisible - Whether the approval alert is visible
+ * @param {Function} props.setIsApproveAlertVisible - The function to set the alert visibility.
+ * @param {Function} props.setIsDeclineAlertVisible - The function to set the Decline alert visibility.
  * @returns {JSX.Element} - The rendered component.
  */
-function AgreementChangesResponseAlert({ changeRequests, isAlertVisible, setIsAlertVisible }) {
+function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, isDeclineAlertVisible, setIsApproveAlertVisible, setIsDeclineAlertVisible }) {
     console.log(changeRequests);
     const approvedRequests = changeRequests.filter((changeRequest) => {
         if(changeRequest.change_request.status === "APPROVED") {
@@ -35,15 +37,15 @@ function AgreementChangesResponseAlert({ changeRequests, isAlertVisible, setIsAl
                 heading="Changes Approved"
                 message="Your changes have been successfully approved by your Division Director."
                 isClosable={true}
-                setIsAlertVisible={setIsAlertVisible}
-                isAlertVisible={isAlertVisible}
+                setIsAlertVisible={setIsApproveAlertVisible}
+                isAlertVisible={isApproveAlertVisible}
             >
                 {changeRequests && changeRequests.length > 0 && (
                     <>
                         <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Approved:</h2>
                         <ul className="margin-0 font-sans-sm">
                             {approvedRequests?.map((changeRequest) => (
-                                <li key={changeRequest.id}>{changeRequest.message}</li>
+                                <li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>
                             ))}
                         </ul>
                     </>
@@ -56,8 +58,8 @@ function AgreementChangesResponseAlert({ changeRequests, isAlertVisible, setIsAl
                 heading="Changes Declined"
                 message="Your changes have been declined by your Division Director."
                 isClosable={true}
-                setIsAlertVisible={setIsAlertVisible}
-                isAlertVisible={isAlertVisible}
+                setIsAlertVisible={setIsDeclineAlertVisible}
+                isAlertVisible={isDeclineAlertVisible}
             >
                 {changeRequests && changeRequests.length > 0 && (
                     <>
@@ -119,7 +121,9 @@ function getChangeRequestNotes(changeRequests) {
 
 AgreementChangesResponseAlert.propTypes = {
     changeRequests: PropTypes.arrayOf(PropTypes.object),
-    isAlertVisible: PropTypes.bool.isRequired,
-    setIsAlertVisible: PropTypes.func.isRequired
+    isApproveAlertVisible: PropTypes.bool.isRequired,
+    isDeclineAlertVisible: PropTypes.bool.isRequired,
+    setIsApproveAlertVisible: PropTypes.func.isRequired,
+    setIsDeclineAlertVisible: PropTypes.func.isRequired,
 };
 export default AgreementChangesResponseAlert;

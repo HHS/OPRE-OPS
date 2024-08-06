@@ -71,8 +71,7 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
             notification = ChangeRequestNotification(
                 change_request_id=change_request.id,
                 title=f"Budget Lines Approved from {old_status} to {new_status} Status",
-                message=f"The budget lines you sent to your Division Director were approved from {old_status} to {new_status} status. "
-                "The amounts have been subtracted from the FY budget.",
+                message=f"The status change you sent to your Division Director were approved from {old_status} to {new_status} status. ",
                 is_read=False,
                 recipient_id=change_request.created_by,
                 expires=get_expires_date(),
@@ -94,8 +93,8 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
         # just a generic message for now
         notification = ChangeRequestNotification(
             change_request_id=change_request.id,
-            title=f"Budget Line Change Request {change_request.status}",
-            message=f"Your budget line change request has been {change_request.status}",
+            title=f"Budget Change Request {change_request.status}",
+            message=f"Your budget change request has been {change_request.status}",
             is_read=False,
             recipient_id=change_request.created_by,
             expires=get_expires_date(),
