@@ -1,10 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { CheckAuth } from "../../Auth/auth";
+import { useSelector } from "react-redux";
 
 export const Menu = () => {
     const isAuthorized = CheckAuth();
+    const activeUser = useSelector((state) => state.auth.activeUser);
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
+    const isUserAdmin = activeUser?.roles.includes("USER_ADMIN");
+
     return (
         <div id="nav-menu">
             <button
@@ -35,9 +40,11 @@ export const Menu = () => {
                 <li className="usa-nav__primary-item">
                     <Link to="/budget-lines">Budget Lines</Link>
                 </li>
-                <li className="usa-nav__primary-item">
-                    <Link to="/user-admin">User Admin</Link>
-                </li>
+                {isUserAdmin && (
+                    <li className="usa-nav__primary-item">
+                        <Link to="/user-admin">User Admin</Link>
+                    </li>
+                )}
                 <li className="usa-nav__primary-item margin-left-auto">
                     <button
                         type="button"
