@@ -3,7 +3,6 @@ import UserInfo from "./UserInfo";
 import { renderWithProviders } from "../../../test-utils.js";
 import { server } from "../../../tests/mocks.js";
 
-// TODO: use: https://reactjs.org/docs/test-utils.html#act to work properly
 describe("UserInfo", () => {
     beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
     afterEach(() => server.resetHandlers());
@@ -34,7 +33,6 @@ describe("UserInfo", () => {
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
         expect(await screen.findByText("ACTIVE")).toBeInTheDocument(); // Status
         expect(await screen.findByText("admin")).toBeInTheDocument(); // Roles
-        // screen.debug();
     });
 
     test("renders correctly (editable)", async () => {
@@ -62,7 +60,28 @@ describe("UserInfo", () => {
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
         expect(await screen.findByText("ACTIVE")).toBeInTheDocument(); // Status
         expect(await screen.findByText("admin")).toBeInTheDocument(); // Roles
+    });
 
+    test("renders correctly - division", async () => {
+        const user = {
+            full_name: "Test User",
+            email: "test.user@exampl.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: ["admin"]
+        };
+        const { container } = renderWithProviders(
+            <App
+                user={user}
+                isEditable={true}
+            />
+        );
+
+        await waitFor(() => {
+            expect(container).toBeInTheDocument();
+        });
+
+        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
         expect(screen.getByTestId("division-combobox")).toBeInTheDocument();
 
         // find the input element within the div with testid division-combobox
@@ -70,10 +89,78 @@ describe("UserInfo", () => {
         // eslint-disable-next-line testing-library/no-node-access
         const divisionInput = divisionComboBox.querySelector("input");
         fireEvent.keyDown(divisionInput, { key: "ArrowDown", code: 40 });
+        expect(await screen.findAllByText("Child Care")).toHaveLength(2);
         expect(await screen.findByText("Division of Economic Independence")).toBeInTheDocument();
         expect(await screen.findByText("Office of the Director")).toBeInTheDocument();
+        expect(await screen.findByText("Division of Child and Family Development")).toBeInTheDocument();
+        expect(await screen.findByText("Division of Family Strengthening")).toBeInTheDocument();
+        expect(await screen.findByText("Division of Data and Improvement")).toBeInTheDocument();
+        expect(await screen.findByText("Non-OPRE Division")).toBeInTheDocument();
+    });
 
-        screen.debug();
+    test("renders correctly - roles", async () => {
+        const user = {
+            full_name: "Test User",
+            email: "test.user@exampl.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: ["admin"]
+        };
+        const { container } = renderWithProviders(
+            <App
+                user={user}
+                isEditable={true}
+            />
+        );
+
+        await waitFor(() => {
+            expect(container).toBeInTheDocument();
+        });
+
+        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+        expect(screen.getByTestId("roles-combobox")).toBeInTheDocument();
+
+        const rolesComboBox = screen.getByTestId("roles-combobox");
+        // eslint-disable-next-line testing-library/no-node-access
+        const rolesInput = rolesComboBox.querySelector("input");
+        fireEvent.keyDown(rolesInput, { key: "ArrowDown", code: 40 });
+        expect(await screen.findByText("admin")).toBeInTheDocument();
+        expect(await screen.findByText("user")).toBeInTheDocument();
+        expect(await screen.findByText("unassigned")).toBeInTheDocument();
+        expect(await screen.findByText("division-director")).toBeInTheDocument();
+        expect(await screen.findByText("USER_ADMIN")).toBeInTheDocument();
+        expect(await screen.findByText("BUDGET_TEAM")).toBeInTheDocument();
+    });
+
+    test("renders correctly - status", async () => {
+        const user = {
+            full_name: "Test User",
+            email: "test.user@exampl.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: ["admin"]
+        };
+        const { container } = renderWithProviders(
+            <App
+                user={user}
+                isEditable={true}
+            />
+        );
+
+        await waitFor(() => {
+            expect(container).toBeInTheDocument();
+        });
+
+        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+        expect(screen.getByTestId("status-combobox")).toBeInTheDocument();
+
+        const statusComboBox = screen.getByTestId("status-combobox");
+        // eslint-disable-next-line testing-library/no-node-access
+        const statusInput = statusComboBox.querySelector("input");
+        fireEvent.keyDown(statusInput, { key: "ArrowDown", code: 40 });
+        expect(await screen.findAllByText("ACTIVE")).toHaveLength(2);
+        expect(await screen.findByText("INACTIVE")).toBeInTheDocument();
+        expect(await screen.findByText("LOCKED")).toBeInTheDocument();
     });
 });
 

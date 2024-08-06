@@ -27,7 +27,7 @@ const UserInfo = ({ user, isEditable }) => {
             setSelectedStatus([]);
             setSelectedRoles([]);
         };
-    }, [divisions, roles]);
+    }, [divisions, roles, user]);
 
     if (isLoadingDivisions || isLoadingRoles) {
         return <div>Loading...</div>;
@@ -78,33 +78,36 @@ const UserInfo = ({ user, isEditable }) => {
                             <div className="grid-col flex-3">
                                 {!isEditable && <span>{selectedRoles?.map((role) => role.name).join(", ")}</span>}
                                 {isEditable && (
-                                    <ComboBox
-                                        namespace="roles-combobox"
-                                        data={roles}
-                                        selectedData={selectedRoles}
-                                        setSelectedData={setSelectedRoles}
-                                        defaultString="-- Select Roles --"
-                                        optionText={(role) => role.name}
-                                        isMulti={true}
-                                    />
+                                    <div data-testid="roles-combobox">
+                                        <ComboBox
+                                            namespace="roles-combobox"
+                                            data={roles}
+                                            selectedData={selectedRoles}
+                                            setSelectedData={setSelectedRoles}
+                                            defaultString="-- Select Roles --"
+                                            optionText={(role) => role.name}
+                                            isMulti={true}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </div>
                         <div className={`grid-row ${styles.centeredItem}`}>
                             <div className="grid-col flex-3">Status:</div>
-                            {/*<span className={styles.column}>{user?.status}</span>*/}
                             <div className="grid-col flex-3">
                                 {!isEditable && <span>{selectedStatus?.name}</span>}
                                 {isEditable && (
-                                    <ComboBox
-                                        namespace="status-combobox"
-                                        data={statusData}
-                                        selectedData={selectedStatus}
-                                        setSelectedData={setSelectedStatus}
-                                        defaultString="-- Select Status --"
-                                        optionText={(status) => status.name}
-                                        isMulti={false}
-                                    />
+                                    <div data-testid="status-combobox">
+                                        <ComboBox
+                                            namespace="status-combobox"
+                                            data={statusData}
+                                            selectedData={selectedStatus}
+                                            setSelectedData={setSelectedStatus}
+                                            defaultString="-- Select Status --"
+                                            optionText={(status) => status.name}
+                                            isMulti={false}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </div>
