@@ -150,7 +150,7 @@ export const codesToDisplayText = {
         amount: "Amount",
         can: "CAN",
         comments: "Notes",
-        date_needed: "Need By Date",
+        date_needed: "Obligate Date",
         line_description: "Description",
         proc_shop_fee_percentage: "Shop Fee",
         status: "Status",
@@ -171,7 +171,7 @@ export const codesToDisplayText = {
     changeToTypes: {
         amount: "Amount",
         can_id: "CAN",
-        date_needed: "Date needed",
+        date_needed: "Obligate By Date",
         status: "Status"
     }
 };

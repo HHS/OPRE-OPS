@@ -40,7 +40,7 @@ export const DesiredAwardDate = ({
         >
             <fieldset className="usa-fieldset">
                 <legend className={`usa-legend margin-top-0 ${isThereDateGroupErrors ? "text-bold" : ""}`}>
-                    Need By Date
+                    Obligate By Date
                 </legend>
                 {isThereDateGroupErrors &&
                     // instead of mapping over the array of errors, we just want the first one
