@@ -2061,7 +2061,7 @@ components:
           $ref: "#/components/schemas/ProductServiceCode"
         procurement_shop:
           $ref: "#/components/schemas/ProcurementShop"
-        procurement_shop_id:
+        awarding_entity_id:
           type: integer
           example: 1
         notes:
@@ -2097,7 +2097,7 @@ components:
         project_officer_id:
           type: integer
           example: 1
-        procurement_tracker_workflow_id:
+        procurement_tracker_id:
           type: integer
           example: 1
         created_on:

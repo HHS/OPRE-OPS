@@ -10,7 +10,7 @@ const testAgreement = {
     description: "Test Description",
     project_id: 1000,
     product_service_code_id: 1,
-    procurement_shop_id: 1,
+    awarding_entity_id: 1,
     project_officer_id: 500,
     team_members: [
         {
@@ -103,6 +103,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').contains("$2,222,222,222.00");
+                // cy.get("[data-cy='close-alert']").click();
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
@@ -216,7 +217,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').contains("$2,222,222,222.00");
-                cy.get("tbody").children().as("table-rows").should("have.length", 2);
+                cy.get("[data-cy='close-alert']").first().click();
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");

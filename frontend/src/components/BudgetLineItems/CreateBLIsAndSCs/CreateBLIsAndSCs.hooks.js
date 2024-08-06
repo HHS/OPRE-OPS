@@ -1,3 +1,4 @@
+import cryptoRandomString from "crypto-random-string";
 import PropTypes from "prop-types";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -169,7 +170,7 @@ const useCreateBLIsAndSCs = (
 
             resetForm();
             setIsEditMode(false);
-            showSuccessMessage();
+            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
             console.error("Error saving budget lines:", error);
             setAlert({
@@ -298,9 +299,22 @@ const useCreateBLIsAndSCs = (
         }
     };
 
-    const showSuccessMessage = () => {
+    /**
+     * Show the success message
+     * @param {boolean} isThereAnyBLIsFinancialSnapshotChanged - Flag to indicate if there are financial snapshot changes
+     * @returns {void}
+     */
+    const showSuccessMessage = (isThereAnyBLIsFinancialSnapshotChanged) => {
         if (continueOverRide) {
             continueOverRide();
+        } else if (isThereAnyBLIsFinancialSnapshotChanged) {
+            setAlert({
+                type: "success",
+                heading: "Changes Sent to Approval",
+                message:
+                    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                redirectUrl: `/agreements/${selectedAgreement?.id}`
+            });
         } else {
             setAlert({
                 type: "success",
@@ -318,7 +332,7 @@ const useCreateBLIsAndSCs = (
     const handleAddBLI = (e) => {
         e.preventDefault();
         const newBudgetLine = {
-            id: crypto.randomUUID(),
+            id: cryptoRandomString({ length: 10 }),
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
@@ -505,7 +519,7 @@ const useCreateBLIsAndSCs = (
             proc_shop_fee_percentage
         } = budgetLine;
         const payload = {
-            id: crypto.randomUUID(),
+            id: cryptoRandomString({ length: 10 }),
             services_component_id,
             comments,
             can_id,

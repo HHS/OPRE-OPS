@@ -196,6 +196,10 @@ export const opsApi = createApi({
             query: () => `/cans/`,
             providesTags: ["Cans"]
         }),
+        getCanById: builder.query({
+            query: (id) => `/cans/${id}`,
+            providesTags: ["Cans"]
+        }),
         getCanFundingSummary: builder.query({
             query: (id) => `/can-funding-summary/${id}`,
             providesTags: ["CanFunding"]
@@ -323,6 +327,7 @@ export const {
     useAddUserMutation,
     useUpdateUserMutation,
     useGetCansQuery,
+    useGetCanByIdQuery,
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
     useDismissNotificationMutation,

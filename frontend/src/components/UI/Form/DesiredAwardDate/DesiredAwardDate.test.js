@@ -34,7 +34,7 @@ describe("DesiredAwardDate", () => {
                 cn={() => {}}
             />
         );
-        const legendElement = screen.getByText(/Need By Date/i);
+        const legendElement = screen.getByText(/Obligate By Date/i);
         expect(legendElement).toBeInTheDocument();
     });
 
