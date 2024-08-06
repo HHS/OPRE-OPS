@@ -19,6 +19,7 @@ import { actionOptions } from "./ReviewAgreement.constants";
 import { getSelectedBudgetLines } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
 import suite from "./suite";
+import Accordion from "../../../components/UI/Accordion";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -188,8 +189,11 @@ export const ReviewAgreement = () => {
                 action={changeRequestAction}
             />
             {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && <AgreementAddInfoAccordion />}
-            <section>
-                <h2 className="font-sans-lg text-semibold">Notes</h2>
+            <Accordion
+                heading="Notes"
+                level={2}
+            >
+                <p>Notes can be shared between the Submitter and Reviewer, if needed.</p>
                 <TextArea
                     name="submitter-notes"
                     label="Notes (optional)"
@@ -197,7 +201,7 @@ export const ReviewAgreement = () => {
                     value={notes}
                     onChange={(name, value) => setNotes(value)}
                 />
-            </section>
+            </Accordion>
             <div className="grid-row flex-justify-end margin-top-1">
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
