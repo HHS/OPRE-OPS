@@ -14,6 +14,10 @@ import { actionOptions, selectedAction } from "./ReviewAgreement.constants";
 import { anyBudgetLinesByStatus, getSelectedBudgetLines, getTotalBySelectedCans } from "./ReviewAgreement.helpers";
 import suite from "./suite";
 
+/**
+ * Custom hook for the Review Agreement page
+ * @param {number} agreementId - the agreement ID
+ */
 const useReviewAgreement = (agreementId) => {
     const [action, setAction] = React.useState(""); // for the action accordion
     const [budgetLines, setBudgetLines] = React.useState([]);
@@ -23,6 +27,9 @@ const useReviewAgreement = (agreementId) => {
     const [notes, setNotes] = React.useState("");
     const [afterApproval, setAfterApproval] = useToggle(true);
     const activeUser = useSelector((state) => state.auth.activeUser);
+    const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
+    const { setAlert } = useAlert();
+    let res = suite.get();
     const {
         isSuccess,
         data: agreement,
@@ -31,15 +38,12 @@ const useReviewAgreement = (agreementId) => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
-    const { setAlert } = useAlert();
-    const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
-    let res = suite.get();
+    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
     const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
         ? groupByServicesComponent(agreement.budget_line_items)
         : [];
 
-    const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
     // NOTE: convert page errors about budget lines object into an array of objects
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
     const budgetLinePageErrorsExist = budgetLinePageErrors.length > 0;
@@ -64,6 +68,7 @@ const useReviewAgreement = (agreementId) => {
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
+
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
 
     React.useEffect(() => {
@@ -97,7 +102,10 @@ const useReviewAgreement = (agreementId) => {
             setIsAlertActive(false);
         };
     }, [res, isSuccess]);
-
+    /**
+     * Handle the sending of the budget line items to approval
+     * @returns {void}
+     */
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft || anyBudgetLinePlanned) {
             const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
@@ -163,7 +171,11 @@ const useReviewAgreement = (agreementId) => {
             });
         }
     };
-
+    /**
+     * Handle the selection of a budget line item
+     * @param {number} bliId - the budget line item ID
+     * @returns {void}
+     */
     const handleSelectBLI = (bliId) => {
         const newBudgetLines = budgetLines.map((bli) => {
             if (+bli.id === +bliId) {
@@ -177,7 +189,11 @@ const useReviewAgreement = (agreementId) => {
 
         setBudgetLines(newBudgetLines);
     };
-
+    /**
+     * Handle the change of the action accordion
+     * @param {string} action - the selected action
+     * @returns {void}
+     */
     const handleActionChange = (action) => {
         setAction(action);
         setMainToggleSelected(false);
@@ -202,7 +218,10 @@ const useReviewAgreement = (agreementId) => {
         });
         setBudgetLines(newBudgetLines);
     };
-
+    /**
+     * Toggle the selection of actionable budget line items
+     * @returns {void}
+     */
     const toggleSelectActionableBLIs = () => {
         const newBudgetLines = budgetLines.map((bli) => ({
             ...bli,
@@ -211,7 +230,10 @@ const useReviewAgreement = (agreementId) => {
 
         setBudgetLines(newBudgetLines);
     };
-
+    /**
+     * Clean the budget line item data for the API
+     * @param {object} data - the budget line item data
+     */
     const cleanBudgetLineItemForApi = (data) => {
         const cleanData = { ...data };
         if (data.services_component_id === 0) {

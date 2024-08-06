@@ -29,7 +29,7 @@ import suite from "./suite";
 
 export const ReviewAgreement = () => {
     const urlPathParams = useParams();
-    const agreementId = urlPathParams?.id;
+    const agreementId = Number(urlPathParams?.id);
     const navigate = useNavigate();
 
     const {
