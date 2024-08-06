@@ -40,8 +40,6 @@ export const ReviewAgreement = () => {
         res,
         handleActionChange,
         toggleSelectActionableBLIs,
-        mainToggleSelected,
-        setMainToggleSelected,
         notes,
         setNotes,
         action,
@@ -63,7 +61,9 @@ export const ReviewAgreement = () => {
         projectOfficerName,
         afterApproval,
         setAfterApproval,
-        agreement
+        agreement,
+        toggleStates,
+        setToggleStates
     } = useReviewAgreement(agreementId);
 
     const cn = classnames(suite.get(), {
@@ -174,9 +174,12 @@ export const ReviewAgreement = () => {
                             budgetLines={group.budgetLines}
                             isReviewMode={true}
                             setSelectedBLIs={handleSelectBLI}
-                            toggleSelectActionableBLIs={toggleSelectActionableBLIs}
-                            mainToggleSelected={mainToggleSelected}
-                            setMainToggleSelected={setMainToggleSelected}
+                            toggleSelectActionableBLIs={() => toggleSelectActionableBLIs(group.servicesComponentId)}
+                            mainToggleSelected={toggleStates[group.servicesComponentId] || false}
+                            setMainToggleSelected={(newState) =>
+                                setToggleStates((prev) => ({ ...prev, [group.servicesComponentId]: newState }))
+                            }
+                            servicesComponentId={group.servicesComponentId}
                         />
                     </ServicesComponentAccordion>
                 ))}

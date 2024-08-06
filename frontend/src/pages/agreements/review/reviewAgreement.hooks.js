@@ -23,13 +23,15 @@ const useReviewAgreement = (agreementId) => {
     const [budgetLines, setBudgetLines] = React.useState([]);
     const [pageErrors, setPageErrors] = React.useState({});
     const [isAlertActive, setIsAlertActive] = React.useState(false);
-    const [mainToggleSelected, setMainToggleSelected] = React.useState(false);
     const [notes, setNotes] = React.useState("");
+    const [toggleStates, setToggleStates] = React.useState({});
+
     const [afterApproval, setAfterApproval] = useToggle(true);
     const activeUser = useSelector((state) => state.auth.activeUser);
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const { setAlert } = useAlert();
     let res = suite.get();
+
     const {
         isSuccess,
         data: agreement,
@@ -193,7 +195,7 @@ const useReviewAgreement = (agreementId) => {
      */
     const handleActionChange = (action) => {
         setAction(action);
-        setMainToggleSelected(false);
+        setToggleStates({});
 
         const newBudgetLines = budgetLines.map((bli) => {
             switch (action) {
@@ -217,17 +219,26 @@ const useReviewAgreement = (agreementId) => {
     };
     /**
      * Toggle the selection of actionable budget line items
-     * @param {object[]} groupBudgetLines - the budget line items
+     * @param {number} servicesComponentId - the services component ID
      * @returns {void}
      */
-    const toggleSelectActionableBLIs = () => {
-        // TODO: refactor to account for service components
-        const newBudgetLines = budgetLines.map((bli) => ({
-            ...bli,
-            selected: bli.actionable && !mainToggleSelected
+    const toggleSelectActionableBLIs = (servicesComponentId) => {
+        setToggleStates((prevStates) => ({
+            ...prevStates,
+            [servicesComponentId]: !prevStates[servicesComponentId]
         }));
 
-        setBudgetLines(newBudgetLines);
+        setBudgetLines((prevBudgetLines) =>
+            prevBudgetLines.map((bli) => {
+                if (bli.actionable && bli.services_component_id === servicesComponentId) {
+                    return {
+                        ...bli,
+                        selected: !toggleStates[servicesComponentId]
+                    };
+                }
+                return bli;
+            })
+        );
     };
     /**
      * Clean the budget line item data for the API
@@ -267,8 +278,6 @@ const useReviewAgreement = (agreementId) => {
         res,
         handleActionChange,
         toggleSelectActionableBLIs,
-        mainToggleSelected,
-        setMainToggleSelected,
         notes,
         setNotes,
         servicesComponents,
@@ -289,7 +298,9 @@ const useReviewAgreement = (agreementId) => {
         projectOfficerName,
         afterApproval,
         setAfterApproval,
-        agreement
+        agreement,
+        toggleStates,
+        setToggleStates
     };
 };
 
