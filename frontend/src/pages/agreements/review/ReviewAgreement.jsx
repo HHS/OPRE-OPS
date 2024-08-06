@@ -20,6 +20,8 @@ import { getSelectedBudgetLines } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
 import suite from "./suite";
 import Accordion from "../../../components/UI/Accordion";
+import DebugCode from "../../../components/DebugCode";
+import StatusChangeReviewCard from "../../../components/ChangeRequests/StatusChangeReviewCard";
 
 /**
  * Renders a page for reviewing and sending an agreement to approval.
@@ -192,6 +194,29 @@ export const ReviewAgreement = () => {
                 action={changeRequestAction}
             />
             {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && <AgreementAddInfoAccordion />}
+            <Accordion
+                heading="Review Changes"
+                level={2}
+            >
+                <p>This is a list of status changes you are requesting approval for.</p>
+                <DebugCode data={getSelectedBudgetLines(budgetLines)} />
+                {/* TODO: Map over selected budget lines */}
+                <StatusChangeReviewCard
+                    isCondensed={true}
+                    agreementId={agreement?.id}
+                    bliId={15000}
+                    requestDate="2021-09-01"
+                    requesterName="John Doe"
+                    changeTo={{
+                        status: {
+                            new: "PLANNED",
+                            old: "DRAFT"
+                        }
+                    }}
+                    handleReviewChangeRequest={() => {}}
+                    changeRequestId={15000}
+                />
+            </Accordion>
             <Accordion
                 heading="Notes"
                 level={2}
