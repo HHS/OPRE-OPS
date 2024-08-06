@@ -6,7 +6,6 @@ import AgreementActionAccordion from "../../../components/Agreements/AgreementAc
 import AgreementAddInfoAccordion from "../../../components/Agreements/AgreementAddInfoAccordion";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
-import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -17,7 +16,7 @@ import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
-import { getSelectedBudgetLines, selectedBudgetLinesTotal } from "./ReviewAgreement.helpers";
+import { getSelectedBudgetLines } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
 import suite from "./suite";
 
@@ -51,7 +50,6 @@ export const ReviewAgreement = () => {
         areThereBudgetLineErrors,
         isSubmissionReady,
         changeRequestAction,
-        changeInCans,
         anyBudgetLinesDraft,
         anyBudgetLinePlanned,
         budgetLineErrorsExist,
@@ -183,18 +181,12 @@ export const ReviewAgreement = () => {
                 ))}
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
-                instructions="The budget lines you've selected are using funds from the CANs displayed below."
+                instructions="The budget lines you've selected are using funds from the CANs displayed below. Use the toggle to see how your approval would change the remaining budget of CANs within your Portfolio or Division."
                 selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
             />
-            {action === actionOptions.CHANGE_DRAFT_TO_PLANNED && (
-                <AgreementChangesAccordion
-                    changeInBudgetLines={selectedBudgetLinesTotal(budgetLines)}
-                    changeInCans={changeInCans}
-                />
-            )}
             {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && <AgreementAddInfoAccordion />}
             <section>
                 <h2 className="font-sans-lg text-semibold">Notes</h2>

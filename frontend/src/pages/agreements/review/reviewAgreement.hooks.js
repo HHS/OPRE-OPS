@@ -11,7 +11,7 @@ import useAlert from "../../../hooks/use-alert.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { actionOptions, selectedAction } from "./ReviewAgreement.constants";
-import { anyBudgetLinesByStatus, getSelectedBudgetLines, getTotalBySelectedCans } from "./ReviewAgreement.helpers";
+import { anyBudgetLinesByStatus, getSelectedBudgetLines } from "./ReviewAgreement.helpers";
 import suite from "./suite";
 
 /**
@@ -50,7 +50,6 @@ const useReviewAgreement = (agreementId) => {
     const areThereBudgetLineErrors = budgetLinePageErrorsExist || budgetLineErrorsExist;
     const anyBudgetLinesDraft = anyBudgetLinesByStatus(agreement ?? {}, "DRAFT");
     const anyBudgetLinePlanned = anyBudgetLinesByStatus(agreement ?? {}, "PLANNED");
-    const changeInCans = getTotalBySelectedCans(budgetLines);
     const actionOptionsToChangeRequests = {
         [actionOptions.CHANGE_DRAFT_TO_PLANNED]: selectedAction.DRAFT_TO_PLANNED,
         [actionOptions.CHANGE_PLANNED_TO_EXECUTING]: selectedAction.PLANNED_TO_EXECUTING
@@ -278,7 +277,6 @@ const useReviewAgreement = (agreementId) => {
         areThereBudgetLineErrors,
         isSubmissionReady,
         changeRequestAction,
-        changeInCans,
         anyBudgetLinesDraft,
         anyBudgetLinePlanned,
         budgetLineErrorsExist,
