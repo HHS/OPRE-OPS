@@ -172,7 +172,7 @@ export const ReviewAgreement = () => {
                     >
                         <AgreementBLIReviewTable
                             readOnly={true}
-                            budgetLines={budgetLines}
+                            budgetLines={group.budgetLines}
                             isReviewMode={true}
                             setSelectedBLIs={handleSelectBLI}
                             toggleSelectActionableBLIs={toggleSelectActionableBLIs}

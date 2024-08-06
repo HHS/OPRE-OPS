@@ -40,9 +40,7 @@ const useReviewAgreement = (agreementId) => {
     });
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
-    const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
-        ? groupByServicesComponent(agreement.budget_line_items)
-        : [];
+    const groupedBudgetLinesByServicesComponent = budgetLines ? groupByServicesComponent(budgetLines) : [];
 
     // NOTE: convert page errors about budget lines object into an array of objects
     const budgetLinePageErrors = Object.entries(pageErrors).filter((error) => error[0].includes("Budget line item"));
@@ -220,9 +218,11 @@ const useReviewAgreement = (agreementId) => {
     };
     /**
      * Toggle the selection of actionable budget line items
+     * @param {object[]} groupBudgetLines - the budget line items
      * @returns {void}
      */
     const toggleSelectActionableBLIs = () => {
+        // TODO: refactor to account for service components
         const newBudgetLines = budgetLines.map((bli) => ({
             ...bli,
             selected: bli.actionable && !mainToggleSelected
