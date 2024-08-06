@@ -1,9 +1,8 @@
 import PropTypes from "prop-types";
+import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 import Table from "../../UI/Table";
 import BLIReviewRow from "./BLIReviewRow";
 import { BUDGET_LINE_TABLE_HEADERS } from "./BLIReviewTable.constants";
-import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
-import { servicesComponent } from "../../../tests/data";
 
 /**
  * A table component that displays budget lines.
