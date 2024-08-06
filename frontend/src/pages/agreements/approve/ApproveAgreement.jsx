@@ -25,7 +25,6 @@ const ApproveAgreement = () => {
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
-        budgetLinesInReview,
         changeRequestsInReview,
         notes,
         setNotes,
@@ -111,6 +110,7 @@ const ApproveAgreement = () => {
         )
     );
     AfterApprovalContent.displayName = "AfterApprovalContent";
+
     return (
         <App breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}>
             {showModal && (
@@ -168,7 +168,7 @@ const ApproveAgreement = () => {
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
-                selectedBudgetLines={budgetLinesInReview}
+                selectedBudgetLines={agreement.budget_line_items}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}

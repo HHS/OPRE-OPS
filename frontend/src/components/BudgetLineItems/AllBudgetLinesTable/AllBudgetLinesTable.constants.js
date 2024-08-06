@@ -2,7 +2,7 @@ export const All_BUDGET_LINES_TABLE_HEADINGS = [
     "BL ID #",
     "Agreement",
     "SC",
-    "Need By",
+    "Obligate By",
     "FY",
     "CAN",
     "Total",

@@ -62,7 +62,7 @@ describe("BudgetLinesForm", () => {
         );
 
         const amount = screen.getByRole("textbox", { name: /amount/i });
-        const needByDate = screen.getByRole("textbox", { name: /need by date/i });
+        const needByDate = screen.getByRole("textbox", { name: /obligate by date/i });
         const comments = screen.getByRole("textbox", { name: /notes/i });
         const cancelBtn = screen.getByRole("button", { name: /cancel/i });
         const cans = screen.getByRole("combobox", { name: /can/i });
@@ -99,7 +99,7 @@ describe("BudgetLinesForm", () => {
                 <BudgetLinesForm {...defaultProps} />
             </Provider>
         );
-        const needByDate = screen.getByRole("textbox", { name: /need by date/i });
+        const needByDate = screen.getByRole("textbox", { name: /obligate by date/i });
         expect(needByDate).toHaveValue("2043-06-13");
         const updateBudgetLineBtn = screen.getByRole("button", { name: /update budget line/i });
         expect(updateBudgetLineBtn).not.toBeDisabled();

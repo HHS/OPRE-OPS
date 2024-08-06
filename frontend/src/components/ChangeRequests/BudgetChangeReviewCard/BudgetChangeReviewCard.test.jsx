@@ -113,7 +113,7 @@ describe("BudgetChangeReviewCard", () => {
             </BrowserRouter>
         );
 
-        expect(screen.getByText("Date needed")).toBeInTheDocument();
+        expect(screen.getByText("Obligate By Date")).toBeInTheDocument();
         expect(screen.getByText("6/1/2044")).toBeInTheDocument();
         expect(screen.getByText("6/13/2045")).toBeInTheDocument();
     });

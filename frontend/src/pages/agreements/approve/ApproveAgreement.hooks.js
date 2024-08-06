@@ -307,7 +307,7 @@ const useApproveAgreement = () => {
             alertHeading = "Changes Declined";
             alertMsg =
                 `The following change(s) have been declined on the ${agreement.display_name} agreement.\n\n` +
-                `<strong>Edits Declined:</strong>\n` +
+                `<strong>Changes Declined:</strong>\n` +
                 `${relevantMessages}\n\n` +
                 `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`;
             changeRequests = budgetChangeRequests;
