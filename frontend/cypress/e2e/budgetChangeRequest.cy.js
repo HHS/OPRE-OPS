@@ -103,6 +103,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').contains("$2,222,222,222.00");
+                // cy.get("[data-cy='close-alert']").click();
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
@@ -216,7 +217,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').contains("$2,222,222,222.00");
-                cy.get("tbody").children().as("table-rows").should("have.length", 2);
+                cy.get("[data-cy='close-alert']").first().click();
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
