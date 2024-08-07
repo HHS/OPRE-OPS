@@ -1,5 +1,5 @@
-import React from "react";
 import PropTypes from "prop-types";
+import React from "react";
 
 /**
  * A radio button component that displays a tile with a label and optional description.
@@ -36,7 +36,7 @@ const RadioButtonTile = ({ label, description, checked = false, setValue = () =>
                 htmlFor={label}
             >
                 {label}
-                {description && <span className="usa-checkbox__label-description">{description}</span>}
+                {description && <span className="usa-checkbox__label-description text-italic">{description}</span>}
             </label>
         </div>
     );
