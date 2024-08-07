@@ -57,7 +57,3 @@ repos:
         entry: bash -c 'docker run --rm -v "$(pwd):/workdir" -i --rm trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail'
         language: system
         stages: ["commit", "push"]
-  - repo: https://github.com/daveshanley/vacuum  # OpenAPI linter
-    rev: v0.11.1
-    hooks:
-      - id: vacuum
