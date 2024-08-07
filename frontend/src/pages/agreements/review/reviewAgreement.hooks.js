@@ -67,8 +67,24 @@ const useReviewAgreement = (agreementId) => {
     const isAgreementStateEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = isAgreementStateEditable && canUserEditAgreement;
-
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
+    let changeTo = {};
+    if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
+        changeTo = {
+            status: {
+                new: BLI_STATUS.PLANNED,
+                old: BLI_STATUS.DRAFT
+            }
+        };
+    } else {
+        changeTo = {
+            status: {
+                new: BLI_STATUS.EXECUTING,
+                old: BLI_STATUS.PLANNED
+            }
+        };
+    }
 
     React.useEffect(() => {
         const newBudgetLines =
@@ -107,7 +123,6 @@ const useReviewAgreement = (agreementId) => {
      */
     const handleSendToApproval = () => {
         if (anyBudgetLinesDraft || anyBudgetLinePlanned) {
-            const selectedBudgetLines = getSelectedBudgetLines(budgetLines);
             let selectedBLIsWithStatusAndNotes = [];
 
             switch (action) {
@@ -270,7 +285,6 @@ const useReviewAgreement = (agreementId) => {
     return {
         action,
         setAction,
-        budgetLines,
         setBudgetLines,
         handleSelectBLI,
         pageErrors,
@@ -300,7 +314,9 @@ const useReviewAgreement = (agreementId) => {
         setAfterApproval,
         agreement,
         toggleStates,
-        setToggleStates
+        setToggleStates,
+        selectedBudgetLines,
+        changeTo
     };
 };
 

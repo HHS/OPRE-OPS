@@ -8,7 +8,9 @@ import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAc
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
+import StatusChangeReviewCard from "../../../components/ChangeRequests/StatusChangeReviewCard";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import TextArea from "../../../components/UI/Form/TextArea";
 import PageHeader from "../../../components/UI/PageHeader";
@@ -16,15 +18,11 @@ import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { actionOptions } from "./ReviewAgreement.constants";
-import { getSelectedBudgetLines } from "./ReviewAgreement.helpers";
 import useReviewAgreement from "./reviewAgreement.hooks";
 import suite from "./suite";
-import Accordion from "../../../components/UI/Accordion";
-import DebugCode from "../../../components/DebugCode";
-import StatusChangeReviewCard from "../../../components/ChangeRequests/StatusChangeReviewCard";
 
 /**
- * Renders a page for reviewing and sending an agreement to approval.
+ * Renders a page for reviewing an Agreement and sending Status Changes to approval.
  * @component
  * @returns {JSX.Element} - The rendered component.
  */
@@ -35,7 +33,6 @@ export const ReviewAgreement = () => {
     const navigate = useNavigate();
 
     const {
-        budgetLines,
         handleSelectBLI,
         pageErrors,
         isAlertActive,
@@ -65,7 +62,9 @@ export const ReviewAgreement = () => {
         setAfterApproval,
         agreement,
         toggleStates,
-        setToggleStates
+        setToggleStates,
+        selectedBudgetLines,
+        changeTo
     } = useReviewAgreement(agreementId);
 
     const cn = classnames(suite.get(), {
@@ -134,7 +133,7 @@ export const ReviewAgreement = () => {
                 title="Select Budget Lines"
                 instructions="  Select the budget lines you'd like this action to apply to. The agreement will be sent to your
                 Division Director to review and approve before changes are made."
-                budgetLineItems={getSelectedBudgetLines(budgetLines)}
+                budgetLineItems={selectedBudgetLines}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
@@ -162,33 +161,34 @@ export const ReviewAgreement = () => {
                         </ul>
                     )}
                 </div>
-                {groupedBudgetLinesByServicesComponent.map((group) => (
-                    <ServicesComponentAccordion
-                        key={group.servicesComponentId}
-                        servicesComponentId={group.servicesComponentId}
-                        withMetadata={true}
-                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                        description={findDescription(servicesComponents, group.servicesComponentId)}
-                    >
-                        <AgreementBLIReviewTable
-                            readOnly={true}
-                            budgetLines={group.budgetLines}
-                            isReviewMode={true}
-                            setSelectedBLIs={handleSelectBLI}
-                            toggleSelectActionableBLIs={() => toggleSelectActionableBLIs(group.servicesComponentId)}
-                            mainToggleSelected={toggleStates[group.servicesComponentId] || false}
-                            setMainToggleSelected={(newState) =>
-                                setToggleStates((prev) => ({ ...prev, [group.servicesComponentId]: newState }))
-                            }
+                {groupedBudgetLinesByServicesComponent.length > 0 &&
+                    groupedBudgetLinesByServicesComponent.map((group) => (
+                        <ServicesComponentAccordion
+                            key={group.servicesComponentId}
                             servicesComponentId={group.servicesComponentId}
-                        />
-                    </ServicesComponentAccordion>
-                ))}
+                            withMetadata={true}
+                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                            description={findDescription(servicesComponents, group.servicesComponentId)}
+                        >
+                            <AgreementBLIReviewTable
+                                readOnly={true}
+                                budgetLines={group.budgetLines}
+                                isReviewMode={true}
+                                setSelectedBLIs={handleSelectBLI}
+                                toggleSelectActionableBLIs={() => toggleSelectActionableBLIs(group.servicesComponentId)}
+                                mainToggleSelected={toggleStates[group.servicesComponentId] || false}
+                                setMainToggleSelected={(newState) =>
+                                    setToggleStates((prev) => ({ ...prev, [group.servicesComponentId]: newState }))
+                                }
+                                servicesComponentId={group.servicesComponentId}
+                            />
+                        </ServicesComponentAccordion>
+                    ))}
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines you've selected are using funds from the CANs displayed below. Use the toggle to see how your approval would change the remaining budget of CANs within your Portfolio or Division."
-                selectedBudgetLines={getSelectedBudgetLines(budgetLines)}
+                selectedBudgetLines={selectedBudgetLines}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={changeRequestAction}
@@ -199,23 +199,20 @@ export const ReviewAgreement = () => {
                 level={2}
             >
                 <p>This is a list of status changes you are requesting approval for.</p>
-                <DebugCode data={getSelectedBudgetLines(budgetLines)} />
-                {/* TODO: Map over selected budget lines */}
-                <StatusChangeReviewCard
-                    isCondensed={true}
-                    agreementId={agreement?.id}
-                    bliId={15000}
-                    requestDate="2021-09-01"
-                    requesterName="John Doe"
-                    changeTo={{
-                        status: {
-                            new: "PLANNED",
-                            old: "DRAFT"
-                        }
-                    }}
-                    handleReviewChangeRequest={() => {}}
-                    changeRequestId={15000}
-                />
+                {selectedBudgetLines.length > 0 &&
+                    selectedBudgetLines.map((budgetLine) => (
+                        <StatusChangeReviewCard
+                            key={budgetLine.id}
+                            isCondensed={true}
+                            agreementId={budgetLine.agreement_id}
+                            bliId={budgetLine.id}
+                            requestDate={budgetLine.date_needed}
+                            changeTo={changeTo}
+                            handleReviewChangeRequest={() => {}}
+                            changeRequestId={budgetLine.id}
+                            createdById={budgetLine.created_by}
+                        />
+                    ))}
             </Accordion>
             <Accordion
                 heading="Notes"
