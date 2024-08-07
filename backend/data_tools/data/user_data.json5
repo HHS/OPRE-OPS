@@ -97,7 +97,8 @@
         "POST_CHANGE_REQUEST_REVIEW",
 
         "GET_UPLOAD_DOCUMENT",
-        "POST_UPLOAD_DOCUMENT"
+        "POST_UPLOAD_DOCUMENT",
+        "PATCH_UPLOAD_DOCUMENT",
       ],
     },
     { // 2 User
@@ -149,7 +150,9 @@
 
         "GET_CHANGE_REQUEST_REVIEW",
 
-        "GET_UPLOAD_DOCUMENT"
+        "GET_UPLOAD_DOCUMENT",
+        "POST_UPLOAD_DOCUMENT",
+        "PATCH_UPLOAD_DOCUMENT"
       ],
     },
     { // 3 Unassigned (new user)
@@ -216,7 +219,8 @@
         "POST_CHANGE_REQUEST_REVIEW",
 
         "GET_UPLOAD_DOCUMENT",
-        "POST_UPLOAD_DOCUMENT"
+        "POST_UPLOAD_DOCUMENT",
+        "PATCH_UPLOAD_DOCUMENT"
       ]
     }
   ],
