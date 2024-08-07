@@ -7,6 +7,7 @@ import AgreementAddInfoAccordion from "../../../components/Agreements/AgreementA
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
+import DocumentCollectionView from "../../../components/Agreements/Documents/DocumentCollectionView";
 import AgreementBLIReviewTable from "../../../components/BudgetLineItems/BLIReviewTable";
 import StatusChangeReviewCard from "../../../components/ChangeRequests/StatusChangeReviewCard";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -17,6 +18,7 @@ import PageHeader from "../../../components/UI/PageHeader";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { document } from "../../../tests/data";
 import { actionOptions } from "./ReviewAgreement.constants";
 import useReviewAgreement from "./reviewAgreement.hooks";
 import suite from "./suite";
@@ -194,6 +196,18 @@ export const ReviewAgreement = () => {
                 action={changeRequestAction}
             />
             {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && <AgreementAddInfoAccordion />}
+            {action === actionOptions.CHANGE_PLANNED_TO_EXECUTING && (
+                <Accordion
+                    heading="Review Documents"
+                    level={2}
+                >
+                    <p className="margin-bottom-neg-2">
+                        Please upload all pre-solicitation documents listed below to begin the procurement process.
+                    </p>
+                    {/* TODO: replace with real documents */}
+                    <DocumentCollectionView documents={document.testDocuments} />
+                </Accordion>
+            )}
             <Accordion
                 heading="Review Changes"
                 level={2}
