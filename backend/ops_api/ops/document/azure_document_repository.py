@@ -1,33 +1,29 @@
+import os
+import uuid
 from datetime import datetime, timedelta, timezone
 
-from azure.core.credentials import AzureNamedKeyCredential
-from azure.storage.blob import BlobClient, BlobSasPermissions, BlobServiceClient, generate_blob_sas
+from azure.storage.blob import AccountSasPermissions, ResourceTypes, generate_account_sas
 from flask import Config, current_app
 
 from ops_api.ops.document.document_repository import DocumentRepository
 from ops_api.ops.document.exceptions import DocumentNotFoundError, SasUrlGenerationError
-from ops_api.ops.document.utils import insert_new_document, set_document_status_by_id
+from ops_api.ops.document.utils import get_by_agreement_id, insert_new_document, set_document_status_by_id
 
 
 class AzureDocumentRepository(DocumentRepository):
     def __init__(self) -> None:
         self.config = Config
-        self.account_key = self.config["UPLOADS_STORAGE_ACCOUNT_ACCESS_KEY"]
-        self.storage_account_name = self.config["UPLOADS_STORAGE_ACCOUNT_NAME"]
-        self.container_name = self.config["UPLOADS_STORAGE_CONTAINER_NAME"]
+        self.account_key = os.getenv("DOCUMENT_STORAGE_ACCOUNT_ACCESS_KEY")
+        self.storage_account_name = os.getenv("DOCUMENT_STORAGE_ACCOUNT_NAME")
 
     def add_document(self, document_data):
         try:
             # Insert document record into the database
+            document_data["document_id"] = str(uuid.uuid4())
             document_record = insert_new_document(document_data)
-            uuid = document_record.document_id
+            document_id = document_record.document_id
 
-            # Generate SAS URL for the document
-            url = generate_sas_url(
-                self.storage_account_name, self.container_name, document_data["file_name"], self.account_key
-            )
-
-            return {"uuid": uuid, "url": url}
+            return {"url": generate_account_sas_url(self.storage_account_name, self.account_key), "uuid": document_id}
 
         except SasUrlGenerationError as e:
             current_app.logger.error(f"Failed to generate SAS URL: {e}")
@@ -46,7 +42,8 @@ class AzureDocumentRepository(DocumentRepository):
         pass
 
     def get_documents_by_agreement_id(self, agreement_id):
-        pass
+        url = generate_account_sas_url(self.storage_account_name, self.account_key)
+        return {"url": url, "documents": get_by_agreement_id(agreement_id)}
 
     def update_document_status(self, document_id, status):
         try:
@@ -59,40 +56,33 @@ class AzureDocumentRepository(DocumentRepository):
             raise e
 
 
-def create_blob_sas_token(blob_client: BlobClient, account_key: str):
+def generate_account_sas_url(account_name, account_key, expiry_hours=1):
     """
-    Create a Shared Access Signature (SAS) token for an Azure Blob Storage Container
-    """
-    # SAS token is valid for one hour
-    start_time = datetime.now(tz=timezone.utc)
-    expiry_time = start_time + timedelta(hours=1)
+    Generate an SAS URL for the Azure Blob Storage account level.
 
-    sas_token = generate_blob_sas(
-        account_name=blob_client.account_name,
-        container_name=blob_client.container_name,
-        blob_name=blob_client.blob_name,
-        account_key=account_key,
-        permission=BlobSasPermissions(read=True, add=True, create=True, write=True),
-        expiry=expiry_time,
-        start=start_time,
-    )
-
-    return sas_token
-
-
-def generate_sas_url(account_name, container_name, blob_name, account_key):
-    """
-    Generate a SAS URL for an Azure Blob Storage Container
+    :param account_name: The name of the Azure Storage account.
+    :param account_key: The account key for the Azure Storage account.
+    :param expiry_hours: The number of hours for which the SAS token should be valid.
+    :return: The SAS URL for the storage account.
     """
     try:
-        credential = AzureNamedKeyCredential(account_name, account_key)
-        blob_service_client = BlobServiceClient(
-            account_url=f"https://{account_name}.blob.core.windows.net", credential=credential
-        )
-        container_client = blob_service_client.get_container_client(container_name)
-        blob_client = container_client.get_blob_client(blob_name)
+        # Define the expiration time of the SAS token. Default is one hour.
+        expiry_time = datetime.now(tz=timezone.utc) + timedelta(hours=expiry_hours)
 
-        sas_token = create_blob_sas_token(blob_client, account_key)
-        return f"https://{account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
+        # Generate the SAS token
+        sas_token = generate_account_sas(
+            account_name=account_name,
+            account_key=account_key,
+            resource_types=ResourceTypes(service=True, container=True, object=True),
+            permission=AccountSasPermissions(
+                read=True, write=True, delete=True, list=True, add=True, create=True, update=True, process=True
+            ),
+            expiry=expiry_time,
+        )
+
+        # Construct the SAS URL
+        sas_url = f"https://{account_name}.blob.core.windows.net/?{sas_token}"
+        return sas_url
+
     except SasUrlGenerationError as e:
         raise e
