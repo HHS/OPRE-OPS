@@ -6,8 +6,8 @@ from azure.storage.blob import AccountSasPermissions, ResourceTypes, generate_ac
 from flask import Config, current_app
 
 from ops_api.ops.document.document_repository import DocumentRepository
-from ops_api.ops.document.exceptions import DocumentNotFoundError, SasUrlGenerationError
-from ops_api.ops.document.utils import get_by_agreement_id, insert_new_document, set_document_status_by_id
+from ops_api.ops.document.exceptions import SasUrlGenerationError
+from ops_api.ops.document.utils import get_by_agreement_id, insert_new_document, process_status_update
 
 
 class AzureDocumentRepository(DocumentRepository):
@@ -46,14 +46,7 @@ class AzureDocumentRepository(DocumentRepository):
         return {"url": url, "documents": get_by_agreement_id(agreement_id)}
 
     def update_document_status(self, document_id, status):
-        try:
-            set_document_status_by_id(document_id, status)
-        except DocumentNotFoundError as e:
-            current_app.logger.error(f"Document not found with uuid {document_id}: {e}")
-            raise
-        except Exception as e:
-            current_app.logger.error(f"Failed to update document status: {e}")
-            raise e
+        process_status_update(document_id, status)
 
 
 def generate_account_sas_url(account_name, account_key, expiry_hours=1):

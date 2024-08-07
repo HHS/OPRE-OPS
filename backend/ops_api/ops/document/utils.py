@@ -81,6 +81,20 @@ def set_document_status_by_id(document_id, status):
     current_app.db_session.commit()
 
 
+def process_status_update(document_id, status):
+    """
+    Process the status update for a document.
+    """
+    try:
+        set_document_status_by_id(document_id, status)
+    except DocumentNotFoundError as e:
+        current_app.logger.error(f"Document not found with uuid {document_id}: {e}")
+        raise
+    except Exception as e:
+        current_app.logger.error(f"Failed to update document status: {e}")
+        raise e
+
+
 def get_by_agreement_id(agreement_id):
     """
     Get all documents associated with a specific agreement ID.
