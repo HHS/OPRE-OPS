@@ -15,7 +15,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 
 
 class DocumentAPI(BaseItemAPI):
-    # TODO: Add limit and offset
     @is_authorized(PermissionType.GET, Permission.UPLOAD_DOCUMENT)
     def get(self, agreement_id: int) -> Response:
         # Call document service to get documents by agreement_id
