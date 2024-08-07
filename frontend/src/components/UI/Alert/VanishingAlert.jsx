@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import SimpleAlert from "./SimpleAlert"
 import { useEffect } from "react";
+import SimpleAlert from "./SimpleAlert";
 
 /**
  * An alert component that dismisses itself after a set amount of time.
