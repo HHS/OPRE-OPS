@@ -1674,16 +1674,18 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /documents/:
+  /api/v1/documents/{agreement_id}/:
     get:
       description: Get documents by agreement id
       parameters:
-        - name: agreement_id
-          in: query
+        - in: path
+          name: agreement_id
           description: The agreement id to filter documents
           schema:
             type: integer
             format: int32
+            minimum: 0
+            default: 1
       responses:
         "200":
           description: OK
@@ -1697,6 +1699,7 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
+  /api/v1/documents/:
     post:
       description: Create a new document
       requestBody:
@@ -1712,6 +1715,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DocumentResponse"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+  /api/v1/documents/{document_id}/status/:
+    patch:
+      description: Update a document status
+      parameters:
+        - in: path
+          name: document_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentStatusRequest"
+      responses:
+        "200":
+          description: OK
         "400":
           description: Bad Request
         "500":
@@ -2703,6 +2728,17 @@ components:
       required:
         - uuid
         - url
+    DocumentStatusRequest:
+      type: object
+      properties:
+        agreement_id:
+          type: integer
+          format: int32
+        status:
+          type: string
+      required:
+        - agreement_id
+        - status
   examples:
     CAN:
       value:
