@@ -48,10 +48,9 @@ class DocumentService:
 
             return response
 
-    def update_document_status(self, request):
+    def update_document_status(self, document_id, request):
         with OpsEventHandler(OpsEventType.UPDATE_DOCUMENT) as meta:
             agreement_id = request["agreement_id"]
-            document_id = request["document_id"]
             status = request["status"]
 
             if not self.can_access_docs(agreement_id):
