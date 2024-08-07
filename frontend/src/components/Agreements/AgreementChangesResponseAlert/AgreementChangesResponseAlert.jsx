@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import SimpleAlert from "../../UI/Alert/SimpleAlert";
+import VanishingAlert from "../../UI/Alert/VanishingAlert";
 import { renderField } from "../../../helpers/utils";
 
 
@@ -15,7 +15,7 @@ import { renderField } from "../../../helpers/utils";
  * @returns {JSX.Element} - The rendered component.
  */
 function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, isDeclineAlertVisible, setIsApproveAlertVisible, setIsDeclineAlertVisible }) {
-    console.log(changeRequests);
+
     const approvedRequests = changeRequests.filter((changeRequest) => {
         if(changeRequest.change_request.status === "APPROVED") {
             return changeRequest;
@@ -32,11 +32,10 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
     return (
         <>
         {approvedRequests && approvedRequests.length > 0 && (
-            <SimpleAlert
+            <VanishingAlert
                 type="success"
                 heading="Changes Approved"
                 message="Your changes have been successfully approved by your Division Director."
-                isClosable={true}
                 setIsAlertVisible={setIsApproveAlertVisible}
                 isAlertVisible={isApproveAlertVisible}
             >
@@ -50,14 +49,13 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                         </ul>
                     </>
                 )}
-            </SimpleAlert>
+            </VanishingAlert>
         )}
         {declinedRequests && declinedRequests.length > 0 && (
-            <SimpleAlert
+            <VanishingAlert
                 type="error"
                 heading="Changes Declined"
                 message="Your changes have been declined by your Division Director."
-                isClosable={true}
                 setIsAlertVisible={setIsDeclineAlertVisible}
                 isAlertVisible={isDeclineAlertVisible}
             >
@@ -79,7 +77,7 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                             </>)}
                     </>
                 )}
-            </SimpleAlert>
+            </VanishingAlert>
         )}
         </>
     );
