@@ -19,7 +19,7 @@ class BasicAuthorizationProvider:
         if users and len(users) == 1:
             user = users[0][0]
 
-            user_permissions = set(p for role in user.roles for p in role.permissions[1:-1].split(","))
+            user_permissions = set(p for role in user.roles for p in role.permissions)
             if permission in user_permissions:
                 return True
 

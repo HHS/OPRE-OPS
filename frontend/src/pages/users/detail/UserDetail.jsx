@@ -9,6 +9,7 @@ import { getUser } from "../../../api/getUser";
 const UserDetail = () => {
     const dispatch = useDispatch();
     const user = useSelector((state) => state.userDetail.user);
+    const activeUser = useSelector((state) => state.auth.activeUser);
     const urlPathParams = useParams();
     const userId = parseInt(urlPathParams.id);
 
@@ -23,7 +24,10 @@ const UserDetail = () => {
 
     return (
         <App breadCrumbName={user?.email}>
-            <UserInfo user={user} />
+            <UserInfo
+                user={user}
+                isEditable={activeUser?.roles.includes("USER_ADMIN")}
+            />
         </App>
     );
 };

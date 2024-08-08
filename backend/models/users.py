@@ -3,8 +3,8 @@
 from enum import Enum, auto
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKey, Integer, Sequence
-from sqlalchemy.dialects.postgresql import ENUM, UUID
+from sqlalchemy import Column, ForeignKey, Integer, Sequence, String
+from sqlalchemy.dialects.postgresql import ARRAY, ENUM, UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 from models import BaseModel
@@ -138,7 +138,9 @@ class Role(BaseModel):
     )
 
     name: Mapped[str] = mapped_column(index=True)
-    permissions: Mapped[str]
+    permissions: Mapped[List[str]] = mapped_column(
+        ARRAY(String()), server_default="{}", default=[]
+    )
 
     users: Mapped[List["User"]] = relationship(
         "User",
