@@ -36,9 +36,9 @@ class DocumentGateway:
         """
         Return the document repository class corresponding to the provider.
         """
-        if provider_name == "fakeauth":
+        if provider_name == ProviderTypes.fakeauth.name:
             return FakeDocumentRepository()
-        elif provider_name == "logingov" or provider_name == "hhsams":
+        elif provider_name == ProviderTypes.logingov.name or provider_name == ProviderTypes.hhsams.name:
             return AzureDocumentRepository()
         else:
             raise NotImplementedError(f"Unsupported document repository provider: {provider_name}")
