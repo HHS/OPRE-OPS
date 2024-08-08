@@ -14,13 +14,14 @@ import ServicesComponentAccordion from "../../../components/ServicesComponents/S
 import Accordion from "../../../components/UI/Accordion";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import TextArea from "../../../components/UI/Form/TextArea";
+import ConfirmationModal from "../../../components/UI/Modals/ConfirmationModal";
 import PageHeader from "../../../components/UI/PageHeader";
 import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { document } from "../../../tests/data";
 import { actionOptions } from "./ReviewAgreement.constants";
-import useReviewAgreement from "./reviewAgreement.hooks";
+import useReviewAgreement from "./ReviewAgreement.hooks";
 import suite from "./suite";
 
 /**
@@ -66,7 +67,11 @@ export const ReviewAgreement = () => {
         toggleStates,
         setToggleStates,
         selectedBudgetLines,
-        changeTo
+        changeTo,
+        handleCancel,
+        showModal,
+        setShowModal,
+        modalProps
     } = useReviewAgreement(agreementId);
 
     const cn = classnames(suite.get(), {
@@ -84,6 +89,15 @@ export const ReviewAgreement = () => {
 
     return (
         <App breadCrumbName="Request BL Status Change">
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                />
+            )}
             {isAlertActive && Object.entries(pageErrors).length > 0 ? (
                 <SimpleAlert
                     type="error"
@@ -250,6 +264,14 @@ export const ReviewAgreement = () => {
                 />
             </Accordion>
             <div className="grid-row flex-justify-end margin-top-1">
+                <button
+                    name="cancel"
+                    className={`usa-button usa-button--unstyled margin-right-2`}
+                    data-cy="cancel-approval-btn"
+                    onClick={handleCancel}
+                >
+                    Cancel
+                </button>
                 <button
                     className={`usa-button usa-button--outline margin-right-2 ${
                         !isAgreementEditable ? "usa-tooltip" : ""

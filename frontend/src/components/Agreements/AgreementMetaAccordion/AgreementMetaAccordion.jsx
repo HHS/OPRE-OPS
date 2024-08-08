@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import Accordion from "../../UI/Accordion";
 import Term from "../../UI/Term";
-import DebugCode from "../../DebugCode";
 
 /**
  * Renders an accordion component that displays the details of an agreement.
@@ -23,10 +22,6 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
             heading="Review Agreement Details"
             level={2}
         >
-            <DebugCode
-                data={agreement}
-                title="Agreement Data"
-            />
             <p>{instructions}</p>
             {/* WITH VALIDATION */}
             {res && (
@@ -66,6 +61,14 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                                 name="contract-type"
                                 label="Contract Type"
                                 value={convertCodeForDisplay("contractType", agreement?.contract_type)}
+                            />
+                            <Term
+                                name="service-requirement-type"
+                                label="Service Requirement Type"
+                                value={convertCodeForDisplay(
+                                    "serviceRequirementType",
+                                    agreement?.service_requirement_type
+                                )}
                             />
                             <Term
                                 name="psc"
@@ -187,6 +190,14 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                                 name="contract-type"
                                 label="Contract Type"
                                 value={convertCodeForDisplay("contractType", agreement?.contract_type)}
+                            />
+                            <Term
+                                name="service-requirement-type"
+                                label="Service Requirement Type"
+                                value={convertCodeForDisplay(
+                                    "serviceRequirementType",
+                                    agreement?.service_requirement_type
+                                )}
                             />
                             <Term
                                 name="psc"
