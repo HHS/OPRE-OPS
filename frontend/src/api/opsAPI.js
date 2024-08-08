@@ -11,6 +11,7 @@ export const opsApi = createApi({
     tagTypes: [
         "Agreements",
         "ResearchProjects",
+        "User",
         "Users",
         "AgreementTypes",
         "AgreementReasons",

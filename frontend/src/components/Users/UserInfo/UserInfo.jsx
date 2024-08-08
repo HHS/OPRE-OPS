@@ -3,7 +3,6 @@ import ComboBox from "../../UI/Form/ComboBox/index.js";
 import React, { useEffect } from "react";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import { USER_STATUS } from "./UserInfo.constants.js";
-import _ from "lodash";
 
 const UserInfo = ({ user, isEditable }) => {
     const [selectedDivision, setSelectedDivision] = React.useState({});
@@ -32,10 +31,8 @@ const UserInfo = ({ user, isEditable }) => {
     }, [divisions, roles, user]);
 
     const handleDivisionChange = (division) => {
-        if (!_.isEmpty(division)) {
-            setSelectedDivision(division);
-            updateUser({ id: user.id, data: { division: division.id } });
-        }
+        setSelectedDivision(division);
+        updateUser({ id: user.id, data: { division: division ? division.id : null } });
     };
 
     if (isLoadingDivisions || isLoadingRoles) {
@@ -45,7 +42,6 @@ const UserInfo = ({ user, isEditable }) => {
         return <div>Oops, an error occurred</div>;
     }
     if (updateUserResult.isError) {
-        console.error(`Error Updating User ${updateUserResult.error}`);
         return <div>Oops, an error occurred</div>;
     }
 

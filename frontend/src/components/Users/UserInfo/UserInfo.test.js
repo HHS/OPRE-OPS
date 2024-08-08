@@ -162,6 +162,40 @@ describe("UserInfo", () => {
         expect(await screen.findByText("INACTIVE")).toBeInTheDocument();
         expect(await screen.findByText("LOCKED")).toBeInTheDocument();
     });
+
+    test("update the division", async () => {
+        const user = {
+            full_name: "Test User",
+            email: "test.user@exampl.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: ["admin"]
+        };
+        const { getByText, container } = renderWithProviders(
+            <App
+                user={user}
+                isEditable={true}
+            />
+        );
+
+        await waitFor(() => {
+            expect(container).toBeInTheDocument();
+        });
+
+        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+
+        // find the input element within the div with testid division-combobox
+        const divisionComboBox = screen.getByTestId("division-combobox");
+        // eslint-disable-next-line testing-library/no-node-access
+        const divisionInput = divisionComboBox.querySelector("input");
+
+        fireEvent.keyDown(divisionInput, { key: "ArrowDown", code: 40 });
+        // eslint-disable-next-line testing-library/prefer-screen-queries
+        fireEvent.click(getByText("Division of Economic Independence"));
+
+        // check that the division has been selected
+        expect(await screen.findByText("Division of Economic Independence")).toBeInTheDocument();
+    });
 });
 
 const App = ({ user, isEditable }) => {

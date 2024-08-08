@@ -42,6 +42,13 @@ export const handlers = [
 
     http.get(`https://localhost:8000/api/v1/divisions/`, () => {
         return HttpResponse.json(divisions);
+    }),
+
+    http.patch("https://localhost:8000/api/v1/users/:id", (req, res, ctx) => {
+        const { id } = req.params;
+        const { body } = req;
+
+        return res(ctx.status(200), ctx.json({ id, ...body }), ctx.delay(150));
     })
 ];
 
