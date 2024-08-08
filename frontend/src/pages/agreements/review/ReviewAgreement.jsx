@@ -133,8 +133,9 @@ export const ReviewAgreement = () => {
             />
             <AgreementBLIAccordion
                 title="Select Budget Lines"
-                instructions="  Select the budget lines you'd like this action to apply to. The agreement will be sent to your
-                Division Director to review and approve before changes are made."
+                instructions={`Select the budget lines you'd like this action to apply to. The agreement will be sent to your
+                Division Director to review and approve before changes are made. ${
+                action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? `Use the toggle to see how your request will change the agreement total.` : ``}`}
                 budgetLineItems={selectedBudgetLines}
                 agreement={agreement}
                 afterApproval={afterApproval}
