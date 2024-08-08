@@ -135,7 +135,10 @@ export const ReviewAgreement = () => {
                 title="Select Budget Lines"
                 instructions={`Select the budget lines you'd like this action to apply to. The agreement will be sent to your
                 Division Director to review and approve before changes are made. ${
-                action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? `Use the toggle to see how your request will change the agreement total.` : ``}`}
+                    action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+                        ? "Use the toggle to see how your request will change the agreement total."
+                        : ""
+                }`}
                 budgetLineItems={selectedBudgetLines}
                 agreement={agreement}
                 afterApproval={afterApproval}
@@ -190,7 +193,11 @@ export const ReviewAgreement = () => {
                     ))}
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
-                instructions="The budget lines you've selected are using funds from the CANs displayed below. Use the toggle to see how your approval would change the remaining budget of CANs within your Portfolio or Division."
+                instructions={`The budget lines you've selected are using funds from the CANs displayed below. ${
+                    action === actionOptions.CHANGE_DRAFT_TO_PLANNED
+                        ? "Use the toggle to see how your approval would change the remaining budget of CANs within your Portfolio or Division."
+                        : ""
+                }`}
                 selectedBudgetLines={selectedBudgetLines}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
