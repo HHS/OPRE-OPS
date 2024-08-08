@@ -1,8 +1,9 @@
-import { useGetDivisionsQuery } from "../../../api/opsAPI.js";
+import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
 import React, { useEffect } from "react";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import { USER_STATUS } from "./UserInfo.constants.js";
+import _ from "lodash";
 
 const UserInfo = ({ user, isEditable }) => {
     const [selectedDivision, setSelectedDivision] = React.useState({});
@@ -16,6 +17,7 @@ const UserInfo = ({ user, isEditable }) => {
 
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery();
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery();
+    const [updateUser, updateUserResult] = useUpdateUserMutation();
 
     useEffect(() => {
         setSelectedDivision(divisions?.find((division) => division.id === user.division));
@@ -29,14 +31,23 @@ const UserInfo = ({ user, isEditable }) => {
         };
     }, [divisions, roles, user]);
 
+    const handleDivisionChange = (division) => {
+        if (!_.isEmpty(division)) {
+            setSelectedDivision(division);
+            updateUser({ id: user.id, data: { division: division.id } });
+        }
+    };
+
     if (isLoadingDivisions || isLoadingRoles) {
         return <div>Loading...</div>;
     }
     if (errorDivisions || errorRoles) {
         return <div>Oops, an error occurred</div>;
     }
-
-    console.log("isEditable: ", isEditable);
+    if (updateUserResult.isError) {
+        console.error(`Error Updating User ${updateUserResult.error}`);
+        return <div>Oops, an error occurred</div>;
+    }
 
     return (
         <div className="usa-card">
@@ -64,7 +75,7 @@ const UserInfo = ({ user, isEditable }) => {
                                             namespace="division-combobox"
                                             data={divisions}
                                             selectedData={selectedDivision}
-                                            setSelectedData={setSelectedDivision}
+                                            setSelectedData={handleDivisionChange}
                                             defaultString="-- Select Division --"
                                             optionText={(division) => division.name}
                                             isMulti={false}

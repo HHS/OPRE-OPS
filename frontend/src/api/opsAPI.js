@@ -184,11 +184,11 @@ export const opsApi = createApi({
             invalidatesTags: ["User"]
         }),
         updateUser: builder.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, data }) => ({
                 url: `/users/${id}`,
-                method: "PUT",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body
+                body: data
             }),
             invalidatesTags: ["User"]
         }),
