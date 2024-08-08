@@ -1,29 +1,18 @@
-import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from flask import Flask
-from flask_jwt_extended import current_user
-
-from models import Role, User
 from ops_api.ops.auth.exceptions import AuthenticationError
 from ops_api.ops.document.document_gateway import DocumentGateway
 from ops_api.ops.document.document_repository import DocumentRepository
 from ops_api.ops.document.exceptions import DocumentNotFoundError
 from ops_api.ops.document.service import DocumentService
 from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.tests.document.test_case import BaseDocumentTestCase
 
 
-class TestDocumentService(unittest.TestCase):
+class TestDocumentService(BaseDocumentTestCase):
     def setUp(self):
-        # Mock Flask app
-        self.app = Flask(__name__)
-        self.app.config["AUTHLIB_OAUTH_CLIENTS"] = "fakeauth"
-        self.client = self.app.test_client()
-
-        # Mock current_user with admin roles
-        self.mock_user = User(id=1, roles=[Role(name="admin")])
-        self.app.before_request(lambda: setattr(current_user, "id", self.mock_user.id))
-        self.app.before_request(lambda: setattr(current_user, "roles", self.mock_user.roles))
+        # Ensure base class setup is called
+        super().setUp()
 
         # Mock DocumentGateway
         self.mock_gateway = Mock(spec=DocumentGateway)
@@ -34,10 +23,15 @@ class TestDocumentService(unittest.TestCase):
         self.document_service = DocumentService(self.mock_gateway, current_user_id=self.mock_user.id, is_admin=True)
 
         # Mock request document data
-        self.mock_doc_data = {"file_name": "Test Document.pdf", "agreement_id": 123, "document_type": "PDF"}
+        self.mock_doc_data = {
+            "file_name": "Test Document.pdf",
+            "agreement_id": 123,
+            "document_type": "ADDITIONAL DOCUMENT",
+        }
         self.mock_repo_result = {"uuid": "123", "url": "mock_url"}
         self.mock_agreement_id = "456"
-        self.mock_status_req_data = {"agreement_id": 123, "document_id": "123456", "status": "Uploaded"}
+        self.mock_status_req_data = {"agreement_id": 123, "status": "Uploaded"}
+        self.mock_document_id = self.mock_repo_result.get("uuid")
 
         # Mock event handler
         self.mock_event_handler = MagicMock(spec=OpsEventHandler)
@@ -84,22 +78,21 @@ class TestDocumentService(unittest.TestCase):
 
         with patch("ops_api.ops.document.service.OpsEventHandler", return_value=self.mock_event_handler):
             with patch.object(self.document_service, "can_access_docs", return_value=True):
-                result = self.document_service.update_document_status(self.mock_status_req_data)
+                result = self.document_service.update_document_status(self.mock_document_id, self.mock_status_req_data)
 
         self.assertEqual(
             result["message"],
-            f"Document {self.mock_status_req_data['document_id']} in agreement "
-            f"{self.mock_status_req_data['agreement_id']} status updated to {self.mock_status_req_data['status']}",
+            f"Document {self.mock_document_id} in agreement {self.mock_status_req_data['agreement_id']} status updated to {self.mock_status_req_data['status']}",
         )
         self.mock_repository.update_document_status.assert_called_once_with(
-            self.mock_status_req_data["document_id"], self.mock_status_req_data["status"]
+            self.mock_document_id, self.mock_status_req_data["status"]
         )
 
     def test_update_document_status_unauthorized(self):
         with patch("ops_api.ops.document.service.OpsEventHandler", return_value=self.mock_event_handler):
             with patch.object(self.document_service, "can_access_docs", return_value=False):
                 with self.assertRaises(AuthenticationError):
-                    self.document_service.update_document_status(self.mock_status_req_data)
+                    self.document_service.update_document_status(self.mock_document_id, self.mock_status_req_data)
 
     def test_update_document_status_document_not_found(self):
         self.mock_repository.update_document_status.side_effect = DocumentNotFoundError("Document not found")
@@ -107,4 +100,4 @@ class TestDocumentService(unittest.TestCase):
         with patch("ops_api.ops.document.service.OpsEventHandler", return_value=self.mock_event_handler):
             with patch.object(self.document_service, "can_access_docs", return_value=True):
                 with self.assertRaises(DocumentNotFoundError):
-                    self.document_service.update_document_status(self.mock_status_req_data)
+                    self.document_service.update_document_status(self.mock_document_id, self.mock_status_req_data)
