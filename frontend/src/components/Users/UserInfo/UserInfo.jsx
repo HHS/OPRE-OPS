@@ -1,17 +1,17 @@
-import styles from "./UserInfo.module.css";
 import { useGetDivisionsQuery } from "../../../api/opsAPI.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
 import React, { useEffect } from "react";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
+import { USER_STATUS } from "./UserInfo.constants.js";
 
 const UserInfo = ({ user, isEditable }) => {
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
     const statusData = [
-        { id: 1, name: "ACTIVE" },
-        { id: 2, name: "INACTIVE" },
-        { id: 3, name: "LOCKED" }
+        { id: 1, name: USER_STATUS.ACTIVE },
+        { id: 2, name: USER_STATUS.INACTIVE },
+        { id: 3, name: USER_STATUS.LOCKED }
     ];
 
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery();
@@ -54,7 +54,7 @@ const UserInfo = ({ user, isEditable }) => {
                             <div className="grid-col">User Email:</div>
                             <div className="grid-col">{user?.email}</div>
                         </div>
-                        <div className={`grid-row ${styles.centeredItem}`}>
+                        <div className="grid-row display-flex flex-align-center">
                             <div className="grid-col flex-3">Division:</div>
                             <div className="grid-col flex-3">
                                 {!isEditable && <span>{selectedDivision?.name}</span>}
@@ -92,7 +92,7 @@ const UserInfo = ({ user, isEditable }) => {
                                 )}
                             </div>
                         </div>
-                        <div className={`grid-row ${styles.centeredItem}`}>
+                        <div className="grid-row display-flex flex-align-center">
                             <div className="grid-col flex-3">Status:</div>
                             <div className="grid-col flex-3">
                                 {!isEditable && <span>{selectedStatus?.name}</span>}
