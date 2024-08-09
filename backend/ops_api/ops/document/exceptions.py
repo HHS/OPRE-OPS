@@ -20,3 +20,11 @@ class UnsupportedProviderError(Exception):
     """
 
     pass
+
+
+class SasUrlGenerationError(Exception):
+    """
+    Exception to raise when the SAS URL generation fails.
+    """
+
+    pass

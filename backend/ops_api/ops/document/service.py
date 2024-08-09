@@ -47,3 +47,21 @@ class DocumentService:
             meta.metadata.update({"new_document": response, "agreement_id": agreement_id})
 
             return response
+
+    def update_document_status(self, document_id, request):
+        with OpsEventHandler(OpsEventType.UPDATE_DOCUMENT) as meta:
+            agreement_id = request["agreement_id"]
+            status = request["status"]
+
+            if not self.can_access_docs(agreement_id):
+                raise AuthenticationError(
+                    f"User {self.current_user_id} does not have access to PATCH documents for agreement {agreement_id}"
+                )
+
+            self.repository.update_document_status(document_id, status)
+
+            meta.metadata.update(
+                {"document_status_updated": status, "agreement_id": agreement_id, "document_id": document_id}
+            )
+
+            return {"message": f"Document {document_id} in agreement {agreement_id} status updated to {status}"}

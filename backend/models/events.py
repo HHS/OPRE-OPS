@@ -39,6 +39,7 @@ class OpsEventType(Enum):
     UPDATE_PROCUREMENT_ACQUISITION_PLANNING = auto()
     DELETE_PROCUREMENT_ACQUISITION_PLANNING = auto()
     CREATE_DOCUMENT = auto()
+    UPDATE_DOCUMENT = auto()
 
     # Auth Related Events
     LOGIN_ATTEMPT = auto()

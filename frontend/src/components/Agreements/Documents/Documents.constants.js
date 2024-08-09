@@ -1,0 +1,16 @@
+export const DOCUMENT_TYPES = [
+    "CERTIFICATION_OF_FUNDING",
+    "STATEMENT_OF_REQUIREMENTS",
+    "ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS",
+    "INDEPENDENT_GOVERNMENT_COST_ESTIMATE",
+    "SECTION_508_EXCEPTION_DOCUMENTATION",
+    "COR_NOMINATION_AND_CERTIFICATION_DOCUMENT",
+    "ADDITIONAL_DOCUMENT"
+];
+
+export const VALID_EXTENSIONS = ["pdf", "doc", "docx", "xls", "xlsx"];
+
+export const DOCUMENT_CONTAINER_NAME = "documents";
+
+export const ALLOWED_FAKE_HOSTS = "FakeDocumentRepository";
+export const ALLOWED_HOSTS = "blob.core.windows.net";

@@ -1,4 +1,4 @@
-from models import AdministrativeAndSupportProject, Notification, Project
+from models import AdministrativeAndSupportProject, Document, Notification, Project
 from models.base import BaseModel
 from models.cans import (
     CAN,
@@ -24,6 +24,7 @@ from models.procurement_tracker import (
 )
 from models.projects import ResearchProject, ResearchType
 from models.users import User
+from ops_api.ops.document.api import DocumentAPI
 from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
     AdministrativeAndSupportProjectListAPI,
@@ -177,7 +178,6 @@ NOTIFICATIONS_LIST_API_VIEW_FUNC = NotificationListAPI.as_view("notifications-gr
 SERVICES_COMPONENT_ITEM_API_VIEW_FUNC = ServicesComponentItemAPI.as_view("services-component-item", ServicesComponent)
 SERVICES_COMPONENT_LIST_API_VIEW_FUNC = ServicesComponentListAPI.as_view("services-component-group", ServicesComponent)
 
-
 # Azure SAS Token ENDPOINTS
 AZURE_SAS_TOKEN_VIEW_FUNC = SasToken.as_view("azure-sas-token")
 
@@ -212,3 +212,6 @@ VERSION_API_VIEW_FUNC = VersionAPI.as_view("version_api")
 # Change Request ENDPOINTs
 CHANGE_REQUEST_LIST_API_VIEW_FUNC = ChangeRequestListAPI.as_view("change-request-list", ChangeRequest)
 CHANGE_REQUEST_REVIEW_API_VIEW_FUNC = ChangeRequestReviewAPI.as_view("change-request-review-list", ChangeRequest)
+
+# Document ENDPOINTs
+DOCUMENT_API_FUNC = DocumentAPI.as_view("documents", Document)
