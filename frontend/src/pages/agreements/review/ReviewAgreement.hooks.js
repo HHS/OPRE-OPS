@@ -126,6 +126,19 @@ const useReviewAgreement = (agreementId) => {
             setIsAlertActive(false);
         };
     }, [res, isSuccess]);
+    const createStatusChangeMessages = (selectedBudgetLines, action) => {
+        let messages = "";
+
+        selectedBudgetLines.forEach((bli) => {
+            if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
+                messages += `\u2022 BL ${bli.id} Status: Draft to Planned \n`;
+            } else {
+                messages += `\u2022 BL ${bli.id} Status: Planned to Executing \n`;
+            }
+        });
+        return messages;
+    };
+    const statusChangeMessages = createStatusChangeMessages(selectedBudgetLines, changeTo);
     /**
      * Handle the sending of the budget line items to approval
      * @returns {void}
@@ -185,9 +198,12 @@ const useReviewAgreement = (agreementId) => {
                     setAlert({
                         type: "success",
                         heading: "Changes Sent to Approval",
-                        // TODO: add Change Requests to alert message
                         message:
-                            "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                            `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                            `<strong>Pending Changes:</strong>\n` +
+                            `${statusChangeMessages}\n` +
+                            `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`,
+
                         redirectUrl: "/agreements"
                     });
                 }
@@ -279,6 +295,7 @@ const useReviewAgreement = (agreementId) => {
             }
         });
     };
+
     /**
      * Clean the budget line item data for the API
      * @param {object} data - the budget line item data
