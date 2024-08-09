@@ -16,17 +16,8 @@ import { renderField } from "../../../helpers/utils";
  */
 function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, isDeclineAlertVisible, setIsApproveAlertVisible, setIsDeclineAlertVisible }) {
 
-    const approvedRequests = changeRequests.filter((changeRequest) => {
-        if(changeRequest.change_request.status === "APPROVED") {
-            return changeRequest;
-        }
-    });
-
-    const declinedRequests = changeRequests.filter((changeRequest) => {
-        if(changeRequest.change_request.status === "REJECTED") {
-            return changeRequest;
-        }
-    });
+    const approvedRequests = changeRequests.filter(request => request.change_request.status === "APPROVED");
+    const declinedRequests = changeRequests.filter(request => request.change_request.status === "REJECTED");
 
     const approvedRequestsReviewNotes = getChangeRequestNotes(approvedRequests);
     const declinedRequestsReviewNotes = getChangeRequestNotes(declinedRequests);

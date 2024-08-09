@@ -12,7 +12,7 @@ import SimpleAlert from "./SimpleAlert";
  * @param {boolean} [props.isAlertVisible] - Whether the alert is visible.
  * @param {Function} [props.setIsAlertVisible] - The function to set the alert visibility.
  * @param {number} [props.timeout] - The amount of time before the alert disappears in milliseconds. Default is 2000ms
- * @returns {JSX.Element | null} - The rendered alert component.
+ * @returns {JSX.Element} - The rendered alert component.
  */
 const VanishingAlert =  ({
     children,

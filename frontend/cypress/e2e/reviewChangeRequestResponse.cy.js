@@ -314,24 +314,3 @@ describe("Approve Change Requests at the Agreement Level", () => {
             });
     });
 });
-
-const checkAgreementHistory = () => {
-    cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
-    cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
-    cy.get('[data-cy="agreement-history-container"]').should("exist");
-    cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
-    cy.get('[data-cy="agreement-history-list"]').should("exist");
-    cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
-        "exist"
-    );
-};
-
-const checkHistoryItem = (titleRegex, expectedText) => {
-    return cy
-        .get('[data-cy="agreement-history-list"]')
-        .contains('[data-cy="log-item-title"]', titleRegex)
-        .closest("li")
-        .within(() => {
-            cy.get('[data-cy="log-item-children"]').should("exist").and("have.text", expectedText);
-        });
-};

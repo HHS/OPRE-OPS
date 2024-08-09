@@ -56,7 +56,6 @@ const Agreement = () => {
         agreement_response_list = query_response.data
     }
 
-    console.log(agreement_response_list);
     if (isSuccess) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     }
