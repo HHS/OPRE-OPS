@@ -40,8 +40,8 @@ it("should create a document database record and upload to in memory storage", (
         expect(response.body.url).to.exist;
         expect(response.body.url).to.include("FakeDocumentRepository");
         expect(response.body.documents).to.exist;
-        expect(response.body.documents[0].name).to.eq("sample_document.xlsx");
-        expect(response.body.documents[0].type).to.eq('DocumentType.ADDITIONAL_DOCUMENT');
+        expect(response.body.documents[0].document_name).to.eq("sample_document.xlsx");
+        expect(response.body.documents[0].document_type).to.eq('DocumentType.ADDITIONAL_DOCUMENT');
         expect(response.body.documents[0].agreement_id).to.eq(1);
     })
 
