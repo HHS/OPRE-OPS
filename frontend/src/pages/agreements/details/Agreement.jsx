@@ -4,12 +4,17 @@ import App from "../../../App";
 import { getUser } from "../../../api/getUser";
 import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
+import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
+import { useGetNotificationsByUserIdAndAgreementIdQuery } from "../../../api/opsAPI";
+import { getAccessToken } from "../../../components/Auth/auth";
+import { jwtDecode } from "jwt-decode";
+
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -18,6 +23,8 @@ const Agreement = () => {
     const [projectOfficer, setProjectOfficer] = useState({});
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
+    const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
+    const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
@@ -33,8 +40,21 @@ const Agreement = () => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
-
     let doesAgreementHaveBlIsInReview = false;
+    const access_token = getAccessToken();
+    let oidc_userId = "";
+    let auth_header = "";
+    if (access_token) {
+        auth_header = `Bearer ${access_token}`;
+        const decodedJwt = jwtDecode(access_token);
+        oidc_userId = decodedJwt["sub"];
+    }
+
+    let agreement_response_list = []
+    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({ user_oidc_id: oidc_userId, agreement_id: agreementId, auth_header });
+    if (query_response){
+        agreement_response_list = query_response.data
+    }
 
     if (isSuccess) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
@@ -80,6 +100,15 @@ const Agreement = () => {
                 </>
             )}
 
+            {agreement_response_list && agreement_response_list.length > 0 && (
+                <AgreementChangesResponseAlert
+                    changeRequests={agreement_response_list}
+                    isApproveAlertVisible={isApproveAlertVisible}
+                    isDeclineAlertVisible={isDeclinedAlertVisible}
+                    setIsApproveAlertVisible={setIsApproveAlertVisible}
+                    setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
+                />
+            )}
             <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs
