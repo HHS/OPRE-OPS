@@ -10,7 +10,7 @@ from models import (
     ChangeRequestStatus,
     Division,
 )
-from models.cans import BudgetLineItemStatus
+from models.cans import BudgetLineItemStatus, ConvertBLIStatusNameToPrettyString
 
 
 def get_expires_date():
@@ -65,8 +65,8 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
 
     if change_request.has_status_change:
         status_diff = change_request.requested_change_diff["status"]
-        new_status = status_diff["new"]
-        old_status = status_diff["old"]
+        new_status = ConvertBLIStatusNameToPrettyString(status_diff["new"])
+        old_status = ConvertBLIStatusNameToPrettyString(status_diff["old"])
         if change_request.status == ChangeRequestStatus.APPROVED:
             notification = ChangeRequestNotification(
                 change_request_id=change_request.id,

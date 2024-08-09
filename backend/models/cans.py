@@ -34,11 +34,24 @@ from models.users import User
 
 
 class BudgetLineItemStatus(Enum):
-    DRAFT = auto()
-    PLANNED = auto()
-    IN_EXECUTION = auto()
-    OBLIGATED = auto()
+    def __str__(self):
+            return str(self.value)
+    DRAFT = "Draft"
+    PLANNED = "Planned"
+    IN_EXECUTION = "In Execution"
+    OBLIGATED = "Obligated"
 
+def ConvertBLIStatusNameToPrettyString(BLIStatusName):
+    if BLIStatusName == "DRAFT":
+        return BudgetLineItemStatus.DRAFT.__str__()
+    elif BLIStatusName == "PLANNED":
+        return BudgetLineItemStatus.PLANNED.__str__()
+    elif BLIStatusName == "IN_EXECUTION":
+        return BudgetLineItemStatus.IN_EXECUTION.__str__()
+    elif BLIStatusName == "OBLIGATED":
+        return BudgetLineItemStatus.OBLIGATED.__str__()
+    else:
+        return BudgetLineItemStatus.DRAFT.__str__()
 
 class ModType(Enum):
     ADMIN = auto()
