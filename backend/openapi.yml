@@ -1,4 +1,4 @@
-openapi: 3.0.2
+openapi: 3.1.0
 info:
   title: OPRE OPS API
   description: OPRE OPS API Specification
@@ -13,6 +13,7 @@ servers:
 paths:
   /api/v1/agreements/:
     get:
+      operationId: getAllAgreements
       description: Get Agreements
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -46,6 +47,7 @@ paths:
                 "0":
                   $ref: "#/components/examples/Agreements"
     post:
+      operationId: createAgreement
       summary: Create a new Agreement
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -64,6 +66,7 @@ paths:
           description: Internal Server Error
   /api/v1/agreements/{agreement_id}:
     get:
+      operationId: getAgreementById
       description: Get Agreement By Id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -87,6 +90,7 @@ paths:
                 "0":
                   $ref: "#/components/examples/Agreement"
     put:
+      operationId: putAgreement
       summary: Update an Agreement (Over-write)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -115,6 +119,7 @@ paths:
         "500":
           description: Internal Server Error
     patch:
+      operationId: patchAgreement
       summary: Update an Agreement (Merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -137,6 +142,7 @@ paths:
         "500":
           description: Internal Server Error
     delete:
+      operationId: deleteAgreement
       summary: Delete an Agreement
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -160,6 +166,7 @@ paths:
           description: Internal Server Error
   /api/v1/agreements/{agreement_id}/history:
     get:
+      operationId: getAgreementHistoryById
       description: Get Agreement History By Id
       parameters:
         - in: path
@@ -183,6 +190,7 @@ paths:
                   $ref: "#/components/examples/Agreement"
   /api/v1/cans/:
     get:
+      operationId: getAllCANs
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       description: Get CANs
@@ -191,6 +199,7 @@ paths:
           description: OK
   /api/v1/cans/{can_id}:
     get:
+      operationId: getCANById
       description: Get CAN by Id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -215,6 +224,7 @@ paths:
                   $ref: "#/components/examples/CAN"
   /api/v1/portfolios:
     get:
+      operationId: getAllPortfolios
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       description: Get Portfolios
@@ -223,6 +233,7 @@ paths:
           description: OK
   /api/v1/portfolios/{portfolio_id}:
     get:
+      operationId: getPortfolioById
       description: Get Portfolio by Id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -247,6 +258,7 @@ paths:
                   $ref: "#/components/examples/Portfolio"
   /api/v1/portfolios/{portfolio_id}/calcFunding/:
     get:
+      operationId: getPortfolioFundingById
       description: Get Total Funding by Id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -345,6 +357,7 @@ paths:
                     }
   /api/v1/portfolios/{portfolio_id}/cans/:
     get:
+      operationId: getCansByPortfolioId
       description: Get CANs associated with a Portfolio
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -369,7 +382,7 @@ paths:
             application/json:
               schema:
                 type: array
-                properties: {}
+                properties: { }
                 items:
                   type: string
               examples:
@@ -407,6 +420,7 @@ paths:
                     ]
   /api/v1/can-funding-summary/{can_id}:
     get:
+      operationId: getFundingTotalsByCanId
       description: Get Funding Totals by CAN Id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -510,6 +524,7 @@ paths:
                     }
   /api/v1/users/:
     get:
+      operationId: getAllUsers
       description: Get all Users
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -542,7 +557,7 @@ paths:
                     type: integer
                   first_name:
                     type: string
-                  updated: {}
+                  updated: { }
                   email:
                     type: string
               examples:
@@ -626,6 +641,7 @@ paths:
                     ]
   /api/v1/users/{user_id}:
     get:
+      operationId: getUserById
       description: Get User by Id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -650,6 +666,7 @@ paths:
                   $ref: "#/components/examples/User"
   /auth/login/:
     post:
+      operationId: login
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       description: API Authentication
@@ -674,6 +691,7 @@ paths:
           description: Created
   /api/v1/research-projects/:
     get:
+      operationId: getResearchProjects
       description: Get ResearchProjects
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -707,6 +725,7 @@ paths:
         "401":
           description: Unauthorized
     post:
+      operationId: createResearchProject
       summary: Create a new Research Project
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -727,6 +746,7 @@ paths:
           description: Internal Server Error
   /api/v1/research-projects/{id}:
     get:
+      operationId: getResearchProjectById
       description: Get Research Projects by id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -752,6 +772,7 @@ paths:
           description: Unauthorized
   /api/v1/research-project-funding-summary/:
     get:
+      operationId: getResearchProjectFundingSummary
       description: ""
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -793,6 +814,7 @@ paths:
                       example: Must be greater than or equal to 1900.
   /api/v1/procurement-shops/:
     get:
+      operationId: getAllProcurementShops
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       description: Get all Procurement Shops
@@ -843,6 +865,7 @@ paths:
                     ]
   /api/v1/procurement-shops/{id}:
     get:
+      operationId: getProcurementShopById
       description: Get Procurement Shop by id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -906,6 +929,7 @@ paths:
                     }
   /api/v1/budget-line-items/:
     get:
+      operationId: getBudgetLineItems
       description: Get Budget Line Items
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -935,6 +959,7 @@ paths:
                 "0":
                   $ref: "#/components/examples/BudgetLineItems"
     post:
+      operationId: createBudgetLineItem
       summary: Create a new Budget Line Item
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -953,6 +978,7 @@ paths:
           description: Internal Server Error
   /api/v1/budget-line-items/{id}:
     get:
+      operationId: getBudgetLineItemById
       description: Get Budget Line Items by id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -973,6 +999,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/BudgetLineItem"
     put:
+      operationId: putBudgetLineItem
       summary: Update a new Budget Line Item (Over-write)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1001,6 +1028,7 @@ paths:
         "500":
           description: Internal Server Error
     patch:
+      operationId: patchBudgetLineItem
       summary: Update a Budget Line Item (Merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1029,6 +1057,7 @@ paths:
         "500":
           description: Internal Server Error
     delete:
+      operationId: deleteBudgetLineItem
       summary: Delete a Budget Line Item
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1052,6 +1081,7 @@ paths:
           description: Internal Server Error
   /api/v1/notifications/:
     get:
+      operationId: getNotifications
       description: Get Notifications
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1082,6 +1112,7 @@ paths:
                   $ref: "#/components/examples/Notifications"
   /api/v1/notifications/{id}:
     get:
+      operationId: getNotificationById
       description: Get Notifications By Id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1102,6 +1133,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Notification"
     put:
+      operationId: putNotification
       summary: Update a Notification (Over-write)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1130,6 +1162,7 @@ paths:
         "500":
           description: Internal Server Error
     patch:
+      operationId: patchNotification
       summary: Update a Notification (Merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1159,6 +1192,7 @@ paths:
           description: Internal Server Error
   /api/v1/services-components/:
     get:
+      operationId: getServicesComponents
       description: Get Services Components
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1175,6 +1209,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ServicesComponents"
     post:
+      operationId: createServicesComponent
       summary: Create a new Service Component
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1193,6 +1228,7 @@ paths:
           description: Internal Server Error
   /api/v1/services-components/{id}:
     get:
+      operationId: getServicesComponentById
       description: Get Services Component by id
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1213,6 +1249,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ServicesComponent"
     put:
+      operationId: putServicesComponent
       summary: Update a Services Component (Over-write)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1241,6 +1278,7 @@ paths:
         "500":
           description: Internal Server Error
     patch:
+      operationId: patchServicesComponent
       summary: Update a Services Component (Merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1269,6 +1307,7 @@ paths:
         "500":
           description: Internal Server Error
     delete:
+      operationId: deleteServicesComponent
       summary: Delete a Service Component
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1292,6 +1331,7 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-steps/:
     get:
+      operationId: getProcurementSteps
       description: Get list of Procurement Steps
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1309,6 +1349,7 @@ paths:
                 $ref: "#/components/schemas/ProcurementSteps"
   /api/v1/procurement-acquisition-plannings/{id}:
     get:
+      operationId: getAcquisitionPlanningById
       description: Get an Acquisition Planning step by ID
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1329,6 +1370,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/AcquisitionPlanning"
     patch:
+      operationId: patchAcquisitionPlanning
       summary: Update Get an Acquisition Planning (merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1358,6 +1400,7 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-pre-solicitations/{id}:
     get:
+      operationId: getPreSolicitationById
       description: Get a Pre-Solicitation step by ID
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1378,6 +1421,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PreSolicitation"
     patch:
+      operationId: patchPreSolicitation
       summary: Update Get an Acquisition Planning (merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1407,6 +1451,7 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-solicitations/{id}:
     get:
+      operationId: getSolicitationById
       description: Get a Pre-Solicitation step by ID
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1427,6 +1472,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Solicitation"
     patch:
+      operationId: patchSolicitation
       summary: Update a Pre-Solicitation step (merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1456,6 +1502,7 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-evaluations/{id}:
     get:
+      operationId: getEvaluationById
       description: Get an Evaluation step by ID
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1476,6 +1523,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Evaluation"
     patch:
+      operationId: patchEvaluation
       summary: Update an Evaluation step (merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1505,6 +1553,7 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-pre-awards/{id}:
     get:
+      operationId: getPreAwardById
       description: Get a Pre-Award step by ID
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1525,6 +1574,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PreAward"
     patch:
+      operationId: patchPreAward
       summary: Update a Pre-Award step (merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1554,6 +1604,7 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-awards/{id}:
     get:
+      operationId: getAwardById
       description: Get an Award step by ID
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1574,6 +1625,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Award"
     patch:
+      operationId: patchAward
       summary: Update an Award step (merge)
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1604,6 +1656,7 @@ paths:
   /api/v1/change-requests/:
     description: ChangeRequests collection endpoint
     get:
+      operationId: getChangeRequests
       description: Get a list of change requests with pagination
       parameters:
         - name: offset
@@ -1641,6 +1694,7 @@ paths:
   /api/v1/change-request-reviews/:
     description: command object endpoint to approve or reject a change request
     post:
+      operationId: approveOrRejectChangeRequest
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       description: approve or reject a change request
@@ -1676,6 +1730,7 @@ paths:
           description: Internal Server Error
   /api/v1/documents/{agreement_id}/:
     get:
+      operationId: getDocuments
       description: Get documents by agreement id
       parameters:
         - in: path
@@ -1701,6 +1756,7 @@ paths:
           description: Internal Server Error
   /api/v1/documents/:
     post:
+      operationId: createDocument
       description: Create a new document
       requestBody:
         required: true
@@ -1814,14 +1870,14 @@ components:
           type: integer
         nickname:
           type: string
-        appropriation_date: {}
+        appropriation_date: { }
         description:
           type: string
         id:
           type: integer
         expiration_date:
           type: string
-        managing_project_id: {}
+        managing_project_id: { }
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -2030,7 +2086,7 @@ components:
           $ref: "#/components/schemas/ProductServiceCode"
         procurement_shop:
           $ref: "#/components/schemas/ProcurementShop"
-        procurement_shop_id:
+        awarding_entity_id:
           type: integer
           example: 1
         notes:
@@ -2066,7 +2122,7 @@ components:
         project_officer_id:
           type: integer
           example: 1
-        procurement_tracker_workflow_id:
+        procurement_tracker_id:
           type: integer
           example: 1
         created_on:
@@ -2412,7 +2468,7 @@ components:
           type: array
           items:
             type: object
-            example: [{ "id": 1 }, { "id": 2 }, { "id": 3 }]
+            example: [ { "id": 1 }, { "id": 2 }, { "id": 3 } ]
 
       required:
         - title
@@ -2428,6 +2484,9 @@ components:
         id:
           type: integer
           example: 1
+        notification_type:
+          type: string
+          example: "CHANGE_REQUEST_NOTIFICATION"
         title:
           type: string
           example: "Notification #1"
@@ -2440,6 +2499,8 @@ components:
         expires:
           type: string
           example: "2023-04-06"
+        change_request:
+          $ref: "#/components/schemas/GenericChangeRequest"
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -2539,14 +2600,13 @@ components:
         period_end:
           type: string
           example: "2023-06-30"
+      required:
+        - contract_agreement_id
+        - number
+        - optional
     ServicesComponentRequestPost:
       allOf:
         - $ref: "#/components/schemas/ServicesComponentRequest"
-        - type: object
-          required:
-            - contract_agreement_id
-            - number
-            - optional
     ProcurementSteps:
       description: OPS List of Procurement Steps
       type: array
@@ -3108,4 +3168,4 @@ components:
         [
         ]
 security:
-  - bearerAuth: []
+  - bearerAuth: [ ]

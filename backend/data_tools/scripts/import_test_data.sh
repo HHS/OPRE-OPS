@@ -45,7 +45,4 @@ DATA=./data_tools/data/first_contract_data.json5 python ./data_tools/src/import_
 echo "Loading 'agreements_and_blin_data.json5'..."
 DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py
 
-echo "Loading 'workflow_data.json5'..."
-DATA=./data_tools/data/workflow_data.json5 python ./data_tools/src/import_static_data/import_data.py
-
 echo "Data Loading Complete!"

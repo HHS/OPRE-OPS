@@ -1,9 +1,10 @@
+import React from "react";
 import App from "../../../App";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
-import AgreementChangesAccordion from "../../../components/Agreements/AgreementChangesAccordion";
 import AgreementMetaAccordion from "../../../components/Agreements/AgreementMetaAccordion";
-import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
+import DocumentCollectionView from "../../../components/Agreements/Documents/DocumentCollectionView";
+import BLIDiffTable from "../../../components/BudgetLineItems/BLIDiffTable";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
@@ -14,6 +15,7 @@ import PageHeader from "../../../components/UI/PageHeader";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import { document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
 
 const ApproveAgreement = () => {
@@ -22,9 +24,8 @@ const ApproveAgreement = () => {
         projectOfficerName,
         servicesComponents,
         groupedBudgetLinesByServicesComponent,
-        budgetLinesInReview,
+        groupedUpdatedBudgetLinesByServicesComponent,
         changeRequestsInReview,
-        changeInCans,
         notes,
         setNotes,
         confirmation,
@@ -41,12 +42,74 @@ const ApproveAgreement = () => {
         setAfterApproval,
         requestorNoters,
         urlChangeToStatus,
-        statusForTitle
+        statusForTitle,
+        statusChangeTo,
+        errorAgreement,
+        isLoadingAgreement,
+        approvedBudgetLinesPreview
     } = useApproveAgreement();
 
-    if (!agreement) {
+    if (isLoadingAgreement) {
         return <div>Loading...</div>;
     }
+    if (errorAgreement) {
+        return <div>Something went wrong...</div>;
+    }
+    if (!agreement) {
+        return <div>No agreement data available.</div>;
+    }
+    const BeforeApprovalContent = React.memo(
+        ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestTitle, urlChangeToStatus }) => (
+            <>
+                {groupedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                    >
+                        <BLIDiffTable
+                            budgetLines={group.budgetLines}
+                            changeType={changeRequestTitle}
+                            statusChangeTo={urlChangeToStatus}
+                        />
+                    </ServicesComponentAccordion>
+                ))}
+            </>
+        )
+    );
+    BeforeApprovalContent.displayName = "BeforeApprovalContent";
+
+    const AfterApprovalContent = React.memo(
+        ({
+            groupedUpdatedBudgetLinesByServicesComponent,
+            servicesComponents,
+            changeRequestTitle,
+            urlChangeToStatus
+        }) => (
+            <>
+                {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                    >
+                        <BLIDiffTable
+                            budgetLines={group.budgetLines}
+                            changeType={changeRequestTitle}
+                            statusChangeTo={urlChangeToStatus}
+                        />
+                    </ServicesComponentAccordion>
+                ))}
+            </>
+        )
+    );
+    AfterApprovalContent.displayName = "AfterApprovalContent";
 
     return (
         <App breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}>
@@ -74,46 +137,52 @@ const ApproveAgreement = () => {
                 projectOfficerName={projectOfficerName}
                 convertCodeForDisplay={convertCodeForDisplay}
             />
-
             <AgreementBLIAccordion
                 title="Review Budget Lines"
                 instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
-                budgetLineItems={budgetLinesInReview}
+                budgetLineItems={agreement?.budget_line_items}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
+                isApprovePage={true}
+                updatedBudgetLines={approvedBudgetLinesPreview}
             >
                 <section className="margin-top-4">
-                    {groupedBudgetLinesByServicesComponent.map((group) => (
-                        <ServicesComponentAccordion
-                            key={group.servicesComponentId}
-                            servicesComponentId={group.servicesComponentId}
-                            withMetadata={true}
-                            periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
-                            periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
-                            description={findDescription(servicesComponents, group.servicesComponentId)}
-                        >
-                            <BudgetLinesTable
-                                budgetLines={group.budgetLines}
-                                readOnly={true}
-                            />
-                        </ServicesComponentAccordion>
-                    ))}
+                    {!afterApproval ? (
+                        <BeforeApprovalContent
+                            groupedBudgetLinesByServicesComponent={groupedBudgetLinesByServicesComponent}
+                            servicesComponents={servicesComponents}
+                            changeRequestTitle={changeRequestTitle}
+                            urlChangeToStatus={urlChangeToStatus}
+                        />
+                    ) : (
+                        <AfterApprovalContent
+                            groupedUpdatedBudgetLinesByServicesComponent={groupedUpdatedBudgetLinesByServicesComponent}
+                            servicesComponents={servicesComponents}
+                            changeRequestTitle={changeRequestTitle}
+                            urlChangeToStatus={urlChangeToStatus}
+                        />
+                    )}
                 </section>
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
-                selectedBudgetLines={budgetLinesInReview}
+                selectedBudgetLines={agreement.budget_line_items}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
+                isApprovePage={true}
             />
-            {urlChangeToStatus === BLI_STATUS.PLANNED && (
-                <AgreementChangesAccordion
-                    changeInBudgetLines={budgetLinesInReview.reduce((acc, { amount }) => acc + amount, 0)}
-                    changeInCans={changeInCans}
-                />
+            {statusChangeTo === BLI_STATUS.EXECUTING && (
+                <Accordion
+                    heading="Review Documents"
+                    level={2}
+                >
+                    <p className="margin-bottom-neg-2">Please review all pre-solicitation documents listed below.</p>
+                    {/* TODO: replace with real documents */}
+                    <DocumentCollectionView documents={document.testDocuments} />
+                </Accordion>
             )}
             <Accordion
                 heading="Notes"

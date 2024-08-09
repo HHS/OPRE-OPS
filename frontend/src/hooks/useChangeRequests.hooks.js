@@ -96,7 +96,7 @@ export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, ca
             }
             if (changeRequest?.requested_change_data?.date_needed) {
                 changeRequestsMessages.push(
-                    `Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                    `Obligate By Date:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                 );
             }
             if (changeRequest?.requested_change_data?.can_id) {
@@ -158,7 +158,7 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
                     }
                     if (changeRequest?.requested_change_data?.date_needed) {
                         changeRequestsMessages.add(
-                            `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                            `${bliId} Obligate By Date:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                         );
                     }
                     if (changeRequest?.requested_change_data?.can_id) {
@@ -215,15 +215,15 @@ function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatu
             let bliId = `BL ${budgetLine.id}`;
             const changeRequest = budgetLine.changeRequest;
 
-            if (isBudgetChange && changeRequest?.requested_change_data?.amount) {
-                changeRequestsMessages.add(
-                    `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
-                );
-            }
-            if (!isBudgetChange) {
+            if (isBudgetChange) {
+                if (changeRequest?.requested_change_data?.amount) {
+                    changeRequestsMessages.add(
+                        `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                    );
+                }
                 if (changeRequest?.requested_change_data?.date_needed) {
                     changeRequestsMessages.add(
-                        `${bliId} Date Needed:  ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
+                        `${bliId} Obligate By Date: ${renderField("BudgetLine", "date_needed", budgetLine?.date_needed)} to ${renderField("BudgetLine", "date_needed", changeRequest.requested_change_data.date_needed)}`
                     );
                 }
                 if (changeRequest?.requested_change_data?.can_id) {
@@ -231,6 +231,8 @@ function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatu
                     let canName = matchingCan?.display_name || "TBD";
                     changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
                 }
+            }
+            if (!isBudgetChange) {
                 if (changeRequest?.requested_change_data?.status) {
                     changeRequestsMessages.add(
                         `${bliId} Status: ${renderField("BudgetLine", "status", budgetLine.status)} to ${renderField("BudgetLine", "status", changeRequest.requested_change_data.status)}`

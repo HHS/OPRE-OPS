@@ -131,7 +131,7 @@ export const AgreementsList = () => {
         return (
             filters.procurementShops.length === 0 ||
             filters.procurementShops.some((procurementShop) => {
-                return procurementShop.id === agreement.procurement_shop_id;
+                return procurementShop.id === agreement.awarding_entity_id;
             })
         );
     });

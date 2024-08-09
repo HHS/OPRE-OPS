@@ -163,7 +163,7 @@ def agreement_null_project(loaded_db, context, test_user):
         contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         agreement_type=AgreementType.CONTRACT,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
         project_officer_id=test_user.id,
@@ -183,7 +183,7 @@ def agreement_null_agreement_type(loaded_db, context, test_user, test_project):
         contract_type=ContractType.FIRM_FIXED_PRICE,
         product_service_code_id=2,
         project_id=test_project.id,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
         project_officer_id=test_user.id,
@@ -206,7 +206,7 @@ def agreement_empty_description(loaded_db, context, test_user, test_project):
         agreement_type=AgreementType.CONTRACT,
         project_id=test_project.id,
         description="",
-        procurement_shop_id=1,
+        awarding_entity_id=1,
         agreement_reason=AgreementReason.NEW_REQ,
         project_officer_id=test_user.id,
     )
@@ -225,7 +225,7 @@ def agreement_null_product_service_code(loaded_db, context, test_user, test_proj
         contract_type=ContractType.FIRM_FIXED_PRICE,
         agreement_type=AgreementType.CONTRACT,
         project_id=test_project.id,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
         project_officer_id=test_user.id,
@@ -268,7 +268,7 @@ def agreement_null_agreement_reason(loaded_db, context, test_user, test_project)
         product_service_code_id=2,
         description="Using Innovative Data...",
         project_officer_id=test_user.id,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
     )
     contract_agreement.team_members.append(test_user)
     loaded_db.add(contract_agreement)
@@ -290,7 +290,7 @@ def agreement_reason_with_incumbent(loaded_db, context, test_user, test_vendor, 
         agreement_reason=AgreementReason.NEW_REQ,
         incumbent_id=test_vendor.id,
         project_officer_id=test_user.id,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
     )
     contract_agreement.team_members.append(test_user)
     loaded_db.add(contract_agreement)
@@ -313,7 +313,7 @@ def agreement_reason_with_incumbent_required(loaded_db, context, test_user, test
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.RECOMPETE,
         project_officer_id=test_user.id,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
     )
     contract_agreement.team_members.append(test_user)
     loaded_db.add(contract_agreement)
@@ -333,7 +333,7 @@ def agreement_null_project_officer(loaded_db, context, test_user, test_project):
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
     )
     contract_agreement.team_members.append(test_user)
     loaded_db.add(contract_agreement)
@@ -354,7 +354,7 @@ def agreement_null_team_members(loaded_db, context, test_user, test_project):
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
         project_officer_id=test_user.id,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
     )
     loaded_db.add(contract_agreement)
     loaded_db.commit()
@@ -374,7 +374,7 @@ def valid_agreement(loaded_db, context, test_user, test_project):
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
         project_officer_id=test_user.id,
-        procurement_shop_id=1,
+        awarding_entity_id=1,
     )
     contract_agreement.team_members.append(test_user)
     loaded_db.add(contract_agreement)

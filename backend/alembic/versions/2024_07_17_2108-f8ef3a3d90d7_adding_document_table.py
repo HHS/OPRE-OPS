@@ -1,7 +1,7 @@
 """Adding document table
 
 Revision ID: f8ef3a3d90d7
-Revises: 5d3916a592a6
+Revises: a4a04f1f868e
 Create Date: 2024-07-17 21:08:10.094647+00:00
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = 'f8ef3a3d90d7'
-down_revision: Union[str, None] = '5d3916a592a6'
+down_revision: Union[str, None] = 'a4a04f1f868e'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

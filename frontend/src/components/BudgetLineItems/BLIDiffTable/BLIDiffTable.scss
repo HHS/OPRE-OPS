@@ -1,0 +1,18 @@
+// USWDS overrides
+.usa-table td,
+.usa-table th {
+    padding: 0.5rem 0.5rem;
+}
+
+.border-top-none {
+    border-top: none !important;
+}
+
+.border-bottom-none {
+    border-bottom: none !important;
+}
+
+.table-item-diff {
+    border-bottom: 0.25em solid #0050d8 !important;
+    color: #0050d8;
+}

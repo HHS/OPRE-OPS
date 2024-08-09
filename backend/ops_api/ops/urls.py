@@ -28,10 +28,6 @@ from ops_api.ops.views import (
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
     OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
-    PACKAGE_ITEM_API_VIEW_FUNC,
-    PACKAGE_LIST_API_VIEW_FUNC,
-    PACKAGE_SNAPSHOT_ITEM_API_VIEW_FUNC,
-    PACKAGE_SNAPSHOT_LIST_API_VIEW_FUNC,
     PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC,
     PORTFOLIO_CANS_API_VIEW_FUNC,
     PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -61,14 +57,6 @@ from ops_api.ops.views import (
     USERS_ITEM_API_VIEW_FUNC,
     USERS_LIST_API_VIEW_FUNC,
     VERSION_API_VIEW_FUNC,
-    WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC,
-    WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC,
-    WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC,
-    WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC,
-    WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC,
-    WORKFLOW_STEP_TEMPLATE_LIST_API_VIEW_FUNC,
-    WORKFLOW_TEMPLATE_ITEM_API_VIEW_FUNC,
-    WORKFLOW_TEMPLATE_LIST_API_VIEW_FUNC,
 )
 
 # Ideas from Flask docs: https://flask.palletsprojects.com/en/2.2.x/views/#method-dispatching-and-apis
@@ -133,23 +121,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/budget-line-items/",
         view_func=BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
-    )
-
-    api_bp.add_url_rule(
-        "/packages/<int:id>",
-        view_func=PACKAGE_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/packages/",
-        view_func=PACKAGE_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/package-snapshots/<int:id>",
-        view_func=PACKAGE_SNAPSHOT_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/package-snapshots/",
-        view_func=PACKAGE_SNAPSHOT_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
@@ -277,38 +248,6 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     )
 
-    api_bp.add_url_rule(
-        "/workflow-instance/",
-        view_func=WORKFLOW_INSTANCE_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/workflow-instance/<int:id>",
-        view_func=WORKFLOW_INSTANCE_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/workflow-step-instance/",
-        view_func=WORKFLOW_STEP_INSTANCE_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/workflow-step-instance/<int:id>",
-        view_func=WORKFLOW_STEP_INSTANCE_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/workflow-template/",
-        view_func=WORKFLOW_TEMPLATE_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/workflow-template/<int:id>",
-        view_func=WORKFLOW_TEMPLATE_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/workflow-step-template/",
-        view_func=WORKFLOW_STEP_TEMPLATE_LIST_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/workflow-step-template/<int:id>",
-        view_func=WORKFLOW_STEP_TEMPLATE_ITEM_API_VIEW_FUNC,
-    )
     api_bp.add_url_rule(
         "/services-components/<int:id>",
         view_func=SERVICES_COMPONENT_ITEM_API_VIEW_FUNC,
