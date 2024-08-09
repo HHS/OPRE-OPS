@@ -39,6 +39,69 @@ describe("agreement change accordion", () => {
             cy.contains("G994426 (1 Year)");
         });
         cy.get('[data-cy="currency-summary-card"]').contains("$ 2,000,000.00");
+        cy.get("h2").contains("Review Changes").as("info-accordion").should("exist");
+        // get content in review-card to see if it exists and contains planned, status and amount
+        cy.get("[data-cy='review-card']").each(($card) => {
+            cy.wrap($card).within(() => {
+                cy.contains(/15000|15001/);
+                cy.contains(/draft/i);
+                cy.contains(/planned/i);
+                cy.contains(/status/i);
+                cy.contains(/total/i);
+                cy.contains("$1,000,000.00");
+            });
+        });
+    });
+    it("handles interactions", () => {
+        cy.visit("/agreements/review/9").wait(1000);
+        cy.get("h2").contains("Select Budget Lines").as("acc-btn");
+        cy.get(".usa-table").should("exist");
+        cy.get('[data-cy="check-all"]').should("exist").should("be.disabled");
+        // click action radio button
+        cy.get("h2").contains("Choose a Status Change").as("acc-btn").should("exist");
+        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').should("exist").should("not.be.disabled");
+        // check the radio button
+        cy.get('[type="radio"]').should("have.length", 2);
+        cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
+        cy.get('[data-cy="check-all"]').each(($el) => {
+            cy.wrap($el).check({ force: true });
+            cy.wait(1);
+        });
+        cy.get('[type="checkbox"]')
+            .should("have.length", 3)
+            .each((checkbox) => {
+                cy.wrap(checkbox).should("be.checked");
+            });
+        cy.get('[data-cy="can-funding-summary-card-502"]').within(() => {
+            cy.contains("$ 10,403,500");
+            cy.contains("$ 13,596,500");
+            cy.contains("$24,000,000.00");
+            cy.contains("G99PHS9 (1 Year)");
+        });
+        cy.get('[data-cy="can-funding-summary-card-512"]').within(() => {
+            cy.contains("$ 602,000");
+            cy.contains("$ 1,678,000");
+            cy.contains("$2,280,000.00");
+            cy.contains("G99XXX8 (1 Year)");
+        });
+        cy.get('[data-cy="currency-summary-card"]').within(() => {
+            cy.contains("$ 1,005,000.00");
+            cy.contains("$1,000,000.00");
+            cy.contains("$5,000.00");
+            cy.contains("NIH - Fee Rate: 0.5%");
+        });
+        cy.get("h2").contains("Review Changes").as("info-accordion").should("exist");
+        // get content in review-card to see if it exists and contains planned, status and amount
+        cy.get("[data-cy='review-card']").each(($card) => {
+            cy.wrap($card).within(() => {
+                cy.contains(/15020|15021/);
+                cy.contains(/planned/i);
+                cy.contains(/executing/i);
+                cy.contains(/status/i);
+                cy.contains(/total/i);
+                cy.contains(/703,500.00|301,500.00/);
+            });
+        });
     });
 });
 
