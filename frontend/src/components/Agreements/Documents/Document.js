@@ -2,6 +2,7 @@ import {DOCUMENT_CONTAINER_NAME, VALID_EXTENSIONS} from "./Documents.constants.j
 import {BlobServiceClient} from "@azure/storage-blob";
 import {patchDocumentStatus} from "../../../api/patchDocumentStatus.js";
 
+const fileStorage = []; // Global variable to store files in memory
 
 // Converts the file size from bytes to megabytes (MB) and rounds to two decimal places
 export const convertFileSizeToMB = (size) => {
@@ -29,17 +30,18 @@ export const patchStatus = async (uuid, statusData) => {
 };
 
 // Process file upload based on the specified storage repository
-export const processUploading = async (sasUrl, uuid, file, agreementId) => {
+export const processUploading = async (sasUrl, uuid, file, agreementId, inMemoryUpload, inBlobUpload, patchStatus) => {
     try {
         if (sasUrl.includes('FakeDocumentRepository')) {
             // Upload to an in-memory storage repository
-            await uploadDocumentToInMemory(uuid, file);
+            await inMemoryUpload(uuid, file);
         } else if (sasUrl.includes('blob.core.windows.net')) {
             // Upload to Azure Blob Storage
-            await uploadDocumentToBlob(sasUrl, uuid, file);
+            await inBlobUpload(sasUrl, uuid, file);
         } else {
             // Log an error if the repository type is invalid
             console.error('Invalid repository type:', sasUrl);
+            return;
         }
         // Update the document status after successful upload
         const statusData = {
@@ -58,11 +60,11 @@ const triggerDownload = (blob, fileName) => {
 
     // Create a temporary anchor element to initiate the download
     const a = document.createElement('a');
-    a.href = objectUrl; // Set the href to the blob URL
-    a.download = `${fileName}`; // Set the name for the downloaded file
-    document.body.appendChild(a); // Append the anchor element to the body
-    a.click(); // Programmatically click the anchor to trigger the download
-    document.body.removeChild(a); // Clean up: remove the anchor element
+    a.href = objectUrl;             // Set the href to the blob URL
+    a.download = `${fileName}`;     // Set the name for the downloaded file
+    document.body.appendChild(a);   // Append the anchor element to the body
+    a.click();                      // Programmatically click the anchor to trigger the download
+    document.body.removeChild(a);   // Clean up: remove the anchor element
 
     // Clean up: revoke the object URL after the download is triggered (to free up memory)
     URL.revokeObjectURL(objectUrl);
@@ -71,7 +73,7 @@ const triggerDownload = (blob, fileName) => {
 
 // AZURE BLOB STORAGE //
 
-const getContainerClient = (sasUrl) => {
+export const getClient = (sasUrl) => {
     // Create a BlobServiceClient instance using the provided SAS URL
     const blobServiceClient = new BlobServiceClient(sasUrl);
 
@@ -83,7 +85,7 @@ const getContainerClient = (sasUrl) => {
 export const uploadDocumentToBlob = async (sasUrl, uuid, file) => {
     try {
         // Get a client for the target container
-        const containerClient = getContainerClient(sasUrl);
+        const containerClient = getClient(sasUrl);
 
         // Get a BlockBlobClient for the specific blob identified by the UUID
         const blockBlobClient = containerClient.getBlockBlobClient(uuid);
@@ -105,7 +107,7 @@ export const uploadDocumentToBlob = async (sasUrl, uuid, file) => {
 export const downloadDocumentFromBlob = async (sasUrl, documentId, fileName) => {
      try {
          // Get a reference to the container client using the SAS URL
-         const containerClient = getContainerClient(sasUrl);
+         const containerClient = getClient(sasUrl);
 
          // Get a reference to the specific blob (document) using its uuid
          const blobClient = containerClient.getBlobClient(documentId);
@@ -120,17 +122,14 @@ export const downloadDocumentFromBlob = async (sasUrl, documentId, fileName) => 
      }
 };
 
-// IN-MEMORY STORAGE
-const fileStorage = {}; // Global variable to store files in memory
+// IN-MEMORY STORAGE //
 
 export const uploadDocumentToInMemory = async (uuid, file) => {
     try {
         const reader = new FileReader();
 
-        // This promise will resolve when the file is successfully read
         const fileReadPromise = new Promise((resolve, reject) => {
             reader.onload = () => {
-                // Store file in the global object
                 fileStorage[uuid] = {
                     name: file.name,
                     type: file.type,
