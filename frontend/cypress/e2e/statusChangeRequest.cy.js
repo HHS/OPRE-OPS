@@ -93,7 +93,14 @@ it("BLI Status Change", () => {
                 cy.wait(1);
             });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+            // type pls approve in the #submitter-notes textarea
+            cy.get("#submitter-notes").type("pls approve");
             cy.get('[data-cy="send-to-approval-btn"]').click();
+            cy.get(".usa-alert__body")
+                .should("contain", "Changes Sent to Approval")
+                .and("contain", `BL ${bliId} Status: Draft to Planned`)
+                .and("contain", "pls approve");
+            cy.get("[data-cy='close-alert']").click();
             cy.visit("/agreements?filter=change-requests").wait(1000);
             // see if there are any review cards
             cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
