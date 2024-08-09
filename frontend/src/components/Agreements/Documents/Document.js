@@ -1,4 +1,4 @@
-import {DOCUMENT_CONTAINER_NAME, VALID_EXTENSIONS} from "./Documents.constants.js";
+import {ALLOWED_FAKE_HOSTS, ALLOWED_HOSTS, DOCUMENT_CONTAINER_NAME, VALID_EXTENSIONS} from "./Documents.constants.js";
 import {BlobServiceClient} from "@azure/storage-blob";
 import {patchDocumentStatus} from "../../../api/patchDocumentStatus.js";
 
@@ -30,17 +30,17 @@ export const patchStatus = async (uuid, statusData) => {
 };
 
 // Process file upload based on the specified storage repository
-export const processUploading = async (sasUrl, uuid, file, agreementId, inMemoryUpload, inBlobUpload, patchStatus) => {
+export const processUploading = async (source, uuid, file, agreementId, inMemoryUpload, inBlobUpload, patchStatus) => {
     try {
-        if (sasUrl.includes("FakeDocumentRepository")) {
+        if (source.includes(ALLOWED_FAKE_HOSTS)) {
             // Upload to an in-memory storage repository
             await inMemoryUpload(uuid, file);
-        } else if (sasUrl.includes("blob.core.windows.net")) {
+        } else if (source.includes(ALLOWED_HOSTS)) {
             // Upload to Azure Blob Storage
-            await inBlobUpload(sasUrl, uuid, file);
+            await inBlobUpload(source, uuid, file);
         } else {
             // Log an error if the repository type is invalid
-            console.error("Invalid repository type:", sasUrl);
+            console.error("Invalid repository type:", source);
             return;
         }
         // Update the document status after successful upload
