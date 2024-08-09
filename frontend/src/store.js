@@ -12,9 +12,11 @@ import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProject
 import alertSlice from "./components/UI/Alert/alertSlice";
 import { opsApi } from "./api/opsAPI";
 import { errorMiddleware } from "./errorMiddleware.js";
+import { opsAuthApi } from "./api/opsAuthAPI.js";
 
 const rootReducer = combineReducers({
     [opsApi.reducerPath]: opsApi.reducer,
+    [opsAuthApi.reducerPath]: opsAuthApi.reducer,
     canList: canListSlice,
     canDetail: canDetailSlice,
     portfolioList: portfolioListSlice,
@@ -31,12 +33,14 @@ const rootReducer = combineReducers({
 export const setupStore = (preloadedState = {}) => {
     return configureStore({
         reducer: rootReducer,
-        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware, errorMiddleware),
+        middleware: (getDefaultMiddleware) =>
+            getDefaultMiddleware().concat(opsApi.middleware, opsAuthApi.middleware, errorMiddleware),
         preloadedState
     });
 };
 
 export default configureStore({
     reducer: rootReducer,
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware, errorMiddleware)
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(opsApi.middleware, opsAuthApi.middleware, errorMiddleware)
 });

@@ -157,6 +157,14 @@ const MultiAuthSection = () => {
                             <p>
                                 <button
                                     className="usa-button  usa-button--outline width-full"
+                                    onClick={() => handleFakeAuthLogin("budget_team")}
+                                >
+                                    Budget Team Member
+                                </button>
+                            </p>
+                            <p>
+                                <button
+                                    className="usa-button  usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("division_director")}
                                 >
                                     Division Director

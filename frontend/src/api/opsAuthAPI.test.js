@@ -1,12 +1,12 @@
 import { server } from "../tests/mocks";
 import { waitFor, screen } from "@testing-library/react";
-import { useGetAgreementsQuery } from "./opsAPI";
 import { renderWithProviders } from "../test-utils";
+import { useGetRolesQuery } from "./opsAuthAPI.js";
 
 server.listen();
 
-describe("opsApi", () => {
-    test("should GET /agreements using mocks", async () => {
+describe("opsAuthApi", () => {
+    test("should GET /roles using mocks", async () => {
         const { container } = renderWithProviders(<TestComponent />);
 
         await waitFor(() => {
@@ -14,18 +14,18 @@ describe("opsApi", () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByText("Agreement 1")).toBeInTheDocument();
+            expect(screen.getByText("admin")).toBeInTheDocument();
         });
     });
 });
 
 function TestComponent() {
-    const result = useGetAgreementsQuery();
+    const result = useGetRolesQuery();
     return (
         <div>
-            Agreements:
-            {result.data?.map((agreement) => (
-                <div key={agreement.id}>{agreement.name}</div>
+            Roles:
+            {result.data?.map((role) => (
+                <div key={role.id}>{role.name}</div>
             ))}
         </div>
     );

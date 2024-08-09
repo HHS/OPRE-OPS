@@ -1,55 +1,119 @@
-import styles from "./UserInfo.module.css";
-import RoundedBox from "../../UI/RoundedBox/RoundedBox";
-import { useSelector } from "react-redux";
+import { useGetDivisionsQuery } from "../../../api/opsAPI.js";
+import ComboBox from "../../UI/Form/ComboBox/index.js";
+import React, { useEffect } from "react";
+import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
+import { USER_STATUS } from "./UserInfo.constants.js";
 
-const UserInfo = () => {
-    const user = useSelector((state) => state.userDetail.user);
+const UserInfo = ({ user, isEditable }) => {
+    const [selectedDivision, setSelectedDivision] = React.useState({});
+    const [selectedStatus, setSelectedStatus] = React.useState({});
+    const [selectedRoles, setSelectedRoles] = React.useState([]);
+    const statusData = [
+        { id: 1, name: USER_STATUS.ACTIVE },
+        { id: 2, name: USER_STATUS.INACTIVE },
+        { id: 3, name: USER_STATUS.LOCKED }
+    ];
+
+    const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery();
+    const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery();
+
+    useEffect(() => {
+        setSelectedDivision(divisions?.find((division) => division.id === user.division));
+        setSelectedStatus(statusData.find((status) => status.name === user.status));
+        setSelectedRoles(roles?.filter((role) => user.roles?.includes(role.name)));
+
+        return () => {
+            setSelectedDivision([]);
+            setSelectedStatus([]);
+            setSelectedRoles([]);
+        };
+    }, [divisions, roles, user]);
+
+    if (isLoadingDivisions || isLoadingRoles) {
+        return <div>Loading...</div>;
+    }
+    if (errorDivisions || errorRoles) {
+        return <div>Oops, an error occurred</div>;
+    }
+
+    console.log("isEditable: ", isEditable);
 
     return (
-        <div className={styles.container}>
-            <h1>User Details:</h1>
-            <RoundedBox>
-                <div className="cardBody">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td>User ID</td>
-                                <td>: {user?.id}</td>
-                            </tr>
-                            <tr>
-                                <td>OIDC</td>
-                                <td>: {user?.oidc_id}</td>
-                            </tr>
-                            <tr>
-                                <td>User Email</td>
-                                <td>: {user?.email}</td>
-                            </tr>
-                            <tr>
-                                <td>Name</td>
-                                <td>
-                                    : {user?.first_name} {user?.last_name}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Date Joined</td>
-                                <td>: {user?.created_on}</td>
-                            </tr>
-                            <tr>
-                                <td>Role(s)</td>
-                                <td>: {user?.roles}</td>
-                            </tr>
-                            <tr>
-                                <td>Division(s)</td>
-                                <td>: {user?.division}</td>
-                            </tr>
-                            <tr>
-                                <td>Status</td>
-                                <td>: {user?.status}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <div className="usa-card">
+            <div className="usa-card__container">
+                <div className="usa-card__header">
+                    <h4 className="usa-card__heading">User Details</h4>
                 </div>
-            </RoundedBox>
+                <div className="usa-card__body">
+                    <div className="font-sans-md line-height-sans-4 flex-align-center">
+                        <div className="grid-row">
+                            <div className="grid-col">Name:</div>
+                            <div className="grid-col">{user.full_name}</div>
+                        </div>
+                        <div className="grid-row">
+                            <div className="grid-col">User Email:</div>
+                            <div className="grid-col">{user?.email}</div>
+                        </div>
+                        <div className="grid-row display-flex flex-align-center">
+                            <div className="grid-col flex-3">Division:</div>
+                            <div className="grid-col flex-3">
+                                {!isEditable && <span>{selectedDivision?.name}</span>}
+                                {isEditable && (
+                                    <div data-testid="division-combobox">
+                                        <ComboBox
+                                            namespace="division-combobox"
+                                            data={divisions}
+                                            selectedData={selectedDivision}
+                                            setSelectedData={setSelectedDivision}
+                                            defaultString="-- Select Division --"
+                                            optionText={(division) => division.name}
+                                            isMulti={false}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="grid-row">
+                            <div className="grid-col flex-3">Role(s):</div>
+                            <div className="grid-col flex-3">
+                                {!isEditable && <span>{selectedRoles?.map((role) => role.name).join(", ")}</span>}
+                                {isEditable && (
+                                    <div data-testid="roles-combobox">
+                                        <ComboBox
+                                            namespace="roles-combobox"
+                                            data={roles}
+                                            selectedData={selectedRoles}
+                                            setSelectedData={setSelectedRoles}
+                                            defaultString="-- Select Roles --"
+                                            optionText={(role) => role.name}
+                                            isMulti={true}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="grid-row display-flex flex-align-center">
+                            <div className="grid-col flex-3">Status:</div>
+                            <div className="grid-col flex-3">
+                                {!isEditable && <span>{selectedStatus?.name}</span>}
+                                {isEditable && (
+                                    <div data-testid="status-combobox">
+                                        <ComboBox
+                                            namespace="status-combobox"
+                                            data={statusData}
+                                            selectedData={selectedStatus}
+                                            setSelectedData={setSelectedStatus}
+                                            defaultString="-- Select Status --"
+                                            optionText={(status) => status.name}
+                                            isMulti={false}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
