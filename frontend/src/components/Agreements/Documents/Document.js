@@ -118,7 +118,7 @@ export const downloadDocumentFromBlob = async (sasUrl, documentId, fileName) => 
 
          triggerDownload(blob, fileName);
      } catch (error) {
-         console.error(`Error downloading blob=${documentId}:`, error);
+         console.error("Error downloading blob", error);
      }
 };
 
