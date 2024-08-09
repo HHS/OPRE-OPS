@@ -18,6 +18,7 @@ class DocumentResponseSchema(Schema):
 
 
 class DocumentSchema(Schema):
+    agreement_id = fields.Integer(required=True)
     document_id = fields.UUID(required=True)
     document_type = fields.String(required=True)
     file_name = fields.String(required=True)
