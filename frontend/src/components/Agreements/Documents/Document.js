@@ -12,7 +12,7 @@ export const convertFileSizeToMB = (size) => {
 // Checks if the file is a valid type (PDF, Word, or Excel)
 export const isFileValid = (file) => {
     if (!file) return false;
-    const fileExtension = file.name.split('.').pop().toLowerCase();
+    const fileExtension = file.name.split(".").pop().toLowerCase();
     return VALID_EXTENSIONS.includes(fileExtension);
 };
 
@@ -22,35 +22,35 @@ export const patchStatus = async (uuid, statusData) => {
         const response = await patchDocumentStatus(uuid, statusData);
 
         // Log the response from the server and success message
-        console.log('patchDocumentStatus response', response);
+        console.log("patchDocumentStatus response", response);
         console.log(`UUID=${uuid} - Status updated to "${statusData.status}".`);
     } catch (error) {
-        console.error('Failed to update document status:', error);
+        console.error("Failed to update document status:", error);
     }
 };
 
 // Process file upload based on the specified storage repository
 export const processUploading = async (sasUrl, uuid, file, agreementId, inMemoryUpload, inBlobUpload, patchStatus) => {
     try {
-        if (sasUrl.includes('FakeDocumentRepository')) {
+        if (sasUrl.includes("FakeDocumentRepository")) {
             // Upload to an in-memory storage repository
             await inMemoryUpload(uuid, file);
-        } else if (sasUrl.includes('blob.core.windows.net')) {
+        } else if (sasUrl.includes("blob.core.windows.net")) {
             // Upload to Azure Blob Storage
             await inBlobUpload(sasUrl, uuid, file);
         } else {
             // Log an error if the repository type is invalid
-            console.error('Invalid repository type:', sasUrl);
+            console.error("Invalid repository type:", sasUrl);
             return;
         }
         // Update the document status after successful upload
         const statusData = {
             agreement_id: agreementId,
-            status: 'uploaded'
+            status: "uploaded"
         };
         await patchStatus(uuid, statusData);
     } catch (error) {
-        console.error('Error processing upload:', error);
+        console.error("Error processing upload:", error);
     }
 };
 
@@ -59,7 +59,7 @@ const triggerDownload = (blob, fileName) => {
     const objectUrl = URL.createObjectURL(blob);
 
     // Create a temporary anchor element to initiate the download
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = objectUrl;             // Set the href to the blob URL
     a.download = `${fileName}`;     // Set the name for the downloaded file
     document.body.appendChild(a);   // Append the anchor element to the body
@@ -99,7 +99,7 @@ export const uploadDocumentToBlob = async (sasUrl, uuid, file) => {
         // Log success message with request id
         console.log(`UUID=${uuid} - Uploaded successfully to Azure storage account. RequestId=${uploadBlobResponse.requestId}.`);
     } catch (error) {
-        console.error('Error uploading file to Azure Blob Storage:', error)
+        console.error("Error uploading file to Azure Blob Storage:", error)
     }
 };
 
@@ -140,7 +140,7 @@ export const uploadDocumentToInMemory = async (uuid, file) => {
             };
 
             reader.onerror = () => {
-                reject(new Error('Error reading file'));
+                reject(new Error("Error reading file"));
             };
         });
 

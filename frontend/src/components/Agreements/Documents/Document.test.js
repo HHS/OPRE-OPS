@@ -4,7 +4,7 @@ import {
     patchStatus,
     processUploading,
 } from "./Document.js";
-import {describe, vi} from 'vitest'
+import {describe, vi} from "vitest"
 
 test("convertFileSizeToMB should convert bytes to megabytes correctly", () => {
     expect(convertFileSizeToMB(1048576)).toBe(1);
@@ -55,11 +55,11 @@ describe("patchStatus", () => {
     });
 });
 
-describe('processUploading', () => {
+describe("processUploading", () => {
     const status = "uploaded";
     const agreementId = 1;
     const uuid = "1234-5678-90ab-cdef";
-    const file = { name: 'test-file.txt' };
+    const file = { name: "test-file.txt" };
 
     let mockUploadDocumentToInMemory;
     let mockUploadDocumentToBlob;
@@ -72,8 +72,8 @@ describe('processUploading', () => {
         console.error = vi.fn();
     });
 
-    it('should upload to in-memory storage', async () => {
-        const sasUrl = 'https://mock.FakeDocumentRepository';
+    it("should upload to in-memory storage", async () => {
+        const sasUrl = "https://mock.FakeDocumentRepository";
 
         await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob, mockPatchStatus);
 
@@ -85,8 +85,8 @@ describe('processUploading', () => {
         });
     });
 
-    it('should upload to Azure Blob Storage', async () => {
-        const sasUrl = 'https://mock.blob.core.windows.net';
+    it("should upload to Azure Blob Storage", async () => {
+        const sasUrl = "https://mock.blob.core.windows.net";
 
         await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToBlob, mockUploadDocumentToBlob, mockPatchStatus);
 
@@ -98,26 +98,26 @@ describe('processUploading', () => {
         });
     });
 
-    it('should log an error for invalid repository type', async () => {
-        const sasUrl = 'https://mock.invalid-repo';
+    it("should log an error for invalid repository type", async () => {
+        const sasUrl = "https://mock.invalid-repo";
 
         await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob, mockPatchStatus);
 
         expect(mockUploadDocumentToInMemory).not.toHaveBeenCalled();
         expect(mockUploadDocumentToBlob).not.toHaveBeenCalled();
         expect(mockPatchStatus).not.toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalledWith('Invalid repository type:', sasUrl);
+        expect(console.error).toHaveBeenCalledWith("Invalid repository type:", sasUrl);
     });
 
-    it('should handle errors gracefully', async () => {
-        const sasUrl = 'https://mock.blob.core.windows.net';
+    it("should handle errors gracefully", async () => {
+        const sasUrl = "https://mock.blob.core.windows.net";
 
-        mockUploadDocumentToBlob.mockRejectedValue(new Error('Upload failed'));
+        mockUploadDocumentToBlob.mockRejectedValue(new Error("Upload failed"));
 
         await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob, mockPatchStatus);
 
         expect(mockUploadDocumentToBlob).toHaveBeenCalledWith(sasUrl, uuid, file);
         expect(mockPatchStatus).not.toHaveBeenCalled();
-        expect(console.error).toHaveBeenCalledWith('Error processing upload:', expect.any(Error));
+        expect(console.error).toHaveBeenCalledWith("Error processing upload:", expect.any(Error));
     });
 });
