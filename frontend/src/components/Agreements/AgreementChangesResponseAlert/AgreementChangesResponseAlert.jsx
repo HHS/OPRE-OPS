@@ -28,6 +28,7 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
         }
     });
 
+    const approvedRequestsReviewNotes = getChangeRequestNotes(approvedRequests);
     const declinedRequestsReviewNotes = getChangeRequestNotes(declinedRequests);
     return (
         <>
@@ -47,6 +48,13 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                                 <li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>
                             ))}
                         </ul>
+                        {approvedRequestsReviewNotes !== "" && (<>
+                            <br/>
+                            <div>
+                                <strong>Notes:</strong> {approvedRequestsReviewNotes}
+                            </div>
+                            </>
+                        )}
                     </>
                 )}
             </VanishingAlert>
