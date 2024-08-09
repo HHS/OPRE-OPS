@@ -54,7 +54,8 @@ def insert_new_document(document_data):
             agreement_id=document_data["agreement_id"],
             document_id=document_data["document_id"],
             document_type=map_document_type_to_enum(document_data["document_type"]),
-            file_name=document_data["file_name"],
+            document_name=document_data["document_name"],
+            document_size=document_data["document_size"],
             created_by=current_user.id,
         )
         current_app.db_session.add(document_record)

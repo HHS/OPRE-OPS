@@ -2767,17 +2767,20 @@ components:
     DocumentRequest:
       type: object
       properties:
-        file_name:
+        document_name:
           type: string
         document_type:
           type: string
         agreement_id:
           type: integer
           format: int32
+        document_size:
+          type: number
       required:
-        - file_name
+        - document_name
         - document_type
         - agreement_id
+        - document_size
     DocumentResponse:
       type: object
       properties:

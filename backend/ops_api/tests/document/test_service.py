@@ -24,9 +24,10 @@ class TestDocumentService(BaseDocumentTestCase):
 
         # Mock request document data
         self.mock_doc_data = {
-            "file_name": "Test Document.pdf",
+            "document_name": "Test Document.pdf",
             "agreement_id": 123,
             "document_type": "ADDITIONAL DOCUMENT",
+            "document_size": 1.23,
         }
         self.mock_repo_result = {"uuid": "123", "url": "mock_url"}
         self.mock_agreement_id = "456"
@@ -50,8 +51,8 @@ class TestDocumentService(BaseDocumentTestCase):
 
     def test_get_documents_by_agreement_id(self):
         self.mock_repository.get_documents_by_agreement_id.return_value = [
-            {"uuid": "123", "file_name": "Test Document 1.pdf"},
-            {"uuid": "456", "file_name": "Test Document 2.pdf"},
+            {"uuid": "123", "document_name": "Test Document 1.pdf"},
+            {"uuid": "456", "document_name": "Test Document 2.pdf"},
         ]
 
         with patch.object(self.document_service, "can_access_docs", return_value=True):

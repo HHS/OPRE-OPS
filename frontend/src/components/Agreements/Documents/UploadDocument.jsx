@@ -2,6 +2,7 @@ import {useState} from "react";
 import {postDocument} from "../../../api/postDocument.js";
 import {getDocumentsByAgreementId} from "../../../api/getDocumentsByAgreementId.js";
 import {
+    convertFileSizeToMB,
     downloadDocumentFromBlob,
     downloadFileFromMemory,
     isFileValid, patchStatus,
@@ -39,8 +40,8 @@ const UploadDocument = () => {
             const documentData = {
                 agreement_id: agreementId,
                 document_type: selectedDocumentType,
-                file_name: file.name,
-                // file_size: convertFileSizeToMB(file.size),
+                document_name: file.name,
+                document_size: convertFileSizeToMB(file.size),
             };
 
             // Save a record of the document in the database
@@ -70,7 +71,7 @@ const UploadDocument = () => {
                     if (url.includes("FakeDocumentRepository")) {
                         downloadFileFromMemory(document.document_id);
                     } else {
-                        await downloadDocumentFromBlob(url, document.document_id, document.file_name);
+                        await downloadDocumentFromBlob(url, document.document_id, document.name);
                     }
                 }
                 console.log(`All documents for agreement ${getDocumentAgreementId} downloaded successfully.`);

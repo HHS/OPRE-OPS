@@ -31,14 +31,15 @@ class TestDocumentRepositoryFactory(BaseDocumentTestCase):
             "agreement_id": 1,
             "document_id": "mock-doc-id",
             "document_type": "Certification of Funding",
-            "file_name": "Certification of Funding.pdf",
+            "document_name": "Certification of Funding.pdf",
         }
 
         self.mock_document = Document(
             agreement_id=1,
             document_id="uuid",
             document_type=DocumentType.CERTIFICATION_OF_FUNDING,
-            file_name="Certification of Funding.pdf",
+            document_name="Certification of Funding.pdf",
+            document_size=1.23,
         )
 
         self.mock_repository_factory = DocumentRepositoryFactory()
@@ -94,11 +95,11 @@ class TestDocumentRepositoryFactory(BaseDocumentTestCase):
 
         self.mock_repository.update_document(
             document_id=self.mock_document_data["document_id"],
-            document_content={"file_name": mock_update, "document_type": "PDF", "agreement_id": 123},
+            document_content={"document_name": mock_update, "document_type": "PDF", "agreement_id": 123},
         )
 
         updated_document = self.mock_repository.get_document(self.mock_document_data["document_id"])
-        assert updated_document["file_name"] == mock_update
+        assert updated_document["document_name"] == mock_update
 
     def test_update_nonexistent_document_raises_error(self):
         with pytest.raises(DocumentNotFoundError):

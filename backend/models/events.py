@@ -38,6 +38,8 @@ class OpsEventType(Enum):
     CREATE_PROCUREMENT_ACQUISITION_PLANNING = auto()
     UPDATE_PROCUREMENT_ACQUISITION_PLANNING = auto()
     DELETE_PROCUREMENT_ACQUISITION_PLANNING = auto()
+
+    # Document Related Events
     CREATE_DOCUMENT = auto()
     UPDATE_DOCUMENT = auto()
 

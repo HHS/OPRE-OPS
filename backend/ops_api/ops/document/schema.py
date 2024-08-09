@@ -9,7 +9,8 @@ class PatchDocumentRequestSchema(Schema):
 class PostDocumentRequestSchema(Schema):
     agreement_id: int = fields.Int(required=True)
     document_type: str = fields.String(required=True)
-    file_name: str = fields.String(required=True)
+    document_name: str = fields.String(required=True)
+    document_size = fields.Number(required=True)
 
 
 class DocumentResponseSchema(Schema):
@@ -21,7 +22,7 @@ class DocumentSchema(Schema):
     agreement_id = fields.Integer(required=True)
     document_id = fields.UUID(required=True)
     document_type = fields.String(required=True)
-    file_name = fields.String(required=True)
+    document_name = fields.String(required=True)
     status = fields.String()
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
