@@ -39,7 +39,7 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                                 <li key={changeRequest.id}>{formatChangeRequest(changeRequest.change_request)}</li>
                             ))}
                         </ul>
-                        {approvedRequestsReviewNotes !== "" && (<>
+                        {approvedRequestsReviewNotes && approvedRequestsReviewNotes !== "" && (<>
                             <br/>
                             <div>
                                 <strong>Notes:</strong> {approvedRequestsReviewNotes}
@@ -68,7 +68,7 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                                 ))
                             }
                         </ul>
-                        {declinedRequestsReviewNotes !== "" && (<>
+                        {declinedRequestsReviewNotes && declinedRequestsReviewNotes !== "" && (<>
                             <br/>
                             <div>
                                 <strong>Notes:</strong> {declinedRequestsReviewNotes}
