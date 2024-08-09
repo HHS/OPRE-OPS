@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
     useGetAgreementByIdQuery,
@@ -35,7 +34,6 @@ const useReviewAgreement = (agreementId) => {
     });
 
     const [afterApproval, setAfterApproval] = useToggle(true);
-    const activeUser = useSelector((state) => state.auth.activeUser);
     const [updateBudgetLineItem] = useUpdateBudgetLineItemMutation();
     const { setAlert } = useAlert();
     let res = suite.get();
