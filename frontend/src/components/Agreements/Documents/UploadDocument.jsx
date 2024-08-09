@@ -67,7 +67,6 @@ const UploadDocument = () => {
 
             if (documents.length > 0) {
                 for (const document of documents) {
-                    console.log(`Downloading document ${document.document_id}`, document);
                     if (url.includes("FakeDocumentRepository")) {
                         downloadFileFromMemory(document.document_id);
                     } else {
