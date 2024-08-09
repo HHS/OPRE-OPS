@@ -1,9 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessToken } from "../components/Auth/auth";
 
-// const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
-// Adding optional runtime config.
-const BACKEND_DOMAIN = window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN || import.meta.env.VITE_BACKEND_DOMAIN;
+const BACKEND_DOMAIN =
+    window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN ||
+    import.meta.env.VITE_BACKEND_DOMAIN ||
+    "https://localhost:8000"; // Default to localhost if not provided (e.g. in tests)
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
@@ -20,7 +21,8 @@ export const opsApi = createApi({
         "CanFunding",
         "Notifications",
         "ServicesComponents",
-        "ChangeRequests"
+        "ChangeRequests",
+        "Divisions"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -302,6 +304,10 @@ export const opsApi = createApi({
                 };
             },
             invalidatesTags: ["ChangeRequests"]
+        }),
+        getDivisions: builder.query({
+            query: () => `/divisions/`,
+            providesTags: ["Divisions"]
         })
     })
 });
@@ -347,5 +353,6 @@ export const {
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
     useGetChangeRequestsListQuery,
-    useReviewChangeRequestMutation
+    useReviewChangeRequestMutation,
+    useGetDivisionsQuery
 } = opsApi;

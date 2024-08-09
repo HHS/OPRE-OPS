@@ -5,8 +5,9 @@ from authlib.oauth2.rfc6749 import OAuth2Token
 from flask import current_app
 from flask_jwt_extended import create_access_token, current_user, get_jwt_identity
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from models import User, UserSession
+from models import Role, User, UserSession
 from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.authentication_gateway import AuthenticationGateway
@@ -137,3 +138,24 @@ def _get_or_create_user_session(
         current_app.db_session.commit()
 
         return user_session
+
+
+def get_roles(session: Session, **kwargs) -> list[Role]:
+    """
+    Get all roles that match the given criteria.
+
+    :param session: The database session.
+    :param **kwargs: The criteria to filter the roles by.
+    :return: The roles that match the criteria.
+
+    """
+    stmt = select(Role)
+
+    for key, value in kwargs.items():
+        stmt = stmt.where(getattr(Role, key) == value)
+
+    stmt = stmt.order_by(Role.id)
+
+    roles = session.execute(stmt).scalars().all()
+
+    return list(roles)

@@ -2974,7 +2974,12 @@ def upgrade() -> None:
         "role",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(), nullable=False),
-        sa.Column("permissions", sa.String(), nullable=False),
+        sa.Column(
+            "permissions",
+            postgresql.ARRAY(sa.String()),
+            server_default="{}",
+            nullable=False,
+        ),
         sa.Column("created_by", sa.Integer(), nullable=True),
         sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),

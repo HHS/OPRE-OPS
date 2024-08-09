@@ -51,9 +51,10 @@ def setup_schema(base: Base) -> callable:
                         )
 
                     # handle list of enums
-                    if isinstance(column.type, sqlalchemy.types.ARRAY) and isinstance(
-                        column.type.item_type.enum_class, enum.EnumMeta
-                    ):
+                    if (isinstance(column.type, sqlalchemy.types.ARRAY) and
+                            hasattr(column.type.item_type, "enum_class") and
+                            isinstance(column.type.item_type.enum_class, enum.EnumMeta
+                    )):
                         schema_class._declared_fields[column.key] = fields.List(
                             EnumField(column.type.item_type.enum_class),
                             default=[],
