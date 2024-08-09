@@ -24,5 +24,7 @@ describe("AgreementMetaAccordion", () => {
         expect(screen.getByText("PSC - Fee Rate: 0%")).toBeInTheDocument();
         expect(screen.getByText("John Doe")).toBeInTheDocument();
         expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
+        expect(screen.getByText("Labor Hour (LH)")).toBeInTheDocument();
+        expect(screen.getByText("Non-Severable")).toBeInTheDocument();
     });
 });
