@@ -19,7 +19,7 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
 
     return (
         <Accordion
-            heading="Agreement Details"
+            heading="Review Agreement Details"
             level={2}
         >
             <p>{instructions}</p>
@@ -56,6 +56,19 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                                 messages={res.getErrors("type")}
                                 className={cn("type")}
                                 value={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
+                            />
+                            <Term
+                                name="contract-type"
+                                label="Contract Type"
+                                value={convertCodeForDisplay("contractType", agreement?.contract_type)}
+                            />
+                            <Term
+                                name="service-requirement-type"
+                                label="Service Requirement Type"
+                                value={convertCodeForDisplay(
+                                    "serviceRequirementType",
+                                    agreement?.service_requirement_type
+                                )}
                             />
                             <Term
                                 name="psc"
@@ -172,6 +185,19 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                                 name="type"
                                 label="Agreement Type"
                                 value={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
+                            />
+                            <Term
+                                name="contract-type"
+                                label="Contract Type"
+                                value={convertCodeForDisplay("contractType", agreement?.contract_type)}
+                            />
+                            <Term
+                                name="service-requirement-type"
+                                label="Service Requirement Type"
+                                value={convertCodeForDisplay(
+                                    "serviceRequirementType",
+                                    agreement?.service_requirement_type
+                                )}
                             />
                             <Term
                                 name="psc"

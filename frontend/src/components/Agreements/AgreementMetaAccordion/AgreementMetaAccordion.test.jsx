@@ -14,7 +14,7 @@ describe("AgreementMetaAccordion", () => {
             />
         );
 
-        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Review Agreement Details")).toBeInTheDocument();
         expect(screen.getByText("test instructions")).toBeInTheDocument();
         expect(screen.getByText("Contract #1: African American Child and Family Research Center")).toBeInTheDocument();
         expect(screen.getByText("Contract")).toBeInTheDocument();

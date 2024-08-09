@@ -7,6 +7,8 @@ import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import SummaryCard from "../../UI/SummaryCard";
 import styles from "./small-summary-card.module.css";
 
+// NOTE: This component is not currently being used in the application.
+
 /**
  * Renders an accordion component to review changes in an agreement.
  * @component

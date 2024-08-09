@@ -15,12 +15,12 @@ import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.
 const AgreementActionAccordion = ({ setAction, optionOneDisabled = false, optionTwoDisabled = false }) => {
     return (
         <Accordion
-            heading="Choose an Action"
+            heading="Choose a Status Change"
             level={2}
         >
             <fieldset className="usa-fieldset">
                 <legend className="usa-legend maxw-full margin-bottom-2 margin-top-0">
-                    Choose which action you&apos;d like to initiate and then select the budget lines below.
+                    Choose which status you&apos;d like to change budget lines to.
                 </legend>
                 <div className="grid-row grid-gap">
                     <div className="grid-col">

@@ -6,6 +6,7 @@ import {
     getNonDRAFTBudgetLines
 } from "../../../helpers/budgetLines.helpers";
 import { draftBudgetLineStatuses } from "../../../helpers/utils";
+import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
 import Accordion from "../../UI/Accordion";
 import ToggleButton from "../../UI/ToggleButton";
 import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
@@ -40,7 +41,7 @@ function AgreementBLIAccordion({
     isApprovePage = false,
     updatedBudgetLines = []
 }) {
-    const showToggle = action === BLI_STATUS.PLANNED || isApprovePage;
+    const showToggle = action === selectedAction.DRAFT_TO_PLANNED || action === BLI_STATUS.PLANNED || isApprovePage;
     const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
 
     // Use the same logic for both !isApprovePage and isDraftToPlanned scenarios
