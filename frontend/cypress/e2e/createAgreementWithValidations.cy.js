@@ -121,7 +121,10 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="error-list"]').should("not.exist");
             // click option and check all budget lines
             cy.get('[type="radio"]').first().check({ force: true });
-            cy.get("#check-all").check({ force: true }).wait(1);
+            cy.get('[data-cy="check-all"]').each(($el) => {
+                cy.wrap($el).check({ force: true });
+                cy.wait(1);
+            });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
 
             // go back to edit mode and look for budget line errors

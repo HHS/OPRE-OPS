@@ -88,32 +88,36 @@ it("BLI Status Change", () => {
             cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
             cy.get('[data-cy="bli-tab-continue-btn"]').click();
             cy.get('input[id="Change Draft Budget Lines to Planned Status"]').check({ force: true });
-            cy.get("#check-all").check({ force: true }).wait(1);
+            cy.get('[data-cy="check-all"]').each(($el) => {
+                cy.wrap($el).check({ force: true });
+                cy.wait(1);
+            });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
             cy.get('[data-cy="send-to-approval-btn"]').click();
             cy.visit("/agreements?filter=change-requests").wait(1000);
             // see if there are any review cards
-            cy.get("[data-cy='review-card']")
-                .should("exist")
-                .contains("Status Change");
+            cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
             // verify agreement history
             cy.visit(`/agreements/${agreementId}`);
-            cy.get('.usa-breadcrumb__list > :nth-child(3)').should("have.text",  testAgreement.name);
+            cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
             cy.get('[data-cy="agreement-history-container"]').should("exist");
             cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
             cy.get('[data-cy="agreement-history-list"]').should("exist");
             cy.get(
-            '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
+                '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("exist");
             cy.get(
                 '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
             ).should("have.text", "Status Change to Planned In Review");
-            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                "have.text",
-                `Admin Demo requested a status change on BL ${bliId} from Draft to Planned and it's currently In Review for approval.`
-            )
+                "exist"
+            );
+            cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
+                .should(
+                    "have.text",
+                    `Admin Demo requested a status change on BL ${bliId} from Draft to Planned and it's currently In Review for approval.`
+                )
                 .then(() => {
                     cy.request({
                         method: "DELETE",
