@@ -126,19 +126,19 @@ const useReviewAgreement = (agreementId) => {
             setIsAlertActive(false);
         };
     }, [res, isSuccess]);
+    /**
+     * Create the status change messages for the selected budget lines
+     * @param {Object[]} selectedBudgetLines - the selected budget lines
+     * @param {typeof actionOptions.CHANGE_DRAFT_TO_PLANNED | typeof actionOptions.CHANGE_PLANNED_TO_EXECUTING } action - the selected action
+     */
     const createStatusChangeMessages = (selectedBudgetLines, action) => {
-        let messages = "";
+        const statusMessage =
+            action === actionOptions.CHANGE_DRAFT_TO_PLANNED ? "Draft to Planned" : "Planned to Executing";
 
-        selectedBudgetLines.forEach((bli) => {
-            if (action === actionOptions.CHANGE_DRAFT_TO_PLANNED) {
-                messages += `\u2022 BL ${bli.id} Status: Draft to Planned \n`;
-            } else {
-                messages += `\u2022 BL ${bli.id} Status: Planned to Executing \n`;
-            }
-        });
+        const messages = selectedBudgetLines.map((bli) => `\u2022 BL ${bli.id} Status: ${statusMessage}`).join("\n");
         return messages;
     };
-    const statusChangeMessages = createStatusChangeMessages(selectedBudgetLines, changeTo);
+    const statusChangeMessages = createStatusChangeMessages(selectedBudgetLines, action);
     /**
      * Handle the sending of the budget line items to approval
      * @returns {void}
@@ -165,11 +165,6 @@ const useReviewAgreement = (agreementId) => {
                 default:
                     break;
             }
-
-            const currentUserId = activeUser?.id;
-
-            console.log("BLI Package Data:", selectedBudgetLines, currentUserId, notes);
-            console.log("THE ACTION IS:", action);
 
             let promises = selectedBLIsWithStatusAndNotes.map((budgetLine) => {
                 const { id, data: cleanExistingBLI } = cleanBudgetLineItemForApi(budgetLine);
@@ -201,7 +196,7 @@ const useReviewAgreement = (agreementId) => {
                         message:
                             `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
                             `<strong>Pending Changes:</strong>\n` +
-                            `${statusChangeMessages}\n` +
+                            `${statusChangeMessages}\n\n` +
                             `${notes ? `<strong>Notes:</strong> ${notes}` : ""}`,
 
                         redirectUrl: "/agreements"
