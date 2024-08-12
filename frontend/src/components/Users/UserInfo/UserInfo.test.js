@@ -231,6 +231,40 @@ describe("UserInfo", () => {
         expect(await screen.findByText("admin")).toBeInTheDocument();
         expect(await screen.findByText("user")).toBeInTheDocument();
     });
+
+    test("update status", async () => {
+        const user = {
+            full_name: "Test User",
+            email: "test.user@exampl.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: ["admin"]
+        };
+        const { getByText, container } = renderWithProviders(
+            <App
+                user={user}
+                isEditable={true}
+            />
+        );
+
+        await waitFor(() => {
+            expect(container).toBeInTheDocument();
+        });
+
+        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+
+        // find the input element within the div with testid status-combobox
+        const statusComboBox = screen.getByTestId("status-combobox");
+        // eslint-disable-next-line testing-library/no-node-access
+        const statusInput = statusComboBox.querySelector("input");
+
+        fireEvent.keyDown(statusInput, { key: "ArrowDown", code: 40 });
+        // eslint-disable-next-line testing-library/prefer-screen-queries
+        fireEvent.click(getByText("LOCKED"));
+
+        // check that the 2 roles are selected
+        expect(await screen.findByText("LOCKED")).toBeInTheDocument();
+    });
 });
 
 const App = ({ user, isEditable }) => {

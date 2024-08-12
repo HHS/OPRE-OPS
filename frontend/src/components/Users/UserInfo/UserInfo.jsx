@@ -41,6 +41,11 @@ const UserInfo = ({ user, isEditable }) => {
         updateUser({ id: user.id, data: { roles: roleNames || [] } });
     };
 
+    const handleStatusChange = (status) => {
+        setSelectedStatus(status);
+        updateUser({ id: user.id, data: { status: status.name } });
+    };
+
     if (isLoadingDivisions || isLoadingRoles) {
         return <div>Loading...</div>;
     }
@@ -115,7 +120,7 @@ const UserInfo = ({ user, isEditable }) => {
                                             namespace="status-combobox"
                                             data={statusData}
                                             selectedData={selectedStatus}
-                                            setSelectedData={setSelectedStatus}
+                                            setSelectedData={handleStatusChange}
                                             defaultString="-- Select Status --"
                                             optionText={(status) => status.name}
                                             isMulti={false}
