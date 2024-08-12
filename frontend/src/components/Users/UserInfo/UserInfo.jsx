@@ -3,7 +3,14 @@ import ComboBox from "../../UI/Form/ComboBox/index.js";
 import React, { useEffect } from "react";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import { USER_STATUS } from "./UserInfo.constants.js";
+import PropTypes from "prop-types";
 
+/**
+ * Renders the user information.
+ * @param {Object} user - The user object.
+ * @param {Boolean} isEditable - Whether the user information is editable.
+ * @returns {JSX.Element} - The rendered component.
+ */
 const UserInfo = ({ user, isEditable }) => {
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
@@ -134,6 +141,11 @@ const UserInfo = ({ user, isEditable }) => {
             </div>
         </div>
     );
+};
+
+UserInfo.propTypes = {
+    user: PropTypes.object.isRequired,
+    isEditable: PropTypes.bool
 };
 
 export default UserInfo;

@@ -1,6 +1,13 @@
 import ComboBox from "../../UI/Form/ComboBox";
 import { useGetUsersQuery } from "../../../api/opsAPI.js";
+import PropTypes from "prop-types";
 
+/**
+ * Renders a ComboBox for selecting users by email.
+ * @param {Array<any>} selectedUsers - The selected users.
+ * @param {Function} setSelectedUsers - The function to set the selected users.
+ * @returns {JSX.Element} - The rendered component.
+ */
 function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
     // const [selectedUsers, setSelectedUsers] = React.useState([]);
 
@@ -34,5 +41,10 @@ function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
         </div>
     );
 }
+
+UserEmailComboBox.propTypes = {
+    selectedUsers: PropTypes.array.isRequired,
+    setSelectedUsers: PropTypes.func.isRequired
+};
 
 export default UserEmailComboBox;

@@ -3,6 +3,10 @@ import UserEmailComboBox from "../../../components/Users/UserEmailComboBox/index
 import React from "react";
 import UserInfo from "../../../components/Users/UserInfo/UserInfo.jsx";
 
+/**
+ * Renders the User Admin page.
+ * @returns {JSX.Element} - The rendered component.
+ */
 const UserAdmin = () => {
     const [selectedUsers, setSelectedUsers] = React.useState([]);
 
