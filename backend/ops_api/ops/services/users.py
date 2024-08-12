@@ -4,7 +4,8 @@ from sqlalchemy import ColumnElement, select
 from sqlalchemy.orm import Session
 from werkzeug.exceptions import Forbidden, NotFound
 
-from models import Role, User
+from models import Role, User, UserStatus
+from ops_api.ops.auth.utils import deactivate_all_user_sessions, get_all_user_sessions
 from ops_api.ops.utils.users import is_user_admin
 
 
@@ -46,6 +47,10 @@ def update_user(session: Session, **kwargs) -> User:
 
     if not is_user_admin(request_user):
         raise Forbidden("You do not have permission to update this user.")
+
+    if data.get("status") in [UserStatus.INACTIVE, UserStatus.LOCKED]:
+        user_sessions = get_all_user_sessions(user_id, session)
+        deactivate_all_user_sessions(user_sessions)
 
     if "roles" in data:
         data["roles"] = [
