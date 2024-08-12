@@ -43,7 +43,7 @@ const UserInfo = ({ user, isEditable }) => {
 
     const handleStatusChange = (status) => {
         setSelectedStatus(status);
-        updateUser({ id: user.id, data: { status: status.name } });
+        updateUser({ id: user.id, data: { status: status ? status.name : "LOCKED" } });
     };
 
     if (isLoadingDivisions || isLoadingRoles) {
