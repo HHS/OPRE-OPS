@@ -35,6 +35,12 @@ const UserInfo = ({ user, isEditable }) => {
         updateUser({ id: user.id, data: { division: division ? division.id : null } });
     };
 
+    const handleRolesChange = (roles) => {
+        setSelectedRoles(roles);
+        const roleNames = roles.map((role) => role.name);
+        updateUser({ id: user.id, data: { roles: roleNames || [] } });
+    };
+
     if (isLoadingDivisions || isLoadingRoles) {
         return <div>Loading...</div>;
     }
@@ -90,7 +96,7 @@ const UserInfo = ({ user, isEditable }) => {
                                             namespace="roles-combobox"
                                             data={roles}
                                             selectedData={selectedRoles}
-                                            setSelectedData={setSelectedRoles}
+                                            setSelectedData={handleRolesChange}
                                             defaultString="-- Select Roles --"
                                             optionText={(role) => role.name}
                                             isMulti={true}

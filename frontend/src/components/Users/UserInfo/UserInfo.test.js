@@ -196,6 +196,41 @@ describe("UserInfo", () => {
         // check that the division has been selected
         expect(await screen.findByText("Division of Economic Independence")).toBeInTheDocument();
     });
+
+    test("update roles", async () => {
+        const user = {
+            full_name: "Test User",
+            email: "test.user@exampl.com",
+            division: 1,
+            status: "ACTIVE",
+            roles: ["admin"]
+        };
+        const { getByText, container } = renderWithProviders(
+            <App
+                user={user}
+                isEditable={true}
+            />
+        );
+
+        await waitFor(() => {
+            expect(container).toBeInTheDocument();
+        });
+
+        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+
+        // find the input element within the div with testid roles-combobox
+        const rolesComboBox = screen.getByTestId("roles-combobox");
+        // eslint-disable-next-line testing-library/no-node-access
+        const rolesInput = rolesComboBox.querySelector("input");
+
+        fireEvent.keyDown(rolesInput, { key: "ArrowDown", code: 40 });
+        // eslint-disable-next-line testing-library/prefer-screen-queries
+        fireEvent.click(getByText("user"));
+
+        // check that the 2 roles are selected
+        expect(await screen.findByText("admin")).toBeInTheDocument();
+        expect(await screen.findByText("user")).toBeInTheDocument();
+    });
 });
 
 const App = ({ user, isEditable }) => {
