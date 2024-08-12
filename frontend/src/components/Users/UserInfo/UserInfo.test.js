@@ -262,8 +262,7 @@ describe("UserInfo", () => {
         // eslint-disable-next-line testing-library/prefer-screen-queries
         fireEvent.click(getByText("LOCKED"));
 
-        // check that the 2 roles are selected
-        expect(await screen.findByText("LOCKED")).toBeInTheDocument();
+        expect(statusComboBox).toHaveTextContent("LOCKED");
     });
 });
 
