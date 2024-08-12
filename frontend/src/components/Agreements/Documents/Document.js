@@ -61,12 +61,12 @@ const triggerDownload = (blob, fileName) => {
     // Create a temporary anchor element to initiate the download
     const a = document.createElement("a");
     a.href = objectUrl;             // Set the href to the blob URL
-    a.download = `${fileName}`;     // Set the name for the downloaded file
+    a.download = fileName;          // Set the name for the downloaded file
     document.body.appendChild(a);   // Append the anchor element to the body
     a.click();                      // Programmatically click the anchor to trigger the download
     document.body.removeChild(a);   // Clean up: remove the anchor element
 
-    // Clean up: revoke the object URL after the download is triggered (to free up memory)
+    // Revoke the object URL after the download is triggered (to free up memory)
     URL.revokeObjectURL(objectUrl);
 };
 
@@ -91,7 +91,7 @@ export const uploadDocumentToBlob = async (sasUrl, uuid, file) => {
         const blockBlobClient = containerClient.getBlockBlobClient(uuid);
 
         // Create a Blob object from the file data
-        const blob = new Blob([file.file], { type: file.type });
+        const blob = new Blob([file], { type: file.type });
 
         // Upload the Blob to Azure Blob Storage
         const uploadBlobResponse = await blockBlobClient.uploadData(blob);

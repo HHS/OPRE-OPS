@@ -9,7 +9,7 @@ import {
     processUploading, uploadDocumentToBlob,
     uploadDocumentToInMemory
 } from "./Document.js";
-import {DOCUMENT_TYPES} from "./Documents.constants.js";
+import {ALLOWED_FAKE_HOSTS, ALLOWED_HOSTS, DOCUMENT_TYPES} from "./Documents.constants.js";
 
 // This component is a temporary page for testing document upload and download functionality
 // The local host URL for this page is http://localhost:3000/upload-document
@@ -53,6 +53,11 @@ const UploadDocument = () => {
             // Upload the document to specified storage
             await processUploading(url, uuid, file, agreementId, uploadDocumentToInMemory, uploadDocumentToBlob, patchStatus);
 
+            // Reset the form fields
+            document.getElementById("file-upload").value = null;
+            document.getElementById("agreement-id-upload").value = null;
+            setSelectedDocumentType("");
+
         } catch (error) {
             console.error("Error in handleUpload:", error);
         }
@@ -68,16 +73,22 @@ const UploadDocument = () => {
 
             if (documents.length > 0) {
                 for (const document of documents) {
-                    if (url.includes("FakeDocumentRepository")) {
+                    if (url.includes(ALLOWED_FAKE_HOSTS)) {
                         downloadFileFromMemory(document.document_id);
+                    } else if (url.includes(ALLOWED_HOSTS)){
+                        await downloadDocumentFromBlob(url, document.document_id, document.document_name);
                     } else {
-                        await downloadDocumentFromBlob(url, document.document_id, document.name);
+                        console.error("Invalid storage type:", url);
+                        return;
                     }
                 }
                 console.log(`All documents for agreement ${getDocumentAgreementId} downloaded successfully.`);
             } else {
                 console.log("No documents found for the provided Agreement ID.");
             }
+
+            // Reset agreement id field
+            document.getElementById("agreement-id-get").value = null;
         } catch (error) {
             console.error("Error in handleGetDocumentByAgreementId:", error);
         }
