@@ -94,7 +94,7 @@ def upgrade() -> None:
         sa.Column('document_size', sa.Numeric(precision=10, scale=2), nullable=False)
     )
 
-    # Rename file_name to name and document_type to type
+    # Rename file_name to document_name
     op.alter_column(
         'document',
         'file_name',

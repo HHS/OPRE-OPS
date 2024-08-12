@@ -73,6 +73,7 @@ const UploadDocument = () => {
 
             if (documents.length > 0) {
                 for (const document of documents) {
+                    console.log("Downloading document:", document.document_id, "Document details:", document);
                     if (url.includes(ALLOWED_FAKE_HOSTS)) {
                         downloadFileFromMemory(document.document_id);
                     } else if (url.includes(ALLOWED_HOSTS)){
