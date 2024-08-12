@@ -100,7 +100,7 @@ const Agreement = () => {
                 </>
             )}
 
-            {agreement_response_list && agreement_response_list.length > 0 && (
+            {agreement_response_list?.length > 0 && (
                 <AgreementChangesResponseAlert
                     changeRequests={agreement_response_list}
                     isApproveAlertVisible={isApproveAlertVisible}

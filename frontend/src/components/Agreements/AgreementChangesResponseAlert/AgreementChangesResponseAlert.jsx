@@ -16,8 +16,8 @@ import { renderField } from "../../../helpers/utils";
  */
 function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, isDeclineAlertVisible, setIsApproveAlertVisible, setIsDeclineAlertVisible }) {
 
-    const approvedRequests = changeRequests.filter(request => request.change_request.status === "APPROVED");
-    const declinedRequests = changeRequests.filter(request => request.change_request.status === "REJECTED");
+    const approvedRequests = changeRequests?.filter(request => request.change_request.status === "APPROVED");
+    const declinedRequests = changeRequests?.filter(request => request.change_request.status === "REJECTED");
 
     const approvedRequestsReviewNotes = getChangeRequestNotes(approvedRequests);
     const declinedRequestsReviewNotes = getChangeRequestNotes(declinedRequests);
@@ -31,7 +31,7 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                 setIsAlertVisible={setIsApproveAlertVisible}
                 isAlertVisible={isApproveAlertVisible}
             >
-                {changeRequests && changeRequests.length > 0 && (
+                {changeRequests?.length > 0 && (
                     <>
                         <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Approved:</h2>
                         <ul className="margin-0 font-sans-sm">
@@ -50,7 +50,7 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                 )}
             </VanishingAlert>
         )}
-        {declinedRequests && declinedRequests.length > 0 && (
+        {declinedRequests?.length > 0 && (
             <VanishingAlert
                 type="error"
                 heading="Changes Declined"
@@ -107,7 +107,7 @@ function formatChangeRequest(changeRequest) {
  */
 function getChangeRequestNotes(changeRequests) {
     let reviewerNotes = "";
-    changeRequests.map((changeRequest) => {
+    changeRequests?.map((changeRequest) => {
         if(changeRequest.change_request?.reviewer_notes !== ""){
             reviewerNotes = changeRequest.change_request?.reviewer_notes;
         }
