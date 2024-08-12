@@ -40,18 +40,18 @@ class BudgetLineItemStatus(Enum):
     PLANNED = "Planned"
     IN_EXECUTION = "In Execution"
     OBLIGATED = "Obligated"
-
-def ConvertBLIStatusNameToPrettyString(BLIStatusName):
-    if BLIStatusName == "DRAFT":
-        return BudgetLineItemStatus.DRAFT.__str__()
-    elif BLIStatusName == "PLANNED":
-        return BudgetLineItemStatus.PLANNED.__str__()
-    elif BLIStatusName == "IN_EXECUTION":
-        return BudgetLineItemStatus.IN_EXECUTION.__str__()
-    elif BLIStatusName == "OBLIGATED":
-        return BudgetLineItemStatus.OBLIGATED.__str__()
-    else:
-        return BudgetLineItemStatus.DRAFT.__str__()
+    @staticmethod
+    def convert_BLI_status_name_to_pretty_string(status_name):
+        if status_name == "DRAFT":
+            return BudgetLineItemStatus.DRAFT.__str__()
+        elif status_name == "PLANNED":
+            return BudgetLineItemStatus.PLANNED.__str__()
+        elif status_name == "IN_EXECUTION":
+            return BudgetLineItemStatus.IN_EXECUTION.__str__()
+        elif status_name == "OBLIGATED":
+            return BudgetLineItemStatus.OBLIGATED.__str__()
+        else:
+            return BudgetLineItemStatus.DRAFT.__str__()
 
 class ModType(Enum):
     ADMIN = auto()
