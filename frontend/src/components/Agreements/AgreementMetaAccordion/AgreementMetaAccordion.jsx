@@ -16,6 +16,7 @@ import Term from "../../UI/Term";
  */
 const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, convertCodeForDisplay, instructions }) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members.length > 3;
+
     /**
      * Renders a Term component.
      * @component
@@ -89,10 +90,10 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                         {renderTerm("project-officer", "Project Officer", projectOfficerName)}
                     </dl>
 
-                    {agreement?.team_members.length > 0 ? (
-                        <dl className="grid-row grid-gap-sm">
-                            <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
-                            {agreement?.team_members.map((member) => (
+                    <dl className="grid-row grid-gap-sm">
+                        <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
+                        {agreement?.team_members.length > 0 ? (
+                            agreement?.team_members.map((member) => (
                                 <dd
                                     key={member.id}
                                     className={`text-semibold margin-0 margin-top-05 ${
@@ -101,11 +102,13 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                                 >
                                     {member.full_name}
                                 </dd>
-                            ))}
-                        </dl>
-                    ) : (
-                        renderTerm("team-members", "Team Members", agreement?.team_members[0])
-                    )}
+                            ))
+                        ) : (
+                            <dd className="text-semibold margin-0 margin-top-05 grid-col-12">
+                                {agreement?.team_members[0]}
+                            </dd>
+                        )}
+                    </dl>
                 </div>
             </div>
         </Accordion>
