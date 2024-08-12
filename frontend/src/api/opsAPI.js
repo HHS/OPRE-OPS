@@ -191,7 +191,7 @@ export const opsApi = createApi({
                 headers: { "Content-Type": "application/json" },
                 body: data
             }),
-            invalidatesTags: ["User"]
+            invalidatesTags: ["User", "Users"]
         }),
         getCans: builder.query({
             query: () => `/cans/`,

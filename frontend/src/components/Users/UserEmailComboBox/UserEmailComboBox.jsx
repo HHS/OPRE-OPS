@@ -1,9 +1,8 @@
-import React from "react";
 import ComboBox from "../../UI/Form/ComboBox";
 import { useGetUsersQuery } from "../../../api/opsAPI.js";
 
-function UserEmailComboBox({ legendClassName = "usa-label margin-top-0" }) {
-    const [selectedUsers, setSelectedUsers] = React.useState([]);
+function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
+    // const [selectedUsers, setSelectedUsers] = React.useState([]);
 
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
 
@@ -17,7 +16,7 @@ function UserEmailComboBox({ legendClassName = "usa-label margin-top-0" }) {
     return (
         <div className="display-flex flex-column width-full">
             <label
-                className={legendClassName}
+                // className={legendClassName}
                 htmlFor="user-email-combobox-input"
             >
                 User
