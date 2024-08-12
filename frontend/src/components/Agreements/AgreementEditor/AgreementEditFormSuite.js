@@ -35,6 +35,12 @@ const suite = create((data = {}, fieldName) => {
     test("project_officer", "This is required information", () => {
         enforce(data.project_officer_id).greaterThan(0);
     });
+    test("contract-type", "This is required information", () => {
+        enforce(fieldName.contract_type).isNotBlank();
+    });
+    test("team-members", "This is required information", () => {
+        enforce(fieldName.team_members).longerThan(0);
+    });
 });
 
 export default suite;

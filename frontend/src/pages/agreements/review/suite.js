@@ -31,6 +31,12 @@ const suite = create((fieldName) => {
     test("project-officer", "This is required information", () => {
         enforce(fieldName.project_officer_id).isNotBlank();
     });
+    test("contract-type", "This is required information", () => {
+        enforce(fieldName.contract_type).isNotBlank();
+    });
+    test("team-members", "This is required information", () => {
+        enforce(fieldName.team_members).longerThan(0);
+    });
     // test to ensure at least one budget line item exists
     test("budget-line-items", "Must have at least one budget line item", () => {
         enforce(fieldName.budget_line_items).longerThan(0);
