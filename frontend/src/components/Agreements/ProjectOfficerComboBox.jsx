@@ -1,7 +1,7 @@
+import cx from "clsx";
 import PropTypes from "prop-types";
 import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
-import cx from "clsx";
 /**
  *  A comboBox for choosing a project officer.
  * @param {Object} props - The component props.
@@ -57,7 +57,7 @@ export const ProjectOfficerComboBox = ({
             >
                 Project Officer
             </label>
-            {messages.length ? (
+            {messages?.length && (
                 <span
                     className="usa-error-message"
                     id="project-officer-combobox-input-error-message"
@@ -65,7 +65,7 @@ export const ProjectOfficerComboBox = ({
                 >
                     {messages[0]}
                 </span>
-            ) : null}
+            )}
             <div>
                 <ComboBox
                     namespace="project-officer-combobox"
