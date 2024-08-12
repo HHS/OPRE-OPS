@@ -105,22 +105,12 @@ export const ReviewAgreement = () => {
                     message="In order to send this agreement to approval, click edit to update the required information."
                 >
                     <ul data-cy="error-list">
-                        {Object.entries(pageErrors).map(([key, value]) => (
+                        {Object.entries(pageErrors).map(([key]) => (
                             <li
                                 key={key}
                                 data-cy="error-item"
                             >
                                 <strong>{convertCodeForDisplay("validation", key)} </strong>
-                                {
-                                    <span>
-                                        {value.map((message, index) => (
-                                            <Fragment key={index}>
-                                                <span>{message}</span>
-                                                {index < value.length - 1 && <span>, </span>}
-                                            </Fragment>
-                                        ))}
-                                    </span>
-                                }
                             </li>
                         ))}
                     </ul>
