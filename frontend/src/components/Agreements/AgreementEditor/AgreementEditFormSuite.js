@@ -35,6 +35,12 @@ const suite = create((data = {}, fieldName) => {
     test("project_officer", "This is required information", () => {
         enforce(data.project_officer_id).greaterThan(0);
     });
+    test("contract-type", "This is required information", () => {
+        enforce(data.contract_type).notEquals("-Select an option-");
+    });
+    test("team-members", "This is required information", () => {
+        enforce(data.team_members).lengthNotEquals(0);
+    });
 });
 
 export default suite;

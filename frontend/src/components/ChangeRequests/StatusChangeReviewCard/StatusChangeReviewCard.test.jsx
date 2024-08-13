@@ -10,6 +10,7 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { useGetBLITotal } from "../../../hooks/lookup.hooks";
 import { agreement, budgetLine } from "../../../tests/data";
 import StatusChangeReviewCard from "./StatusChangeReviewCard";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 vi.mock("../../../api/opsAPI");
 vi.mock("../../../hooks/lookup.hooks", () => ({
@@ -17,12 +18,14 @@ vi.mock("../../../hooks/lookup.hooks", () => ({
     useGetNameForCanId: vi.fn(),
     useGetAgreementName: vi.fn()
 }));
+vi.mock("../../../hooks/user.hooks");
 describe("StatusChangeReviewCard", () => {
     useGetAgreementByIdQuery.mockReturnValue({ data: { agreement } });
     useGetBudgetLineItemQuery.mockReturnValue({ data: budgetLine });
     useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
     useGetBLITotal.mockReturnValue(1000000);
     useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+    useGetUserFullNameFromId.mockReturnValue("unknown");
 
     const initialProps = {
         changeRequestId: 1,
