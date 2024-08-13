@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Route, Routes, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetNotificationsByUserIdAndAgreementIdQuery } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
 import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
@@ -11,9 +12,6 @@ import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
-import { useGetNotificationsByUserIdAndAgreementIdQuery } from "../../../api/opsAPI";
-import { getAccessToken } from "../../../components/Auth/auth";
-import { jwtDecode } from "jwt-decode";
 
 
 const Agreement = () => {
@@ -41,17 +39,10 @@ const Agreement = () => {
         refetchOnMountOrArgChange: true
     });
     let doesAgreementHaveBlIsInReview = false;
-    const access_token = getAccessToken();
-    let oidc_userId = "";
-    let auth_header = "";
-    if (access_token) {
-        auth_header = `Bearer ${access_token}`;
-        const decodedJwt = jwtDecode(access_token);
-        oidc_userId = decodedJwt["sub"];
-    }
+    const activeUser = useSelector((state) => state.auth.activeUser);
 
     let agreement_response_list = []
-    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({ user_oidc_id: oidc_userId, agreement_id: agreementId, auth_header });
+    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({ user_oidc_id: activeUser?.oidc_id, agreement_id: agreementId});
     if (query_response){
         agreement_response_list = query_response.data
     }

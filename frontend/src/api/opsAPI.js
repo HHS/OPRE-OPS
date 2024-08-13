@@ -217,13 +217,12 @@ export const opsApi = createApi({
             providesTags: ["Notifications"]
         }),
         getNotificationsByUserIdAndAgreementId: builder.query({
-            query: ({ user_oidc_id, agreement_id, auth_header}) => {
+            query: ({ user_oidc_id, agreement_id}) => {
                 if(!user_oidc_id || !agreement_id){
                     return { skip: true };
                 }
                 return {
                     url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`,
-                    headers: { Authorization: auth_header }
                 };
             },
             providesTags: ["Notifications"]
