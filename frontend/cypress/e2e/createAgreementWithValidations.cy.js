@@ -61,9 +61,10 @@ describe("create agreement and test validations", () => {
             //fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
-            // get all errors on page, should be 4
-            cy.get(".usa-form-group--error").should("have.length", 4);
+            // get all errors on page, should be 5
+            cy.get(".usa-form-group--error").should("have.length", 5);
             cy.get("#description").type("Test Description");
+            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
             cy.get("#product_service_code_id").select(1);
             cy.get("#serviceReqType").select("Severable");
             cy.get("#agreement_reason").select("NEW_REQ");
