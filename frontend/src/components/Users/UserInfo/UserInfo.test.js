@@ -28,7 +28,6 @@ describe("UserInfo", () => {
             expect(container).toBeInTheDocument();
         });
 
-        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
         expect(await screen.findByText("Test User")).toBeInTheDocument(); // User Name
         expect(await screen.findByText("test.user@exampl.com")).toBeInTheDocument(); // User Email
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
@@ -55,7 +54,6 @@ describe("UserInfo", () => {
             expect(container).toBeInTheDocument();
         });
 
-        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
         expect(await screen.findByText("Test User")).toBeInTheDocument(); // User Name
         expect(await screen.findByText("test.user@exampl.com")).toBeInTheDocument(); // User Email
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
@@ -82,7 +80,8 @@ describe("UserInfo", () => {
             expect(container).toBeInTheDocument();
         });
 
-        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+        expect(await screen.findByText("Test User")).toBeInTheDocument(); // Card Header
+
         expect(screen.getByTestId("division-combobox")).toBeInTheDocument();
 
         // find the input element within the div with testid division-combobox
@@ -118,7 +117,8 @@ describe("UserInfo", () => {
             expect(container).toBeInTheDocument();
         });
 
-        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+        expect(await screen.findByText("Test User")).toBeInTheDocument(); // Card Header
+
         expect(screen.getByTestId("roles-combobox")).toBeInTheDocument();
 
         const rolesComboBox = screen.getByTestId("roles-combobox");
@@ -152,7 +152,8 @@ describe("UserInfo", () => {
             expect(container).toBeInTheDocument();
         });
 
-        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+        expect(await screen.findByText("Test User")).toBeInTheDocument(); // Card Header
+
         expect(screen.getByTestId("status-combobox")).toBeInTheDocument();
 
         const statusComboBox = screen.getByTestId("status-combobox");
@@ -185,7 +186,7 @@ describe("UserInfo", () => {
             expect(container).toBeInTheDocument();
         });
 
-        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+        expect(await screen.findByText("Test User")).toBeInTheDocument(); // Card Header
 
         // find the input element within the div with testid division-combobox
         const divisionComboBox = screen.getByTestId("division-combobox");
@@ -221,7 +222,7 @@ describe("UserInfo", () => {
             expect(container).toBeInTheDocument();
         });
 
-        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+        expect(await screen.findByText("Test User")).toBeInTheDocument(); // Card Header
 
         // find the input element within the div with testid roles-combobox
         const rolesComboBox = screen.getByTestId("roles-combobox");
@@ -258,7 +259,7 @@ describe("UserInfo", () => {
             expect(container).toBeInTheDocument();
         });
 
-        expect(await screen.findByText("User Details")).toBeInTheDocument(); // Card Header
+        expect(await screen.findByText("Test User")).toBeInTheDocument(); // Card Header
 
         // find the input element within the div with testid status-combobox
         const statusComboBox = screen.getByTestId("status-combobox");
