@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import UserInfo from "./UserInfo";
 import { renderWithProviders } from "../../../test-utils.js";
 import { server } from "../../../tests/mocks.js";
+import userEvent from "@testing-library/user-event";
 
 describe("UserInfo", () => {
     beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -164,6 +165,8 @@ describe("UserInfo", () => {
     });
 
     test("update the division", async () => {
+        const browserUser = userEvent.setup();
+
         const user = {
             full_name: "Test User",
             email: "test.user@exampl.com",
@@ -189,15 +192,17 @@ describe("UserInfo", () => {
         // eslint-disable-next-line testing-library/no-node-access
         const divisionInput = divisionComboBox.querySelector("input");
 
-        fireEvent.keyDown(divisionInput, { key: "ArrowDown", code: 40 });
+        await browserUser.click(divisionInput);
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("Division of Economic Independence"));
+        await browserUser.click(getByText("Division of Economic Independence"));
 
         // check that the division has been selected
         expect(await screen.findByText("Division of Economic Independence")).toBeInTheDocument();
     });
 
     test("update roles", async () => {
+        const browserUser = userEvent.setup();
+
         const user = {
             full_name: "Test User",
             email: "test.user@exampl.com",
@@ -223,9 +228,9 @@ describe("UserInfo", () => {
         // eslint-disable-next-line testing-library/no-node-access
         const rolesInput = rolesComboBox.querySelector("input");
 
-        fireEvent.keyDown(rolesInput, { key: "ArrowDown", code: 40 });
+        await browserUser.click(rolesInput);
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("user"));
+        await browserUser.click(getByText("user"));
 
         // check that the 2 roles are selected
         expect(await screen.findByText("admin")).toBeInTheDocument();
@@ -233,6 +238,8 @@ describe("UserInfo", () => {
     });
 
     test("update status", async () => {
+        const browserUser = userEvent.setup();
+
         const user = {
             full_name: "Test User",
             email: "test.user@exampl.com",
@@ -255,12 +262,13 @@ describe("UserInfo", () => {
 
         // find the input element within the div with testid status-combobox
         const statusComboBox = screen.getByTestId("status-combobox");
+
         // eslint-disable-next-line testing-library/no-node-access
         const statusInput = statusComboBox.querySelector("input");
 
-        fireEvent.keyDown(statusInput, { key: "ArrowDown", code: 40 });
+        await browserUser.click(statusInput);
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        fireEvent.click(getByText("LOCKED"));
+        await browserUser.click(getByText("LOCKED"));
 
         expect(statusComboBox).toHaveTextContent("LOCKED");
     });
