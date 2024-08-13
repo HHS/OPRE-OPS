@@ -1,38 +1,38 @@
-import React from "react";
 import PropTypes from "prop-types";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
 
-import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
+import {
+    useAddAgreementMutation,
+    useDeleteAgreementMutation,
+    useGetProductServiceCodesQuery,
+    useUpdateAgreementMutation
+} from "../../../api/opsAPI";
+import { formatTeamMember } from "../../../api/postAgreements";
+import useAlert from "../../../hooks/use-alert.hooks";
+import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
+import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
+import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
+import GoBackButton from "../../UI/Button/GoBackButton";
+import Input from "../../UI/Form/Input";
+import TextArea from "../../UI/Form/TextArea/TextArea";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import AgreementReasonSelect from "../AgreementReasonSelect";
 import AgreementTypeSelect from "../AgreementTypeSelect";
+import ProcurementShopSelectWithFee from "../ProcurementShopSelectWithFee";
 import ProductServiceCodeSelect from "../ProductServiceCodeSelect";
+import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
+import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
 import TeamMemberComboBox from "../TeamMemberComboBox";
 import TeamMemberList from "../TeamMemberList";
-import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
-import { formatTeamMember } from "../../../api/postAgreements";
-import ProductServiceCodeSummaryBox from "../ProductServiceCodeSummaryBox";
+import suite from "./AgreementEditFormSuite";
 import {
     useEditAgreement,
     useEditAgreementDispatch,
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
-import suite from "./AgreementEditFormSuite";
-import Input from "../../UI/Form/Input";
-import TextArea from "../../UI/Form/TextArea/TextArea";
-import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
-import {
-    useAddAgreementMutation,
-    useGetProductServiceCodesQuery,
-    useUpdateAgreementMutation,
-    useDeleteAgreementMutation
-} from "../../../api/opsAPI";
-import ProjectOfficerComboBox from "../ProjectOfficerComboBox";
-import GoBackButton from "../../UI/Button/GoBackButton";
-import useAlert from "../../../hooks/use-alert.hooks";
-import ServiceReqTypeSelect from "../../ServicesComponents/ServiceReqTypeSelect";
-import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -375,6 +375,7 @@ export const AgreementEditForm = ({
                 }}
             />
             <ContractTypeSelect
+                messages={res.getErrors("contract-type")}
                 className="margin-top-3"
                 value={contractType}
                 onChange={(name, value) => {
@@ -466,6 +467,7 @@ export const AgreementEditForm = ({
                     overrideStyles={{ width: "15em" }}
                 />
                 <TeamMemberComboBox
+                    messages={res.getErrors("team-members")}
                     className="margin-left-4"
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     selectedTeamMembers={selectedTeamMembers}

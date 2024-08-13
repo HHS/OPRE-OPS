@@ -1,18 +1,23 @@
-import { useState } from "react";
-import PropTypes from "prop-types";
-import { useGetUsersQuery } from "../../api/opsAPI";
 import cx from "clsx";
-import ComboBox from "../UI/Form/ComboBox";
 import _ from "lodash";
+import PropTypes from "prop-types";
+import { useState } from "react";
+import { useGetUsersQuery } from "../../api/opsAPI";
+import ComboBox from "../UI/Form/ComboBox";
 
 /**
  * A component that renders a select input for choosing team members.
+ * @component
  * @param {Object} props - The component props.
  * @param {string} [props.className] - The class name to apply to the component.
  * @param {Object} props.selectedProjectOfficer - The currently selected project officer.
- * @param {Array} props.selectedTeamMembers - The currently selected team members.
+ * @param {Object[]} props.selectedTeamMembers - The currently selected team members.
  * @param {Function} props.setSelectedTeamMembers - A function to set the selected team members.
- * @returns {React.JSX.Element} - The rendered component.
+ * @param {string} [props.legendClassname] - The class name to apply to the label/legend.
+ * @param {string} [props.defaultString] - The default string to display in the select input.
+ * @param {Object} [props.overrideStyles] - The styles to apply to the component.
+ * @param {Object[]} [props.messages] - An array of error messages to display.
+ * @returns {JSX.Element} - The rendered component.
  */
 export const TeamMemberComboBox = ({
     className,
@@ -21,7 +26,8 @@ export const TeamMemberComboBox = ({
     setSelectedTeamMembers,
     legendClassname = "usa-label margin-top-0",
     defaultString = "",
-    overrideStyles = {}
+    overrideStyles = {},
+    messages = []
 }) => {
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
     const [selectedTeamMember, setSelectedTeamMember] = useState({});
@@ -47,7 +53,7 @@ export const TeamMemberComboBox = ({
     };
 
     return (
-        <div className={cx("usa-form-group margin-top-0", className)}>
+        <div className={cx("usa-form-group margin-top-0", messages.length && "usa-form-group--error", className)}>
             <label
                 className={legendClassname}
                 htmlFor="team-member-combobox-input"
@@ -55,6 +61,15 @@ export const TeamMemberComboBox = ({
             >
                 Team Members
             </label>
+            {messages?.length > 0 && (
+                <span
+                    className="usa-error-message"
+                    id="project-officer-combobox-input-error-message"
+                    role="alert"
+                >
+                    {messages[0]}
+                </span>
+            )}
             <div>
                 <ComboBox
                     namespace="team-member-combobox"
@@ -65,6 +80,7 @@ export const TeamMemberComboBox = ({
                     optionText={(user) => user.full_name || user.email}
                     overrideStyles={overrideStyles}
                     clearWhenSet={true}
+                    messages={messages}
                 />
             </div>
         </div>
@@ -78,7 +94,8 @@ TeamMemberComboBox.propTypes = {
     setSelectedTeamMembers: PropTypes.func,
     legendClassname: PropTypes.string,
     defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object
+    overrideStyles: PropTypes.object,
+    messages: PropTypes.array
 };
 
 export default TeamMemberComboBox;
