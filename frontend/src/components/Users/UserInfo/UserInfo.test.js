@@ -197,7 +197,7 @@ describe("UserInfo", () => {
         await browserUser.click(getByText("Division of Economic Independence"));
 
         // check that the division has been selected
-        expect(await screen.findByText("Division of Economic Independence")).toBeInTheDocument();
+        expect(divisionComboBox).toHaveTextContent("Division of Economic Independence");
     });
 
     test("update roles", async () => {
@@ -233,8 +233,8 @@ describe("UserInfo", () => {
         await browserUser.click(getByText("user"));
 
         // check that the 2 roles are selected
-        expect(await screen.findByText("admin")).toBeInTheDocument();
-        expect(await screen.findByText("user")).toBeInTheDocument();
+        expect(rolesComboBox).toHaveTextContent("admin");
+        expect(rolesComboBox).toHaveTextContent("user");
     });
 
     test("update status", async () => {
