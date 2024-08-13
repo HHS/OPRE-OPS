@@ -93,7 +93,7 @@ const UserInfo = ({ user, isEditable }) => {
         <div className="usa-card">
             <div className="usa-card__container">
                 <div className="usa-card__header">
-                    <h4 className="usa-card__heading">User Details</h4>
+                    <h4 className="usa-card__heading">{user.full_name}</h4>
                 </div>
                 <div className="usa-card__body">
                     <div className="font-sans-md line-height-sans-4 flex-align-center">

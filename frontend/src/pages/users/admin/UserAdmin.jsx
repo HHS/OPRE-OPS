@@ -24,7 +24,7 @@ const UserAdmin = () => {
                     selectedUsers.map((user) => (
                         <section
                             key={user.id}
-                            className="margin-top-2"
+                            className="margin-5"
                         >
                             <UserInfo
                                 user={user}
