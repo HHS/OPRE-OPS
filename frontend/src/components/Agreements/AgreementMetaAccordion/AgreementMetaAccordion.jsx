@@ -91,21 +91,24 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                     </dl>
 
                     <dl className="grid-row grid-gap-sm">
-                        <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
                         {agreement?.team_members.length > 0 ? (
-                            agreement?.team_members.map((member) => (
-                                <dd
-                                    key={member.id}
-                                    className={`text-semibold margin-0 margin-top-05 ${
-                                        MORE_THAN_THREE_TEAM_MEMBERS ? "grid-col-6" : "grid-col-12"
-                                    }`}
-                                >
-                                    {member.full_name}
-                                </dd>
-                            ))
+                            <>
+                                <dt className="margin-0 text-base-dark margin-top-3 grid-col-12">Team Members</dt>
+                                {agreement?.team_members.map((member) => (
+                                    <dd
+                                        key={member.id}
+                                        className={`text-semibold margin-0 margin-top-05 ${
+                                            MORE_THAN_THREE_TEAM_MEMBERS ? "grid-col-6" : "grid-col-12"
+                                        }`}
+                                    >
+                                        {member.full_name}
+                                    </dd>
+                                ))}
+                            </>
                         ) : (
                             <dd className="text-semibold margin-0 margin-top-05 grid-col-12">
-                                {agreement?.team_members[0]}
+                                {renderTerm("team-members", "Team Members", "No team members")}
+                                <p>not today satan</p>
                             </dd>
                         )}
                     </dl>
