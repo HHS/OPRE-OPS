@@ -98,16 +98,12 @@ const UserInfo = ({ user, isEditable }) => {
                 <div className="usa-card__body">
                     <div className="font-sans-md line-height-sans-4 flex-align-center">
                         <div className="grid-row">
-                            <div className="grid-col">Name:</div>
-                            <div className="grid-col">{user.full_name}</div>
-                        </div>
-                        <div className="grid-row">
-                            <div className="grid-col">User Email:</div>
-                            <div className="grid-col">{user?.email}</div>
+                            <div className="grid-col-4">User Email:</div>
+                            <div className="grid-col-8">{user?.email}</div>
                         </div>
                         <div className="grid-row display-flex flex-align-center">
-                            <div className="grid-col flex-3">Division:</div>
-                            <div className="grid-col flex-3">
+                            <div className="grid-col-4">Division:</div>
+                            <div className="grid-col-8">
                                 {!isEditable && <span>{selectedDivision?.name}</span>}
                                 {isEditable && (
                                     <div data-testid="division-combobox">
@@ -125,8 +121,8 @@ const UserInfo = ({ user, isEditable }) => {
                             </div>
                         </div>
                         <div className="grid-row">
-                            <div className="grid-col flex-3">Role(s):</div>
-                            <div className="grid-col flex-3">
+                            <div className="grid-col-4">Role(s):</div>
+                            <div className="grid-col-8">
                                 {!isEditable && <span>{selectedRoles?.map((role) => role.name).join(", ")}</span>}
                                 {isEditable && (
                                     <div data-testid="roles-combobox">
@@ -144,8 +140,8 @@ const UserInfo = ({ user, isEditable }) => {
                             </div>
                         </div>
                         <div className="grid-row display-flex flex-align-center">
-                            <div className="grid-col flex-3">Status:</div>
-                            <div className="grid-col flex-3">
+                            <div className="grid-col-4">Status:</div>
+                            <div className="grid-col-8">
                                 {!isEditable && <span>{selectedStatus?.name}</span>}
                                 {isEditable && (
                                     <div data-testid="status-combobox">

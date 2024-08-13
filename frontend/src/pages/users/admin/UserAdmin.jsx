@@ -13,6 +13,7 @@ const UserAdmin = () => {
     return (
         <App breadCrumbName="User Admin">
             <h1 className={`font-sans-2xl margin-0 text-brand-primary`}>User Management</h1>
+            <p className="margin-top-1">Select the users you want to edit, and then update their access below.</p>
             <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <UserEmailComboBox
