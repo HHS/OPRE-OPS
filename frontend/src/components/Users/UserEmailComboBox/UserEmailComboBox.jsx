@@ -9,8 +9,6 @@ import PropTypes from "prop-types";
  * @returns {JSX.Element} - The rendered component.
  */
 function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
-    // const [selectedUsers, setSelectedUsers] = React.useState([]);
-
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
 
     if (isLoadingUsers) {
@@ -22,12 +20,7 @@ function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
 
     return (
         <div className="display-flex flex-column width-full">
-            <label
-                // className={legendClassName}
-                htmlFor="user-email-combobox-input"
-            >
-                User
-            </label>
+            <label htmlFor="user-email-combobox-input">User</label>
             <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox
                 selectedData={selectedUsers}
