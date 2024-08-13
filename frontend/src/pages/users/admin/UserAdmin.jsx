@@ -1,7 +1,7 @@
 import App from "../../../App";
-import UserEmailComboBox from "../../../components/Users/UserEmailComboBox/index.js";
+import UserEmailComboBox from "../../../components/Users/UserEmailComboBox";
 import React from "react";
-import UserInfo from "../../../components/Users/UserInfo/UserInfo.jsx";
+import UserInfo from "../../../components/Users/UserInfo";
 
 /**
  * Renders the User Admin page.
