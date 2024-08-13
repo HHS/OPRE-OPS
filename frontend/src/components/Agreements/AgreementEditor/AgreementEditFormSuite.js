@@ -36,10 +36,10 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.project_officer_id).greaterThan(0);
     });
     test("contract-type", "This is required information", () => {
-        enforce(fieldName.contract_type).isNotBlank();
+        enforce(data.contract_type).notEquals("-Select an option-");
     });
     test("team-members", "This is required information", () => {
-        enforce(fieldName.team_members).longerThan(0);
+        enforce(data.team_members).lengthNotEquals(0);
     });
 });
 
