@@ -4,6 +4,9 @@ import React, { useEffect } from "react";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import { USER_STATUS } from "./UserInfo.constants.js";
 import PropTypes from "prop-types";
+import useAlert from "../../../hooks/use-alert.hooks.js";
+import { useDispatch } from "react-redux";
+import { setIsActive } from "../../UI/Alert/alertSlice.js";
 
 /**
  * Renders the user information.
@@ -12,6 +15,9 @@ import PropTypes from "prop-types";
  * @returns {JSX.Element} - The rendered component.
  */
 const UserInfo = ({ user, isEditable }) => {
+    const { setAlert } = useAlert();
+    const dispatch = useDispatch();
+
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
@@ -36,6 +42,26 @@ const UserInfo = ({ user, isEditable }) => {
             setSelectedRoles([]);
         };
     }, [divisions, roles, user]);
+
+    useEffect(() => {
+        if (updateUserResult.isSuccess) {
+            setAlert({
+                type: "success",
+                heading: "User Updated",
+                message: "The user has been updated successfully."
+            });
+            dispatch(setIsActive(true));
+        }
+
+        if (updateUserResult.isError) {
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the user."
+            });
+            dispatch(setIsActive(true));
+        }
+    }, [updateUserResult]);
 
     const handleDivisionChange = (division) => {
         setSelectedDivision(division);
