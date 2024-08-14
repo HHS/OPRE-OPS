@@ -41,16 +41,16 @@ def update_user(session: Session, **kwargs) -> User:
         raise RuntimeError("No data provided to update user.")
 
     if "id" in data and user_id != data.get("id"):
-        raise Forbidden("User ID does not match ID in data.")
+        raise RuntimeError("User ID does not match ID in data.")
 
     get_user(session, id=user_id)  # Ensure user exists
 
     if not is_user_admin(request_user):
-        raise Forbidden("You do not have permission to update this user.")
+        raise RuntimeError("You do not have permission to update this user.")
 
     if data.get("status") in [UserStatus.INACTIVE, UserStatus.LOCKED]:
         if user_id == request_user.id:
-            raise Forbidden("You cannot deactivate yourself.")
+            raise RuntimeError("You cannot deactivate yourself.")
 
         user_sessions = get_all_user_sessions(user_id, session)
         deactivate_all_user_sessions(user_sessions)
