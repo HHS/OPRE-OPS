@@ -1730,47 +1730,72 @@ paths:
           description: Internal Server Error
   /api/v1/documents/{agreement_id}/:
     get:
-      operationId: getDocuments
+      operationId: Get Documents
       description: Get documents by agreement id
       parameters:
         - in: path
           name: agreement_id
           description: The agreement id to filter documents
+          required: true
           schema:
             type: integer
             format: int32
             minimum: 0
-            default: 1
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/DocumentResponse"
+                type: object
+                properties:
+                  url:
+                    type: string
+                  documents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Documents"
         "400":
           description: Bad Request
         "500":
           description: Internal Server Error
   /api/v1/documents/:
     post:
-      operationId: createDocument
+      operationId: Create Document
       description: Create a new document
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DocumentRequest"
+              type: object
+              properties:
+                document_name:
+                  type: string
+                document_type:
+                  type: string
+                agreement_id:
+                  type: integer
+                  format: int32
+                document_size:
+                  type: number
+              required:
+                - document_name
+                - document_type
+                - agreement_id
+                - document_size
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DocumentResponse"
+                type: object
+                properties:
+                  url:
+                    type: string
+                  uuid:
+                    type: string
         "400":
           description: Bad Request
         "500":
@@ -1789,10 +1814,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DocumentStatusRequest"
+              type: object
+              properties:
+                agreement_id:
+                  type: integer
+                  format: int32
+                status:
+                  type: string
+              required:
+                - agreement_id
+                - status
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
         "400":
           description: Bad Request
         "500":
@@ -2764,44 +2805,38 @@ components:
       allOf:
         - $ref: "#/components/schemas/ProcurementStep"
         - $ref: "#/components/schemas/Attestation"
-    DocumentRequest:
-      type: object
-      properties:
-        document_name:
-          type: string
-        document_type:
-          type: string
-        agreement_id:
-          type: integer
-          format: int32
-        document_size:
-          type: number
-      required:
-        - document_name
-        - document_type
-        - agreement_id
-        - document_size
     DocumentResponse:
       type: object
       properties:
-        uuid:
-          type: string
         url:
           type: string
-      required:
-        - uuid
-        - url
-    DocumentStatusRequest:
+        documents:
+          type: object
+          ref: "#/components/schemas/Documents"
+    Documents:
       type: object
       properties:
         agreement_id:
           type: integer
           format: int32
+        document_id:
+          type: string
+        document_type:
+          type: string
+        document_name:
+          type: string
+        document_size:
+          type: number(10, 2)
         status:
           type: string
-      required:
-        - agreement_id
-        - status
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
   examples:
     CAN:
       value:
