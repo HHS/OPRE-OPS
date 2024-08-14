@@ -1,37 +1,51 @@
 import PropTypes from "prop-types";
-import VanishingAlert from "../../UI/Alert/VanishingAlert";
+import { useDismissNotificationMutation } from "../../../api/opsAPI";
 import { renderField } from "../../../helpers/utils";
+import SimpleAlert from "../../UI/Alert/SimpleAlert";
+
 
 
 /**
  * Alert for when there are agreement changes in review.
  * @component
  * @param {Object} props - The component props.
- * @param {Object[]} props.changeRequests - The change requests.
+ * @param {Object[]} props.changeRequestNotifications - The notifications for change requests for a given agreement
  * @param {boolean} props.isApproveAlertVisible - Whether the approval alert is visible.
  * @param {boolean} props.isDeclineAlertVisible - Whether the approval alert is visible
  * @param {Function} props.setIsApproveAlertVisible - The function to set the alert visibility.
  * @param {Function} props.setIsDeclineAlertVisible - The function to set the Decline alert visibility.
  * @returns {JSX.Element} - The rendered component.
  */
-function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, isDeclineAlertVisible, setIsApproveAlertVisible, setIsDeclineAlertVisible }) {
+function AgreementChangesResponseAlert({ changeRequestNotifications, isApproveAlertVisible, isDeclineAlertVisible, setIsApproveAlertVisible, setIsDeclineAlertVisible }) {
 
-    const approvedRequests = changeRequests?.filter(request => request.change_request.status === "APPROVED");
-    const declinedRequests = changeRequests?.filter(request => request.change_request.status === "REJECTED");
+    const [dismissNotification] = useDismissNotificationMutation();
+    const approvedRequests = changeRequestNotifications?.filter(request => request.change_request.status === "APPROVED");
+    const declinedRequests = changeRequestNotifications?.filter(request => request.change_request.status === "REJECTED");
 
+    const approveRequestIds = approvedRequests?.map(request => request.id);
+    const declineRequestIds = declinedRequests?.map(request => request.id);
     const approvedRequestsReviewNotes = getChangeRequestNotes(approvedRequests);
     const declinedRequestsReviewNotes = getChangeRequestNotes(declinedRequests);
+    const setApproveAlertVisibleAndDismissRequest = (approveAlertStatus) => {
+        approveRequestIds?.forEach((requestId) => {dismissNotification(requestId)})
+        setIsApproveAlertVisible(approveAlertStatus);
+    }
+    const setDeclineAlertVisibleAndDismissRequest = (declineAlertStatus) => {
+        declineRequestIds?.forEach((requestId) => {dismissNotification(requestId)})
+        setIsDeclineAlertVisible(declineAlertStatus);
+    }
     return (
         <>
         {approvedRequests && approvedRequests.length > 0 && (
-            <VanishingAlert
+            <SimpleAlert
                 type="success"
                 heading="Changes Approved"
                 message="Your changes have been successfully approved by your Division Director."
-                setIsAlertVisible={setIsApproveAlertVisible}
+                setIsAlertVisible={setApproveAlertVisibleAndDismissRequest}
                 isAlertVisible={isApproveAlertVisible}
+                isClosable={true}
             >
-                {changeRequests?.length > 0 && (
+                {changeRequestNotifications?.length > 0 && (
                     <>
                         <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Approved:</h2>
                         <ul className="margin-0 font-sans-sm">
@@ -48,17 +62,18 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                         )}
                     </>
                 )}
-            </VanishingAlert>
+            </SimpleAlert>
         )}
         {declinedRequests?.length > 0 && (
-            <VanishingAlert
+            <SimpleAlert
                 type="error"
                 heading="Changes Declined"
                 message="Your changes have been declined by your Division Director."
-                setIsAlertVisible={setIsDeclineAlertVisible}
+                setIsAlertVisible={setDeclineAlertVisibleAndDismissRequest}
                 isAlertVisible={isDeclineAlertVisible}
+                isClosable={true}
             >
-                {changeRequests && changeRequests.length > 0 && (
+                {changeRequestNotifications && changeRequestNotifications.length > 0 && (
                     <>
                         <h2 className="margin-0 margin-top-3 font-sans-sm text-bold">Changes Declined:</h2>
                         <ul className="margin-0 font-sans-sm">
@@ -76,7 +91,7 @@ function AgreementChangesResponseAlert({ changeRequests, isApproveAlertVisible, 
                             </>)}
                     </>
                 )}
-            </VanishingAlert>
+            </SimpleAlert>
         )}
         </>
     );
@@ -117,7 +132,7 @@ function getChangeRequestNotes(changeRequests) {
 }
 
 AgreementChangesResponseAlert.propTypes = {
-    changeRequests: PropTypes.arrayOf(PropTypes.object),
+    changeRequestNotifications: PropTypes.arrayOf(PropTypes.object),
     isApproveAlertVisible: PropTypes.bool.isRequired,
     isDeclineAlertVisible: PropTypes.bool.isRequired,
     setIsApproveAlertVisible: PropTypes.func.isRequired,

@@ -41,10 +41,10 @@ const Agreement = () => {
     let doesAgreementHaveBlIsInReview = false;
     const activeUser = useSelector((state) => state.auth.activeUser);
 
-    let agreement_response_list = []
+    let user_agreement_notifications = []
     const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({ user_oidc_id: activeUser?.oidc_id, agreement_id: agreementId});
     if (query_response){
-        agreement_response_list = query_response.data
+        user_agreement_notifications = query_response.data
     }
 
     if (isSuccess) {
@@ -91,9 +91,9 @@ const Agreement = () => {
                 </>
             )}
 
-            {agreement_response_list?.length > 0 && (
+            {user_agreement_notifications?.length > 0 && (
                 <AgreementChangesResponseAlert
-                    changeRequests={agreement_response_list}
+                    changeRequestNotifications={user_agreement_notifications}
                     isApproveAlertVisible={isApproveAlertVisible}
                     isDeclineAlertVisible={isDeclinedAlertVisible}
                     setIsApproveAlertVisible={setIsApproveAlertVisible}
