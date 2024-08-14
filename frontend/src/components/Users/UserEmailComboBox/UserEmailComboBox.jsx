@@ -1,10 +1,14 @@
-import React from "react";
 import ComboBox from "../../UI/Form/ComboBox";
 import { useGetUsersQuery } from "../../../api/opsAPI.js";
+import PropTypes from "prop-types";
 
-function UserEmailComboBox({ legendClassName = "usa-label margin-top-0" }) {
-    const [selectedUsers, setSelectedUsers] = React.useState([]);
-
+/**
+ * Renders a ComboBox for selecting users by email.
+ * @param {Array<any>} selectedUsers - The selected users.
+ * @param {Function} setSelectedUsers - The function to set the selected users.
+ * @returns {JSX.Element} - The rendered component.
+ */
+function UserEmailComboBox({ selectedUsers, setSelectedUsers }) {
     const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
 
     if (isLoadingUsers) {
@@ -16,12 +20,7 @@ function UserEmailComboBox({ legendClassName = "usa-label margin-top-0" }) {
 
     return (
         <div className="display-flex flex-column width-full">
-            <label
-                className={legendClassName}
-                htmlFor="user-email-combobox-input"
-            >
-                User
-            </label>
+            <label htmlFor="user-email-combobox-input">User</label>
             <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox
                 selectedData={selectedUsers}
@@ -35,5 +34,10 @@ function UserEmailComboBox({ legendClassName = "usa-label margin-top-0" }) {
         </div>
     );
 }
+
+UserEmailComboBox.propTypes = {
+    selectedUsers: PropTypes.array.isRequired,
+    setSelectedUsers: PropTypes.func.isRequired
+};
 
 export default UserEmailComboBox;

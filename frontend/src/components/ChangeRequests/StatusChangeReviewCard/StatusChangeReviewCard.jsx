@@ -5,6 +5,7 @@ import { useGetBLITotal, useGetNameForCanId } from "../../../hooks/lookup.hooks"
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import ReviewCard from "../ReviewCard";
 import TermTag from "../TermTag";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 /**
  * BudgetChangeReviewCard component
@@ -12,13 +13,14 @@ import TermTag from "../TermTag";
  * @param {Object} props - Properties passed to component
  * @param {number} props.changeRequestId - The ID of the change request
  * @param {number} props.agreementId - The name of the agreement
- * @param {string} props.requesterName - The name of the requester
+ * @param {string} [props.requesterName] - The name of the requester
  * @param {string} props.requestDate - The date of the request
  * @param {number} props.bliId - The budget line item ID
  * @param {Object} props.changeTo - The requested change
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
  * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
  * @param {boolean} [props.forceHover=false] - Whether to force hover state
+ * @param {number} [props.createdById] - The ID of the user who created the change request
  * @returns {JSX.Element} - The rendered component
  */
 function StatusChangeReviewCard({
@@ -30,7 +32,8 @@ function StatusChangeReviewCard({
     changeTo,
     handleReviewChangeRequest,
     isCondensed = false,
-    forceHover = false
+    forceHover = false,
+    createdById
 }) {
     const keyName = Object.keys(changeTo)[0];
     const totalAmount = useGetBLITotal(bliId);
@@ -38,6 +41,10 @@ function StatusChangeReviewCard({
     const newCan = useGetNameForCanId(changeTo.can_id?.new);
     const { oldValue, newValue } = renderChangeValues(keyName, changeTo, oldCan, newCan);
     const changeMsg = `\u2022 BL ${bliId} ${convertCodeForDisplay("changeToTypes", keyName)}: ${oldValue} to ${newValue}`;
+    const createdBy = useGetUserFullNameFromId(createdById);
+    if (createdById === null && !requesterName) {
+        requesterName = createdBy;
+    }
 
     return (
         <ReviewCard
@@ -85,12 +92,13 @@ function StatusChangeReviewCard({
 StatusChangeReviewCard.propTypes = {
     changeRequestId: PropTypes.number.isRequired,
     agreementId: PropTypes.number.isRequired,
-    requesterName: PropTypes.string.isRequired,
+    requesterName: PropTypes.string,
     requestDate: PropTypes.string.isRequired,
     bliId: PropTypes.number.isRequired,
     changeTo: PropTypes.object.isRequired,
     handleReviewChangeRequest: PropTypes.func.isRequired,
     isCondensed: PropTypes.bool,
-    forceHover: PropTypes.bool
+    forceHover: PropTypes.bool,
+    createdById: PropTypes.number
 };
 export default StatusChangeReviewCard;

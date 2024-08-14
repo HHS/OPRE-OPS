@@ -111,11 +111,13 @@ export const codesToDisplayText = {
         naics: "NAICS Code",
         "program-support-code": "Program Support Code",
         "procurement-shop": "Procurement Shop",
-        reason: "Reason for creating the agreement",
+        reason: "Reason for Creating the Agreement",
         incumbent: "Incumbent",
         "project-officer": "Project Officer",
         "team-member": "Team Members",
-        "budget-line-items": "Budget Line Items"
+        "budget-line-items": "Budget Line Items",
+        "contract-type": "Contract Type",
+        "team-members": "Team Members"
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",
@@ -126,7 +128,7 @@ export const codesToDisplayText = {
         BudgetLineItem: "Budget Line"
     },
     agreementPropertyLabels: {
-        agreement_reason: "Reason for Agreement",
+        agreement_reason: "Reason for Creating the Agreement",
         agreement_type: "Agreement Type",
         description: "Agreement Description",
         incumbent: "Incumbent",

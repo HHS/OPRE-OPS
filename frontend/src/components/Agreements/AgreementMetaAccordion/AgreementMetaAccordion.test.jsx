@@ -14,7 +14,7 @@ describe("AgreementMetaAccordion", () => {
             />
         );
 
-        expect(screen.getByText("Agreement Details")).toBeInTheDocument();
+        expect(screen.getByText("Review Agreement Details")).toBeInTheDocument();
         expect(screen.getByText("test instructions")).toBeInTheDocument();
         expect(screen.getByText("Contract #1: African American Child and Family Research Center")).toBeInTheDocument();
         expect(screen.getByText("Contract")).toBeInTheDocument();
@@ -24,5 +24,7 @@ describe("AgreementMetaAccordion", () => {
         expect(screen.getByText("PSC - Fee Rate: 0%")).toBeInTheDocument();
         expect(screen.getByText("John Doe")).toBeInTheDocument();
         expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
+        expect(screen.getByText("Labor Hour (LH)")).toBeInTheDocument();
+        expect(screen.getByText("Non-Severable")).toBeInTheDocument();
     });
 });
