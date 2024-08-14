@@ -222,3 +222,12 @@ def test_put_user_changing_status_deactivates_user_session(auth_client, new_user
     # cleanup
     loaded_db.delete(user_session)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_put_user__cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user):
+    response = auth_client.put(
+        url_for("api.users-item", id=test_admin_user.id),
+        json={"email": "new_user@example.com", "status": UserStatus.INACTIVE.name},
+    )
+    assert response.status_code == 403

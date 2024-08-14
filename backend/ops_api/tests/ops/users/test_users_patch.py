@@ -157,3 +157,15 @@ def test_patch_user_changing_status_deactivates_user_session(auth_client, new_us
     # cleanup
     loaded_db.delete(user_session)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_user_cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user):
+    response = auth_client.patch(
+        url_for("api.users-item", id=test_admin_user.id),
+        json={
+            "id": test_admin_user.id,
+            "status": UserStatus.INACTIVE.name,
+        },
+    )
+    assert response.status_code == 403

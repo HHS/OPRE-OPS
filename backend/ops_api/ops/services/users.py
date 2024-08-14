@@ -49,6 +49,9 @@ def update_user(session: Session, **kwargs) -> User:
         raise Forbidden("You do not have permission to update this user.")
 
     if data.get("status") in [UserStatus.INACTIVE, UserStatus.LOCKED]:
+        if user_id == request_user.id:
+            raise Forbidden("You cannot deactivate yourself.")
+
         user_sessions = get_all_user_sessions(user_id, session)
         deactivate_all_user_sessions(user_sessions)
 
