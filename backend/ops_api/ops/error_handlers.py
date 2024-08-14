@@ -1,7 +1,7 @@
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from marshmallow import ValidationError
 from sqlalchemy.exc import PendingRollbackError
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from ops_api.ops.auth.exceptions import AuthenticationError, InvalidUserSessionError, NotActiveUserError
 from ops_api.ops.utils.response import make_response_with_headers
@@ -57,6 +57,11 @@ def register_error_handlers(app):  # noqa: C901
     def handle_exception_forbidden(e):
         app.logger.exception(e)
         return make_response_with_headers({}, 403)
+
+    @app.errorhandler(BadRequest)
+    def handle_exception_bad_request(e):
+        app.logger.exception(e)
+        return make_response_with_headers({}, 400)
 
     @app.errorhandler(Exception)
     def handle_exception(e):

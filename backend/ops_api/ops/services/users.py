@@ -2,7 +2,7 @@ from typing import cast
 
 from sqlalchemy import ColumnElement, select
 from sqlalchemy.orm import Session
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 
 from models import Role, User, UserStatus
 from ops_api.ops.auth.utils import deactivate_all_user_sessions, get_all_user_sessions
@@ -38,19 +38,19 @@ def update_user(session: Session, **kwargs) -> User:
     data = kwargs.get("data", {})
 
     if not data:
-        raise RuntimeError("No data provided to update user.")
+        raise BadRequest("No data provided to update user.")
 
     if "id" in data and user_id != data.get("id"):
-        raise RuntimeError("User ID does not match ID in data.")
+        raise BadRequest("User ID does not match ID in data.")
 
     get_user(session, id=user_id)  # Ensure user exists
 
     if not is_user_admin(request_user):
-        raise RuntimeError("You do not have permission to update this user.")
+        raise BadRequest("You do not have permission to update this user.")
 
     if data.get("status") in [UserStatus.INACTIVE, UserStatus.LOCKED]:
         if user_id == request_user.id:
-            raise RuntimeError("You cannot deactivate yourself.")
+            raise BadRequest("You cannot deactivate yourself.")
 
         user_sessions = get_all_user_sessions(user_id, session)
         deactivate_all_user_sessions(user_sessions)
