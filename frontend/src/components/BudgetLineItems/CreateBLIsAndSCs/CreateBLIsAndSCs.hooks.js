@@ -80,7 +80,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery();
+    const { data: cans } = useGetCansQuery();
 
     const handleSetBudgetLineFromUrl = () => {
         if (!budgetLineIdFromUrl) return;
