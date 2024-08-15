@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Route, Routes, useParams } from "react-router-dom";
 import App from "../../../App";
 import { getUser } from "../../../api/getUser";
-import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+import { useGetAgreementByIdQuery, useGetNotificationsByUserIdAndAgreementIdQuery } from "../../../api/opsAPI";
 import AgreementChangesAlert from "../../../components/Agreements/AgreementChangesAlert";
+import AgreementChangesResponseAlert from "../../../components/Agreements/AgreementChangesResponseAlert";
 import DetailsTabs from "../../../components/Agreements/DetailsTabs";
 import DocumentView from "../../../components/Agreements/Documents/DocumentView";
 import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { useChangeRequestsForAgreement } from "../../../hooks/useChangeRequests.hooks";
 import AgreementBudgetLines from "./AgreementBudgetLines";
 import AgreementDetails from "./AgreementDetails";
+
 
 const Agreement = () => {
     const urlPathParams = useParams();
@@ -18,6 +21,8 @@ const Agreement = () => {
     const [projectOfficer, setProjectOfficer] = useState({});
     const [hasAgreementChanged, setHasAgreementChanged] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(true);
+    const [isApproveAlertVisible, setIsApproveAlertVisible] = useState(true);
+    const [isDeclinedAlertVisible, setIsDeclinedAlertVisible] = useState(true);
 
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get("mode") || undefined;
@@ -33,8 +38,14 @@ const Agreement = () => {
     } = useGetAgreementByIdQuery(agreementId, {
         refetchOnMountOrArgChange: true
     });
-
     let doesAgreementHaveBlIsInReview = false;
+    const activeUser = useSelector((state) => state.auth.activeUser);
+
+    let user_agreement_notifications = []
+    const query_response = useGetNotificationsByUserIdAndAgreementIdQuery({ user_oidc_id: activeUser?.oidc_id, agreement_id: agreementId});
+    if (query_response){
+        user_agreement_notifications = query_response.data
+    }
 
     if (isSuccess) {
         doesAgreementHaveBlIsInReview = hasBlIsInReview(agreement?.budget_line_items);
@@ -80,6 +91,15 @@ const Agreement = () => {
                 </>
             )}
 
+            {user_agreement_notifications?.length > 0 && (
+                <AgreementChangesResponseAlert
+                    changeRequestNotifications={user_agreement_notifications}
+                    isApproveAlertVisible={isApproveAlertVisible}
+                    isDeclineAlertVisible={isDeclinedAlertVisible}
+                    setIsApproveAlertVisible={setIsApproveAlertVisible}
+                    setIsDeclineAlertVisible={setIsDeclinedAlertVisible}
+                />
+            )}
             <div>
                 <section className="display-flex flex-justify margin-top-3">
                     <DetailsTabs
