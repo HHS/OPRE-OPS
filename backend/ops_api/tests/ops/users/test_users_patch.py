@@ -63,7 +63,7 @@ def test_patch_user_unauthorized_different_user(client, loaded_db, test_non_admi
         json={"id": test_user.id, "email": "new_user@example.com", "first_name": "New First Name"},
         headers={"Authorization": f"Bearer {str(access_token)}"},
     )
-    assert response.status_code == 403
+    assert response.status_code == 400
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -121,7 +121,7 @@ def test_patch_user_must_be_user_admin_to_change_status(client, test_user, test_
         json={"id": test_non_admin_user.id, "status": UserStatus.ACTIVE.name},
         headers={"Authorization": f"Bearer {str(access_token)}"},
     )
-    assert response.status_code == 403
+    assert response.status_code == 400
 
 
 def test_patch_user_changing_status_deactivates_user_session(auth_client, new_user, loaded_db):
@@ -157,3 +157,15 @@ def test_patch_user_changing_status_deactivates_user_session(auth_client, new_us
     # cleanup
     loaded_db.delete(user_session)
     loaded_db.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_patch_user_cannot_deactivate_yourself(auth_client, new_user, loaded_db, test_admin_user):
+    response = auth_client.patch(
+        url_for("api.users-item", id=test_admin_user.id),
+        json={
+            "id": test_admin_user.id,
+            "status": UserStatus.INACTIVE.name,
+        },
+    )
+    assert response.status_code == 400
