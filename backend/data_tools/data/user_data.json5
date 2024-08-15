@@ -272,6 +272,8 @@
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",
+        "PUT_USER",
+        "PATCH_USER",
 
         "GET_HISTORY",
 

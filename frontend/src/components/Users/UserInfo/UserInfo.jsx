@@ -1,10 +1,23 @@
-import { useGetDivisionsQuery } from "../../../api/opsAPI.js";
+import { useGetDivisionsQuery, useUpdateUserMutation } from "../../../api/opsAPI.js";
 import ComboBox from "../../UI/Form/ComboBox/index.js";
 import React, { useEffect } from "react";
 import { useGetRolesQuery } from "../../../api/opsAuthAPI.js";
 import { USER_STATUS } from "./UserInfo.constants.js";
+import PropTypes from "prop-types";
+import useAlert from "../../../hooks/use-alert.hooks.js";
+import { useDispatch } from "react-redux";
+import { setIsActive } from "../../UI/Alert/alertSlice.js";
 
+/**
+ * Renders the user information.
+ * @param {Object} user - The user object.
+ * @param {Boolean} isEditable - Whether the user information is editable.
+ * @returns {JSX.Element} - The rendered component.
+ */
 const UserInfo = ({ user, isEditable }) => {
+    const { setAlert } = useAlert();
+    const dispatch = useDispatch();
+
     const [selectedDivision, setSelectedDivision] = React.useState({});
     const [selectedStatus, setSelectedStatus] = React.useState({});
     const [selectedRoles, setSelectedRoles] = React.useState([]);
@@ -16,6 +29,7 @@ const UserInfo = ({ user, isEditable }) => {
 
     const { data: divisions, error: errorDivisions, isLoading: isLoadingDivisions } = useGetDivisionsQuery();
     const { data: roles, error: errorRoles, isLoading: isLoadingRoles } = useGetRolesQuery();
+    const [updateUser, updateUserResult] = useUpdateUserMutation();
 
     useEffect(() => {
         setSelectedDivision(divisions?.find((division) => division.id === user.division));
@@ -29,34 +43,67 @@ const UserInfo = ({ user, isEditable }) => {
         };
     }, [divisions, roles, user]);
 
+    useEffect(() => {
+        if (updateUserResult.isSuccess) {
+            setAlert({
+                type: "success",
+                heading: "User Updated",
+                message: "The user has been updated successfully."
+            });
+            dispatch(setIsActive(true));
+        }
+
+        if (updateUserResult.isError) {
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the user."
+            });
+            dispatch(setIsActive(true));
+        }
+    }, [updateUserResult]);
+
+    const handleDivisionChange = (division) => {
+        setSelectedDivision(division);
+        updateUser({ id: user.id, data: { division: division ? division.id : null } });
+    };
+
+    const handleRolesChange = (roles) => {
+        setSelectedRoles(roles);
+        const roleNames = roles?.map((role) => role.name);
+        updateUser({ id: user.id, data: { roles: roleNames || [] } });
+    };
+
+    const handleStatusChange = (status) => {
+        setSelectedStatus(status);
+        updateUser({ id: user.id, data: { status: status ? status.name : "LOCKED" } });
+    };
+
     if (isLoadingDivisions || isLoadingRoles) {
         return <div>Loading...</div>;
     }
     if (errorDivisions || errorRoles) {
         return <div>Oops, an error occurred</div>;
     }
-
-    console.log("isEditable: ", isEditable);
+    if (updateUserResult.isError) {
+        return <div>Oops, an error occurred</div>;
+    }
 
     return (
         <div className="usa-card">
             <div className="usa-card__container">
                 <div className="usa-card__header">
-                    <h4 className="usa-card__heading">User Details</h4>
+                    <h4 className="usa-card__heading">{user.full_name}</h4>
                 </div>
                 <div className="usa-card__body">
                     <div className="font-sans-md line-height-sans-4 flex-align-center">
                         <div className="grid-row">
-                            <div className="grid-col">Name:</div>
-                            <div className="grid-col">{user.full_name}</div>
-                        </div>
-                        <div className="grid-row">
-                            <div className="grid-col">User Email:</div>
-                            <div className="grid-col">{user?.email}</div>
+                            <div className="grid-col-4">User Email:</div>
+                            <div className="grid-col-8">{user?.email}</div>
                         </div>
                         <div className="grid-row display-flex flex-align-center">
-                            <div className="grid-col flex-3">Division:</div>
-                            <div className="grid-col flex-3">
+                            <div className="grid-col-4">Division:</div>
+                            <div className="grid-col-8">
                                 {!isEditable && <span>{selectedDivision?.name}</span>}
                                 {isEditable && (
                                     <div data-testid="division-combobox">
@@ -64,7 +111,7 @@ const UserInfo = ({ user, isEditable }) => {
                                             namespace="division-combobox"
                                             data={divisions}
                                             selectedData={selectedDivision}
-                                            setSelectedData={setSelectedDivision}
+                                            setSelectedData={handleDivisionChange}
                                             defaultString="-- Select Division --"
                                             optionText={(division) => division.name}
                                             isMulti={false}
@@ -74,8 +121,8 @@ const UserInfo = ({ user, isEditable }) => {
                             </div>
                         </div>
                         <div className="grid-row">
-                            <div className="grid-col flex-3">Role(s):</div>
-                            <div className="grid-col flex-3">
+                            <div className="grid-col-4">Role(s):</div>
+                            <div className="grid-col-8">
                                 {!isEditable && <span>{selectedRoles?.map((role) => role.name).join(", ")}</span>}
                                 {isEditable && (
                                     <div data-testid="roles-combobox">
@@ -83,7 +130,7 @@ const UserInfo = ({ user, isEditable }) => {
                                             namespace="roles-combobox"
                                             data={roles}
                                             selectedData={selectedRoles}
-                                            setSelectedData={setSelectedRoles}
+                                            setSelectedData={handleRolesChange}
                                             defaultString="-- Select Roles --"
                                             optionText={(role) => role.name}
                                             isMulti={true}
@@ -93,8 +140,8 @@ const UserInfo = ({ user, isEditable }) => {
                             </div>
                         </div>
                         <div className="grid-row display-flex flex-align-center">
-                            <div className="grid-col flex-3">Status:</div>
-                            <div className="grid-col flex-3">
+                            <div className="grid-col-4">Status:</div>
+                            <div className="grid-col-8">
                                 {!isEditable && <span>{selectedStatus?.name}</span>}
                                 {isEditable && (
                                     <div data-testid="status-combobox">
@@ -102,7 +149,7 @@ const UserInfo = ({ user, isEditable }) => {
                                             namespace="status-combobox"
                                             data={statusData}
                                             selectedData={selectedStatus}
-                                            setSelectedData={setSelectedStatus}
+                                            setSelectedData={handleStatusChange}
                                             defaultString="-- Select Status --"
                                             optionText={(status) => status.name}
                                             isMulti={false}
@@ -116,6 +163,11 @@ const UserInfo = ({ user, isEditable }) => {
             </div>
         </div>
     );
+};
+
+UserInfo.propTypes = {
+    user: PropTypes.object.isRequired,
+    isEditable: PropTypes.bool
 };
 
 export default UserInfo;

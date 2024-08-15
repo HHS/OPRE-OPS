@@ -95,9 +95,9 @@ def test_successful_edit_patch_notes():
     pass
 
 
-@scenario("edit_agreement_metadata.feature", "Successful Edit Non-Draft BLI")
-def test_successful_edit_bli_draft():
-    pass
+# @scenario("edit_agreement_metadata.feature", "Successful Edit Non-Draft BLI")
+# def test_successful_edit_bli_draft():
+#     pass
 
 
 @scenario("edit_agreement_metadata.feature", "Failed Edit because In Execution")

@@ -11,6 +11,7 @@ export const opsApi = createApi({
     tagTypes: [
         "Agreements",
         "ResearchProjects",
+        "User",
         "Users",
         "AgreementTypes",
         "AgreementReasons",
@@ -184,13 +185,13 @@ export const opsApi = createApi({
             invalidatesTags: ["User"]
         }),
         updateUser: builder.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, data }) => ({
                 url: `/users/${id}`,
-                method: "PUT",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body
+                body: data
             }),
-            invalidatesTags: ["User"]
+            invalidatesTags: ["User", "Users"]
         }),
         getCans: builder.query({
             query: () => `/cans/`,
@@ -212,6 +213,17 @@ export const opsApi = createApi({
                 return {
                     url: `/notifications/?oidc_id=${id}`,
                     headers: { Authorization: auth_header }
+                };
+            },
+            providesTags: ["Notifications"]
+        }),
+        getNotificationsByUserIdAndAgreementId: builder.query({
+            query: ({ user_oidc_id, agreement_id}) => {
+                if(!user_oidc_id || !agreement_id){
+                    return { skip: true };
+                }
+                return {
+                    url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`,
                 };
             },
             providesTags: ["Notifications"]
@@ -330,6 +342,7 @@ export const {
     useGetCanByIdQuery,
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
+    useGetNotificationsByUserIdAndAgreementIdQuery,
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
     useAddBliPackageMutation,
