@@ -309,7 +309,7 @@ const useCreateBLIsAndSCs = (
         const budgetChangeMessages = new Set();
         const fieldsToCheck = ["date_needed", "can_id", "amount"];
 
-        tempBudgetLines.forEach((tempBudgetLine, i) => {
+        tempBudgetLines.forEach((tempBudgetLine) => {
             const bliId = `\u2022 BL ${tempBudgetLine?.id || "Unknown"}`;
             const { financialSnapshot, tempChangeRequest } = tempBudgetLine;
 
