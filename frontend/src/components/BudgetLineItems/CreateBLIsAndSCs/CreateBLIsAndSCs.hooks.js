@@ -312,7 +312,9 @@ const useCreateBLIsAndSCs = (
                 type: "success",
                 heading: "Changes Sent to Approval",
                 message:
-                    "Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.",
+                    `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                    `<strong>Pending Changes:</strong>\n` +
+                    `${budgetChangeMessages}`,
                 redirectUrl: `/agreements/${selectedAgreement?.id}`
             });
         } else {
@@ -374,17 +376,41 @@ const useCreateBLIsAndSCs = (
             return;
         }
 
-        const amountChanged = financialSnapshot.enteredAmount !== enteredAmount;
-        const dateChanged = financialSnapshot.needByDate !== needByDate;
-        const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
-        const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
+        const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
+        const tempChangeRequest = { ...currentBudgetLine.tempChangeRequest } || {};
+
+        // Compare with the original values in financialSnapshot
+        if (enteredAmount !== financialSnapshot.enteredAmount) {
+            if (enteredAmount === currentBudgetLine.amount) {
+                delete tempChangeRequest.amount;
+            } else {
+                tempChangeRequest.amount = enteredAmount;
+            }
+        }
+
+        if (needByDate !== financialSnapshot.needByDate) {
+            const formattedDate = formatDateForApi(needByDate);
+            if (formattedDate === currentBudgetLine.date_needed) {
+                delete tempChangeRequest.date_needed;
+            } else {
+                tempChangeRequest.date_needed = formattedDate;
+            }
+        }
+
+        if (selectedCan?.id !== financialSnapshot.selectedCanId) {
+            if (selectedCan?.id === currentBudgetLine.can_id) {
+                delete tempChangeRequest.can_id;
+            } else {
+                tempChangeRequest.can_id = selectedCan?.id;
+            }
+        }
+
+        const financialSnapshotChanged = Object.keys(tempChangeRequest).length > 0;
         const BLIStatusIsPlannedOrExecuting =
-            budgetLines[budgetLineBeingEdited]?.status === BLI_STATUS.PLANNED ||
-            budgetLines[budgetLineBeingEdited]?.status === BLI_STATUS.EXECUTING;
+            currentBudgetLine.status === BLI_STATUS.PLANNED || currentBudgetLine.status === BLI_STATUS.EXECUTING;
 
         const payload = {
-            ...tempBudgetLines[budgetLineBeingEdited],
-            id: tempBudgetLines[budgetLineBeingEdited].id,
+            ...currentBudgetLine,
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
@@ -392,27 +418,17 @@ const useCreateBLIsAndSCs = (
             canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
-            status: tempBudgetLines[budgetLineBeingEdited].status || "DRAFT",
+            status: currentBudgetLine.status || "DRAFT",
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
-            const payloadPlusFinances = {
-                ...payload,
-                financialSnapshotChanged
-            };
-            setTempBudgetLines(
-                tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payloadPlusFinances : item))
-            );
-            setAlert({
-                type: "success",
-                heading: "Budget Line Updated",
-                message: "The budget line has been successfully edited."
-            });
-            resetForm();
-
-            return;
+            payload.financialSnapshotChanged = true;
+            payload.tempChangeRequest = tempChangeRequest;
+        } else {
+            delete payload.financialSnapshotChanged;
+            delete payload.tempChangeRequest;
         }
 
         setTempBudgetLines(tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payload : item)));
@@ -426,6 +442,8 @@ const useCreateBLIsAndSCs = (
             message: "The budget line has been successfully edited."
         });
         resetForm();
+
+        // Do not update financialSnapshot here
     };
     /**
      * Handle deleting a budget line
@@ -494,7 +512,11 @@ const useCreateBLIsAndSCs = (
             setNeedByDate(dateForScreen);
             setEnteredComments(comments);
             setIsEditing(true);
-            setFinancialSnapshot({ enteredAmount: amount, needByDate: dateForScreen, selectedCanId: can_id });
+            setFinancialSnapshot({
+                enteredAmount: amount,
+                needByDate: dateForScreen,
+                selectedCanId: can_id
+            });
             setIsBudgetLineNotDraft(tempBudgetLines[index].status !== BLI_STATUS.DRAFT);
         }
     };
@@ -608,7 +630,7 @@ const useCreateBLIsAndSCs = (
         setEnteredAmount(null);
         setNeedByDate(null);
         setEnteredComments(null);
-        setFinancialSnapshot(null);
+        setFinancialSnapshot({});
         setBudgetLineBeingEdited(null);
     };
 
