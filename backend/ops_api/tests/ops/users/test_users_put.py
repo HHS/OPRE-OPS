@@ -1,9 +1,12 @@
+from datetime import datetime
+
 import pytest
 from flask import url_for
 from flask_jwt_extended import create_access_token
 
-from models import UserStatus
+from models import UserSession, UserStatus
 from models.users import User
+from ops_api.ops.auth.utils import get_all_user_sessions
 
 
 @pytest.fixture
@@ -179,3 +182,43 @@ def test_put_user_must_be_user_admin_to_change_status(client, test_user, test_no
         headers={"Authorization": f"Bearer {str(access_token)}"},
     )
     assert response.status_code == 403
+
+
+def test_put_user_changing_status_deactivates_user_session(auth_client, new_user, loaded_db):
+    """
+    If the status of a user is changed to INACTIVE or LOCKED, all of their sessions should be invalidated.
+    """
+    # setup a user session
+    user_session = UserSession(
+        user_id=new_user.id,
+        is_active=True,
+        ip_address="fake ip",
+        access_token="fake token",
+        refresh_token="fake token",
+        last_active_at=datetime.now(),
+    )
+    loaded_db.add(user_session)
+    loaded_db.commit()
+
+    response = auth_client.put(
+        url_for("api.users-item", id=new_user.id),
+        json={
+            "id": new_user.id,
+            "email": "new_user@example.com",
+            "first_name": "New First Name",
+            "last_name": "New Last Name",
+            "division": 1,
+            "status": UserStatus.INACTIVE.name,
+            "roles": ["admin"],
+        },
+    )
+    assert response.status_code == 200
+
+    user_sessions = get_all_user_sessions(new_user.id, loaded_db)
+    for session in user_sessions:
+        assert not session.is_active, "all sessions should be inactive"
+        assert session.last_active_at is not None, "last_active_at should be set"
+
+    # cleanup
+    loaded_db.delete(user_session)
+    loaded_db.commit()
