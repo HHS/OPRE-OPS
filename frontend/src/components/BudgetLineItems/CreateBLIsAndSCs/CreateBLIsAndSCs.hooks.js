@@ -6,6 +6,7 @@ import {
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
+    useGetCansQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
@@ -16,7 +17,7 @@ import {
     getNonDRAFTBudgetLines,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
-import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
+import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import suite from "./suite";
@@ -79,6 +80,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
+    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery();
 
     const handleSetBudgetLineFromUrl = () => {
         if (!budgetLineIdFromUrl) return;
@@ -298,13 +300,63 @@ const useCreateBLIsAndSCs = (
             });
         }
     };
-    let budgetChangeMessages = "";
+
+    /**
+     * function to create a message for the alert
+     * @param {Object[]} tempBudgetLines - The temporary budget lines
+     * @param {Object[]} budgetLines - The actual budget lines
+     * @returns {string} - The message(s) to display in the Alert in bullet points
+     */
+    const createBudgetChangeMessages = (tempBudgetLines, budgetLines) => {
+        const budgetChangeMessages = new Set();
+        const fieldsToCheck = ["date_needed", "can_id", "amount"];
+
+        tempBudgetLines.forEach((tempBudgetLine, i) => {
+            const bliId = `BL ${tempBudgetLine?.id || "Unknown"}`;
+            const originalBudgetLine = budgetLines[i] || {};
+
+            fieldsToCheck.forEach((field) => {
+                if (tempBudgetLine?.tempChangeRequest?.[field] !== undefined) {
+                    let oldValue, newValue;
+
+                    switch (field) {
+                        case "date_needed":
+                            oldValue = renderField("BudgetLine", "date_needed", originalBudgetLine.date_needed);
+                            newValue = renderField(
+                                "BudgetLine",
+                                "date_needed",
+                                tempBudgetLine.tempChangeRequest.date_needed
+                            );
+                            budgetChangeMessages.add(`${bliId} Obligate By Date: ${oldValue} to ${newValue}`);
+                            break;
+                        case "can_id":
+                            oldValue = originalBudgetLine.can?.display_name || "Unknown";
+                            newValue =
+                                cans?.find((can) => can.id === tempBudgetLine.tempChangeRequest.can_id)?.display_name ||
+                                "Unknown";
+                            budgetChangeMessages.add(`${bliId} CAN: ${oldValue} to ${newValue}`);
+                            break;
+                        case "amount":
+                            oldValue = renderField("BudgetLineItem", "amount", originalBudgetLine.amount);
+                            newValue = renderField("BudgetLineItem", "amount", tempBudgetLine.tempChangeRequest.amount);
+                            budgetChangeMessages.add(`${bliId} Amount: ${oldValue} to ${newValue}`);
+                            break;
+                    }
+                }
+            });
+        });
+
+        return Array.from(budgetChangeMessages).join("\n");
+    };
+
     /**
      * Show the success message
      * @param {boolean} isThereAnyBLIsFinancialSnapshotChanged - Flag to indicate if there are financial snapshot changes
      * @returns {void}
      */
     const showSuccessMessage = (isThereAnyBLIsFinancialSnapshotChanged) => {
+        const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines, budgetLines);
+
         if (continueOverRide) {
             continueOverRide();
         } else if (isThereAnyBLIsFinancialSnapshotChanged) {
@@ -442,8 +494,6 @@ const useCreateBLIsAndSCs = (
             message: "The budget line has been successfully edited."
         });
         resetForm();
-
-        // Do not update financialSnapshot here
     };
     /**
      * Handle deleting a budget line
