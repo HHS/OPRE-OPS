@@ -1,44 +1,44 @@
 from flask import Config
 from flask_jwt_extended import current_user
 
-from ops_api.ops.auth.auth_types import ProviderTypes
 from ops_api.ops.document.azure_document_repository import AzureDocumentRepository
 from ops_api.ops.document.document_repository import DocumentRepository
 from ops_api.ops.document.document_repository_factory import DocumentRepositoryFactory
 from ops_api.ops.document.fake_document_repository import FakeDocumentRepository
+from ops_api.ops.document.utils import DocumentProviders
 
 
 class DocumentGateway:
     def __init__(self, config: Config) -> None:
-        self.providers = config.get("AUTHLIB_OAUTH_CLIENTS", {})
+        self.providers = config.get("DOCUMENT_PROVIDERS", {})
         self.repository_factory = DocumentRepositoryFactory()
 
         # Validate and register providers with the factory
-        self.register_providers(self.providers)
+        self.register_providers()
 
         # Select provider based on the current user
         if current_user.id >= 500:  # Users with id 5xx are test users
-            self.provider = ProviderTypes.fakeauth.name
+            self.provider = DocumentProviders.fake.name
         else:
-            self.provider = ProviderTypes.logingov.name
+            self.provider = DocumentProviders.azure.name
 
-    def register_providers(self, providers: dict[str, dict]) -> None:
+    def register_providers(self) -> None:
         """
-        Register document repository providers with the factory.
+        Register document providers with the factory.
         """
-        for provider_name, provider_config in providers.items():
-            if provider_name not in ProviderTypes.__members__:
-                raise ValueError(f"Invalid document repository provider: {provider_name}")
+        for each in self.providers:
+            if each not in DocumentProviders.__members__:
+                raise ValueError(f"Invalid document repository provider: {each}")
 
-            self.repository_factory.register_provider(provider_name, self.get_repository_class(provider_name))
+            self.repository_factory.register_provider(each, self.get_repository_class(each))
 
     def get_repository_class(self, provider_name: str) -> DocumentRepository:
         """
         Return the document repository class corresponding to the provider.
         """
-        if provider_name == ProviderTypes.fakeauth.name:
+        if provider_name == DocumentProviders.fake.name:
             return FakeDocumentRepository()
-        elif provider_name == ProviderTypes.logingov.name or provider_name == ProviderTypes.hhsams.name:
+        elif provider_name == DocumentProviders.azure.name:
             return AzureDocumentRepository()
         else:
             raise NotImplementedError(f"Unsupported document repository provider: {provider_name}")

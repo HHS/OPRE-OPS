@@ -1,9 +1,16 @@
+from enum import Enum, auto
+
 from flask import current_app
 from flask_jwt_extended import current_user
 from sqlalchemy.future import select
 
 from models import Agreement, Document, DocumentType
 from ops_api.ops.document.exceptions import DocumentNotFoundError
+
+
+class DocumentProviders(Enum):
+    fake = auto()
+    azure = auto()
 
 
 def is_user_linked_to_agreement(user_id, agreement_id: int) -> bool:
