@@ -298,7 +298,7 @@ const useCreateBLIsAndSCs = (
             });
         }
     };
-
+    let budgetChangeMessages = "";
     /**
      * Show the success message
      * @param {boolean} isThereAnyBLIsFinancialSnapshotChanged - Flag to indicate if there are financial snapshot changes
@@ -377,11 +377,11 @@ const useCreateBLIsAndSCs = (
         }
 
         const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
-        const tempChangeRequest = { ...currentBudgetLine.tempChangeRequest } || {};
+        const tempChangeRequest = currentBudgetLine.tempChangeRequest || {};
 
         // Compare with the original values in financialSnapshot
         if (enteredAmount !== financialSnapshot.enteredAmount) {
-            if (enteredAmount === currentBudgetLine.amount) {
+            if (enteredAmount === financialSnapshot.originalAmount) {
                 delete tempChangeRequest.amount;
             } else {
                 tempChangeRequest.amount = enteredAmount;
@@ -390,7 +390,7 @@ const useCreateBLIsAndSCs = (
 
         if (needByDate !== financialSnapshot.needByDate) {
             const formattedDate = formatDateForApi(needByDate);
-            if (formattedDate === currentBudgetLine.date_needed) {
+            if (formattedDate === financialSnapshot.originalDateNeeded) {
                 delete tempChangeRequest.date_needed;
             } else {
                 tempChangeRequest.date_needed = formattedDate;
@@ -398,7 +398,7 @@ const useCreateBLIsAndSCs = (
         }
 
         if (selectedCan?.id !== financialSnapshot.selectedCanId) {
-            if (selectedCan?.id === currentBudgetLine.can_id) {
+            if (selectedCan?.id === financialSnapshot.originalCanID) {
                 delete tempChangeRequest.can_id;
             } else {
                 tempChangeRequest.can_id = selectedCan?.id;
@@ -503,6 +503,11 @@ const useCreateBLIsAndSCs = (
         const index = tempBudgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
             const { services_component_id, comments, can, can_id, amount, date_needed } = tempBudgetLines[index];
+            const {
+                can_id: originalCanID,
+                amount: originalAmount,
+                date_needed: originalDateNeeded
+            } = budgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
 
             setBudgetLineBeingEdited(index);
@@ -513,6 +518,9 @@ const useCreateBLIsAndSCs = (
             setEnteredComments(comments);
             setIsEditing(true);
             setFinancialSnapshot({
+                originalAmount,
+                originalDateNeeded,
+                originalCanID,
                 enteredAmount: amount,
                 needByDate: dateForScreen,
                 selectedCanId: can_id
