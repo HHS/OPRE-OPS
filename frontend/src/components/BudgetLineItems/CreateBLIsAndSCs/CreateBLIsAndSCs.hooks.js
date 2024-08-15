@@ -62,7 +62,6 @@ const useCreateBLIsAndSCs = (
     const [enteredComments, setEnteredComments] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
-    const [financialSnapshot, setFinancialSnapshot] = React.useState({});
     const searchParams = new URLSearchParams(location.search);
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
@@ -704,7 +703,6 @@ const useCreateBLIsAndSCs = (
         setEnteredAmount(null);
         setNeedByDate(null);
         setEnteredComments(null);
-        setFinancialSnapshot({});
         setBudgetLineBeingEdited(null);
     };
 
