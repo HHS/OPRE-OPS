@@ -1,6 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { vi } from "vitest";
+import store from "../../../store";
 import AgreementChangesResponseAlert from "./AgreementChangesResponseAlert";
+
 
 const changeRequests = [{
     id: 1,
@@ -26,24 +29,28 @@ const changeRequests = [{
 describe("AgreementChangesAlert", () => {
     it("should render ", () => {
         render(
-            <AgreementChangesResponseAlert
-                isApproveAlertVisible={true}
-                isDeclineAlertVisible={true}
-                setIsApproveAlertVisible={() => {}}
-                setIsDeclineAlertVisible={() => {}}
-                changeRequests={[]}
-            />
+            <Provider store={store}>
+                <AgreementChangesResponseAlert
+                    isApproveAlertVisible={true}
+                    isDeclineAlertVisible={true}
+                    setIsApproveAlertVisible={() => {}}
+                    setIsDeclineAlertVisible={() => {}}
+                    changeRequestNotifications={[]}
+                />
+            </Provider>
         );
     });
     it("should render change requests", () => {
         render(
-            <AgreementChangesResponseAlert
-                isApproveAlertVisible={true}
-                isDeclineAlertVisible={true}
-                setIsApproveAlertVisible={() => {}}
-                setIsDeclineAlertVisible={() => {}}
-                changeRequests={changeRequests}
-            />
+            <Provider store={store}>
+                <AgreementChangesResponseAlert
+                    isApproveAlertVisible={true}
+                    isDeclineAlertVisible={true}
+                    setIsApproveAlertVisible={() => {}}
+                    setIsDeclineAlertVisible={() => {}}
+                    changeRequestNotifications={changeRequests}
+                />
+            </Provider>
         );
         const list = screen.getByRole("list");
         expect(list).toBeInTheDocument();
@@ -52,13 +59,15 @@ describe("AgreementChangesAlert", () => {
     it("should be closable", async () => {
         const setIsAlertVisible = vi.fn();
         const { rerender } = render(
-            <AgreementChangesResponseAlert
-                isApproveAlertVisible={true}
-                isDeclineAlertVisible={true}
-                setIsApproveAlertVisible={setIsAlertVisible}
-                setIsDeclineAlertVisible={setIsAlertVisible}
-                changeRequests={changeRequests}
-            />
+            <Provider store={store}>
+                <AgreementChangesResponseAlert
+                    isApproveAlertVisible={true}
+                    isDeclineAlertVisible={true}
+                    setIsApproveAlertVisible={setIsAlertVisible}
+                    setIsDeclineAlertVisible={setIsAlertVisible}
+                    changeRequestNotifications={changeRequests}
+                />
+            </Provider>
         );
         const close = screen.getByRole("img", { name: "close" });
         expect(close).toBeInTheDocument();
@@ -66,13 +75,15 @@ describe("AgreementChangesAlert", () => {
         expect(setIsAlertVisible).toHaveBeenCalledWith(false);
         // Rerender the component with the updated prop
         rerender(
-            <AgreementChangesResponseAlert
-                isApproveAlertVisible={true}
-                isDeclineAlertVisible={true}
-                setIsApproveAlertVisible={setIsAlertVisible}
-                setIsDeclineAlertVisible={setIsAlertVisible}
-                changeRequests={changeRequests}
-            />
+            <Provider store={store}>
+                <AgreementChangesResponseAlert
+                    isApproveAlertVisible={true}
+                    isDeclineAlertVisible={true}
+                    setIsApproveAlertVisible={setIsAlertVisible}
+                    setIsDeclineAlertVisible={setIsAlertVisible}
+                    changeRequestNotifications={changeRequests}
+                />
+            </Provider>
         );
         // Wait for the alert to be removed from the DOM
         await waitFor(() => {
