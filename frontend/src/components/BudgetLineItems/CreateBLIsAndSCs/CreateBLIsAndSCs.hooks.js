@@ -304,42 +304,38 @@ const useCreateBLIsAndSCs = (
     /**
      * function to create a message for the alert
      * @param {Object[]} tempBudgetLines - The temporary budget lines
-     * @param {Object[]} budgetLines - The actual budget lines
      * @returns {string} - The message(s) to display in the Alert in bullet points
      */
-    const createBudgetChangeMessages = (tempBudgetLines, budgetLines) => {
+    const createBudgetChangeMessages = (tempBudgetLines) => {
         const budgetChangeMessages = new Set();
         const fieldsToCheck = ["date_needed", "can_id", "amount"];
 
         tempBudgetLines.forEach((tempBudgetLine, i) => {
-            const bliId = `BL ${tempBudgetLine?.id || "Unknown"}`;
-            const originalBudgetLine = budgetLines[i] || {};
+            const bliId = `\u2022 BL ${tempBudgetLine?.id || "Unknown"}`;
+            const { financialSnapshot, tempChangeRequest } = tempBudgetLine;
 
             fieldsToCheck.forEach((field) => {
-                if (tempBudgetLine?.tempChangeRequest?.[field] !== undefined) {
+                if (tempChangeRequest && tempChangeRequest[field] !== undefined) {
                     let oldValue, newValue;
 
                     switch (field) {
+                        case "amount":
+                            oldValue = renderField("BudgetLineItem", "amount", financialSnapshot.originalAmount);
+                            newValue = renderField("BudgetLineItem", "amount", tempChangeRequest.amount);
+                            budgetChangeMessages.add(`${bliId} Amount: ${oldValue} to ${newValue}`);
+                            break;
                         case "date_needed":
-                            oldValue = renderField("BudgetLine", "date_needed", originalBudgetLine.date_needed);
-                            newValue = renderField(
-                                "BudgetLine",
-                                "date_needed",
-                                tempBudgetLine.tempChangeRequest.date_needed
-                            );
+                            oldValue = renderField("BudgetLine", "date_needed", financialSnapshot.originalDateNeeded);
+                            newValue = renderField("BudgetLine", "date_needed", tempChangeRequest.date_needed);
                             budgetChangeMessages.add(`${bliId} Obligate By Date: ${oldValue} to ${newValue}`);
                             break;
                         case "can_id":
-                            oldValue = originalBudgetLine.can?.display_name || "Unknown";
-                            newValue =
-                                cans?.find((can) => can.id === tempBudgetLine.tempChangeRequest.can_id)?.display_name ||
+                            oldValue =
+                                cans?.find((can) => can.id === financialSnapshot.originalCanID)?.display_name ||
                                 "Unknown";
+                            newValue =
+                                cans?.find((can) => can.id === tempChangeRequest.can_id)?.display_name || "Unknown";
                             budgetChangeMessages.add(`${bliId} CAN: ${oldValue} to ${newValue}`);
-                            break;
-                        case "amount":
-                            oldValue = renderField("BudgetLineItem", "amount", originalBudgetLine.amount);
-                            newValue = renderField("BudgetLineItem", "amount", tempBudgetLine.tempChangeRequest.amount);
-                            budgetChangeMessages.add(`${bliId} Amount: ${oldValue} to ${newValue}`);
                             break;
                     }
                 }
@@ -355,7 +351,7 @@ const useCreateBLIsAndSCs = (
      * @returns {void}
      */
     const showSuccessMessage = (isThereAnyBLIsFinancialSnapshotChanged) => {
-        const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines, budgetLines);
+        const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
 
         if (continueOverRide) {
             continueOverRide();
@@ -429,6 +425,7 @@ const useCreateBLIsAndSCs = (
         }
 
         const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
+        const { financialSnapshot } = currentBudgetLine;
         const tempChangeRequest = currentBudgetLine.tempChangeRequest || {};
 
         // Compare with the original values in financialSnapshot
@@ -472,7 +469,13 @@ const useCreateBLIsAndSCs = (
             amount: enteredAmount || 0,
             status: currentBudgetLine.status || "DRAFT",
             date_needed: formatDateForApi(needByDate),
-            proc_shop_fee_percentage: selectedProcurementShop?.fee || null
+            proc_shop_fee_percentage: selectedProcurementShop?.fee || null,
+            financialSnapshot: {
+                ...financialSnapshot,
+                enteredAmount: enteredAmount,
+                needByDate: formatDateForApi(needByDate),
+                selectedCanId: selectedCan?.id
+            }
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
@@ -482,8 +485,18 @@ const useCreateBLIsAndSCs = (
             delete payload.financialSnapshotChanged;
             delete payload.tempChangeRequest;
         }
-
-        setTempBudgetLines(tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payload : item)));
+        /**
+         * Update the tempBudgetLines array with the new payload of the budgetLineBeingEdited
+         * @type {Object[]} updatedBudgetLines
+         * @returns {void}
+         */
+        const updatedBudgetLines = tempBudgetLines.map((budgetLine, index) => {
+            if (index === budgetLineBeingEdited) {
+                return payload; // Replace the edited budget line with the new payload
+            }
+            return budgetLine; // Keep other budget lines unchanged
+        });
+        setTempBudgetLines(updatedBudgetLines);
 
         if (budgetLineIdFromUrl) {
             resetQueryParams();
@@ -560,6 +573,17 @@ const useCreateBLIsAndSCs = (
             } = budgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
 
+            const financialSnapshot = {
+                originalAmount,
+                originalDateNeeded,
+                originalCanID,
+                enteredAmount: amount,
+                needByDate: date_needed,
+                selectedCanId: can_id
+            };
+
+            setTempBudgetLines(tempBudgetLines.map((item, i) => (i === index ? { ...item, financialSnapshot } : item)));
+
             setBudgetLineBeingEdited(index);
             setServicesComponentId(services_component_id);
             setSelectedCan(can);
@@ -567,14 +591,6 @@ const useCreateBLIsAndSCs = (
             setNeedByDate(dateForScreen);
             setEnteredComments(comments);
             setIsEditing(true);
-            setFinancialSnapshot({
-                originalAmount,
-                originalDateNeeded,
-                originalCanID,
-                enteredAmount: amount,
-                needByDate: dateForScreen,
-                selectedCanId: can_id
-            });
             setIsBudgetLineNotDraft(tempBudgetLines[index].status !== BLI_STATUS.DRAFT);
         }
     };
