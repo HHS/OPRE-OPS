@@ -217,6 +217,17 @@ export const opsApi = createApi({
             },
             providesTags: ["Notifications"]
         }),
+        getNotificationsByUserIdAndAgreementId: builder.query({
+            query: ({ user_oidc_id, agreement_id}) => {
+                if(!user_oidc_id || !agreement_id){
+                    return { skip: true };
+                }
+                return {
+                    url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`,
+                };
+            },
+            providesTags: ["Notifications"]
+        }),
         dismissNotification: builder.mutation({
             query: (id) => ({
                 url: `/notifications/${id}`,
@@ -331,6 +342,7 @@ export const {
     useGetCanByIdQuery,
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
+    useGetNotificationsByUserIdAndAgreementIdQuery,
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
     useAddBliPackageMutation,
