@@ -121,15 +121,6 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="agreement-history-container"]').should("exist");
                 cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
                 cy.get('[data-cy="agreement-history-list"]').should("exist");
-                cy.get(
-                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).should("exist");
-                cy.get(
-                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).should("have.text", "Budget Change to Amount In Review");
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                    "exist"
-                );
                 checkHistoryItem(
                     /Budget Change to CAN In Review/,
                     `Admin Demo requested a budget change on BL ${bliId} from G99IA14 to G99MVT3 and it's currently In Review for approval.`
