@@ -48,10 +48,6 @@ afterEach(() => {
 });
 
 describe("Approve Change Requests at the Agreement Level", () => {
-    // automate creation of agreement and bli
-    // automate submission of change request
-    // automate approval of change request
-    // pickup UI click through from here
     it("review Status Change Approved", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 
