@@ -87,7 +87,7 @@ const useCreateBLIsAndSCs = (
         const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
 
         if (selectedBudgetLine) {
-            const { services_component_id, comments, can, can_id, amount, date_needed } = selectedBudgetLine;
+            const { services_component_id, comments, can, amount, date_needed } = selectedBudgetLine;
             const dateForScreen = formatDateForScreen(date_needed);
 
             setServicesComponentId(services_component_id);
