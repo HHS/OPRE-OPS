@@ -3,17 +3,23 @@ import { vi, beforeEach } from "vitest";
 import DateRangePickerWrapper from "./DateRangePickerWrapper";
 import DatePicker from "../DatePicker";
 
-// Mock the USWDS date range picker
-const mockOn = vi.fn();
-const mockOff = vi.fn();
-vi.mock("@uswds/uswds/js/usa-date-range-picker", () => ({
-    default: {
-        on: mockOn,
-        off: mockOff
-    }
-}));
-
 describe("DateRangePickerWrapper", () => {
+    let mockOn;
+    let mockOff;
+
+    beforeEach(() => {
+        // Define mock functions inside beforeEach to avoid hoisting issues
+        mockOn = vi.fn();
+        mockOff = vi.fn();
+
+        vi.doMock("@uswds/uswds/js/usa-date-range-picker", () => ({
+            default: {
+                on: mockOn,
+                off: mockOff
+            }
+        }));
+    });
+
     const defaultProps = {
         id: "test-date-range",
         className: "custom-class"
@@ -90,11 +96,11 @@ describe("DateRangePickerWrapper", () => {
     });
 
     it("renders children correctly", () => {
-        const { container } = renderComponent({
+        renderComponent({
             children: <div data-testid="custom-child">Custom Child</div>
         });
 
-        const customChild = container.querySelector('[data-testid="custom-child"]');
+        const customChild = screen.getByTestId("custom-child");
         expect(customChild).toBeInTheDocument();
         expect(customChild).toHaveTextContent("Custom Child");
     });
