@@ -96,13 +96,20 @@ describe("Budget Change Requests", () => {
                 cy.get("[data-cy='edit-row']").click();
                 cy.get("#allServicesComponentSelect").select("SC1");
                 cy.get("#enteredAmount").clear();
-                cy.get("#enteredAmount").type("2_222_222_222");
-
+                cy.get("#enteredAmount").type("2_222_222");
+                cy.get("#need-by-date").clear();
+                cy.get("#need-by-date").type("01/01/2048");
+                cy.get("#can-combobox-input").clear();
+                cy.get("#can-combobox-input").type("G99MVT3{enter}");
                 cy.get('[data-cy="update-budget-line"]').click();
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
-                cy.get('[data-cy="alert"]').contains("$2,222,222,222.00");
+                cy.get('[data-cy="alert"]').should(($alert) => {
+                    expect($alert).to.contain(`BL ${bliId} Amount: $1,000,000.00 to $2,222,222.00`);
+                    expect($alert).to.contain(`BL ${bliId} Obligate By Date: 1/1/2025 to 1/1/2048`);
+                    expect($alert).to.contain(`BL ${bliId} CAN: G99IA14 to G99MVT3`);
+                });
                 // cy.get("[data-cy='close-alert']").click();
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
@@ -123,11 +130,22 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
                     "exist"
                 );
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
-                    .should(
-                        "have.text",
-                        `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222,222.00 and it's currently In Review for approval.`
-                    )
+                checkHistoryItem(
+                    /Budget Change to Amount In Review/,
+                    `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
+                )
+                    .then(() => {
+                        return checkHistoryItem(
+                            /Budget Change to CAN In Review/,
+                            `Admin Demo requested a budget change on BL ${bliId} from G99IA14 to G99MVT3 and it's currently In Review for approval.`
+                        );
+                    })
+                    .then(() => {
+                        return checkHistoryItem(
+                            /Budget Change to Obligate Date In Review/,
+                            `Admin Demo requested a budget change on BL ${bliId} from 1/1/2025 to 1/1/2048 and it's currently In Review for approval.`
+                        );
+                    })
                     .then(() => {
                         cy.request({
                             method: "DELETE",
@@ -269,3 +287,13 @@ describe("Budget Change Requests", () => {
             });
     });
 });
+
+const checkHistoryItem = (titleRegex, expectedText) => {
+    return cy
+        .get('[data-cy="agreement-history-list"]')
+        .contains('[data-cy="log-item-title"]', titleRegex)
+        .closest("li")
+        .within(() => {
+            cy.get('[data-cy="log-item-children"]').should("exist").and("have.text", expectedText);
+        });
+};
