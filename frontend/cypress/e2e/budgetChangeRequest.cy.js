@@ -131,13 +131,13 @@ describe("Budget Change Requests", () => {
                     "exist"
                 );
                 checkHistoryItem(
-                    /Budget Change to Amount In Review/,
-                    `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
+                    /Budget Change to CAN In Review/,
+                    `Admin Demo requested a budget change on BL ${bliId} from G99IA14 to G99MVT3 and it's currently In Review for approval.`
                 )
                     .then(() => {
                         return checkHistoryItem(
-                            /Budget Change to CAN In Review/,
-                            `Admin Demo requested a budget change on BL ${bliId} from G99IA14 to G99MVT3 and it's currently In Review for approval.`
+                            /Budget Change to Amount In Review/,
+                            `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
                         );
                     })
                     .then(() => {
@@ -223,7 +223,7 @@ describe("Budget Change Requests", () => {
                 cy.get("[data-cy='edit-row']").click();
                 cy.get("#allServicesComponentSelect").select("SC1");
                 cy.get("#enteredAmount").clear();
-                cy.get("#enteredAmount").type("2_222_222_222");
+                cy.get("#enteredAmount").type("2_222_222");
                 cy.get('[data-cy="update-budget-line"]').click();
                 // add a DRAFT BLI
                 cy.get("#allServicesComponentSelect").select("SC1");
@@ -234,7 +234,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="continue-btn"]').click();
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get('[data-cy="alert"]').should("exist");
-                cy.get('[data-cy="alert"]').contains("$2,222,222,222.00");
+                cy.get('[data-cy="alert"]').contains("$2,222,222.00");
                 cy.get("[data-cy='close-alert']").first().click();
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
@@ -246,20 +246,10 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="agreement-history-container"]').should("exist");
                 cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
                 cy.get('[data-cy="agreement-history-list"]').should("exist");
-                cy.get(
-                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).should("exist");
-                cy.get(
-                    '[data-cy="agreement-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]'
-                ).should("have.text", "Budget Change to Amount In Review");
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
-                    "exist"
-                );
-                cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
-                    .should(
-                        "have.text",
-                        `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222,222.00 and it's currently In Review for approval.`
-                    )
+                checkHistoryItem(
+                    /Budget Change to Amount In Review/,
+                    `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
+                )
                     .then(() => {
                         cy.request({
                             method: "DELETE",
