@@ -87,7 +87,16 @@ const useCreateBLIsAndSCs = (
         const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
 
         if (selectedBudgetLine) {
-            handleSetBudgetLineForEditingById(selectedBudgetLine.id);
+            const { services_component_id, comments, can, can_id, amount, date_needed } = selectedBudgetLine;
+            const dateForScreen = formatDateForScreen(date_needed);
+
+            setServicesComponentId(services_component_id);
+            setSelectedCan(can);
+            setEnteredAmount(amount);
+            setNeedByDate(dateForScreen);
+            setEnteredComments(comments);
+            setIsEditing(true);
+            setBudgetLineBeingEdited(budgetLines.findIndex((bl) => bl.id === Number(budgetLineIdFromUrl)));
         }
     };
 
@@ -704,6 +713,7 @@ const useCreateBLIsAndSCs = (
         setNeedByDate(null);
         setEnteredComments(null);
         setBudgetLineBeingEdited(null);
+        resetQueryParams();
     };
 
     return {
