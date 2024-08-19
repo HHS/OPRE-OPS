@@ -15,6 +15,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -276,7 +277,7 @@ export const CreateBLIsAndSCs = ({
             ) : (
                 <p className="text-center margin-y-7">You have not added any Budget Lines yet.</p>
             )}
-
+            <DebugCode data={tempBudgetLines} />
             <div className="display-flex flex-justify margin-top-1">
                 <GoBackButton handleGoBack={handleGoBack} />
                 <div>

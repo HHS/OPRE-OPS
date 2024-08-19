@@ -81,25 +81,6 @@ const useCreateBLIsAndSCs = (
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const { data: cans } = useGetCansQuery();
 
-    const handleSetBudgetLineFromUrl = () => {
-        if (!budgetLineIdFromUrl) return;
-        setIsEditMode(true);
-        const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
-
-        if (selectedBudgetLine) {
-            const { services_component_id, comments, can, amount, date_needed } = selectedBudgetLine;
-            const dateForScreen = formatDateForScreen(date_needed);
-
-            setServicesComponentId(services_component_id);
-            setSelectedCan(can);
-            setEnteredAmount(amount);
-            setNeedByDate(dateForScreen);
-            setEnteredComments(comments);
-            setIsEditing(true);
-            setBudgetLineBeingEdited(budgetLines.findIndex((bl) => bl.id === Number(budgetLineIdFromUrl)));
-        }
-    };
-
     React.useEffect(() => {
         let newTempBudgetLines =
             (budgetLines && budgetLines.length > 0 ? budgetLines : null) ??
@@ -114,7 +95,28 @@ const useCreateBLIsAndSCs = (
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines]);
 
-    React.useEffect(handleSetBudgetLineFromUrl, [budgetLineIdFromUrl, budgetLines, tempBudgetLines]);
+    React.useEffect(() => {
+        const handleSetBudgetLineFromUrl = () => {
+            if (!budgetLineIdFromUrl) return;
+            setIsEditMode(true);
+            const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
+
+            if (selectedBudgetLine) {
+                const { services_component_id, comments, can, amount, date_needed } = selectedBudgetLine;
+                const dateForScreen = formatDateForScreen(date_needed);
+
+                setServicesComponentId(services_component_id);
+                setSelectedCan(can);
+                setEnteredAmount(amount);
+                setNeedByDate(dateForScreen);
+                setEnteredComments(comments);
+                setIsEditing(true);
+                setBudgetLineBeingEdited(budgetLines.findIndex((bl) => bl.id === Number(budgetLineIdFromUrl)));
+            }
+        };
+
+        handleSetBudgetLineFromUrl();
+    }, [budgetLineIdFromUrl, budgetLines, tempBudgetLines]);
 
     // Validation
     let res = suite.get();
@@ -433,7 +435,30 @@ const useCreateBLIsAndSCs = (
         }
 
         const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
-        const { financialSnapshot } = currentBudgetLine;
+        const originalBudgetLine = budgetLines[budgetLineBeingEdited];
+
+        // Create a new budget line object with the financial snapshot
+        const updatedBudgetLine = {
+            ...currentBudgetLine,
+            financialSnapshot: currentBudgetLine.financialSnapshot || {
+                originalAmount: originalBudgetLine.amount,
+                originalDateNeeded: originalBudgetLine.date_needed,
+                originalCanID: originalBudgetLine.can_id,
+                enteredAmount: enteredAmount,
+                needByDate: needByDate,
+                selectedCanId: selectedCan?.id
+            }
+        };
+
+        // Update the tempBudgetLines array with the new object
+        const newTempBudgetLines = [...tempBudgetLines];
+        newTempBudgetLines[budgetLineBeingEdited] = updatedBudgetLine;
+        setTempBudgetLines(newTempBudgetLines);
+
+        // Use the updatedBudgetLine for the rest of the function
+        const { financialSnapshot } = updatedBudgetLine;
+
+        // const { financialSnapshot } = currentBudgetLine;
         const tempChangeRequest = currentBudgetLine.tempChangeRequest || {};
 
         // Compare with the original values in financialSnapshot
