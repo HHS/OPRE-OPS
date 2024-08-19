@@ -43,6 +43,7 @@ it("should create a document database record and upload to in memory storage", (
         expect(response.body.documents[0].document_name).to.eq("sample_document.xlsx");
         expect(response.body.documents[0].document_type).to.eq('DocumentType.ADDITIONAL_DOCUMENT');
         expect(response.body.documents[0].agreement_id).to.eq(1);
+        expect(response.body.documents[0].status).to.eq("uploaded");
     })
 
     // Verifying the document is uploaded into memory storage by downloading it

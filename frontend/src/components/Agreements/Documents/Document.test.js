@@ -1,7 +1,6 @@
 import {
     convertFileSizeToMB,
     isFileValid,
-    patchStatus,
     processUploading,
 } from "./Document.js";
 import {describe, vi} from "vitest"
@@ -35,77 +34,45 @@ describe("isFileValid", () => {
     });
 });
 
-
-describe("patchStatus", () => {
-    it("should update status and log success message on successful patch", async () => {
-        const uuid = "1234-5678-90ab-cdef";
-        const statusData = { status: "uploaded" };
-        const mockResponse = { success: true };
-        vi.mock("frontend/src/api/patchDocumentStatus", async () => {
-            return vi.fn().mockResolvedValue(mockResponse);
-        })
-        const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-        await patchStatus(uuid, statusData);
-
-        expect(consoleLogSpy).toHaveBeenCalledTimes(2);
-        expect(consoleLogSpy).toHaveBeenCalledWith(`UUID=${uuid} - Status updated to "${statusData.status}".`);
-
-        consoleLogSpy.mockRestore();
-    });
-});
-
 describe("processUploading", () => {
-    const status = "uploaded";
     const agreementId = 1;
     const uuid = "1234-5678-90ab-cdef";
     const file = { name: "test-file.txt" };
 
     let mockUploadDocumentToInMemory;
     let mockUploadDocumentToBlob;
-    let mockPatchStatus;
 
     beforeEach(() => {
         mockUploadDocumentToInMemory = vi.fn();
         mockUploadDocumentToBlob = vi.fn();
-        mockPatchStatus = vi.fn();
         console.error = vi.fn();
     });
 
     it("should upload to in-memory storage", async () => {
         const sasUrl = "https://mock.FakeDocumentRepository";
 
-        await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob, mockPatchStatus);
+        await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob);
 
-         expect(console.error).not.toHaveBeenCalled();
+        expect(console.error).not.toHaveBeenCalled();
         expect(mockUploadDocumentToInMemory).toHaveBeenCalledWith(uuid, file);
-        expect(mockPatchStatus).toHaveBeenCalledWith(uuid, {
-            agreement_id: agreementId,
-            status: status
-        });
     });
 
     it("should upload to Azure Blob Storage", async () => {
         const sasUrl = "https://mock.blob.core.windows.net";
 
-        await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToBlob, mockUploadDocumentToBlob, mockPatchStatus);
+        await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToBlob, mockUploadDocumentToBlob);
 
          expect(console.error).not.toHaveBeenCalled();
         expect(mockUploadDocumentToBlob).toHaveBeenCalledWith(sasUrl, uuid, file);
-        expect(mockPatchStatus).toHaveBeenCalledWith(uuid, {
-            agreement_id: agreementId,
-            status: status
-        });
     });
 
     it("should log an error for invalid repository type", async () => {
         const sasUrl = "https://mock.invalid-repo";
 
-        await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob, mockPatchStatus);
+        await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob);
 
         expect(mockUploadDocumentToInMemory).not.toHaveBeenCalled();
         expect(mockUploadDocumentToBlob).not.toHaveBeenCalled();
-        expect(mockPatchStatus).not.toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledWith("Invalid repository type:", sasUrl);
     });
 
@@ -114,10 +81,9 @@ describe("processUploading", () => {
 
         mockUploadDocumentToBlob.mockRejectedValue(new Error("Upload failed"));
 
-        await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob, mockPatchStatus);
+        await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToInMemory, mockUploadDocumentToBlob);
 
         expect(mockUploadDocumentToBlob).toHaveBeenCalledWith(sasUrl, uuid, file);
-        expect(mockPatchStatus).not.toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledWith("Error processing upload:", expect.any(Error));
     });
 });

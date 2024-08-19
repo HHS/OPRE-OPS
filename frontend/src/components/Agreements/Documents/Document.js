@@ -1,6 +1,5 @@
 import {ALLOWED_FAKE_HOSTS, ALLOWED_HOSTS, DOCUMENT_CONTAINER_NAME, VALID_EXTENSIONS} from "./Documents.constants.js";
 import {BlobServiceClient} from "@azure/storage-blob";
-import {patchDocumentStatus} from "../../../api/patchDocumentStatus.js";
 
 const fileStorage = []; // Global variable to store files in memory
 
@@ -16,21 +15,8 @@ export const isFileValid = (file) => {
     return VALID_EXTENSIONS.includes(fileExtension);
 };
 
-export const patchStatus = async (uuid, statusData) => {
-    try {
-        // Send a request to update the document status
-        const response = await patchDocumentStatus(uuid, statusData);
-
-        // Log the response from the server and success message
-        console.log("patchDocumentStatus response", response);
-        console.log(`UUID=${uuid} - Status updated to "${statusData.status}".`);
-    } catch (error) {
-        console.error("Failed to update document status:", error);
-    }
-};
-
 // Process file upload based on the specified storage repository
-export const processUploading = async (source, uuid, file, agreementId, inMemoryUpload, inBlobUpload, patchStatus) => {
+export const processUploading = async (source, uuid, file, agreementId, inMemoryUpload, inBlobUpload) => {
     try {
         if (source.includes(ALLOWED_FAKE_HOSTS)) {
             // Upload to an in-memory storage repository
@@ -41,14 +27,7 @@ export const processUploading = async (source, uuid, file, agreementId, inMemory
         } else {
             // Log an error if the repository type is invalid
             console.error("Invalid repository type:", source);
-            return;
         }
-        // Update the document status after successful upload
-        const statusData = {
-            agreement_id: agreementId,
-            status: "uploaded"
-        };
-        await patchStatus(uuid, statusData);
     } catch (error) {
         console.error("Error processing upload:", error);
     }

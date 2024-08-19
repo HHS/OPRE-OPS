@@ -1,15 +1,21 @@
 import {useState} from "react";
-import {postDocument} from "../../../api/postDocument.js";
-import {getDocumentsByAgreementId} from "../../../api/getDocumentsByAgreementId.js";
+import { skipToken } from "@reduxjs/toolkit/query";
 import {
     convertFileSizeToMB,
     downloadDocumentFromBlob,
     downloadFileFromMemory,
-    isFileValid, patchStatus,
-    processUploading, uploadDocumentToBlob,
+    isFileValid,
+    processUploading,
+    uploadDocumentToBlob,
     uploadDocumentToInMemory
 } from "./Document.js";
 import {ALLOWED_FAKE_HOSTS, ALLOWED_HOSTS, DOCUMENT_TYPES} from "./Documents.constants.js";
+import {
+    useGetDocumentsByAgreementIdQuery,
+    useAddDocumentMutation,
+    useUpdateDocumentStatusMutation
+} from "../../../api/opsAPI.js";
+
 
 // This component is a temporary page for testing document upload and download functionality
 // The local host URL for this page is http://localhost:3000/upload-document
@@ -17,8 +23,16 @@ import {ALLOWED_FAKE_HOSTS, ALLOWED_HOSTS, DOCUMENT_TYPES} from "./Documents.con
 const UploadDocument = () => {
     const [file, setFile] = useState(null);
     const [agreementId, setAgreementId] = useState(0);
-    const [getDocumentAgreementId, setGetDocumentAgreementId] = useState(0);
+    const [getDocumentAgreementId, setGetDocumentAgreementId] = useState(null);
     const [selectedDocumentType, setSelectedDocumentType] = useState("");
+
+    const [addDocument] = useAddDocumentMutation();
+    const [updateDocumentStatus] = useUpdateDocumentStatusMutation();
+
+    // Uses skipToken to skip the query execution when getDocumentAgreementId is null (on component mount)
+    const { data, isSuccess } = useGetDocumentsByAgreementIdQuery(
+        getDocumentAgreementId !== null ? getDocumentAgreementId : skipToken
+    );
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -35,6 +49,19 @@ const UploadDocument = () => {
         }
     };
 
+    const patchStatus = async (uuid, statusData) => {
+        try {
+            // Use the mutation hook to update the document status
+            const response =  updateDocumentStatus({document_id: uuid, data: statusData}).unwrap();
+
+            // Log the response from the server and success message
+            console.log("patchDocumentStatus response", response);
+            console.log(`UUID=${uuid} - Status updated to "${statusData.status}".`);
+        } catch (error) {
+            console.error("Failed to update document status:", error);
+        }
+    };
+
     const handleUpload = async () => {
         try {
             const documentData = {
@@ -44,14 +71,20 @@ const UploadDocument = () => {
                 document_size: convertFileSizeToMB(file.size),
             };
 
-            // Save a record of the document in the database
-            const response = await postDocument(documentData);
-            console.log("postDocument response", response);
+            // Use the mutation hook to add a document
+            const response = await addDocument(documentData).unwrap();
+            console.log("addDocument response", response);
+
             const {url, uuid} = response;
             console.log(`UUID=${uuid} - Database record created successfully.`);
 
             // Upload the document to specified storage
-            await processUploading(url, uuid, file, agreementId, uploadDocumentToInMemory, uploadDocumentToBlob, patchStatus);
+            await processUploading(url, uuid, file, agreementId, uploadDocumentToInMemory, uploadDocumentToBlob);
+
+            await patchStatus(uuid, {
+                agreement_id: agreementId,
+                status: "uploaded"
+            });
 
             // Reset the form fields
             document.getElementById("file-upload").value = null;
@@ -64,34 +97,33 @@ const UploadDocument = () => {
     };
 
     const handleGetDocumentByAgreementId = async () => {
-        try {
-            // Call the endpoint to get documents by Agreement ID
-            const response = await getDocumentsByAgreementId(getDocumentAgreementId);
-            console.log("getDocumentsByAgreementId response", response);
+        if (isSuccess && data) {
+            try {
+                console.log("getDocumentsByAgreementId response", data);
+                const {url, documents} = data;
 
-            const {url, documents} = response;
-
-            if (documents.length > 0) {
-                for (const document of documents) {
-                    console.log("Downloading document:", document.document_id, "Document details:", document);
-                    if (url.includes(ALLOWED_FAKE_HOSTS)) {
-                        downloadFileFromMemory(document.document_id);
-                    } else if (url.includes(ALLOWED_HOSTS)){
-                        await downloadDocumentFromBlob(url, document.document_id, document.document_name);
-                    } else {
-                        console.error("Invalid storage type:", url);
-                        return;
+                if (documents.length > 0) {
+                    for (const document of documents) {
+                        console.log("Downloading document:", document.document_id, "Document details:", document);
+                        if (url.includes(ALLOWED_FAKE_HOSTS)) {
+                            downloadFileFromMemory(document.document_id);
+                        } else if (url.includes(ALLOWED_HOSTS)){
+                            await downloadDocumentFromBlob(url, document.document_id, document.document_name);
+                        } else {
+                            console.error("Invalid storage type:", url);
+                            return;
+                        }
                     }
+                    console.log(`All documents for agreement ${getDocumentAgreementId} downloaded successfully.`);
+                } else {
+                    console.log("No documents found for the provided Agreement ID.");
                 }
-                console.log(`All documents for agreement ${getDocumentAgreementId} downloaded successfully.`);
-            } else {
-                console.log("No documents found for the provided Agreement ID.");
-            }
 
-            // Reset agreement id field
-            document.getElementById("agreement-id-get").value = null;
-        } catch (error) {
-            console.error("Error in handleGetDocumentByAgreementId:", error);
+                // Reset agreement id field
+                document.getElementById("agreement-id-get").value = null;
+            } catch (error) {
+                console.error("Error in handleGetDocumentByAgreementId:", error);
+            }
         }
     };
 
