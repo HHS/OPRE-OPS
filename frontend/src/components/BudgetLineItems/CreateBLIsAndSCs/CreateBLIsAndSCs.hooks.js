@@ -437,54 +437,36 @@ const useCreateBLIsAndSCs = (
         const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
         const originalBudgetLine = budgetLines[budgetLineBeingEdited];
 
-        // Create a new budget line object with the financial snapshot
-        const updatedBudgetLine = {
-            ...currentBudgetLine,
-            financialSnapshot: currentBudgetLine.financialSnapshot || {
-                originalAmount: originalBudgetLine.amount,
-                originalDateNeeded: originalBudgetLine.date_needed,
-                originalCanID: originalBudgetLine.can_id,
-                enteredAmount: enteredAmount,
-                needByDate: needByDate,
-                selectedCanId: selectedCan?.id
-            }
+        // Initialize financialSnapshot if it doesn't exist
+        const financialSnapshot = currentBudgetLine.financialSnapshot || {
+            originalAmount: originalBudgetLine.amount,
+            originalDateNeeded: originalBudgetLine.date_needed,
+            originalCanID: originalBudgetLine.can_id,
+            enteredAmount: enteredAmount,
+            needByDate: needByDate,
+            selectedCanId: selectedCan?.id
         };
 
-        // Update the tempBudgetLines array with the new object
-        const newTempBudgetLines = [...tempBudgetLines];
-        newTempBudgetLines[budgetLineBeingEdited] = updatedBudgetLine;
-        setTempBudgetLines(newTempBudgetLines);
-
-        // Use the updatedBudgetLine for the rest of the function
-        const { financialSnapshot } = updatedBudgetLine;
-
-        // const { financialSnapshot } = currentBudgetLine;
-        const tempChangeRequest = currentBudgetLine.tempChangeRequest || {};
+        // Initialize tempChangeRequest
+        let tempChangeRequest = currentBudgetLine.tempChangeRequest || {};
 
         // Compare with the original values in financialSnapshot
-        if (enteredAmount !== financialSnapshot.enteredAmount) {
-            if (enteredAmount === financialSnapshot.originalAmount) {
-                delete tempChangeRequest.amount;
-            } else {
-                tempChangeRequest.amount = enteredAmount;
-            }
+        if (enteredAmount !== financialSnapshot.originalAmount) {
+            tempChangeRequest.amount = enteredAmount;
+        } else {
+            delete tempChangeRequest.amount;
         }
 
-        if (needByDate !== financialSnapshot.needByDate) {
-            const formattedDate = formatDateForApi(needByDate);
-            if (formattedDate === financialSnapshot.originalDateNeeded) {
-                delete tempChangeRequest.date_needed;
-            } else {
-                tempChangeRequest.date_needed = formattedDate;
-            }
+        if (formatDateForApi(needByDate) !== financialSnapshot.originalDateNeeded) {
+            tempChangeRequest.date_needed = formatDateForApi(needByDate);
+        } else {
+            delete tempChangeRequest.date_needed;
         }
 
-        if (selectedCan?.id !== financialSnapshot.selectedCanId) {
-            if (selectedCan?.id === financialSnapshot.originalCanID) {
-                delete tempChangeRequest.can_id;
-            } else {
-                tempChangeRequest.can_id = selectedCan?.id;
-            }
+        if (selectedCan?.id !== financialSnapshot.originalCanID) {
+            tempChangeRequest.can_id = selectedCan?.id;
+        } else {
+            delete tempChangeRequest.can_id;
         }
 
         const financialSnapshotChanged = Object.keys(tempChangeRequest).length > 0;
