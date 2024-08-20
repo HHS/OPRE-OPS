@@ -45,9 +45,35 @@ it("should create a document database record and upload to in memory storage", (
         expect(response.body.documents[0].agreement_id).to.eq(1);
         expect(response.body.documents[0].status).to.eq("uploaded");
     })
+});
 
-    // Verifying the document is uploaded into memory storage by downloading it
+it("Should download document in memory storage and verify logs", () => {
+    // set up spy on console.log
+    let logSpy;
+    cy.window().then((win) => {
+        logSpy = cy.spy(win.console, "log")
+    });
+
+    cy.intercept('GET', 'http://localhost:8080/api/v1/documents/1').as('getDocumentsRequest');
+
     cy.get('#agreement-id-get').type('1');
     cy.get('button').contains('Get Documents').click();
-    cy.readFile('cypress/downloads/sample_document.xlsx').should('exist');
+
+    //  Verifying documents in downloads have "uploaded" status
+    cy.wait('@getDocumentsRequest').then((interception) => {
+        expect(interception.response.statusCode).to.eq(200);
+        expect(interception.response.body.url).to.include('FakeDocumentRepository');
+        const documents = interception.response.body.documents;
+
+        for (let i = 0; i < documents.length; i++) {
+            expect(documents[i].status).to.eq("uploaded");
+        }
+    });
+
+    //  Verifying logs for successful document download
+    const expectedMessage = "All documents for agreement 1 downloaded successfully.";
+    cy.wait(2000).then (() => {
+        const calls = logSpy.getCalls();
+        expect(calls[calls.length - 1].args.toString()).to.contains("Downloading");
+    });
 });
