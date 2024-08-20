@@ -438,7 +438,7 @@ const useCreateBLIsAndSCs = (
         const originalBudgetLine = budgetLines[budgetLineBeingEdited];
 
         // Initialize financialSnapshot if it doesn't exist
-        const financialSnapshot = currentBudgetLine.financialSnapshot || {
+        const financialSnapshot = {
             originalAmount: originalBudgetLine.amount,
             originalDateNeeded: originalBudgetLine.date_needed,
             originalCanID: originalBudgetLine.can_id,
@@ -580,24 +580,8 @@ const useCreateBLIsAndSCs = (
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
         const index = tempBudgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
-            const { services_component_id, comments, can, can_id, amount, date_needed } = tempBudgetLines[index];
-            const {
-                can_id: originalCanID,
-                amount: originalAmount,
-                date_needed: originalDateNeeded
-            } = budgetLines[index];
+            const { services_component_id, comments, can, amount, date_needed } = tempBudgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
-
-            const financialSnapshot = {
-                originalAmount,
-                originalDateNeeded,
-                originalCanID,
-                enteredAmount: amount,
-                needByDate: date_needed,
-                selectedCanId: can_id
-            };
-
-            setTempBudgetLines(tempBudgetLines.map((item, i) => (i === index ? { ...item, financialSnapshot } : item)));
 
             setBudgetLineBeingEdited(index);
             setServicesComponentId(services_component_id);
