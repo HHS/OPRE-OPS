@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
-import ServicesComponentForm from "./ServicesComponentForm";
-import ServicesComponentsList from "./ServicesComponentsList";
 import ConfirmationModal from "../UI/Modals/ConfirmationModal";
+import ServicesComponentForm from "./ServicesComponentForm";
 import useServicesComponents from "./ServicesComponents.hooks";
+import ServicesComponentsList from "./ServicesComponentsList";
 
 /**
  * ServicesComponents is a component that handles the display and functionality of service components.
