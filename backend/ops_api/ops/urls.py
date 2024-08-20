@@ -23,6 +23,7 @@ from ops_api.ops.views import (
     CONTRACT_LIST_API_VIEW_FUNC,
     DIVISIONS_ITEM_API_VIEW_FUNC,
     DIVISIONS_LIST_API_VIEW_FUNC,
+    DOCUMENT_API_FUNC,
     HEALTH_CHECK_VIEW_FUNC,
     NOTIFICATIONS_ITEM_API_VIEW_FUNC,
     NOTIFICATIONS_LIST_API_VIEW_FUNC,
@@ -295,4 +296,16 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/change-request-reviews/",
         view_func=CHANGE_REQUEST_REVIEW_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/documents/<int:agreement_id>/",
+        view_func=DOCUMENT_API_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/documents/",
+        view_func=DOCUMENT_API_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/documents/<string:document_id>/status/",
+        view_func=DOCUMENT_API_FUNC,
     )

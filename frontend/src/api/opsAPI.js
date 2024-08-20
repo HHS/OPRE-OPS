@@ -23,7 +23,8 @@ export const opsApi = createApi({
         "Notifications",
         "ServicesComponents",
         "ChangeRequests",
-        "Divisions"
+        "Divisions",
+        "Documents"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -308,6 +309,32 @@ export const opsApi = createApi({
         getDivisions: builder.query({
             query: () => `/divisions/`,
             providesTags: ["Divisions"]
+        }),
+        addDocument: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/documents/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["Documents"]
+        }),
+        getDocumentsByAgreementId: builder.query({
+            query: (agreement_id) => `/documents/${agreement_id}/`,
+            providesTags: ["Documents"]
+        }),
+        updateDocumentStatus: builder.mutation({
+            query: ({ document_id, data }) => {
+                return {
+                    url: `/documents/${document_id}/status/`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["Documents"]
         })
     })
 });
@@ -354,5 +381,8 @@ export const {
     useDeleteServicesComponentMutation,
     useGetChangeRequestsListQuery,
     useReviewChangeRequestMutation,
-    useGetDivisionsQuery
+    useGetDivisionsQuery,
+    useAddDocumentMutation,
+    useGetDocumentsByAgreementIdQuery,
+    useUpdateDocumentStatusMutation,
 } = opsApi;
