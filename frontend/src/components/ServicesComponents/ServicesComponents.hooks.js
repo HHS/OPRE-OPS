@@ -10,6 +10,10 @@ import {
 } from "../../api/opsAPI";
 import { formatDateForApi, formatDateForScreen } from "../../helpers/utils";
 
+/**
+ * @param {number} agreementId - The ID of the agreement.
+ * @returns {Object} - An object containing the services components data.
+ */
 const useServicesComponents = (agreementId) => {
     const [serviceTypeReq, setServiceTypeReq] = React.useState(SERVICE_REQ_TYPES.NON_SEVERABLE);
     const [formData, setFormData] = React.useState(initialFormData);
