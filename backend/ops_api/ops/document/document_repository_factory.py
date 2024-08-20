@@ -13,6 +13,6 @@ class DocumentRepositoryFactory:
     def create_repository(provider_name: str) -> DocumentRepository:
         repository_class = DocumentRepositoryFactory._registered_providers.get(provider_name)
         if repository_class:
-            return repository_class()
+            return repository_class
         else:
-            raise UnsupportedProviderError(f"Provider '{provider_name}' is not supported.")
+            raise UnsupportedProviderError(f"Document repository provider '{provider_name}' is not supported.")

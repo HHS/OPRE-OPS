@@ -1,7 +1,7 @@
 import uuid
 from enum import Enum, auto
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,9 +27,10 @@ class Document(BaseModel):
     agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), nullable=False)
     document_id: Mapped[str] = mapped_column(default=str(uuid.uuid4()), nullable=False, unique=True)
     document_type: Mapped[DocumentType] = mapped_column(ENUM(DocumentType), nullable=False)
-    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    document_name: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String, default='', nullable=True)
+    document_size: Mapped[float] = mapped_column(Numeric(precision=10, scale=2), default=0.0, nullable=False)
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return f"document id: {self.id};file name: {self.file_name};document type: {self.document_type};agreement id:{self.agreement_id}"
+        return f"document id: {self.id};file name: {self.document_name};document type: {self.document_type};agreement id:{self.agreement_id}"
