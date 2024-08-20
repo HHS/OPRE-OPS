@@ -5,6 +5,7 @@
     "private": true,
     "type": "module",
     "dependencies": {
+        "@azure/storage-blob": "^12.24.0",
         "@fortawesome/fontawesome-svg-core": "6.5.2",
         "@fortawesome/free-regular-svg-icons": "6.5.2",
         "@fortawesome/free-solid-svg-icons": "6.5.2",
@@ -66,7 +67,7 @@
         "msw": "2.3.5",
         "prettier": "3.3.3",
         "redux-mock-store": "1.5.4",
-        "vite": "5.4.1",
+        "vite": "5.4.2",
         "vite-jsconfig-paths": "2.0.1",
         "vite-plugin-babel-macros": "1.0.6",
         "vite-plugin-eslint": "1.8.1",
