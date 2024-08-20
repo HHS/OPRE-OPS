@@ -21,3 +21,7 @@ class DocumentRepository(ABC):
     @abstractmethod
     def get_documents_by_agreement_id(self, agreement_id):
         pass
+
+    @abstractmethod
+    def update_document_status(self, document_id, status):
+        pass
