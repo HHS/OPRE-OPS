@@ -400,7 +400,7 @@ const useCreateBLIsAndSCs = (
             canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
-            status: "DRAFT",
+            status: BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
@@ -437,7 +437,7 @@ const useCreateBLIsAndSCs = (
         const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
         const originalBudgetLine = budgetLines[budgetLineBeingEdited];
 
-        // Initialize financialSnapshot if it doesn't exist
+        // Initialize financialSnapshot
         const financialSnapshot = {
             originalAmount: originalBudgetLine.amount,
             originalDateNeeded: originalBudgetLine.date_needed,
@@ -482,7 +482,7 @@ const useCreateBLIsAndSCs = (
             canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
-            status: currentBudgetLine.status || "DRAFT",
+            status: currentBudgetLine.status || BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null,
             financialSnapshot: {
@@ -624,7 +624,7 @@ const useCreateBLIsAndSCs = (
             amount,
             date_needed,
             proc_shop_fee_percentage,
-            status: "DRAFT",
+            status: BLI_STATUS.DRAFT,
             created_by: loggedInUserFullName
         };
         setTempBudgetLines([...tempBudgetLines, payload]);
