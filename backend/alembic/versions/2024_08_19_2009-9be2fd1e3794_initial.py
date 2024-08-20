@@ -155,26 +155,37 @@ def upgrade() -> None:
     )
     sa.Enum("SUCCESS", "FAILED", "UNKNOWN", name="opseventstatus").create(op.get_bind())
     sa.Enum(
+        # # BLI Related Events
         "CREATE_BLI",
         "UPDATE_BLI",
         "DELETE_BLI",
         "SEND_BLI_FOR_APPROVAL",
+        # Project Related Events
         "CREATE_PROJECT",
+        # Agreement Related Events
         "CREATE_NEW_AGREEMENT",
         "UPDATE_AGREEMENT",
         "DELETE_AGREEMENT",
+        # Notification Related Events
         "ACKNOWLEDGE_NOTIFICATION",
+        # Package Related Events
         "CREATE_BLI_PACKAGE",
         "UPDATE_BLI_PACKAGE",
+        # Services Component Related Events
         "CREATE_SERVICES_COMPONENT",
         "UPDATE_SERVICES_COMPONENT",
         "DELETE_SERVICES_COMPONENT",
+        # Procurement Acquisition Planning Related Events
         "CREATE_PROCUREMENT_ACQUISITION_PLANNING",
         "UPDATE_PROCUREMENT_ACQUISITION_PLANNING",
         "DELETE_PROCUREMENT_ACQUISITION_PLANNING",
+        # Document Related Events
         "CREATE_DOCUMENT",
+        "UPDATE_DOCUMENT",
+        # Auth Related Events
         "LOGIN_ATTEMPT",
         "LOGOUT",
+        # User Related Events
         "GET_USER_DETAILS",
         "CREATE_USER",
         "UPDATE_USER",
@@ -1210,8 +1221,9 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
-        sa.Column("file_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("document_name", sa.String(), autoincrement=False, nullable=True),
         sa.Column("status", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("document_size", sa.Numeric(precision=10, scale=2), nullable=False),
         sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
         sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
@@ -3691,8 +3703,9 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
-        sa.Column("file_name", sa.String(), nullable=False),
+        sa.Column("document_name", sa.String(), nullable=False),
         sa.Column("status", sa.String(), nullable=True),
+        sa.Column("document_size", sa.Numeric(precision=10, scale=2), nullable=False),
         sa.Column("created_by", sa.Integer(), nullable=True),
         sa.Column("updated_by", sa.Integer(), nullable=True),
         sa.Column("created_on", sa.DateTime(), nullable=True),
@@ -4858,26 +4871,37 @@ def downgrade() -> None:
         name="documenttype",
     ).drop(op.get_bind())
     sa.Enum(
+        # # BLI Related Events
         "CREATE_BLI",
         "UPDATE_BLI",
         "DELETE_BLI",
         "SEND_BLI_FOR_APPROVAL",
+        # Project Related Events
         "CREATE_PROJECT",
+        # Agreement Related Events
         "CREATE_NEW_AGREEMENT",
         "UPDATE_AGREEMENT",
         "DELETE_AGREEMENT",
+        # Notification Related Events
         "ACKNOWLEDGE_NOTIFICATION",
+        # Package Related Events
         "CREATE_BLI_PACKAGE",
         "UPDATE_BLI_PACKAGE",
+        # Services Component Related Events
         "CREATE_SERVICES_COMPONENT",
         "UPDATE_SERVICES_COMPONENT",
         "DELETE_SERVICES_COMPONENT",
+        # Procurement Acquisition Planning Related Events
         "CREATE_PROCUREMENT_ACQUISITION_PLANNING",
         "UPDATE_PROCUREMENT_ACQUISITION_PLANNING",
         "DELETE_PROCUREMENT_ACQUISITION_PLANNING",
+        # Document Related Events
         "CREATE_DOCUMENT",
+        "UPDATE_DOCUMENT",
+        # Auth Related Events
         "LOGIN_ATTEMPT",
         "LOGOUT",
+        # User Related Events
         "GET_USER_DETAILS",
         "CREATE_USER",
         "UPDATE_USER",
