@@ -1,6 +1,6 @@
 # ---- Build Stage ----
 # alpine
-FROM oven/bun@sha256:db00a82e371b323cd36d1f40ee7ef46614d07a78054d40a8658d5dd6ed87d8be as build
+FROM oven/bun@sha256:566dc4f280a33631904ac7f33355d6e743c70d25b71ffb5d10bc58bc70a4d647 as build
 RUN apt-get update && apt-get -y install unzip=6.0-26+deb11u1 --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home/bun/app
