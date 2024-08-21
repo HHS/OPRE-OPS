@@ -6,7 +6,7 @@ import pytest
 from flask import url_for
 
 from models import Agreement, BudgetLineItem, BudgetLineItemStatus, Division
-from models.workflows import BudgetLineItemChangeRequest, ChangeRequestStatus, ChangeRequestType
+from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestStatus, ChangeRequestType
 from ops_api.ops.resources.agreement_history import find_agreement_histories
 
 test_user_id = 4

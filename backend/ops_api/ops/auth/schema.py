@@ -1,3 +1,5 @@
+from typing import Optional
+
 from marshmallow import Schema, fields
 
 from ops_api.ops.auth.auth_types import ProviderTypes
@@ -20,3 +22,13 @@ class LogoutResponseSchema(Schema):
 
 class RefreshResponseSchema(Schema):
     access_token: str = fields.String(required=True)
+
+
+class RoleRequestSchema(Schema):
+    id: Optional[int] = fields.Integer()
+    name: Optional[str] = fields.String()
+
+
+class RoleResponseSchema(Schema):
+    id: int = fields.Integer(required=True)
+    name: str = fields.String(required=True)

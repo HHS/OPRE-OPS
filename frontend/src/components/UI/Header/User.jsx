@@ -1,17 +1,12 @@
 import { Link } from "react-router-dom";
-import { CheckAuth, getAccessToken } from "../../Auth/auth";
-import { useGetUserByOIDCIdQuery } from "../../../api/opsAPI";
-import { jwtDecode } from "jwt-decode";
+import { useSelector } from "react-redux";
+import PropTypes from "prop-types";
 
-export const User = () => {
-    const currentJWT = getAccessToken();
-    const decodedJwt = jwtDecode(currentJWT);
-    const userId = decodedJwt["sub"];
-    const { data: user } = useGetUserByOIDCIdQuery(userId);
-    const isAuthorized = CheckAuth() && user;
+export const User = ({ user }) => {
+    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
     return (
         <span>
-            {isAuthorized ? (
+            {isLoggedIn ? (
                 <Link
                     className="text-primary"
                     to={`/users/${user?.id}`}
@@ -23,4 +18,8 @@ export const User = () => {
             )}
         </span>
     );
+};
+
+User.propTypes = {
+    user: PropTypes.object.isRequired
 };

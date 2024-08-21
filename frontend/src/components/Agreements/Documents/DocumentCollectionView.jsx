@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import DocumentCard from "../../UI/DocumentCard/DocumentCard";
-import cssClasses from "./styles.module.css";
 
 /**
  * Renders the list of documents for an agreement.
@@ -10,11 +9,13 @@ import cssClasses from "./styles.module.css";
  * @returns {JSX.Element} - The rendered component.
  */
 const DocumentCollectionView = ({ documents }) => {
-    const cardContainerClassNames = `display-flex flex-wrap ${cssClasses.container}`;
     return (
         <section className="display-flex">
             {documents.length > 0 ? (
-                <div className={cardContainerClassNames}>
+                <div
+                    className="display-flex flex-wrap"
+                    style={{ columnGap: "20px" }}
+                >
                     {documents.map((document, docIndex) => (
                         <div key={docIndex}>
                             <DocumentCard document={document} />

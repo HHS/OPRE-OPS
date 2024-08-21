@@ -6,12 +6,12 @@ from models import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
     ChangeRequest,
+    ChangeRequestNotification,
     ChangeRequestStatus,
     Division,
-    Notification,
 )
-
 from models.cans import BudgetLineItemStatus
+from ops_api.ops.utils.budget_line_items import convert_BLI_status_name_to_pretty_string
 
 
 def get_expires_date():
@@ -47,9 +47,9 @@ def create_notification_of_new_request_to_reviewer(change_request: ChangeRequest
             approve_url = f"{approve_url}&to={to_status}"
 
     for division_director_id in division_director_ids:
-        notification = Notification(
+        notification = ChangeRequestNotification(
+            change_request_id=change_request.id,
             title="Approval Request",
-            # NOTE: approve_url only renders as plain text in default react-markdown
             message=f"An Agreement Approval Request has been submitted. "
             f"Please review and approve. \n\\\n\\\n[Link]({approve_url})",
             is_read=False,
@@ -66,13 +66,13 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
 
     if change_request.has_status_change:
         status_diff = change_request.requested_change_diff["status"]
-        new_status = status_diff["new"]
-        old_status = status_diff["old"]
+        new_status = convert_BLI_status_name_to_pretty_string(status_diff["new"])
+        old_status = convert_BLI_status_name_to_pretty_string(status_diff["old"])
         if change_request.status == ChangeRequestStatus.APPROVED:
-            notification = Notification(
+            notification = ChangeRequestNotification(
+                change_request_id=change_request.id,
                 title=f"Budget Lines Approved from {old_status} to {new_status} Status",
-                message=f"The budget lines you sent to your Division Director were approved from {old_status} to {new_status} status. "
-                "The amounts have been subtracted from the FY budget.",
+                message=f"The status change you sent to your Division Director were approved from {old_status} to {new_status} status. ",
                 is_read=False,
                 recipient_id=change_request.created_by,
                 expires=get_expires_date(),
@@ -80,10 +80,10 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
             current_app.db_session.add(notification)
             current_app.db_session.commit()
         elif change_request.status == ChangeRequestStatus.REJECTED:
-            notification = Notification(
-                title=f"Budget Lines Approved from {old_status} to {new_status} Status",
-                message=f"The budget lines you sent to your Division Director were approved from {old_status} to {new_status} status. "
-                "The amounts have been subtracted from the FY budget.",
+            notification = ChangeRequestNotification(
+                change_request_id=change_request.id,
+                title=f"Budget Lines Declined from {old_status} to {new_status} Status",
+                message=f"The budget lines you sent to your Division Director were declined from {old_status} to {new_status} status. ",
                 is_read=False,
                 recipient_id=change_request.created_by,
                 expires=get_expires_date(),
@@ -92,9 +92,10 @@ def create_notification_of_reviews_request_to_submitter(change_request: ChangeRe
             current_app.db_session.commit()
     else:  # non-status change request
         # just a generic message for now
-        notification = Notification(
-            title=f"Budget Line Change Request {change_request.status}",
-            message=f"Your budget line change request has been {change_request.status}",
+        notification = ChangeRequestNotification(
+            change_request_id=change_request.id,
+            title=f"Budget Change Request {change_request.status}",
+            message=f"Your budget change request has been {change_request.status}",
             is_read=False,
             recipient_id=change_request.created_by,
             expires=get_expires_date(),

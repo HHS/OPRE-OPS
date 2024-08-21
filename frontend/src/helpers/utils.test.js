@@ -32,7 +32,7 @@ test("codes are converted for display correctly", () => {
     expect(convertCodeForDisplay("agreementReason", "NEW_REQ")).toEqual("New Requirement");
     expect(convertCodeForDisplay("changeToTypes", "amount")).toEqual("Amount");
     expect(convertCodeForDisplay("changeToTypes", "can_id")).toEqual("CAN");
-    expect(convertCodeForDisplay("changeToTypes", "date_needed")).toEqual("Date needed");
+    expect(convertCodeForDisplay("changeToTypes", "date_needed")).toEqual("Obligate By Date");
     expect(convertCodeForDisplay("changeToTypes", "status")).toEqual("Status");
     expect(convertCodeForDisplay("budgetLineItemPropertyLabels", "services_component")).toEqual("Services Component");
 });

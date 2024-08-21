@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { useGetAgreementByIdQuery } from "../api/opsAPI";
+import { BLI_STATUS } from "../helpers/budgetLines.helpers";
 
 /**
  * Custom hook that returns whether the user is allowed to edit the agreement.
@@ -37,8 +38,10 @@ export const useIsUserAllowedToEditAgreement = (agreementId) => {
 export const useIsAgreementEditable = (agreementId) => {
     const { data: agreement } = useGetAgreementByIdQuery(agreementId);
 
-    const anyBudgetLinesInExecuting = agreement?.budget_line_items?.some((item) => item.status === "IN_EXECUTING");
-    const anyBudgetLinesObligated = agreement?.budget_line_items?.some((item) => item.status === "OBLIGATED");
+    const anyBudgetLinesInExecuting = agreement?.budget_line_items?.some(
+        (item) => item.status === BLI_STATUS.EXECUTING
+    );
+    const anyBudgetLinesObligated = agreement?.budget_line_items?.some((item) => item.status === BLI_STATUS.OBLIGATED);
     const isAgreementEditable = !anyBudgetLinesInExecuting && !anyBudgetLinesObligated;
 
     return isAgreementEditable;

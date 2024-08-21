@@ -19,6 +19,12 @@ class FakeAuthProvider(AuthenticationProvider):
                 "email": "admin.demo@email.com",
                 "sub": "00000000-0000-1111-a111-000000000018",
             },
+            "budget_team": {
+                "given_name": "Budget",
+                "family_name": "Team",
+                "email": "budget.team@email.com",
+                "sub": "00000000-0000-1111-a111-000000000021",
+            },
             "division_director": {
                 "given_name": "Dave",
                 "family_name": "Director",

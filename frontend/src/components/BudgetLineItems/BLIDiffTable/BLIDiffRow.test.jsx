@@ -1,0 +1,119 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { Provider } from "react-redux";
+import { Router } from "react-router-dom";
+import { vi } from "vitest";
+import { useGetAgreementByIdQuery, useGetCansQuery, useGetUserByIdQuery } from "../../../api/opsAPI";
+import store from "../../../store";
+import {
+    agreement,
+    budgetLineWithBudgetChangeRequest,
+    budgetLineWithStatusChangeRequestToExecuting,
+    budgetLineWithStatusChangeRequestToPlanned
+} from "../../../tests/data";
+import BLIDiffRow from "./BLIDiffRow";
+
+const renderComponent = (additionalProps = {}) => {
+    useGetUserByIdQuery.mockReturnValue({ data: "John Doe" });
+    useGetAgreementByIdQuery.mockReturnValue({ data: agreement });
+    useGetCansQuery.mockReturnValue({ data: [{ id: 1, code: "CAN 1", name: "CAN 1" }] });
+
+    const defaultProps = {
+        budgetLine: budgetLineWithBudgetChangeRequest,
+        changeType: "Budget Change",
+        statusChangeTo: ""
+    };
+
+    render(
+        <Router location="/agreements/approve/1?type=budget-change">
+            <Provider store={store}>
+                <BLIDiffRow
+                    {...defaultProps}
+                    {...additionalProps}
+                />
+            </Provider>
+        </Router>
+    );
+};
+
+vi.mock("../../../api/opsAPI");
+
+describe("BLIRow", () => {
+    it("should render the BLIRow component", () => {
+        renderComponent();
+
+        const needByDate = screen.getByRole("cell", { name: "6/13/2044" });
+        const FY = screen.getByRole("cell", { name: "2044" });
+        const status = screen.getByRole("cell", { name: "Planned" });
+        const currentDollarAmount = screen.queryByText("$300,000.00");
+        const CAN = screen.getByRole("cell", { name: "G99XXX8" });
+
+        expect(needByDate).toBeInTheDocument();
+        expect(FY).toBeInTheDocument();
+        expect(status).toBeInTheDocument();
+        expect(currentDollarAmount).toBeInTheDocument();
+        expect(CAN).toBeInTheDocument;
+    });
+    it("should be expandable", async () => {
+        renderComponent();
+
+        const user = userEvent.setup();
+        const expandButton = screen.getByTestId("expand-row");
+        await user.click(expandButton);
+        const expandedRow = screen.getByTestId("expanded-data");
+        const createdBy = screen.getByText("unknown");
+        const createdDate = screen.getByText("July 26, 2024");
+        const notes = screen.getByText(/no notes added/i);
+
+        expect(expandedRow).toBeInTheDocument();
+        expect(createdBy).toBeInTheDocument();
+        expect(createdDate).toBeInTheDocument();
+        expect(notes).toBeInTheDocument();
+    });
+    it("should highlight changed fields for budget change", () => {
+        renderComponent();
+        const amountCell = screen.getByRole("cell", { name: "$300,000.00" });
+        const canCell = screen.getByRole("cell", { name: "G99XXX8" });
+        const obligateByCell = screen.getByRole("cell", { name: "6/13/2044" });
+
+        expect(amountCell).toHaveClass("table-item-diff");
+        expect(canCell).toHaveClass("table-item-diff");
+        expect(obligateByCell).toHaveClass("table-item-diff");
+    });
+    it("should highlight changed fields for status change to EXECUTING", () => {
+        renderComponent({
+            changeType: "Status Change",
+            statusChangeTo: "EXECUTING",
+            budgetLine: budgetLineWithStatusChangeRequestToExecuting
+        });
+
+        const statusCell = screen.getByRole("cell", { name: "Executing" });
+        expect(statusCell).toHaveClass("table-item-diff");
+    });
+    it("should highlight changed fields for status change to PLANNED", () => {
+        renderComponent({
+            changeType: "Status Change",
+            statusChangeTo: "PLANNED",
+            budgetLine: budgetLineWithStatusChangeRequestToPlanned
+        });
+
+        const statusCell = screen.getByRole("cell", { name: "Planned" });
+        expect(statusCell).toHaveClass("table-item-diff");
+    });
+    it("should display correct fee and total amounts", () => {
+        renderComponent();
+        const amount = screen.getByRole("cell", { name: "$300,000.00" });
+        const feeAmount = screen.getByRole("cell", { name: "$1,500.00" });
+        const totalAmount = screen.getByRole("cell", { name: "$301,500.00" });
+
+        expect(amount).toBeInTheDocument();
+        expect(feeAmount).toBeInTheDocument();
+        expect(totalAmount).toBeInTheDocument();
+    });
+    it("should render the BLIDiffRow component with null budgetLine prop", () => {
+        renderComponent({ budgetLine: null });
+
+        const errorText = screen.getByText("Error: Budget line is not present");
+        expect(errorText).toBeInTheDocument();
+    });
+});

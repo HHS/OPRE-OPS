@@ -6,6 +6,7 @@ import {
     getNonDRAFTBudgetLines
 } from "../../../helpers/budgetLines.helpers";
 import { draftBudgetLineStatuses } from "../../../helpers/utils";
+import { selectedAction } from "../../../pages/agreements/review/ReviewAgreement.constants";
 import Accordion from "../../UI/Accordion";
 import ToggleButton from "../../UI/ToggleButton";
 import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
@@ -13,18 +14,20 @@ import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
 import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.helpers";
 
 /**
- * Renders an accordion component for selecting budget lines for an agreement.
+ * Renders an accordion component for reviewing budget line items.
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.title - The title of the accordion.
  * @param {string} props.instructions - The instructions for the accordion.
- * @param {Object[]} props.budgetLineItems - An array of budget line items.
- * @param {React.ReactNode} props.children - Child components to be rendered inside the accordion.
+ * @param {Object[]} props.budgetLineItems - The budget line items.
+ * @param {React.ReactNode} props.children - The children to render.
  * @param {Object} props.agreement - The agreement object.
  * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
  * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
  * @param {string} props.action - The action to perform.
- * @returns {JSX.Element} - The rendered accordion component.
+ * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve page.
+ * @param {Object[]} [props.updatedBudgetLines=[]] - The updated budget lines.
+ * @returns {JSX.Element} The AgreementBLIAccordion component.
  */
 function AgreementBLIAccordion({
     title,
@@ -34,14 +37,31 @@ function AgreementBLIAccordion({
     agreement,
     afterApproval,
     setAfterApproval,
-    action
+    action,
+    isApprovePage = false,
+    updatedBudgetLines = []
 }) {
+    const showToggle = action === selectedAction.DRAFT_TO_PLANNED || action === BLI_STATUS.PLANNED || isApprovePage;
+    const isDraftToPlanned = isApprovePage && action === BLI_STATUS.PLANNED;
+
+    // Use the same logic for both !isApprovePage and isDraftToPlanned scenarios
     const notDraftBLIs = getNonDRAFTBudgetLines(agreement.budget_line_items);
     const selectedDRAFTBudgetLines = getBudgetByStatus(selectedBudgetLineItems, draftBudgetLineStatuses);
-    const budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
-    const feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards);
-    const subTotalForCards = budgetLinesTotal(budgetLinesForCards);
-    const totalsForCards = subTotalForCards + getProcurementShopSubTotal(agreement, budgetLinesForCards);
+
+    let budgetLinesForCards, subTotalForCards, feesForCards, totalsForCards;
+
+    if (!isApprovePage || isDraftToPlanned) {
+        budgetLinesForCards = afterApproval ? [...selectedDRAFTBudgetLines, ...notDraftBLIs] : notDraftBLIs;
+        feesForCards = getProcurementShopSubTotal(agreement, budgetLinesForCards);
+        subTotalForCards = budgetLinesTotal(budgetLinesForCards);
+        totalsForCards = subTotalForCards + feesForCards;
+    } else {
+        const diffsForCards = afterApproval ? updatedBudgetLines : selectedBudgetLineItems;
+        feesForCards = getProcurementShopSubTotal(agreement, diffsForCards);
+        subTotalForCards = budgetLinesTotal(diffsForCards);
+        totalsForCards = subTotalForCards + feesForCards;
+        budgetLinesForCards = diffsForCards;
+    }
 
     return (
         <Accordion
@@ -50,7 +70,7 @@ function AgreementBLIAccordion({
         >
             <p>{instructions}</p>
             <div className="display-flex flex-justify-end margin-top-3 margin-bottom-2">
-                {action === BLI_STATUS.PLANNED && (
+                {showToggle && (
                     <ToggleButton
                         btnText="After Approval"
                         handleToggle={() => setAfterApproval(!afterApproval)}
@@ -72,6 +92,7 @@ function AgreementBLIAccordion({
         </Accordion>
     );
 }
+
 AgreementBLIAccordion.propTypes = {
     title: PropTypes.string.isRequired,
     instructions: PropTypes.string.isRequired,
@@ -80,6 +101,9 @@ AgreementBLIAccordion.propTypes = {
     agreement: PropTypes.object,
     afterApproval: PropTypes.bool,
     setAfterApproval: PropTypes.func,
-    action: PropTypes.string
+    action: PropTypes.string,
+    isApprovePage: PropTypes.bool,
+    updatedBudgetLines: PropTypes.arrayOf(PropTypes.object)
 };
+
 export default AgreementBLIAccordion;

@@ -15,8 +15,8 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.changeType - The type of change request.
- * @param {ChangeRequest[]} props.changeRequests - The budget lines in review.
  * @param {string} [props.statusChangeTo=""] - The status change to. - optional
+ * @param {ChangeRequest[]} props.changeRequests - The budget lines in review.
  * @returns {JSX.Element} - The rendered component.
  */
 function ReviewChangeRequestAccordion({ changeType, changeRequests, statusChangeTo = "" }) {
