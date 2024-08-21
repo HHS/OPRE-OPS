@@ -36,7 +36,8 @@ import suite from "./suite";
  * @param {Object} selectedProcurementShop - Selected procurement shop object.
  * @param {string} workflow - The workflow type ("agreement" or "budgetLines").
  * @param {Object} formData - The form data.
- * @param {boolean} includeDrafts - Flag to include drafts budget lines
+ * @param {boolean} includeDrafts - Flag to include drafts budget lines.
+ * @param {boolean} canUserEditBudgetLines - Flag to indicate if the user can edit budget lines.
  *
  */
 const useCreateBLIsAndSCs = (
@@ -51,7 +52,8 @@ const useCreateBLIsAndSCs = (
     setIsEditMode,
     workflow,
     formData,
-    includeDrafts
+    includeDrafts,
+    canUserEditBudgetLines
 ) => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -632,29 +634,22 @@ const useCreateBLIsAndSCs = (
     };
 
     const handleCancel = () => {
-        const heading = `${
-            isEditMode || isReviewMode
-                ? "Are you sure you want to cancel editing? Your changes will not be saved."
-                : "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
-        }`;
-        const actionButtonText = `${isEditMode ? "Cancel Edits" : "Cancel Agreement"}`;
+        const isCreatingNewAgreement = !isEditMode && !isReviewMode && canUserEditBudgetLines;
+
+        const heading = isCreatingNewAgreement
+            ? "Are you sure you want to cancel creating a new agreement? Your progress will not be saved."
+            : "Are you sure you want to cancel editing? Your changes will not be saved.";
+
+        const actionButtonText = isCreatingNewAgreement ? "Cancel Agreement" : "Cancel Edits";
+
         setShowModal(true);
         setModalProps({
             heading,
             actionButtonText,
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                if (isEditMode || isReviewMode) {
-                    setIsEditMode(false);
-                    resetForm();
-                    setTempBudgetLines([]);
-                    if (budgetLineIdFromUrl) {
-                        resetQueryParams();
-                    }
-                    navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
-                } else {
-                    // TODO: Add logic to delete the agreement in the workflow
-                    // Delete the agreement in the workflow
+                if (isCreatingNewAgreement) {
+                    // Only allow deleting the agreement if creating a new one
                     deleteAgreement(selectedAgreement?.id)
                         .unwrap()
                         .then((fulfilled) => {
@@ -675,6 +670,15 @@ const useCreateBLIsAndSCs = (
                                 redirectUrl: "/error"
                             });
                         });
+                } else {
+                    // For editing existing agreements or when user can't edit
+                    setIsEditMode(false);
+                    resetForm();
+                    setTempBudgetLines([]);
+                    if (budgetLineIdFromUrl) {
+                        resetQueryParams();
+                    }
+                    navigate(`/agreements/${selectedAgreement?.id}/budget-lines`);
                 }
             }
         });
@@ -759,7 +763,9 @@ useCreateBLIsAndSCs.propTypes = {
     selectedAgreement: PropTypes.object,
     selectedProcurementShop: PropTypes.object,
     setIsEditMode: PropTypes.func,
-    workflow: PropTypes.string
+    workflow: PropTypes.string.isRequired,
+    includeDrafts: PropTypes.bool.isRequired,
+    canUserEditBudgetLines: PropTypes.bool.isRequired
 };
 
 export default useCreateBLIsAndSCs;
