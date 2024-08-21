@@ -93,6 +93,12 @@ You will want to familiarize yourself with the following tools and libraries:
   - Learn Vite – [Frontend Build Tool Course](https://youtube.com/watch?v=VAeRhmpcWEQ)
   - FrontEnd Masters Course on [Vite](https://frontendmasters.com/courses/vite/) [paid]
 
+Helpful browser extensions:
+- [React Developer Tools](https://react.dev/learn/react-developer-tools)
+- [Redux DevTools](https://github.com/reduxjs/redux-devtools/tree/main/extension#installation)
+- Clear Browsing Data
+- Measure-it
+- WAVE Evaluation Tool
 
 ## BackEnd Development
 
@@ -131,6 +137,6 @@ Some additional resources that may be helpful to you as you get started:
 - [SQLAlchemy Tutorial](https://docs.sqlalchemy.org/en/20/tutorial/index.html)
 
 ## Getting Help
-- join a pairing session on team calendar
-- ping team engineering Slack channel `acf-ops-engineers`
-- ping team members on Slack
+- Join a pairing session on team calendar
+- Ping team engineering Slack channel `acf-opre-ops-engineer-discuss`
+- Ping team members on Slack
