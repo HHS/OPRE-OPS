@@ -1,15 +1,17 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getAccessToken } from "../components/Auth/auth";
 
-// const BACKEND_DOMAIN = import.meta.env.VITE_BACKEND_DOMAIN;
-// Adding optional runtime config.
-const BACKEND_DOMAIN = window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN || import.meta.env.VITE_BACKEND_DOMAIN;
+const BACKEND_DOMAIN =
+    window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN ||
+    import.meta.env.VITE_BACKEND_DOMAIN ||
+    "https://localhost:8000"; // Default to localhost if not provided (e.g. in tests)
 
 export const opsApi = createApi({
     reducerPath: "opsApi",
     tagTypes: [
         "Agreements",
         "ResearchProjects",
+        "User",
         "Users",
         "AgreementTypes",
         "AgreementReasons",
@@ -20,7 +22,9 @@ export const opsApi = createApi({
         "CanFunding",
         "Notifications",
         "ServicesComponents",
-        "ChangeRequests"
+        "ChangeRequests",
+        "Divisions",
+        "Documents"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
@@ -182,16 +186,20 @@ export const opsApi = createApi({
             invalidatesTags: ["User"]
         }),
         updateUser: builder.mutation({
-            query: ({ id, body }) => ({
+            query: ({ id, data }) => ({
                 url: `/users/${id}`,
-                method: "PUT",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body
+                body: data
             }),
-            invalidatesTags: ["User"]
+            invalidatesTags: ["User", "Users"]
         }),
         getCans: builder.query({
             query: () => `/cans/`,
+            providesTags: ["Cans"]
+        }),
+        getCanById: builder.query({
+            query: (id) => `/cans/${id}`,
             providesTags: ["Cans"]
         }),
         getCanFundingSummary: builder.query({
@@ -206,6 +214,17 @@ export const opsApi = createApi({
                 return {
                     url: `/notifications/?oidc_id=${id}`,
                     headers: { Authorization: auth_header }
+                };
+            },
+            providesTags: ["Notifications"]
+        }),
+        getNotificationsByUserIdAndAgreementId: builder.query({
+            query: ({ user_oidc_id, agreement_id}) => {
+                if(!user_oidc_id || !agreement_id){
+                    return { skip: true };
+                }
+                return {
+                    url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`,
                 };
             },
             providesTags: ["Notifications"]
@@ -286,6 +305,36 @@ export const opsApi = createApi({
                 };
             },
             invalidatesTags: ["ChangeRequests"]
+        }),
+        getDivisions: builder.query({
+            query: () => `/divisions/`,
+            providesTags: ["Divisions"]
+        }),
+        addDocument: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/documents/`,
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["Documents"]
+        }),
+        getDocumentsByAgreementId: builder.query({
+            query: (agreement_id) => `/documents/${agreement_id}/`,
+            providesTags: ["Documents"]
+        }),
+        updateDocumentStatus: builder.mutation({
+            query: ({ document_id, data }) => {
+                return {
+                    url: `/documents/${document_id}/status/`,
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: data
+                };
+            },
+            invalidatesTags: ["Documents"]
         })
     })
 });
@@ -317,8 +366,10 @@ export const {
     useAddUserMutation,
     useUpdateUserMutation,
     useGetCansQuery,
+    useGetCanByIdQuery,
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
+    useGetNotificationsByUserIdAndAgreementIdQuery,
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
     useAddBliPackageMutation,
@@ -329,5 +380,9 @@ export const {
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
     useGetChangeRequestsListQuery,
-    useReviewChangeRequestMutation
+    useReviewChangeRequestMutation,
+    useGetDivisionsQuery,
+    useAddDocumentMutation,
+    useGetDocumentsByAgreementIdQuery,
+    useUpdateDocumentStatusMutation,
 } = opsApi;

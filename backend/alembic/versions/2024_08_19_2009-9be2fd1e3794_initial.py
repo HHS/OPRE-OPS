@@ -1,0 +1,4935 @@
+"""initial
+
+Revision ID: 9be2fd1e3794
+Revises:
+Create Date: 2024-08-19 20:09:33.113868+00:00
+
+"""
+
+from typing import Sequence, Union
+
+import sqlalchemy as sa
+from alembic import op
+from sqlalchemy.dialects import postgresql
+
+# revision identifiers, used by Alembic.
+revision: str = "9be2fd1e3794"
+down_revision: Union[str, None] = None
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+def upgrade() -> None:
+    # manually added
+    sa.Sequence("ops_user_id_seq", start=500, increment=1).create(op.get_bind())
+    sa.Sequence("project_id_seq", start=1000, increment=1).create(op.get_bind())
+    sa.Sequence("vendor_id_seq", start=100, increment=1).create(op.get_bind())
+    sa.Sequence("can_id_seq", start=500, increment=1).create(op.get_bind())
+    sa.Sequence("can_fiscal_year_id_seq", start=5000, increment=1).create(op.get_bind())
+    sa.Sequence("clin_id_seq", start=5000, increment=1).create(op.get_bind())
+    sa.Sequence("budget_line_item_id_seq", start=15000, increment=1).create(
+        op.get_bind()
+    )
+
+    sa.Enum("ACTIVE", "INACTIVE", "LOCKED", name="userstatus").create(op.get_bind())
+    op.create_table(
+        "ops_user",
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('ops_user_id_seq')"),
+            nullable=False,
+        ),
+        sa.Column("oidc_id", sa.UUID(), nullable=True),
+        sa.Column("hhs_id", sa.String(), nullable=True),
+        sa.Column("email", sa.String(), nullable=False),
+        sa.Column("first_name", sa.String(), nullable=True),
+        sa.Column("last_name", sa.String(), nullable=True),
+        sa.Column("division", sa.Integer(), nullable=True),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "ACTIVE", "INACTIVE", "LOCKED", name="userstatus", create_type=False
+            ),
+            server_default="INACTIVE",
+            nullable=False,
+        ),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(op.f("ix_ops_user_email"), "ops_user", ["email"], unique=False)
+    op.create_index(op.f("ix_ops_user_oidc_id"), "ops_user", ["oidc_id"], unique=True)
+    op.create_table(
+        "ops_user_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("oidc_id", sa.UUID(), autoincrement=False, nullable=True),
+        sa.Column("hhs_id", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("email", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("first_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("last_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("division", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "ACTIVE", "INACTIVE", "LOCKED", name="userstatus", create_type=False
+            ),
+            server_default="INACTIVE",
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_email"), "ops_user_version", ["email"], unique=False
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_end_transaction_id"),
+        "ops_user_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_oidc_id"),
+        "ops_user_version",
+        ["oidc_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_operation_type"),
+        "ops_user_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_user_version_transaction_id"),
+        "ops_user_version",
+        ["transaction_id"],
+        unique=False,
+    )
+
+    # ### commands auto generated by Alembic - please adjust! ###
+    sa.Enum("FINANCIAL", "CONTRACT", "CUSTOMER", name="contacttype").create(
+        op.get_bind()
+    )
+    sa.Enum(
+        "POPULATION_1", "POPULATION_2", "POPULATION_3", name="populationtype"
+    ).create(op.get_bind())
+    sa.Enum(
+        "SURVEY",
+        "FIELD_RESEARCH",
+        "PARTICIPANT_OBSERVATION",
+        "ETHNOGRAPHY",
+        "EXPERIMENT",
+        "SECONDARY_DATA_ANALYSIS",
+        "CASE_STUDY",
+        name="methodologytype",
+    ).create(op.get_bind())
+    sa.Enum("RESEARCH", "ADMINISTRATIVE_AND_SUPPORT", name="projecttype").create(
+        op.get_bind()
+    )
+    sa.Enum(
+        "NOTIFICATION", "CHANGE_REQUEST_NOTIFICATION", name="notificationtype"
+    ).create(op.get_bind())
+    sa.Enum("NEW", "UPDATED", "DELETED", "ERROR", name="opsdbhistorytype").create(
+        op.get_bind()
+    )
+    sa.Enum("SUCCESS", "FAILED", "UNKNOWN", name="opseventstatus").create(op.get_bind())
+    sa.Enum(
+        # # BLI Related Events
+        "CREATE_BLI",
+        "UPDATE_BLI",
+        "DELETE_BLI",
+        "SEND_BLI_FOR_APPROVAL",
+        # Project Related Events
+        "CREATE_PROJECT",
+        # Agreement Related Events
+        "CREATE_NEW_AGREEMENT",
+        "UPDATE_AGREEMENT",
+        "DELETE_AGREEMENT",
+        # Notification Related Events
+        "ACKNOWLEDGE_NOTIFICATION",
+        # Package Related Events
+        "CREATE_BLI_PACKAGE",
+        "UPDATE_BLI_PACKAGE",
+        # Services Component Related Events
+        "CREATE_SERVICES_COMPONENT",
+        "UPDATE_SERVICES_COMPONENT",
+        "DELETE_SERVICES_COMPONENT",
+        # Procurement Acquisition Planning Related Events
+        "CREATE_PROCUREMENT_ACQUISITION_PLANNING",
+        "UPDATE_PROCUREMENT_ACQUISITION_PLANNING",
+        "DELETE_PROCUREMENT_ACQUISITION_PLANNING",
+        # Document Related Events
+        "CREATE_DOCUMENT",
+        "UPDATE_DOCUMENT",
+        # Auth Related Events
+        "LOGIN_ATTEMPT",
+        "LOGOUT",
+        # User Related Events
+        "GET_USER_DETAILS",
+        "CREATE_USER",
+        "UPDATE_USER",
+        "DEACTIVATE_USER",
+        name="opseventtype",
+    ).create(op.get_bind())
+    sa.Enum(
+        "CERTIFICATION_OF_FUNDING",
+        "STATEMENT_OF_REQUIREMENTS",
+        "ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS",
+        "INDEPENDENT_GOVERNMENT_COST_ESTIMATE",
+        "SECTION_508_EXCEPTION_DOCUMENTATION",
+        "COR_NOMINATION_AND_CERTIFICATION_DOCUMENT",
+        "ADDITIONAL_DOCUMENT",
+        name="documenttype",
+    ).create(op.get_bind())
+    sa.Enum("OPRE", "NON_OPRE", name="cantype").create(op.get_bind())
+    sa.Enum(
+        "OPRE_APPROPRIATION",
+        "COST_SHARE",
+        "IAA",
+        "IDDA",
+        "MOU",
+        name="canarrangementtype",
+    ).create(op.get_bind())
+    sa.Enum(
+        "DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", name="budgetlineitemstatus"
+    ).create(op.get_bind())
+    sa.Enum(
+        "ADMIN", "AMOUNT_TBD", "AS_IS", "REPLACEMENT_AMOUNT_FINAL", name="modtype"
+    ).create(op.get_bind())
+    sa.Enum("RESEARCH", "SERVICE", name="contractcategory").create(op.get_bind())
+    sa.Enum("SEVERABLE", "NON_SEVERABLE", name="servicerequirementtype").create(
+        op.get_bind()
+    )
+    sa.Enum(
+        "FIRM_FIXED_PRICE",
+        "TIME_AND_MATERIALS",
+        "LABOR_HOUR",
+        "COST_PLUS_FIXED_FEE",
+        "COST_PLUS_AWARD_FEE",
+        "HYBRID",
+        name="contracttype",
+    ).create(op.get_bind())
+    sa.Enum(
+        "GSA_SCHEDULE", "TASK_ORDER", "FULL_AND_OPEN", name="acquisitiontype"
+    ).create(op.get_bind())
+    sa.Enum("NEW_REQ", "RECOMPETE", "LOGICAL_FOLLOW_ON", name="agreementreason").create(
+        op.get_bind()
+    )
+    sa.Enum(
+        "CONTRACT",
+        "GRANT",
+        "DIRECT_ALLOCATION",
+        "IAA",
+        "IAA_AA",
+        "MISCELLANEOUS",
+        name="agreementtype",
+    ).create(op.get_bind())
+    sa.Enum("IN_PROCESS", "NOT_STARTED", "SANDBOX", name="portfoliostatus").create(
+        op.get_bind()
+    )
+    sa.Enum("IN_REVIEW", "APPROVED", "REJECTED", name="changerequeststatus").create(
+        op.get_bind()
+    )
+    sa.Enum(
+        "CHANGE_REQUEST",
+        "AGREEMENT_CHANGE_REQUEST",
+        "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+        name="changerequesttype",
+    ).create(op.get_bind())
+    op.create_table(
+        "administrative_and_support_project_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_administrative_and_support_project_version_end_transaction_id"),
+        "administrative_and_support_project_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_administrative_and_support_project_version_operation_type"),
+        "administrative_and_support_project_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_administrative_and_support_project_version_transaction_id"),
+        "administrative_and_support_project_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "agreement_ops_db_history_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "ops_db_history_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_agreement_ops_db_history_version_end_transaction_id"),
+        "agreement_ops_db_history_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_agreement_ops_db_history_version_operation_type"),
+        "agreement_ops_db_history_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_agreement_ops_db_history_version_transaction_id"),
+        "agreement_ops_db_history_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "agreement_team_members_version",
+        sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("user_id", "agreement_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_agreement_team_members_version_end_transaction_id"),
+        "agreement_team_members_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_agreement_team_members_version_operation_type"),
+        "agreement_team_members_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_agreement_team_members_version_transaction_id"),
+        "agreement_team_members_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "agreement_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "agreement_type",
+            postgresql.ENUM(
+                "CONTRACT",
+                "GRANT",
+                "DIRECT_ALLOCATION",
+                "IAA",
+                "IAA_AA",
+                "MISCELLANEOUS",
+                name="agreementtype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("description", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "product_service_code_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "agreement_reason",
+            postgresql.ENUM(
+                "NEW_REQ",
+                "RECOMPETE",
+                "LOGICAL_FOLLOW_ON",
+                name="agreementreason",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "project_officer_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("project_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "awarding_entity_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("notes", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_agreement_version_end_transaction_id"),
+        "agreement_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_agreement_version_operation_type"),
+        "agreement_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_agreement_version_transaction_id"),
+        "agreement_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "budget_line_item_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("line_description", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("comments", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "services_component_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("clin_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "amount",
+            sa.Numeric(precision=12, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "mod_type",
+            postgresql.ENUM(
+                "ADMIN",
+                "AMOUNT_TBD",
+                "AS_IS",
+                "REPLACEMENT_AMOUNT_FINAL",
+                name="modtype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "DRAFT",
+                "PLANNED",
+                "IN_EXECUTION",
+                "OBLIGATED",
+                name="budgetlineitemstatus",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("on_hold", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("certified", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("closed", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column(
+            "requisition_number", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("requisition_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "is_under_current_resolution",
+            sa.Boolean(),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("date_needed", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "proc_shop_fee_percentage",
+            sa.Numeric(precision=12, scale=5),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_budget_line_item_version_end_transaction_id"),
+        "budget_line_item_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_budget_line_item_version_operation_type"),
+        "budget_line_item_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_budget_line_item_version_transaction_id"),
+        "budget_line_item_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "can_appropriation_details_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "appropriation_prefix", sa.String(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "appropriation_postfix", sa.String(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "appropriation_year", sa.String(), autoincrement=False, nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_can_appropriation_details_version_end_transaction_id"),
+        "can_appropriation_details_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_appropriation_details_version_operation_type"),
+        "can_appropriation_details_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_appropriation_details_version_transaction_id"),
+        "can_appropriation_details_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "can_fiscal_year_carry_forward_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("from_fiscal_year", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("to_fiscal_year", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "received_amount",
+            sa.Numeric(precision=12, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "expected_amount",
+            sa.Numeric(precision=12, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_carry_forward_version_end_transaction_id"),
+        "can_fiscal_year_carry_forward_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_carry_forward_version_operation_type"),
+        "can_fiscal_year_carry_forward_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_carry_forward_version_transaction_id"),
+        "can_fiscal_year_carry_forward_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "can_fiscal_year_funding_details_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("fund", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("allowance", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("sub_allowance", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("allotment_org", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "current_fy_funding_ytd", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "can_fiscal_year_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_funding_details_version_end_transaction_id"),
+        "can_fiscal_year_funding_details_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_funding_details_version_operation_type"),
+        "can_fiscal_year_funding_details_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_funding_details_version_transaction_id"),
+        "can_fiscal_year_funding_details_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "can_fiscal_year_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("fiscal_year", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "received_funding",
+            sa.Numeric(precision=12, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "expected_funding",
+            sa.Numeric(precision=12, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "potential_additional_funding",
+            sa.Numeric(precision=12, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "fiscal_year", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_version_end_transaction_id"),
+        "can_fiscal_year_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_version_operation_type"),
+        "can_fiscal_year_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_fiscal_year_version_transaction_id"),
+        "can_fiscal_year_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "can_funding_sources_version",
+        sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "funding_source_id", sa.Integer(), autoincrement=False, nullable=False
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("can_id", "funding_source_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_can_funding_sources_version_end_transaction_id"),
+        "can_funding_sources_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_funding_sources_version_operation_type"),
+        "can_funding_sources_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_funding_sources_version_transaction_id"),
+        "can_funding_sources_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "can_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("number", sa.String(length=30), autoincrement=False, nullable=True),
+        sa.Column("description", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("nickname", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("expiration_date", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "appropriation_date", sa.DateTime(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "arrangement_type",
+            postgresql.ENUM(
+                "OPRE_APPROPRIATION",
+                "COST_SHARE",
+                "IAA",
+                "IDDA",
+                "MOU",
+                name="canarrangementtype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "can_type",
+            postgresql.ENUM("OPRE", "NON_OPRE", name="cantype", create_type=False),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("division_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("authorizer_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "managing_portfolio_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "external_authorizer_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_can_version_end_transaction_id"),
+        "can_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_version_operation_type"),
+        "can_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_can_version_transaction_id"),
+        "can_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "change_request_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "change_request_type",
+            postgresql.ENUM(
+                "CHANGE_REQUEST",
+                "AGREEMENT_CHANGE_REQUEST",
+                "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+                name="changerequesttype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "IN_REVIEW",
+                "APPROVED",
+                "REJECTED",
+                name="changerequeststatus",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "requested_change_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "requested_change_diff",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "requested_change_info",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("requestor_notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "managing_division_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("reviewed_by_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("reviewed_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("reviewer_notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "budget_line_item_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_change_request_version_end_transaction_id"),
+        "change_request_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_change_request_version_operation_type"),
+        "change_request_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_change_request_version_transaction_id"),
+        "change_request_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "clin_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("number", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("pop_start_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("pop_end_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "contract_agreement_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_clin_version_end_transaction_id"),
+        "clin_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_clin_version_operation_type"),
+        "clin_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_clin_version_transaction_id"),
+        "clin_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "contact_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("first_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("last_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("middle_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("address", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("city", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("state", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("zip", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("phone_area_code", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("phone_number", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("email", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "contact_type",
+            postgresql.ENUM(
+                "FINANCIAL",
+                "CONTRACT",
+                "CUSTOMER",
+                name="contacttype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_contact_version_end_transaction_id"),
+        "contact_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_contact_version_operation_type"),
+        "contact_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_contact_version_transaction_id"),
+        "contact_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "contract_agreement_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("contract_number", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("incumbent_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("vendor_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("task_order_number", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("po_number", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "acquisition_type",
+            postgresql.ENUM(
+                "GSA_SCHEDULE",
+                "TASK_ORDER",
+                "FULL_AND_OPEN",
+                name="acquisitiontype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("delivered_status", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column(
+            "contract_type",
+            postgresql.ENUM(
+                "FIRM_FIXED_PRICE",
+                "TIME_AND_MATERIALS",
+                "LABOR_HOUR",
+                "COST_PLUS_FIXED_FEE",
+                "COST_PLUS_AWARD_FEE",
+                "HYBRID",
+                name="contracttype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("invoice_line_nbr", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "service_requirement_type",
+            postgresql.ENUM(
+                "SEVERABLE",
+                "NON_SEVERABLE",
+                name="servicerequirementtype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "contract_category",
+            postgresql.ENUM(
+                "RESEARCH", "SERVICE", name="contractcategory", create_type=False
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_contract_agreement_version_end_transaction_id"),
+        "contract_agreement_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_contract_agreement_version_operation_type"),
+        "contract_agreement_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_contract_agreement_version_transaction_id"),
+        "contract_agreement_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "contract_support_contacts_version",
+        sa.Column("contract_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("users_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("contract_id", "users_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_contract_support_contacts_version_end_transaction_id"),
+        "contract_support_contacts_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_contract_support_contacts_version_operation_type"),
+        "contract_support_contacts_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_contract_support_contacts_version_transaction_id"),
+        "contract_support_contacts_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "direct_agreement_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("payee", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_direct_agreement_version_end_transaction_id"),
+        "direct_agreement_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_direct_agreement_version_operation_type"),
+        "direct_agreement_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_direct_agreement_version_transaction_id"),
+        "direct_agreement_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "division",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(length=100), nullable=False),
+        sa.Column("abbreviation", sa.String(length=10), nullable=False),
+        sa.Column("division_director_id", sa.Integer(), nullable=True),
+        sa.Column("deputy_division_director_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["deputy_division_director_id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["division_director_id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("abbreviation"),
+        sa.UniqueConstraint("name"),
+    )
+    op.create_foreign_key(
+        "fk_user_division", "ops_user", "division", ["division"], ["id"]
+    )
+    op.create_table(
+        "division_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(length=100), autoincrement=False, nullable=True),
+        sa.Column(
+            "abbreviation", sa.String(length=10), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "division_director_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "deputy_division_director_id",
+            sa.Integer(),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_division_version_end_transaction_id"),
+        "division_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_division_version_operation_type"),
+        "division_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_division_version_transaction_id"),
+        "division_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "document_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("document_id", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "document_type",
+            postgresql.ENUM(
+                "CERTIFICATION_OF_FUNDING",
+                "STATEMENT_OF_REQUIREMENTS",
+                "ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS",
+                "INDEPENDENT_GOVERNMENT_COST_ESTIMATE",
+                "SECTION_508_EXCEPTION_DOCUMENTATION",
+                "COR_NOMINATION_AND_CERTIFICATION_DOCUMENT",
+                "ADDITIONAL_DOCUMENT",
+                name="documenttype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("document_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("status", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("document_size", sa.Numeric(precision=10, scale=2), nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_document_version_end_transaction_id"),
+        "document_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_document_version_operation_type"),
+        "document_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_document_version_transaction_id"),
+        "document_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "funding_partner_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("nickname", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_funding_partner_version_end_transaction_id"),
+        "funding_partner_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_funding_partner_version_operation_type"),
+        "funding_partner_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_funding_partner_version_transaction_id"),
+        "funding_partner_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "funding_source_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("nickname", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_funding_source_version_end_transaction_id"),
+        "funding_source_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_funding_source_version_operation_type"),
+        "funding_source_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_funding_source_version_transaction_id"),
+        "funding_source_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "grant_agreement_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("foa", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_grant_agreement_version_end_transaction_id"),
+        "grant_agreement_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_grant_agreement_version_operation_type"),
+        "grant_agreement_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_grant_agreement_version_transaction_id"),
+        "grant_agreement_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "group_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_group_version_end_transaction_id"),
+        "group_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_group_version_name"), "group_version", ["name"], unique=False
+    )
+    op.create_index(
+        op.f("ix_group_version_operation_type"),
+        "group_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_group_version_transaction_id"),
+        "group_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "iaa_aa_agreement_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("iaa_aa", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_iaa_aa_agreement_version_end_transaction_id"),
+        "iaa_aa_agreement_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_iaa_aa_agreement_version_operation_type"),
+        "iaa_aa_agreement_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_iaa_aa_agreement_version_transaction_id"),
+        "iaa_aa_agreement_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "iaa_agreement_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("iaa", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_iaa_agreement_version_end_transaction_id"),
+        "iaa_agreement_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_iaa_agreement_version_operation_type"),
+        "iaa_agreement_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_iaa_agreement_version_transaction_id"),
+        "iaa_agreement_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "notification_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "notification_type",
+            postgresql.ENUM(
+                "NOTIFICATION",
+                "CHANGE_REQUEST_NOTIFICATION",
+                name="notificationtype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("title", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("message", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("is_read", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("expires", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("recipient_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "change_request_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_notification_version_end_transaction_id"),
+        "notification_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_notification_version_operation_type"),
+        "notification_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_notification_version_transaction_id"),
+        "notification_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "ops_db_history_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "event_type",
+            postgresql.ENUM(
+                "NEW",
+                "UPDATED",
+                "DELETED",
+                "ERROR",
+                name="opsdbhistorytype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "event_details",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("class_name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("row_key", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "changes",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_ops_db_history_version_end_transaction_id"),
+        "ops_db_history_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_db_history_version_operation_type"),
+        "ops_db_history_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_db_history_version_transaction_id"),
+        "ops_db_history_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "ops_event_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "event_type",
+            postgresql.ENUM(
+                "CREATE_BLI",
+                "UPDATE_BLI",
+                "DELETE_BLI",
+                "SEND_BLI_FOR_APPROVAL",
+                "CREATE_PROJECT",
+                "CREATE_NEW_AGREEMENT",
+                "UPDATE_AGREEMENT",
+                "DELETE_AGREEMENT",
+                "ACKNOWLEDGE_NOTIFICATION",
+                "CREATE_BLI_PACKAGE",
+                "UPDATE_BLI_PACKAGE",
+                "CREATE_SERVICES_COMPONENT",
+                "UPDATE_SERVICES_COMPONENT",
+                "DELETE_SERVICES_COMPONENT",
+                "CREATE_PROCUREMENT_ACQUISITION_PLANNING",
+                "UPDATE_PROCUREMENT_ACQUISITION_PLANNING",
+                "DELETE_PROCUREMENT_ACQUISITION_PLANNING",
+                "CREATE_DOCUMENT",
+                "LOGIN_ATTEMPT",
+                "LOGOUT",
+                "GET_USER_DETAILS",
+                "CREATE_USER",
+                "UPDATE_USER",
+                "DEACTIVATE_USER",
+                name="opseventtype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "event_status",
+            postgresql.ENUM(
+                "SUCCESS", "FAILED", "UNKNOWN", name="opseventstatus", create_type=False
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "event_details",
+            postgresql.JSONB(astext_type=sa.Text()),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_ops_event_version_end_transaction_id"),
+        "ops_event_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_event_version_operation_type"),
+        "ops_event_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_ops_event_version_transaction_id"),
+        "ops_event_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "portfolio_team_leaders_version",
+        sa.Column("portfolio_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("team_lead_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("portfolio_id", "team_lead_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_portfolio_team_leaders_version_end_transaction_id"),
+        "portfolio_team_leaders_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_portfolio_team_leaders_version_operation_type"),
+        "portfolio_team_leaders_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_portfolio_team_leaders_version_transaction_id"),
+        "portfolio_team_leaders_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "portfolio_url_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("portfolio_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("url", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_portfolio_url_version_end_transaction_id"),
+        "portfolio_url_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_portfolio_url_version_operation_type"),
+        "portfolio_url_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_portfolio_url_version_transaction_id"),
+        "portfolio_url_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "portfolio_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("abbreviation", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "IN_PROCESS",
+                "NOT_STARTED",
+                "SANDBOX",
+                name="portfoliostatus",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("division_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("description", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_portfolio_version_end_transaction_id"),
+        "portfolio_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_portfolio_version_operation_type"),
+        "portfolio_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_portfolio_version_transaction_id"),
+        "portfolio_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_acquisition_planning_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_acquisition_planning_version_end_transaction_id"),
+        "procurement_acquisition_planning_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_acquisition_planning_version_operation_type"),
+        "procurement_acquisition_planning_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_acquisition_planning_version_transaction_id"),
+        "procurement_acquisition_planning_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_award_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("vendor", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("vendor_type", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("financial_number", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_award_version_end_transaction_id"),
+        "procurement_award_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_award_version_operation_type"),
+        "procurement_award_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_award_version_transaction_id"),
+        "procurement_award_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_evaluation_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("target_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_evaluation_version_end_transaction_id"),
+        "procurement_evaluation_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_evaluation_version_operation_type"),
+        "procurement_evaluation_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_evaluation_version_transaction_id"),
+        "procurement_evaluation_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_pre_solicitation_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("target_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_pre_solicitation_version_end_transaction_id"),
+        "procurement_pre_solicitation_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_pre_solicitation_version_operation_type"),
+        "procurement_pre_solicitation_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_pre_solicitation_version_transaction_id"),
+        "procurement_pre_solicitation_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_preaward_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("target_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_preaward_version_end_transaction_id"),
+        "procurement_preaward_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_preaward_version_operation_type"),
+        "procurement_preaward_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_preaward_version_transaction_id"),
+        "procurement_preaward_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_shop_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("abbr", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("fee", sa.Float(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_shop_version_end_transaction_id"),
+        "procurement_shop_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_shop_version_operation_type"),
+        "procurement_shop_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_shop_version_transaction_id"),
+        "procurement_shop_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_solicitation_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("is_complete", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("actual_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("completed_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("notes", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("target_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_solicitation_version_end_transaction_id"),
+        "procurement_solicitation_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_solicitation_version_operation_type"),
+        "procurement_solicitation_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_solicitation_version_transaction_id"),
+        "procurement_solicitation_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "project",
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('project_id_seq')"),
+            nullable=False,
+        ),
+        sa.Column(
+            "project_type",
+            postgresql.ENUM(
+                "RESEARCH",
+                "ADMINISTRATIVE_AND_SUPPORT",
+                name="projecttype",
+                create_type=False,
+            ),
+            nullable=False,
+        ),
+        sa.Column("title", sa.String(), nullable=False),
+        sa.Column("short_title", sa.String(), nullable=False),
+        sa.Column("description", sa.Text(), nullable=False),
+        sa.Column("url", sa.Text(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("short_title"),
+    )
+    op.create_table(
+        "product_service_code",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("naics", sa.Integer(), nullable=True),
+        sa.Column("support_code", sa.String(), nullable=True),
+        sa.Column("description", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_shop",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("abbr", sa.String(), nullable=False),
+        sa.Column("fee", sa.Float(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "agreement",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "agreement_type",
+            postgresql.ENUM(
+                "CONTRACT",
+                "GRANT",
+                "DIRECT_ALLOCATION",
+                "IAA",
+                "IAA_AA",
+                "MISCELLANEOUS",
+                name="agreementtype",
+                create_type=False,
+            ),
+            nullable=False,
+        ),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("description", sa.String(), nullable=True),
+        sa.Column("product_service_code_id", sa.Integer(), nullable=True),
+        sa.Column(
+            "agreement_reason",
+            postgresql.ENUM(
+                "NEW_REQ",
+                "RECOMPETE",
+                "LOGICAL_FOLLOW_ON",
+                name="agreementreason",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column("project_officer_id", sa.Integer(), nullable=True),
+        sa.Column("project_id", sa.Integer(), nullable=True),
+        sa.Column("awarding_entity_id", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.Text(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["awarding_entity_id"],
+            ["procurement_shop.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["product_service_code_id"],
+            ["product_service_code.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["project_id"],
+            ["project.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["project_officer_id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_tracker",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), nullable=True),
+        sa.Column("current_step_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["agreement_id"],
+            ["agreement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_step",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), nullable=True),
+        sa.Column("procurement_tracker_id", sa.Integer(), nullable=True),
+        sa.Column("type", sa.String(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["agreement_id"],
+            ["agreement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["procurement_tracker_id"],
+            ["procurement_tracker.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_foreign_key(
+        "fk_procurement_tracker_procurement_step",
+        "procurement_tracker",
+        "procurement_step",
+        ["current_step_id"],
+        ["id"],
+    )
+    op.create_table(
+        "procurement_step_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column(
+            "procurement_tracker_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("type", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_step_version_end_transaction_id"),
+        "procurement_step_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_step_version_operation_type"),
+        "procurement_step_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_step_version_transaction_id"),
+        "procurement_step_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "procurement_tracker_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("current_step_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_procurement_tracker_version_end_transaction_id"),
+        "procurement_tracker_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_tracker_version_operation_type"),
+        "procurement_tracker_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_procurement_tracker_version_transaction_id"),
+        "procurement_tracker_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "product_service_code_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("naics", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("support_code", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("description", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_product_service_code_version_end_transaction_id"),
+        "product_service_code_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_product_service_code_version_operation_type"),
+        "product_service_code_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_product_service_code_version_transaction_id"),
+        "product_service_code_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "project_cans_version",
+        sa.Column("project_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("project_id", "can_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_project_cans_version_end_transaction_id"),
+        "project_cans_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_project_cans_version_operation_type"),
+        "project_cans_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_project_cans_version_transaction_id"),
+        "project_cans_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "project_team_leaders_version",
+        sa.Column("project_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("team_lead_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("project_id", "team_lead_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_project_team_leaders_version_end_transaction_id"),
+        "project_team_leaders_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_project_team_leaders_version_operation_type"),
+        "project_team_leaders_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_project_team_leaders_version_transaction_id"),
+        "project_team_leaders_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "project_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column(
+            "project_type",
+            postgresql.ENUM(
+                "RESEARCH",
+                "ADMINISTRATIVE_AND_SUPPORT",
+                name="projecttype",
+                create_type=False,
+            ),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("title", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("short_title", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("description", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("url", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_project_version_end_transaction_id"),
+        "project_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_project_version_operation_type"),
+        "project_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_project_version_transaction_id"),
+        "project_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "research_project_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("origination_date", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column(
+            "methodologies",
+            postgresql.ARRAY(
+                postgresql.ENUM(
+                    "SURVEY",
+                    "FIELD_RESEARCH",
+                    "PARTICIPANT_OBSERVATION",
+                    "ETHNOGRAPHY",
+                    "EXPERIMENT",
+                    "SECONDARY_DATA_ANALYSIS",
+                    "CASE_STUDY",
+                    name="methodologytype",
+                    create_type=False,
+                )
+            ),
+            server_default="{}",
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "populations",
+            postgresql.ARRAY(
+                postgresql.ENUM(
+                    "POPULATION_1",
+                    "POPULATION_2",
+                    "POPULATION_3",
+                    name="populationtype",
+                    create_type=False,
+                )
+            ),
+            server_default="{}",
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_research_project_version_end_transaction_id"),
+        "research_project_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_research_project_version_operation_type"),
+        "research_project_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_research_project_version_transaction_id"),
+        "research_project_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "role_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "permissions",
+            postgresql.ARRAY(sa.String()),
+            server_default="{}",
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_role_version_end_transaction_id"),
+        "role_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_role_version_name"), "role_version", ["name"], unique=False
+    )
+    op.create_index(
+        op.f("ix_role_version_operation_type"),
+        "role_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_role_version_transaction_id"),
+        "role_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "services_component_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("number", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("optional", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("description", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("period_start", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("period_end", sa.Date(), autoincrement=False, nullable=True),
+        sa.Column("sub_component", sa.String(), autoincrement=False, nullable=True),
+        sa.Column(
+            "contract_agreement_id", sa.Integer(), autoincrement=False, nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_services_component_version_end_transaction_id"),
+        "services_component_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_services_component_version_operation_type"),
+        "services_component_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_services_component_version_transaction_id"),
+        "services_component_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "shared_portfolio_cans_version",
+        sa.Column("portfolio_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("can_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("portfolio_id", "can_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_shared_portfolio_cans_version_end_transaction_id"),
+        "shared_portfolio_cans_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_shared_portfolio_cans_version_operation_type"),
+        "shared_portfolio_cans_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_shared_portfolio_cans_version_transaction_id"),
+        "shared_portfolio_cans_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "transaction",
+        sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
+        sa.Column("remote_addr", sa.String(length=50), nullable=True),
+        sa.Column("issued_at", sa.DateTime(), nullable=True),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "user_group_version",
+        sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("group_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("user_id", "group_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_user_group_version_end_transaction_id"),
+        "user_group_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_user_group_version_operation_type"),
+        "user_group_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_user_group_version_transaction_id"),
+        "user_group_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "user_role_version",
+        sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("role_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("user_id", "role_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_user_role_version_end_transaction_id"),
+        "user_role_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_user_role_version_operation_type"),
+        "user_role_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_user_role_version_transaction_id"),
+        "user_role_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "user_session_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("user_id", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("is_active", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("ip_address", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("access_token", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("refresh_token", sa.Text(), autoincrement=False, nullable=True),
+        sa.Column("last_active_at", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_user_session_version_end_transaction_id"),
+        "user_session_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_user_session_version_operation_type"),
+        "user_session_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_user_session_version_transaction_id"),
+        "user_session_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "vendor_contacts_version",
+        sa.Column("vendor_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("contact_id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("vendor_id", "contact_id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_vendor_contacts_version_end_transaction_id"),
+        "vendor_contacts_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_vendor_contacts_version_operation_type"),
+        "vendor_contacts_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_vendor_contacts_version_transaction_id"),
+        "vendor_contacts_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "vendor_version",
+        sa.Column("id", sa.Integer(), autoincrement=False, nullable=False),
+        sa.Column("name", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("duns", sa.String(), autoincrement=False, nullable=True),
+        sa.Column("active", sa.Boolean(), autoincrement=False, nullable=True),
+        sa.Column("created_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("updated_by", sa.Integer(), autoincrement=False, nullable=True),
+        sa.Column("created_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column("updated_on", sa.DateTime(), autoincrement=False, nullable=True),
+        sa.Column(
+            "transaction_id", sa.BigInteger(), autoincrement=False, nullable=False
+        ),
+        sa.Column("end_transaction_id", sa.BigInteger(), nullable=True),
+        sa.Column("operation_type", sa.SmallInteger(), nullable=False),
+        sa.PrimaryKeyConstraint("id", "transaction_id"),
+    )
+    op.create_index(
+        op.f("ix_vendor_version_end_transaction_id"),
+        "vendor_version",
+        ["end_transaction_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_vendor_version_operation_type"),
+        "vendor_version",
+        ["operation_type"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_vendor_version_transaction_id"),
+        "vendor_version",
+        ["transaction_id"],
+        unique=False,
+    )
+    op.create_table(
+        "can_appropriation_details",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("appropriation_prefix", sa.String(), nullable=True),
+        sa.Column("appropriation_postfix", sa.String(), nullable=True),
+        sa.Column("appropriation_year", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "contact",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("first_name", sa.String(), nullable=True),
+        sa.Column("last_name", sa.String(), nullable=True),
+        sa.Column("middle_name", sa.String(), nullable=True),
+        sa.Column("address", sa.String(), nullable=True),
+        sa.Column("city", sa.String(), nullable=True),
+        sa.Column("state", sa.String(), nullable=True),
+        sa.Column("zip", sa.String(), nullable=True),
+        sa.Column("phone_area_code", sa.String(), nullable=True),
+        sa.Column("phone_number", sa.String(), nullable=True),
+        sa.Column("email", sa.String(), nullable=True),
+        sa.Column(
+            "contact_type",
+            postgresql.ENUM(
+                "FINANCIAL",
+                "CONTRACT",
+                "CUSTOMER",
+                name="contacttype",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "funding_partner",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("nickname", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "funding_source",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("nickname", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "group",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(op.f("ix_group_name"), "group", ["name"], unique=False)
+    op.create_table(
+        "ops_db_history",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "event_type",
+            postgresql.ENUM(
+                "NEW",
+                "UPDATED",
+                "DELETED",
+                "ERROR",
+                name="opsdbhistorytype",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column(
+            "event_details", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
+        sa.Column("class_name", sa.String(), nullable=True),
+        sa.Column("row_key", sa.String(), nullable=True),
+        sa.Column("changes", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        "idx_ops_db_history_class_name_row_key_created_on",
+        "ops_db_history",
+        ["class_name", "row_key", sa.text("created_on DESC")],
+        unique=False,
+    )
+    op.create_table(
+        "ops_event",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "event_type",
+            postgresql.ENUM(
+                "CREATE_BLI",
+                "UPDATE_BLI",
+                "DELETE_BLI",
+                "SEND_BLI_FOR_APPROVAL",
+                "CREATE_PROJECT",
+                "CREATE_NEW_AGREEMENT",
+                "UPDATE_AGREEMENT",
+                "DELETE_AGREEMENT",
+                "ACKNOWLEDGE_NOTIFICATION",
+                "CREATE_BLI_PACKAGE",
+                "UPDATE_BLI_PACKAGE",
+                "CREATE_SERVICES_COMPONENT",
+                "UPDATE_SERVICES_COMPONENT",
+                "DELETE_SERVICES_COMPONENT",
+                "CREATE_PROCUREMENT_ACQUISITION_PLANNING",
+                "UPDATE_PROCUREMENT_ACQUISITION_PLANNING",
+                "DELETE_PROCUREMENT_ACQUISITION_PLANNING",
+                "CREATE_DOCUMENT",
+                "LOGIN_ATTEMPT",
+                "LOGOUT",
+                "GET_USER_DETAILS",
+                "CREATE_USER",
+                "UPDATE_USER",
+                "DEACTIVATE_USER",
+                name="opseventtype",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column(
+            "event_status",
+            postgresql.ENUM(
+                "SUCCESS", "FAILED", "UNKNOWN", name="opseventstatus", create_type=False
+            ),
+            nullable=True,
+        ),
+        sa.Column(
+            "event_details", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "portfolio",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("abbreviation", sa.String(), nullable=True),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "IN_PROCESS",
+                "NOT_STARTED",
+                "SANDBOX",
+                name="portfoliostatus",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column("division_id", sa.Integer(), nullable=False),
+        sa.Column("description", sa.Text(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["division_id"],
+            ["division.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_acquisition_planning",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_award",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("vendor", sa.String(), nullable=True),
+        sa.Column("vendor_type", sa.String(), nullable=True),
+        sa.Column("financial_number", sa.String(), nullable=True),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_evaluation",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_pre_solicitation",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_preaward",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "procurement_solicitation",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("is_complete", sa.Boolean(), nullable=False),
+        sa.Column("actual_date", sa.Date(), nullable=True),
+        sa.Column("completed_by", sa.Integer(), nullable=True),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("target_date", sa.Date(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["completed_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["procurement_step.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "role",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column(
+            "permissions",
+            postgresql.ARRAY(sa.String()),
+            server_default="{}",
+            nullable=False,
+        ),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(op.f("ix_role_name"), "role", ["name"], unique=False)
+    op.create_table(
+        "user_session",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("is_active", sa.Boolean(), nullable=True),
+        sa.Column("ip_address", sa.String(), nullable=False),
+        sa.Column("access_token", sa.Text(), nullable=False),
+        sa.Column("refresh_token", sa.Text(), nullable=False),
+        sa.Column("last_active_at", sa.DateTime(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "vendor",
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('vendor_id_seq')"),
+            nullable=False,
+        ),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("duns", sa.String(), nullable=False),
+        sa.Column("active", sa.Boolean(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "administrative_and_support_project",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["project.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "agreement_ops_db_history",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), nullable=True),
+        sa.Column("ops_db_history_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["ops_db_history_id"], ["ops_db_history.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "can",
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('can_id_seq')"),
+            nullable=False,
+        ),
+        sa.Column("number", sa.String(length=30), nullable=False),
+        sa.Column("description", sa.String(), nullable=True),
+        sa.Column("nickname", sa.String(), nullable=True),
+        sa.Column("expiration_date", sa.DateTime(), nullable=True),
+        sa.Column("appropriation_date", sa.DateTime(), nullable=True),
+        sa.Column(
+            "arrangement_type",
+            postgresql.ENUM(
+                "OPRE_APPROPRIATION",
+                "COST_SHARE",
+                "IAA",
+                "IDDA",
+                "MOU",
+                name="canarrangementtype",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column(
+            "can_type",
+            postgresql.ENUM("OPRE", "NON_OPRE", name="cantype", create_type=False),
+            nullable=True,
+        ),
+        sa.Column("division_id", sa.Integer(), nullable=True),
+        sa.Column("authorizer_id", sa.Integer(), nullable=True),
+        sa.Column("managing_portfolio_id", sa.Integer(), nullable=False),
+        sa.Column("external_authorizer_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["authorizer_id"],
+            ["funding_partner.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["division_id"],
+            ["division.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["external_authorizer_id"],
+            ["contact.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["managing_portfolio_id"],
+            ["portfolio.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "portfolio_team_leaders",
+        sa.Column("portfolio_id", sa.Integer(), nullable=False),
+        sa.Column("team_lead_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["portfolio_id"],
+            ["portfolio.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["team_lead_id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("portfolio_id", "team_lead_id"),
+    )
+    op.create_table(
+        "portfolio_url",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("portfolio_id", sa.Integer(), nullable=True),
+        sa.Column("url", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["portfolio_id"],
+            ["portfolio.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "project_team_leaders",
+        sa.Column("project_id", sa.Integer(), nullable=False),
+        sa.Column("team_lead_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["project_id"],
+            ["project.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["team_lead_id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("project_id", "team_lead_id"),
+    )
+    op.create_table(
+        "research_project",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("origination_date", sa.Date(), nullable=True),
+        sa.Column(
+            "methodologies",
+            postgresql.ARRAY(
+                postgresql.ENUM(
+                    "SURVEY",
+                    "FIELD_RESEARCH",
+                    "PARTICIPANT_OBSERVATION",
+                    "ETHNOGRAPHY",
+                    "EXPERIMENT",
+                    "SECONDARY_DATA_ANALYSIS",
+                    "CASE_STUDY",
+                    name="methodologytype",
+                    create_type=False,
+                )
+            ),
+            server_default="{}",
+            nullable=False,
+        ),
+        sa.Column(
+            "populations",
+            postgresql.ARRAY(
+                postgresql.ENUM(
+                    "POPULATION_1",
+                    "POPULATION_2",
+                    "POPULATION_3",
+                    name="populationtype",
+                    create_type=False,
+                )
+            ),
+            server_default="{}",
+            nullable=True,
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["project.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "user_group",
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("group_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["group_id"],
+            ["group.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("user_id", "group_id"),
+    )
+    op.create_table(
+        "user_role",
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("role_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["role_id"],
+            ["role.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("user_id", "role_id"),
+    )
+    op.create_table(
+        "vendor_contacts",
+        sa.Column("vendor_id", sa.Integer(), nullable=False),
+        sa.Column("contact_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["contact_id"],
+            ["contact.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["vendor_id"],
+            ["vendor.id"],
+        ),
+        sa.PrimaryKeyConstraint("vendor_id", "contact_id"),
+    )
+    op.create_table(
+        "agreement_team_members",
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("agreement_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["agreement_id"],
+            ["agreement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("user_id", "agreement_id"),
+    )
+    op.create_table(
+        "can_fiscal_year",
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('can_fiscal_year_id_seq')"),
+            nullable=False,
+            unique=True,
+        ),
+        sa.Column("can_id", sa.Integer(), nullable=False),
+        sa.Column("fiscal_year", sa.Integer(), nullable=False),
+        sa.Column("received_funding", sa.Numeric(precision=12, scale=2), nullable=True),
+        sa.Column("expected_funding", sa.Numeric(precision=12, scale=2), nullable=True),
+        sa.Column(
+            "potential_additional_funding",
+            sa.Numeric(precision=12, scale=2),
+            nullable=True,
+        ),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["can_id"],
+            ["can.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id", "fiscal_year"),
+        sa.UniqueConstraint("can_id", "fiscal_year"),
+    )
+    op.create_table(
+        "can_fiscal_year_carry_forward",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("can_id", sa.Integer(), nullable=True),
+        sa.Column("from_fiscal_year", sa.Integer(), nullable=True),
+        sa.Column("to_fiscal_year", sa.Integer(), nullable=True),
+        sa.Column("received_amount", sa.Numeric(precision=12, scale=2), nullable=False),
+        sa.Column("expected_amount", sa.Numeric(precision=12, scale=2), nullable=False),
+        sa.Column("notes", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["can_id"],
+            ["can.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "can_funding_sources",
+        sa.Column("can_id", sa.Integer(), nullable=False),
+        sa.Column("funding_source_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["can_id"],
+            ["can.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["funding_source_id"],
+            ["funding_source.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("can_id", "funding_source_id"),
+    )
+    op.create_table(
+        "contract_agreement",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("contract_number", sa.String(), nullable=True),
+        sa.Column("incumbent_id", sa.Integer(), nullable=True),
+        sa.Column("vendor_id", sa.Integer(), nullable=True),
+        sa.Column("task_order_number", sa.String(), nullable=True),
+        sa.Column("po_number", sa.String(), nullable=True),
+        sa.Column(
+            "acquisition_type",
+            postgresql.ENUM(
+                "GSA_SCHEDULE",
+                "TASK_ORDER",
+                "FULL_AND_OPEN",
+                name="acquisitiontype",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column("delivered_status", sa.Boolean(), nullable=False),
+        sa.Column(
+            "contract_type",
+            postgresql.ENUM(
+                "FIRM_FIXED_PRICE",
+                "TIME_AND_MATERIALS",
+                "LABOR_HOUR",
+                "COST_PLUS_FIXED_FEE",
+                "COST_PLUS_AWARD_FEE",
+                "HYBRID",
+                name="contracttype",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column("invoice_line_nbr", sa.Integer(), nullable=True),
+        sa.Column(
+            "service_requirement_type",
+            postgresql.ENUM(
+                "SEVERABLE",
+                "NON_SEVERABLE",
+                name="servicerequirementtype",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column(
+            "contract_category",
+            postgresql.ENUM(
+                "RESEARCH", "SERVICE", name="contractcategory", create_type=False
+            ),
+            nullable=True,
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["agreement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["incumbent_id"],
+            ["vendor.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["vendor_id"],
+            ["vendor.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "direct_agreement",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("payee", sa.String(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["agreement.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "document",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("agreement_id", sa.Integer(), nullable=False),
+        sa.Column("document_id", sa.String(), nullable=False),
+        sa.Column(
+            "document_type",
+            postgresql.ENUM(
+                "CERTIFICATION_OF_FUNDING",
+                "STATEMENT_OF_REQUIREMENTS",
+                "ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS",
+                "INDEPENDENT_GOVERNMENT_COST_ESTIMATE",
+                "SECTION_508_EXCEPTION_DOCUMENTATION",
+                "COR_NOMINATION_AND_CERTIFICATION_DOCUMENT",
+                "ADDITIONAL_DOCUMENT",
+                name="documenttype",
+                create_type=False,
+            ),
+            nullable=False,
+        ),
+        sa.Column("document_name", sa.String(), nullable=False),
+        sa.Column("status", sa.String(), nullable=True),
+        sa.Column("document_size", sa.Numeric(precision=10, scale=2), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["agreement_id"],
+            ["agreement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("document_id"),
+    )
+    op.create_table(
+        "grant_agreement",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("foa", sa.String(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["agreement.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "iaa_aa_agreement",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("iaa_aa", sa.String(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["agreement.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "iaa_agreement",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("iaa", sa.String(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["agreement.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "project_cans",
+        sa.Column("project_id", sa.Integer(), nullable=False),
+        sa.Column("can_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["can_id"],
+            ["can.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["project_id"],
+            ["project.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("project_id", "can_id"),
+    )
+    op.create_table(
+        "shared_portfolio_cans",
+        sa.Column("portfolio_id", sa.Integer(), nullable=False),
+        sa.Column("can_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["can_id"],
+            ["can.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["portfolio_id"],
+            ["portfolio.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("portfolio_id", "can_id"),
+    )
+    op.create_table(
+        "can_fiscal_year_funding_details",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("fund", sa.String(), nullable=True),
+        sa.Column("allowance", sa.String(), nullable=True),
+        sa.Column("sub_allowance", sa.String(), nullable=True),
+        sa.Column("allotment_org", sa.String(), nullable=True),
+        sa.Column("current_fy_funding_ytd", sa.Integer(), nullable=True),
+        sa.Column("can_fiscal_year_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["can_fiscal_year_id"],
+            ["can_fiscal_year.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "clin",
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('clin_id_seq')"),
+            nullable=False,
+        ),
+        sa.Column("number", sa.Integer(), nullable=False),
+        sa.Column("name", sa.String(), nullable=True),
+        sa.Column("pop_start_date", sa.Date(), nullable=True),
+        sa.Column("pop_end_date", sa.Date(), nullable=True),
+        sa.Column("contract_agreement_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["contract_agreement_id"], ["contract_agreement.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("number", "contract_agreement_id"),
+    )
+    op.create_table(
+        "contract_support_contacts",
+        sa.Column("contract_id", sa.Integer(), nullable=False),
+        sa.Column("users_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["contract_id"],
+            ["contract_agreement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["users_id"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("contract_id", "users_id"),
+    )
+    op.create_table(
+        "services_component",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("number", sa.Integer(), nullable=False),
+        sa.Column("optional", sa.Boolean(), nullable=False),
+        sa.Column("description", sa.String(), nullable=True),
+        sa.Column("period_start", sa.Date(), nullable=True),
+        sa.Column("period_end", sa.Date(), nullable=True),
+        sa.Column("sub_component", sa.String(), nullable=True),
+        sa.Column("contract_agreement_id", sa.Integer(), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["contract_agreement_id"], ["contract_agreement.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint(
+            "number", "sub_component", "optional", "contract_agreement_id"
+        ),
+    )
+    op.create_table(
+        "budget_line_item",
+        sa.Column(
+            "id",
+            sa.Integer(),
+            server_default=sa.text("nextval('budget_line_item_id_seq')"),
+            nullable=False,
+        ),
+        sa.Column("line_description", sa.String(), nullable=True),
+        sa.Column("comments", sa.Text(), nullable=True),
+        sa.Column("agreement_id", sa.Integer(), nullable=True),
+        sa.Column("can_id", sa.Integer(), nullable=True),
+        sa.Column("services_component_id", sa.Integer(), nullable=True),
+        sa.Column("clin_id", sa.Integer(), nullable=True),
+        sa.Column("amount", sa.Numeric(precision=12, scale=2), nullable=True),
+        sa.Column(
+            "mod_type",
+            postgresql.ENUM(
+                "ADMIN",
+                "AMOUNT_TBD",
+                "AS_IS",
+                "REPLACEMENT_AMOUNT_FINAL",
+                name="modtype",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "DRAFT",
+                "PLANNED",
+                "IN_EXECUTION",
+                "OBLIGATED",
+                name="budgetlineitemstatus",
+                create_type=False,
+            ),
+            nullable=True,
+        ),
+        sa.Column("on_hold", sa.Boolean(), nullable=False),
+        sa.Column("certified", sa.Boolean(), nullable=False),
+        sa.Column("closed", sa.Boolean(), nullable=False),
+        sa.Column("requisition_number", sa.Integer(), nullable=True),
+        sa.Column("requisition_date", sa.Date(), nullable=True),
+        sa.Column("is_under_current_resolution", sa.Boolean(), nullable=True),
+        sa.Column("date_needed", sa.Date(), nullable=True),
+        sa.Column(
+            "proc_shop_fee_percentage", sa.Numeric(precision=12, scale=5), nullable=True
+        ),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["agreement_id"],
+            ["agreement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["can_id"],
+            ["can.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["clin_id"],
+            ["clin.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["services_component_id"],
+            ["services_component.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "change_request",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column(
+            "change_request_type",
+            postgresql.ENUM(
+                "CHANGE_REQUEST",
+                "AGREEMENT_CHANGE_REQUEST",
+                "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+                name="changerequesttype",
+                create_type=False,
+            ),
+            nullable=False,
+        ),
+        sa.Column(
+            "status",
+            postgresql.ENUM(
+                "IN_REVIEW",
+                "APPROVED",
+                "REJECTED",
+                name="changerequeststatus",
+                create_type=False,
+            ),
+            nullable=False,
+        ),
+        sa.Column(
+            "requested_change_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=False,
+        ),
+        sa.Column(
+            "requested_change_diff",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
+        sa.Column(
+            "requested_change_info",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
+        sa.Column("requestor_notes", sa.String(), nullable=True),
+        sa.Column("managing_division_id", sa.Integer(), nullable=True),
+        sa.Column("reviewed_by_id", sa.Integer(), nullable=True),
+        sa.Column("reviewed_on", sa.DateTime(), nullable=True),
+        sa.Column("reviewer_notes", sa.String(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.Column("agreement_id", sa.Integer(), nullable=True),
+        sa.Column("budget_line_item_id", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(["agreement_id"], ["agreement.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["budget_line_item_id"], ["budget_line_item.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["managing_division_id"],
+            ["division.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["reviewed_by_id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "notification",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column(
+            "notification_type",
+            postgresql.ENUM(
+                "NOTIFICATION",
+                "CHANGE_REQUEST_NOTIFICATION",
+                name="notificationtype",
+                create_type=False,
+            ),
+            nullable=False,
+        ),
+        sa.Column("title", sa.String(), nullable=True),
+        sa.Column("message", sa.String(), nullable=True),
+        sa.Column("is_read", sa.Boolean(), nullable=False),
+        sa.Column("expires", sa.Date(), nullable=True),
+        sa.Column("recipient_id", sa.Integer(), nullable=True),
+        sa.Column("created_by", sa.Integer(), nullable=True),
+        sa.Column("updated_by", sa.Integer(), nullable=True),
+        sa.Column("created_on", sa.DateTime(), nullable=True),
+        sa.Column("updated_on", sa.DateTime(), nullable=True),
+        sa.Column("change_request_id", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["change_request_id"], ["change_request.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["created_by"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["recipient_id"],
+            ["ops_user.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["updated_by"],
+            ["ops_user.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    # ### end Alembic commands ###
+
+
+def downgrade() -> None:
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table("notification")
+    op.drop_table("change_request")
+    op.drop_table("budget_line_item")
+    op.drop_table("services_component")
+    op.drop_table("contract_support_contacts")
+    op.drop_table("clin")
+    op.drop_table("can_fiscal_year_funding_details")
+    op.drop_table("shared_portfolio_cans")
+    op.drop_table("project_cans")
+    op.drop_table("iaa_agreement")
+    op.drop_table("iaa_aa_agreement")
+    op.drop_table("grant_agreement")
+    op.drop_table("document")
+    op.drop_table("direct_agreement")
+    op.drop_table("contract_agreement")
+    op.drop_table("can_funding_sources")
+    op.drop_table("can_fiscal_year_carry_forward")
+    op.drop_table("can_fiscal_year")
+    op.drop_table("agreement_team_members")
+    op.drop_table("vendor_contacts")
+    op.drop_table("user_role")
+    op.drop_table("user_group")
+    op.drop_table("research_project")
+    op.drop_table("project_team_leaders")
+    op.drop_table("portfolio_url")
+    op.drop_table("portfolio_team_leaders")
+    op.drop_table("can")
+    op.drop_table("agreement_ops_db_history")
+    op.drop_table("agreement")
+    op.drop_table("administrative_and_support_project")
+    op.drop_table("vendor")
+    op.drop_table("user_session")
+    op.drop_index(op.f("ix_role_name"), table_name="role")
+    op.drop_table("role")
+    op.drop_table("project")
+    op.drop_table("product_service_code")
+    op.drop_table("procurement_solicitation")
+    op.drop_table("procurement_shop")
+    op.drop_table("procurement_preaward")
+    op.drop_table("procurement_pre_solicitation")
+    op.drop_table("procurement_evaluation")
+    op.drop_table("procurement_award")
+    op.drop_table("procurement_acquisition_planning")
+    op.drop_table("portfolio")
+    op.drop_table("ops_event")
+    op.drop_index(
+        "idx_ops_db_history_class_name_row_key_created_on", table_name="ops_db_history"
+    )
+    op.drop_table("ops_db_history")
+    op.drop_index(op.f("ix_group_name"), table_name="group")
+    op.drop_table("group")
+    op.drop_table("funding_source")
+    op.drop_table("funding_partner")
+    op.drop_table("contact")
+    op.drop_table("can_appropriation_details")
+    op.drop_index(op.f("ix_vendor_version_transaction_id"), table_name="vendor_version")
+    op.drop_index(op.f("ix_vendor_version_operation_type"), table_name="vendor_version")
+    op.drop_index(
+        op.f("ix_vendor_version_end_transaction_id"), table_name="vendor_version"
+    )
+    op.drop_table("vendor_version")
+    op.drop_index(
+        op.f("ix_vendor_contacts_version_transaction_id"),
+        table_name="vendor_contacts_version",
+    )
+    op.drop_index(
+        op.f("ix_vendor_contacts_version_operation_type"),
+        table_name="vendor_contacts_version",
+    )
+    op.drop_index(
+        op.f("ix_vendor_contacts_version_end_transaction_id"),
+        table_name="vendor_contacts_version",
+    )
+    op.drop_table("vendor_contacts_version")
+    op.drop_index(
+        op.f("ix_user_session_version_transaction_id"),
+        table_name="user_session_version",
+    )
+    op.drop_index(
+        op.f("ix_user_session_version_operation_type"),
+        table_name="user_session_version",
+    )
+    op.drop_index(
+        op.f("ix_user_session_version_end_transaction_id"),
+        table_name="user_session_version",
+    )
+    op.drop_table("user_session_version")
+    op.drop_index(
+        op.f("ix_user_role_version_transaction_id"), table_name="user_role_version"
+    )
+    op.drop_index(
+        op.f("ix_user_role_version_operation_type"), table_name="user_role_version"
+    )
+    op.drop_index(
+        op.f("ix_user_role_version_end_transaction_id"), table_name="user_role_version"
+    )
+    op.drop_table("user_role_version")
+    op.drop_index(
+        op.f("ix_user_group_version_transaction_id"), table_name="user_group_version"
+    )
+    op.drop_index(
+        op.f("ix_user_group_version_operation_type"), table_name="user_group_version"
+    )
+    op.drop_index(
+        op.f("ix_user_group_version_end_transaction_id"),
+        table_name="user_group_version",
+    )
+    op.drop_table("user_group_version")
+    op.drop_table("transaction")
+    op.drop_index(
+        op.f("ix_shared_portfolio_cans_version_transaction_id"),
+        table_name="shared_portfolio_cans_version",
+    )
+    op.drop_index(
+        op.f("ix_shared_portfolio_cans_version_operation_type"),
+        table_name="shared_portfolio_cans_version",
+    )
+    op.drop_index(
+        op.f("ix_shared_portfolio_cans_version_end_transaction_id"),
+        table_name="shared_portfolio_cans_version",
+    )
+    op.drop_table("shared_portfolio_cans_version")
+    op.drop_index(
+        op.f("ix_services_component_version_transaction_id"),
+        table_name="services_component_version",
+    )
+    op.drop_index(
+        op.f("ix_services_component_version_operation_type"),
+        table_name="services_component_version",
+    )
+    op.drop_index(
+        op.f("ix_services_component_version_end_transaction_id"),
+        table_name="services_component_version",
+    )
+    op.drop_table("services_component_version")
+    op.drop_index(op.f("ix_role_version_transaction_id"), table_name="role_version")
+    op.drop_index(op.f("ix_role_version_operation_type"), table_name="role_version")
+    op.drop_index(op.f("ix_role_version_name"), table_name="role_version")
+    op.drop_index(op.f("ix_role_version_end_transaction_id"), table_name="role_version")
+    op.drop_table("role_version")
+    op.drop_index(
+        op.f("ix_research_project_version_transaction_id"),
+        table_name="research_project_version",
+    )
+    op.drop_index(
+        op.f("ix_research_project_version_operation_type"),
+        table_name="research_project_version",
+    )
+    op.drop_index(
+        op.f("ix_research_project_version_end_transaction_id"),
+        table_name="research_project_version",
+    )
+    op.drop_table("research_project_version")
+    op.drop_index(
+        op.f("ix_project_version_transaction_id"), table_name="project_version"
+    )
+    op.drop_index(
+        op.f("ix_project_version_operation_type"), table_name="project_version"
+    )
+    op.drop_index(
+        op.f("ix_project_version_end_transaction_id"), table_name="project_version"
+    )
+    op.drop_table("project_version")
+    op.drop_index(
+        op.f("ix_project_team_leaders_version_transaction_id"),
+        table_name="project_team_leaders_version",
+    )
+    op.drop_index(
+        op.f("ix_project_team_leaders_version_operation_type"),
+        table_name="project_team_leaders_version",
+    )
+    op.drop_index(
+        op.f("ix_project_team_leaders_version_end_transaction_id"),
+        table_name="project_team_leaders_version",
+    )
+    op.drop_table("project_team_leaders_version")
+    op.drop_index(
+        op.f("ix_project_cans_version_transaction_id"),
+        table_name="project_cans_version",
+    )
+    op.drop_index(
+        op.f("ix_project_cans_version_operation_type"),
+        table_name="project_cans_version",
+    )
+    op.drop_index(
+        op.f("ix_project_cans_version_end_transaction_id"),
+        table_name="project_cans_version",
+    )
+    op.drop_table("project_cans_version")
+    op.drop_index(
+        op.f("ix_product_service_code_version_transaction_id"),
+        table_name="product_service_code_version",
+    )
+    op.drop_index(
+        op.f("ix_product_service_code_version_operation_type"),
+        table_name="product_service_code_version",
+    )
+    op.drop_index(
+        op.f("ix_product_service_code_version_end_transaction_id"),
+        table_name="product_service_code_version",
+    )
+    op.drop_table("product_service_code_version")
+    op.drop_index(
+        op.f("ix_procurement_tracker_version_transaction_id"),
+        table_name="procurement_tracker_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_tracker_version_operation_type"),
+        table_name="procurement_tracker_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_tracker_version_end_transaction_id"),
+        table_name="procurement_tracker_version",
+    )
+    op.drop_table("procurement_tracker_version")
+    op.drop_table("procurement_tracker")
+    op.drop_index(
+        op.f("ix_procurement_step_version_transaction_id"),
+        table_name="procurement_step_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_step_version_operation_type"),
+        table_name="procurement_step_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_step_version_end_transaction_id"),
+        table_name="procurement_step_version",
+    )
+    op.drop_table("procurement_step_version")
+    op.drop_table("procurement_step")
+    op.drop_index(
+        op.f("ix_procurement_solicitation_version_transaction_id"),
+        table_name="procurement_solicitation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_solicitation_version_operation_type"),
+        table_name="procurement_solicitation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_solicitation_version_end_transaction_id"),
+        table_name="procurement_solicitation_version",
+    )
+    op.drop_table("procurement_solicitation_version")
+    op.drop_index(
+        op.f("ix_procurement_shop_version_transaction_id"),
+        table_name="procurement_shop_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_shop_version_operation_type"),
+        table_name="procurement_shop_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_shop_version_end_transaction_id"),
+        table_name="procurement_shop_version",
+    )
+    op.drop_table("procurement_shop_version")
+    op.drop_index(
+        op.f("ix_procurement_preaward_version_transaction_id"),
+        table_name="procurement_preaward_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_preaward_version_operation_type"),
+        table_name="procurement_preaward_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_preaward_version_end_transaction_id"),
+        table_name="procurement_preaward_version",
+    )
+    op.drop_table("procurement_preaward_version")
+    op.drop_index(
+        op.f("ix_procurement_pre_solicitation_version_transaction_id"),
+        table_name="procurement_pre_solicitation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_pre_solicitation_version_operation_type"),
+        table_name="procurement_pre_solicitation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_pre_solicitation_version_end_transaction_id"),
+        table_name="procurement_pre_solicitation_version",
+    )
+    op.drop_table("procurement_pre_solicitation_version")
+    op.drop_index(
+        op.f("ix_procurement_evaluation_version_transaction_id"),
+        table_name="procurement_evaluation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_evaluation_version_operation_type"),
+        table_name="procurement_evaluation_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_evaluation_version_end_transaction_id"),
+        table_name="procurement_evaluation_version",
+    )
+    op.drop_table("procurement_evaluation_version")
+    op.drop_index(
+        op.f("ix_procurement_award_version_transaction_id"),
+        table_name="procurement_award_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_award_version_operation_type"),
+        table_name="procurement_award_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_award_version_end_transaction_id"),
+        table_name="procurement_award_version",
+    )
+    op.drop_table("procurement_award_version")
+    op.drop_index(
+        op.f("ix_procurement_acquisition_planning_version_transaction_id"),
+        table_name="procurement_acquisition_planning_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_acquisition_planning_version_operation_type"),
+        table_name="procurement_acquisition_planning_version",
+    )
+    op.drop_index(
+        op.f("ix_procurement_acquisition_planning_version_end_transaction_id"),
+        table_name="procurement_acquisition_planning_version",
+    )
+    op.drop_table("procurement_acquisition_planning_version")
+    op.drop_index(
+        op.f("ix_portfolio_version_transaction_id"), table_name="portfolio_version"
+    )
+    op.drop_index(
+        op.f("ix_portfolio_version_operation_type"), table_name="portfolio_version"
+    )
+    op.drop_index(
+        op.f("ix_portfolio_version_end_transaction_id"), table_name="portfolio_version"
+    )
+    op.drop_table("portfolio_version")
+    op.drop_index(
+        op.f("ix_portfolio_url_version_transaction_id"),
+        table_name="portfolio_url_version",
+    )
+    op.drop_index(
+        op.f("ix_portfolio_url_version_operation_type"),
+        table_name="portfolio_url_version",
+    )
+    op.drop_index(
+        op.f("ix_portfolio_url_version_end_transaction_id"),
+        table_name="portfolio_url_version",
+    )
+    op.drop_table("portfolio_url_version")
+    op.drop_index(
+        op.f("ix_portfolio_team_leaders_version_transaction_id"),
+        table_name="portfolio_team_leaders_version",
+    )
+    op.drop_index(
+        op.f("ix_portfolio_team_leaders_version_operation_type"),
+        table_name="portfolio_team_leaders_version",
+    )
+    op.drop_index(
+        op.f("ix_portfolio_team_leaders_version_end_transaction_id"),
+        table_name="portfolio_team_leaders_version",
+    )
+    op.drop_table("portfolio_team_leaders_version")
+    op.drop_index(
+        op.f("ix_ops_user_version_transaction_id"), table_name="ops_user_version"
+    )
+    op.drop_index(
+        op.f("ix_ops_user_version_operation_type"), table_name="ops_user_version"
+    )
+    op.drop_index(op.f("ix_ops_user_version_oidc_id"), table_name="ops_user_version")
+    op.drop_index(
+        op.f("ix_ops_user_version_end_transaction_id"), table_name="ops_user_version"
+    )
+    op.drop_index(op.f("ix_ops_user_version_email"), table_name="ops_user_version")
+    op.drop_table("ops_user_version")
+    op.drop_index(op.f("ix_ops_user_oidc_id"), table_name="ops_user")
+    op.drop_index(op.f("ix_ops_user_email"), table_name="ops_user")
+    op.drop_table("ops_user")
+    op.drop_index(
+        op.f("ix_ops_event_version_transaction_id"), table_name="ops_event_version"
+    )
+    op.drop_index(
+        op.f("ix_ops_event_version_operation_type"), table_name="ops_event_version"
+    )
+    op.drop_index(
+        op.f("ix_ops_event_version_end_transaction_id"), table_name="ops_event_version"
+    )
+    op.drop_table("ops_event_version")
+    op.drop_index(
+        op.f("ix_ops_db_history_version_transaction_id"),
+        table_name="ops_db_history_version",
+    )
+    op.drop_index(
+        op.f("ix_ops_db_history_version_operation_type"),
+        table_name="ops_db_history_version",
+    )
+    op.drop_index(
+        op.f("ix_ops_db_history_version_end_transaction_id"),
+        table_name="ops_db_history_version",
+    )
+    op.drop_table("ops_db_history_version")
+    op.drop_index(
+        op.f("ix_notification_version_transaction_id"),
+        table_name="notification_version",
+    )
+    op.drop_index(
+        op.f("ix_notification_version_operation_type"),
+        table_name="notification_version",
+    )
+    op.drop_index(
+        op.f("ix_notification_version_end_transaction_id"),
+        table_name="notification_version",
+    )
+    op.drop_table("notification_version")
+    op.drop_index(
+        op.f("ix_iaa_agreement_version_transaction_id"),
+        table_name="iaa_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_iaa_agreement_version_operation_type"),
+        table_name="iaa_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_iaa_agreement_version_end_transaction_id"),
+        table_name="iaa_agreement_version",
+    )
+    op.drop_table("iaa_agreement_version")
+    op.drop_index(
+        op.f("ix_iaa_aa_agreement_version_transaction_id"),
+        table_name="iaa_aa_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_iaa_aa_agreement_version_operation_type"),
+        table_name="iaa_aa_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_iaa_aa_agreement_version_end_transaction_id"),
+        table_name="iaa_aa_agreement_version",
+    )
+    op.drop_table("iaa_aa_agreement_version")
+    op.drop_index(op.f("ix_group_version_transaction_id"), table_name="group_version")
+    op.drop_index(op.f("ix_group_version_operation_type"), table_name="group_version")
+    op.drop_index(op.f("ix_group_version_name"), table_name="group_version")
+    op.drop_index(
+        op.f("ix_group_version_end_transaction_id"), table_name="group_version"
+    )
+    op.drop_table("group_version")
+    op.drop_index(
+        op.f("ix_grant_agreement_version_transaction_id"),
+        table_name="grant_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_grant_agreement_version_operation_type"),
+        table_name="grant_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_grant_agreement_version_end_transaction_id"),
+        table_name="grant_agreement_version",
+    )
+    op.drop_table("grant_agreement_version")
+    op.drop_index(
+        op.f("ix_funding_source_version_transaction_id"),
+        table_name="funding_source_version",
+    )
+    op.drop_index(
+        op.f("ix_funding_source_version_operation_type"),
+        table_name="funding_source_version",
+    )
+    op.drop_index(
+        op.f("ix_funding_source_version_end_transaction_id"),
+        table_name="funding_source_version",
+    )
+    op.drop_table("funding_source_version")
+    op.drop_index(
+        op.f("ix_funding_partner_version_transaction_id"),
+        table_name="funding_partner_version",
+    )
+    op.drop_index(
+        op.f("ix_funding_partner_version_operation_type"),
+        table_name="funding_partner_version",
+    )
+    op.drop_index(
+        op.f("ix_funding_partner_version_end_transaction_id"),
+        table_name="funding_partner_version",
+    )
+    op.drop_table("funding_partner_version")
+    op.drop_index(
+        op.f("ix_document_version_transaction_id"), table_name="document_version"
+    )
+    op.drop_index(
+        op.f("ix_document_version_operation_type"), table_name="document_version"
+    )
+    op.drop_index(
+        op.f("ix_document_version_end_transaction_id"), table_name="document_version"
+    )
+    op.drop_table("document_version")
+    op.drop_index(
+        op.f("ix_division_version_transaction_id"), table_name="division_version"
+    )
+    op.drop_index(
+        op.f("ix_division_version_operation_type"), table_name="division_version"
+    )
+    op.drop_index(
+        op.f("ix_division_version_end_transaction_id"), table_name="division_version"
+    )
+    op.drop_table("division_version")
+    op.drop_table("division")
+    op.drop_index(
+        op.f("ix_direct_agreement_version_transaction_id"),
+        table_name="direct_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_direct_agreement_version_operation_type"),
+        table_name="direct_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_direct_agreement_version_end_transaction_id"),
+        table_name="direct_agreement_version",
+    )
+    op.drop_table("direct_agreement_version")
+    op.drop_index(
+        op.f("ix_contract_support_contacts_version_transaction_id"),
+        table_name="contract_support_contacts_version",
+    )
+    op.drop_index(
+        op.f("ix_contract_support_contacts_version_operation_type"),
+        table_name="contract_support_contacts_version",
+    )
+    op.drop_index(
+        op.f("ix_contract_support_contacts_version_end_transaction_id"),
+        table_name="contract_support_contacts_version",
+    )
+    op.drop_table("contract_support_contacts_version")
+    op.drop_index(
+        op.f("ix_contract_agreement_version_transaction_id"),
+        table_name="contract_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_contract_agreement_version_operation_type"),
+        table_name="contract_agreement_version",
+    )
+    op.drop_index(
+        op.f("ix_contract_agreement_version_end_transaction_id"),
+        table_name="contract_agreement_version",
+    )
+    op.drop_table("contract_agreement_version")
+    op.drop_index(
+        op.f("ix_contact_version_transaction_id"), table_name="contact_version"
+    )
+    op.drop_index(
+        op.f("ix_contact_version_operation_type"), table_name="contact_version"
+    )
+    op.drop_index(
+        op.f("ix_contact_version_end_transaction_id"), table_name="contact_version"
+    )
+    op.drop_table("contact_version")
+    op.drop_index(op.f("ix_clin_version_transaction_id"), table_name="clin_version")
+    op.drop_index(op.f("ix_clin_version_operation_type"), table_name="clin_version")
+    op.drop_index(op.f("ix_clin_version_end_transaction_id"), table_name="clin_version")
+    op.drop_table("clin_version")
+    op.drop_index(
+        op.f("ix_change_request_version_transaction_id"),
+        table_name="change_request_version",
+    )
+    op.drop_index(
+        op.f("ix_change_request_version_operation_type"),
+        table_name="change_request_version",
+    )
+    op.drop_index(
+        op.f("ix_change_request_version_end_transaction_id"),
+        table_name="change_request_version",
+    )
+    op.drop_table("change_request_version")
+    op.drop_index(op.f("ix_can_version_transaction_id"), table_name="can_version")
+    op.drop_index(op.f("ix_can_version_operation_type"), table_name="can_version")
+    op.drop_index(op.f("ix_can_version_end_transaction_id"), table_name="can_version")
+    op.drop_table("can_version")
+    op.drop_index(
+        op.f("ix_can_funding_sources_version_transaction_id"),
+        table_name="can_funding_sources_version",
+    )
+    op.drop_index(
+        op.f("ix_can_funding_sources_version_operation_type"),
+        table_name="can_funding_sources_version",
+    )
+    op.drop_index(
+        op.f("ix_can_funding_sources_version_end_transaction_id"),
+        table_name="can_funding_sources_version",
+    )
+    op.drop_table("can_funding_sources_version")
+    op.drop_index(
+        op.f("ix_can_fiscal_year_version_transaction_id"),
+        table_name="can_fiscal_year_version",
+    )
+    op.drop_index(
+        op.f("ix_can_fiscal_year_version_operation_type"),
+        table_name="can_fiscal_year_version",
+    )
+    op.drop_index(
+        op.f("ix_can_fiscal_year_version_end_transaction_id"),
+        table_name="can_fiscal_year_version",
+    )
+    op.drop_table("can_fiscal_year_version")
+    op.drop_index(
+        op.f("ix_can_fiscal_year_funding_details_version_transaction_id"),
+        table_name="can_fiscal_year_funding_details_version",
+    )
+    op.drop_index(
+        op.f("ix_can_fiscal_year_funding_details_version_operation_type"),
+        table_name="can_fiscal_year_funding_details_version",
+    )
+    op.drop_index(
+        op.f("ix_can_fiscal_year_funding_details_version_end_transaction_id"),
+        table_name="can_fiscal_year_funding_details_version",
+    )
+    op.drop_table("can_fiscal_year_funding_details_version")
+    op.drop_index(
+        op.f("ix_can_fiscal_year_carry_forward_version_transaction_id"),
+        table_name="can_fiscal_year_carry_forward_version",
+    )
+    op.drop_index(
+        op.f("ix_can_fiscal_year_carry_forward_version_operation_type"),
+        table_name="can_fiscal_year_carry_forward_version",
+    )
+    op.drop_index(
+        op.f("ix_can_fiscal_year_carry_forward_version_end_transaction_id"),
+        table_name="can_fiscal_year_carry_forward_version",
+    )
+    op.drop_table("can_fiscal_year_carry_forward_version")
+    op.drop_index(
+        op.f("ix_can_appropriation_details_version_transaction_id"),
+        table_name="can_appropriation_details_version",
+    )
+    op.drop_index(
+        op.f("ix_can_appropriation_details_version_operation_type"),
+        table_name="can_appropriation_details_version",
+    )
+    op.drop_index(
+        op.f("ix_can_appropriation_details_version_end_transaction_id"),
+        table_name="can_appropriation_details_version",
+    )
+    op.drop_table("can_appropriation_details_version")
+    op.drop_index(
+        op.f("ix_budget_line_item_version_transaction_id"),
+        table_name="budget_line_item_version",
+    )
+    op.drop_index(
+        op.f("ix_budget_line_item_version_operation_type"),
+        table_name="budget_line_item_version",
+    )
+    op.drop_index(
+        op.f("ix_budget_line_item_version_end_transaction_id"),
+        table_name="budget_line_item_version",
+    )
+    op.drop_table("budget_line_item_version")
+    op.drop_index(
+        op.f("ix_agreement_version_transaction_id"), table_name="agreement_version"
+    )
+    op.drop_index(
+        op.f("ix_agreement_version_operation_type"), table_name="agreement_version"
+    )
+    op.drop_index(
+        op.f("ix_agreement_version_end_transaction_id"), table_name="agreement_version"
+    )
+    op.drop_table("agreement_version")
+    op.drop_index(
+        op.f("ix_agreement_team_members_version_transaction_id"),
+        table_name="agreement_team_members_version",
+    )
+    op.drop_index(
+        op.f("ix_agreement_team_members_version_operation_type"),
+        table_name="agreement_team_members_version",
+    )
+    op.drop_index(
+        op.f("ix_agreement_team_members_version_end_transaction_id"),
+        table_name="agreement_team_members_version",
+    )
+    op.drop_table("agreement_team_members_version")
+    op.drop_index(
+        op.f("ix_agreement_ops_db_history_version_transaction_id"),
+        table_name="agreement_ops_db_history_version",
+    )
+    op.drop_index(
+        op.f("ix_agreement_ops_db_history_version_operation_type"),
+        table_name="agreement_ops_db_history_version",
+    )
+    op.drop_index(
+        op.f("ix_agreement_ops_db_history_version_end_transaction_id"),
+        table_name="agreement_ops_db_history_version",
+    )
+    op.drop_table("agreement_ops_db_history_version")
+    op.drop_index(
+        op.f("ix_administrative_and_support_project_version_transaction_id"),
+        table_name="administrative_and_support_project_version",
+    )
+    op.drop_index(
+        op.f("ix_administrative_and_support_project_version_operation_type"),
+        table_name="administrative_and_support_project_version",
+    )
+    op.drop_index(
+        op.f("ix_administrative_and_support_project_version_end_transaction_id"),
+        table_name="administrative_and_support_project_version",
+    )
+    op.drop_table("administrative_and_support_project_version")
+    sa.Enum(
+        "CHANGE_REQUEST",
+        "AGREEMENT_CHANGE_REQUEST",
+        "BUDGET_LINE_ITEM_CHANGE_REQUEST",
+        name="changerequesttype",
+    ).drop(op.get_bind())
+    sa.Enum("IN_REVIEW", "APPROVED", "REJECTED", name="changerequeststatus").drop(
+        op.get_bind()
+    )
+    sa.Enum("IN_PROCESS", "NOT_STARTED", "SANDBOX", name="portfoliostatus").drop(
+        op.get_bind()
+    )
+    sa.Enum("ACTIVE", "INACTIVE", "LOCKED", name="userstatus").drop(op.get_bind())
+    sa.Enum(
+        "CONTRACT",
+        "GRANT",
+        "DIRECT_ALLOCATION",
+        "IAA",
+        "IAA_AA",
+        "MISCELLANEOUS",
+        name="agreementtype",
+    ).drop(op.get_bind())
+    sa.Enum("NEW_REQ", "RECOMPETE", "LOGICAL_FOLLOW_ON", name="agreementreason").drop(
+        op.get_bind()
+    )
+    sa.Enum("GSA_SCHEDULE", "TASK_ORDER", "FULL_AND_OPEN", name="acquisitiontype").drop(
+        op.get_bind()
+    )
+    sa.Enum(
+        "FIRM_FIXED_PRICE",
+        "TIME_AND_MATERIALS",
+        "LABOR_HOUR",
+        "COST_PLUS_FIXED_FEE",
+        "COST_PLUS_AWARD_FEE",
+        "HYBRID",
+        name="contracttype",
+    ).drop(op.get_bind())
+    sa.Enum("SEVERABLE", "NON_SEVERABLE", name="servicerequirementtype").drop(
+        op.get_bind()
+    )
+    sa.Enum("RESEARCH", "SERVICE", name="contractcategory").drop(op.get_bind())
+    sa.Enum(
+        "ADMIN", "AMOUNT_TBD", "AS_IS", "REPLACEMENT_AMOUNT_FINAL", name="modtype"
+    ).drop(op.get_bind())
+    sa.Enum(
+        "DRAFT", "PLANNED", "IN_EXECUTION", "OBLIGATED", name="budgetlineitemstatus"
+    ).drop(op.get_bind())
+    sa.Enum(
+        "OPRE_APPROPRIATION",
+        "COST_SHARE",
+        "IAA",
+        "IDDA",
+        "MOU",
+        name="canarrangementtype",
+    ).drop(op.get_bind())
+    sa.Enum("OPRE", "NON_OPRE", name="cantype").drop(op.get_bind())
+    sa.Enum(
+        "CERTIFICATION_OF_FUNDING",
+        "STATEMENT_OF_REQUIREMENTS",
+        "ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS",
+        "INDEPENDENT_GOVERNMENT_COST_ESTIMATE",
+        "SECTION_508_EXCEPTION_DOCUMENTATION",
+        "COR_NOMINATION_AND_CERTIFICATION_DOCUMENT",
+        "ADDITIONAL_DOCUMENT",
+        name="documenttype",
+    ).drop(op.get_bind())
+    sa.Enum(
+        # # BLI Related Events
+        "CREATE_BLI",
+        "UPDATE_BLI",
+        "DELETE_BLI",
+        "SEND_BLI_FOR_APPROVAL",
+        # Project Related Events
+        "CREATE_PROJECT",
+        # Agreement Related Events
+        "CREATE_NEW_AGREEMENT",
+        "UPDATE_AGREEMENT",
+        "DELETE_AGREEMENT",
+        # Notification Related Events
+        "ACKNOWLEDGE_NOTIFICATION",
+        # Package Related Events
+        "CREATE_BLI_PACKAGE",
+        "UPDATE_BLI_PACKAGE",
+        # Services Component Related Events
+        "CREATE_SERVICES_COMPONENT",
+        "UPDATE_SERVICES_COMPONENT",
+        "DELETE_SERVICES_COMPONENT",
+        # Procurement Acquisition Planning Related Events
+        "CREATE_PROCUREMENT_ACQUISITION_PLANNING",
+        "UPDATE_PROCUREMENT_ACQUISITION_PLANNING",
+        "DELETE_PROCUREMENT_ACQUISITION_PLANNING",
+        # Document Related Events
+        "CREATE_DOCUMENT",
+        "UPDATE_DOCUMENT",
+        # Auth Related Events
+        "LOGIN_ATTEMPT",
+        "LOGOUT",
+        # User Related Events
+        "GET_USER_DETAILS",
+        "CREATE_USER",
+        "UPDATE_USER",
+        "DEACTIVATE_USER",
+        name="opseventtype",
+    ).drop(op.get_bind())
+    sa.Enum("SUCCESS", "FAILED", "UNKNOWN", name="opseventstatus").drop(op.get_bind())
+    sa.Enum("NEW", "UPDATED", "DELETED", "ERROR", name="opsdbhistorytype").drop(
+        op.get_bind()
+    )
+    sa.Enum(
+        "NOTIFICATION", "CHANGE_REQUEST_NOTIFICATION", name="notificationtype"
+    ).drop(op.get_bind())
+    sa.Enum("RESEARCH", "ADMINISTRATIVE_AND_SUPPORT", name="projecttype").drop(
+        op.get_bind()
+    )
+    sa.Enum(
+        "SURVEY",
+        "FIELD_RESEARCH",
+        "PARTICIPANT_OBSERVATION",
+        "ETHNOGRAPHY",
+        "EXPERIMENT",
+        "SECONDARY_DATA_ANALYSIS",
+        "CASE_STUDY",
+        name="methodologytype",
+    ).drop(op.get_bind())
+    sa.Enum("POPULATION_1", "POPULATION_2", "POPULATION_3", name="populationtype").drop(
+        op.get_bind()
+    )
+    sa.Enum("FINANCIAL", "CONTRACT", "CUSTOMER", name="contacttype").drop(op.get_bind())
+    # ### end Alembic commands ###

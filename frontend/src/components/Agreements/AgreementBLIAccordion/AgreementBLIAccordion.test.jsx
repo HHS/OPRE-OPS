@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
-import AgreementBLIAccordion from "./AgreementBLIAccordion";
-import { agreement } from "../../../tests/data";
-import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import userEvent from "@testing-library/user-event";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
+import { agreement } from "../../../tests/data";
+import AgreementBLIAccordion from "./AgreementBLIAccordion";
 
 describe("AgreementBLIAccordion", () => {
     const defaultProps = {

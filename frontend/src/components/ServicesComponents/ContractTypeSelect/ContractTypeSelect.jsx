@@ -16,7 +16,7 @@ import { CONTRACT_TYPE_OPTIONS } from "../ServicesComponents.constants";
 function ContractTypeSelect({ value, onChange, ...rest }) {
     return (
         <Select
-            name="contractType"
+            name="contract-type"
             label="Contract Type"
             options={CONTRACT_TYPE_OPTIONS}
             onChange={onChange}

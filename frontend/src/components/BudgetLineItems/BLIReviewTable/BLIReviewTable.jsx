@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
+import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 import Table from "../../UI/Table";
 import BLIReviewRow from "./BLIReviewRow";
 import { BUDGET_LINE_TABLE_HEADERS } from "./BLIReviewTable.constants";
-import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 
 /**
  * A table component that displays budget lines.
@@ -18,6 +18,7 @@ import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
  * @param {Function} [props.toggleSelectActionableBLIs] - A function to toggle the selection of actionable budget line items.
  * @param {Boolean} [props.mainToggleSelected] - A flag to indicate if the main toggle is selected.
  * @param {Function} [props.setMainToggleSelected] - A function to set the main toggle selected.
+ * @param {Number} props.servicesComponentId - The ID of the services component.
  * @returns {JSX.Element} - The rendered table component.
  */
 const AgreementBLIReviewTable = ({
@@ -30,7 +31,8 @@ const AgreementBLIReviewTable = ({
     setSelectedBLIs,
     toggleSelectActionableBLIs = () => {},
     mainToggleSelected,
-    setMainToggleSelected = () => {}
+    setMainToggleSelected = () => {},
+    servicesComponentId
 }) => {
     const sortedBudgetLines = budgetLines
         .slice()
@@ -42,12 +44,12 @@ const AgreementBLIReviewTable = ({
         <th>
             <input
                 className="usa-checkbox__input"
-                id="check-all"
+                id={`check-all-${servicesComponentId}`} // Use unique ID
                 type="checkbox"
                 name="budget-line-checkbox"
                 value="check-all"
                 onChange={() => {
-                    toggleSelectActionableBLIs();
+                    toggleSelectActionableBLIs(servicesComponentId);
                     setMainToggleSelected(!mainToggleSelected);
                 }}
                 disabled={!areSomeBudgetLinesActionable}
@@ -56,7 +58,7 @@ const AgreementBLIReviewTable = ({
             />
             <label
                 className="usa-checkbox__label usa-tool-tip text-bold"
-                htmlFor="check-all"
+                htmlFor={`check-all-${servicesComponentId}`} // Use unique ID
                 data-position="top"
                 title={`${!areSomeBudgetLinesActionable ? "disabled" : ""}`}
             >
@@ -100,7 +102,8 @@ AgreementBLIReviewTable.propTypes = {
     setSelectedBLIs: PropTypes.func,
     toggleSelectActionableBLIs: PropTypes.func,
     mainToggleSelected: PropTypes.bool,
-    setMainToggleSelected: PropTypes.func
+    setMainToggleSelected: PropTypes.func,
+    servicesComponentId: PropTypes.number.isRequired
 };
 
 export default AgreementBLIReviewTable;

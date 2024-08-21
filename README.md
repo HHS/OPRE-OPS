@@ -62,6 +62,12 @@ To run the application using the minimal initial data set...
   docker compose --profile data-initial up --build
 ```
 
+To run the application using the demo data set...
+
+```shell
+  docker compose --profile data-demo up --build
+```
+
 
 ## Access
 

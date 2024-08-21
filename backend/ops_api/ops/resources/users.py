@@ -1,115 +1,166 @@
-from typing import Any
-
-import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
-from marshmallow import Schema
+from flask_jwt_extended import current_user
 
-from models import BaseModel, User
+import ops_api.ops.services.users as users_service
+from models import BaseModel, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.users import PATCHRequestBody, POSTRequestBody, QueryParameters, UserResponse
+from ops_api.ops.schemas.users import CreateUserSchema, QueryParameters, SafeUserSchema, UpdateUserSchema, UserResponse
+from ops_api.ops.services.users import get_users
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
+from ops_api.ops.utils.users import is_user_admin
 
 
 class UsersItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(UserResponse)()
-        self._put_schema = mmdc.class_schema(POSTRequestBody)()
-        self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self, id: int) -> Response:
-        # token = verify_jwt_in_request()
-        # Get the user from the token to see who's making the request
-        # sub = str(token[1]["sub"])
-        oidc_id = request.args.get("oidc_id", type=str)
+        """
+        Get a user by ID
 
-        # Grab the user, based on which ID is being queried (id or oidc_id)
-        if oidc_id:
-            response = self._get_item_by_oidc_with_try(oidc_id)
-        else:
-            response = self._get_item_with_try(id)
+        :param id: The ID of the user to get
+        :return: The user
 
-        # current_app.logger.debug(f"GET User response: {response}")
-        # Users can only see their own user details
-        # Update this authZ checks once we determine additional
-        # roles that can view other users details.
-        # TODO: Need to be able to do user lookup without OIDC
-        # if sub == str(response.json["oidc_id"]):
-        return response
-        # else:
-        #    response = make_response({}, 401)  # nosemgrep
-        #    return response
+        Business Rules:
+        - If the user is an admin, they can get the full details of any user
+        - If the user is not an admin, they can get the full details of their own user or a safe version of another user
+        """
+        with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
+            user: User = users_service.get_user(current_app.db_session, id=id)
+
+            if is_user_admin(current_user) or user.id == current_user.id:
+                schema = UserResponse()
+            else:
+                schema = SafeUserSchema()
+
+            user_data = schema.dump(user)
+            user_data["roles"] = [role.name for role in user.roles]
+
+            meta.metadata.update({"user_details": user_data})
+
+            return make_response_with_headers(user_data)
 
     @is_authorized(PermissionType.PUT, Permission.USER)
     def put(self, id: int) -> Response:
-        old_user: User = User.query.get(id)
-        if not old_user:
-            raise RuntimeError("Invalid User ID")
+        """
+        Update a user by ID
 
-        user = update_user(old_user, request.json)
-        user_dict = user.to_dict()
+        :param id: The ID of the user to update
+        :return: The updated user
 
-        # Return the updated user as a response
-        return make_response_with_headers(user_dict)
+        Business Rules:
+        - Only USER_ADMIN role can update users
+
+        """
+        with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
+            schema = UpdateUserSchema()
+            user_data = schema.load(request.json)
+
+            updated_user = users_service.update_user(
+                current_app.db_session, id=id, data=user_data, request_user=current_user
+            )
+
+            schema = UserResponse()
+            user_data = schema.dump(updated_user)
+            user_data["roles"] = [role.name for role in updated_user.roles]
+
+            meta.metadata.update({"user_details": user_data})
+
+            return make_response_with_headers(user_data)
 
     @is_authorized(PermissionType.PATCH, Permission.USER)
     def patch(self, id: int) -> Response:
-        # Update the user with the request data, and save the changes to the database
-        user = update_user(request.json, id)
-        # Return the updated user as a response
-        return make_response_with_headers(user.to_dict())
+        """
+        Partially update a user by ID
+
+        :param id: The ID of the user to update
+        :return: The updated user
+
+        Business Rules:
+        - Only USER_ADMIN role can update users
+
+        """
+        with OpsEventHandler(OpsEventType.UPDATE_USER) as meta:
+            schema = UpdateUserSchema(partial=True)
+            user_data = schema.load(request.json)
+
+            updated_user = users_service.update_user(
+                current_app.db_session, id=id, data=user_data, request_user=current_user
+            )
+
+            schema = UserResponse()
+            user_data = schema.dump(updated_user)
+            user_data["roles"] = [role.name for role in updated_user.roles]
+
+            meta.metadata.update({"user_details": user_data})
+
+            return make_response_with_headers(user_data)
 
 
 class UsersListAPI(BaseListAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
-        self._post_schema = mmdc.class_schema(POSTRequestBody)()
-        self._get_schema = mmdc.class_schema(QueryParameters)()
 
     @is_authorized(PermissionType.GET, Permission.USER)
     def get(self) -> Response:
-        oidc_id = request.args.get("oidc_id", type=str)
+        """
+        Get all users
 
-        if oidc_id:
-            response = self._get_item_by_oidc_with_try(oidc_id)
-        else:
-            items = self.model.query.all()
-            response = make_response_with_headers([item.to_dict() for item in items])
-        return response
+        :return: All users
 
-    @is_authorized(PermissionType.PUT, Permission.USER)
-    def put(self, id: int) -> Response:
-        # Update the user with the request data, and save the changes to the database
-        user = update_user(request.json, id)
+        Business Rules:
+        - If the user is an admin, they can get the full details of all users
+        - If the user is not an admin, they can get the safe version of other users
+        """
+        with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
+            schema = QueryParameters()
+            request_data = schema.load(request.args)
 
-        # Return the updated user as a response
-        return make_response_with_headers(user.to_dict())
+            users = get_users(current_app.db_session, **request_data)
 
+            if is_user_admin(current_user) or (len(users) == 1 and users[0].id == current_user.id):
+                schema = UserResponse(many=True)
+            else:
+                schema = SafeUserSchema(many=True)
 
-def update_data(user: User, data: dict[str, Any]) -> None:
-    for item in data:
-        current_app.logger.debug(f"Updating user with item: {user} {item} {getattr(user, item)} {data[item]}")
-        setattr(user, item, data[item])
-    current_app.logger.debug(f"Updated user (setattr): {user.to_dict()}")
-    return user
+            user_data = schema.dump(users)
 
+            if not isinstance(schema, SafeUserSchema):
+                for user in users:
+                    for data in user_data:
+                        if user.id == data["id"]:
+                            data["roles"] = [role.name for role in user.roles]
+                            break
 
-def update_user(user: User, data: dict[str, Any]) -> User:
-    user = update_data(user, data)
-    current_app.db_session.add(user)
-    current_app.db_session.commit()
-    return user
+            meta.metadata.update({"user_details": user_data})
 
+            return make_response_with_headers(user_data)
 
-def validate_and_normalize_request_data_for_patch(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json))
-    data = {k: v for (k, v) in data.items() if k in request.json}  # only keep the attributes from the request body
-    return data
+    @is_authorized(PermissionType.POST, Permission.USER)
+    def post(self) -> Response:
+        """
+        Create a user
 
+        :return: The created user
 
-def validate_and_normalize_request_data_for_put(schema: Schema) -> dict[str, Any]:
-    data = schema.dump(schema.load(request.json))
-    return data
+        Business Rules:
+        - Only USER_ADMIN role can create users
+
+        """
+        with OpsEventHandler(OpsEventType.CREATE_USER) as meta:
+            schema = CreateUserSchema(partial=True)
+            user_data = schema.load(request.json)
+
+            updated_user = users_service.create_user(current_app.db_session, data=user_data, request_user=current_user)
+
+            schema = UserResponse()
+            user_data = schema.dump(updated_user)
+            user_data["roles"] = [role.name for role in updated_user.roles]
+
+            meta.metadata.update({"user_details": user_data})
+
+            return make_response_with_headers(user_data, 202)

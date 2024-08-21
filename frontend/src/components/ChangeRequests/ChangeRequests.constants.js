@@ -34,3 +34,9 @@ export const CHANGE_REQUEST_SLUG_TYPES = {
     STATUS: "status-change",
     BUDGET: "budget-change"
 };
+export const KEY_NAMES = {
+    AMOUNT: "amount",
+    CAN: "can_id",
+    DATE_NEEDED: "date_needed",
+    STATUS: "status"
+};

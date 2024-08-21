@@ -145,6 +145,15 @@ def test_admin_user(loaded_db) -> User | None:
 
 
 @pytest.fixture()
+def test_non_admin_user(loaded_db) -> User | None:
+    """Get a test admin user - also the user associated with the auth_client.
+
+    N.B. This user has an non-ADMIN role whose status is ACTIVE.
+    """
+    return loaded_db.get(User, 521)
+
+
+@pytest.fixture()
 def test_vendor(loaded_db) -> Vendor | None:
     """Get a test Vendor."""
     return loaded_db.get(Vendor, 100)

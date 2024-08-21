@@ -27,26 +27,30 @@ from sqlalchemy.orm import Mapped, column_property, mapped_column, object_sessio
 from typing_extensions import Any, override
 
 from models.base import BaseModel
+from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestStatus
 from models.portfolios import Portfolio
+from models.procurement_tracker import ProcurementTracker
 from models.users import User
-from models.workflows import (
-    BudgetLineItemChangeRequest,
-    ChangeRequestStatus,
-    Package,
-    PackageSnapshot,
-    WorkflowAction,
-    WorkflowInstance,
-    WorkflowStepInstance,
-    WorkflowStepStatus,
-    WorkflowTriggerType,
-)
 
 
 class BudgetLineItemStatus(Enum):
-    DRAFT = auto()
-    PLANNED = auto()
-    IN_EXECUTION = auto()
-    OBLIGATED = auto()
+    def __str__(self):
+            return str(self.value)
+    DRAFT = "Draft"
+    PLANNED = "Planned"
+    IN_EXECUTION = "In Execution"
+    OBLIGATED = "Obligated"
+
+class ModType(Enum):
+    ADMIN = auto()
+    AMOUNT_TBD = auto()
+    AS_IS = auto()
+    REPLACEMENT_AMOUNT_FINAL = auto()
+
+
+class ContractCategory(Enum):
+    RESEARCH = auto()
+    SERVICE = auto()
 
 
 class CANArrangementType(Enum):
@@ -213,7 +217,7 @@ class Agreement(BaseModel):
         cascade="all, delete",
     )
 
-    procurement_shop_id: Mapped[Optional[int]] = mapped_column(
+    awarding_entity_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("procurement_shop.id")
     )
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
@@ -229,20 +233,15 @@ class Agreement(BaseModel):
     }
 
     @property
-    def procurement_tracker_workflow_id(self):
+    def procurement_tracker_id(self):
         if object_session(self) is None:
             return False
-        workflow_id = object_session(self).scalar(
-            select(WorkflowInstance.id).where(
-                and_(
-                    WorkflowInstance.workflow_action
-                    == WorkflowAction.PROCUREMENT_TRACKING,
-                    WorkflowInstance.associated_type == WorkflowTriggerType.AGREEMENT,
-                    WorkflowInstance.associated_id == self.id,
-                )
+        tracker_id = object_session(self).scalar(
+            select(ProcurementTracker.id).where(
+                ProcurementTracker.agreement_id == self.id
             )
         )
-        return workflow_id
+        return tracker_id
 
 
 contract_support_contacts = Table(
@@ -306,9 +305,12 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer())
+    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer)
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
+    )
+    contract_category: Mapped[Optional[ContractCategory]] = mapped_column(
+        ENUM(ContractCategory)
     )
 
     __mapper_args__ = {
@@ -577,6 +579,7 @@ class BudgetLineItem(BaseModel):
     clin: Mapped[Optional[CLIN]] = relationship(CLIN, backref="budget_line_items")
 
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
+    mod_type: Mapped[Optional[ModType]] = mapped_column(sa.Enum(ModType))
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         sa.Enum(BudgetLineItemStatus)
@@ -585,6 +588,13 @@ class BudgetLineItem(BaseModel):
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
     certified: Mapped[bool] = mapped_column(Boolean, default=False)
     closed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    requisition_number: Mapped[Optional[int]] = mapped_column(Integer)
+    requisition_date: Mapped[Optional[date]] = mapped_column(Date)
+
+    is_under_current_resolution: Mapped[Optional[bool]] = mapped_column(
+        Boolean, default=False
+    )
 
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
 
@@ -780,7 +790,6 @@ class CAN(BaseModel):
         if self.appropriation_date is None:
             return None
         return self.expiration_date.year - self.appropriation_date.year
-
 
     @BaseModel.display_name.getter
     def display_name(self):

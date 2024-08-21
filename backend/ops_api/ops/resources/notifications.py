@@ -1,21 +1,23 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date
 from typing import Optional, cast
 
 import desert
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user
+from marshmallow import Schema, fields
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import InstrumentedAttribute
 
-from models import Notification, OpsEventType, User
+from models import AgreementChangeRequest, ChangeRequestNotification, Notification, NotificationType, OpsEventType, User
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -32,26 +34,26 @@ class UpdateSchema:
     expires: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
 
 
-@dataclass
-class Recipient:
-    id: int
-    oidc_id: str
-    full_name: Optional[str] = None
-    email: Optional[str] = None
+class RecipientSchema(Schema):
+    id = fields.Int(required=True)
+    oidc_id = fields.Str(required=True)
+    full_name = fields.Str(allow_none=True)
+    email = fields.Str(allow_none=True)
 
 
-@dataclass
-class NotificationResponse:
-    id: int
-    is_read: bool
-    created_by: int
-    updated_by: int
-    created_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    updated_on: Optional[datetime] = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})
-    title: Optional[str] = None
-    message: Optional[str] = None
-    recipient: Optional[Recipient] = None
-    expires: Optional[date] = field(default=None, metadata={"format": "%Y-%m-%d"})
+class NotificationResponseSchema(Schema):
+    id = fields.Int(required=True)
+    notification_type = fields.Enum(NotificationType, required=True)
+    is_read = fields.Bool(required=True)
+    created_by = fields.Int(required=True)
+    updated_by = fields.Int(required=True)
+    created_on = fields.DateTime(allow_none=True, format="%Y-%m-%dT%H:%M:%S.%fZ")
+    updated_on = fields.DateTime(allow_none=True, format="%Y-%m-%dT%H:%M:%S.%fZ")
+    title = fields.Str(allow_none=True)
+    message = fields.Str(allow_none=True)
+    recipient = fields.Nested(RecipientSchema(), allow_none=True)
+    expires = fields.Date(allow_none=True)
+    change_request = fields.Nested(GenericChangeRequestResponseSchema(), allow_none=True)
 
 
 @dataclass
@@ -59,12 +61,13 @@ class ListAPIRequest:
     user_id: Optional[str]
     oidc_id: Optional[str]
     is_read: Optional[bool]
+    agreement_id: Optional[int]
 
 
 class NotificationItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
-        self._response_schema = mmdc.class_schema(NotificationResponse)()
+        self._response_schema = NotificationResponseSchema()
         self._put_schema = mmdc.class_schema(UpdateSchema)()
         self._patch_schema = mmdc.class_schema(UpdateSchema)()
 
@@ -163,20 +166,33 @@ class NotificationListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
         self._get_input_schema = desert.schema(ListAPIRequest)
-        self._response_schema_collection = mmdc.class_schema(NotificationResponse)(many=True)
+        self._response_schema_collection = NotificationResponseSchema(many=True)
 
     @staticmethod
     def _get_query(
         user_id: Optional[int] = None,
         oidc_id: Optional[str] = None,
         is_read: Optional[bool] = None,
+        agreement_id: Optional[int] = None,
     ):
-        stmt = (
-            select(Notification)
-            .distinct(Notification.id)
-            .join(User, Notification.recipient_id == User.id, isouter=True)
-            .order_by(Notification.id)
-        )
+        if agreement_id:
+            # only ChangeRequestNotifications are associated with an agreement
+            stmt = (
+                select(ChangeRequestNotification)
+                .join(User, ChangeRequestNotification.recipient_id == User.id, isouter=True)
+                .join(
+                    AgreementChangeRequest,
+                    ChangeRequestNotification.change_request_id == AgreementChangeRequest.id,
+                )
+                .where(AgreementChangeRequest.agreement_id == agreement_id)
+                .order_by(ChangeRequestNotification.created_on.desc())
+            )
+        else:
+            stmt = (
+                select(Notification)
+                .join(User, Notification.recipient_id == User.id, isouter=True)
+                .order_by(Notification.created_on.desc())
+            )
 
         query_helper = QueryHelper(stmt)
 
@@ -208,6 +224,7 @@ class NotificationListAPI(BaseListAPI):
             user_id=request_data.user_id,
             oidc_id=request_data.oidc_id,
             is_read=request_data.is_read,
+            agreement_id=request_data.agreement_id,
         )
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers(self._response_schema_collection.dump([item[0] for item in result]))

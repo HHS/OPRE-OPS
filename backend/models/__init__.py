@@ -1,6 +1,8 @@
 from .auth import *
 from .base import *
 from .cans import *
+from .change_requests import *
+from .document import *
 from .events import *
 from .history import *
 from .notifications import *
@@ -9,4 +11,3 @@ from .procurement_shops import *
 from .projects import *
 from .users import *
 from .vendors import *
-from .workflows import *

@@ -1,18 +1,17 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
+import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
+import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
+import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
+import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
-import AgreementBudgetLinesHeader from "../../../components/Agreements/AgreementBudgetLinesHeader";
-import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
-import AgreementTotalCard from "../../../components/Agreements/AgreementDetailsCards/AgreementTotalCard";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
-import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
-import useAlert from "../../../hooks/use-alert.hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import { groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
-import { findPeriodStart, findPeriodEnd, findDescription } from "../../../helpers/servicesComponent.helpers";
+import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
+import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
 /**
  * Renders Agreement budget lines view
@@ -27,15 +26,13 @@ import { findPeriodStart, findPeriodEnd, findDescription } from "../../../helper
 const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     // TODO: Create a custom hook for this business logix (./AgreementBudgetLines.hooks.js)
     const navigate = useNavigate();
-    const [includeDrafts, setIncludeDrafts] = useState(false);
+    const [includeDrafts, setIncludeDrafts] = React.useState(false);
     const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id) && !doesAgreementHaveBLIsInReview;
-    const { setAlert } = useAlert();
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
-    // eslint-disable-next-line no-unused-vars
-    let { budget_line_items: _, ...agreement_details } = agreement;
+
     // details for AgreementTotalBudgetLinesCard
-    const blis = agreement.budget_line_items ? agreement.budget_line_items : [];
+    const blis = agreement.budget_line_items ?? [];
     const filteredBlis = includeDrafts ? blis : blis.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
     const currentFiscalYear = getCurrentFiscalYear();
 
@@ -75,27 +72,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
     const agreementTotal = totals.Agreement.total;
     const agreementSubtotal = totals.Agreement.subtotal;
     const agreementFees = totals.Agreement.fees;
-
     const groupedBudgetLinesByServicesComponent = groupByServicesComponent(agreement?.budget_line_items);
-    const handleAlert = () => {
-        if (doesAgreementHaveBLIsInReview) {
-            setAlert({
-                type: "success",
-                heading: "Agreement Edits Sent to Approval",
-                message:
-                    "Your edits have been successfully sent to your Division Director to review. After edits are approved, they will update on the Agreement",
-                redirectUrl: `/agreements/${agreement.id}/budget-lines`
-            });
-            return;
-        }
-
-        setAlert({
-            type: "success",
-            heading: "Budget Lines Saved",
-            message: "The budget lines have been successfully saved.",
-            redirectUrl: `/agreements/${agreement.id}/budget-lines`
-        });
-    };
 
     return (
         <>
@@ -148,10 +125,6 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                     goBack={() => {
                         setIsEditMode(false);
                         navigate(`/agreements/${agreement.id}/budget-lines`);
-                    }}
-                    continueOverRide={() => {
-                        setIsEditMode(false);
-                        handleAlert();
                     }}
                 />
             )}

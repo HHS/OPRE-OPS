@@ -17,7 +17,7 @@ const minAgreement = {
     agreement_type: "CONTRACT",
     name: `Test Contract ${randomNumber}`,
     project_id: 1000,
-    procurement_shop_id: 1
+    awarding_entity_id: 1
 };
 
 beforeEach(() => {
@@ -54,16 +54,17 @@ describe("create agreement and test validations", () => {
             cy.get("h1").should("have.text", "Please resolve the errors outlined below");
 
             cy.get('[data-cy="error-list"]').should("exist");
-            cy.get('[data-cy="error-item"]').should("have.length", 7);
+            cy.get('[data-cy="error-item"]').should("have.length", 9);
             //send-to-approval button should be disabled
             cy.get('[data-cy="send-to-approval-btn"]').should("be.disabled");
 
             //fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
-            // get all errors on page, should be 4
-            cy.get(".usa-form-group--error").should("have.length", 4);
+            // get all errors on page, should be 5
+            cy.get(".usa-form-group--error").should("have.length", 5);
             cy.get("#description").type("Test Description");
+            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
             cy.get("#product_service_code_id").select(1);
             cy.get("#serviceReqType").select("Severable");
             cy.get("#agreement_reason").select("NEW_REQ");
@@ -121,7 +122,10 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="error-list"]').should("not.exist");
             // click option and check all budget lines
             cy.get('[type="radio"]').first().check({ force: true });
-            cy.get("#check-all").check({ force: true }).wait(1);
+            cy.get('[data-cy="check-all"]').each(($el) => {
+                cy.wrap($el).check({ force: true });
+                cy.wait(1);
+            });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
 
             // go back to edit mode and look for budget line errors

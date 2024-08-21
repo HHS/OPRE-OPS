@@ -7,7 +7,7 @@ from typing import Optional
 class ProcurementStepRequest:
     type: Optional[str] = None
     agreement_id: Optional[int] = None
-    workflow_step_id: Optional[int] = None
+    procurement_tracker_id: Optional[int] = None
     # From BaseModel
     display_name: Optional[str] = None
     created_on: datetime = field(default=None, metadata={"format": "%Y-%m-%dT%H:%M:%S.%fZ"})

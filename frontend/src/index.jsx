@@ -33,6 +33,8 @@ import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList"
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import ApproveAgreement from "./pages/agreements/approve";
 import VersionPage from "./pages/version/VersionPage";
+import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
+import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -254,6 +256,14 @@ const router = createBrowserRouter(
                             </Link>
                         )
                     }}
+                />
+                <Route
+                    path="/user-admin"
+                    element={<UserAdmin />}
+                />
+                <Route
+                    path="/upload-document"
+                    element={<UploadDocument/>}
                 />
             </Route>
             {/* END PROTECTED ROUTES */}

@@ -1,20 +1,20 @@
-import React from "react";
 import PropTypes from "prop-types";
-import StepIndicator from "../../UI/StepIndicator/StepIndicator";
-import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
-import BudgetLinesTable from "../BudgetLinesTable";
-import BudgetLinesForm from "../BudgetLinesForm";
-import EditModeTitle from "../../../pages/agreements/EditModeTitle";
-import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
-import ServicesComponents from "../../ServicesComponents";
-import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import React from "react";
 import { convertCodeForDisplay } from "../../../helpers/utils";
-import ServicesComponentAccordion from "../../ServicesComponents/ServicesComponentAccordion";
-import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import EditModeTitle from "../../../pages/agreements/EditModeTitle";
+import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
+import BLIsByFYSummaryCard from "../../Agreements/AgreementDetailsCards/BLIsByFYSummaryCard";
+import ProjectAgreementSummaryCard from "../../Projects/ProjectAgreementSummaryCard";
+import ServicesComponents from "../../ServicesComponents";
+import ServicesComponentAccordion from "../../ServicesComponents/ServicesComponentAccordion";
 import GoBackButton from "../../UI/Button/GoBackButton";
 import FormHeader from "../../UI/Form/FormHeader";
-import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import StepIndicator from "../../UI/StepIndicator/StepIndicator";
+import BudgetLinesForm from "../BudgetLinesForm";
+import BudgetLinesTable from "../BudgetLinesTable";
+import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -137,7 +137,7 @@ export const CreateBLIsAndSCs = ({
             }
 
             {workflow !== "none" && (
-                // this includes the agreement workflow
+                // NOTE: this includes the Agreement Workflow steps
                 <>
                     <StepIndicator
                         steps={wizardSteps}
@@ -172,7 +172,7 @@ export const CreateBLIsAndSCs = ({
             )}
 
             {workflow === "none" && (
-                // this is the Agreement details page
+                // NOTE: this is the Agreement Details page
                 <>
                     <ServicesComponents
                         serviceRequirementType={selectedAgreement.service_requirement_type}
@@ -229,6 +229,7 @@ export const CreateBLIsAndSCs = ({
                 agreementId={selectedAgreement.id}
                 isBudgetLineNotDraft={isBudgetLineNotDraft}
             />
+
             {budgetLinePageErrorsExist && (
                 <ul
                     className="usa-list--unstyled font-12px text-error"
@@ -255,6 +256,7 @@ export const CreateBLIsAndSCs = ({
                     ))}
                 </ul>
             )}
+
             {groupedBudgetLinesByServicesComponent.length > 0 ? (
                 groupedBudgetLinesByServicesComponent.map((group) => (
                     <ServicesComponentAccordion

@@ -1,3 +1,4 @@
+import cryptoRandomString from "crypto-random-string";
 import PropTypes from "prop-types";
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -5,6 +6,7 @@ import {
     useAddBudgetLineItemMutation,
     useDeleteAgreementMutation,
     useDeleteBudgetLineItemMutation,
+    useGetCansQuery,
     useUpdateBudgetLineItemMutation
 } from "../../../api/opsAPI";
 import { getProcurementShopSubTotal } from "../../../helpers/agreement.helpers";
@@ -15,7 +17,7 @@ import {
     getNonDRAFTBudgetLines,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
-import { formatDateForApi, formatDateForScreen } from "../../../helpers/utils";
+import { formatDateForApi, formatDateForScreen, renderField } from "../../../helpers/utils";
 import useAlert from "../../../hooks/use-alert.hooks";
 import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import suite from "./suite";
@@ -60,7 +62,6 @@ const useCreateBLIsAndSCs = (
     const [enteredComments, setEnteredComments] = React.useState(null);
     const [isEditing, setIsEditing] = React.useState(false);
     const [budgetLineBeingEdited, setBudgetLineBeingEdited] = React.useState(null);
-    const [financialSnapshot, setFinancialSnapshot] = React.useState({});
     const searchParams = new URLSearchParams(location.search);
     const [budgetLineIdFromUrl, setBudgetLineIdFromUrl] = React.useState(
         () => searchParams.get("budget-line-id") || null
@@ -78,16 +79,7 @@ const useCreateBLIsAndSCs = (
     const [addBudgetLineItem] = useAddBudgetLineItemMutation();
     const [deleteBudgetLineItem] = useDeleteBudgetLineItemMutation();
     const loggedInUserFullName = useGetLoggedInUserFullName();
-
-    const handleSetBudgetLineFromUrl = () => {
-        if (!budgetLineIdFromUrl) return;
-        setIsEditMode(true);
-        const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
-
-        if (selectedBudgetLine) {
-            handleSetBudgetLineForEditingById(selectedBudgetLine.id);
-        }
-    };
+    const { data: cans } = useGetCansQuery();
 
     React.useEffect(() => {
         let newTempBudgetLines =
@@ -103,7 +95,28 @@ const useCreateBLIsAndSCs = (
         setGroupedBudgetLinesByServicesComponent(groupByServicesComponent(tempBudgetLines));
     }, [tempBudgetLines]);
 
-    React.useEffect(handleSetBudgetLineFromUrl, [budgetLineIdFromUrl, budgetLines, tempBudgetLines]);
+    React.useEffect(() => {
+        const handleSetBudgetLineFromUrl = () => {
+            if (!budgetLineIdFromUrl) return;
+            setIsEditMode(true);
+            const selectedBudgetLine = budgetLines.find(({ id }) => id === Number(budgetLineIdFromUrl));
+
+            if (selectedBudgetLine) {
+                const { services_component_id, comments, can, amount, date_needed } = selectedBudgetLine;
+                const dateForScreen = formatDateForScreen(date_needed);
+
+                setServicesComponentId(services_component_id);
+                setSelectedCan(can);
+                setEnteredAmount(amount);
+                setNeedByDate(dateForScreen);
+                setEnteredComments(comments);
+                setIsEditing(true);
+                setBudgetLineBeingEdited(budgetLines.findIndex((bl) => bl.id === Number(budgetLineIdFromUrl)));
+            }
+        };
+
+        handleSetBudgetLineFromUrl();
+    }, [budgetLineIdFromUrl, budgetLines, tempBudgetLines]);
 
     // Validation
     let res = suite.get();
@@ -169,7 +182,7 @@ const useCreateBLIsAndSCs = (
 
             resetForm();
             setIsEditMode(false);
-            showSuccessMessage();
+            showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
         } catch (error) {
             console.error("Error saving budget lines:", error);
             setAlert({
@@ -298,9 +311,70 @@ const useCreateBLIsAndSCs = (
         }
     };
 
-    const showSuccessMessage = () => {
+    /**
+     * function to create a message for the alert
+     * @param {Object[]} tempBudgetLines - The temporary budget lines
+     * @returns {string} - The message(s) to display in the Alert in bullet points
+     */
+    const createBudgetChangeMessages = (tempBudgetLines) => {
+        const budgetChangeMessages = new Set();
+        const fieldsToCheck = ["date_needed", "can_id", "amount"];
+
+        tempBudgetLines.forEach((tempBudgetLine) => {
+            const bliId = `\u2022 BL ${tempBudgetLine?.id || "Unknown"}`;
+            const { financialSnapshot, tempChangeRequest } = tempBudgetLine;
+
+            fieldsToCheck.forEach((field) => {
+                if (tempChangeRequest && tempChangeRequest[field] !== undefined) {
+                    let oldValue, newValue;
+
+                    switch (field) {
+                        case "amount":
+                            oldValue = renderField("BudgetLineItem", "amount", financialSnapshot.originalAmount);
+                            newValue = renderField("BudgetLineItem", "amount", tempChangeRequest.amount);
+                            budgetChangeMessages.add(`${bliId} Amount: ${oldValue} to ${newValue}`);
+                            break;
+                        case "date_needed":
+                            oldValue = renderField("BudgetLine", "date_needed", financialSnapshot.originalDateNeeded);
+                            newValue = renderField("BudgetLine", "date_needed", tempChangeRequest.date_needed);
+                            budgetChangeMessages.add(`${bliId} Obligate By Date: ${oldValue} to ${newValue}`);
+                            break;
+                        case "can_id":
+                            oldValue =
+                                cans?.find((can) => can.id === financialSnapshot.originalCanID)?.display_name ||
+                                "Unknown";
+                            newValue =
+                                cans?.find((can) => can.id === tempChangeRequest.can_id)?.display_name || "Unknown";
+                            budgetChangeMessages.add(`${bliId} CAN: ${oldValue} to ${newValue}`);
+                            break;
+                    }
+                }
+            });
+        });
+
+        return Array.from(budgetChangeMessages).join("\n");
+    };
+
+    /**
+     * Show the success message
+     * @param {boolean} isThereAnyBLIsFinancialSnapshotChanged - Flag to indicate if there are financial snapshot changes
+     * @returns {void}
+     */
+    const showSuccessMessage = (isThereAnyBLIsFinancialSnapshotChanged) => {
+        const budgetChangeMessages = createBudgetChangeMessages(tempBudgetLines);
+
         if (continueOverRide) {
             continueOverRide();
+        } else if (isThereAnyBLIsFinancialSnapshotChanged) {
+            setAlert({
+                type: "success",
+                heading: "Changes Sent to Approval",
+                message:
+                    `Your changes have been successfully sent to your Division Director to review. Once approved, they will update on the agreement.\n\n` +
+                    `<strong>Pending Changes:</strong>\n` +
+                    `${budgetChangeMessages}`,
+                redirectUrl: `/agreements/${selectedAgreement?.id}`
+            });
         } else {
             setAlert({
                 type: "success",
@@ -318,7 +392,7 @@ const useCreateBLIsAndSCs = (
     const handleAddBLI = (e) => {
         e.preventDefault();
         const newBudgetLine = {
-            id: crypto.randomUUID(),
+            id: cryptoRandomString({ length: 10 }),
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
@@ -326,7 +400,7 @@ const useCreateBLIsAndSCs = (
             canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
-            status: "DRAFT",
+            status: BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
             proc_shop_fee_percentage: selectedProcurementShop?.fee || null
         };
@@ -360,17 +434,47 @@ const useCreateBLIsAndSCs = (
             return;
         }
 
-        const amountChanged = financialSnapshot.enteredAmount !== enteredAmount;
-        const dateChanged = financialSnapshot.needByDate !== needByDate;
-        const canChanged = financialSnapshot.selectedCanId !== selectedCan?.id;
-        const financialSnapshotChanged = amountChanged || dateChanged || canChanged;
+        const currentBudgetLine = tempBudgetLines[budgetLineBeingEdited];
+        const originalBudgetLine = budgetLines[budgetLineBeingEdited];
+
+        // Initialize financialSnapshot
+        const financialSnapshot = {
+            originalAmount: originalBudgetLine.amount,
+            originalDateNeeded: originalBudgetLine.date_needed,
+            originalCanID: originalBudgetLine.can_id,
+            enteredAmount: enteredAmount,
+            needByDate: needByDate,
+            selectedCanId: selectedCan?.id
+        };
+
+        // Initialize tempChangeRequest
+        let tempChangeRequest = currentBudgetLine.tempChangeRequest || {};
+
+        // Compare with the original values in financialSnapshot
+        if (enteredAmount !== financialSnapshot.originalAmount) {
+            tempChangeRequest.amount = enteredAmount;
+        } else {
+            delete tempChangeRequest.amount;
+        }
+
+        if (formatDateForApi(needByDate) !== financialSnapshot.originalDateNeeded) {
+            tempChangeRequest.date_needed = formatDateForApi(needByDate);
+        } else {
+            delete tempChangeRequest.date_needed;
+        }
+
+        if (selectedCan?.id !== financialSnapshot.originalCanID) {
+            tempChangeRequest.can_id = selectedCan?.id;
+        } else {
+            delete tempChangeRequest.can_id;
+        }
+
+        const financialSnapshotChanged = Object.keys(tempChangeRequest).length > 0;
         const BLIStatusIsPlannedOrExecuting =
-            budgetLines[budgetLineBeingEdited]?.status === BLI_STATUS.PLANNED ||
-            budgetLines[budgetLineBeingEdited]?.status === BLI_STATUS.EXECUTING;
+            currentBudgetLine.status === BLI_STATUS.PLANNED || currentBudgetLine.status === BLI_STATUS.EXECUTING;
 
         const payload = {
-            ...tempBudgetLines[budgetLineBeingEdited],
-            id: tempBudgetLines[budgetLineBeingEdited].id,
+            ...currentBudgetLine,
             services_component_id: servicesComponentId,
             comments: enteredComments || "",
             can_id: selectedCan?.id || null,
@@ -378,30 +482,36 @@ const useCreateBLIsAndSCs = (
             canDisplayName: selectedCan?.display_name || null,
             agreement_id: selectedAgreement?.id || null,
             amount: enteredAmount || 0,
-            status: tempBudgetLines[budgetLineBeingEdited].status || "DRAFT",
+            status: currentBudgetLine.status || BLI_STATUS.DRAFT,
             date_needed: formatDateForApi(needByDate),
-            proc_shop_fee_percentage: selectedProcurementShop?.fee || null
+            proc_shop_fee_percentage: selectedProcurementShop?.fee || null,
+            financialSnapshot: {
+                ...financialSnapshot,
+                enteredAmount: enteredAmount,
+                needByDate: formatDateForApi(needByDate),
+                selectedCanId: selectedCan?.id
+            }
         };
 
         if (financialSnapshotChanged && BLIStatusIsPlannedOrExecuting) {
-            const payloadPlusFinances = {
-                ...payload,
-                financialSnapshotChanged
-            };
-            setTempBudgetLines(
-                tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payloadPlusFinances : item))
-            );
-            setAlert({
-                type: "success",
-                heading: "Budget Line Updated",
-                message: "The budget line has been successfully edited."
-            });
-            resetForm();
-
-            return;
+            payload.financialSnapshotChanged = true;
+            payload.tempChangeRequest = tempChangeRequest;
+        } else {
+            delete payload.financialSnapshotChanged;
+            delete payload.tempChangeRequest;
         }
-
-        setTempBudgetLines(tempBudgetLines.map((item, index) => (index === budgetLineBeingEdited ? payload : item)));
+        /**
+         * Update the tempBudgetLines array with the new payload of the budgetLineBeingEdited
+         * @type {Object[]} updatedBudgetLines
+         * @returns {void}
+         */
+        const updatedBudgetLines = tempBudgetLines.map((budgetLine, index) => {
+            if (index === budgetLineBeingEdited) {
+                return payload; // Replace the edited budget line with the new payload
+            }
+            return budgetLine; // Keep other budget lines unchanged
+        });
+        setTempBudgetLines(updatedBudgetLines);
 
         if (budgetLineIdFromUrl) {
             resetQueryParams();
@@ -470,7 +580,7 @@ const useCreateBLIsAndSCs = (
     const handleSetBudgetLineForEditingById = (budgetLineId) => {
         const index = tempBudgetLines.findIndex((budgetLine) => budgetLine.id === budgetLineId);
         if (index !== -1) {
-            const { services_component_id, comments, can, can_id, amount, date_needed } = tempBudgetLines[index];
+            const { services_component_id, comments, can, amount, date_needed } = tempBudgetLines[index];
             const dateForScreen = formatDateForScreen(date_needed);
 
             setBudgetLineBeingEdited(index);
@@ -480,7 +590,6 @@ const useCreateBLIsAndSCs = (
             setNeedByDate(dateForScreen);
             setEnteredComments(comments);
             setIsEditing(true);
-            setFinancialSnapshot({ enteredAmount: amount, needByDate: dateForScreen, selectedCanId: can_id });
             setIsBudgetLineNotDraft(tempBudgetLines[index].status !== BLI_STATUS.DRAFT);
         }
     };
@@ -505,7 +614,7 @@ const useCreateBLIsAndSCs = (
             proc_shop_fee_percentage
         } = budgetLine;
         const payload = {
-            id: crypto.randomUUID(),
+            id: cryptoRandomString({ length: 10 }),
             services_component_id,
             comments,
             can_id,
@@ -515,7 +624,7 @@ const useCreateBLIsAndSCs = (
             amount,
             date_needed,
             proc_shop_fee_percentage,
-            status: "DRAFT",
+            status: BLI_STATUS.DRAFT,
             created_by: loggedInUserFullName
         };
         setTempBudgetLines([...tempBudgetLines, payload]);
@@ -594,8 +703,8 @@ const useCreateBLIsAndSCs = (
         setEnteredAmount(null);
         setNeedByDate(null);
         setEnteredComments(null);
-        setFinancialSnapshot(null);
         setBudgetLineBeingEdited(null);
+        resetQueryParams();
     };
 
     return {
