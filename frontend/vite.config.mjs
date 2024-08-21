@@ -14,6 +14,14 @@ export default defineConfig(({ mode }) => {
         build: {
             outDir: "build"
         },
+        css: {
+            preprocessorOptions: {
+                // file: "./sass/uswds/styles.scss", // default: "styles.css
+                scss: {
+                    includePaths: ["./node_modules/@uswds", "./node_modules/@uswds/uswds/packages"]
+                }
+            }
+        },
         server: {
             host: true,
             port: 3000,

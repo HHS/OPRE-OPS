@@ -2,10 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Link, Navigate } from "react-router-dom";
+import "@uswds/uswds";
 import store from "./store";
 
 //  USWDS
-import "./uswds/css/styles.css";
+import "../sass/uswds/styles.scss";
+// import "./uswds/css/styles.css";
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
 
