@@ -1,10 +1,9 @@
 """Portfolio models."""
 
 from enum import Enum
-from typing import List
 
-import sqlalchemy as sa
 from sqlalchemy import Column, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 
 from models.base import BaseModel
@@ -81,14 +80,10 @@ class Portfolio(BaseModel):
     id = BaseModel.get_pk_column()
     name = Column(String, nullable=False)
     abbreviation = Column(String)
-    status = Column(sa.Enum(PortfolioStatus))
+    status = Column(ENUM(PortfolioStatus))
     cans = relationship(
         "CAN",
-        back_populates="managing_portfolio",
-    )
-
-    shared_cans: Mapped[List["CAN"]] = relationship(
-        secondary="shared_portfolio_cans", back_populates="shared_portfolios"
+        back_populates="portfolio",
     )
 
     division_id = Column(Integer, ForeignKey("division.id"), nullable=False)

@@ -3,7 +3,7 @@
 from enum import Enum, auto
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKey, Integer, Sequence, String
+from sqlalchemy import ForeignKey, Sequence, String
 from sqlalchemy.dialects.postgresql import ARRAY, ENUM, UUID
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
