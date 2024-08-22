@@ -31,6 +31,9 @@ describe("CanCard", () => {
         // Wait for the async data to be loaded
         await waitFor(() => {
             expect(screen.getByText("FY 2023 CAN Total Funding")).toBeInTheDocument();
+        });
+
+        await waitFor(() => {
             expect(screen.getByText("FY 2023 CAN Budget Status")).toBeInTheDocument();
         });
 
