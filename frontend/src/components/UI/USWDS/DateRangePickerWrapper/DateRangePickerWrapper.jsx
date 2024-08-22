@@ -33,6 +33,7 @@ function DateRangePickerWrapper({ id, children, className }) {
             id={id}
             ref={dateRangePickerRef}
             className={`usa-date-range-picker ${className}`}
+            data-testid={id}
         >
             {children}
         </div>
