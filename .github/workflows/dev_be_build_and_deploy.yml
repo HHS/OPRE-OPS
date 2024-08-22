@@ -67,10 +67,10 @@ jobs:
           azcliversion: latest
           inlineScript: |
             # Update job to this image
-            az containerapp update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+            az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
             # Start the data-tools job
             az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
-            
+
       # - name: Deploy Container App
       #   uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
       #   with:
