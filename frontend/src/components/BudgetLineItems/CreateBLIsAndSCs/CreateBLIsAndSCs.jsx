@@ -15,7 +15,6 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
-import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -211,7 +210,7 @@ export const CreateBLIsAndSCs = ({
                         you provide."
                 />
             )}
-            <DebugCode data={workflow} />
+
             {isAgreementWorkflowOrCanEditBudgetLines && (
                 <BudgetLinesForm
                     selectedCan={selectedCan}
@@ -295,7 +294,7 @@ export const CreateBLIsAndSCs = ({
                         className="usa-button"
                         data-cy="continue-btn"
                         onClick={handleSave}
-                        disabled={isReviewMode && !res.isValid()}
+                        disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
                     >
                         {isReviewMode ? "Review" : continueBtnText}
                     </button>
