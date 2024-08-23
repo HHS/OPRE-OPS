@@ -15,6 +15,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -110,6 +111,7 @@ export const CreateBLIsAndSCs = ({
         canUserEditBudgetLines
     );
 
+    const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
     return (
         <>
             {showModal && (
@@ -149,7 +151,7 @@ export const CreateBLIsAndSCs = ({
                         selectedAgreement={selectedAgreement}
                         selectedProcurementShop={selectedProcurementShop}
                     />
-                    {canUserEditBudgetLines && (
+                    {isAgreementWorkflowOrCanEditBudgetLines && (
                         <ServicesComponents
                             serviceRequirementType={selectedAgreement.service_requirement_type}
                             agreementId={selectedAgreement.id}
@@ -209,8 +211,8 @@ export const CreateBLIsAndSCs = ({
                         you provide."
                 />
             )}
-
-            {canUserEditBudgetLines && (
+            <DebugCode data={workflow} />
+            {isAgreementWorkflowOrCanEditBudgetLines && (
                 <BudgetLinesForm
                     selectedCan={selectedCan}
                     servicesComponentId={servicesComponentId}
