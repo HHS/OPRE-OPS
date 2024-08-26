@@ -4,7 +4,7 @@ import decimal
 from enum import Enum, auto
 from typing import List, Optional
 
-from sqlalchemy import ForeignKey, Integer, Sequence
+from sqlalchemy import ForeignKey, Integer, Sequence, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -187,7 +187,7 @@ class CANFundingReceived(BaseModel):
         sequence=Sequence("can_funding_received_id_seq", start=5000, increment=1)
     )
     fiscal_year: Mapped[int]
-    fund_code: Mapped[str]
+    can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"))
     funding: Mapped[Optional[decimal.Decimal]]
     notes: Mapped[Optional[str]]
 
@@ -199,8 +199,10 @@ class CANFundingBudget(BaseModel):
 
     __tablename__ = "can_funding_budget"
 
+    __table_args__ = (UniqueConstraint("fiscal_year", "can_id"),)
+
     id: Mapped[int] = BaseModel.get_pk_column()
     fiscal_year: Mapped[int]
-    fund_code: Mapped[str]
+    can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"))
     budget: Mapped[Optional[decimal.Decimal]]
     notes: Mapped[Optional[str]]
