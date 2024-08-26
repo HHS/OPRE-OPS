@@ -13,7 +13,6 @@ import dateRangePicker from "@uswds/uswds/js/usa-date-range-picker";
  * @param {string} [props.className=""] - Optional additional CSS classes to apply to the wrapper.
  * @returns {JSX.Element} The rendered DateRangePickerWrapper component.
  */
-// eslint-disable-next-line react-refresh/only-export-components
 function DateRangePickerWrapper({ id, children, className }) {
     const dateRangePickerRef = useRef(null);
 
@@ -46,7 +45,6 @@ DateRangePickerWrapper.propTypes = {
     className: PropTypes.string
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export default React.memo(DateRangePickerWrapper, (prevProps, nextProps) => {
     // Return true if passing nextProps to render would return
     // the same result as passing prevProps to render,

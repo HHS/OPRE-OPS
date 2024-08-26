@@ -18,6 +18,7 @@ export const getCurrentFiscalYear = (today = new Date()) => {
  * @returns {number} The calculated percent.
  */
 export const calculatePercent = (numerator, denominator) => {
+    if (!numerator || !denominator) return 0;
     if (typeof numerator !== "number" || typeof denominator !== "number") {
         numerator = +numerator;
         denominator = +denominator;
