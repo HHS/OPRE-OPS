@@ -52,7 +52,7 @@ export const useHandleDeleteAgreement = () => {
                         setAlert({
                             type: "success",
                             heading: "Agreement deleted",
-                            message: `Agreement ${agreementName} has been successfully deleted.`
+                            message: `The agreement ${agreementName} has been successfully deleted.`
                         });
                     })
                     .catch((rejected) => {
