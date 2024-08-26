@@ -441,9 +441,9 @@ const useCreateBLIsAndSCs = (
 
         // Initialize financialSnapshot
         const financialSnapshot = {
-            originalAmount: originalBudgetLine.amount,
-            originalDateNeeded: originalBudgetLine.date_needed,
-            originalCanID: originalBudgetLine.can_id,
+            originalAmount: originalBudgetLine?.amount,
+            originalDateNeeded: originalBudgetLine?.date_needed,
+            originalCanID: originalBudgetLine?.can_id,
             enteredAmount: enteredAmount,
             needByDate: needByDate,
             selectedCanId: selectedCan?.id
