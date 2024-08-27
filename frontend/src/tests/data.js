@@ -531,6 +531,10 @@ export const roles = [
     {
         id: 6,
         name: "BUDGET_TEAM"
+    },
+    {
+        id: 7,
+        name: "read-only"
     }
 ];
 

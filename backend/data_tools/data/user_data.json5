@@ -153,7 +153,7 @@
         "PATCH_UPLOAD_DOCUMENT"
       ],
     },
-    { // 3 Unassigned (new user)
+    { // 3 Unassigned (new user assigned to no other roles)
       name: "unassigned",
       permissions: [
         "GET_USER",
@@ -289,6 +289,43 @@
 
         "GET_UPLOAD_DOCUMENT",
         "POST_UPLOAD_DOCUMENT"
+      ]
+    },
+    { // 7 Read-Only User
+      name: "read-only",
+      permissions: [
+        "GET_AGREEMENT",
+
+        "GET_BUDGET_LINE_ITEM",
+
+        "GET_SERVICES_COMPONENT",
+
+        "GET_BLI_PACKAGE",
+
+        "GET_CAN",
+
+        "GET_DIVISION",
+
+        "GET_NOTIFICATION",
+        "PUT_NOTIFICATION",
+        "PATCH_NOTIFICATION",
+
+        "GET_PORTFOLIO",
+
+        "GET_RESEARCH_PROJECT",
+
+        "GET_USER",
+        "PUT_USER",
+        "PATCH_USER",
+        "GET_HISTORY",
+
+        "GET_WORKFLOW",
+
+        "GET_CHANGE_REQUEST",
+
+        "GET_CHANGE_REQUEST_REVIEW",
+
+        "GET_UPLOAD_DOCUMENT"
       ]
     }
   ],

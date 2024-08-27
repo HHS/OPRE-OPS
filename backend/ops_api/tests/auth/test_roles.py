@@ -13,6 +13,7 @@ def test_get_roles(auth_client):
     assert {"id": 4, "name": "division-director"} in response.json
     assert {"id": 5, "name": "USER_ADMIN"} in response.json
     assert {"id": 6, "name": "BUDGET_TEAM"} in response.json
+    assert {"id": 7, "name": "read-only"} in response.json
 
 
 @pytest.mark.usefixtures("app_ctx")
