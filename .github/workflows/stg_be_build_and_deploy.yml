@@ -1,18 +1,15 @@
-name: Dev Backend Build and Deploy
+name: Staging Backend Build and Deploy
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - backend/**
+  schedule: 
+    - cron: '0 0 * * *'
       
 env:
   WORKING_DIR: "backend"
   DT_DOCKER_FILE: "Dockerfile.data-tools-import"
   BE_DOCKER_FILE: "Dockerfile.ops-api"
-  ENVIRONMENT: dev
+  ENVIRONMENT: stg
 
 jobs:
   build-data-tools:
@@ -30,7 +27,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DT_DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }}"
+          image_tags: "${{ github.sha }}"
   
   build-backend:
     permissions:
@@ -47,7 +44,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }}"
+          image_tags: "${{ github.sha }}"
 
   deploy-data-tools: 
     needs: build-data-tools
