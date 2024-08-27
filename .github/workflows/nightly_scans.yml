@@ -22,7 +22,7 @@ jobs:
         uses: zaproxy/action-full-scan@d2a07475d467566c9a3e3c700f31f47724aa1060 # v0.10.0
         with:
           docker_name: 'owasp/zap2docker-stable'
-          target: 'https://ops-dev.fr.cloud.gov/'
+          target: 'https://stg.ops.opre.acf.gov/'
           allow_issue_writing: false
           fail_action: false
           cmd_options: '-I'
