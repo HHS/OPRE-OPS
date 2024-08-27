@@ -3,9 +3,7 @@ from typing import Optional
 from flask import Response, current_app, request
 from sqlalchemy import select
 
-from models import CANFiscalYear
-from models.base import BaseModel
-from models.cans import CAN
+from models import CAN, BaseModel, CANFundingDetails
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI
@@ -18,11 +16,14 @@ class PortfolioCansAPI(BaseItemAPI):
 
     def _get_item(self, id: int, year: Optional[int] = None) -> set[CAN]:
         cfy_stmt = (
-            select(CANFiscalYear).join(CAN).where(CAN.managing_portfolio_id == id).order_by(CANFiscalYear.fiscal_year)
+            select(CANFundingDetails)
+            .join(CAN)
+            .where(CAN.managing_portfolio_id == id)
+            .order_by(CANFundingDetails.fiscal_year)
         )
 
         if year:
-            cfy_stmt = cfy_stmt.where(CANFiscalYear.fiscal_year == year)
+            cfy_stmt = cfy_stmt.where(CANFundingDetails.fiscal_year == year)
 
         return set([cfy.can for cfy in current_app.db_session.execute(cfy_stmt).scalars().all()])
 

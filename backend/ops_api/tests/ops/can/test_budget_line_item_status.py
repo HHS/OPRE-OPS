@@ -1,6 +1,6 @@
 import pytest
 
-from models.cans import BudgetLineItemStatus
+from models import BudgetLineItemStatus
 
 
 @pytest.mark.usefixtures("app_ctx")

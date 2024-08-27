@@ -1,8 +1,6 @@
 import pytest
 
-from models import ContractAgreement, FundingPartner, GrantAgreement
-from models.cans import CAN, AgreementType, BudgetLineItem, CANFiscalYear
-from models.projects import ResearchProject
+from models import CAN, AgreementType, BudgetLineItem, ContractAgreement, GrantAgreement, ResearchProject
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -70,12 +68,17 @@ def db_loaded_with_research_projects(app, loaded_db):
         loaded_db.add_all([research_project_rp1, research_project_rp2])
         loaded_db.commit()
 
-        funding_partner = loaded_db.get(FundingPartner, 1)
+        # funding_partner = loaded_db.get(FundingPartner, 1)
 
-        can_1 = CAN(number="CAN1", authorizer_id=funding_partner.id, managing_portfolio_id=1)
-        can_2 = CAN(number="CAN2", authorizer_id=funding_partner.id, managing_portfolio_id=1)
-        can_3 = CAN(number="CAN3", authorizer_id=funding_partner.id, managing_portfolio_id=1)
-        can_4 = CAN(number="CAN4", authorizer_id=funding_partner.id, managing_portfolio_id=1)
+        # can_1 = CAN(number="CAN1", authorizer_id=funding_partner.id, managing_portfolio_id=1)
+        # can_2 = CAN(number="CAN2", authorizer_id=funding_partner.id, managing_portfolio_id=1)
+        # can_3 = CAN(number="CAN3", authorizer_id=funding_partner.id, managing_portfolio_id=1)
+        # can_4 = CAN(number="CAN4", authorizer_id=funding_partner.id, managing_portfolio_id=1)
+
+        can_1 = CAN(number="CAN1", managing_portfolio_id=1)
+        can_2 = CAN(number="CAN2", managing_portfolio_id=1)
+        can_3 = CAN(number="CAN3", managing_portfolio_id=1)
+        can_4 = CAN(number="CAN4", managing_portfolio_id=1)
 
         loaded_db.add_all([can_1, can_2, can_3, can_4])
         loaded_db.commit()
@@ -95,13 +98,13 @@ def db_loaded_with_research_projects(app, loaded_db):
         loaded_db.add_all([agreement_1, agreement_2])
         loaded_db.commit()
 
-        can_1_fy_2023 = CANFiscalYear(can_id=can_1.id, fiscal_year=2023, received_funding=5)
-        can_2_fy_2023 = CANFiscalYear(can_id=can_2.id, fiscal_year=2023, received_funding=5)
-        can_3_fy_2022 = CANFiscalYear(can_id=can_3.id, fiscal_year=2022, received_funding=5)
-        can_3_fy_2023 = CANFiscalYear(can_id=can_3.id, fiscal_year=2023, received_funding=5)
-        can_4_fy_2023 = CANFiscalYear(can_id=can_4.id, fiscal_year=2023, received_funding=5)
+        # can_1_fy_2023 = CANFiscalYear(can_id=can_1.id, fiscal_year=2023, received_funding=5)
+        # can_2_fy_2023 = CANFiscalYear(can_id=can_2.id, fiscal_year=2023, received_funding=5)
+        # can_3_fy_2022 = CANFiscalYear(can_id=can_3.id, fiscal_year=2022, received_funding=5)
+        # can_3_fy_2023 = CANFiscalYear(can_id=can_3.id, fiscal_year=2023, received_funding=5)
+        # can_4_fy_2023 = CANFiscalYear(can_id=can_4.id, fiscal_year=2023, received_funding=5)
 
-        loaded_db.add_all([can_1_fy_2023, can_2_fy_2023, can_3_fy_2022, can_3_fy_2023, can_4_fy_2023])
+        # loaded_db.add_all([can_1_fy_2023, can_2_fy_2023, can_3_fy_2022, can_3_fy_2023, can_4_fy_2023])
         loaded_db.commit()
 
         blin_1 = BudgetLineItem(line_description="#1", amount=1.0, can_id=can_1.id, agreement_id=agreement_1.id)
@@ -118,6 +121,25 @@ def db_loaded_with_research_projects(app, loaded_db):
         yield loaded_db
 
         # Cleanup
+        # for obj in [
+        #     research_project_rp1,
+        #     research_project_rp2,
+        #     can_1,
+        #     can_2,
+        #     can_3,
+        #     can_4,
+        #     agreement_1,
+        #     agreement_2,
+        #     blin_1,
+        #     blin_2,
+        #     blin_3,
+        #     blin_4,
+        #     can_1_fy_2023,
+        #     can_2_fy_2023,
+        #     can_3_fy_2022,
+        #     can_3_fy_2023,
+        #     can_4_fy_2023,
+        # ]:
         for obj in [
             research_project_rp1,
             research_project_rp2,
@@ -131,11 +153,6 @@ def db_loaded_with_research_projects(app, loaded_db):
             blin_2,
             blin_3,
             blin_4,
-            can_1_fy_2023,
-            can_2_fy_2023,
-            can_3_fy_2022,
-            can_3_fy_2023,
-            can_4_fy_2023,
         ]:
             loaded_db.delete(obj)
         loaded_db.commit()

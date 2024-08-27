@@ -3,8 +3,7 @@ import datetime
 import pytest
 from sqlalchemy_continuum import parent_class, version_class
 
-from models import CAN
-from models.cans import Agreement, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
+from models import CAN, Agreement, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
 
 
 @pytest.mark.usefixtures("app_ctx")

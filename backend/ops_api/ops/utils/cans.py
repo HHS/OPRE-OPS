@@ -1,9 +1,9 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.orm import object_session
 
-from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
+from models import CAN, BudgetLineItem, BudgetLineItemStatus
 
 
 class CanFundingSummary(TypedDict):
@@ -25,43 +25,47 @@ class CanFundingSummary(TypedDict):
 def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
     can_fiscal_year_list = []
     can_fiscal_year_carry_forward_list = []
-    session = object_session(can)
+    # session = object_session(can)
 
     if fiscal_year:
-        can_fiscal_year_list = (
-            session.execute(
-                select(CANFiscalYear).where(
-                    and_(CANFiscalYear.can_id == can.id, CANFiscalYear.fiscal_year == fiscal_year)
-                )
-            )
-            .scalars()
-            .all()
-        )
-
-        can_fiscal_year_carry_forward_list = (
-            object_session(can)
-            .execute(
-                select(CANFiscalYearCarryForward).where(
-                    and_(
-                        CANFiscalYearCarryForward.can_id == can.id,
-                        CANFiscalYearCarryForward.to_fiscal_year == fiscal_year,
-                    )
-                )
-            )
-            .scalars()
-            .all()
-        )
+        # can_fiscal_year_list = (
+        #     session.execute(
+        #         select(CANFiscalYear).where(
+        #             and_(CANFiscalYear.can_id == can.id, CANFiscalYear.fiscal_year == fiscal_year)
+        #         )
+        #     )
+        #     .scalars()
+        #     .all()
+        # )
+        #
+        # can_fiscal_year_carry_forward_list = (
+        #     object_session(can)
+        #     .execute(
+        #         select(CANFiscalYearCarryForward).where(
+        #             and_(
+        #                 CANFiscalYearCarryForward.can_id == can.id,
+        #                 CANFiscalYearCarryForward.to_fiscal_year == fiscal_year,
+        #             )
+        #         )
+        #     )
+        #     .scalars()
+        #     .all()
+        # )
+        can_fiscal_year_list = []
+        can_fiscal_year_carry_forward_list = []  # TODO: Implement this
     else:
-        can_fiscal_year_list = (
-            object_session(can).execute(select(CANFiscalYear).where(CANFiscalYear.can_id == can.id)).scalars().all()
-        )
-
-        can_fiscal_year_carry_forward_list = (
-            object_session(can)
-            .execute(select(CANFiscalYearCarryForward).where(CANFiscalYearCarryForward.can_id == can.id))
-            .scalars()
-            .all()
-        )
+        # can_fiscal_year_list = (
+        #     object_session(can).execute(select(CANFiscalYear).where(CANFiscalYear.can_id == can.id)).scalars().all()
+        # )
+        #
+        # can_fiscal_year_carry_forward_list = (
+        #     object_session(can)
+        #     .execute(select(CANFiscalYearCarryForward).where(CANFiscalYearCarryForward.can_id == can.id))
+        #     .scalars()
+        #     .all()
+        # )
+        can_fiscal_year_list = []
+        can_fiscal_year_carry_forward_list = []  # TODO: Implement this
 
     received_funding = sum([c.received_funding for c in can_fiscal_year_list]) or 0
 

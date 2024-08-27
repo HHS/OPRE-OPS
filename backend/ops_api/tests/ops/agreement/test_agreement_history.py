@@ -3,7 +3,7 @@ import datetime
 import pytest
 from flask import url_for
 
-from models.cans import Agreement, BudgetLineItem, BudgetLineItemStatus
+from models import Agreement, BudgetLineItem, BudgetLineItemStatus
 
 test_user_id = 503
 test_user_name = "Amelia Popham"

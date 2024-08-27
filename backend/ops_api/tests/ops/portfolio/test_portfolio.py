@@ -3,8 +3,7 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import select
 
-from models.cans import CAN, BudgetLineItem, BudgetLineItemStatus, CANFiscalYear, CANFiscalYearCarryForward
-from models.portfolios import Portfolio, PortfolioStatus
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, Portfolio, PortfolioStatus
 from ops_api.ops.utils.portfolios import (
     _get_budget_line_item_total_by_status,
     _get_carry_forward_total,
@@ -100,7 +99,7 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
     loaded_db.add(portfolio)
     loaded_db.commit()
 
-    cfy = CANFiscalYear(can_id=can.id, fiscal_year=2023, expected_funding=2.0)
+    # cfy = CANFiscalYear(can_id=can.id, fiscal_year=2023, expected_funding=2.0)
 
     blin_1 = BudgetLineItem(
         line_description="#1",
@@ -121,21 +120,23 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
         can_id=can.id,
     )
 
-    cf = CANFiscalYearCarryForward(
-        received_amount=1.0,
-        from_fiscal_year=2022,
-        to_fiscal_year=2023,
-        can_id=can.id,
-    )
+    # cf = CANFiscalYearCarryForward(
+    #     received_amount=1.0,
+    #     from_fiscal_year=2022,
+    #     to_fiscal_year=2023,
+    #     can_id=can.id,
+    # )
 
-    loaded_db.add_all([cfy, blin_1, blin_2, blin_3, cf])
+    # loaded_db.add_all([cfy, blin_1, blin_2, blin_3, cf])
+    loaded_db.add_all([blin_1, blin_2, blin_3])
     loaded_db.commit()
 
     yield loaded_db
 
     # Cleanup
     loaded_db.rollback()
-    for obj in [portfolio, can, cfy, blin_1, blin_2, blin_3, cf]:
+    # for obj in [portfolio, can, cfy, blin_1, blin_2, blin_3, cf]:
+    for obj in [portfolio, can, blin_1, blin_2, blin_3]:
         loaded_db.delete(obj)
     loaded_db.commit()
 
