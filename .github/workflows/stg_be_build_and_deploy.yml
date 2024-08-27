@@ -27,7 +27,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DT_DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }}"
+          image_tags: "${{ github.sha }}"
   
   build-backend:
     permissions:
@@ -44,7 +44,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }}"
+          image_tags: "${{ github.sha }}"
 
   deploy-data-tools: 
     needs: build-data-tools
@@ -59,7 +59,7 @@ jobs:
           creds: ${{ secrets.SDLC_AZURE_CREDS }}
       
       - name: Trigger Data-Tools Job
-        uses: azure/cli@v2
+        uses: azure/cli@965c8d7571d2231a54e321ddd07f7b10317f34d9 # v2
         with:
           azcliversion: latest
           inlineScript: |
