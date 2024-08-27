@@ -266,7 +266,8 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 onChangeSelectedProcurementShop={setProcurementShop}
                 legendClassname={legendStyles}
                 defaultString={"All Shops"}
-                defaultToGCS={true}
+                defaultToGCS={false}
+                isFilter={true}
             />
         </fieldset>,
         <fieldset

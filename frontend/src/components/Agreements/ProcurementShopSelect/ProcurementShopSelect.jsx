@@ -1,5 +1,6 @@
-import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
+import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
+import { useGetProcurementShopsQuery } from "../../../api/opsAPI";
 
 /**
  * Object representing a procurement shop.
@@ -18,6 +19,7 @@ import { useEffect, useState } from "react";
  * @param {string} [props.legendClassname] - Additional CSS classes to apply to the label/legend (optional).
  * @param {string} [props.defaultString] - Initial text to display in select (optional).
  * @param {boolean} [props.defaultToGCS] - Whether to initially select GCS (optional).
+ * @param {boolean} [props.isFilter] - Whether the select is used as a filter (optional).
  * @returns {JSX.Element} - The procurement shop select element.
  */
 export const ProcurementShopSelect = ({
@@ -25,7 +27,8 @@ export const ProcurementShopSelect = ({
     onChangeSelectedProcurementShop,
     legendClassname = "",
     defaultString = "-Select Procurement Shop-",
-    defaultToGCS = true
+    defaultToGCS = true,
+    isFilter = false
 }) => {
     const [hasSelectedDefault, setHasSelectedDefault] = useState(defaultToGCS);
 
@@ -60,26 +63,27 @@ export const ProcurementShopSelect = ({
 
         setHasSelectedDefault(procurementShop.id === 2);
     };
+    const showValidation = !isFilter && !hasSelectedDefault;
 
     return (
-        <fieldset className={`usa-fieldset ${hasSelectedDefault ? "" : "usa-form-group--error"}`}>
+        <fieldset className={`usa-fieldset ${showValidation ? "usa-form-group--error" : ""}`}>
             <label
-                className={`usa-label margin-top-0 ${legendClassname} ${hasSelectedDefault ? "" : "usa-label--error"}`}
+                className={`usa-label margin-top-0 ${legendClassname} ${showValidation ? "usa-label--error" : ""}`}
                 htmlFor="procurement-shop-select"
             >
                 Procurement Shop
             </label>
-            {!hasSelectedDefault && <span className="usa-error-message">GCS is the only available type for now</span>}
+            {showValidation && <span className="usa-error-message">GCS is the only available type for now</span>}
             <div className="display-flex flex-align-center">
                 <select
-                    className={`usa-select margin-top-1 ${hasSelectedDefault ? "" : "usa-input--error"}`}
+                    className={`usa-select margin-top-1 ${showValidation ? "usa-input--error" : ""}`}
                     name="procurement-shop-select"
                     id="procurement-shop-select"
                     onChange={handleChange}
                     value={selectedProcurementShop?.id || 0}
                     required
                 >
-                    <option value="0">{defaultString}</option>
+                    <option value={0}>{defaultString}</option>
                     {procurementShops.map((shop) => (
                         <option
                             key={shop?.id}
@@ -95,3 +99,12 @@ export const ProcurementShopSelect = ({
 };
 
 export default ProcurementShopSelect;
+
+ProcurementShopSelect.propTypes = {
+    selectedProcurementShop: Object,
+    onChangeSelectedProcurementShop: PropTypes.func,
+    legendClassname: PropTypes.string,
+    defaultString: PropTypes.string,
+    defaultToGCS: PropTypes.bool,
+    isFilter: PropTypes.bool
+};
