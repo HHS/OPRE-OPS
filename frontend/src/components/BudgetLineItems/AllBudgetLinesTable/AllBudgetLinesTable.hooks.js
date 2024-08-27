@@ -23,7 +23,7 @@ function useAllBudgetLinesTable(budgetLines) {
                         setAlert({
                             type: "success",
                             heading: "Budget Line Deleted",
-                            message: `Budget line ${budgetLineDisplayName} has been successfully deleted.`
+                            message: `The budget line ${budgetLineDisplayName} has been successfully deleted.`
                         });
                     })
                     .catch((rejected) => {

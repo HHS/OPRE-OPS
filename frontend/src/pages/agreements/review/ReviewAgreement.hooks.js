@@ -280,9 +280,9 @@ const useReviewAgreement = (agreementId) => {
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
-            heading: "Are you sure you want to cancel? This will exit the request and you can come back to it later.",
-            actionButtonText: "Cancel",
-            secondaryButtonText: "Continue Reviewing",
+            heading: "Are you sure you want to cancel this status change? Your changes will not be saved.",
+            actionButtonText: "Cancel Status Change",
+            secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
                 navigate("/agreements");
             }
