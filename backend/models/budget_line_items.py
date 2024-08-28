@@ -94,7 +94,7 @@ class BudgetLineItem(BaseModel):
     def portfolio_id(self):
         return object_session(self).scalar(
             select(Portfolio.id)
-            .join(CAN, Portfolio.id == CAN.managing_portfolio_id)
+            .join(CAN, Portfolio.id == CAN.portfolio_id)
             .join(self.__class__, self.can_id == CAN.id)
             .where(self.__class__.id == self.id)
         )

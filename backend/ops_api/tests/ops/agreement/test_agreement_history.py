@@ -282,9 +282,8 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     session.commit()
 
 
-def test_agreement_history_log_items_with_change_requests(auth_client, app, test_can, test_project):
-    session = app.db_session
-
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_history_log_items_with_change_requests(auth_client, loaded_db, test_can, test_project):
     # create agreement (using API)
     data = {
         "agreement_type": "CONTRACT",
@@ -320,17 +319,14 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
         created_by=test_user_id,
         date_needed=datetime.date(2025, 1, 1),
     )
-    session.add(bli)
-    session.commit()
-    session.flush()
-    assert bli.id is not None
-    bli_id = bli.id
+    loaded_db.add(bli)
+    loaded_db.commit()
 
     prev_hist_count = 2
 
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 333.33, "can_id": 502, "date_needed": "2032-03-03"}
-    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -400,7 +396,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
             assert log_item["changes_requested_by_user_full_name"] is None
 
     # cleanup
-    session.delete(bli)
-    agreement = session.get(Agreement, agreement_id)
-    session.delete(agreement)
-    session.commit()
+    loaded_db.delete(bli)
+    agreement = loaded_db.get(Agreement, agreement_id)
+    loaded_db.delete(agreement)
+    loaded_db.commit()

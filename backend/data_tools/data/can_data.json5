@@ -4,6 +4,7 @@
       // 1
       fiscal_year: 2023,
       fund_code: "AAXXXX20231DAD",
+      funding_source: "OPRE",
     },
     {
       // 2
@@ -569,7 +570,7 @@
       budget: 500000.0,
     }
   ],
-  can_funding_funding: [
+  can_funding_received: [
     {
       fiscal_year: 2023,
       can_id: 500,

@@ -209,12 +209,17 @@ def test_post_budget_line_items_auth_required(client, test_can):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_only_agreement_id_required(auth_client):
+def test_post_budget_line_items_only_agreement_id_required(auth_client, loaded_db):
     data = {"agreement_id": 1}
     response = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 201
     assert response.json["id"] is not None
     assert response.json["agreement_id"] == 1
+
+    # cleanup
+    bli = loaded_db.get(BudgetLineItem, response.json["id"])
+    loaded_db.delete(bli)
+    loaded_db.commit()
 
 
 @pytest.fixture()
@@ -707,7 +712,7 @@ def test_patch_budget_line_items_history(loaded_db, test_can):
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_portfolio_id(loaded_db, test_bli_new):
     can = loaded_db.get(CAN, test_bli_new.can_id)
-    assert test_bli_new.portfolio_id == can.managing_portfolio_id
+    assert test_bli_new.portfolio_id == can.portfolio_id
 
 
 @pytest.mark.usefixtures("app_ctx")

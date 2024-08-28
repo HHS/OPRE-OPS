@@ -41,7 +41,7 @@ from ops_api.ops.resources.agreements import (
     AgreementTypeListAPI,
 )
 from ops_api.ops.resources.azure import SasToken
-from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI
+from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
@@ -102,7 +102,7 @@ CANS_BY_PORTFOLIO_API_VIEW_FUNC = CANsByPortfolioAPI.as_view("can-portfolio", Ba
 
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
-BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-group", BudgetLineItem)
+BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC = BudgetLineItemsListAPI.as_view("budget-line-items-group", BudgetLineItem)
 
 
 # PRODUCT SERVICE CODES ENDPOINTS

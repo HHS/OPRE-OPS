@@ -1,6 +1,7 @@
 """CAN models."""
 
 import decimal
+from datetime import date
 from enum import Enum, auto
 from typing import List, Optional
 
@@ -24,9 +25,9 @@ class CANMethodOfTransfer(Enum):
 #     NON_OPRE = auto()
 #
 #
-# class CANStatus(Enum):
-#     ACTIVE = auto()
-#     INACTIVE = auto()
+class CANStatus(Enum):
+    ACTIVE = auto()
+    INACTIVE = auto()
 
 
 class CANFundingSource(Enum):
@@ -69,6 +70,14 @@ class CAN(BaseModel):
     portfolio_id: Mapped[int] = mapped_column(Integer, ForeignKey("portfolio.id"))
     portfolio: Mapped[Portfolio] = relationship(Portfolio, back_populates="cans")
 
+    funding_budgets: Mapped[List["CANFundingBudget"]] = relationship(
+        "CANFundingBudget", back_populates="can"
+    )
+
+    funding_received: Mapped[List["CANFundingReceived"]] = relationship(
+        "CANFundingReceived", back_populates="can"
+    )
+
     budget_line_items: Mapped[List["BudgetLineItem"]] = relationship(
         "BudgetLineItem", back_populates="can"
     )
@@ -76,70 +85,44 @@ class CAN(BaseModel):
     projects: Mapped[List["Project"]] = relationship(
         "Project", secondary="project_cans", back_populates="cans"
     )
-    #
-    # @property
-    # def status(self):
-    #     current_year = date.today().year
-    #     can_fiscal_year = object_session(self).scalar(
-    #         select(CANFiscalYear).where(
-    #             and_(
-    #                 CANFiscalYear.can_id == self.id,
-    #                 CANFiscalYear.fiscal_year == current_year,
-    #             )
-    #         )
-    #     )
-    #     if can_fiscal_year is None:
-    #         return CANStatus.INACTIVE
-    #     # Amount available to a Portfolio budget is the sum of the BLI minus the Portfolio total (above)
-    #     budget_line_items = (
-    #         object_session(self)
-    #         .execute(select(BudgetLineItem).where(BudgetLineItem.can_id == self.id))
-    #         .scalars()
-    #         .all()
-    #     )
-    #
-    #     planned_budget_line_items = [
-    #         bli
-    #         for bli in budget_line_items
-    #         if bli.status == BudgetLineItemStatus.PLANNED
-    #     ]
-    #     planned_funding = sum([b.amount for b in planned_budget_line_items]) or 0
-    #
-    #     obligated_budget_line_items = [
-    #         bli
-    #         for bli in budget_line_items
-    #         if bli.status == BudgetLineItemStatus.OBLIGATED
-    #     ]
-    #     obligated_funding = sum([b.amount for b in obligated_budget_line_items]) or 0
-    #
-    #     in_execution_budget_line_items = [
-    #         bli
-    #         for bli in budget_line_items
-    #         if bli.status == BudgetLineItemStatus.IN_EXECUTION
-    #     ]
-    #     in_execution_funding = (
-    #         sum([b.amount for b in in_execution_budget_line_items]) or 0
-    #     )
-    #     total_accounted_for = (
-    #         sum((planned_funding, obligated_funding, in_execution_funding)) or 0
-    #     )
-    #     available_funding = can_fiscal_year.total_funding - total_accounted_for
-    #
-    #     is_expired = self.expiration_date.date() < date.today()
-    #     can_status = (
-    #         CANStatus.INACTIVE
-    #         if available_funding <= 0 and is_expired
-    #         else CANStatus.ACTIVE
-    #     )
-    #     return can_status
-    #
-    # @property
-    # def appropriation_term(self):
-    #     if self.expiration_date is None:
-    #         return 0
-    #     if self.appropriation_date is None:
-    #         return None
-    #     return self.expiration_date.year - self.appropriation_date.year
+
+    @property
+    def is_expired(self):
+        today = date.today()
+        current_fy = today.year if today.month <= 9 else today.year + 1
+        is_expired = (
+            self.funding_details is None
+            or self.funding_details.obligate_by <= current_fy
+        )
+        return is_expired
+
+    @property
+    def status(self):
+        total_funding = sum([b.budget for b in self.funding_budgets]) or 0
+        total_spent = (
+            sum([b.amount for b in self.budget_line_items if b.status.name != "DRAFT"])
+            or 0
+        )
+        available_funding = total_funding - total_spent
+
+        can_status = (
+            CANStatus.INACTIVE
+            if available_funding <= 0 and self.is_expired
+            else CANStatus.ACTIVE
+        )
+        return can_status
+
+    @property
+    def active_period(self):
+        if self.funding_details is None:
+            return None
+        return self.funding_details.active_period
+
+    @property
+    def obligate_by(self):
+        if self.funding_details is None:
+            return None
+        return self.funding_details.obligate_by
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -175,6 +158,18 @@ class CANFundingDetails(BaseModel):
     )
     funding_partner: Mapped[Optional[str]]
 
+    @property
+    def active_period(self) -> Optional[int]:
+        """The number of years the funds are active for"""
+        if len(self.fund_code) != 14:
+            return None
+        return int(self.fund_code[10:11])
+
+    @property
+    def obligate_by(self) -> Optional[int]:
+        """The fiscal year in which the funds must be obligated by"""
+        return self.fiscal_year + self.active_period
+
 
 class CANFundingReceived(BaseModel):
     """
@@ -191,6 +186,8 @@ class CANFundingReceived(BaseModel):
     funding: Mapped[Optional[decimal.Decimal]]
     notes: Mapped[Optional[str]]
 
+    can: Mapped[CAN] = relationship(CAN, back_populates="funding_received")
+
 
 class CANFundingBudget(BaseModel):
     """
@@ -206,3 +203,5 @@ class CANFundingBudget(BaseModel):
     can_id: Mapped[int] = mapped_column(Integer, ForeignKey("can.id"))
     budget: Mapped[Optional[decimal.Decimal]]
     notes: Mapped[Optional[str]]
+
+    can: Mapped[CAN] = relationship(CAN, back_populates="funding_budgets")

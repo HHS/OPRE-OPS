@@ -16,10 +16,7 @@ class PortfolioCansAPI(BaseItemAPI):
 
     def _get_item(self, id: int, year: Optional[int] = None) -> set[CAN]:
         cfy_stmt = (
-            select(CANFundingDetails)
-            .join(CAN)
-            .where(CAN.managing_portfolio_id == id)
-            .order_by(CANFundingDetails.fiscal_year)
+            select(CANFundingDetails).join(CAN).where(CAN.portfolio_id == id).order_by(CANFundingDetails.fiscal_year)
         )
 
         if year:
