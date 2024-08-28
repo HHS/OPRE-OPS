@@ -36,6 +36,7 @@ const ChangeIcons = ({
     handleSubmitItemForApproval = () => {}
 }) => {
     const disabledClasses = `text-primary height-2 width-2 margin-right-1 cursor-pointer ${DISABLED_ICON_CLASSES}`;
+    const notEditableOrDeletableMsg = "Only budget lines in Draft or Planned Status can be edited or deleted";
 
     return (
         <>
@@ -86,9 +87,7 @@ const ChangeIcons = ({
                     <>
                         <Tooltip
                             position="top"
-                            label={
-                                lockedMessage ? lockedMessage : "Only team members listed on this agreement can edit"
-                            }
+                            label={lockedMessage ? lockedMessage : notEditableOrDeletableMsg}
                             className="line-height-body-1"
                         >
                             <button
@@ -106,9 +105,7 @@ const ChangeIcons = ({
                         </Tooltip>
                         <Tooltip
                             position="top"
-                            label={`${
-                                lockedMessage ? lockedMessage : "Only team members listed on this agreement can delete"
-                            }`}
+                            label={`${lockedMessage ? lockedMessage : notEditableOrDeletableMsg}`}
                             className="line-height-body-1"
                         >
                             <button
