@@ -75,7 +75,7 @@ export const AgreementTableRow = ({ agreement }) => {
     const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
     const lockedMessage = doesAgreementHaveBLIsInReview
         ? "This agreement cannot be edited because it is currently In Review for a status change"
-        : "";
+        : "Only team members on this agreement can edit, delete, or send to approval";
     const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT);
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);

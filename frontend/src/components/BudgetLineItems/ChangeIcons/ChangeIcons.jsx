@@ -188,7 +188,7 @@ const ChangeIcons = ({
                         label={`${
                             lockedMessage
                                 ? lockedMessage
-                                : "Only team members listed on this agreement can submit it for approval"
+                                : "Only team members on this agreement can edit, delete, or send to approval"
                         }`}
                         className="line-height-body-1"
                     >
