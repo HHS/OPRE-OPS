@@ -9,6 +9,11 @@ export const Menu = () => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
     const isUserAdmin = activeUser?.roles.includes("USER_ADMIN");
+    const isAdmin = activeUser?.roles.includes("admin");
+    const isStandardUser = activeUser?.roles.includes("user");
+    const isDivisionDirector = activeUser?.roles.includes("division-director");
+    const isBudgetTeam = activeUser?.roles.includes("BUDGET_TEAM");
+
 
     return (
         <div id="nav-menu">
@@ -45,6 +50,7 @@ export const Menu = () => {
                         <Link to="/user-admin">User Admin</Link>
                     </li>
                 )}
+                {(isAdmin || isStandardUser || isDivisionDirector || isBudgetTeam) && (
                 <li className="usa-nav__primary-item margin-left-auto">
                     <button
                         type="button"
@@ -67,6 +73,7 @@ export const Menu = () => {
                         </li>
                     </ul>
                 </li>
+                )}
             </ul>
         </div>
     );
