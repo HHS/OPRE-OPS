@@ -2,7 +2,7 @@ import { BLI_STATUS } from "./budgetLines.helpers";
 
 /**
  * Validates if the given budget line is an object.
- * @param {Object} agreement - The budget line to validate.
+ * @param {Object} agreement - The agreement object.
  * @throws {Error} Will throw an error if the budget line is not an object.
  */
 const handleAgreementProp = (agreement) => {
@@ -27,12 +27,12 @@ export const getAgreementSubTotal = (agreement) => {
 
 /**
  * Calculates the total cost of a list of items, taking into account a fee per item and non-DRAFT budgetlines.
- * @param {[]} items - The list of items to calculate the total cost for.
+ * @param {[]} budgetLines - The list of items to calculate the total cost for.
  * @param {number} fee - The fee per item.
  * @returns {number} The total cost of the items.
  */
-const calculateTotal = (items, fee) => {
-    return items
+const calculateTotal = (budgetLines, fee) => {
+    return budgetLines
         ?.filter(({ status }) => status !== BLI_STATUS.DRAFT)
         .reduce((acc, { amount }) => acc + amount * fee, 0);
 };
@@ -40,7 +40,7 @@ const calculateTotal = (items, fee) => {
 /**
  * Calculates the procurement shop subtotal based on the agreement and budget lines.
  * @param {Object} agreement - The agreement object.
- * @param {Array<any>} [budgetLines] - The array of budget line items.
+ * @param {[]} [budgetLines] - The array of budget line items.
  * @returns {number} - The procurement shop subtotal.
  */
 export const getProcurementShopSubTotal = (agreement, budgetLines = []) => {
