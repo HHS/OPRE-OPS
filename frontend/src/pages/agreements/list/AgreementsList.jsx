@@ -7,6 +7,7 @@ import { useGetAgreementsQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import AgreementsFilterButton from "./AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags";
@@ -146,15 +147,15 @@ export const AgreementsList = () => {
                 })) ||
             (filters.budgetLineStatus.planned === true &&
                 agreement.budget_line_items.some((bli) => {
-                    return bli.status === "PLANNED";
+                    return bli.status === BLI_STATUS.PLANNED;
                 })) ||
             (filters.budgetLineStatus.executing === true &&
                 agreement.budget_line_items.some((bli) => {
-                    return bli.status === "IN_EXECUTION";
+                    return bli.status === BLI_STATUS.EXECUTING;
                 })) ||
             (filters.budgetLineStatus.obligated === true &&
                 agreement.budget_line_items.some((bli) => {
-                    return bli.status === "OBLIGATED";
+                    return bli.status === BLI_STATUS.OBLIGATED;
                 }))
         );
     });
@@ -173,10 +174,11 @@ export const AgreementsList = () => {
     }
 
     let subtitle = "All Agreements";
-    let details = "This is a list of all agreements across OPRE.";
+    let details = "This is a list of all agreements across OPRE. Draft budget lines are not included in the Totals.";
     if (myAgreementsUrl) {
         subtitle = "My Agreements";
-        details = "This is a list of the agreements you are listed as a Team Member on.";
+        details =
+            "This is a list of agreements you are listed as a Team Member on.  Draft budget lines are not included in the Totals.";
     }
     if (changeRequestUrl) {
         subtitle = "For Review";
