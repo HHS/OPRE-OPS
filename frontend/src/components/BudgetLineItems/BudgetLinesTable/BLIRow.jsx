@@ -7,7 +7,7 @@ import {
     BLILabel,
     canLabel,
     getBudgetLineCreatedDate,
-    useIsBudgetLineEditableByStatus
+    isBudgetLineEditableByStatus
 } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
@@ -58,7 +58,7 @@ const BLIRow = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
-    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;

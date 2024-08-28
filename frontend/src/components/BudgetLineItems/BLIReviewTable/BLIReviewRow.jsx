@@ -2,7 +2,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import { getBudgetLineCreatedDate, useIsBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, isBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
@@ -50,7 +50,7 @@ const BLIReviewRow = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
-    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;

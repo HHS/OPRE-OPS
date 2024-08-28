@@ -2,7 +2,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import { getBudgetLineCreatedDate, useIsBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
+import { getBudgetLineCreatedDate, isBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
@@ -39,7 +39,7 @@ const AllBLIRow = ({
 }) => {
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
-    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineInReview = budgetLine?.in_review;
     const isBudgetLineEditable =
