@@ -1,5 +1,21 @@
 import { formatDateToMonthDayYear } from "./utils";
+/**
+ * @typedef {Object} BudgetLine
+ * @property {number} id - The ID of the budget line.
+ * @property {string} status - The status of the budget line.
+ * @property {number} created_by - The ID of the user who created the budget line.
+ * @property {boolean} in_review - Whether the budget line is in review.
+ */
 
+/**
+ * Enum representing the possible statuses of a budget line item.
+ * @readonly
+ * @enum {string}
+ * @property {string} DRAFT - Initial status for newly created budget lines.
+ * @property {string} PLANNED - Status for budget lines that have been planned but not yet executed.
+ * @property {string} EXECUTING - Status for budget lines currently in execution phase.
+ * @property {string} OBLIGATED - Status for budget lines that have been fully obligated.
+ */
 export const BLI_STATUS = {
     DRAFT: "DRAFT",
     PLANNED: "PLANNED",
@@ -9,7 +25,7 @@ export const BLI_STATUS = {
 
 /**
  * Validates if the given budget line is an object.
- * @param {Object} budgetLine - The budget line to validate.
+ * @param {BudgetLine} budgetLine - The budget line to validate.
  * @throws {Error} Will throw an error if the budget line is not an object.
  */
 const handleBLIProp = (budgetLine) => {
@@ -22,7 +38,7 @@ const handleBLIProp = (budgetLine) => {
  * Returns the created date of a budget line in a formatted string.
  * If the budget line does not have a created_on property, returns today's date in a formatted string.
  *
- * @param {Object} budgetLine - The budget line object to get the created date from.
+ * @param {BudgetLine} budgetLine - The budget line object to get the created date from.
  * @returns {string} The formatted created date of the budget line.
  */
 export const getBudgetLineCreatedDate = (budgetLine) => {
@@ -35,7 +51,7 @@ export const getBudgetLineCreatedDate = (budgetLine) => {
 
 /**
  * Returns the total amount of a budget line.
- * @param {Object[]} budgetLines - The budget line to get the total amount from.
+ * @param {BudgetLine[]} budgetLines - The budget line to get the total amount from.
  * @returns {Object | null} The total amount of the budget line.
  */
 export const budgetLinesTotal = (budgetLines) => {
@@ -45,11 +61,10 @@ export const budgetLinesTotal = (budgetLines) => {
 
 /**
  * Returns an array of budget lines filtered by status.
- * @param {Object[]} budgetLines - The budget lines to filter.
+ * @param {BudgetLine[]} budgetLines - The budget lines to filter.
  * @param {string[]} status - The status to filter by.
- * @returns {Object[]} An array of budget lines filtered by status.
+ * @returns {BudgetLine[]} An array of budget lines filtered by status.
  */
-// const notDraftBLIs = agreement.budget_line_items.filter((bli) => !draftBudgetLineStatuses.includes(bli.status));
 export const getBudgetByStatus = (budgetLines, status) => {
     handleBLIProp(budgetLines);
     return budgetLines?.filter((bli) => status.includes(bli.status));
@@ -57,16 +72,17 @@ export const getBudgetByStatus = (budgetLines, status) => {
 
 /**
  * Returns an array of budget lines that are not in draft status.
- * @param {Object[]} budgetLines - The budget lines to filter.
- * @returns {Object[]} An array of budget lines that are not in draft status.
+ * @param {BudgetLine[]} budgetLines - The budget lines to filter.
+ * @returns {BudgetLine[]} An array of budget lines that are not in draft status.
  */
 export const getNonDRAFTBudgetLines = (budgetLines) => {
     handleBLIProp(budgetLines);
     return budgetLines?.filter((bli) => bli.status !== BLI_STATUS.DRAFT);
 };
+
 /**
  * Returns a boolean indicating if any of the budget lines are in review.
- * @param {Object[]} budgetLines - The budget lines to check.
+ * @param {BudgetLine[]} budgetLines - The budget lines to check.
  * @returns {boolean} Whether any of the budget lines are in review.
  */
 export const hasBlIsInReview = (budgetLines) => {
@@ -76,9 +92,8 @@ export const hasBlIsInReview = (budgetLines) => {
 
 /**
  * Returns an array of budget lines grouped by services component.
- * @param {Object[]} budgetLines - The budget lines to group.
- * @returns {Object[]} An array of budget lines grouped by services component.
- 
+ * @param {BudgetLine[]} budgetLines - The budget lines to group.
+ * @returns {BudgetLine[]} An array of budget lines grouped by services component.
  */
 export const groupByServicesComponent = (budgetLines) => {
     try {
@@ -107,7 +122,7 @@ export const groupByServicesComponent = (budgetLines) => {
 
 /**
  * Returns whether the given budget line is permanent.
- * @param {Object} budgetLine - The budget line to check.
+ * @param {BudgetLine} budgetLine - The budget line to check.
  * @returns {boolean} Whether the budget line is permanent.
  */
 export const isBLIPermanent = (budgetLine) => {
@@ -118,7 +133,7 @@ export const isBLIPermanent = (budgetLine) => {
 
 /**
  * Returns the display can label of a budget line.
- * @param {Object} budgetLine - The budget line to get the can label from.
+ * @param {BudgetLine} budgetLine - The budget line to get the can label from.
  * @returns {string} The can label of the budget line.
  * canDisplayName is for temporary BLIs, can.number is for permanent BLIs
  */
@@ -127,7 +142,20 @@ export const canLabel = (budgetLine) =>
 
 /**
  * Returns display label of a budget line.
- * @param {Object} budgetLine - The budget line to get the BLI label from.
+ * @param {BudgetLine} budgetLine - The budget line to get the BLI label from.
  * @returns {string} The BLI label of the budget line.
  */
 export const BLILabel = (budgetLine) => (isBLIPermanent(budgetLine) ? budgetLine?.id : "TBD");
+
+/**
+ * Returns whether the given budget line is editable by status.
+ * @param {BudgetLine} budgetLine - The budget line to check.
+ * @returns {boolean} Whether the budget line is editable by status.
+ **/
+export const isBudgetLineEditableByStatus = (budgetLine) => {
+    const isBudgetLineDraft = budgetLine?.status === BLI_STATUS.DRAFT;
+    const isBudgetLinePlanned = budgetLine?.status === BLI_STATUS.PLANNED;
+    const isBudgetLineInReview = budgetLine?.in_review;
+
+    return (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInReview;
+};

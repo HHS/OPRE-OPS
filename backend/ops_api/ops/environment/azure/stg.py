@@ -25,7 +25,7 @@ AUTHLIB_OAUTH_CLIENTS = {
         "client_id": "44fe2c7a-e9c5-43ec-87e9-3de78d2d3a11",
         "client_kwargs": {"scope": "openid email"},
         "aud": "https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/protocol/openid-connect/token",
-        "redirect_uri": "http://localhost:3000",
+        "redirect_uri": "https://stg.ops.opre.acf.gov/login",
     },
     "fakeauth": {
         "server_metadata_url": "http://localhost:5000/oidc/.well-known/openid-configuration",
@@ -34,8 +34,6 @@ AUTHLIB_OAUTH_CLIENTS = {
         "client_id": "blah:blah",
         "client_kwargs": {"scope": "openid email"},
         "aud": "http://localhost:5000/oidc/openid-connect/token",
-        "redirect_uri": "http://localhost:3000/login",
+        "redirect_uri": "https://stg.ops.opre.acf.gov/login",
     },
 }
-
-JWT_PUBLIC_KEY_PATH = "static/public.pem"
