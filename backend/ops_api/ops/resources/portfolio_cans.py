@@ -15,14 +15,12 @@ class PortfolioCansAPI(BaseItemAPI):
         super().__init__(model)
 
     def _get_item(self, id: int, year: Optional[int] = None) -> set[CAN]:
-        cfy_stmt = (
-            select(CANFundingDetails).join(CAN).where(CAN.portfolio_id == id).order_by(CANFundingDetails.fiscal_year)
-        )
+        can_stmt = select(CAN).join(CANFundingDetails).where(CAN.portfolio_id == id).order_by(CAN.id)
 
         if year:
-            cfy_stmt = cfy_stmt.where(CANFundingDetails.fiscal_year == year)
+            can_stmt = can_stmt.where(CANFundingDetails.fiscal_year == year)
 
-        return set([cfy.can for cfy in current_app.db_session.execute(cfy_stmt).scalars().all()])
+        return set(current_app.db_session.execute(can_stmt).scalars().all())
 
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:

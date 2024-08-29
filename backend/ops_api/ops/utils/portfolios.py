@@ -5,7 +5,7 @@ from flask import current_app
 from sqlalchemy import Select, select, sql
 from sqlalchemy.sql.functions import coalesce
 
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, Portfolio
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingBudget, Portfolio
 
 
 class FundingLineItem(TypedDict):
@@ -27,14 +27,13 @@ class TotalFunding(TypedDict):
 
 
 def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
-    # stmt = (
-    #     select(coalesce(sql.functions.sum(CANFiscalYear.total_funding), 0))
-    #     .join(CAN)
-    #     .where(CAN.managing_portfolio_id == portfolio_id)
-    #     .where(CANFiscalYear.fiscal_year == fiscal_year)
-    # )
+    stmt = (
+        select(coalesce(sql.functions.sum(CANFundingBudget.budget), 0))
+        .join(CAN)
+        .where(CAN.portfolio_id == portfolio_id)
+        .where(CANFundingBudget.fiscal_year == fiscal_year)
+    )
 
-    stmt = ""  # TODO: Implement this query
     return current_app.db_session.scalar(stmt)
 
 

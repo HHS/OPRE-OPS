@@ -3,7 +3,7 @@
 import decimal
 from datetime import date
 from enum import Enum, auto
-from typing import List, Optional
+from typing import Any, List, Optional, override
 
 from sqlalchemy import ForeignKey, Integer, Sequence, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ENUM
@@ -128,12 +128,22 @@ class CAN(BaseModel):
     def display_name(self):
         return self.number
 
-    # @override
-    # def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
-    #     d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
-    #     # add the appropriation_term calculated property to this dictionary
-    #     d["appropriation_term"] = self.appropriation_term
-    #     return d
+    @override
+    def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
+        d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]
+
+        d.update(
+            {
+                "display_name": self.display_name,
+                "funding_details": (
+                    self.funding_details.to_dict() if self.funding_details else None
+                ),
+                "funding_budgets": [fb.to_dict() for fb in self.funding_budgets],
+                "funding_received": [fr.to_dict() for fr in self.funding_received],
+            }
+        )
+
+        return d
 
 
 class CANFundingDetails(BaseModel):
