@@ -113,7 +113,7 @@ To run them...
 
 ```shell
 cd ./backend/ops_api
-pytest
+pipenv run pytest
 ```
 
 Note: All backend API endpoints have the ability to simulate an error response, for testing purposes for the frontend. This is accomplished
@@ -163,6 +163,9 @@ or Interactively via:
 ```shell
 bun run test:e2e:interactive
 ```
+
+N.B. Running the E2E tests multiple times using the same containers and volumes can lead to unexpected results.
+It is recommended to run `docker system prune --volumes` between test runs.
 
 ### Linting
 
