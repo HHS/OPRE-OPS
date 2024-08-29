@@ -24,6 +24,7 @@ import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";
 import CreateProject from "./pages/projects/CreateProject";
 import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
+import ResolveAgreement from "./pages/agreements/resolve/ResolveAgreement";
 import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import UserDetail from "./pages/users/detail/UserDetail";
 import EditUser from "./pages/users/edit/EditUser";
@@ -220,6 +221,20 @@ const router = createBrowserRouter(
                 <Route
                     path="/agreements/approve/:id/*"
                     element={<ApproveAgreement />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/agreements"
+                                className="text-primary"
+                            >
+                                Agreements
+                            </Link>
+                        )
+                    }}
+                />
+                <Route
+                    path="/agreements/resolve/:id/*"
+                    element={<ResolveAgreement />}
                     handle={{
                         crumb: () => (
                             <Link
