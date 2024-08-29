@@ -1,4 +1,4 @@
-FROM oven/bun@sha256:566dc4f280a33631904ac7f33355d6e743c70d25b71ffb5d10bc58bc70a4d647
+FROM oven/bun@sha256:21c4ca3f887f4bf034231501201f82bc17bf56bc1830fb17a54e55e945db6818
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get -y --no-install-recommends install unzip && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN useradd -ms /bin/bash app

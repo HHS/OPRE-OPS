@@ -1,17 +1,14 @@
-name: Dev Frontend Build and Deploy
+name: Staging Frontend Build and Deploy
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'main'
-    paths:
-      - 'frontend/**'
+  schedule: 
+    - cron: '0 0 * * *'
 
 env:
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
-  ENVIRONMENT: dev
+  ENVIRONMENT: stg
   DOMAIN_NAME: "ops.opre.acf.gov"
 
 jobs:
@@ -30,7 +27,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }},${{ env.ENVIRONMENT }}"
+          image_tags: "${{ github.sha }},${{ env.ENVIRONMENT }}"
           build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}"
 
   deploy-frontend:

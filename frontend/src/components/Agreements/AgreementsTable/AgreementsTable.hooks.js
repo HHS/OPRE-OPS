@@ -51,8 +51,8 @@ export const useHandleDeleteAgreement = () => {
                         console.log(`DELETE agreement success: ${JSON.stringify(fulfilled, null, 2)}`);
                         setAlert({
                             type: "success",
-                            heading: "Agreement deleted",
-                            message: `Agreement ${agreementName} has been successfully deleted.`
+                            heading: "Agreement Deleted",
+                            message: `The agreement ${agreementName} has been successfully deleted.`
                         });
                     })
                     .catch((rejected) => {

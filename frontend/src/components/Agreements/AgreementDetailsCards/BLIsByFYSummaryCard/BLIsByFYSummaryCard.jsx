@@ -25,7 +25,7 @@ const BLIsByFYSummaryCard = ({ budgetLineItems = [] }) => {
             <div>
                 {chartData.map((item, index) => (
                     <div
-                        className="display-flex margin-y-1"
+                        className="display-flex margin-y-105 font-12px"
                         key={`blis-fy-${index}-${id}`}
                     >
                         <span>FY {item.FY}</span>

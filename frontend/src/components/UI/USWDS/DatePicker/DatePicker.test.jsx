@@ -1,57 +1,93 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import DatePicker from "./DatePicker"; // Adjust the import path as necessary
+import DatePicker from "./DatePicker";
 
-describe("DatePicker component", () => {
+describe("DatePicker", () => {
     const defaultProps = {
         id: "test-datepicker",
         name: "test-datepicker",
         label: "Test Date",
         onChange: vi.fn()
     };
+
+    const getExternalInput = () => {
+        return screen.getByRole("textbox", { name: "Test Date" });
+    };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
     it("renders correctly with minimum props", () => {
         render(<DatePicker {...defaultProps} />);
         expect(screen.getByText("Test Date")).toBeInTheDocument();
+        expect(getExternalInput()).toBeInTheDocument();
     });
 
-    it.todo("calls onChange when the date is changed", async () => {
+    it("calls onChange with the correct value when a valid date is entered", async () => {
         render(<DatePicker {...defaultProps} />);
+        const input = getExternalInput();
 
-        const input = screen.getByRole("textbox");
-        await userEvent.type(input, "2023-05-01");
+        await userEvent.type(input, "01/01/2048");
+        fireEvent.blur(input);
 
-        expect(handleChange).toHaveBeenCalledTimes(10); // Called once for each character typed
+        await waitFor(() => {
+            expect(defaultProps.onChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    target: expect.objectContaining({
+                        name: "test-datepicker",
+                        value: "01/01/2048"
+                    })
+                })
+            );
+        });
+
+        // Check that the last call to onChange has the correct value
+        const lastCall = defaultProps.onChange.mock.calls[defaultProps.onChange.mock.calls.length - 1];
+        expect(lastCall[0].target.value).toBe("01/01/2048");
     });
 
-    it.todo("respects minDate and maxDate", () => {
-        const minDate = "2023-01-01";
-        const maxDate = "2023-12-31";
-        render(
-            <DatePicker
-                {...defaultProps}
-                minDate={minDate}
-                maxDate={maxDate}
-            />
-        );
-        // eslint-disable-next-line testing-library/no-debugging-utils
-        screen.debug();
+    it("calls onChange with the entered value even when an invalid date is entered", async () => {
+        render(<DatePicker {...defaultProps} />);
+        const input = getExternalInput();
 
-        // eslint-disable-next-line testing-library/no-node-access
-        const datePickerDiv = screen.getByRole("textbox").parentElement;
-        expect(datePickerDiv).toHaveAttribute("data-min-date", minDate);
-        expect(datePickerDiv).toHaveAttribute("data-max-date", maxDate);
+        await userEvent.type(input, "invalid");
+        fireEvent.blur(input);
+
+        await waitFor(() => {
+            expect(defaultProps.onChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    target: expect.objectContaining({
+                        name: "test-datepicker",
+                        value: "invalid"
+                    })
+                })
+            );
+        });
     });
 
-    it("displays error messages when provided", () => {
-        const errorMessage = "Invalid date";
-        render(
+    it("handles error messages correctly", async () => {
+        const { rerender } = render(<DatePicker {...defaultProps} />);
+
+        // No error message initially
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+        // Rerender with an error message
+        rerender(
             <DatePicker
                 {...defaultProps}
-                messages={[errorMessage]}
+                messages={["Invalid date"]}
             />
         );
 
-        expect(screen.getByRole("alert")).toHaveTextContent(errorMessage);
+        await waitFor(() => {
+            expect(screen.getByRole("alert")).toHaveTextContent("Invalid date");
+        });
+
+        // Rerender without error message
+        rerender(<DatePicker {...defaultProps} />);
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 });

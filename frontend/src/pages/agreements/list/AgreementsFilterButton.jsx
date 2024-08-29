@@ -267,6 +267,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
                 legendClassname={legendStyles}
                 defaultString={"All Shops"}
                 defaultToGCS={false}
+                isFilter={true}
             />
         </fieldset>,
         <fieldset

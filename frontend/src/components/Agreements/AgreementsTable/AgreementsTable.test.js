@@ -64,7 +64,6 @@ it("renders without crashing", () => {
     expect(screen.getByText("Test Agreement")).toBeInTheDocument();
     expect(screen.getByText("Test Project")).toBeInTheDocument();
     expect(screen.getByText("Grant")).toBeInTheDocument();
-    expect(screen.getByText("$630.00")).toBeInTheDocument();
-    expect(screen.getByText("$315.00")).toBeInTheDocument();
+    expect(screen.getAllByText("$315.00")).toHaveLength(2);
     expect(screen.getByText("3/4/2043")).toBeInTheDocument();
 });
