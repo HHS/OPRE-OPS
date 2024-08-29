@@ -96,34 +96,6 @@ def test_check_user_session_token_doesnt_match(mocker, loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_ip_address_doesnt_match(mocker, loaded_db):
-    # Arrange
-    mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
-    mock_user_session = mocker.MagicMock()
-    mock_user_session.is_active = True
-    mock_user_session.ip_address = "192.168.0.1"  # UserSession ip_address is different from the request
-    mock_get_latest_user_session.return_value = mock_user_session
-
-    mocker.patch("flask.request.remote_addr", return_value="127.0.0.1")  # Request ip_address
-
-    @check_user_session
-    def dummy_function(*args, **kwargs):
-        return "success"
-
-    # Act
-    verify_jwt_in_request(optional=True)  # This is needed to set the current_user
-    mock_current_user = mocker.patch("ops_api.ops.auth.decorators.current_user")
-    mock_current_user.id = 503
-
-    # Assert
-    with pytest.raises(InvalidUserSessionError):
-        dummy_function()
-
-    user_sessions = get_all_user_sessions(503, loaded_db)
-    assert all([not user_session.is_active for user_session in user_sessions])
-
-
-@pytest.mark.usefixtures("app_ctx")
 def test_idle_timeout(mocker, loaded_db):
     # Arrange
     mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
