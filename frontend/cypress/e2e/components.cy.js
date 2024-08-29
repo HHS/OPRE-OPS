@@ -11,47 +11,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-describe("DatePicker", () => {
-    it("should error if date is not in the future", () => {
-        cy.visit("/agreements/1/budget-lines");
-        cy.get("#edit").click();
-        cy.get("#need-by-date").as("need-by-date");
-        cy.get("@need-by-date").type("01/01/2020");
-        cy.get("@need-by-date").blur();
-        cy.get(".usa-error-message").should("exist");
-        cy.get("#add-budget-line").should("be.disabled");
-        cy.get("@need-by-date").clear();
-        cy.get("@need-by-date").type("01/01/2048");
-        cy.get("@need-by-date").blur();
-        cy.get(".usa-error-message").should("not.exist");
-        cy.get("#add-budget-line").should("not.be.disabled");
-    });
-    it('should error if date is not in the format "MM/DD/YYYY"', () => {
-        cy.visit("/agreements/1/budget-lines");
-        cy.get("#edit").click();
-        cy.get("#need-by-date").as("need-by-date");
-        cy.get("@need-by-date").type("01/01/20");
-        cy.get("@need-by-date").blur();
-        cy.get(".usa-error-message").should("exist");
-        cy.get("#add-budget-line").should("be.disabled");
-        cy.get("@need-by-date").clear();
-        cy.get("@need-by-date").type("01/01/2048");
-        cy.get("@need-by-date").blur();
-        cy.get(".usa-error-message").should("not.exist");
-        cy.get("#add-budget-line").should("not.be.disabled");
-        cy.get("@need-by-date").clear();
-        cy.get("@need-by-date").type("tacocat");
-        cy.get("@need-by-date").blur();
-        cy.get(".usa-error-message").should("exist");
-        cy.get("#add-budget-line").should("be.disabled");
-        cy.get("@need-by-date").clear();
-        cy.get("@need-by-date").type("01/01/2048");
-        cy.get("@need-by-date").blur();
-        cy.get(".usa-error-message").should("not.exist");
-        cy.get("#add-budget-line").should("not.be.disabled");
-    });
-});
-
 describe("DateRangePicker", () => {
     it("should display date range picker", () => {
         cy.visit("/agreements/1/budget-lines");

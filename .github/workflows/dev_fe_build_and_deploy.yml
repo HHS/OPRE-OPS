@@ -12,6 +12,7 @@ env:
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
   ENVIRONMENT: dev
+  DOMAIN_NAME: "ops.opre.acf.gov"
 
 jobs:
   build-frontend:
@@ -30,7 +31,7 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "unstable,${{ github.sha }},${{ env.ENVIRONMENT }}"
-          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.acf.opre-ops.flexion.us, MODE=${{ env.ENVIRONMENT }}"
+          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}"
 
   deploy-frontend:
     needs: build-frontend
@@ -47,6 +48,6 @@ jobs:
       - name: Deploy Container App
         uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
         with:
-            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-${{ env.WORKING_DIR }}
-            resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
+            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
+            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}

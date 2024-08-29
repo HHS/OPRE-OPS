@@ -5,7 +5,7 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 This is the OPRE Portfolio Management System, or OPS. The finished product will replace OPRE's prior system,
-[MAPS](https://github.com/HHS/MAPS-app). The purpose of OPS can be found on
+MAPS. The purpose of OPS can be found on
 [the wiki](https://github.com/HHS/OPRE-OPS/wiki).
 
 ## Dependencies
@@ -25,7 +25,7 @@ install it on your machine.
 To install the dependencies, run...
 
 ```shell
-cd ./backend/
+cd ./backend/ops_api/
 pipenv install --dev
 ```
 
@@ -80,7 +80,7 @@ the backend api at `http://localhost:8080`.
 
 #### Backend
 
-The backend api utilizes `pytest`.
+The backend api utilizes [pytest](https://docs.pytest.org/en/stable/).
 
 To run them...
 
@@ -186,7 +186,7 @@ bun run lint --fix
 
 ### Pre-commit Hooks
 
-We use pre-commit hooks to help keep our code clean. If you develop for OPS, you must install them.
+We use [pre-commit](https://pre-commit.com/index.html) hooks to help keep our code clean. If you develop for OPS, you must install them.
 
 ```shell
 pre-commit install

@@ -106,9 +106,11 @@ export const CreateBLIsAndSCs = ({
         setIsEditMode,
         workflow,
         formData,
-        includeDrafts
+        includeDrafts,
+        canUserEditBudgetLines
     );
 
+    const isAgreementWorkflowOrCanEditBudgetLines = workflow === "agreement" || canUserEditBudgetLines;
     return (
         <>
             {showModal && (
@@ -137,7 +139,7 @@ export const CreateBLIsAndSCs = ({
             }
 
             {workflow !== "none" && (
-                // NOTE: this includes the Agreement Workflow steps
+                // NOTE: this includes the Agreement/Budget Line Workflow steps
                 <>
                     <StepIndicator
                         steps={wizardSteps}
@@ -148,10 +150,12 @@ export const CreateBLIsAndSCs = ({
                         selectedAgreement={selectedAgreement}
                         selectedProcurementShop={selectedProcurementShop}
                     />
-                    <ServicesComponents
-                        serviceRequirementType={selectedAgreement.service_requirement_type}
-                        agreementId={selectedAgreement.id}
-                    />
+                    {isAgreementWorkflowOrCanEditBudgetLines && (
+                        <ServicesComponents
+                            serviceRequirementType={selectedAgreement.service_requirement_type}
+                            agreementId={selectedAgreement.id}
+                        />
+                    )}
                     <div className="margin-top-3">
                         <FormHeader
                             heading="Add Budget Lines"
@@ -199,36 +203,36 @@ export const CreateBLIsAndSCs = ({
             )}
 
             {workflow === "budgetLines" && (
-                <>
-                    <FormHeader
-                        heading="Budget Lines"
-                        details="This is a list of all budget lines for the selected project and agreement. The budget lines you
+                <FormHeader
+                    heading="Budget Lines"
+                    details="This is a list of all budget lines for the selected project and agreement. The budget lines you
                         add will display in draft status. The Fiscal Year (FY) will populate based on the election date
                         you provide."
-                    />
-                </>
+                />
             )}
 
-            <BudgetLinesForm
-                selectedCan={selectedCan}
-                servicesComponentId={servicesComponentId}
-                enteredAmount={enteredAmount}
-                needByDate={needByDate}
-                setNeedByDate={setNeedByDate}
-                enteredComments={enteredComments}
-                isEditing={isEditing}
-                setServicesComponentId={setServicesComponentId}
-                setSelectedCan={setSelectedCan}
-                setEnteredAmount={setEnteredAmount}
-                setEnteredComments={setEnteredComments}
-                handleEditBLI={handleEditBLI}
-                handleResetForm={handleResetForm}
-                handleAddBLI={handleAddBLI}
-                isReviewMode={isReviewMode}
-                isEditMode={isEditMode}
-                agreementId={selectedAgreement.id}
-                isBudgetLineNotDraft={isBudgetLineNotDraft}
-            />
+            {isAgreementWorkflowOrCanEditBudgetLines && (
+                <BudgetLinesForm
+                    selectedCan={selectedCan}
+                    servicesComponentId={servicesComponentId}
+                    enteredAmount={enteredAmount}
+                    needByDate={needByDate}
+                    setNeedByDate={setNeedByDate}
+                    enteredComments={enteredComments}
+                    isEditing={isEditing}
+                    setServicesComponentId={setServicesComponentId}
+                    setSelectedCan={setSelectedCan}
+                    setEnteredAmount={setEnteredAmount}
+                    setEnteredComments={setEnteredComments}
+                    handleEditBLI={handleEditBLI}
+                    handleResetForm={handleResetForm}
+                    handleAddBLI={handleAddBLI}
+                    isReviewMode={isReviewMode}
+                    isEditMode={isEditMode}
+                    agreementId={selectedAgreement.id}
+                    isBudgetLineNotDraft={isBudgetLineNotDraft}
+                />
+            )}
 
             {budgetLinePageErrorsExist && (
                 <ul
@@ -290,7 +294,7 @@ export const CreateBLIsAndSCs = ({
                         className="usa-button"
                         data-cy="continue-btn"
                         onClick={handleSave}
-                        disabled={isReviewMode && !res.isValid()}
+                        disabled={(isReviewMode && !res.isValid()) || !isAgreementWorkflowOrCanEditBudgetLines}
                     >
                         {isReviewMode ? "Review" : continueBtnText}
                     </button>
