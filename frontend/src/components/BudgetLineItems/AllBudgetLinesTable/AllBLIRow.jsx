@@ -1,24 +1,24 @@
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import TableTag from "../../UI/TableTag";
-import ChangeIcons from "../ChangeIcons";
-import TableRowExpandable from "../../UI/TableRowExpandable";
-import TextClip from "../../UI/Text/TextClip";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { getBudgetLineCreatedDate, isBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import { useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesComponents.hooks";
-import { formatDateNeeded, totalBudgetLineFeeAmount, totalBudgetLineAmountPlusFees } from "../../../helpers/utils";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
+import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
     removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import TableTag from "../../UI/TableTag";
+import TextClip from "../../UI/Text/TextClip";
+import ChangeIcons from "../ChangeIcons";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -39,7 +39,7 @@ const AllBLIRow = ({
 }) => {
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
-    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineInReview = budgetLine?.in_review;
     const isBudgetLineEditable =
