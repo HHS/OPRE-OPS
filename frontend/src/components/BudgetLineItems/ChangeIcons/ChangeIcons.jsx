@@ -62,7 +62,7 @@ const ChangeIcons = ({
                             </button>
                         </Tooltip>
                         <Tooltip
-                            label={`${isItemDeletable ? "Delete" : "Cannot delete"}`}
+                            label={`${isItemDeletable ? "Delete" : "Disabled"}`}
                             className="line-height-body-1"
                         >
                             <button

@@ -73,10 +73,28 @@ export const AgreementTableRow = ({ agreement }) => {
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const doesAgreementHaveBLIsInReview = hasBlIsInReview(agreement?.budget_line_items);
-    const lockedMessage = doesAgreementHaveBLIsInReview
-        ? "This agreement cannot be edited because it is currently In Review for a status change"
-        : "Only team members on this agreement can edit, delete, or send to approval";
     const isEditable = isAgreementEditable && canUserEditAgreement && !doesAgreementHaveBLIsInReview;
+
+    function getLockedMessage() {
+        const lockedMessages = {
+            inReview: "This agreement cannot be edited because it is currently In Review for a status change",
+            notTeamMember: "Only team members on this agreement can edit, delete, or send to approval",
+            notEditable: "This agreement cannot be edited because of budget lines status",
+            default: "Disabled"
+        };
+        switch (true) {
+            case doesAgreementHaveBLIsInReview:
+                return lockedMessages.inReview;
+            case !canUserEditAgreement:
+                return lockedMessages.notTeamMember;
+            case !isAgreementEditable:
+                return lockedMessages.notEditable;
+            default:
+                return lockedMessages.default;
+        }
+    }
+
+    const lockedMessage = getLockedMessage();
     const areAllBudgetLinesInDraftStatus = areAllBudgetLinesInStatus(agreement, BLI_STATUS.DRAFT);
     const areThereAnyBudgetLines = isThereAnyBudgetLines(agreement);
     const canUserDeleteAgreement = canUserEditAgreement && (areAllBudgetLinesInDraftStatus || !areThereAnyBudgetLines);
