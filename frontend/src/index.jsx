@@ -1,40 +1,38 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Link, Navigate } from "react-router-dom";
+import { createBrowserRouter, createRoutesFromElements, Link, Navigate, Route, RouterProvider } from "react-router-dom";
 import store from "./store";
+import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
+import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
+import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
+import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
+import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
+import ApproveAgreement from "./pages/agreements/approve";
+import CreateAgreement from "./pages/agreements/CreateAgreement";
+import Agreement from "./pages/agreements/details/Agreement";
+import EditAgreement from "./pages/agreements/EditAgreement";
+import { AgreementsList } from "./pages/agreements/list/AgreementsList";
+import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
+import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
+import CanDetail from "./pages/cans/detail/CanDetail";
+import CanList from "./pages/cans/list/CanList";
+import ErrorPage from "./pages/ErrorPage";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
+import PortfolioList from "./pages/portfolios/list/PortfolioList";
+import CreateProject from "./pages/projects/CreateProject";
+import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
+import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
+import UserDetail from "./pages/users/detail/UserDetail";
+import EditUser from "./pages/users/edit/EditUser";
+import VersionPage from "./pages/version/VersionPage";
 
 //  USWDS
 import "./uswds/css/styles.css";
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
-
-import Home from "./pages/Home";
-import PortfolioList from "./pages/portfolios/list/PortfolioList";
-import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
-import CanList from "./pages/cans/list/CanList";
-import CanDetail from "./pages/cans/detail/CanDetail";
-import UserDetail from "./pages/users/detail/UserDetail";
-import EditUser from "./pages/users/edit/EditUser";
-import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
-import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
-import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
-import ResearchProjectDetail from "./pages/researchProjects/detail/ResearchProjectDetail";
-import CreateBudgetLines from "./pages/budgetLines";
-import CreateAgreement from "./pages/agreements/CreateAgreement";
-import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
-import CreateProject from "./pages/projects/CreateProject";
-import { AgreementsList } from "./pages/agreements/list/AgreementsList";
-import Agreement from "./pages/agreements/details/Agreement";
-import EditAgreement from "./pages/agreements/EditAgreement";
-import Login from "./pages/Login";
-import ErrorPage from "./pages/ErrorPage";
-import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
-import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
-import ApproveAgreement from "./pages/agreements/approve";
-import VersionPage from "./pages/version/VersionPage";
-import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
-import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -189,12 +187,6 @@ const router = createBrowserRouter(
                     path="/budget-lines"
                     element={<BudgetLineItemList />}
                 />
-                {import.meta.env.DEV && (
-                    <Route
-                        path="/budget-lines/create"
-                        element={<CreateBudgetLines />}
-                    />
-                )}
                 <Route
                     path="/projects/create"
                     element={<CreateProject />}
@@ -263,7 +255,7 @@ const router = createBrowserRouter(
                 />
                 <Route
                     path="/upload-document"
-                    element={<UploadDocument/>}
+                    element={<UploadDocument />}
                 />
             </Route>
             {/* END PROTECTED ROUTES */}
