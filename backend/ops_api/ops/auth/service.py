@@ -112,32 +112,24 @@ def _get_or_create_user_session(
         .order_by(UserSession.created_on.desc())  # type: ignore
     )
     user_sessions = current_app.db_session.execute(stmt).scalars().all()
-    latest_user_session = get_latest_user_session(user.id, current_app.db_session)
 
-    if (
-        latest_user_session
-        and latest_user_session.is_active
-        and not is_token_expired(latest_user_session.access_token, current_app.config["JWT_PRIVATE_KEY"])
-    ):
-        return latest_user_session
-    else:
-        # set all other sessions to inactive before creating a new one
-        deactivate_all_user_sessions(user_sessions)
+    # set all other sessions to inactive before creating a new one
+    deactivate_all_user_sessions(user_sessions)
 
-        user_session = UserSession(
-            user_id=user.id,
-            is_active=True,
-            ip_address=ip_address,
-            access_token=access_token,
-            refresh_token=refresh_token,
-            last_active_at=datetime.now(),
-            created_by=user.id,
-            updated_by=user.id,
-        )
-        current_app.db_session.add(user_session)
-        current_app.db_session.commit()
+    user_session = UserSession(
+        user_id=user.id,
+        is_active=True,
+        ip_address=ip_address,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        last_active_at=datetime.now(),
+        created_by=user.id,
+        updated_by=user.id,
+    )
+    current_app.db_session.add(user_session)
+    current_app.db_session.commit()
 
-        return user_session
+    return user_session
 
 
 def get_roles(session: Session, **kwargs) -> list[Role]:
