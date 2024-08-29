@@ -34,7 +34,7 @@ import suite from "./suite";
  * @param {Function} continueOverRide - Function to override the continue action.
  * @param {Object} selectedAgreement - Selected agreement object.
  * @param {Object} selectedProcurementShop - Selected procurement shop object.
- * @param {string} workflow - The workflow type ("agreement" or "budgetLines").
+ * @param {"agreement" | "none"} workflow - The workflow type
  * @param {Object} formData - The form data.
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
  * @param {boolean} canUserEditBudgetLines - Flag to indicate if the user can edit budget lines.
