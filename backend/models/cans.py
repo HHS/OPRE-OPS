@@ -215,3 +215,12 @@ class CANFundingBudget(BaseModel):
     notes: Mapped[Optional[str]]
 
     can: Mapped[CAN] = relationship(CAN, back_populates="funding_budgets")
+
+    @property
+    def is_carry_forward(self) -> Optional[bool]:
+        """If this is a carry forward budget then return True else it is new money return False"""
+        return (
+            self.fiscal_year != self.can.funding_details.fiscal_year
+            if self.can.funding_details
+            else None
+        )

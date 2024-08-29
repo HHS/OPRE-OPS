@@ -1,9 +1,8 @@
 from decimal import Decimal
-from typing import Any, Optional, TypedDict
+from typing import TypedDict
 
 from flask import current_app
-from sqlalchemy import Select, select, sql
-from sqlalchemy.sql.functions import coalesce
+from sqlalchemy import and_, select
 
 from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingBudget, Portfolio
 
@@ -26,54 +25,40 @@ class TotalFunding(TypedDict):
     available_funding: FundingLineItem
 
 
-def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
+def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
     stmt = (
-        select(coalesce(sql.functions.sum(CANFundingBudget.budget), 0))
+        select(CANFundingBudget)
         .join(CAN)
         .where(CAN.portfolio_id == portfolio_id)
         .where(CANFundingBudget.fiscal_year == fiscal_year)
     )
 
-    return current_app.db_session.scalar(stmt)
+    return current_app.db_session.execute(stmt).scalars().all()
+
+
+def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
+    return sum([b.budget for b in _get_all_budgets(portfolio_id, fiscal_year)]) or Decimal(0)
 
 
 def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
-    # stmt = (
-    #     select(coalesce(sql.functions.sum(CANFiscalYearCarryForward.total_amount), 0))
-    #     .join(CAN)
-    #     .where(CAN.managing_portfolio_id == portfolio_id)
-    #     .where(CANFiscalYearCarryForward.to_fiscal_year == fiscal_year)
-    # )
-
-    stmt = ""  # TODO: Implement this query
-
-    return current_app.db_session.scalar(stmt)
+    return sum([b.budget for b in _get_all_budgets(portfolio_id, fiscal_year) if b.is_carry_forward]) or Decimal(0)
 
 
-def _get_budget_line_item_total_by_status(portfolio_id: int, status: BudgetLineItemStatus) -> Decimal:
-    stmt = _get_budget_line_item_total(portfolio_id)
-    stmt = stmt.where(BudgetLineItem.status == status)
-
-    return current_app.db_session.scalar(stmt)
-
-
-def _get_budget_line_item_total(portfolio_id: int) -> Select[Any]:
+def _get_budget_line_item_total_by_status(portfolio_id: int, fiscal_year: int, status: BudgetLineItemStatus) -> Decimal:
     stmt = (
-        select(coalesce(sql.functions.sum(BudgetLineItem.amount), 0))
-        .join(CAN)
-        .where(CAN.managing_portfolio_id == portfolio_id)
+        select(BudgetLineItem).join(CAN).where(and_(CAN.portfolio_id == portfolio_id, BudgetLineItem.status == status))
     )
 
-    return stmt
+    blis = current_app.db_session.execute(stmt).scalars().all()
+
+    return sum([bli.amount for bli in blis if bli.fiscal_year == fiscal_year]) or Decimal(0)
 
 
 def get_total_funding(
     portfolio: Portfolio,
-    fiscal_year: Optional[int] = None,
+    fiscal_year: int,
 ) -> TotalFunding:
     """Get the portfolio total funding for the given fiscal year."""
-    if fiscal_year is None:
-        raise ValueError
     total_funding = _get_total_fiscal_year_funding(
         portfolio_id=portfolio.id,
         fiscal_year=fiscal_year,
@@ -85,26 +70,29 @@ def get_total_funding(
     )
 
     planned_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, status=BudgetLineItemStatus.PLANNED
+        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.PLANNED
     )
 
     obligated_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, status=BudgetLineItemStatus.OBLIGATED
+        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.OBLIGATED
     )
 
     in_execution_funding = _get_budget_line_item_total_by_status(
-        portfolio_id=portfolio.id, status=BudgetLineItemStatus.IN_EXECUTION
+        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.IN_EXECUTION
     )
 
-    total_accounted_for = sum(
-        (
-            planned_funding,
-            obligated_funding,
-            in_execution_funding,
+    total_accounted_for = (
+        sum(
+            (
+                planned_funding,
+                obligated_funding,
+                in_execution_funding,
+            )
         )
+        or 0
     )
 
-    available_funding = float(total_funding) - float(total_accounted_for)
+    available_funding = total_funding - total_accounted_for
 
     return {
         "total_funding": {
