@@ -328,8 +328,6 @@ export const AgreementEditForm = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Agreement Type</h2>
-            <p className="margin-top-1">Select the agreement type to get started.</p>
             <AgreementTypeSelect
                 messages={res.getErrors("agreement_type")}
                 className={cn("agreement_type")}
@@ -340,12 +338,6 @@ export const AgreementEditForm = ({
                     runValidate(name, value);
                 }}
             />
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <p className="margin-top-1">
-                Tell us a little more about this agreement. Make sure you complete the required information in order to
-                proceed. For everything else you can skip the parts you do not know or come back to edit the information
-                later.
-            </p>
             <Input
                 name="name"
                 label="Agreement Title"
@@ -417,7 +409,6 @@ export const AgreementEditForm = ({
                     onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
                 />
             </div>
-
             <div className="display-flex margin-top-3">
                 <AgreementReasonSelect
                     name="agreement_reason"
@@ -452,7 +443,6 @@ export const AgreementEditForm = ({
                     />
                 </fieldset>
             </div>
-
             <div className="display-flex margin-top-3">
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
@@ -476,7 +466,6 @@ export const AgreementEditForm = ({
                     overrideStyles={{ width: "14.375rem" }}
                 />
             </div>
-
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList
                 selectedTeamMembers={selectedTeamMembers}
