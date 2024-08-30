@@ -721,6 +721,7 @@ const useCreateBLIsAndSCs = (
         isEditing,
         budgetLineBeingEdited,
         pageErrors,
+        budgetLinePageErrorsExist,
         showModal,
         setShowModal,
         modalProps,
