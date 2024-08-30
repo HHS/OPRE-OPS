@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { convertCodeForDisplay } from "../../../helpers/utils";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -15,6 +14,7 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
+import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -210,7 +210,7 @@ export const CreateBLIsAndSCs = ({
                 />
             )}
 
-            {budgetLinePageErrorsExist && (
+            {pageErrors && (
                 <ul
                     className="usa-list--unstyled font-12px text-error"
                     data-cy="error-list"
@@ -221,7 +221,6 @@ export const CreateBLIsAndSCs = ({
                             className="border-left-2px padding-left-1"
                             data-cy="error-item"
                         >
-                            <strong>{convertCodeForDisplay("validation", key)}: </strong>
                             {
                                 <span>
                                     {value.map((message, index) => (
