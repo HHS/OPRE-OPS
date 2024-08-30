@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
@@ -10,6 +9,7 @@ import {
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import { formatTeamMember } from "../../../api/postAgreements";
+import { cleanAgreementForApi } from "../../../helpers/agreement.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
@@ -174,12 +174,6 @@ export const AgreementEditForm = ({
             type: "REMOVE_TEAM_MEMBER",
             payload: teamMember
         });
-    };
-
-    const cleanAgreementForApi = (data) => {
-        // eslint-disable-next-line no-unused-vars
-        const { id, budget_line_items, services_components, created_by, created_on, updated_on, ...cleanData } = data;
-        return { id: id, cleanData: cleanData };
     };
 
     const saveAgreement = async () => {

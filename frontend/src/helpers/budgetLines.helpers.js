@@ -159,3 +159,27 @@ export const isBudgetLineEditableByStatus = (budgetLine) => {
 
     return (isBudgetLineDraft || isBudgetLinePlanned) && !isBudgetLineInReview;
 };
+
+export const cleanBudgetLineItemForApi = (data) => {
+    const cleanData = { ...data };
+    if (data.services_component_id === 0) {
+        cleanData.services_component_id = null;
+    }
+    if (cleanData.date_needed === "--") {
+        cleanData.date_needed = null;
+    }
+    const budgetLineId = cleanData.id;
+    delete cleanData.created_by;
+    delete cleanData.created_on;
+    delete cleanData.updated_on;
+    delete cleanData.can;
+    delete cleanData.id;
+    delete cleanData.in_review;
+    delete cleanData.canDisplayName;
+    delete cleanData.versions;
+    delete cleanData.clin;
+    delete cleanData.agreement;
+    delete cleanData.financialSnapshotChanged;
+
+    return { id: budgetLineId, data: cleanData };
+};
