@@ -720,7 +720,6 @@ const useCreateBLIsAndSCs = (
         handleDuplicateBudgetLine,
         isEditing,
         budgetLineBeingEdited,
-        budgetLinePageErrorsExist,
         pageErrors,
         showModal,
         setShowModal,

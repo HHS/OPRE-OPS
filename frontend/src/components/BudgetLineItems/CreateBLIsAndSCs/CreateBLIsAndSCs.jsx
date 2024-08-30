@@ -14,7 +14,6 @@ import StepIndicator from "../../UI/StepIndicator/StepIndicator";
 import BudgetLinesForm from "../BudgetLinesForm";
 import BudgetLinesTable from "../BudgetLinesTable";
 import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
-import DebugCode from "../../DebugCode";
 
 /**
  * Renders the Create Budget Lines and Services Components with React context.
@@ -61,7 +60,6 @@ export const CreateBLIsAndSCs = ({
     setIncludeDrafts
 }) => {
     const {
-        budgetLinePageErrorsExist,
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleEditBLI,
