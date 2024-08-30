@@ -6,7 +6,6 @@ import App from "../../../App";
 import AgreementEditForm from "../../../components/Agreements/AgreementEditor/AgreementEditForm";
 import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
-import DebugCode from "../../../components/DebugCode";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 
@@ -98,7 +97,6 @@ function ResolveAgreement() {
                 setIncludeDrafts={setIncludeDrafts}
                 goBack={() => {}}
             />
-            <DebugCode data={agreement} />
         </App>
     );
 }
