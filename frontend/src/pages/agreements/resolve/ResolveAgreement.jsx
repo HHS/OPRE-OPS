@@ -7,14 +7,22 @@ import AgreementEditForm from "../../../components/Agreements/AgreementEditor/Ag
 import { EditAgreementProvider } from "../../../components/Agreements/AgreementEditor/AgreementEditorContext";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import SimpleAlert from "../../../components/UI/Alert/SimpleAlert";
-import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import {
+    useIsAgreementEditable,
+    useIsUserAllowedToEditAgreement,
+    useSaveAgreement
+} from "../../../hooks/agreement.hooks";
+import useSaveBudgetLines from "../../../hooks/budget-line.hooks";
 
 // /agreements/resolve/:id/*
 function ResolveAgreement() {
-    const urlPathParams = useParams();
-    const agreementId = parseInt(urlPathParams.id);
+    const { id } = useParams();
+    const agreementId = id ? parseInt(id, 10) : undefined;
     const [projectOfficer, setProjectOfficer] = React.useState({});
     const [includeDrafts, setIncludeDrafts] = React.useState(false);
+    const [selectedTeamMembers, setSelectedTeamMembers] = React.useState([]);
+    const [tempBudgetLines, setTempBudgetLines] = React.useState([]);
+
     const {
         data: agreement,
         error: errorAgreement,
@@ -26,6 +34,9 @@ function ResolveAgreement() {
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const isEditable = isAgreementEditable && canUserEditAgreement;
+
+    const { saveAgreement } = useSaveAgreement(agreement, selectedTeamMembers, () => {});
+    const { saveBudgetLines } = useSaveBudgetLines(tempBudgetLines);
 
     React.useEffect(() => {
         const getProjectOfficerSetState = async (id) => {
@@ -41,6 +52,15 @@ function ResolveAgreement() {
             setProjectOfficer({});
         };
     }, [agreement]);
+
+    const handleSaveAll = React.useCallback(async () => {
+        try {
+            await saveAgreement();
+            await saveBudgetLines();
+        } catch (error) {
+            console.error("Error saving agreement and budget lines:", error);
+        }
+    }, [saveAgreement, saveBudgetLines]);
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
@@ -97,6 +117,12 @@ function ResolveAgreement() {
                 setIncludeDrafts={setIncludeDrafts}
                 goBack={() => {}}
             />
+            <button
+                className="usa-button float-right margin-top-2"
+                onClick={handleSaveAll}
+            >
+                Save All
+            </button>
         </App>
     );
 }
