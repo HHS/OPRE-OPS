@@ -1,0 +1,48 @@
+name: Staging Frontend Build and Deploy
+
+on:
+  workflow_dispatch:
+  
+env:
+  WORKING_DIR: "frontend"
+  DOCKER_FILE: "Dockerfile.azure"
+  ENVIRONMENT: prod
+  DOMAIN_NAME: "ops.opre.acf.gov"
+
+jobs:
+  build-frontend:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Build and publish the Docker image for ${{ github.repository }}
+        uses: ./.github/actions/build-and-push
+        with:
+          image_name: ${{ github.repository }}/ops-${{ env.WORKING_DIR }} # it will be lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
+          image_tags: "${{ github.sha }},${{ env.ENVIRONMENT }}"
+          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=production"
+
+  deploy-frontend:
+    needs: build-frontend
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Log in to Azure
+        uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
+        with:
+          creds: ${{ secrets.PROD_AZURE_CREDS }}
+
+      - name: Deploy Container App
+        uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
+        with:
+            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
+            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
