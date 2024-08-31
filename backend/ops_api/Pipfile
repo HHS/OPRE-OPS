@@ -11,7 +11,7 @@ flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.6.0"}
 authlib = "==1.3.2"
 requests = "==2.32.3"
 markupsafe = "==2.1.5"
-flask-cors = "==4.0.2"
+flask-cors = "==5.0.0"
 psycopg2-binary = "==2.9.9"
 gunicorn = "==22.0.0"
 desert = "==2022.9.22"
