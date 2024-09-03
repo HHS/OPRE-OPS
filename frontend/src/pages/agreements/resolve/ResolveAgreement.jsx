@@ -117,12 +117,14 @@ function ResolveAgreement() {
                 setIncludeDrafts={setIncludeDrafts}
                 goBack={() => {}}
             />
-            <button
-                className="usa-button float-right margin-top-2"
-                onClick={handleSaveAll}
-            >
-                Save All
-            </button>
+            <div className="display-flex flex-justify-end">
+                <button
+                    className="usa-button margin-top-2"
+                    onClick={handleSaveAll}
+                >
+                    Save All
+                </button>
+            </div>
         </App>
     );
 }
