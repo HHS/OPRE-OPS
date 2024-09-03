@@ -1897,28 +1897,44 @@ components:
       description: Common Accounting Number (CAN) Object
       type: object
       properties:
-        appropriation_term:
+        active_period:
           type: integer
-        authorizer_id:
+        budget_line_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BudgetLineItem"
+        display_name:
+          type: string
+        funding_budgets:
+          type: array
+          items:
+            $ref: "#/components/schemas/FundingBudget"
+        funding_details:
+          type: object
+          items:
+            $ref: "#/components/schemas/FundingDetail"
+        funding_details_id:
           type: integer
-        arrangement_type_id:
-          type: integer
+        funding_received:
+          type: array
+          items:
+              $ref: "#/components/schemas/FundingReceived"
         number:
           type: string
-        purpose:
-          type: string
-        managing_portfolio_id:
+        portfolio:
           type: integer
-        nickname:
+        portfolio_id:
+          type: integer
+        projects:
+          type: array
+          items:
+            type: integer
+        nick_name:
           type: string
-        appropriation_date: { }
         description:
           type: string
         id:
           type: integer
-        expiration_date:
-          type: string
-        managing_project_id: { }
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -1931,6 +1947,110 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+    FundingReceived:
+      description: Funding Received Object
+      type: object
+      properties:
+        can:
+          type: integer
+        can_id:
+          type: integer
+        display_name:
+          type: string
+        fiscal_year:
+          type: integer
+        funding:
+          type: number
+        id:
+          type: integer
+        notes:
+          type: string
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+    FundingDetail:
+      description: Funding Detail Object
+      type: object
+      properties:
+        allotment:
+          type: string
+        allowance:
+          type: string
+        appropriation:
+          type: string
+        display_name:
+          type: string
+        fiscal_year:
+          type: integer
+        fund_code:
+          type: string
+        funding_partner:
+          type: string
+        funding_source:
+          type: string
+        id:
+          type: integer
+        method_of_transfer:
+          type: string
+        sub_allowance:
+          type: string
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+    FundingBudget:
+      description: Funding Budget Object
+      type: object
+      properties:
+        budget:
+          type: number
+        can:
+          type: integer
+        can_id:
+          type: integer
+        display_name:
+          type: string
+        fiscal_year:
+          type: integer
+        id:
+          type: integer
+        notes:
+          type: string
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/FundingBudgetVersion"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+    FundingBudgetVersion:
+      description: SQLAlchemy Continuum Version for Funding Budget
     Portfolio:
       description: Portfolio Object
     User:

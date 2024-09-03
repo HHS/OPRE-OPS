@@ -20,11 +20,6 @@ class CANMethodOfTransfer(Enum):
     IDDA = auto()
 
 
-# class CANType(Enum):
-#     OPRE = auto()
-#     NON_OPRE = auto()
-#
-#
 class CANStatus(Enum):
     ACTIVE = auto()
     INACTIVE = auto()
@@ -140,6 +135,7 @@ class CAN(BaseModel):
                 ),
                 "funding_budgets": [fb.to_dict() for fb in self.funding_budgets],
                 "funding_received": [fr.to_dict() for fr in self.funding_received],
+                "active_period": self.active_period,
             }
         )
 

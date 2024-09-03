@@ -18,6 +18,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
     assert result == {
         "available_funding": Decimal("-860000.00"),
         "can": {
+            "active_period": 1,
             "budget_line_items": [15008],
             "created_by": None,
             "created_by_user": None,
@@ -103,6 +104,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
     assert result == {
         "available_funding": Decimal("-860000.00"),
         "can": {
+            "active_period": 1,
             "budget_line_items": [15008],
             "created_by": None,
             "created_by_user": None,
