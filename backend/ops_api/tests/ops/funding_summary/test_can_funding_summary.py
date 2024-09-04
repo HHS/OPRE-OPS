@@ -19,11 +19,13 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
         "available_funding": Decimal("-860000.00"),
         "can": {
             "active_period": 1,
+            "appropriation_date": 2023,
             "budget_line_items": [15008],
             "created_by": None,
             "created_by_user": None,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
             "display_name": "G99HRF2",
+            "expiration_date": 2024,
             "funding_budgets": [
                 {
                     "budget": "1140000.0",
@@ -105,11 +107,13 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
         "available_funding": Decimal("-860000.00"),
         "can": {
             "active_period": 1,
+            "appropriation_date": 2023,
             "budget_line_items": [15008],
             "created_by": None,
             "created_by_user": None,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
             "display_name": "G99HRF2",
+            "expiration_date": 2024,
             "funding_budgets": [
                 {
                     "budget": "1140000.0",

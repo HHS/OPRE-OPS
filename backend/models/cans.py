@@ -137,8 +137,9 @@ class CAN(BaseModel):
                 "funding_received": [fr.to_dict() for fr in self.funding_received],
                 "active_period": self.active_period,
                 "expiration_date": self.obligate_by,
-                "appropriation_date": self.funding_details.fiscal_year,
-                "portfolio": self.portfolio.to_dict(),
+                "appropriation_date": (
+                    self.funding_details.fiscal_year if self.funding_details else None
+                ),
             }
         )
 
