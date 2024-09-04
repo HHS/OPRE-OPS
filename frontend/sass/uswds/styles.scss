@@ -9,6 +9,7 @@ html {
 
 // COLORS
 :root {
+    --base-light-variant: #f5f5f5;
     --primary-light: #bcd9ed;
     --primary: #336a90;
     --primary-dark: #264a64;
@@ -54,6 +55,7 @@ html {
 }
 
 $themeColors: (
+    "base-light-variant": var(--base-light-variant),
     "primary-light": var(--primary-light),
     "primary": var(--primary),
     "primary-dark": var(--primary-dark),

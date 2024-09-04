@@ -13,9 +13,10 @@ import RoundedBox from "../RoundedBox";
 const SummaryCard = ({ title, children, dataCy = "", ...rest }) => {
     return (
         <RoundedBox
-            className={`padding-y-205 padding-x-4 padding-right-9 display-inline-block`}
+            className={"display-inline-block"}
             dataCy={dataCy ?? dataCy}
-            {...rest} // this is real trust
+            style={{ padding: "20px 30px 30px 30px" }}
+            {...rest} // this is real trust 🧡
         >
             {title && <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{title}</h3>}
             {children}
