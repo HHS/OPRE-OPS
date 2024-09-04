@@ -56,7 +56,7 @@ const canData = {
     display_name: "G99PHS9",
     expiration_date: "2024-09-01T00:00:00.000000Z",
     id: 502,
-    managing_portfolio_id: 8,
+    portfolio_id: 8,
     nickname: "SSRD",
     number: "G99PHS9"
 };
@@ -82,7 +82,7 @@ const canFundingCardData = {
         funding_sources: [26],
         id: 502,
         managing_portfolio: 8,
-        managing_portfolio_id: 8,
+        portfolio_id: 8,
         nickname: "SSRD",
         number: "G99PHS9",
         projects: [],

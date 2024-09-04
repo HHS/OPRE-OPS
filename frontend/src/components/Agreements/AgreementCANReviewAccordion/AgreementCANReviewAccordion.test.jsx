@@ -413,7 +413,7 @@ const selectedBudgetLines = [
             display_name: "G99PHS9",
             expiration_date: "2024-09-01T00:00:00.000000Z",
             id: 502,
-            managing_portfolio_id: 8,
+            portfolio_id: 8,
             nickname: "SSRD",
             number: "G99PHS9"
         },
@@ -458,7 +458,7 @@ const selectedBudgetLines = [
             display_name: "G99XXX8",
             expiration_date: "2023-09-01T00:00:00.000000Z",
             id: 512,
-            managing_portfolio_id: 3,
+            portfolio_id: 3,
             nickname: "",
             number: "G99XXX8"
         },
@@ -1258,7 +1258,7 @@ const canFundingCardData = {
         funding_sources: [26],
         id: 502,
         managing_portfolio: 8,
-        managing_portfolio_id: 8,
+        portfolio_id: 8,
         nickname: "SSRD",
         number: "G99PHS9",
         projects: [],
@@ -1305,7 +1305,7 @@ const canFundingCardData2 = {
         funding_sources: [26],
         id: 512,
         managing_portfolio: 3,
-        managing_portfolio_id: 3,
+        portfolio_id: 3,
         nickname: "",
         number: "G99XXX8",
         projects: [1000],
@@ -1352,7 +1352,7 @@ const canFundingCard_G994426 = {
         funding_sources: [26],
         id: 504,
         managing_portfolio: 2,
-        managing_portfolio_id: 2,
+        portfolio_id: 2,
         nickname: "HS",
         number: "G994426",
         projects: [],
@@ -1390,7 +1390,7 @@ const selectedBudgetLinesToAmount = [
             display_name: "G99XXX8",
             expiration_date: "2023-09-01T00:00:00.000000Z",
             id: 512,
-            managing_portfolio_id: 3,
+            portfolio_id: 3,
             nickname: "",
             number: "G99XXX8"
         },
@@ -1465,7 +1465,7 @@ const selectedBudgetLinesToAmount = [
             display_name: "G99PHS9",
             expiration_date: "2024-09-01T00:00:00.000000Z",
             id: 502,
-            managing_portfolio_id: 8,
+            portfolio_id: 8,
             nickname: "SSRD",
             number: "G99PHS9"
         },
@@ -1543,7 +1543,7 @@ const selectedBudgetLinesToCans = [
             display_name: "G99XXX8",
             expiration_date: "2023-09-01T00:00:00.000000Z",
             id: 512,
-            managing_portfolio_id: 3,
+            portfolio_id: 3,
             nickname: "",
             number: "G99XXX8"
         },
@@ -1586,7 +1586,7 @@ const selectedBudgetLinesToCans = [
             display_name: "G99PHS9",
             expiration_date: "2024-09-01T00:00:00.000000Z",
             id: 502,
-            managing_portfolio_id: 8,
+            portfolio_id: 8,
             nickname: "SSRD",
             number: "G99PHS9"
         },
@@ -1664,7 +1664,7 @@ const selectedBudgetLinesDRAFT_TO_PLANNED = [
             display_name: "G994426",
             expiration_date: "2024-09-01T00:00:00.000000Z",
             id: 504,
-            managing_portfolio_id: 2,
+            portfolio_id: 2,
             nickname: "HS",
             number: "G994426"
         },
@@ -1719,7 +1719,7 @@ const selectedBudgetLinesDRAFT_TO_PLANNED = [
             display_name: "G994426",
             expiration_date: "2024-09-01T00:00:00.000000Z",
             id: 504,
-            managing_portfolio_id: 2,
+            portfolio_id: 2,
             nickname: "HS",
             number: "G994426"
         },
@@ -1777,7 +1777,7 @@ const selectedBudgetLines_CAN_and_AMT = [
             display_name: "G99XXX8",
             expiration_date: "2023-09-01T00:00:00.000000Z",
             id: 512,
-            managing_portfolio_id: 3,
+            portfolio_id: 3,
             nickname: "",
             number: "G99XXX8"
         },
@@ -1820,7 +1820,7 @@ const selectedBudgetLines_CAN_and_AMT = [
             display_name: "G99PHS9",
             expiration_date: "2024-09-01T00:00:00.000000Z",
             id: 502,
-            managing_portfolio_id: 8,
+            portfolio_id: 8,
             nickname: "SSRD",
             number: "G99PHS9"
         },

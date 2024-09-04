@@ -8,7 +8,7 @@ export const budgetLine = {
         description: "Head Start Research",
         expiration_date: "2024-09-01T00:00:00.000000Z",
         id: 5,
-        managing_portfolio_id: 2,
+        portfolio_id: 2,
         nickname: "HS",
         number: "G994426",
         display_name: "G994426"
@@ -53,7 +53,7 @@ export const agreement = {
                 description: "Head Start Research",
                 expiration_date: "2024-09-01T00:00:00.000000Z",
                 id: 5,
-                managing_portfolio_id: 2,
+                portfolio_id: 2,
                 nickname: "HS",
                 number: "G994426",
                 display_name: "G994426"
@@ -109,7 +109,7 @@ export const agreement = {
                 description: "Head Start Research",
                 expiration_date: "2024-09-01T00:00:00.000000Z",
                 id: 5,
-                managing_portfolio_id: 2,
+                portfolio_id: 2,
                 nickname: "HS",
                 number: "G994426",
                 display_name: "G994426"
@@ -485,8 +485,8 @@ export const canFiscalYearFundingDetails = [
         current_fy_funding_ytd: 100000,
         can_fiscal_year_id: 5004
     }
-  ]
-  export const canAppropriationDetails =  [
+];
+export const canAppropriationDetails = [
     {
         id: 1,
         appropriation_prefix: "ABCDE",
@@ -604,7 +604,7 @@ export const budgetLineWithBudgetChangeRequest = {
         display_name: "G99XXX8",
         expiration_date: "2023-09-01T00:00:00.000000Z",
         id: 512,
-        managing_portfolio_id: 3,
+        portfolio_id: 3,
         nickname: "",
         number: "G99XXX8"
     },
@@ -742,7 +742,7 @@ export const budgetLineWithStatusChangeRequestToPlanned = {
         display_name: "G994426",
         expiration_date: "2024-09-01T00:00:00.000000Z",
         id: 504,
-        managing_portfolio_id: 2,
+        portfolio_id: 2,
         nickname: "HS",
         number: "G994426"
     },
@@ -828,7 +828,7 @@ export const budgetLineWithStatusChangeRequestToExecuting = {
         display_name: "G99PHS9",
         expiration_date: "2024-09-01T00:00:00.000000Z",
         id: 502,
-        managing_portfolio_id: 8,
+        portfolio_id: 8,
         nickname: "SSRD",
         number: "G99PHS9"
     },
