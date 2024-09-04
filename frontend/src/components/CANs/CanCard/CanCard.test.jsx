@@ -54,7 +54,7 @@ describe("CanCard", () => {
 
 const mockCan = {
     appropriation_date: "2023-10-01T00:00:00.000000Z",
-    appropriation_term: 1,
+    active_period: 1,
     arrangement_type: "OPRE_APPROPRIATION",
     authorizer: 26,
     authorizer_id: 26,
@@ -72,7 +72,7 @@ const mockCan = {
     id: 504,
     managing_portfolio: 2,
     portfolio_id: 2,
-    nickname: "HS",
+    nick_name: "HS",
     number: "G994426",
     projects: [],
     shared_portfolios: [],
@@ -93,7 +93,7 @@ const mockCanFundingData = {
     available_funding: "7000000.00",
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
-        appropriation_term: 1,
+        active_period: 1,
         arrangement_type: "OPRE_APPROPRIATION",
         authorizer: 26,
         authorizer_id: 26,
@@ -111,7 +111,7 @@ const mockCanFundingData = {
         id: 504,
         managing_portfolio: 2,
         portfolio_id: 2,
-        nickname: "HS",
+        nick_name: "HS",
         number: "G994426",
         projects: [],
         shared_portfolios: [],

@@ -30,7 +30,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     if (error) {
         return <div>An error occurred loading CAN funding data</div>;
     }
-    const title = `${data.can.number} (${data.can.appropriation_term} Year)`;
+    const title = `${data.can.number} (${data.can.active_period} Year)`;
     const totalFunding = Number(data.total_funding);
     const availableFunding = Number(data.available_funding);
     const totalAccountedFor = totalFunding - availableFunding; // same as adding planned, obligated, in_execution

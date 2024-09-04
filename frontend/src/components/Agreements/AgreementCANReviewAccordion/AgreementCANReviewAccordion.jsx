@@ -92,11 +92,16 @@ const AgreementCANReviewAccordion = ({
     }, {});
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
 
+    console.log("selectedBudgetLines", selectedBudgetLines);
+    console.log("selectedBudgetLines[0]", selectedBudgetLines[0]);
+
     let canPortfolios = [];
     selectedBudgetLines.forEach((budgetLine) => {
-        const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.managing_portfolio_id);
+        const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.portfolio_id);
         if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
+
+    console.log("canPortfolios", canPortfolios);
 
     // TODO: Replace with actual data
     let cansOutsideDivision = [
@@ -153,9 +158,9 @@ const AgreementCANReviewAccordion = ({
                 {canPortfolios?.length > 0 &&
                     canPortfolios.map((portfolio) => (
                         <Tag
-                            key={portfolio.id}
+                            key={portfolio?.id}
                             className="margin-left-1"
-                            text={portfolio.name}
+                            text={portfolio?.name}
                             tagStyle="primaryDarkTextLightBackground"
                         />
                     ))}
@@ -165,9 +170,9 @@ const AgreementCANReviewAccordion = ({
                 {cansOutsideDivision.length > 0 &&
                     cansOutsideDivision.map((portfolio) => (
                         <Tag
-                            key={portfolio.id}
+                            key={portfolio?.id}
                             className="margin-left-1"
-                            text={portfolio.name}
+                            text={portfolio?.name}
                             tagStyle="primaryDarkTextLightBackground"
                         />
                     ))}
