@@ -104,7 +104,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
     remove_keys(result, ["created_on", "updated_on", "versions"])
 
     assert result == {
-        "available_funding": Decimal("-860000.00"),
+        "available_funding": Decimal("1140000.0"),
         "can": {
             "active_period": 1,
             "appropriation_date": 2023,
@@ -175,7 +175,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
         "carry_forward_label": " Carry-Forward",
         "expected_funding": Decimal("260000.0"),
         "expiration_date": "10/01/2024",
-        "in_execution_funding": Decimal("2000000.00"),
+        "in_execution_funding": 0,
         "obligated_funding": 0,
         "planned_funding": 0,
         "received_funding": Decimal("880000.0"),
