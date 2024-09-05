@@ -92,16 +92,11 @@ const AgreementCANReviewAccordion = ({
     }, {});
     const cansWithPendingAmount = Object.values(cansWithPendingAmountMap);
 
-    console.log("selectedBudgetLines", selectedBudgetLines);
-    console.log("selectedBudgetLines[0]", selectedBudgetLines[0]);
-
     let canPortfolios = [];
     selectedBudgetLines.forEach((budgetLine) => {
         const canPortfolio = portfolios.find((portfolio) => portfolio.id === budgetLine?.can?.portfolio_id);
         if (canPortfolios.indexOf(canPortfolio) < 0) canPortfolios.push(canPortfolio);
     });
-
-    console.log("canPortfolios", canPortfolios);
 
     // TODO: Replace with actual data
     let cansOutsideDivision = [
