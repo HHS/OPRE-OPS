@@ -127,7 +127,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
 
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = `usa-legend font-sans-3xs margin-top-0 padding-bottom-1 ${customStyles.legendColor}`;
-    const checkboxStyles = `usa-checkbox display-flex flex-align-center ${customStyles.modalBackgroundColor}`;
+    const checkboxStyles = `display-flex flex-align-center ${customStyles.modalBackgroundColor}`;
     const checkboxInputStyles = "usa-checkbox__input height-3 width-3";
     const checkboxLabelStyles = "usa-checkbox__label margin-top-0";
     const radioInputStyles = "usa-radio__input height-3 width-3";
@@ -140,7 +140,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         >
             <legend className={legendStyles}>Upcoming Need By Date</legend>
             <div className="display-flex">
-                <div className={`usa-radio padding-right-5 ${customStyles.modalBackgroundColor}`}>
+                <div className={`padding-right-5 ${customStyles.modalBackgroundColor}`}>
                     <div className="display-flex flex-align-center padding-bottom-1">
                         <input
                             className={radioInputStyles}
