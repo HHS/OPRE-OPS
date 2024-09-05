@@ -1,27 +1,27 @@
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import TableTag from "../../UI/TableTag";
-import ChangeIcons from "../ChangeIcons";
-import TableRowExpandable from "../../UI/TableRowExpandable";
-import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
-import { useIsBudgetLineEditableByStatus, useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
-import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
-import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
-import { getBudgetLineCreatedDate } from "../../../helpers/budgetLines.helpers";
-import {
-    removeBorderBottomIfExpanded,
-    changeBgColorIfExpanded
-} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
-import { futureDateErrorClass, addErrorClassIfNotFound } from "../BudgetLinesTable/BLIRow.helpers";
+import { getBudgetLineCreatedDate, isBudgetLineEditableByStatus } from "../../../helpers/budgetLines.helpers";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import {
     fiscalYearFromDate,
     formatDateNeeded,
-    totalBudgetLineFeeAmount,
-    totalBudgetLineAmountPlusFees
+    totalBudgetLineAmountPlusFees,
+    totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
+import { useIsBudgetLineCreator } from "../../../hooks/budget-line.hooks";
+import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
+import TableRowExpandable from "../../UI/TableRowExpandable";
+import {
+    changeBgColorIfExpanded,
+    removeBorderBottomIfExpanded
+} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
+import TableTag from "../../UI/TableTag";
+import { addErrorClassIfNotFound, futureDateErrorClass } from "../BudgetLinesTable/BLIRow.helpers";
+import ChangeIcons from "../ChangeIcons";
 
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
@@ -50,7 +50,7 @@ const BLIReviewRow = ({
     const loggedInUserFullName = useGetLoggedInUserFullName();
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
-    const isBudgetLineEditableFromStatus = useIsBudgetLineEditableByStatus(budgetLine);
+    const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
     const isBudgetLineEditable = (canUserEditAgreement || isUserBudgetLineCreator) && isBudgetLineEditableFromStatus;

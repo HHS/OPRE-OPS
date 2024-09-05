@@ -1,36 +1,31 @@
-name: Dev Backend Build and Deploy
+name: Staging Backend Build and Deploy
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - backend/**
       
 env:
   WORKING_DIR: "backend"
   DT_DOCKER_FILE: "Dockerfile.data-tools-import"
   BE_DOCKER_FILE: "Dockerfile.ops-api"
-  ENVIRONMENT: dev
+  ENVIRONMENT: prod
 
 jobs:
-  build-data-tools:
-    permissions:
-      contents: read
-      packages: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+  # build-data-tools:
+  #   permissions:
+  #     contents: read
+  #     packages: write
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       
-      - name: Build and publish the Docker image for ${{ github.repository }}
-        uses: ./.github/actions/build-and-push
-        with:
-          image_name: ${{ github.repository }}/ops-data-tools # it will be lowercased internally
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
-          dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DT_DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }}"
+  #     - name: Build and publish the Docker image for ${{ github.repository }}
+  #       uses: ./.github/actions/build-and-push
+  #       with:
+  #         image_name: ${{ github.repository }}/ops-data-tools # it will be lowercased internally
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
+  #         dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DT_DOCKER_FILE }}
+  #         image_tags: "${{ github.sha }}"
   
   build-backend:
     permissions:
@@ -47,29 +42,29 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }}"
+          image_tags: "${{ github.sha }}"
 
-  deploy-data-tools: 
-    needs: build-data-tools
+  # deploy-data-tools: 
+  #   needs: build-data-tools
 
-    runs-on: ubuntu-latest
-    steps: 
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+  #   runs-on: ubuntu-latest
+  #   steps: 
+  #     - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       
-      - name: Log in to Azure
-        uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
-        with:
-          creds: ${{ secrets.SDLC_AZURE_CREDS }}
+  #     - name: Log in to Azure
+  #       uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
+  #       with:
+  #         creds: ${{ secrets.PROD_AZURE_CREDS }}
       
-      - name: Trigger Data-Tools Job
-        uses: azure/cli@089eac9d8cc39f5d003e94f8b65efc51076c9cbd # v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            # Update job to this image
-            az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
-            # Start the data-tools job
-            az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
+  #     - name: Trigger Data-Tools Job
+  #       uses: azure/cli@965c8d7571d2231a54e321ddd07f7b10317f34d9 # v2
+  #       with:
+  #         azcliversion: latest
+  #         inlineScript: |
+  #           # Update job to this image
+  #           az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+  #           # Start the data-tools job
+  #           az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
 
       # - name: Deploy Container App
       #   uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
@@ -89,7 +84,7 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
-          creds: ${{ secrets.SDLC_AZURE_CREDS }}
+          creds: ${{ secrets.PROD_AZURE_CREDS }}
 
       - name: Deploy Container App
         uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2

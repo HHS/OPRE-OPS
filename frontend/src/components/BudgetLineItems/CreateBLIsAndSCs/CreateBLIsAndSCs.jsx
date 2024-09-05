@@ -35,7 +35,7 @@ import useCreateBLIsAndSCs from "./CreateBLIsAndSCs.hooks";
  * @param {Function} props.setIsEditMode - A function to set the edit mode state.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {Function} [props.continueOverRide] - A function to override the default "Continue" button behavior. - optional
- * @param {"agreement" | "budgetLines" | "none"} props.workflow - The workflow type.
+ * @param {"agreement" | "none"} props.workflow - The workflow type.
  * @param {boolean} props.includeDrafts - Whether to include drafts budget lines.
  * @param {Function} props.setIncludeDrafts - A function to set the include drafts state.
  * @returns {JSX.Element} - The rendered component.
@@ -123,24 +123,9 @@ export const CreateBLIsAndSCs = ({
                 />
             )}
 
-            {
-                // TODO: consider moving this to a separate component for BudgetLine tab
-                // if workflow is none, skip the title
-                workflow !== "none" ? (
-                    workflow === "agreement" ? (
-                        <EditModeTitle isEditMode={isEditMode || isReviewMode} />
-                    ) : (
-                        <FormHeader
-                            heading="Create New Budget Line"
-                            details="Step Two: Text explaining this page"
-                        />
-                    )
-                ) : null
-            }
-
-            {workflow !== "none" && (
-                // NOTE: this includes the Agreement/Budget Line Workflow steps
+            {workflow === "agreement" && (
                 <>
+                    <EditModeTitle isEditMode={isEditMode || isReviewMode} />
                     <StepIndicator
                         steps={wizardSteps}
                         currentStep={currentStep}
@@ -200,15 +185,6 @@ export const CreateBLIsAndSCs = ({
                         />
                     </div>
                 </>
-            )}
-
-            {workflow === "budgetLines" && (
-                <FormHeader
-                    heading="Budget Lines"
-                    details="This is a list of all budget lines for the selected project and agreement. The budget lines you
-                        add will display in draft status. The Fiscal Year (FY) will populate based on the election date
-                        you provide."
-                />
             )}
 
             {isAgreementWorkflowOrCanEditBudgetLines && (
@@ -320,7 +296,7 @@ CreateBLIsAndSCs.propTypes = {
     setIsEditMode: PropTypes.func,
     isReviewMode: PropTypes.bool.isRequired,
     continueOverRide: PropTypes.func,
-    workflow: PropTypes.oneOf(["agreement", "budgetLines", "none"]).isRequired,
+    workflow: PropTypes.oneOf(["agreement", "none"]).isRequired,
     includeDrafts: PropTypes.bool.isRequired,
     setIncludeDrafts: PropTypes.func.isRequired
 };

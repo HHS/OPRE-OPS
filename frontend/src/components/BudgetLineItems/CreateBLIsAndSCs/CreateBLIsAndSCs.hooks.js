@@ -34,7 +34,7 @@ import suite from "./suite";
  * @param {Function} continueOverRide - Function to override the continue action.
  * @param {Object} selectedAgreement - Selected agreement object.
  * @param {Object} selectedProcurementShop - Selected procurement shop object.
- * @param {string} workflow - The workflow type ("agreement" or "budgetLines").
+ * @param {"agreement" | "none"} workflow - The workflow type
  * @param {Object} formData - The form data.
  * @param {boolean} includeDrafts - Flag to include drafts budget lines.
  * @param {boolean} canUserEditBudgetLines - Flag to indicate if the user can edit budget lines.
@@ -410,7 +410,7 @@ const useCreateBLIsAndSCs = (
         setAlert({
             type: "success",
             heading: "Budget Line Added",
-            message: "The budget line has been successfully added."
+            message: `The budget line ${BLILabel(newBudgetLine)} has been successfully added.`
         });
         resetForm();
     };
@@ -521,7 +521,7 @@ const useCreateBLIsAndSCs = (
         setAlert({
             type: "success",
             heading: "Budget Line Updated",
-            message: "The budget line has been successfully edited."
+            message: `The budget line ${BLILabel(currentBudgetLine)} has been successfully edited.`
         });
         resetForm();
     };
@@ -543,7 +543,7 @@ const useCreateBLIsAndSCs = (
                 setAlert({
                     type: "success",
                     heading: "Budget Line Deleted",
-                    message: `Budget line ${BLILabel(budgetLine)} has been successfully deleted.`
+                    message: `The budget line ${BLILabel(budgetLine)} has been successfully deleted.`
                 });
                 resetForm();
             }

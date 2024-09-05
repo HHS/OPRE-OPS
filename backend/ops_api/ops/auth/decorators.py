@@ -14,7 +14,6 @@ from ops_api.ops.auth.utils import (
     get_all_user_sessions,
     get_bearer_token,
     get_latest_user_session,
-    get_request_ip_address,
     get_user_from_userinfo,
 )
 from ops_api.ops.utils.errors import error_simulator
@@ -138,10 +137,6 @@ def check_user_session_function(user: User):
         if access_token != latest_user_session.access_token:
             deactivate_all_user_sessions(user_sessions)
             raise InvalidUserSessionError(f"User with id={user.id} is using an invalid access token")
-    # Check if the ip address in the request is the same as the latest user session ip address
-    if get_request_ip_address() != latest_user_session.ip_address:
-        deactivate_all_user_sessions(user_sessions)
-        raise InvalidUserSessionError(f"User with id={user.id} is using an invalid ip address")
     # Check if the last_accessed_at field of the latest user session is not more than a configurable threshold ago
     if check_last_active_at(latest_user_session):
         deactivate_all_user_sessions(user_sessions)

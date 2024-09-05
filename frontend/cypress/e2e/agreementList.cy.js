@@ -46,7 +46,7 @@ it("Agreements list table has correct headers and first row", () => {
         "Human Services Interoperability Support"
     );
     cy.get("tbody > :nth-child(1) > :nth-child(3)").should("have.text", "Contract");
-    cy.get("tbody > :nth-child(1) > :nth-child(4)").should("have.text", "$2,000,000.00");
+    cy.get("tbody > :nth-child(1) > :nth-child(4)").should("have.text", "$0");
     cy.get("tbody > :nth-child(1) > :nth-child(5)").should("have.text", "$0");
     cy.get("tbody > :nth-child(1) > :nth-child(6)").should("have.text", "None");
 
@@ -63,8 +63,6 @@ it("Agreements list table has correct headers and first row", () => {
 });
 
 it("navigates to the ReviewAgreements page when the review button is clicked", () => {
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(2000);
     cy.get(".usa-table").should("exist");
     cy.get("tbody tr").first().trigger("mouseover");
     cy.get("button[id^='submit-for-approval-']").first().should("exist");

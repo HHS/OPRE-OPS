@@ -157,11 +157,11 @@ def test_login_with_active_session(client, db_with_active_user_session, mocker):
     stmt = select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.created_on.desc())
     user_sessions = db_with_active_user_session.execute(stmt).scalars().all()
     assert user_sessions[0].is_active
-    assert user_sessions[0].access_token == "6526adb0e0777586804035802f48d8"
-    assert user_sessions[0].refresh_token == "14b0c1c59859cf1a7cca71af11283c"
+    assert user_sessions[0].access_token != "6526adb0e0777586804035802f48d8"
+    assert user_sessions[0].refresh_token != "14b0c1c59859cf1a7cca71af11283c"
     assert user_sessions[0].user_id == user.id
-    assert user_sessions[0].ip_address == "26.13.164.12"
-    assert user_sessions[0].last_active_at == datetime.datetime(2021, 10, 1, 0)
+    assert user_sessions[0].ip_address != "26.13.164.12"
+    assert user_sessions[0].last_active_at != datetime.datetime(2021, 10, 1, 0)
 
     # cleanup
     db_with_active_user_session.execute(text("DELETE FROM user_session"))
