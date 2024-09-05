@@ -14,7 +14,7 @@ import PropTypes from "prop-types";
  * @returns {JSX.Element} - The tag element.
  */
 const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children }) => {
-    let tagClasses = "font-12px padding-y-05 padding-x-1 height-205 radius-md",
+    let tagClasses = "font-12px height-205 radius-md",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
     // Can also pass in className prop to override
@@ -97,7 +97,10 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
     return (
         <span
             className={`${tagClasses} ${activeClass} ${className}`}
-            style={{ width: "fit-content" }}
+            style={{
+                width: "fit-content", // Ensures the tag's width adapts to its content
+                padding: ".25em .5em" // Adds some space inside the tag for better readability
+            }}
         >
             {text ? text : children}
         </span>
