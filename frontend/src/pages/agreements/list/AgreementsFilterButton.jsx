@@ -241,7 +241,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         </fieldset>,
         <fieldset
             key="field4"
-            className={fieldStyles}
+            className={`margin-top-105 ${fieldStyles}`}
             style={{ width: "22.7rem" }}
         >
             <AgreementTypeSelect
