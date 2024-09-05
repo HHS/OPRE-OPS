@@ -80,7 +80,7 @@ def test_login_fails_with_inactive_status(client, loaded_db, mocker):
 
     # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process
     res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
-    assert res.status_code == 403
+    assert res.status_code == 401
 
 
 def test_login_fails_with_locked_status(client, loaded_db, mocker):
@@ -89,7 +89,7 @@ def test_login_fails_with_locked_status(client, loaded_db, mocker):
 
     # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process
     res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
-    assert res.status_code == 403
+    assert res.status_code == 401
 
 
 def test_login_fails_with_null_status(client, loaded_db, mocker):
@@ -98,4 +98,4 @@ def test_login_fails_with_null_status(client, loaded_db, mocker):
 
     # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process
     res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
-    assert res.status_code == 403
+    assert res.status_code == 401
