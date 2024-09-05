@@ -120,8 +120,7 @@ def check_user_session_function(user: User):
     A user session is considered valid if:
     1. The user has an active user session.
     2. The access token in the request is the same as the latest user session access token.
-    3. The ip address in the request is the same as the latest user session ip address.
-    4. The last_accessed_at field of the latest user session is not more than a configurable threshold ago.
+    3. The last_accessed_at field of the latest user session is not more than a configurable threshold ago.
     """
     user_sessions = get_all_user_sessions(user.id, current_app.db_session)
     latest_user_session = get_latest_user_session(user.id, current_app.db_session)
