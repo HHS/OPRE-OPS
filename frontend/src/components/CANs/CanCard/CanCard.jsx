@@ -121,8 +121,8 @@ const CanCard = ({ can, fiscalYear }) => {
                 <div className="margin-y-3">
                     <dt className="margin-0 text-base-dark">Appropriation</dt>
                     <dd className="text-semibold margin-0">
-                        {formatDateNeeded(can.appropriation_date) || "---"} ({can.active_period}{" "}
-                        {can.active_period > 1 ? "years" : "year"})
+                        {formatDateNeeded(new Date(can.funding_details?.fiscal_year, 9, 1)) || "---"} (
+                        {can.active_period} {can.active_period > 1 ? "years" : "year"})
                     </dd>
                 </div>
                 <div className="margin-y-3">
