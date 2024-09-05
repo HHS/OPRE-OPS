@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers.js";
 
 const sortAgreements = (agreements) => {
     /*
@@ -39,7 +40,7 @@ const sortAgreements = (agreements) => {
             min_date_needed: Math.min(
                 ...agreement.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed)
             ),
-            all_draft: agreement.budget_line_items.every((bli) => bli.status === "DRAFT")
+            all_draft: agreement.budget_line_items.every((bli) => bli.status === BLI_STATUS.DRAFT)
         };
     });
 
