@@ -52,6 +52,11 @@ html {
     --data-viz-secondary-23: #8b4687;
     --data-viz-secondary-26: #b6406c;
     --data-viz-secondary-58: #80a858;
+    --data-viz-bl-by-fy-1: #a5174c;
+    --data-viz-bl-by-fy-2: #c94576;
+    --data-viz-bl-by-fy-3: #eb6a94;
+    --data-viz-bl-by-fy-4: #f492bd;
+    --data-viz-bl-by-fy-5: #d393b3;
 }
 
 $themeColors: (
@@ -97,7 +102,12 @@ $themeColors: (
     "data-viz-secondary-20": var(--data-viz-secondary-20),
     "data-viz-secondary-23": var(--data-viz-secondary-23),
     "data-viz-secondary-26": var(--data-viz-secondary-26),
-    "data-viz-secondary-58": var(--data-viz-secondary-58)
+    "data-viz-secondary-58": var(--data-viz-secondary-58),
+    "data-viz-bl-by-fy-1": var(--data-viz-bl-by-fy-1),
+    "data-viz-bl-by-fy-2": var(--data-viz-bl-by-fy-2),
+    "data-viz-bl-by-fy-3": var(--data-viz-bl-by-fy-3),
+    "data-viz-bl-by-fy-4": var(--data-viz-bl-by-fy-4),
+    "data-viz-bl-by-fy-5": var(--data-viz-bl-by-fy-5)
 );
 
 @each $name, $color in $themeColors {
