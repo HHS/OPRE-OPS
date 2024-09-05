@@ -2,7 +2,6 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
-import { useState } from "react";
 import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
@@ -18,6 +17,12 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import TableRowExpandable from "../../UI/TableRowExpandable";
+import {
+    expandedRowBGColor,
+    changeBgColorIfExpanded,
+    removeBorderBottomIfExpanded
+} from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
+import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import Tag from "../../UI/Tag";
 import TextClip from "../../UI/Text/TextClip";
 import {
@@ -44,9 +49,7 @@ import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementR
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreement }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [isRowActive, setIsRowActive] = useState(false);
-
+    const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const agreementName = getAgreementName(agreement);
     const researchProjectName = getResearchProjectName(agreement);
     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
@@ -65,10 +68,9 @@ export const AgreementTableRow = ({ agreement }) => {
     const agreementDescription = getAgreementDescription(agreement);
     const agreementCreatedOn = getAgreementCreatedDate(agreement);
     const budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreement);
-
     // styles for the table row
-    const removeBorderBottomIfExpanded = isExpanded ? "border-bottom-none" : "";
-    const changeBgColorIfExpanded = { backgroundColor: isExpanded ? "var(--neutral-lightest)" : "" };
+    const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
+    const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     // Validations for editing/deleting an agreement
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(agreement?.id);
@@ -125,8 +127,8 @@ export const AgreementTableRow = ({ agreement }) => {
         <>
             <th
                 scope="row"
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 <Link
                     className="text-ink text-no-underline"
@@ -136,8 +138,8 @@ export const AgreementTableRow = ({ agreement }) => {
                 </Link>
             </th>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 <TextClip
                     text={researchProjectName}
@@ -145,14 +147,14 @@ export const AgreementTableRow = ({ agreement }) => {
                 />
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {agreementType || ""}
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 <CurrencyFormat
                     value={agreementTotal}
@@ -165,8 +167,8 @@ export const AgreementTableRow = ({ agreement }) => {
                 />
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 <CurrencyFormat
                     value={nextBudgetLineAmount}
@@ -179,8 +181,8 @@ export const AgreementTableRow = ({ agreement }) => {
                 />
             </td>
             <td
-                className={removeBorderBottomIfExpanded}
-                style={changeBgColorIfExpanded}
+                className={borderExpandedStyles}
+                style={bgExpandedStyles}
             >
                 {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <div>{nextNeedBy}</div>}
             </td>
@@ -226,7 +228,7 @@ export const AgreementTableRow = ({ agreement }) => {
         <td
             colSpan={9}
             className="border-top-none"
-            style={{ backgroundColor: "var(--neutral-lightest)" }}
+            style={expandedRowBGColor}
         >
             <div className="display-flex padding-right-9">
                 <dl className="font-12px">

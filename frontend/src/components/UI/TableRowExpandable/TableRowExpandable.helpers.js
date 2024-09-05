@@ -11,5 +11,7 @@ export const removeBorderBottomIfExpanded = (isExpanded) => (isExpanded ? "borde
  * @returns {Object} - An object with a backgroundColor property.
  */
 export const changeBgColorIfExpanded = (isExpanded) => ({
-    backgroundColor: isExpanded ? "var(--neutral-lightest)" : ""
+    backgroundColor: isExpanded ? "var(--base-light-variant)" : ""
 });
+
+export const expandedRowBGColor = { backgroundColor: "var(--base-light-variant)" };

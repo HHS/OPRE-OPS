@@ -49,7 +49,7 @@ const Accordion = ({ heading, level = 4, children }) => {
             <AccordionHeading className="usa-accordion__heading">
                 <button
                     type="button"
-                    className="usa-accordion__button"
+                    className="usa-accordion__button bg-brand-base-light-variant"
                     aria-expanded={true}
                     aria-controls={accordionId}
                 >
