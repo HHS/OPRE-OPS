@@ -44,28 +44,28 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             id: 1,
             label: "Draft",
             value: budgetLinesTotalsByStatus.DRAFT?.total ?? 0,
-            color: "#A9AEB1",
+            color: "var(--data-viz-bl-by-status-1)",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.DRAFT?.total ?? 0, totalFunding)}%`
         },
         {
             id: 2,
             label: "Planned",
             value: budgetLinesTotalsByStatus.PLANNED?.total ?? 0,
-            color: "#336A90",
+            color: "var(--data-viz-bl-by-status-2)",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.PLANNED?.total ?? 0, totalFunding)}%`
         },
         {
             id: 3,
             label: "Executing",
             value: budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0,
-            color: "#E5A000",
+            color: "var(--data-viz-bl-by-status-3)",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0, totalFunding)}%`
         },
         {
             id: 4,
             label: "Obligated",
             value: budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0,
-            color: "#3A835B",
+            color: "var(--data-viz-bl-by-status-4)",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0, totalFunding)}%`
         }
     ];

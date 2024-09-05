@@ -77,16 +77,16 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
                     activeClass += " bg-brand-data-viz-primary-5 text-white fake-bold";
                     break;
                 case "Planned":
-                    activeClass += " bg-brand-data-viz-primary-11 text-white fake-bold";
+                    activeClass += " bg-brand-data-viz-bl-by-status-2 text-white fake-bold";
                     break;
                 case "Executing":
-                    activeClass += " bg-brand-data-viz-primary-8 fake-bold";
+                    activeClass += " bg-brand-data-viz-bl-by-status-3 fake-bold";
                     break;
                 case "Obligated":
-                    activeClass += " bg-brand-data-viz-primary-6 text-white fake-bold";
+                    activeClass += " bg-brand-data-viz-bl-by-status-4 text-white fake-bold";
                     break;
                 case "Draft":
-                    activeClass += " bg-brand-neutral-lighter fake-bold";
+                    activeClass += " bg-brand-data-viz-bl-by-status-1 fake-bold";
                     break;
                 default:
                     break;
