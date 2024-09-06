@@ -61,6 +61,8 @@ html {
     --data-viz-bl-by-status-2: #336a90;
     --data-viz-bl-by-status-3: #e5a000;
     --data-viz-bl-by-status-4: #8b4687;
+    --data-viz-budget-graph-1: #3a835b;
+    --data-viz-budget-graph-2: #a6deb5;
 }
 
 $themeColors: (
@@ -115,7 +117,9 @@ $themeColors: (
     "data-viz-bl-by-status-1": var(--data-viz-bl-by-status-1),
     "data-viz-bl-by-status-2": var(--data-viz-bl-by-status-2),
     "data-viz-bl-by-status-3": var(--data-viz-bl-by-status-3),
-    "data-viz-bl-by-status-4": var(--data-viz-bl-by-status-4)
+    "data-viz-bl-by-status-4": var(--data-viz-bl-by-status-4),
+    "data-viz-budget-graph-1": var(--data-viz-budget-graph-1),
+    "data-viz-budget-graph-2": var(--data-viz-budget-graph-2)
 );
 
 @each $name, $color in $themeColors {
@@ -136,6 +140,9 @@ $themeColors: (
     font-size: 1.25rem;
 }
 
+.font-32px {
+    font-size: 2rem;
+}
 .fake-bold {
     text-shadow: 0 0 0.025rem;
 }
