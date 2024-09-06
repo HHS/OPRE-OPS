@@ -40,6 +40,9 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
         case "lightTextRedBackground":
             tagClasses += " bg-secondary-dark text-white";
             break;
+        case "budgetAvailable":
+            tagClasses += " bg-brand-data-viz-budget-graph-1 text-white";
+            break;
         default:
             break;
     }
