@@ -1,6 +1,5 @@
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
 import CurrencyFormat from "react-currency-format";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { calculatePercent } from "../../../helpers/utils";
@@ -29,7 +28,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     if (error) {
         return <div>An error occurred loading CAN funding data</div>;
     }
-    const title = `${data.can.number} (${data.can.appropriation_term} Year)`;
+    const title = `${data.can.number}-${data.can.appropriation_term}Y`;
     const totalFunding = Number(data.total_funding);
     const availableFunding = Number(data.available_funding);
     const totalAccountedFor = totalFunding - availableFunding; // same as adding planned, obligated, in_execution
@@ -68,7 +67,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
                 className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal"
                 style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
             >
-                {title} <br /> CAN Total Budget
+                {title} <br /> CAN Available Budget
             </h3>
 
             <div className="font-32px margin-0 display-flex flex-justify">
