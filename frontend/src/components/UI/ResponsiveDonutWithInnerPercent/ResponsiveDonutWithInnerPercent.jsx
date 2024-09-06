@@ -3,8 +3,8 @@ import { useEffect } from "react";
 
 export const ResponsiveDonutWithInnerPercent = ({
     data = [{ id: -1, label: "", value: "", color: "", percent: "" }],
-    width = 175,
-    height = 175,
+    width = 150,
+    height = 150,
     margin,
     CustomLayerComponent,
     setPercent = () => {},

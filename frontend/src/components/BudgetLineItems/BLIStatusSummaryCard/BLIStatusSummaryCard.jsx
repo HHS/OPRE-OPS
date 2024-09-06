@@ -148,14 +148,14 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                 </div>
                 <div
                     id="budget-line-status-chart"
-                    className="width-card height-card margin-top-neg-2"
+                    className="width-card height-card margin-top-neg-1"
                     aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                     role="img"
                 >
                     <ResponsiveDonutWithInnerPercent
                         data={data}
-                        width={175}
-                        height={175}
+                        width={150}
+                        height={150}
                         margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                         setPercent={setPercent}
                         setHoverId={setHoverId}
