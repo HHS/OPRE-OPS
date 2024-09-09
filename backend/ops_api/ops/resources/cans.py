@@ -65,6 +65,9 @@ class CANListAPI(BaseListAPI):
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers([i.to_dict() for item in result for i in item])
 
+    def post(self) -> Response:
+        return "Hello"
+
 
 class CANsByPortfolioAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
