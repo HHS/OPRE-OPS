@@ -39,7 +39,7 @@ it("clicking the add budget lines button takes you to the create budget lines pa
 
 it("pagination on the bli table works as expected", () => {
     cy.visit("/budget-lines");
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
+
     cy.wait(1000);
     cy.get("ul").should("have.class", "usa-pagination__list");
     cy.get("li").should("have.class", "usa-pagination__item").contains("1");
@@ -149,16 +149,16 @@ it("click on chevron down should open row and see budgetline data", () => {
 });
 
 it("click on edit bli and check if its routed to the correct page", () => {
-    cy.get("tbody").find("tr").first().trigger("mouseover");
-    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
-    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+    cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
+    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
 });
 
 it("click on edit bli and check to see if the form is populated", () => {
-    cy.get("tbody").find("tr").first().trigger("mouseover");
-    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
-    cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+    cy.get("[data-testid='budget-line-row-15000']").trigger("mouseover");
+    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').should("exist");
+    cy.get("[data-testid='budget-line-row-15000']").find('[data-cy="edit-row"]').click();
     cy.url().should("include", "/agreements/1/budget-lines");
     cy.get("#allServicesComponentSelect").should("have.value", "1");
     cy.get(".can-combobox__single-value").should("have.text", "G994426");

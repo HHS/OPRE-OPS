@@ -13,6 +13,11 @@ class PortfolioCalculateFundingAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:
+        """
+        GET the total funding for a portfolio for a given fiscal year.
+
+        /portfolios/<int:id>/calcFunding/
+        """
         fiscal_year = request.args.get("fiscal_year")
         portfolio = self._get_item(id)
         total_funding = get_total_funding(portfolio, fiscal_year)

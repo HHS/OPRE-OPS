@@ -75,9 +75,9 @@ class CANsByPortfolioAPI(BaseItemAPI):
 
     @jwt_required()
     def _get_item(self, id: int) -> List[CAN]:
-        cans = CAN.query.filter(CAN.managing_portfolio_id == id).all()
+        cfy_stmt = select(CAN).where(CAN.portfolio_id == id).order_by(CAN.id)
 
-        return cans
+        return current_app.db_session.execute(cfy_stmt).scalars().all()
 
     @jwt_required()
     def get(self, id: int) -> Response:
