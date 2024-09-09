@@ -93,22 +93,7 @@
       number: "G99HRF2",
       description: "Healthy Marriages Responsible Fatherhood - OPRE",
       nick_name: "HMRF-OPRE",
-      //      expiration_date: "9/1/2023",
-      //      appropriation_date: "10/1/2022",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 6,
-      //      division_id: 5,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        },
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 24
-      //        }
-      //      ]
       funding_details_id: 1
     },
     {
@@ -116,222 +101,95 @@
       number: "G99IA14",
       description: "Incoming Interagency Agreements",
       nick_name: "IAA-Incoming",
-      //      expiration_date: "9/1/2024",
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 1,
-      //      division_id: 4,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 2
     },
-    { // 502
+    {
+      // 502
       number: "G99PHS9",
       description: "Social Science Research and Development",
       nick_name: "SSRD",
-      //      expiration_date: "9/1/2024",
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 8,
-      //      division_id: 6,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 3
     },
-    { // 503
+    {
+      // 503
       number: "G990136",
       description: "Child Development Research Fellowship Grant Program",
       nick_name: "ASPE SRCD-IDDA",
-      //      expiration_date: "9/1/2023",
-      //      appropriation_date: "10/1/2022",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 1,
-      //      division_id: 4,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 4
     },
-    { // 504
+    {
+      // 504
       number: "G994426",
       description: "Head Start Research",
       nick_name: "HS",
-      //      expiration_date: "9/1/2024",
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 2,
-      //      division_id: 4,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 5
     },
-    { // 505
+    {
+      // 505
       number: "G994648",
       description: "Kinship Navigation",
       nick_name: "Kin-Nav",
-      //      expiration_date: "9/1/2028",
-      //      appropriation_date: "10/1/2027",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 1,
       portfolio_id: 6,
-      //      division_id: 5,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 6
     },
-    { // 506
+    {
+      // 506
       number: "G996125",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
-      //      expiration_date: "9/1/2024",
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 23,
       portfolio_id: 6,
-      //      division_id: 5,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 7
     },
-    { // 507
+    {
+      // 507
       number: "G99XXX1",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
-      //      expiration_date: "9/1/2024",
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 23,
       portfolio_id: 6,
-      //      division_id: 5,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ],
-      //      shared_portfolios: [
-      //        {
-      //          "tablename": "portfolio",
-      //          "id": 2
-      //        }
-      //      ]
       funding_details_id: 8
     },
-    { // 508
+    {
+      // 508
       number: "G99XXX2",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
-      //      expiration_date: "9/1/2024",
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 23,
       portfolio_id: 6,
-      //      division_id: 5,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 9
     },
-    { // 509
+    {
+      // 509
       number: "G99XXX3",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
-      //      expiration_date: "9/1/2024",
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 23,
       portfolio_id: 6,
-      //      division_id: 5,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 10
     },
-    { // 510
+    {
+      // 510
       number: "G99XXX4",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
-      //      expiration_date: "10/1/2027",
-      //      appropriation_date: "10/1/2022",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 23,
       portfolio_id: 6,
-      //      division_id: 5,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 11
     },
-    { // 511
+    {
+      // 511
       number: "G99XXX7",
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
-      //      appropriation_date: null,
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 23,
       portfolio_id: 6,
-      //      division_id: 5,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ]
       funding_details_id: 12
     },
-    { // 512
+    {
+      // 512
       number: "G99XXX8",
       description: "Example CAN",
       nick_name: "",
-      //      expiration_date: "9/1/2023",
-      //      appropriation_date: "10/1/2022",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 3,
-      //      division_id: 4,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 26
-      //        }
-      //      ],
       funding_details_id: 13,
       projects: [
         {
@@ -340,76 +198,36 @@
         }
       ]
     },
-    { // 513
+    {
+      // 513
       number: "G99MV23",
       description: "MIHOPE Check-in 2023",
       nick_name: "MIHOPE 23",
-      //      expiration_date: "9/29/2023",
-      //      appropriation_date: "10/1/2022",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 3,
-      //      division_id: 4,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 25
-      //        }
-      //      ]
       funding_details_id: 14
     },
-    { // 514
+    {
+      // 514
       number: "G99MV24",
       description: "MIHOPE Check-in 2024",
       nick_name: "MIHOPE 24",
-      //      expiration_date: "9/29/2024",
-      //      appropriation_date: "10/1/2023",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 3,
-      //      division_id: 4,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 25
-      //        }
-      //      ]
       funding_details_id: 15
     },
-    { // 515
+    {
+      // 515
       number: "G99MVT3",
       description: "MOHOPE Long-Term",
       nick_name: "MIHOPE LT",
-      //      expiration_date: "9/1/2027",
-      //      appropriation_date: "10/1/2022",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 3,
-      //      division_id: 4,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 25
-      //        }
-      //      ]
       funding_details_id: 16
     },
-    { // 516
+    {
+      // 516
       number: "G99SHARED",
       description: "Shared CAN",
       nick_name: "SHARED",
-      //      expiration_date: "9/1/2027",
-      //      appropriation_date: "10/1/2022",
-      //      arrangement_type: "OPRE_APPROPRIATION",
-      //      authorizer_id: 26,
       portfolio_id: 3,
-      //      division_id: 4,
-      //      funding_sources: [
-      //        {
-      //          "tablename": "funding_source",
-      //          "id": 25
-      //        }
-      //      ]
       funding_details_id: 17
     }
   ],
@@ -702,321 +520,4 @@
       funding: 1000000.0,
     }
   ],
-//  can_fiscal_year: [
-    //    {
-    //      can_id: 500,
-    //      fiscal_year: 2023,
-    //      received_funding: 880000.0,
-    //      expected_funding: 260000.0,
-    //      potential_additional_funding: 1300000.0,
-    //      notes: "",
-    //    },
-    //    {
-    //      can_id: 501,
-    //      fiscal_year: 2021,
-    //      received_funding: 200000.0,
-    //      expected_funding: 0.0,
-    //      potential_additional_funding: 0.0,
-    //      notes: "147-OPRE-FY21 $150K from ASPE; 149-OPRE-FY21 $50K from SSA\n\nNote to us: This distinction is in budget lines, not sure how it ties into CANs",
-    //    },
-    //    {
-    //      can_id: 502,
-    //      fiscal_year: 2022,
-    //      received_funding: 6000000.0,
-    //      expected_funding: 1000000.0,
-    //      potential_additional_funding: 3000000.0,
-    //      notes: "",
-    //    },
-//    {
-//      can_id: 502,
-//      fiscal_year: 2023,
-//      received_funding: 7000000.0,
-//      expected_funding: 3000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 502,
-//      fiscal_year: 2024,
-//      received_funding: 6000000.0,
-//      expected_funding: 1000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 503,
-//      fiscal_year: 2021,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 504,
-//      fiscal_year: 2021,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 504,
-//      fiscal_year: 2022,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 504,
-//      fiscal_year: 2023,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 504,
-//      fiscal_year: 2024,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 505,
-//      fiscal_year: 2021,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 506,
-//      fiscal_year: 2023,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 501,
-//      fiscal_year: 2023,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 503,
-//      fiscal_year: 2023,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 510,
-//      fiscal_year: 2022,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 510,
-//      fiscal_year: 2023,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 511,
-//      fiscal_year: 2022,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 511,
-//      fiscal_year: 2023,
-//      received_funding: 6000000.0,
-//      expected_funding: 4000000.0,
-//      potential_additional_funding: 3000000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 512,
-//      fiscal_year: 2023,
-//      received_funding: 880000.0,
-//      expected_funding: 260000.0,
-//      potential_additional_funding: 1300000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 512,
-//      fiscal_year: 2024,
-//      received_funding: 880000.0,
-//      expected_funding: 260000.0,
-//      potential_additional_funding: 1300000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 507,
-//      fiscal_year: 2023,
-//      received_funding: 880000.0,
-//      expected_funding: 260000.0,
-//      potential_additional_funding: 1300000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 508,
-//      fiscal_year: 2023,
-//      received_funding: 880000.0,
-//      expected_funding: 260000.0,
-//      potential_additional_funding: 1300000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 505,
-//      fiscal_year: 2023,
-//      received_funding: 880000.0,
-//      expected_funding: 260000.0,
-//      potential_additional_funding: 1300000.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 513,
-//      fiscal_year: 2023,
-//      received_funding: 1000000.0,
-//      expected_funding: 0.0,
-//      potential_additional_funding: 0.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 514,
-//      fiscal_year: 2024,
-//      received_funding: 1000000.0,
-//      expected_funding: 0.0,
-//      potential_additional_funding: 0.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 515,
-//      fiscal_year: 2023,
-//      received_funding: 1000000.0,
-//      expected_funding: 0.0,
-//      potential_additional_funding: 0.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 515,
-//      fiscal_year: 2024,
-//      received_funding: 0.0,
-//      expected_funding: 1000000.0,
-//      potential_additional_funding: 0.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 515,
-//      fiscal_year: 2025,
-//      received_funding: 0.0,
-//      expected_funding: 1000000.0,
-//      potential_additional_funding: 0.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 515,
-//      fiscal_year: 2026,
-//      received_funding: 0.0,
-//      expected_funding: 500000.0,
-//      potential_additional_funding: 0.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 515,
-//      fiscal_year: 2027,
-//      received_funding: 0.0,
-//      expected_funding: 500000.0,
-//      potential_additional_funding: 0.0,
-//      notes: "",
-//    },
-//    {
-//      can_id: 516,
-//      fiscal_year: 2023,
-//      received_funding: 0.0,
-//      expected_funding: 500000.0,
-//      potential_additional_funding: 0.0,
-//      notes: "",
-//    }
-//  ],
-//  can_fiscal_year_carry_forward: [
-//    {
-//      can_id: 510,
-//      from_fiscal_year: 2022,
-//      to_fiscal_year: 2023,
-//      received_amount: 200000.0,
-//      expected_amount: 100000.0,
-//    },
-//    {
-//      can_id: 511,
-//      from_fiscal_year: 2022,
-//      to_fiscal_year: 2023,
-//      received_amount: 500000.0,
-//      expected_amount: 500000.0,
-//    },
-//  ],
-//  can_funding_details: [
-//    {
-//      fund: "DFGBTN2024BCDS",
-//      allowance: "JDI109DHAD",
-//      sub_allowance: "RHI45T78F0",
-//      allotment_org: "JJH45ST607",
-//      current_fy_funding_ytd: 25000,
-//      can_fiscal_year_id: 5001
-//    },
-//    {
-//      fund: "FLYDIG2024RSTF",
-//      allowance: "JHH939DHAD",
-//      sub_allowance: "RHI45T8EX2",
-//      allotment_org: "RT045ST607",
-//      current_fy_funding_ytd: 38000,
-//      can_fiscal_year_id: 5002
-//    },
-//    {
-//      fund: "IMTEDG2023SEMI",
-//      allowance: "JHH9JJNHAD",
-//      sub_allowance: "RASTO8EX27",
-//      allotment_org: "BFSIE5ST60",
-//      current_fy_funding_ytd: 45899,
-//      can_fiscal_year_id: 5003
-//    },
-//    {
-//      fund: "FNCTSM2022QRTA",
-//      allowance: "JH98HG3HAD",
-//      sub_allowance: "RASTO8EX27",
-//      allotment_org: "BFSIE5ST60",
-//      current_fy_funding_ytd: 100000,
-//      can_fiscal_year_id: 5004
-//    }
-//  ],
-//  can_appropriation_details: [
-//    {
-//      appropriation_prefix: "ABCDE",
-//      appropriation_postfix: "FGHIJ",
-//      appropriation_year: "2024"
-//    },
-//    {
-//      appropriation_prefix: "PREFI",
-//      appropriation_postfix: "POSTF",
-//      appropriation_year: "2023"
-//    },
-//    {
-//      appropriation_prefix: "AEIOU",
-//      appropriation_postfix: "ALSOY",
-//      appropriation_year: "2024"
-//    }
-//  ]
 }
