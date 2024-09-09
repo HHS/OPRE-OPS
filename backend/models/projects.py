@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import Optional
 
-import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from sqlalchemy import Column, Date, ForeignKey, Sequence, String, Text
 from sqlalchemy.dialects.postgresql import ENUM
@@ -107,10 +106,10 @@ class ResearchProject(Project):
     id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
     origination_date: Mapped[Optional[Date]] = mapped_column(Date(), nullable=True)
     methodologies: Mapped[List[MethodologyType]] = mapped_column(
-        pg.ARRAY(sa.Enum(MethodologyType)), server_default="{}", default=[]
+        pg.ARRAY(ENUM(MethodologyType)), server_default="{}", default=[]
     )
     populations: Mapped[List[PopulationType]] = Column(
-        pg.ARRAY(sa.Enum(PopulationType)), server_default="{}", default=[]
+        pg.ARRAY(ENUM(PopulationType)), server_default="{}", default=[]
     )
 
 

@@ -167,7 +167,7 @@ const agreementHistoryData = [
             amount: 200000.0,
             can: {
                 id: 1,
-                nickname: "HMRF-OPRE",
+                nick_name: "HMRF-OPRE",
                 number: "G99HRF2"
             },
             can_id: 1,

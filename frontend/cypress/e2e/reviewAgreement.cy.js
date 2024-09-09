@@ -36,7 +36,7 @@ describe("agreement change accordion", () => {
             cy.contains("$ 5,000,000");
             cy.contains("$ 35,000,000");
             cy.contains("$40,000,000.00");
-            cy.contains("G994426 (1 Year)");
+            cy.contains("G994426 (5 Year)");
         });
         cy.get('[data-cy="currency-summary-card"]').contains("$ 2,000,000.00");
         cy.get("h2").contains("Review Changes").as("info-accordion").should("exist");
@@ -76,13 +76,13 @@ describe("agreement change accordion", () => {
             cy.contains("$ 10,403,500");
             cy.contains("$ 13,596,500");
             cy.contains("$24,000,000.00");
-            cy.contains("G99PHS9 (1 Year)");
+            cy.contains("G99PHS9 (5 Year)");
         });
         cy.get('[data-cy="can-funding-summary-card-512"]').within(() => {
             cy.contains("$ 602,000");
             cy.contains("$ 1,678,000");
             cy.contains("$2,280,000.00");
-            cy.contains("G99XXX8 (1 Year)");
+            cy.contains("G99XXX8 (5 Year)");
         });
         cy.get('[data-cy="currency-summary-card"]').within(() => {
             cy.contains("$ 1,005,000.00");

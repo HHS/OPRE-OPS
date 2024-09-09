@@ -256,13 +256,11 @@ class BudgetLineItemCANSchema(Schema):
     display_name = fields.Str(required=True)
     number = fields.Str(required=True)
     description = fields.Str(required=True)
-    purpose = fields.Str(required=True)
-    nickname = fields.Str(required=True)
-    appropriation_term = fields.Int(required=True)
-    authorizer_id = fields.Int(required=True)
-    managing_portfolio_id = fields.Int(required=True)
-    expiration_date = fields.DateTime(default=None, allow_none=True, format="%Y-%m-%dT%H:%M:%S.%fZ")
-    appropriation_date = fields.DateTime(default=None, allow_none=True, format="%Y-%m-%dT%H:%M:%S.%fZ")
+    nick_name = fields.Str(required=True)
+    active_period = fields.Int(required=True)
+    portfolio_id = fields.Int(required=True)
+    expiration_date = fields.Int(required=True)
+    appropriation_date = fields.Int(required=True)
 
 
 class BudgetLineItemResponseSchema(Schema):

@@ -37,6 +37,7 @@ it("loads", () => {
 });
 
 it("loads the Portfolio Budget Details component", () => {
+    cy.get("#fiscal-year-select").select("2021");
     cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
     cy.get("section").should("contain", "G99IA14");
 });

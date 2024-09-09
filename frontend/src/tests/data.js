@@ -3,13 +3,13 @@ export const budgetLine = {
     amount: 1_000_000,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
-        appropriation_term: 1,
+        active_period: 1,
         authorizer_id: 525,
         description: "Head Start Research",
         expiration_date: "2024-09-01T00:00:00.000000Z",
         id: 5,
-        managing_portfolio_id: 2,
-        nickname: "HS",
+        portfolio_id: 2,
+        nick_name: "HS",
         number: "G994426",
         display_name: "G994426"
     },
@@ -48,13 +48,13 @@ export const agreement = {
             amount: 1_000_000,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
-                appropriation_term: 1,
+                active_period: 1,
                 authorizer_id: 525,
                 description: "Head Start Research",
                 expiration_date: "2024-09-01T00:00:00.000000Z",
                 id: 5,
-                managing_portfolio_id: 2,
-                nickname: "HS",
+                portfolio_id: 2,
+                nick_name: "HS",
                 number: "G994426",
                 display_name: "G994426"
             },
@@ -104,13 +104,13 @@ export const agreement = {
             amount: 1_000_000,
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
-                appropriation_term: 1,
+                active_period: 1,
                 authorizer_id: 525,
                 description: "Head Start Research",
                 expiration_date: "2024-09-01T00:00:00.000000Z",
                 id: 5,
-                managing_portfolio_id: 2,
-                nickname: "HS",
+                portfolio_id: 2,
+                nick_name: "HS",
                 number: "G994426",
                 display_name: "G994426"
             },
@@ -485,8 +485,8 @@ export const canFiscalYearFundingDetails = [
         current_fy_funding_ytd: 100000,
         can_fiscal_year_id: 5004
     }
-  ]
-  export const canAppropriationDetails =  [
+];
+export const canAppropriationDetails = [
     {
         id: 1,
         appropriation_prefix: "ABCDE",
@@ -598,14 +598,14 @@ export const budgetLineWithBudgetChangeRequest = {
     amount: 300000,
     can: {
         appropriation_date: "2022-10-01T00:00:00.000000Z",
-        appropriation_term: 1,
+        active_period: 1,
         authorizer_id: 26,
         description: "Example CAN",
         display_name: "G99XXX8",
         expiration_date: "2023-09-01T00:00:00.000000Z",
         id: 512,
-        managing_portfolio_id: 3,
-        nickname: "",
+        portfolio_id: 3,
+        nick_name: "",
         number: "G99XXX8"
     },
     can_id: 512,
@@ -736,14 +736,14 @@ export const budgetLineWithStatusChangeRequestToPlanned = {
     amount: 1000000,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
-        appropriation_term: 1,
+        active_period: 1,
         authorizer_id: 26,
         description: "Head Start Research",
         display_name: "G994426",
         expiration_date: "2024-09-01T00:00:00.000000Z",
         id: 504,
-        managing_portfolio_id: 2,
-        nickname: "HS",
+        portfolio_id: 2,
+        nick_name: "HS",
         number: "G994426"
     },
     can_id: 504,
@@ -822,14 +822,14 @@ export const budgetLineWithStatusChangeRequestToExecuting = {
     amount: 700000,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
-        appropriation_term: 1,
+        active_period: 1,
         authorizer_id: 26,
         description: "Social Science Research and Development",
         display_name: "G99PHS9",
         expiration_date: "2024-09-01T00:00:00.000000Z",
         id: 502,
-        managing_portfolio_id: 8,
-        nickname: "SSRD",
+        portfolio_id: 8,
+        nick_name: "SSRD",
         number: "G99PHS9"
     },
     can_id: 502,

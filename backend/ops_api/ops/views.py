@@ -1,29 +1,33 @@
-from models import AdministrativeAndSupportProject, Document, Notification, Project
-from models.base import BaseModel
-from models.cans import (
+from models import (
     CAN,
-    Agreement,
-    BudgetLineItem,
-    CANFiscalYear,
-    ContractAgreement,
-    ProductServiceCode,
-    ServicesComponent,
-)
-from models.change_requests import ChangeRequest
-from models.history import OpsDBHistory
-from models.portfolios import Division, Portfolio, PortfolioStatus
-from models.procurement_shops import ProcurementShop
-from models.procurement_tracker import (
     AcquisitionPlanning,
+    AdministrativeAndSupportProject,
+    Agreement,
     Award,
+    BaseModel,
+    BudgetLineItem,
+    CANFundingDetails,
+    ChangeRequest,
+    ContractAgreement,
+    Division,
+    Document,
     Evaluation,
+    Notification,
+    OpsDBHistory,
+    Portfolio,
+    PortfolioStatus,
     PreAward,
     PreSolicitation,
+    ProcurementShop,
     ProcurementStep,
+    ProductServiceCode,
+    Project,
+    ResearchProject,
+    ResearchType,
+    ServicesComponent,
     Solicitation,
+    User,
 )
-from models.projects import ResearchProject, ResearchType
-from models.users import User
 from ops_api.ops.document.api import DocumentAPI
 from ops_api.ops.resources.administrative_and_support_projects import (
     AdministrativeAndSupportProjectItemAPI,
@@ -38,7 +42,6 @@ from ops_api.ops.resources.agreements import (
 )
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
-from ops_api.ops.resources.can_fiscal_year import CANFiscalYearItemAPI, CANFiscalYearListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
@@ -88,7 +91,7 @@ CONTRACT_LIST_API_VIEW_FUNC = ContractListAPI.as_view("contract-list", ContractL
 PORTFOLIO_CALCULATE_FUNDING_API_VIEW_FUNC = PortfolioCalculateFundingAPI.as_view(
     "portfolio-calculate-funding", Portfolio
 )
-PORTFOLIO_CANS_API_VIEW_FUNC = PortfolioCansAPI.as_view("portfolio-cans", CANFiscalYear)
+PORTFOLIO_CANS_API_VIEW_FUNC = PortfolioCansAPI.as_view("portfolio-cans", CANFundingDetails)
 PORTFOLIO_ITEM_API_VIEW_FUNC = PortfolioItemAPI.as_view("portfolio-item", Portfolio)
 PORTFOLIO_LIST_API_VIEW_FUNC = PortfolioListAPI.as_view("portfolio-group", Portfolio)
 
@@ -96,10 +99,6 @@ PORTFOLIO_LIST_API_VIEW_FUNC = PortfolioListAPI.as_view("portfolio-group", Portf
 CAN_ITEM_API_VIEW_FUNC = CANItemAPI.as_view("can-item", CAN)
 CAN_LIST_API_VIEW_FUNC = CANListAPI.as_view("can-group", CAN)
 CANS_BY_PORTFOLIO_API_VIEW_FUNC = CANsByPortfolioAPI.as_view("can-portfolio", BaseModel)
-
-# CAN FISCAL YEAR ENDPOINTS
-CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC = CANFiscalYearItemAPI.as_view("can-fiscal-year-item", CANFiscalYear)
-CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC = CANFiscalYearListAPI.as_view("can-fiscal-year-group", CANFiscalYear)
 
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
