@@ -142,7 +142,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
 
     # verify agreement history (+1 agreement created)
     prev_hist_count = 0
-    resp = auth_client.get(f"/api/v1/agreementhistory/{agreement_id}?limit=100")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     resp_json = resp.json
     hist_count = len(resp_json)
