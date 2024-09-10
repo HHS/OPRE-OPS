@@ -191,12 +191,6 @@
       nick_name: "",
       portfolio_id: 3,
       funding_details_id: 13,
-      projects: [
-        {
-          "tablename": "project",
-          "id": 1000
-        }
-      ]
     },
     {
       // 513
