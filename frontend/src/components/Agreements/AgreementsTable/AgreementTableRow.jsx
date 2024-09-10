@@ -295,6 +295,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 isExpanded={isExpanded}
                 setIsExpanded={setIsExpanded}
                 setIsRowActive={setIsRowActive}
+                data-testid={`agreement-table-row-${agreement.id}`}
             />
         </>
     );

@@ -5,12 +5,12 @@ from flask import current_app
 from models import (
     AgreementChangeRequest,
     BudgetLineItemChangeRequest,
+    BudgetLineItemStatus,
     ChangeRequest,
     ChangeRequestNotification,
     ChangeRequestStatus,
     Division,
 )
-from models.cans import BudgetLineItemStatus
 from ops_api.ops.utils.budget_line_items import convert_BLI_status_name_to_pretty_string
 
 

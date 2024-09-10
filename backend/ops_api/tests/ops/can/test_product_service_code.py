@@ -1,6 +1,6 @@
 import pytest
 
-from models.cans import ProductServiceCode
+from models import ProductServiceCode
 
 
 @pytest.mark.usefixtures("app_ctx")

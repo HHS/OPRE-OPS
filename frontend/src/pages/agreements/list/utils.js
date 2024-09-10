@@ -1,6 +1,18 @@
 import _ from "lodash";
+import { BLI_STATUS } from "../../../helpers/budgetLines.helpers.js";
 
 const sortAgreements = (agreements) => {
+    /*
+     * Sort agreements by date_needed.
+     * @param {Object[]} agreements - Array of agreements.
+     *
+     * @returns {Object[]} - Sorted array of agreements.
+     *
+     * This function needs a little work to be consistent with how the "Next Budget Line" and "Next Need By" are calculated.
+     *
+     * The sort order here is first including all agreements with BLIs that are not in DRAFT status, then sorting by date_needed.
+     *
+     */
     // BLIs will date_needed should come before BLIs with date_needed === null
     // date_needed can be string or Date
     if (!agreements) {
@@ -22,22 +34,17 @@ const sortAgreements = (agreements) => {
         });
     });
 
-    const sortedAgreements = agreementsCopy.sort((a, b) => {
-        const aMinDateNeeded = Math.min(
-            ...a.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed)
-        );
-        const bMinDateNeeded = Math.min(
-            ...b.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed)
-        );
-
-        if ((!aMinDateNeeded && bMinDateNeeded) || aMinDateNeeded < bMinDateNeeded) {
-            return -1;
-        }
-        if ((!bMinDateNeeded && aMinDateNeeded) || aMinDateNeeded > bMinDateNeeded) {
-            return 1;
-        }
-        return 0;
+    const agreementsWithDateNeeded = agreementsCopy.map((agreement) => {
+        return {
+            ...agreement,
+            min_date_needed: Math.min(
+                ...agreement.budget_line_items.filter((bli) => bli.date_needed).map((bli) => bli.date_needed)
+            ),
+            all_draft: agreement.budget_line_items.every((bli) => bli.status === BLI_STATUS.DRAFT)
+        };
     });
+
+    const sortedAgreements = _.orderBy(agreementsWithDateNeeded, ["all_draft", "min_date_needed"]);
 
     // convert all date_needed back to string if needed
     if (datesAreStrings) {

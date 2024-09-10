@@ -223,6 +223,7 @@ const AllBLIRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
+            data-testid={`budget-line-row-${budgetLine?.id}`}
         />
     );
 };

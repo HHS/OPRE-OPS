@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import ENUM, JSONB
 
 from .base import BaseModel
 
@@ -64,6 +64,6 @@ class OpsEvent(BaseModel):
     __tablename__ = "ops_event"
 
     id = BaseModel.get_pk_column()
-    event_type = sa.Column(sa.Enum(OpsEventType))
-    event_status = sa.Column(sa.Enum(OpsEventStatus))
-    event_details = sa.Column(JSONB)
+    event_type = Column(ENUM(OpsEventType))
+    event_status = Column(ENUM(OpsEventStatus))
+    event_details = Column(JSONB)
