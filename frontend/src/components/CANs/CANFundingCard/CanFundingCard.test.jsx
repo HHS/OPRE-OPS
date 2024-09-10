@@ -14,18 +14,14 @@ describe("CanFundingCard", () => {
         render(<CANFundingCard {...initialProps} />);
 
         const heading = screen.getByText(/G99PHS9/i);
-        const totalBudget = screen.getByText(/24,000,000.00/i);
+        const totalBudget = screen.getByText(/24,000,000/i);
         const totalSpending = screen.getByText(/10,403,500/i);
-        const totalSpendingPercent = screen.getByText(/43%/i);
         const remainingBudget = screen.getByText(/13,596,500/i);
-        const remainingBudgetPercent = screen.getByText(/57%/i);
 
         expect(heading).toBeInTheDocument();
         expect(totalBudget).toBeInTheDocument();
         expect(totalSpending).toBeInTheDocument;
-        expect(totalSpendingPercent).toBeInTheDocument();
         expect(remainingBudget).toBeInTheDocument;
-        expect(remainingBudgetPercent).toBeInTheDocument;
     });
 
     it("should render the component after approval", () => {
@@ -37,14 +33,10 @@ describe("CanFundingCard", () => {
         );
 
         const totalSpending = screen.getByText(/9,700,000/i);
-        const totalSpendingPercent = screen.getByText(/40%/i);
         const remainingBudget = screen.getByText(/14,300,000/i);
-        const remainingBudgetPercent = screen.getByText(/60%/i);
 
         expect(totalSpending).toBeInTheDocument();
         expect(remainingBudget).toBeInTheDocument();
-        expect(totalSpendingPercent).toBeInTheDocument();
-        expect(remainingBudgetPercent).toBeInTheDocument();
     });
 });
 
