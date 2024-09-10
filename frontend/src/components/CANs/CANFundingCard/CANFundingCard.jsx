@@ -70,7 +70,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
                 {title} <br /> CAN Available Budget
             </h3>
 
-            <div className="font-32px margin-0 display-flex flex-justify">
+            <div className="font-32px margin-0 display-flex flex-justify flex-align-end">
                 <CurrencyWithSmallCents
                     amount={remainingBudget}
                     dollarsClasses="font-sans-xl text-bold margin-bottom-0"
@@ -78,11 +78,11 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
                 />
                 {overBudget ? (
                     <Tag tagStyle={"lightTextRedBackground"}>
-                        Over Budget{" "}
                         <FontAwesomeIcon
                             icon={faTriangleExclamation}
                             title="Over Budget"
-                        />
+                        />{" "}
+                        Over Budget
                     </Tag>
                 ) : (
                     <Tag tagStyle={"budgetAvailable"}>Available</Tag>

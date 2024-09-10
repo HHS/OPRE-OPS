@@ -40,7 +40,7 @@ const CANFundingBar = ({ data = [], setActiveId = () => {}, isStriped = false, o
                     transparent,
                     transparent 5px,
                     var(--data-viz-budget-graph-1) 5px,
-                    var(--data-viz-budget-graph-1) 8px
+                    var(--data-viz-budget-graph-1) 6px
                 )`
                             : "none"
                 }}
