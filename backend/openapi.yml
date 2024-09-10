@@ -1893,6 +1893,25 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    BasicCAN:
+      description: >-
+        A simple version of the Common Accounting Number (CAN) Object.
+        This object is intended to be used in the schemas nested within the CAN object.
+      properties:
+        active_period:
+          type: integer
+        display_name:
+          type: string
+        nick_name:
+          type: string
+        number:
+          type: string
+        portfolio_id:
+          type: integer
+        description:
+          type: string
+        id:
+          type: integer
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -2053,6 +2072,69 @@ components:
       description: SQLAlchemy Continuum Version for Funding Budget
     Portfolio:
       description: Portfolio Object
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        abbreviation:
+          type: string
+        status:
+          type: string
+          enum:
+            - IN_PROCESS
+            - NOT_STARTED
+            - SANDBOX
+        cans:
+          type: array
+          items:
+            $ref: "#/components/schemas/CAN"
+        division_id:
+          type: integer
+        urls:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioUrl"
+        team_leaders:
+          type: array
+          items:
+            $ref: "#/components/schemas/SafeUser"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+    PortfolioUrl:
+      description: Used to list the URL/links associated with the Portfolio
+      type: object
+      properties:
+        id:
+          type: integer
+        portfolio_id:
+          type: integer
+        url:
+          type: string
+          format: uri
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
     User:
       description: OPRE User Object
       type: object
