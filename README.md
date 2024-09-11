@@ -15,6 +15,33 @@ At a bare minimum, you need [Docker](https://www.docker.com) and
 development, you will also need to install [Python](https://www.python.org), [Node.js](https://nodejs.org), and
 [pre-commit](https://pre-commit.com/#installation).
 
+## RSA Key Generation
+
+The backend uses RSA keys to sign and verify JWTs. You can generate these keys by running the following commands...
+
+```shell
+mkdir ~/ops-keys
+openssl genrsa -out ~/ops-keys/keypair.pem 2048
+openssl rsa -in ~/ops-keys/keypair.pem -pubout -out ~/ops-keys/public.pem
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in ~/ops-keys/keypair.pem -out ~/ops-keys/private.pem
+```
+
+Then place the private/public keys in your shell environment...
+
+```shell
+export JWT_PRIVATE_KEY=$(cat ~/ops-keys/private.pem)
+export JWT_PUBLIC_KEY=$(cat ~/ops-keys/public.pem)
+```
+
+Also, replace the public key file contents in the following locations...
+
+```
+./public.pub
+backend/ops_api/ops/static/public.pem
+```
+
+N.B. The public key files above are deprecated and will be replaced with the `JWT_PUBLIC_KEY` environment variable in the future.
+
 ## Install
 
 ### Backend
@@ -137,11 +164,6 @@ or Interactively via:
 bun run test:e2e:interactive
 ```
 
-The E2E uses it's own TEST keys for generating and validating JWT Signatures, as it bypasses any live OAuth providers.
-The test-private-key is currently configured within the `cypress.config.js` directly (base64url encoded). The `backend`, then requires the test-public-key in order to validate the signatures of the JWT. This is configured within the `/ops/environment/local/e2e.py` (path); which points to the `/static/test-public-key.pem`.
-
-These keys are ONLY used for End-to-end testing, and are not pushed to any LIVE system outside of local testing.
-
 ### Linting
 
 #### Backend
@@ -203,25 +225,9 @@ TBD
 
 TBD
 
-~~This environment can be deployed to manually as well by authorized committers in the repository. You accomplish this by force pushingan existing commit to the `development` branch.~~
-
-```shell
-git branch -d development  # deletes the development branch if it was already checked out locally
-git checkout -b development
-git push --force --set-upstream origin development
-```
-
 ### Staging Environment
 
 TBD
-
-~~This environment can be deployed to by authorized committers in the repository. You accomplish this by force pushing an existing commit to the `staging` branch.~~
-
-```shell
-git branch -d staging  # deletes the staging branch if it was already checked out locally
-git checkout -b staging
-git push --force --set-upstream origin staging
-```
 
 ### Production Environment
 
