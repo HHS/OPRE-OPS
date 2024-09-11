@@ -118,3 +118,14 @@ def test_get_cans_search_filter(auth_client, loaded_db, test_can):
     response = auth_client.get("/api/v1/cans/?search=")
     assert response.status_code == 200
     assert len(response.json) == 0
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_post_creates_can(auth_client):
+    data = {
+        "portfolio_id": 6,
+        "number": "G998235",
+        "description": "Test CAN Created by unit test",
+    }
+    response = auth_client.post("/api/v1/cans", data)
+    print(response)

@@ -12,13 +12,13 @@ class BasicCANSchema(Schema):
     nick_name = fields.String(allow_none=True)
     number = fields.String(required=True)
     description = fields.String(allow_none=True)
-    id = fields.Integer(required=True)
+    id = fields.Integer()
     portfolio_id = fields.Integer(required=True)
     projects = fields.List(fields.Nested(ProjectSchema()), default=[])
 
 
 class PortfolioUrlCANSchema(Schema):
-    id = fields.Integer(required=True)
+    id = fields.Integer()
     portfolio_id = fields.Integer(required=True)
     url = fields.String(required=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -30,7 +30,7 @@ class PortfolioUrlCANSchema(Schema):
 
 
 class PortfolioCANSchema(Schema):
-    id = fields.Integer(required=True)
+    id = fields.Integer()
     name = fields.String(allow_none=True)
     abbreviation = fields.String(required=True)
     status = fields.Enum(PortfolioStatus)
@@ -51,7 +51,7 @@ class FundingBudgetVersionSchema(Schema):
     can_id = fields.Integer(required=True)
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
-    id = fields.Integer(required=True)
+    id = fields.Integer()
     notes = fields.String(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -70,7 +70,7 @@ class FundingBudgetSchema(Schema):
     can_id = fields.Integer(required=True)
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
-    id = fields.Integer(required=True)
+    id = fields.Integer()
     notes = fields.String(allow_none=True)
     versions = fields.List(fields.Nested(FundingBudgetVersionSchema()), default=[])
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -106,7 +106,7 @@ class FundingReceivedSchema(Schema):
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
     funding = fields.Float(allow_none=True)
-    id = fields.Integer(required=True)
+    id = fields.Integer()
     notes = fields.String(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)

@@ -75,6 +75,7 @@ class CANListAPI(BaseListAPI):
         result = current_app.db_session.execute(stmt).all()
         return make_response_with_headers([can_schema.dump(i) for item in result for i in item])
 
+    @is_authorized(PermissionType.POST, Permission.CAN)
     def post(self) -> Response:
         return "Hello"
 
