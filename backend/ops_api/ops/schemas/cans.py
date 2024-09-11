@@ -1,8 +1,8 @@
 from marshmallow import Schema, fields
 
-from budget_line_items import BudgetLineItemCANSchema
-from portfolios import PortfolioSchema
-from users import SafeUserSchema
+from models import PortfolioStatus
+from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
+from ops_api.ops.schemas.users import SafeUserSchema
 
 
 class BasicCANSchema(Schema):
@@ -16,9 +16,37 @@ class BasicCANSchema(Schema):
     projects = fields.List(fields.Integer())
 
 
+class PortfolioUrlCANSchema(Schema):
+    id = fields.Integer(required=True)
+    portfolio_id = fields.Integer(required=True)
+    url = fields.String()
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+    updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+
+
+class PortfolioCANSchema(Schema):
+    id = fields.Integer(required=True)
+    name = fields.String(allow_none=True)
+    abbreviation = fields.String()
+    status = fields.Enum(PortfolioStatus)
+    division_id = fields.Integer(required=True)
+    urls = fields.List(fields.Nested(PortfolioUrlCANSchema()), default=[])
+    team_leaders = fields.List(fields.Nested(SafeUserSchema()), default=[])
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+    updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+
+
 class FundingBudgetVersionSchema(Schema):
     budget = fields.Float(allow_none=True)
-    can = fields.Nested(BasicCANSchema)
+    can = fields.Nested(BasicCANSchema())
     can_id = fields.Integer(required=True)
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
@@ -28,8 +56,8 @@ class FundingBudgetVersionSchema(Schema):
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
-    created_by_user = fields.Nested(SafeUserSchema)
-    updated_by_user = fields.Nested(SafeUserSchema)
+    created_by_user = fields.Nested(SafeUserSchema())
+    updated_by_user = fields.Nested(SafeUserSchema())
     transaction_id = fields.Integer()
     end_transaction_id = fields.Integer()
     operation_type = fields.Integer()
@@ -37,19 +65,19 @@ class FundingBudgetVersionSchema(Schema):
 
 class FundingBudgetSchema(Schema):
     budget = fields.Float(allow_none=True)
-    can = fields.Nested(BasicCANSchema)
+    can = fields.Nested(BasicCANSchema())
     can_id = fields.Integer(required=True)
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
     id = fields.Integer(required=True)
     notes = fields.String(allow_none=True)
-    versions = fields.List(fields.Nested(FundingBudgetVersionSchema), default=[])
+    versions = fields.List(fields.Nested(FundingBudgetVersionSchema()), default=[])
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
-    created_by_user = fields.Nested(SafeUserSchema, allow_none=True)
-    updated_by_user = fields.Nested(SafeUserSchema, allow_none=True)
+    created_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+    updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
 
 
 class FundingDetailsSchema(Schema):
@@ -66,7 +94,7 @@ class FundingDetailsSchema(Schema):
 
 
 class FundingReceivedSchema(Schema):
-    can = fields.Nested(BasicCANSchema)
+    can = fields.Nested(BasicCANSchema())
     can_id = fields.Integer()
     display_name = fields.String()
     fiscal_year = fields.Integer()
@@ -77,21 +105,21 @@ class FundingReceivedSchema(Schema):
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
-    created_by_user = fields.Nested(SafeUserSchema, allow_none=True)
-    updated_by_user = fields.Nested(SafeUserSchema, allow_none=True)
+    created_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+    updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
 
 
 class CANSchema(BasicCANSchema):
-    budget_line_items = fields.List(fields.Nested(BudgetLineItemCANSchema), default=[])
-    funding_budgets = fields.List(fields.Nested(FundingBudgetSchema), default=[])
-    funding_details = fields.List(fields.Nested(FundingDetailsSchema), default=[])
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema()), default=[])
+    funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), default=[])
+    funding_details = fields.List(fields.Nested(FundingDetailsSchema()), default=[])
     funding_details_id = fields.Integer()
-    funding_received = fields.List(fields.Nested(FundingReceivedSchema), default=[])
+    funding_received = fields.List(fields.Nested(FundingReceivedSchema()), default=[])
     # Exclude all CANs that are normally attached to a portfolio
-    portfolio = fields.Nested(PortfolioSchema(exclude=("cans",)))
+    portfolio = fields.Nested(PortfolioCANSchema())
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     created_by = fields.Integer(allow_none=True)
     updated_by = fields.Integer(allow_none=True)
-    created_by_user = fields.Nested(SafeUserSchema, allow_none=True)
-    updated_by_user = fields.Nested(SafeUserSchema, allow_none=True)
+    created_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
+    updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
