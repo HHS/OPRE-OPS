@@ -7,7 +7,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.wait(1000);
     cy.injectAxe();
     cy.checkA11y(null, null, terminalLog);
@@ -28,29 +27,30 @@ it("Agreements list table has correct headers and first row", () => {
     cy.get("thead > tr > :nth-child(4)").should("have.text", "Agreement Total");
     cy.get("thead > tr > :nth-child(5)").should("have.text", "Next Budget Line");
     cy.get("thead > tr > :nth-child(6)").should("have.text", "Next Need By");
-    // first row (including tooltips)
-    cy.get("tbody > :nth-child(1) > :nth-child(1) > a > .usa-tooltip > .usa-tooltip__trigger").should(
-        "have.text",
-        "Contract #1: African American Child and Family Research Center"
-    );
-    cy.get("tbody > :nth-child(1) > :nth-child(1) > a > .usa-tooltip > .usa-tooltip__body").should(
-        "have.text",
-        "Contract #1: African American Child and Family Research Center"
-    );
-    cy.get("tbody > :nth-child(1) > :nth-child(2) > .usa-tooltip > .usa-tooltip__trigger").should(
-        "have.text",
-        "Human Services Interoperability Support"
-    );
-    cy.get("tbody > :nth-child(1) > :nth-child(2) > .usa-tooltip > .usa-tooltip__body").should(
-        "have.text",
-        "Human Services Interoperability Support"
-    );
-    cy.get("tbody > :nth-child(1) > :nth-child(3)").should("have.text", "Contract");
-    cy.get("tbody > :nth-child(1) > :nth-child(4)").should("have.text", "$0");
-    cy.get("tbody > :nth-child(1) > :nth-child(5)").should("have.text", "$0");
-    cy.get("tbody > :nth-child(1) > :nth-child(6)").should("have.text", "None");
 
-    cy.get("tbody tr").first().trigger("mouseover");
+    // select the row with data-testid="agreement-table-row-1"
+    cy.get("[data-testid='agreement-table-row-1']").should("exist");
+
+    // first row (including tooltips)
+    cy.get(
+        "tbody > [data-testid='agreement-table-row-1'] > :nth-child(1) > a > .usa-tooltip > .usa-tooltip__trigger"
+    ).should("have.text", "Contract #1: African American Child and Family Research Center");
+    cy.get(
+        "tbody > [data-testid='agreement-table-row-1'] > :nth-child(1) > a > .usa-tooltip > .usa-tooltip__body"
+    ).should("have.text", "Contract #1: African American Child and Family Research Center");
+    cy.get(
+        "tbody > [data-testid='agreement-table-row-1'] > :nth-child(2) > .usa-tooltip > .usa-tooltip__trigger"
+    ).should("have.text", "Human Services Interoperability Support");
+    cy.get("tbody > [data-testid='agreement-table-row-1'] > :nth-child(2) > .usa-tooltip > .usa-tooltip__body").should(
+        "have.text",
+        "Human Services Interoperability Support"
+    );
+    cy.get("tbody > [data-testid='agreement-table-row-1'] > :nth-child(3)").should("have.text", "Contract");
+    cy.get("tbody > [data-testid='agreement-table-row-1'] > :nth-child(4)").should("have.text", "$0");
+    cy.get("tbody > [data-testid='agreement-table-row-1'] > :nth-child(5)").should("have.text", "$0");
+    cy.get("tbody > [data-testid='agreement-table-row-1'] > :nth-child(6)").should("have.text", "None");
+
+    cy.get("[data-testid='agreement-table-row-1']").trigger("mouseover");
     cy.get("button[id^='submit-for-approval-']").first().should("exist");
     cy.get("button[id^='submit-for-approval-']").first().should("not.be.disabled");
 
@@ -64,7 +64,7 @@ it("Agreements list table has correct headers and first row", () => {
 
 it("navigates to the ReviewAgreements page when the review button is clicked", () => {
     cy.get(".usa-table").should("exist");
-    cy.get("tbody tr").first().trigger("mouseover");
+    cy.get("[data-testid='agreement-table-row-1']").trigger("mouseover");
     cy.get("button[id^='submit-for-approval-']").first().should("exist");
     cy.get("button[id^='submit-for-approval-']").first().should("not.be.disabled");
     cy.get("button[id^='submit-for-approval-']").first().click();

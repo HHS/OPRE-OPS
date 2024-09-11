@@ -147,9 +147,9 @@ describe("totalByCan", () => {
 describe("getTotalBySelectedCans", () => {
     it("returns an empty array when no budget lines are selected", () => {
         const budgetLines = [
-            { id: 1, selected: false, can: { number: "123", appropriation_term: "2021" }, amount: 100 },
-            { id: 2, selected: false, can: { number: "456", appropriation_term: "2022" }, amount: 200 },
-            { id: 3, selected: false, can: { number: "123", appropriation_term: "2021" }, amount: 300 }
+            { id: 1, selected: false, can: { number: "123", active_period: "2021" }, amount: 100 },
+            { id: 2, selected: false, can: { number: "456", active_period: "2022" }, amount: 200 },
+            { id: 3, selected: false, can: { number: "123", active_period: "2021" }, amount: 300 }
         ];
         const result = getTotalBySelectedCans(budgetLines);
         expect(result).toEqual([]);
@@ -157,9 +157,9 @@ describe("getTotalBySelectedCans", () => {
 
     it("returns an array with selected cans' numbers, amounts and terms", () => {
         const budgetLines = [
-            { id: 1, selected: true, can: { number: "123", appropriation_term: "2021" }, amount: 100 },
-            { id: 2, selected: true, can: { number: "456", appropriation_term: "2022" }, amount: 200 },
-            { id: 3, selected: true, can: { number: "123", appropriation_term: "2021" }, amount: 300 }
+            { id: 1, selected: true, can: { number: "123", active_period: "2021" }, amount: 100 },
+            { id: 2, selected: true, can: { number: "456", active_period: "2022" }, amount: 200 },
+            { id: 3, selected: true, can: { number: "123", active_period: "2021" }, amount: 300 }
         ];
         const result = getTotalBySelectedCans(budgetLines);
         expect(result).toEqual([
