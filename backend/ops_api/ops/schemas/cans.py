@@ -2,6 +2,7 @@ from marshmallow import Schema, fields
 
 from models import PortfolioStatus
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
+from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
@@ -11,9 +12,9 @@ class BasicCANSchema(Schema):
     nick_name = fields.String()
     number = fields.String()
     description = fields.String()
-    id = fields.String()
+    id = fields.Integer()
     portfolio_id = fields.Integer()
-    projects = fields.List(fields.Integer())
+    projects = fields.List(fields.Nested(ProjectSchema()))
 
 
 class PortfolioUrlCANSchema(Schema):
@@ -112,7 +113,7 @@ class FundingReceivedSchema(Schema):
 class CANSchema(BasicCANSchema):
     budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema()), default=[])
     funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), default=[])
-    funding_details = fields.List(fields.Nested(FundingDetailsSchema()), default=[])
+    funding_details = fields.Nested(FundingDetailsSchema())
     funding_details_id = fields.Integer()
     funding_received = fields.List(fields.Nested(FundingReceivedSchema()), default=[])
     # Exclude all CANs that are normally attached to a portfolio
