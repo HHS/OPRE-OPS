@@ -199,7 +199,7 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/agreements/<int:id>/history/",
+        "/agreement-history/<int:id>",
         view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
