@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import App from "../../../App";
 import { getResearchProject } from "./getResearchProject";
 import { setResearchProject } from "./researchProjectSlice";
-import Hero from "../../../components/UI/Hero/Hero";
+import Hero from "../../../components/UI/Hero";
 import HeroFooter from "../../../components/Projects/HeroFooter/HeroFooter";
 
 const ResearchProjectDetail = () => {

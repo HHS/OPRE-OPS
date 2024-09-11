@@ -9,7 +9,7 @@ const PortfolioHeader = () => {
     const divisionClasses = `font-sans-3xs ${style.division}`;
 
     return (
-        <section className="padding-4 radius-md bg-brand-neutral-lightest">
+        <section className="padding-4 radius-md bg-brand-base-light-variant">
             <h1 className={`font-sans-2xl margin-0 text-brand-primary ${style.heading}`}>{portfolio.name}</h1>
             <h2 className={divisionClasses}>{portfolio.division?.name}</h2>
             <TeamLeaders teamLeaders={portfolio.team_leaders} />

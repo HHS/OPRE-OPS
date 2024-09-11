@@ -79,7 +79,6 @@ function AgreementBLIAccordion({
                 )}
             </div>
             <div className="display-flex flex-justify">
-                <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                 <AgreementTotalCard
                     total={totalsForCards}
                     subtotal={subTotalForCards}
@@ -87,6 +86,7 @@ function AgreementBLIAccordion({
                     procurementShopAbbr={agreement.procurement_shop?.abbr}
                     procurementShopFee={agreement.procurement_shop?.fee}
                 />
+                <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
             </div>
             {children}
         </Accordion>

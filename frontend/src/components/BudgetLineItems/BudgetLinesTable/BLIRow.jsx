@@ -23,6 +23,7 @@ import useGetUserFullNameFromId, { useGetLoggedInUserFullName } from "../../../h
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
+    expandedRowBGColor,
     removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
@@ -189,7 +190,7 @@ const BLIRow = ({
         <td
             colSpan={9}
             className="border-top-none"
-            style={{ backgroundColor: "var(--neutral-lightest)" }}
+            style={expandedRowBGColor}
         >
             <div className="display-flex padding-right-9">
                 <dl className="font-12px">
