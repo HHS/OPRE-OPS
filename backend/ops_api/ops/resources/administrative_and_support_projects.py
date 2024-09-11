@@ -1,16 +1,23 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional, override
 
 from flask import Response, current_app, request
 from marshmallow import Schema, fields
 from marshmallow_enum import EnumField
-from sqlalchemy.future import select
-from typing_extensions import List, override
+from sqlalchemy import select
 
-from models import CAN, AdministrativeAndSupportProject, Agreement, BudgetLineItem, OpsEventType, ProjectType, User
-from models.base import BaseModel
-from models.cans import CANFiscalYear
-from models.projects import ResearchProject
+from models import (
+    CAN,
+    AdministrativeAndSupportProject,
+    Agreement,
+    BaseModel,
+    BudgetLineItem,
+    CANFundingDetails,
+    OpsEventType,
+    ProjectType,
+    ResearchProject,
+    User,
+)
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
@@ -82,16 +89,16 @@ class AdministrativeAndSupportProjectListAPI(BaseListAPI):
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
-            .join(CANFiscalYear, isouter=True)
+            .join(CANFundingDetails, isouter=True)
         )
 
         query_helper = QueryHelper(stmt)
 
         if portfolio_id:
-            query_helper.add_column_equals(CAN.managing_portfolio_id, portfolio_id)
+            query_helper.add_column_equals(CAN.portfolio_id, portfolio_id)
 
         if fiscal_year:
-            query_helper.add_column_equals(CANFiscalYear.fiscal_year, fiscal_year)
+            query_helper.add_column_equals(CANFundingDetails.fiscal_year, fiscal_year)
 
         if search is not None and len(search) == 0:
             query_helper.return_none()

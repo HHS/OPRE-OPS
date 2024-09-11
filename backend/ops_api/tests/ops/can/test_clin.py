@@ -1,6 +1,6 @@
 import pytest
 
-from models.cans import CLIN
+from models import CLIN
 
 
 @pytest.mark.usefixtures("app_ctx")

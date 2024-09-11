@@ -5,6 +5,7 @@ from flask.testing import FlaskClient
 
 from models.cans import CAN
 from ops_api.ops.utils.cans import get_can_funding_summary
+from ops_api.tests.utils import remove_keys
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -12,47 +13,85 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
     result = get_can_funding_summary(test_can)
 
     # Remove these because they are set according to when the test was run
-    del result["can"]["created_on"]
-    del result["can"]["updated_on"]
-    del result["can"]["versions"]
+    remove_keys(result, ["created_on", "updated_on", "versions"])
 
     assert result == {
-        "available_funding": -860000.0,
+        "available_funding": Decimal("-860000.00"),
         "can": {
-            "appropriation_date": "2022-10-01T00:00:00.000000Z",
-            "appropriation_term": 1,
-            "arrangement_type": "OPRE_APPROPRIATION",
-            "authorizer": 26,
-            "authorizer_id": 26,
+            "active_period": 1,
+            "appropriation_date": 2023,
             "budget_line_items": [15008],
-            "can_type": None,
             "created_by": None,
             "created_by_user": None,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
             "display_name": "G99HRF2",
-            "division_id": 5,
-            "expiration_date": "2023-09-01T00:00:00.000000Z",
-            "funding_sources": [24, 26],
+            "expiration_date": 2024,
+            "funding_budgets": [
+                {
+                    "budget": "1140000.0",
+                    "can": 500,
+                    "can_id": 500,
+                    "created_by": None,
+                    "created_by_user": None,
+                    "display_name": "CANFundingBudget#1",
+                    "fiscal_year": 2023,
+                    "id": 1,
+                    "notes": None,
+                    "updated_by": None,
+                    "updated_by_user": None,
+                }
+            ],
+            "funding_details": {
+                "allotment": None,
+                "allowance": None,
+                "appropriation": None,
+                "created_by": None,
+                "created_by_user": None,
+                "display_name": "CANFundingDetails#1",
+                "fiscal_year": 2023,
+                "fund_code": "AAXXXX20231DAD",
+                "funding_partner": None,
+                "funding_source": "OPRE",
+                "id": 1,
+                "method_of_transfer": None,
+                "sub_allowance": None,
+                "updated_by": None,
+                "updated_by_user": None,
+            },
+            "funding_details_id": 1,
+            "funding_received": [
+                {
+                    "can": 500,
+                    "can_id": 500,
+                    "created_by": None,
+                    "created_by_user": None,
+                    "display_name": "CANFundingReceived#500",
+                    "fiscal_year": 2023,
+                    "funding": "880000.0",
+                    "id": 500,
+                    "notes": None,
+                    "updated_by": None,
+                    "updated_by_user": None,
+                }
+            ],
             "id": 500,
-            "managing_portfolio": 6,
-            "managing_portfolio_id": 6,
-            "nickname": "HMRF-OPRE",
+            "nick_name": "HMRF-OPRE",
             "number": "G99HRF2",
+            "portfolio": 6,
+            "portfolio_id": 6,
             "projects": [],
-            "shared_portfolios": [],
             "updated_by": None,
             "updated_by_user": None,
-            "external_authorizer_id": None,
         },
         "carry_forward_funding": 0,
-        "carry_forward_label": "Carry-Forward",
-        "received_funding": Decimal("880000.00"),
-        "expected_funding": Decimal("260000.00"),
-        "expiration_date": "09/01/2023",
+        "carry_forward_label": " Carry-Forward",
+        "expected_funding": Decimal("260000.0"),
+        "expiration_date": "10/01/2024",
         "in_execution_funding": Decimal("2000000.00"),
         "obligated_funding": 0,
         "planned_funding": 0,
-        "total_funding": Decimal("1140000.00"),
+        "received_funding": Decimal("880000.0"),
+        "total_funding": Decimal("1140000.0"),
     }
 
 
@@ -62,47 +101,85 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
     result = get_can_funding_summary(test_can, 2023)
 
     # Remove these because they are set according to when the test was run
-    del result["can"]["created_on"]
-    del result["can"]["updated_on"]
-    del result["can"]["versions"]
+    remove_keys(result, ["created_on", "updated_on", "versions"])
 
     assert result == {
-        "available_funding": -860000.0,
+        "available_funding": Decimal("1140000.0"),
         "can": {
-            "appropriation_date": "2022-10-01T00:00:00.000000Z",
-            "appropriation_term": 1,
-            "arrangement_type": "OPRE_APPROPRIATION",
-            "authorizer": 26,
-            "authorizer_id": 26,
+            "active_period": 1,
+            "appropriation_date": 2023,
             "budget_line_items": [15008],
-            "can_type": None,
             "created_by": None,
             "created_by_user": None,
             "description": "Healthy Marriages Responsible Fatherhood - OPRE",
             "display_name": "G99HRF2",
-            "division_id": 5,
-            "expiration_date": "2023-09-01T00:00:00.000000Z",
-            "funding_sources": [24, 26],
+            "expiration_date": 2024,
+            "funding_budgets": [
+                {
+                    "budget": "1140000.0",
+                    "can": 500,
+                    "can_id": 500,
+                    "created_by": None,
+                    "created_by_user": None,
+                    "display_name": "CANFundingBudget#1",
+                    "fiscal_year": 2023,
+                    "id": 1,
+                    "notes": None,
+                    "updated_by": None,
+                    "updated_by_user": None,
+                }
+            ],
+            "funding_details": {
+                "allotment": None,
+                "allowance": None,
+                "appropriation": None,
+                "created_by": None,
+                "created_by_user": None,
+                "display_name": "CANFundingDetails#1",
+                "fiscal_year": 2023,
+                "fund_code": "AAXXXX20231DAD",
+                "funding_partner": None,
+                "funding_source": "OPRE",
+                "id": 1,
+                "method_of_transfer": None,
+                "sub_allowance": None,
+                "updated_by": None,
+                "updated_by_user": None,
+            },
+            "funding_details_id": 1,
+            "funding_received": [
+                {
+                    "can": 500,
+                    "can_id": 500,
+                    "created_by": None,
+                    "created_by_user": None,
+                    "display_name": "CANFundingReceived#500",
+                    "fiscal_year": 2023,
+                    "funding": "880000.0",
+                    "id": 500,
+                    "notes": None,
+                    "updated_by": None,
+                    "updated_by_user": None,
+                }
+            ],
             "id": 500,
-            "managing_portfolio": 6,
-            "managing_portfolio_id": 6,
-            "nickname": "HMRF-OPRE",
+            "nick_name": "HMRF-OPRE",
             "number": "G99HRF2",
+            "portfolio": 6,
+            "portfolio_id": 6,
             "projects": [],
-            "shared_portfolios": [],
             "updated_by": None,
             "updated_by_user": None,
-            "external_authorizer_id": None,
         },
         "carry_forward_funding": 0,
-        "carry_forward_label": "Carry-Forward",
-        "received_funding": Decimal("880000.00"),
-        "expected_funding": Decimal("260000.00"),
-        "expiration_date": "09/01/2023",
-        "in_execution_funding": Decimal("2000000.00"),
+        "carry_forward_label": " Carry-Forward",
+        "expected_funding": Decimal("260000.0"),
+        "expiration_date": "10/01/2024",
+        "in_execution_funding": 0,
         "obligated_funding": 0,
         "planned_funding": 0,
-        "total_funding": Decimal("1140000.00"),
+        "received_funding": Decimal("880000.0"),
+        "total_funding": Decimal("1140000.0"),
     }
 
 
