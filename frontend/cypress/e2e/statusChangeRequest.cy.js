@@ -94,6 +94,14 @@ it("BLI Status Change", () => {
                 cy.wait(1);
             });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+            cy.get('[data-cy="review-card"]').within(() => {
+                cy.contains(bliId);
+                cy.contains("Admin Demo");
+                cy.contains("Status");
+                cy.contains("Draft");
+                cy.contains("Planned");
+                cy.contains("$1,005,000.00");
+            });
             // type pls approve in the #submitter-notes textarea
             cy.get("#submitter-notes").type("pls approve");
             cy.get('[data-cy="send-to-approval-btn"]').click();
