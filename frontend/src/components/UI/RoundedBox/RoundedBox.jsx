@@ -14,7 +14,7 @@ library.add(faSquare);
  * @returns {React.JSX.Element} Rendered component.
  */
 const RoundedBox = ({ children, className, dataCy, ...rest }) => {
-    const cardContainer = `bg-base-lightest border-base-lighter font-family-sans display-flex ${cssClasses.container} ${className}`;
+    const cardContainer = `bg-brand-base-light-variant border-base-light font-family-sans display-flex ${cssClasses.container} ${className}`;
 
     return (
         <div

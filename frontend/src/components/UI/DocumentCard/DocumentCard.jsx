@@ -12,7 +12,7 @@ import { faEye } from "@fortawesome/free-solid-svg-icons";
  * @returns {JSX.Element} - The rendered component
  */
 const DocumentCard = ({ className, dataCy, document, ...rest }) => {
-    const cardContainer = `bg-base-lightest border-base-lighter font-family-sans display-flex ${cssClasses.container} ${className}`;
+    const cardContainer = `bg-brand-base-light-variant border-base-lighter font-family-sans display-flex ${cssClasses.container} ${className}`;
     const icon_class_names = `${cssClasses.eyeIcon} height-3 width-3`;
     const documentTitleClassNames = `${cssClasses.documentTitle} font-12px`;
     const uploaded_by_text = `Uploaded by ${document.uploaded_by} on ${document.upload_date}`;

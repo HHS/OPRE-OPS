@@ -12,11 +12,11 @@ import BLIStatusSummaryCard from "../BLIStatusSummaryCard";
 const SummaryCardsSection = ({ budgetLines }) => {
     return (
         <div className="display-flex flex-justify">
-            <BLIStatusSummaryCard budgetLines={budgetLines} />
             <BudgetLinesTotalSummaryCard
                 title="Budget Lines Total"
                 budgetLines={budgetLines}
             />
+            <BLIStatusSummaryCard budgetLines={budgetLines} />
         </div>
     );
 };

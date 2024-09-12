@@ -14,7 +14,7 @@ import PropTypes from "prop-types";
  * @returns {JSX.Element} - The tag element.
  */
 const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children }) => {
-    let tagClasses = "font-12px padding-y-05 padding-x-1 height-205 radius-md",
+    let tagClasses = "font-12px height-205 radius-md",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
     // Can also pass in className prop to override
@@ -39,6 +39,9 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
             break;
         case "lightTextRedBackground":
             tagClasses += " bg-secondary-dark text-white";
+            break;
+        case "budgetAvailable":
+            tagClasses += " bg-brand-data-viz-budget-graph-1 text-white";
             break;
         default:
             break;
@@ -77,16 +80,16 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
                     activeClass += " bg-brand-data-viz-primary-5 text-white fake-bold";
                     break;
                 case "Planned":
-                    activeClass += " bg-brand-data-viz-primary-11 text-white fake-bold";
+                    activeClass += " bg-brand-data-viz-bl-by-status-2 text-white fake-bold";
                     break;
                 case "Executing":
-                    activeClass += " bg-brand-data-viz-primary-8 fake-bold";
+                    activeClass += " bg-brand-data-viz-bl-by-status-3 fake-bold";
                     break;
                 case "Obligated":
-                    activeClass += " bg-brand-data-viz-primary-6 text-white fake-bold";
+                    activeClass += " bg-brand-data-viz-bl-by-status-4 text-white fake-bold";
                     break;
                 case "Draft":
-                    activeClass += " bg-brand-neutral-lighter fake-bold";
+                    activeClass += " bg-brand-data-viz-bl-by-status-1 fake-bold";
                     break;
                 default:
                     break;
@@ -97,7 +100,10 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
     return (
         <span
             className={`${tagClasses} ${activeClass} ${className}`}
-            style={{ width: "fit-content" }}
+            style={{
+                width: "fit-content", // Ensures the tag's width adapts to its content
+                padding: ".25em .5em" // Adds some space inside the tag for better readability
+            }}
         >
             {text ? text : children}
         </span>

@@ -15,7 +15,8 @@ import { CHANGE_REQUEST_TYPES, KEY_NAMES } from "../../ChangeRequests/ChangeRequ
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
-    removeBorderBottomIfExpanded
+    removeBorderBottomIfExpanded,
+    expandedRowBGColor
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
@@ -142,7 +143,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
         <td
             colSpan={9}
             className="border-top-none"
-            style={{ backgroundColor: "var(--neutral-lightest)" }}
+            style={expandedRowBGColor}
         >
             <div className="display-flex padding-right-9">
                 <dl className="font-12px">

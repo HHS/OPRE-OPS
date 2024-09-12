@@ -1,8 +1,18 @@
+import PropTypes from "prop-types";
 import styles from "./styles.module.scss";
 import { useEffect, useState } from "react";
 import { calculateRatio } from "./util";
-
-const CANFundingBar = ({ data = [], setActiveId = () => {} }) => {
+/**
+ *
+ * @component
+ * @param {Object} props
+ * @param {Object[]} props.data
+ * @param {Function} [props.setActiveId]
+ * @param {boolean} [props.isStriped]
+ * @param {boolean} [props.overBudget]
+ * @returns {JSX.Element}
+ */
+const CANFundingBar = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
     const [ratio, setRatio] = useState(1);
     const received_funding = data[0].value;
     const expected_funding = data[1].value;
@@ -19,8 +29,21 @@ const CANFundingBar = ({ data = [], setActiveId = () => {} }) => {
     return (
         <div className={styles.barBox}>
             <div
-                className={styles.leftBar}
-                style={{ flex: ratio, backgroundColor: data[0].color }}
+                className={`${styles.leftBar} ${styles.dottedBar}`}
+                style={{
+                    flex: ratio,
+                    backgroundColor: data[0].color,
+                    backgroundImage:
+                        isStriped && !overBudget
+                            ? `repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 5px,
+                    var(--data-viz-budget-graph-1) 5px,
+                    var(--data-viz-budget-graph-1) 6px
+                )`
+                            : "none"
+                }}
                 onMouseEnter={() => setActiveId(data[0].id)}
                 onMouseLeave={() => setActiveId(0)}
             />
@@ -34,4 +57,10 @@ const CANFundingBar = ({ data = [], setActiveId = () => {} }) => {
     );
 };
 
+CANFundingBar.propTypes = {
+    data: PropTypes.array.isRequired,
+    setActiveId: PropTypes.func,
+    isStriped: PropTypes.bool,
+    overBudget: PropTypes.bool
+};
 export default CANFundingBar;
