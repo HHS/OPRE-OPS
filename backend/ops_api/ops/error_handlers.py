@@ -31,12 +31,12 @@ def register_error_handlers(app):  # noqa: C901
     @app.errorhandler(NotActiveUserError)
     def handle_exception_not_active_user_error(e):
         app.logger.exception(e)
-        return make_response_with_headers({}, 403)
+        return make_response_with_headers({}, 401)
 
     @app.errorhandler(InvalidUserSessionError)
     def handle_exception_invalid_user_session_error(e):
         app.logger.exception(e)
-        return make_response_with_headers({}, 403)
+        return make_response_with_headers({}, 401)
 
     @app.errorhandler(NoAuthorizationError)
     def handle_exception_no_authorization_error(e):

@@ -34,28 +34,28 @@ const CanCard = ({ can, fiscalYear }) => {
             id: 1,
             label: "Available",
             value: canFundingData.available_funding || 0,
-            color: "#C07B96",
+            color: "var(--data-viz-primary-5)",
             percent: `${calculatePercent(+canFundingData?.available_funding, +canFundingData?.total_funding)}%`
         },
         {
             id: 2,
             label: "Planned",
             value: canFundingData.planned_funding || 0,
-            color: "#336A90",
+            color: "var(--data-viz-bl-by-status-2)",
             percent: `${calculatePercent(+canFundingData?.planned_funding, +canFundingData?.total_funding)}%`
         },
         {
             id: 3,
             label: "Executing",
             value: canFundingData.in_execution_funding || 0,
-            color: "#E5A000",
+            color: "var(--data-viz-bl-by-status-3)",
             percent: `${calculatePercent(+canFundingData?.in_execution_funding, +canFundingData?.total_funding)}%`
         },
         {
             id: 4,
             label: "Obligated",
             value: canFundingData.obligated_funding || 0,
-            color: "#3A835B",
+            color: "var(--data-viz-bl-by-status-4)",
             percent: `${calculatePercent(+canFundingData?.obligated_funding, +canFundingData?.total_funding)}%`
         }
     ];
@@ -164,15 +164,15 @@ const CanCard = ({ can, fiscalYear }) => {
 
                         <div
                             id={`can-graph-${can.id}`}
-                            className="width-card height-card margin-right-2 margin-top-neg-2"
+                            className="width-card height-card margin-right-2 margin-top-neg-1"
                             aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                             role="img"
                             title="Donut Chart"
                         >
                             <ResponsiveDonutWithInnerPercent
                                 data={data}
-                                width={175}
-                                height={175}
+                                width={150}
+                                height={150}
                                 margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                                 setPercent={setPercent}
                                 setHoverId={setHoverId}

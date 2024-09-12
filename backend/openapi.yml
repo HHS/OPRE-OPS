@@ -164,7 +164,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-  /api/v1/agreements/{agreement_id}/history:
+  /api/v1/agreements-history/{agreement_id}:
     get:
       operationId: getAgreementHistoryById
       description: Get Agreement History By Id

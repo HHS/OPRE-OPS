@@ -3,7 +3,14 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import ReactMarkdown from "react-markdown";
-
+/**
+ * @component
+ * @param {Object} props
+ * @param {string} props.label
+ * @param {string} props.description
+ * @param {string []} props.urls
+ * @returns {JSX.Element}
+ */
 const HeroDescription = ({ label, description, urls }) => {
     const styles = {
         hidden: {

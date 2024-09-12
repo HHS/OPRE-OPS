@@ -341,7 +341,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
 
         # verify agreement history (+1 agreement created)
         prev_hist_count = 0
-        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
         hist_count = len(resp_json)
@@ -367,7 +367,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         assert resp.status_code == 200
 
         # verify agreement history (+1 agreement updated)
-        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
         hist_count = len(resp_json)
@@ -405,7 +405,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         bli_id = bli.id
 
         # verify agreement history added (+1 BLI created)
-        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
         hist_count = len(resp_json)
@@ -429,7 +429,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         session.commit()
 
         # verify agreement history added (+1 BLI update with 3 log_item)
-        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
         hist_count = len(resp_json)
@@ -459,7 +459,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         session.commit()
 
         # verify agreement history added (+1 BLI created)
-        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
         hist_count = len(resp_json)
@@ -487,7 +487,7 @@ def test_agreement_history_with_change_requests(auth_client, app):
         assert len(change_requests_in_review) == 3
 
         # verify agreement history added (+3 change requests created)
-        resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+        resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
         assert resp.status_code == 200
         resp_json = resp.json
         hist_count = len(resp_json)

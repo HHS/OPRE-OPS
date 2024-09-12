@@ -20,28 +20,28 @@ const PortfolioFundingByBudgetStatus = () => {
             id: 1,
             label: "Available",
             value: portfolioFunding.available_funding.amount || 0,
-            color: "#C07B96",
+            color: "var(--data-viz-primary-5)",
             percent: Math.round(portfolioFunding.available_funding.percent) + "%"
         },
         {
             id: 2,
             label: "Planned",
             value: portfolioFunding.planned_funding.amount || 0,
-            color: "#336A90",
+            color: "var(--data-viz-bl-by-status-2)",
             percent: Math.round(portfolioFunding.planned_funding.percent) + "%"
         },
         {
             id: 3,
             label: "Executing",
             value: portfolioFunding.in_execution_funding.amount || 0,
-            color: "#E5A000",
+            color: "var(--data-viz-bl-by-status-3)",
             percent: Math.round(portfolioFunding.in_execution_funding.percent) + "%"
         },
         {
             id: 4,
             label: "Obligated",
             value: portfolioFunding.obligated_funding.amount || 0,
-            color: "#3A835B",
+            color: "var(--data-viz-bl-by-status-4)",
             percent: Math.round(portfolioFunding.obligated_funding.percent) + "%"
         }
     ];
@@ -57,7 +57,7 @@ const PortfolioFundingByBudgetStatus = () => {
                             className={`height-1 width-1 margin-right-05`}
                             style={{ color: color }}
                         />
-                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
+                        <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
                     </div>
                 </div>
                 <div className="grid-col-6">
@@ -66,7 +66,7 @@ const PortfolioFundingByBudgetStatus = () => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
+                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
                     />
                 </div>
                 <div className="grid-col-1">
@@ -106,14 +106,14 @@ const PortfolioFundingByBudgetStatus = () => {
                 </div>
                 <div
                     id="portfolioBudgetStatusChart"
-                    className="width-card height-card margin-top-neg-2"
+                    className="width-card height-card margin-top-neg-1 margin-left-2"
                     aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                     role="img"
                 >
                     <ResponsiveDonutWithInnerPercent
                         data={data}
-                        width={175}
-                        height={175}
+                        width={150}
+                        height={150}
                         margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                         setPercent={setPercent}
                         setHoverId={setHoverId}

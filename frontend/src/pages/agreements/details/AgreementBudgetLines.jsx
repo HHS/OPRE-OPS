@@ -88,7 +88,6 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                         isEditable={canUserEditAgreement}
                     />
                     <div className="display-flex flex-justify">
-                        <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
                         <AgreementTotalCard
                             total={agreementTotal}
                             subtotal={agreementSubtotal}
@@ -96,6 +95,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                             procurementShopAbbr={agreement.procurement_shop?.abbr}
                             procurementShopFee={agreement.procurement_shop?.fee}
                         />
+                        <BLIsByFYSummaryCard budgetLineItems={filteredBlis} />
                     </div>
                     <div className="margin-y-3">
                         <h2 className="font-sans-lg">Budget Lines</h2>
