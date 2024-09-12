@@ -13,6 +13,7 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import CANSchema
+from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -77,7 +78,12 @@ class CANListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.CAN)
     def post(self) -> Response:
-        return "Hello"
+        request_data = request.get_json()
+        schema = CANSchema()
+        serialized_request = schema.load(request_data)
+        can_service = CANService()
+        created_can = can_service.create(serialized_request)
+        return make_response_with_headers(created_can, 201)
 
 
 class CANsByPortfolioAPI(BaseItemAPI):

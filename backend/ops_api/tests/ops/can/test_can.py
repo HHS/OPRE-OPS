@@ -121,11 +121,28 @@ def test_get_cans_search_filter(auth_client, loaded_db, test_can):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_post_creates_can(auth_client):
+def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
+    mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
+    mocker_create_can.return_value = "Hello"
     data = {
         "portfolio_id": 6,
         "number": "G998235",
         "description": "Test CAN Created by unit test",
     }
-    response = auth_client.post("/api/v1/cans", data)
-    print(response)
+    response = budget_team_auth_client.post("/api/v1/cans/", json=data)
+
+    assert response.status_code == 201
+    assert mocker_create_can.call_count == 1
+    # mocker_create_can.called_once_with(parameters)
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_basic_user_cannot_post_creates_can(basic_user_auth_client):
+    data = {
+        "portfolio_id": 6,
+        "number": "G998235",
+        "description": "Test CAN Created by unit test",
+    }
+    response = basic_user_auth_client.post("/api/v1/cans/", json=data)
+
+    assert response.status_code == 401

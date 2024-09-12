@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from models import CAN, BudgetLineItem, OpsDBHistory, OpsEvent, Project, User, Vendor
 from ops_api.ops import create_app
-from tests.auth_client import AuthClient, NoPermsAuthClient
+from tests.auth_client import AuthClient, BasicUserAuthClient, BudgetTeamAuthClient, NoPermsAuthClient
 
 
 @pytest.fixture()
@@ -45,6 +45,22 @@ def no_perms_auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
     """Get the authenticated test client for flask."""
     app.testing = True
     app.test_client_class = NoPermsAuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def basic_user_auth_client(app: Flask) -> FlaskClient:
+    """Get a user with just the basic user permissions and not admin perms."""
+    app.testing = True
+    app.test_client_class = BasicUserAuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def budget_team_auth_client(app: Flask) -> FlaskClient:
+    """Get a user with just the budget team permissions and not admin perms."""
+    app.testing = True
+    app.test_client_class = BudgetTeamAuthClient
     return app.test_client()
 
 

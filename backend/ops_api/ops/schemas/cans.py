@@ -12,7 +12,7 @@ class BasicCANSchema(Schema):
     nick_name = fields.String(allow_none=True)
     number = fields.String(required=True)
     description = fields.String(allow_none=True)
-    id = fields.Integer()
+    id = fields.Integer(required=True)
     portfolio_id = fields.Integer(required=True)
     projects = fields.List(fields.Nested(ProjectSchema()), default=[])
 
