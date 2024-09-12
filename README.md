@@ -36,8 +36,8 @@ export JWT_PUBLIC_KEY=$(cat ~/ops-keys/public.pem)
 Also, replace the public key file contents in the following locations...
 
 ```
-./public.pub
-backend/ops_api/ops/static/public.pem
+cat ~/ops-keys/public.pem > ./public.pub
+cat ~/ops-keys/public.pem > ./backend/ops_api/ops/static/public.pem
 ```
 
 N.B. The public key files above are deprecated and will be replaced with the `JWT_PUBLIC_KEY` environment variable in the future.
