@@ -12,7 +12,7 @@ from models.cans import CAN
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.cans import CANSchema
+from ops_api.ops.schemas.cans import CANSchema, CreateCANRequestSchema
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
@@ -78,12 +78,19 @@ class CANListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.CAN)
     def post(self) -> Response:
+        """
+        Create a new Common Accounting Number (CAN) object.
+        """
         request_data = request.get_json()
-        schema = CANSchema()
+        schema = CreateCANRequestSchema()
         serialized_request = schema.load(request_data)
+
         can_service = CANService()
         created_can = can_service.create(serialized_request)
-        return make_response_with_headers(created_can, 201)
+
+        can_schema = CANSchema()
+        serialized_can = can_schema.dump(created_can)
+        return make_response_with_headers(serialized_can, 201)
 
 
 class CANsByPortfolioAPI(BaseItemAPI):

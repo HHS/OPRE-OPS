@@ -6,6 +6,13 @@ from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
+class CreateCANRequestSchema(Schema):
+    nick_name = fields.String(allow_none=True)
+    number = fields.String(required=True)
+    description = fields.String(allow_none=True)
+    portfolio_id = fields.Integer(required=True)
+
+
 class BasicCANSchema(Schema):
     active_period = fields.Integer(allow_none=True)
     display_name = fields.String(allow_none=True)
@@ -18,7 +25,7 @@ class BasicCANSchema(Schema):
 
 
 class PortfolioUrlCANSchema(Schema):
-    id = fields.Integer()
+    id = fields.Integer(required=True)
     portfolio_id = fields.Integer(required=True)
     url = fields.String(required=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -30,7 +37,7 @@ class PortfolioUrlCANSchema(Schema):
 
 
 class PortfolioCANSchema(Schema):
-    id = fields.Integer()
+    id = fields.Integer(required=True)
     name = fields.String(allow_none=True)
     abbreviation = fields.String(required=True)
     status = fields.Enum(PortfolioStatus)
@@ -106,7 +113,7 @@ class FundingReceivedSchema(Schema):
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
     funding = fields.Float(allow_none=True)
-    id = fields.Integer()
+    id = fields.Integer(required=True)
     notes = fields.String(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)

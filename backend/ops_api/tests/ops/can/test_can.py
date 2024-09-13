@@ -122,18 +122,23 @@ def test_get_cans_search_filter(auth_client, loaded_db, test_can):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
-    mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
-    mocker_create_can.return_value = "Hello"
-    data = {
+    input_data = {
         "portfolio_id": 6,
         "number": "G998235",
         "description": "Test CAN Created by unit test",
     }
-    response = budget_team_auth_client.post("/api/v1/cans/", json=data)
+
+    mock_output_data = CAN(id=517, portfolio_id=6, number="G998235", description="Test CAN Created by unit test")
+    mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
+    mocker_create_can.return_value = mock_output_data
+    response = budget_team_auth_client.post("/api/v1/cans/", json=input_data)
 
     assert response.status_code == 201
-    assert mocker_create_can.call_count == 1
-    # mocker_create_can.called_once_with(parameters)
+    mocker_create_can.assert_called_once_with(input_data)
+    assert response.json["id"] == mock_output_data.id
+    assert response.json["portfolio_id"] == mock_output_data.portfolio_id
+    assert response.json["number"] == mock_output_data.number
+    assert response.json["description"] == mock_output_data.description
 
 
 @pytest.mark.usefixtures("app_ctx")
