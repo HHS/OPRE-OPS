@@ -14,6 +14,7 @@ import IsRequiredHelper from "../Form/IsRequiredHelper";
  * @param {Array<Object>} [props.options] - An array of options to display (optional).
  * @param {boolean} [props.valueOverride] - A flag to indicate if the value should be an index (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
+ * @param {string} [props.legendClassname] - Additional CSS classes to apply to the legend (optional).
  * @param {string} [props.defaultOption] - The default option to display (optional).
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show (optional).
@@ -37,6 +38,7 @@ const Select = ({
         }
     ],
     className,
+    legendClassname,
     defaultOption = "-Select an option-",
     isRequired = false,
     isRequiredNoShow = false
@@ -48,7 +50,7 @@ const Select = ({
     return (
         <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
             <label
-                className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : ""} `}
+                className={`usa-label margin-top-0 ${legendClassname} ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
             >
                 {label}
@@ -109,6 +111,7 @@ Select.propTypes = {
     ),
     valueOverride: PropTypes.bool,
     className: PropTypes.string,
+    legendClassname: PropTypes.string,
     defaultOption: PropTypes.string,
     isRequired: PropTypes.bool,
     isRequiredNoShow: PropTypes.bool

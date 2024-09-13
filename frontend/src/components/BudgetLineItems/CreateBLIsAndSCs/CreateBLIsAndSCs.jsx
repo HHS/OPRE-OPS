@@ -148,7 +148,6 @@ export const CreateBLIsAndSCs = ({
                         />
                     </div>
                     <div className="display-flex flex-justify margin-y-2">
-                        <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                         <AgreementTotalCard
                             total={totalsForCards(subTotalForCards(tempBudgetLines), tempBudgetLines)}
                             subtotal={subTotalForCards(tempBudgetLines)}
@@ -156,6 +155,7 @@ export const CreateBLIsAndSCs = ({
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />
+                        <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                     </div>
                 </>
             )}
@@ -175,7 +175,6 @@ export const CreateBLIsAndSCs = ({
                         isEditable={false}
                     />
                     <div className="display-flex flex-justify margin-y-2">
-                        <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                         <AgreementTotalCard
                             total={totalsForCards(subTotalForCards(budgetLinesForCards), budgetLinesForCards)}
                             subtotal={subTotalForCards(budgetLinesForCards)}
@@ -183,6 +182,7 @@ export const CreateBLIsAndSCs = ({
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />
+                        <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                     </div>
                 </>
             )}

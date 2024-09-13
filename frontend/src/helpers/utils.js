@@ -308,13 +308,13 @@ export const statusToClassName = (status, styleType = "text") => {
     if (styleType === "text") {
         switch (status) {
             case BLI_STATUS.DRAFT:
-                return "text-brand-neutral-lighter";
+                return "text-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
-                return "text-brand-data-viz-primary-11";
+                return "text-brand-data-viz-bl-by-status-2";
             case BLI_STATUS.EXECUTING:
-                return "text-brand-data-viz-primary-8";
+                return "text-brand-data-viz-bl-by-status-3";
             case BLI_STATUS.OBLIGATED:
-                return "text-brand-data-viz-primary-6";
+                return "text-brand-data-viz-bl-by-status-4";
             default:
                 return "";
         }
@@ -322,13 +322,13 @@ export const statusToClassName = (status, styleType = "text") => {
         // tag style with status color as the background and contrasting text
         switch (status) {
             case BLI_STATUS.DRAFT:
-                return "bg-brand-neutral-lighter";
+                return "bg-brand-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
-                return "bg-brand-data-viz-primary-11 text-white";
+                return "brand-data-viz-bl-by-status-2 text-white";
             case BLI_STATUS.EXECUTING:
-                return "bg-brand-data-viz-primary-8";
+                return "brand-data-viz-bl-by-status-3";
             case BLI_STATUS.OBLIGATED:
-                return "bg-brand-data-viz-primary-6 text-white";
+                return "brand-data-viz-bl-by-status-4 text-white";
             default:
                 return "";
         }
@@ -369,7 +369,7 @@ export function toSlugCase(str) {
  * This function takes a slug and returns a title case version of the string.
  * @param {string} slug - The slug to convert to title case.
  * @returns {string} The title case version of the slug.
- 
+
  */
 export function toTitleCaseFromSlug(slug) {
     if (!slug) return "";
