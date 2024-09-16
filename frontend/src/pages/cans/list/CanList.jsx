@@ -1,13 +1,11 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
 import App from "../../../App";
-import { getCanList } from "./getCanList";
-import TextClip from "../../../components/UI/Text/TextClip";
+import CANTable from "../../../components/CANs/CANTable";
 import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import BLITags from "../../budgetLines/list/BLITabs";
-import CANTags from "./CansTabs";
+import CANTags from "./CanTabs";
+import { getCanList } from "./getCanList";
 
 const CanList = () => {
     const dispatch = useDispatch();
@@ -18,7 +16,6 @@ const CanList = () => {
     }, [dispatch]);
 
     // TODO: remove flag once CANS are ready
-    /*<DebugCode data={canList}/>*/
     return (
         import.meta.env.DEV && (
             <App breadCrumbName="CANs">
@@ -31,7 +28,9 @@ const CanList = () => {
                             : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
                     }
                     TabsSection={<CANTags />}
+                    TableSection={<CANTable cans={canList} />}
                 />
+                <DebugCode data={canList} />
             </App>
         )
     );
