@@ -1,15 +1,20 @@
 import CurrencyFormat from "react-currency-format";
-import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
-import { convertCodeForDisplay } from "../../../helpers/utils";
 import { Link } from "react-router-dom";
+import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 
 const CANTableRow = ({ can, portfolio, FY, activePeriod, obligateBy, transfer, fyBudget, canId }) => {
     const availableFunds = useGetCanFundingSummaryQuery(canId).data?.available_funding ?? 0;
     return (
         <tr>
             <th scope="row">
-                <Link to={`/cans/${canId}`}>{can}</Link>
+                <Link
+                    to={`/cans/${canId}`}
+                    className="text-ink text-no-underline"
+                >
+                    {can}
+                </Link>
             </th>
             <td>{portfolio}</td>
             <td>{FY}</td>
