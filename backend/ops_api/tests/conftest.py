@@ -188,6 +188,14 @@ def test_can(loaded_db) -> CAN | None:
 
 
 @pytest.fixture()
+def unadded_can():
+    new_can = CAN(
+        portfolio_id=6, number=" G998235", description="Test CAN created for unit tests", nick_name="My nick name"
+    )
+    return new_can
+
+
+@pytest.fixture()
 def test_bli(loaded_db) -> BudgetLineItem | None:
     """Get a test BudgetLineItem."""
     return loaded_db.get(BudgetLineItem, 15000)

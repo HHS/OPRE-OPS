@@ -92,6 +92,16 @@ class CANListAPI(BaseListAPI):
         serialized_can = can_schema.dump(created_can)
         return make_response_with_headers(serialized_can, 201)
 
+    @is_authorized(PermissionType.PATCH, Permission.CAN)
+    def patch(self, id: int) -> Response:
+        request_data = request.get_json()
+        schema = CANSchema()
+        serialized_request = schema.load(request_data)
+
+        can_service = CANService()
+        can_service.update_by_fields(serialized_request, id)
+        return make_response_with_headers({})
+
 
 class CANsByPortfolioAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):

@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import func, select
 
 from models import CAN, BudgetLineItem, CANFundingSource, CANStatus
+from ops.services.cans import CANService
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -120,6 +121,7 @@ def test_get_cans_search_filter(auth_client, loaded_db, test_can):
     assert len(response.json) == 0
 
 
+# Testing CAN Creation
 @pytest.mark.usefixtures("app_ctx")
 def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
     input_data = {
@@ -151,3 +153,83 @@ def test_basic_user_cannot_post_creates_can(basic_user_auth_client):
     response = basic_user_auth_client.post("/api/v1/cans/", json=data)
 
     assert response.status_code == 401
+
+
+def test_service_create_can(loaded_db):
+    data = {
+        "portfolio_id": 6,
+        "number": "G998235",
+        "description": "Test CAN Created by unit test",
+    }
+
+    can_service = CANService()
+
+    new_can = can_service.create(data)
+
+    can = loaded_db.execute(select(CAN).where(CAN.number == "G998235")).scalar_one()
+
+    assert can is not None
+    assert can.number == "G998235"
+    assert can.description == "Test CAN Created by unit test"
+    assert can.portfolio_id == 6
+    assert can.id == 517
+    assert can == new_can
+
+    loaded_db.delete(new_can)
+    loaded_db.commit()
+
+
+# Testing updating CANs by field
+@pytest.mark.usefixtures("app_ctx")
+def test_can_patch_updates_can(budget_team_auth_client, mocker, loaded_db, unadded_can):
+    update_data = {
+        "id": 517,
+        "portfolio_id": 6,
+        "number": "G998235",
+        "description": "Test CAN Created by unit test",
+    }
+
+    test_data = {
+        "portfolio_id": 6,
+        "number": "G998235",
+        "description": "Test CAN Created by unit test",
+    }
+
+    can_service = CANService()
+
+    can_service.create(test_data)
+
+    mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update_by_fields")
+    response = budget_team_auth_client.patch("/api/v1/cans/", json=update_data)
+
+    updated_can = loaded_db.execute(select(CAN).where(CAN.number == "G998235")).scalar_one()
+
+    assert response.status_code == 200
+    mocker_update_can.assert_called_once()
+    # Assert fields that should not have changed
+    assert updated_can.nick_name == unadded_can.nick_name
+    assert updated_can.number == unadded_can.number
+    # Assert field that should have changed.
+    assert updated_can.description == update_data["description"]
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_basic_user_cannot_patch_cans(basic_user_auth_client):
+    data = {
+        "id": 517,
+        "portfolio_id": 6,
+        "description": "An updated can description",
+    }
+    response = basic_user_auth_client.patch("/api/v1/cans/", json=data)
+
+    assert response.status_code == 401
+
+
+@pytest.fixture()
+def db_with_test_can(loaded_db, unadded_can):
+    loaded_db.add(unadded_can)
+    loaded_db.commit()
+    yield loaded_db
+
+    loaded_db.delete(unadded_can)
+    loaded_db.commit()
