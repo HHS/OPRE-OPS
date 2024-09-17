@@ -6,11 +6,13 @@ import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import CANTags from "./CanTabs";
 import { getCanList } from "./getCanList";
+import { useSearchParams } from "react-router-dom";
 
 const CanList = () => {
     const dispatch = useDispatch();
     const canList = useSelector((state) => state.canList.cans);
-    const myCANsUrl = false;
+    const [searchParams] = useSearchParams();
+    const myCANsUrl = searchParams.get("filter") === "my-cans";
     useEffect(() => {
         dispatch(getCanList());
     }, [dispatch]);
