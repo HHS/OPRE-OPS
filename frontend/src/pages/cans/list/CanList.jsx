@@ -1,23 +1,15 @@
-// import { useEffect } from "react";
-// import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
+import { useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANTable from "../../../components/CANs/CANTable";
 import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import CANTags from "./CanTabs";
-// import { getCanList } from "./getCanList";
-import { useSearchParams } from "react-router-dom";
-import { useGetCansQuery } from "../../../api/opsAPI";
 import ErrorPage from "../../ErrorPage";
+import CANTags from "./CanTabs";
 
 const CanList = () => {
-    // const dispatch = useDispatch();
-    // const canList = useSelector((state) => state.canList.cans);
     const [searchParams] = useSearchParams();
     const myCANsUrl = searchParams.get("filter") === "my-cans";
-    // useEffect(() => {
-    //     dispatch(getCanList());
-    // }, [dispatch]);
     const { data: canList, isError, isLoading } = useGetCansQuery();
     if (isLoading) {
         return (

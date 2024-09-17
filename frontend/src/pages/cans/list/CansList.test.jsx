@@ -1,11 +1,7 @@
-import { server } from "../../../tests/mocks";
-import { waitFor, screen } from "@testing-library/react";
-// import { useGetAgreementsQuery } from "./opsAPI";
+import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../../test-utils";
+import { server } from "../../../tests/mocks";
 import CanList from "./CanList";
-import { Router } from "react-router-dom";
-import { Provider } from "react-redux";
-import store from "../../../store";
 
 server.listen();
 // TODO: Fix this test
