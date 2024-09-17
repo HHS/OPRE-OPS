@@ -8,6 +8,7 @@ const CANTable = ({ cans }) => {
             {cans.map((can) => (
                 <CANTableRow
                     key={can.id}
+                    canId={can.id}
                     can={can.display_name}
                     portfolio={can.portfolio.abbreviation}
                     FY={can.funding_budgets[0]?.fiscal_year ?? "TBD"}
