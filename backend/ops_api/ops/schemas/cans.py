@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from models import PortfolioStatus
+from models import PortfolioStatus, CANMethodOfTransfer
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
@@ -90,7 +90,7 @@ class FundingDetailsSchema(Schema):
     funding_partner = fields.String(allow_none=True)
     funding_source = fields.String(allow_none=True)
     id = fields.Integer(required=True)
-    method_of_transfer = fields.String(allow_none=True)
+    method_of_transfer = fields.Enum(CANMethodOfTransfer, allow_none=True)
     sub_allowance = fields.String(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
