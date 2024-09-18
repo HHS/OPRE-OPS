@@ -2,6 +2,7 @@
 
 import subprocess
 from collections.abc import Generator
+from datetime import datetime, timezone
 
 import pytest
 from flask import Flask
@@ -175,3 +176,8 @@ def test_can(loaded_db) -> CAN | None:
 def test_bli(loaded_db) -> BudgetLineItem | None:
     """Get a test BudgetLineItem."""
     return loaded_db.get(BudgetLineItem, 15000)
+
+
+@pytest.fixture
+def utc_today():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT")
