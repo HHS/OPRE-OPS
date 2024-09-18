@@ -8,7 +8,7 @@ server.listen();
 describe.skip("opsApi", () => {
     test("should GET /cans using mocks", async () => {
         const { container } = renderWithProviders(<TestComponent />);
-        screen.debug();
+
         await waitFor(() => {
             expect(container).toBeInTheDocument();
         });
