@@ -25,7 +25,7 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     }
 
     /**
-     *  @typedef {import('./ChangeRequests').ChangeRequest} ChangeRequest
+     *  @typedef {import('../ChangeRequestsTypes').ChangeRequest} ChangeRequest
      *  @type {ChangeRequest[]}
      */
     return changeRequests.length > 0 ? (

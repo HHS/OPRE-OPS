@@ -1,8 +1,20 @@
+import PropTypes from "prop-types";
 import Table from "../../UI/Table";
 import { CAN_TABLE_HEADINGS } from "./CANTable.constants";
 import CANTableRow from "./CANTableRow";
 
+/**
+ * CANTable component of CanList
+ * @component
+ * @typedef {import("../../CANs/CANTypes").CAN} CAN
+ * @param {Object} props
+ * @param {CAN[]} props.cans - Array of CANs
+ * @returns {JSX.Element}
+ */
 const CANTable = ({ cans }) => {
+    if (cans.length === 0) {
+        return <p className="text-center">No CANs found</p>;
+    }
     return (
         <Table tableHeadings={CAN_TABLE_HEADINGS}>
             {cans.map((can) => (
@@ -20,6 +32,10 @@ const CANTable = ({ cans }) => {
             ))}
         </Table>
     );
+};
+
+CANTable.propTypes = {
+    cans: PropTypes.array.isRequired
 };
 
 export default CANTable;

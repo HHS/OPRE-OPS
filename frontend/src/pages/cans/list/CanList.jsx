@@ -36,7 +36,7 @@ const CanList = () => {
                     TabsSection={<CANTags />}
                     TableSection={<CANTable cans={canList} />}
                 />
-                {/* <DebugCode data={canList} /> */}
+                <DebugCode data={canList} />
             </App>
         )
     );
