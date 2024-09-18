@@ -1,5 +1,5 @@
 import { SimpleCAN } from "../CANs/CANTypes";
-import { ChangeRequest } from "../ChangeRequests/ChangeRequests";
+import { ChangeRequest } from "../ChangeRequests/ChangeRequestsTypes";
 import { SafeUser } from "../Users/UserTypes";
 
 export type BudgetLine = {

@@ -1,6 +1,7 @@
 import { SafeUser } from "../Users/UserTypes";
 import { BudgetLine } from "../BudgetLineItems/BudgetLineTypes";
 import { Portfolio } from "../Portfolios/PortfolioTypes";
+import { Project } from "../Projects/ProjectTypes";}
 
 export type CAN = {
     active_period: number;
@@ -19,8 +20,7 @@ export type CAN = {
     number: string;
     portfolio: Portfolio;
     portfolio_id: number;
-    // TODO: Add projects
-    projects: [];
+    projects: Project[];
     updated_by: number | null;
     updated_by_user: number | null;
     updated_on: Date;
