@@ -289,3 +289,16 @@ describe("Additional Information accordion", () => {
         cy.get("h2").contains("Review Documents").as("info-accordion").should("exist");
     });
 });
+
+describe("Should not allow non-team members from submitting status changes", () => {
+    it("should disable submit button", () => {
+        testLogin("basic");
+        cy.visit("/agreements/9/budget-lines").wait(1000);
+        cy.get("span").contains("Plan or Execute Budget Lines").should("have.attr", "aria-disabled", "true");
+    });
+    it("should show error page", () => {
+        testLogin("basic");
+        cy.visit("/agreements/review/9").wait(1000);
+        cy.get("h1").contains("Something went wrong").should("exist");
+    });
+});

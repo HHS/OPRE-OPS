@@ -8,6 +8,7 @@ import BLIsByFYSummaryCard from "../../../components/Agreements/AgreementDetails
 import BudgetLinesTable from "../../../components/BudgetLineItems/BudgetLinesTable";
 import CreateBLIsAndSCs from "../../../components/BudgetLineItems/CreateBLIsAndSCs";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
+import Tooltip from "../../../components/UI/USWDS/Tooltip";
 import { groupByServicesComponent, hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
@@ -153,13 +154,24 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
 
             {!isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-1">
-                    <Link
-                        className="usa-button margin-top-4 margin-right-0"
-                        to={`/agreements/review/${agreement?.id}`}
-                        data-cy="bli-tab-continue-btn"
-                    >
-                        Plan or Execute Budget Lines
-                    </Link>
+                    {canUserEditAgreement ? (
+                        <Link
+                            className="usa-button margin-top-4 margin-right-0"
+                            to={`/agreements/review/${agreement?.id}`}
+                            data-cy="bli-tab-continue-btn"
+                        >
+                            Plan or Execute Budget Lines
+                        </Link>
+                    ) : (
+                        <Tooltip label="Only team members on this agreement can send to approval">
+                            <span
+                                className="usa-button margin-top-4 margin-right-0 usa-button--disabled"
+                                aria-disabled="true"
+                            >
+                                Plan or Execute Budget Lines
+                            </span>
+                        </Tooltip>
+                    )}
                 </div>
             )}
         </>

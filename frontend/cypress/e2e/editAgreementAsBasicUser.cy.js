@@ -27,7 +27,7 @@ it("select first agreement and edit icon should not be visible", () => {
 
 it("review first agreement and edit button is disabled", () => {
     cy.visit(`/agreements/review/1`);
-    cy.get('[data-cy="edit-agreement-btn"]').should("be.disabled");
+    cy.get("h1").contains("Something went wrong").should("exist");
 });
 
 it("hack url and see error alert", () => {

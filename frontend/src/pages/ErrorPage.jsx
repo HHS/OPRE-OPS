@@ -12,50 +12,45 @@ const ErrorPage = () => {
             <div className="usa-section">
                 <div className="grid-container">
                     <div className="grid-row grid-gap">
-                        <main
-                            className=""
-                            id="main-content"
-                        >
-                            <div className="usa-prose">
-                                <h1>Something went wrong</h1>
-                                <p className="usa-intro">
-                                    We’re sorry, something went wrong. The page you’re looking for might have been
-                                    removed, had its name changed, or is temporarily unavailable.
-                                </p>
-                                <p>
-                                    If you typed the URL directly, check your spelling and capitalization. Our URLs look
-                                    like this:
-                                    <strong>&lt;agency.gov/example-one&gt;</strong>.
-                                </p>
-                                <p>
-                                    Visit our homepage for helpful tools and resources, or contact us and we’ll point
-                                    you in the right direction.
-                                </p>
-                                <div className="margin-y-5">
-                                    <ul className="usa-button-group">
-                                        <li className="usa-button-group__item">
-                                            <Link
-                                                to="/"
-                                                className="usa-button"
-                                            >
-                                                Visit homepage
-                                            </Link>
-                                        </li>
-                                        <li className="usa-button-group__item">
-                                            <button
-                                                className="usa-button usa-button--outline"
-                                                type="button"
-                                                onClick={() => {
-                                                    alert("Not yet implemented");
-                                                }}
-                                            >
-                                                Contact Us
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
+                        <div className="usa-prose">
+                            <h1>Something went wrong</h1>
+                            <p className="usa-intro">
+                                We’re sorry, something went wrong. The page you’re looking for might have been removed,
+                                had its name changed, or is temporarily unavailable.
+                            </p>
+                            <p>
+                                If you typed the URL directly, check your spelling and capitalization. Our URLs look
+                                like this:
+                                <strong>&lt;agency.gov/example-one&gt;</strong>.
+                            </p>
+                            <p>
+                                Visit our homepage for helpful tools and resources, or contact us and we’ll point you in
+                                the right direction.
+                            </p>
+                            <div className="margin-y-5">
+                                <ul className="usa-button-group">
+                                    <li className="usa-button-group__item">
+                                        <Link
+                                            to="/"
+                                            className="usa-button"
+                                        >
+                                            Visit homepage
+                                        </Link>
+                                    </li>
+                                    <li className="usa-button-group__item">
+                                        <button
+                                            className="usa-button usa-button--outline"
+                                            type="button"
+                                            onClick={() => {
+                                                alert("Not yet implemented");
+                                            }}
+                                        >
+                                            Contact Us
+                                        </button>
+                                    </li>
+                                </ul>
                             </div>
-                        </main>
+                        </div>
                     </div>
                 </div>
             </div>
