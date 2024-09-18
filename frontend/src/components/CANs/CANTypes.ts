@@ -1,7 +1,6 @@
-import { SafeUser } from "../Users/UserTypes";
 import { BudgetLine } from "../BudgetLineItems/BudgetLineTypes";
 import { Portfolio } from "../Portfolios/PortfolioTypes";
-import { Project } from "../Projects/ProjectTypes";}
+import { Project } from "../Projects/ProjectTypes";
 
 export type CAN = {
     active_period: number;
@@ -34,7 +33,7 @@ export type SimpleCAN = {
     nick_name: string;
     number: string;
     portfolio_id: number;
-    projects: [];
+    projects: Project[];
 };
 
 export type URL = {
