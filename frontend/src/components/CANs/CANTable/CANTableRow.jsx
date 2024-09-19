@@ -11,17 +11,27 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @component
  * @param {Object} props
  * @param {string} props.name - CAN name
- * @param {string} props.nickname - Portfolio nickname
+ * @param {string} props.nickname - CAN nickname
  * @param {string} props.portfolio - Portfolio abbreviation
- * @param {number} props.FY - Fiscal Year
- * @param {number} props.activePeriod - Active Period
- * @param {string} props.obligateBy - Obligate By
+ * @param {number} props.fiscalYear - Fiscal Year
+ * @param {number} props.activePeriod - Active Period in years
+ * @param {string} props.obligateBy - Obligate By Date
  * @param {string} props.transfer - Method of Transfer
  * @param {number} props.fyBudget - Fiscal Year Budget
  * @param {number} props.canId - CAN ID
  * @returns {JSX.Element}
  */
-const CANTableRow = ({ name, nickname, portfolio, FY, activePeriod, obligateBy, transfer, fyBudget, canId }) => {
+const CANTableRow = ({
+    name,
+    nickname,
+    portfolio,
+    fiscalYear,
+    activePeriod,
+    obligateBy,
+    transfer,
+    fyBudget,
+    canId
+}) => {
     const availableFunds = useGetCanFundingSummaryQuery(canId).data?.available_funding ?? 0;
 
     return (
@@ -40,7 +50,7 @@ const CANTableRow = ({ name, nickname, portfolio, FY, activePeriod, obligateBy, 
                 </Tooltip>
             </th>
             <td>{portfolio}</td>
-            <td>{FY}</td>
+            <td>{fiscalYear}</td>
             <td>{activePeriod > 1 ? `${activePeriod} years` : `${activePeriod} year`}</td>
             <td>{obligateBy}</td>
             <td>{convertCodeForDisplay("methodOfTransfer", transfer)}</td>
@@ -72,7 +82,7 @@ CANTableRow.propTypes = {
     name: PropTypes.string.isRequired,
     nickname: PropTypes.string.isRequired,
     portfolio: PropTypes.string.isRequired,
-    FY: PropTypes.string.isRequired,
+    fiscalYear: PropTypes.number.isRequired,
     activePeriod: PropTypes.number.isRequired,
     obligateBy: PropTypes.string.isRequired,
     transfer: PropTypes.string.isRequired,
