@@ -184,9 +184,6 @@ def test_service_create_can(loaded_db):
 def test_can_patch_updates_can(budget_team_auth_client, mocker, unadded_can):
     test_can_id = 517
     update_data = {
-        "id": test_can_id,
-        "portfolio_id": 6,
-        "number": "G998235",
         "description": "Test CAN Created by unit test",
     }
 
@@ -207,9 +204,6 @@ def test_can_patch_updates_can(budget_team_auth_client, mocker, unadded_can):
 def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
     test_can_id = 518
     update_data = {
-        "id": test_can_id,
-        "portfolio_id": 6,
-        "number": "G998235",
         "description": "Test CAN Created by unit test",
     }
 
@@ -221,8 +215,6 @@ def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
 @pytest.mark.usefixtures("app_ctx")
 def test_basic_user_cannot_patch_cans(basic_user_auth_client):
     data = {
-        "id": 517,
-        "portfolio_id": 6,
         "description": "An updated can description",
     }
     response = basic_user_auth_client.patch("/api/v1/cans/517", json=data)
@@ -233,9 +225,6 @@ def test_basic_user_cannot_patch_cans(basic_user_auth_client):
 def test_service_patch_can(loaded_db):
     test_can_id = 517
     update_data = {
-        "id": test_can_id,
-        "portfolio_id": 6,
-        "number": "G998235",
         "description": "Test Test Test",
     }
 

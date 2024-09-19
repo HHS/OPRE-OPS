@@ -6,12 +6,13 @@ from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
-class CreateCANRequestSchema(Schema):
+class CreateUpdateCANRequestSchema(Schema):
     nick_name = fields.String(allow_none=True)
     number = fields.String(required=True)
     description = fields.String(allow_none=True)
     portfolio_id = fields.Integer(required=True)
     obligate_by = fields.DateTime(format="%Y-%m-%dT", allow_none=True)
+    funding_details_id = fields.Integer(allow_none=True)
 
 
 class BasicCANSchema(Schema):
