@@ -141,7 +141,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                 "funding_partner": None,
                 "funding_source": "OPRE",
                 "id": 1,
-                "method_of_transfer": None,
+                "method_of_transfer": "DIRECT",
                 "sub_allowance": None,
                 "updated_by": None,
                 "updated_by_user": None,
