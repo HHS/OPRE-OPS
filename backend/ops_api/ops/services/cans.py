@@ -1,28 +1,24 @@
-from typing import Any
-
 from flask import current_app
 from sqlalchemy import select
+from sqlalchemy.exc import NoResultFound
+from werkzeug.exceptions import NotFound
 
 from models import CAN
 
 
 class CANService:
-    def _get_changed_fields(old_can: CAN, can_update) -> dict[str, Any]:
+    def _update_fields(self, old_can: CAN, can_update) -> bool:
         """
-        Create a dictionary of attributes from the old_can based on the attributes found in can_update
+        Update fields on the CAN based on the fields passed in can_update.
+        Returns true if any fields were updated.
         """
-        try:
-            data = {
-                key: value for key, value in old_can.to_dict().items() if key in can_update
-            }  # only keep the attributes from the request body
-        except AttributeError:
-            data = {}
-            change_data = {
-                key: value
-                for key, value in can_update.items()
-                if key not in {"status", "id"} and key in can_update and value != data.get(key, None)
-            }  # only keep the attributes from the request body
-            return change_data
+        is_changed = False
+        for attr, value in can_update.items():
+            if getattr(old_can, attr) != value:
+                setattr(old_can, attr, value)
+                is_changed = True
+
+        return is_changed
 
     def create(self, create_can_request) -> CAN:
         """
@@ -34,17 +30,19 @@ class CANService:
         current_app.db_session.commit()
         return new_can
 
-    def update_by_fields(self, updated_fields, id):
+    def update_by_fields(self, updated_fields, id) -> CAN:
         """
         Update a CAN with only the provided values in updated_fields.
         """
-        old_can: CAN = current_app.db_session.execute(select(CAN).where(CAN.number == "G998235")).scalar_one()
-        if not old_can:
-            raise RuntimeError(f"Invalid Agreement id: {id}.")
+        try:
+            old_can: CAN = current_app.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
 
-        data = self._get_changed_data(old_can, updated_fields)
-        print(data)
+            can_was_updated = self._update_fields(old_can, updated_fields)
+            if can_was_updated:
+                current_app.db_session.add(old_can)
+                current_app.db_session.commit()
 
-        # agreement = update_agreement(data, old_can)
-
-        # agreement_dict = agreement.to_dict()
+            return old_can
+        except NoResultFound:
+            current_app.logger.exception(f"Could not find a CAN with id {id}")
+            raise NotFound()
