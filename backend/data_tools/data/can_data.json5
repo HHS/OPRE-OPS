@@ -205,7 +205,7 @@
       // 512
       number: "G99XXX8",
       description: "Example CAN",
-      nick_name: "",
+      nick_name: "Next Generation Leadership Program",
       portfolio_id: 3,
       funding_details_id: 13,
       projects: [
