@@ -47,6 +47,9 @@ jobs:
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "unstable,${{ github.sha }},${{ env.ENVIRONMENT }},${{ env.ENVIRONMENT }}-${{ steps.extract_version.outputs.version }}"
           build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}"
+    
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
 
   deploy-frontend:
     needs: build-frontend
@@ -65,4 +68,4 @@ jobs:
         with:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
-            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}-${{ needs.build-frontend.outputs.version }}
