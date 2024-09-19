@@ -2,7 +2,6 @@ import { useSearchParams } from "react-router-dom";
 import { useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANTable from "../../../components/CANs/CANTable";
-import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import ErrorPage from "../../ErrorPage";
 import CANTags from "./CanTabs";
@@ -36,7 +35,6 @@ const CanList = () => {
                     TabsSection={<CANTags />}
                     TableSection={<CANTable cans={canList} />}
                 />
-                <DebugCode data={canList} />
             </App>
         )
     );
