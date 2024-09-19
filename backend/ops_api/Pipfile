@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-sqlalchemy = "==2.0.34"
+sqlalchemy = "==2.0.35"
 flask = "==3.0.3"
 mypy = "==1.11.2"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.6.0"}
@@ -16,7 +16,7 @@ psycopg2-binary = "==2.9.9"
 gunicorn = "==22.0.0"
 desert = "==2022.9.22"
 marshmallow-enum = "==1.5.1"
-marshmallow-dataclass = "==8.7.0"
+marshmallow-dataclass = "==8.7.1"
 sqlalchemy-continuum = "==1.4.2"
 marshmallow-sqlalchemy = "==1.0.0"
 azure-storage-blob = "==12.22.0"

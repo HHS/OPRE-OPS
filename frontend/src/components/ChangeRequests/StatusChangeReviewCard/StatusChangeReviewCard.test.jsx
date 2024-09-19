@@ -10,7 +10,7 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { useGetBLITotal } from "../../../hooks/lookup.hooks";
 import { agreement, budgetLine } from "../../../tests/data";
 import StatusChangeReviewCard from "./StatusChangeReviewCard";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
+import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 
 vi.mock("../../../api/opsAPI");
 vi.mock("../../../hooks/lookup.hooks", () => ({
@@ -25,7 +25,7 @@ describe("StatusChangeReviewCard", () => {
     useGetCansQuery.mockReturnValue({ data: [agreement.budget_line_items[0].can] });
     useGetBLITotal.mockReturnValue(1000000);
     useReviewChangeRequestMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
-    useGetUserFullNameFromId.mockReturnValue("unknown");
+    useGetLoggedInUserFullName.mockReturnValue("Logged In User");
 
     const initialProps = {
         changeRequestId: 1,
@@ -53,6 +53,7 @@ describe("StatusChangeReviewCard", () => {
 
         expect(screen.getByRole("heading", { name: "Status Change Planned" })).toBeInTheDocument();
         expect(screen.getByText("$1,000,000.00")).toBeInTheDocument();
+        expect(screen.getByText("Jane Doe")).toBeInTheDocument();
     });
     it("should render a status change of DRAFT to PLANNED", () => {
         render(
@@ -86,5 +87,17 @@ describe("StatusChangeReviewCard", () => {
         expect(screen.getByRole("heading", { name: "Status Change Executing" })).toBeInTheDocument();
         expect(screen.getByText(/planned/i)).toBeInTheDocument();
         expect(screen.getByText(/executing/i, { selector: "span" })).toBeInTheDocument();
+    });
+    it("should render logged in user name if no requestor name is passed", () => {
+        render(
+            <BrowserRouter>
+                <StatusChangeReviewCard
+                    key={1}
+                    {...initialProps}
+                    requesterName={null}
+                />
+            </BrowserRouter>
+        );
+        expect(screen.getByText("Logged In User")).toBeInTheDocument();
     });
 });

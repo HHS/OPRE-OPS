@@ -12,6 +12,7 @@ from models.cans import CAN
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
+from ops_api.ops.schemas.cans import CANSchema
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
@@ -28,7 +29,15 @@ class CANItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.CAN)
     def get(self, id: int) -> Response:
-        return self._get_item_with_try(id)
+        schema = CANSchema()
+        item = self._get_item(id)
+
+        if item:
+            response = make_response_with_headers(schema.dump(item))
+        else:
+            response = make_response_with_headers({}, 404)
+
+        return response
 
 
 class CANListAPI(BaseListAPI):
@@ -56,6 +65,7 @@ class CANListAPI(BaseListAPI):
     @error_simulator
     def get(self) -> Response:
         errors = self._get_input_schema.validate(request.args)
+        can_schema = CANSchema()
 
         if errors:
             return make_response_with_headers(errors, 400)
@@ -63,7 +73,10 @@ class CANListAPI(BaseListAPI):
         request_data: ListAPIRequest = self._get_input_schema.load(request.args)
         stmt = self._get_query(request_data.search)
         result = current_app.db_session.execute(stmt).all()
-        return make_response_with_headers([i.to_dict() for item in result for i in item])
+        return make_response_with_headers([can_schema.dump(i) for item in result for i in item])
+
+    def post(self) -> Response:
+        return "Hello"
 
 
 class CANsByPortfolioAPI(BaseItemAPI):

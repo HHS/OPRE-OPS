@@ -1,5 +1,4 @@
 {
-
   direct_agreement: [
     {
       name: "DIRECT ALLOCATION #2: African American Child and Family Research Center",
@@ -14,18 +13,18 @@
       payee: "The Foundation of People Who Get Paid",
       team_members: [
         {
-          "tablename": "ops_user",
-          "id": 500,
+          tablename: "ops_user",
+          id: 500,
         },
         {
-          "tablename": "ops_user",
-          "id": 503
+          tablename: "ops_user",
+          id: 503,
         },
         {
-          "tablename": "ops_user",
-          "id": 520,
-        }
-      ]
+          tablename: "ops_user",
+          id: 520,
+        },
+      ],
     },
   ],
   grant_agreement: [
@@ -106,7 +105,7 @@
       contract_type: "TIME_AND_MATERIALS",
       contract_category: "SERVICE",
       support_contacts: [],
-      service_requirement_type: "SEVERABLE"
+      service_requirement_type: "SEVERABLE",
     },
     {
       name: "MIHOPE Long-Term",
@@ -125,7 +124,7 @@
       contract_type: "LABOR_HOUR",
       support_contacts: [],
       contract_category: "SERVICE",
-      service_requirement_type: "NON_SEVERABLE"
+      service_requirement_type: "NON_SEVERABLE",
     },
     {
       name: "Interoperability Initiatives",
@@ -147,14 +146,14 @@
       support_contacts: [],
       team_members: [
         {
-          "tablename": "ops_user",
-          "id": 511,
+          tablename: "ops_user",
+          id: 511,
         },
         {
-          "tablename": "ops_user",
-          "id": 520,
-        }
-      ]
+          tablename: "ops_user",
+          id: 520,
+        },
+      ],
     },
     {
       name: "Contract Workflow Test",
@@ -176,21 +175,21 @@
       support_contacts: [],
       team_members: [
         {
-          "tablename": "ops_user",
-          "id": 500,
+          tablename: "ops_user",
+          id: 500,
         },
         {
-          "tablename": "ops_user",
-          "id": 503,
+          tablename: "ops_user",
+          id: 503,
         },
         {
-          "tablename": "ops_user",
-          "id": 520,
+          tablename: "ops_user",
+          id: 520,
         },
         {
-          "tablename": "ops_user",
-          "id": 522,
-        }
+          tablename: "ops_user",
+          id: 522,
+        },
       ],
     },
     {
@@ -213,15 +212,15 @@
       support_contacts: [],
       team_members: [
         {
-          "tablename": "ops_user",
-          "id": 511,
+          tablename: "ops_user",
+          id: 511,
         },
         {
-          "tablename": "ops_user",
-          "id": 520,
-        }
-      ]
-    }
+          tablename: "ops_user",
+          id: 520,
+        },
+      ],
+    },
   ],
   clin: [
     {
@@ -241,7 +240,7 @@
       name: "CLIN 3",
       number: 3,
       contract_agreement_id: 1,
-    }
+    },
   ],
   services_component: [
     {
@@ -280,7 +279,7 @@
       period_end: "2045-06-13T14:00:00",
       contract_agreement_id: 7,
     },
-     {
+    {
       id: 5,
       number: 1,
       optional: false,
@@ -315,13 +314,14 @@
       period_start: "2044-06-13T14:00:00",
       period_end: "2045-06-13T14:00:00",
       contract_agreement_id: 11,
-    }
+    },
   ],
   budget_line_item: [
     {
       line_description: "LI 1",
       comments: "",
       can_id: 504,
+      created_by: 503,
       agreement_id: 1,
       amount: 1000000.0,
       status: "DRAFT",
@@ -337,6 +337,7 @@
       line_description: "LI 2",
       comments: "",
       can_id: 504,
+      created_by: 503,
       agreement_id: 1,
       amount: 1000000.0,
       status: "DRAFT",
@@ -350,6 +351,7 @@
       line_description: "Line Item 1",
       comments: "",
       can_id: 507,
+      created_by: 503,
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
@@ -357,12 +359,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 507,
+      created_by: 503,
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
@@ -370,12 +373,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 1",
       comments: "",
       can_id: 508,
+      created_by: 503,
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
@@ -383,12 +387,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 508,
+      created_by: 503,
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
@@ -396,12 +401,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 1",
       comments: "",
       can_id: 508,
+      created_by: 503,
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
@@ -409,12 +415,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 508,
+      created_by: 503,
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
@@ -422,12 +429,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 500,
+      created_by: 503,
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
@@ -435,12 +443,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 503,
+      created_by: 503,
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
@@ -448,12 +457,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 501,
+      created_by: 503,
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
@@ -461,12 +471,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 502,
+      created_by: 503,
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
@@ -474,12 +485,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 504,
+      created_by: 503,
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
@@ -487,12 +499,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 505,
+      created_by: 503,
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
@@ -500,12 +513,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 506,
+      created_by: 503,
       agreement_id: 2,
       amount: 2000000.0,
       status: "IN_EXECUTION",
@@ -513,12 +527,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 501,
+      created_by: 503,
       agreement_id: 2,
       amount: 1000000.0,
       status: "PLANNED",
@@ -526,12 +541,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 501,
+      created_by: 503,
       agreement_id: 2,
       amount: 3000000.0,
       status: "OBLIGATED",
@@ -539,12 +555,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Line Item 2",
       comments: "",
       can_id: 502,
+      created_by: 503,
       agreement_id: 2,
       amount: 7000000.0,
       status: "PLANNED",
@@ -552,12 +569,13 @@
       proc_shop_fee_percentage: 0.005,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Yet Another Line Item",
       comments: "",
       can_id: 512,
+      created_by: 503,
       agreement_id: 7,
       amount: 500.0,
       status: "OBLIGATED",
@@ -566,12 +584,13 @@
       services_component_id: 4,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
-    line_description: "Yet Another Line Item",
+      line_description: "Yet Another Line Item",
       comments: "",
       can_id: 514,
+      created_by: 503,
       agreement_id: 8,
       amount: 500.0,
       status: "OBLIGATED",
@@ -580,12 +599,13 @@
       services_component_id: 5,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "SC2",
       comments: "",
       can_id: 502,
+      created_by: 503,
       agreement_id: 9,
       amount: 700000.0,
       status: "PLANNED",
@@ -594,12 +614,13 @@
       services_component_id: 6,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "SC3",
       comments: "",
       can_id: 512,
+      created_by: 503,
       agreement_id: 9,
       amount: 300000.0,
       status: "PLANNED",
@@ -608,12 +629,13 @@
       services_component_id: 6,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "LI 1",
       comments: "",
       can_id: 504,
+      created_by: 503,
       agreement_id: 10,
       amount: 1000000.0,
       status: "PLANNED",
@@ -622,12 +644,13 @@
       services_component_id: 7,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "LI 2",
       comments: "",
       can_id: 504,
+      created_by: 503,
       agreement_id: 10,
       amount: 1000000.0,
       status: "DRAFT",
@@ -636,12 +659,13 @@
       services_component_id: 7,
       on_hold: false,
       certified: false,
-      closed: false
+      closed: false,
     },
     {
       line_description: "Support #1",
       comments: "",
       can_id: 516,
+      created_by: 503,
       agreement_id: 11,
       amount: 300000.0,
       status: "PLANNED",
@@ -650,7 +674,7 @@
       services_component_id: 8,
       on_hold: false,
       certified: false,
-      closed: false
-    }
-  ]
+      closed: false,
+    },
+  ],
 }

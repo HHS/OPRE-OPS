@@ -10,9 +10,15 @@ servers:
     description: Development Server (Live)
   - url: https://ops-api-staging.app.cloud.gov
     description: Staging Server (Live)
+
+tags:
+  - name: Agreements
+    description: Everything having to do with agreements
 paths:
   /api/v1/agreements/:
     get:
+      tags:
+        - Agreements
       operationId: getAllAgreements
       description: Get Agreements
       parameters:
@@ -47,6 +53,8 @@ paths:
                 "0":
                   $ref: "#/components/examples/Agreements"
     post:
+      tags:
+        - Agreements
       operationId: createAgreement
       summary: Create a new Agreement
       parameters:
@@ -66,6 +74,8 @@ paths:
           description: Internal Server Error
   /api/v1/agreements/{agreement_id}:
     get:
+      tags:
+        - Agreements
       operationId: getAgreementById
       description: Get Agreement By Id
       parameters:
@@ -90,6 +100,8 @@ paths:
                 "0":
                   $ref: "#/components/examples/Agreement"
     put:
+      tags:
+        - Agreements
       operationId: putAgreement
       summary: Update an Agreement (Over-write)
       parameters:
@@ -119,6 +131,8 @@ paths:
         "500":
           description: Internal Server Error
     patch:
+      tags:
+        - Agreements
       operationId: patchAgreement
       summary: Update an Agreement (Merge)
       parameters:
@@ -142,6 +156,8 @@ paths:
         "500":
           description: Internal Server Error
     delete:
+      tags:
+        - Agreements
       operationId: deleteAgreement
       summary: Delete an Agreement
       parameters:
@@ -166,6 +182,8 @@ paths:
           description: Internal Server Error
   /api/v1/agreements-history/{agreement_id}:
     get:
+      tags:
+        - Agreements
       operationId: getAgreementHistoryById
       description: Get Agreement History By Id
       parameters:
@@ -190,7 +208,10 @@ paths:
                   $ref: "#/components/examples/Agreement"
   /api/v1/cans/:
     get:
+      tags:
+        - CANs
       operationId: getAllCANs
+      summary: Get a list of all the CANs
       parameters:
         - $ref: "#/components/parameters/simulatedError"
       description: Get CANs
@@ -199,6 +220,9 @@ paths:
           description: OK
   /api/v1/cans/{can_id}:
     get:
+      tags:
+        - CANs
+      summary: Get an individual CAN
       operationId: getCANById
       description: Get CAN by Id
       parameters:
@@ -224,6 +248,9 @@ paths:
                   $ref: "#/components/examples/CAN"
   /api/v1/portfolios:
     get:
+      tags:
+        - Portfolios
+      summary: Get all Portfolios
       operationId: getAllPortfolios
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -233,6 +260,8 @@ paths:
           description: OK
   /api/v1/portfolios/{portfolio_id}:
     get:
+      tags:
+        - Portfolios
       operationId: getPortfolioById
       description: Get Portfolio by Id
       parameters:
@@ -258,6 +287,8 @@ paths:
                   $ref: "#/components/examples/Portfolio"
   /api/v1/portfolios/{portfolio_id}/calcFunding/:
     get:
+      tags:
+        - Portfolios
       operationId: getPortfolioFundingById
       description: Get Total Funding by Id
       parameters:
@@ -357,6 +388,8 @@ paths:
                     }
   /api/v1/portfolios/{portfolio_id}/cans/:
     get:
+      tags:
+        - Portfolios
       operationId: getCansByPortfolioId
       description: Get CANs associated with a Portfolio
       parameters:
@@ -420,6 +453,8 @@ paths:
                     ]
   /api/v1/can-funding-summary/{can_id}:
     get:
+      tags:
+        - CAN Funding Summary
       operationId: getFundingTotalsByCanId
       description: Get Funding Totals by CAN Id
       parameters:
@@ -524,6 +559,8 @@ paths:
                     }
   /api/v1/users/:
     get:
+      tags:
+        - Users
       operationId: getAllUsers
       description: Get all Users
       parameters:
@@ -641,6 +678,8 @@ paths:
                     ]
   /api/v1/users/{user_id}:
     get:
+      tags:
+        - Users
       operationId: getUserById
       description: Get User by Id
       parameters:
@@ -666,6 +705,8 @@ paths:
                   $ref: "#/components/examples/User"
   /auth/login/:
     post:
+      tags:
+        - Authentication
       operationId: login
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -691,6 +732,8 @@ paths:
           description: Created
   /api/v1/research-projects/:
     get:
+      tags:
+        - Projects
       operationId: getResearchProjects
       description: Get ResearchProjects
       parameters:
@@ -725,6 +768,8 @@ paths:
         "401":
           description: Unauthorized
     post:
+      tags:
+        - Projects
       operationId: createResearchProject
       summary: Create a new Research Project
       parameters:
@@ -746,6 +791,8 @@ paths:
           description: Internal Server Error
   /api/v1/research-projects/{id}:
     get:
+      tags:
+        - Projects
       operationId: getResearchProjectById
       description: Get Research Projects by id
       parameters:
@@ -772,6 +819,8 @@ paths:
           description: Unauthorized
   /api/v1/research-project-funding-summary/:
     get:
+      tags:
+        - Projects
       operationId: getResearchProjectFundingSummary
       description: ""
       parameters:
@@ -814,6 +863,8 @@ paths:
                       example: Must be greater than or equal to 1900.
   /api/v1/procurement-shops/:
     get:
+      tags:
+        - Procurement Shops
       operationId: getAllProcurementShops
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -865,6 +916,8 @@ paths:
                     ]
   /api/v1/procurement-shops/{id}:
     get:
+      tags:
+        - Procurement Shops
       operationId: getProcurementShopById
       description: Get Procurement Shop by id
       parameters:
@@ -929,6 +982,8 @@ paths:
                     }
   /api/v1/budget-line-items/:
     get:
+      tags:
+        - Budget Line Items
       operationId: getBudgetLineItems
       description: Get Budget Line Items
       parameters:
@@ -959,6 +1014,8 @@ paths:
                 "0":
                   $ref: "#/components/examples/BudgetLineItems"
     post:
+      tags:
+        - Budget Line Items
       operationId: createBudgetLineItem
       summary: Create a new Budget Line Item
       parameters:
@@ -978,6 +1035,8 @@ paths:
           description: Internal Server Error
   /api/v1/budget-line-items/{id}:
     get:
+      tags:
+        - Budget Line Items
       operationId: getBudgetLineItemById
       description: Get Budget Line Items by id
       parameters:
@@ -999,6 +1058,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/BudgetLineItem"
     put:
+      tags:
+        - Budget Line Items
       operationId: putBudgetLineItem
       summary: Update a new Budget Line Item (Over-write)
       parameters:
@@ -1028,6 +1089,8 @@ paths:
         "500":
           description: Internal Server Error
     patch:
+      tags:
+        - Budget Line Items
       operationId: patchBudgetLineItem
       summary: Update a Budget Line Item (Merge)
       parameters:
@@ -1057,6 +1120,8 @@ paths:
         "500":
           description: Internal Server Error
     delete:
+      tags:
+        - Budget Line Items
       operationId: deleteBudgetLineItem
       summary: Delete a Budget Line Item
       parameters:
@@ -1081,6 +1146,8 @@ paths:
           description: Internal Server Error
   /api/v1/notifications/:
     get:
+      tags:
+        - Notifications
       operationId: getNotifications
       description: Get Notifications
       parameters:
@@ -1112,6 +1179,8 @@ paths:
                   $ref: "#/components/examples/Notifications"
   /api/v1/notifications/{id}:
     get:
+      tags:
+        - Notifications
       operationId: getNotificationById
       description: Get Notifications By Id
       parameters:
@@ -1133,6 +1202,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Notification"
     put:
+      tags:
+        - Notifications
       operationId: putNotification
       summary: Update a Notification (Over-write)
       parameters:
@@ -1162,6 +1233,8 @@ paths:
         "500":
           description: Internal Server Error
     patch:
+      tags:
+        - Notifications
       operationId: patchNotification
       summary: Update a Notification (Merge)
       parameters:
@@ -1192,6 +1265,8 @@ paths:
           description: Internal Server Error
   /api/v1/services-components/:
     get:
+      tags:
+        - Service Components
       operationId: getServicesComponents
       description: Get Services Components
       parameters:
@@ -1209,6 +1284,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ServicesComponents"
     post:
+      tags:
+        - Service Components
       operationId: createServicesComponent
       summary: Create a new Service Component
       parameters:
@@ -1228,6 +1305,8 @@ paths:
           description: Internal Server Error
   /api/v1/services-components/{id}:
     get:
+      tags:
+        - Service Components
       operationId: getServicesComponentById
       description: Get Services Component by id
       parameters:
@@ -1249,6 +1328,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ServicesComponent"
     put:
+      tags:
+        - Service Components
       operationId: putServicesComponent
       summary: Update a Services Component (Over-write)
       parameters:
@@ -1278,6 +1359,8 @@ paths:
         "500":
           description: Internal Server Error
     patch:
+      tags:
+        - Service Components
       operationId: patchServicesComponent
       summary: Update a Services Component (Merge)
       parameters:
@@ -1307,6 +1390,8 @@ paths:
         "500":
           description: Internal Server Error
     delete:
+      tags:
+        - Service Components
       operationId: deleteServicesComponent
       summary: Delete a Service Component
       parameters:
@@ -1331,6 +1416,8 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-steps/:
     get:
+      tags:
+        - Procurement Shops
       operationId: getProcurementSteps
       description: Get list of Procurement Steps
       parameters:
@@ -1349,6 +1436,8 @@ paths:
                 $ref: "#/components/schemas/ProcurementSteps"
   /api/v1/procurement-acquisition-plannings/{id}:
     get:
+      tags:
+        - Procurement Shops
       operationId: getAcquisitionPlanningById
       description: Get an Acquisition Planning step by ID
       parameters:
@@ -1370,6 +1459,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/AcquisitionPlanning"
     patch:
+      tags:
+        - Procurement Shops
       operationId: patchAcquisitionPlanning
       summary: Update Get an Acquisition Planning (merge)
       parameters:
@@ -1400,6 +1491,8 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-pre-solicitations/{id}:
     get:
+      tags:
+        - Procurement Shops
       operationId: getPreSolicitationById
       description: Get a Pre-Solicitation step by ID
       parameters:
@@ -1421,6 +1514,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/PreSolicitation"
     patch:
+      tags:
+        - Procurement Shops
       operationId: patchPreSolicitation
       summary: Update Get an Acquisition Planning (merge)
       parameters:
@@ -1451,6 +1546,8 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-solicitations/{id}:
     get:
+      tags:
+        - Procurement Shops
       operationId: getSolicitationById
       description: Get a Pre-Solicitation step by ID
       parameters:
@@ -1472,6 +1569,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Solicitation"
     patch:
+      tags:
+        - Procurement Shops
       operationId: patchSolicitation
       summary: Update a Pre-Solicitation step (merge)
       parameters:
@@ -1502,6 +1601,8 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-evaluations/{id}:
     get:
+      tags:
+        - Procurement Shops
       operationId: getEvaluationById
       description: Get an Evaluation step by ID
       parameters:
@@ -1523,6 +1624,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Evaluation"
     patch:
+      tags:
+        - Procurement Shops
       operationId: patchEvaluation
       summary: Update an Evaluation step (merge)
       parameters:
@@ -1553,6 +1656,8 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-pre-awards/{id}:
     get:
+      tags:
+        - Procurement Shops
       operationId: getPreAwardById
       description: Get a Pre-Award step by ID
       parameters:
@@ -1574,6 +1679,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/PreAward"
     patch:
+      tags:
+        - Procurement Shops
       operationId: patchPreAward
       summary: Update a Pre-Award step (merge)
       parameters:
@@ -1604,6 +1711,8 @@ paths:
           description: Internal Server Error
   /api/v1/procurement-awards/{id}:
     get:
+      tags:
+        - Procurement Shops
       operationId: getAwardById
       description: Get an Award step by ID
       parameters:
@@ -1625,6 +1734,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Award"
     patch:
+      tags:
+        - Procurement Shops
       operationId: patchAward
       summary: Update an Award step (merge)
       parameters:
@@ -1656,6 +1767,8 @@ paths:
   /api/v1/change-requests/:
     description: ChangeRequests collection endpoint
     get:
+      tags:
+        - Change Requests
       operationId: getChangeRequests
       description: Get a list of change requests with pagination
       parameters:
@@ -1694,6 +1807,8 @@ paths:
   /api/v1/change-request-reviews/:
     description: command object endpoint to approve or reject a change request
     post:
+      tags:
+        - Change Requests
       operationId: approveOrRejectChangeRequest
       parameters:
         - $ref: "#/components/parameters/simulatedError"
@@ -1730,6 +1845,8 @@ paths:
           description: Internal Server Error
   /api/v1/documents/{agreement_id}/:
     get:
+      tags:
+        - Documents
       operationId: Get Documents
       description: Get documents by agreement id
       parameters:
@@ -1761,6 +1878,8 @@ paths:
           description: Internal Server Error
   /api/v1/documents/:
     post:
+      tags:
+        - Documents
       operationId: Create Document
       description: Create a new document
       requestBody:
@@ -1802,6 +1921,8 @@ paths:
           description: Internal Server Error
   /api/v1/documents/{document_id}/status/:
     patch:
+      tags:
+        - Documents
       description: Update a document status
       parameters:
         - in: path
@@ -1893,6 +2014,25 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    BasicCAN:
+      description: >-
+        A simple version of the Common Accounting Number (CAN) Object.
+        This object is intended to be used in the schemas nested within the CAN object.
+      properties:
+        active_period:
+          type: integer
+        display_name:
+          type: string
+        nick_name:
+          type: string
+        number:
+          type: string
+        portfolio_id:
+          type: integer
+        description:
+          type: string
+        id:
+          type: integer
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -1912,7 +2052,7 @@ components:
         funding_details:
           type: object
           items:
-            $ref: "#/components/schemas/FundingDetail"
+            $ref: "#/components/schemas/FundingDetails"
         funding_details_id:
           type: integer
         funding_received:
@@ -1928,7 +2068,7 @@ components:
         projects:
           type: array
           items:
-            type: integer
+            $ref: "#/components/schemas/Project"
         nick_name:
           type: string
         description:
@@ -1947,6 +2087,10 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+      required:
+        - id
+        - portfolio_id
+        - number
     FundingReceived:
       description: Funding Received Object
       type: object
@@ -1977,7 +2121,11 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
-    FundingDetail:
+      required:
+        - id
+        - can_id
+        - fiscal_year
+    FundingDetails:
       description: Funding Detail Object
       type: object
       properties:
@@ -2015,6 +2163,10 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+      required:
+        - fiscal_year
+        - fund_code
+        - id
     FundingBudget:
       description: Funding Budget Object
       type: object
@@ -2049,10 +2201,119 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+      required:
+        - id
+        - can_id
+        - fiscal_year
     FundingBudgetVersion:
       description: SQLAlchemy Continuum Version for Funding Budget
+      type: object
+      properties:
+        budget:
+          type: number
+        can:
+          type: integer
+        can_id:
+          type: integer
+        display_name:
+          type: string
+        fiscal_year:
+          type: integer
+        id:
+          type: integer
+        notes:
+          type: string
+        transaction_id:
+          type: integer
+        end_transation_id:
+          type: integer
+        operation_type:
+          type: integer
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
     Portfolio:
       description: Portfolio Object
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        abbreviation:
+          type: string
+        status:
+          type: string
+          enum:
+            - IN_PROCESS
+            - NOT_STARTED
+            - SANDBOX
+        cans:
+          type: array
+          items:
+            $ref: "#/components/schemas/CAN"
+        division_id:
+          type: integer
+        urls:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioUrl"
+        team_leaders:
+          type: array
+          items:
+            $ref: "#/components/schemas/SafeUser"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+      required:
+        - id
+        - division_id
+        - abbreviation
+    PortfolioUrl:
+      description: Used to list the URL/links associated with the Portfolio
+      type: object
+      properties:
+        id:
+          type: integer
+        portfolio_id:
+          type: integer
+        url:
+          type: string
+          format: uri
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_by_user:
+          $ref: "#/components/parameters/created_by_user"
+        updated_by_user:
+          $ref: "#/components/parameters/updated_by_user"
+      required:
+        - id
+        - portfolio_id
+        - url
     User:
       description: OPRE User Object
       type: object
@@ -2816,31 +3077,30 @@ components:
         id:
           type: integer
           example: 1
-          required: true
         name:
           type: string
           example: Procurement Shop Name
-          required: true
         abbr:
           type: string
           example: PSN
-          required: true
         fee:
           type: number
           format: float
           example: 1.1
           default: 0.0
+      required:
+        - id
+        - name
+        - abbr
     ProductServiceCode:
       type: object
       properties:
         id:
           type: integer
           example: 1
-          required: true
         name:
           type: string
-          exampe: Code ABC
-          required: true
+          example: Code ABC
         naics:
           type: integer
           example: 3
@@ -2850,34 +3110,38 @@ components:
         description:
           type: string
           example: Description of the product service code
+      required:
+        - id
+        - name
     Project:
       type: object
       properties:
         id:
           type: integer
           example: 1
-          required: true
         project_type:
           type: string
           enum:
             - RESEARCH
             - ADMINISTRATIVE_AND_SUPPORT
-          required: true
         title:
           type: string
           example: Example Project Title
-          required: true
         short_title:
           type: string
           example: Short Title
-          required: true
         description:
           type: string
           example: A short description about the project
-          required: true
         url:
           type: string
           example: www.example.com
+      required:
+        - id
+        - project_type
+        - title
+        - short_title
+        - description
     Attestation:
       type: object
       properties:
@@ -2931,8 +3195,7 @@ components:
         url:
           type: string
         documents:
-          type: object
-          ref: "#/components/schemas/Documents"
+          $ref: "#/components/schemas/Documents"
     Documents:
       type: object
       properties:

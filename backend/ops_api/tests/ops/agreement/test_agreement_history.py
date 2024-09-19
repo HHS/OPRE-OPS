@@ -113,7 +113,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     assert len(data[5]["changes"]) == 11
 
 
-def test_agreement_history_log_items(auth_client, app, test_can):
+def test_agreement_history_log_items(auth_client, app, test_can, utc_today):
     session = app.db_session
 
     # create agreement (using API)
@@ -157,7 +157,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     assert log_item["event_type"] == "NEW"
     assert log_item["scope"] == "OBJECT"
     assert log_item["created_on"] is not None
-    assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+    assert log_item["created_on"].startswith(utc_today)
 
     # update Agreement
     data = {
@@ -188,7 +188,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
         "old": "TEST: Agreement history with change requests",
     }
     assert log_item["created_on"] is not None
-    assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+    assert log_item["created_on"].startswith(utc_today)
 
     #  create BLI
     bli = BudgetLineItem(
@@ -219,7 +219,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     assert log_item["event_type"] == "NEW"
     assert log_item["scope"] == "OBJECT"
     assert log_item["created_on"] is not None
-    assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+    assert log_item["created_on"].startswith(utc_today)
 
     # update BLI
     bli.can_id = 501
@@ -244,7 +244,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
         assert log_item["event_type"] == "UPDATED"
         assert log_item["scope"] == "PROPERTY"
         assert log_item["created_on"] is not None
-        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+        assert log_item["created_on"].startswith(utc_today)
         assert log_item["property_key"] in ["amount", "can_id", "date_needed"]
         if log_item["property_key"] == "amount":
             assert log_item["change"] == {"new": 222.22, "old": 111.11}
@@ -273,7 +273,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     assert log_item["property_key"] == "status"
     assert log_item["event_type"] == "UPDATED"
     assert log_item["created_on"] is not None
-    assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+    assert log_item["created_on"].startswith(utc_today)
     assert log_item["change"] == {"new": "PLANNED", "old": "DRAFT"}
 
     session.delete(bli)
@@ -283,7 +283,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreement_history_log_items_with_change_requests(auth_client, loaded_db, test_can, test_project):
+def test_agreement_history_log_items_with_change_requests(auth_client, loaded_db, test_can, test_project, utc_today):
     # create agreement (using API)
     data = {
         "agreement_type": "CONTRACT",
@@ -353,7 +353,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, loaded_db
         assert log_item["event_type"] == "IN_REVIEW"
         assert log_item["scope"] == "PROPERTY"
         assert log_item["created_on"] is not None
-        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+        assert log_item["created_on"].startswith(utc_today)
         assert log_item["property_key"] in ["amount", "can_id", "date_needed"]
         if log_item["property_key"] == "amount":
             assert log_item["change"] == {"new": 333.33, "old": 111.11}
