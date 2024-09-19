@@ -45,7 +45,6 @@ const CANTableRow = ({ can, portfolio, FY, activePeriod, obligateBy, transfer, f
                     prefix={"$"}
                     decimalScale={getDecimalScale(fyBudget)}
                     fixedDecimalScale={true}
-                    renderText={(value) => value}
                 />
             </td>
             <td>
@@ -56,7 +55,6 @@ const CANTableRow = ({ can, portfolio, FY, activePeriod, obligateBy, transfer, f
                     prefix={"$"}
                     decimalScale={getDecimalScale(availableFunds)}
                     fixedDecimalScale={true}
-                    renderText={(value) => value}
                 />
             </td>
         </tr>

@@ -10,7 +10,7 @@ import CANTags from "./CanTabs";
 const CanList = () => {
     const [searchParams] = useSearchParams();
     const myCANsUrl = searchParams.get("filter") === "my-cans";
-    const { data: canList, isError, isLoading } = useGetCansQuery();
+    const { data: canList, isError, isLoading } = useGetCansQuery({});
     if (isLoading) {
         return (
             <App>
