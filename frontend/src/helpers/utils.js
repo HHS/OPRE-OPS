@@ -29,7 +29,10 @@ export const calculatePercent = (numerator, denominator) => {
 
     return Math.round((numerator / denominator) * 100);
 };
-
+/**
+ * This function formats a date into a string in the format MM/DD/YYYY.
+ * @param {Date} date - The date to format. This parameter is required.
+ */
 export const formatDate = (date) => {
     const options = { timeZone: "UTC" };
 
@@ -38,8 +41,8 @@ export const formatDate = (date) => {
 
 /**
  * Formats a date string into a date string in the format MM/DD/YYYY.
- * @param {string} dateNeeded - The date string to format. This parameter is required.
- * @returns {string} The formatted date string.
+ * @param {Date | string} dateNeeded - The date string to format. This parameter is required.
+ * @returns {string | undefined} The formatted date string or undefined if input is invalid.
  */
 export const formatDateNeeded = (dateNeeded) => {
     let formatted_date_needed;
