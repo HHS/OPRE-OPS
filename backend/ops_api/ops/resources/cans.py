@@ -7,6 +7,7 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import select
 from sqlalchemy.orm import InstrumentedAttribute
 
+from models import OpsEventType
 from models.base import BaseModel
 from models.cans import CAN
 from ops_api.ops.auth.auth_types import Permission, PermissionType
@@ -15,6 +16,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import CANSchema, CreateCANRequestSchema
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.errors import error_simulator
+from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.query_helpers import QueryHelper
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -42,13 +44,19 @@ class CANItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.PATCH, Permission.CAN)
     def patch(self, id: int) -> Response:
-        request_data = request.get_json()
-        schema = CANSchema()
-        serialized_request = schema.load(request_data)
+        """
+        Update a CAN with only the fields provided in the request body.
+        """
+        with OpsEventHandler(OpsEventType.UPDATE_CAN) as meta:
+            request_data = request.get_json()
+            schema = CANSchema()
+            serialized_request = schema.load(request_data)
 
-        can_service = CANService()
-        updated_can = can_service.update_by_fields(serialized_request, id)
-        return make_response_with_headers(schema.dump(updated_can))
+            can_service = CANService()
+            updated_can = can_service.update_by_fields(serialized_request, id)
+            serialized_can = schema.dump(updated_can)
+            meta.metadata.update({"updated_can": serialized_can})
+            return make_response_with_headers(schema.dump(updated_can))
 
 
 class CANListAPI(BaseListAPI):
@@ -91,16 +99,18 @@ class CANListAPI(BaseListAPI):
         """
         Create a new Common Accounting Number (CAN) object.
         """
-        request_data = request.get_json()
-        schema = CreateCANRequestSchema()
-        serialized_request = schema.load(request_data)
+        with OpsEventHandler(OpsEventType.CREATE_NEW_CAN) as meta:
+            request_data = request.get_json()
+            schema = CreateCANRequestSchema()
+            serialized_request = schema.load(request_data)
 
-        can_service = CANService()
-        created_can = can_service.create(serialized_request)
+            can_service = CANService()
+            created_can = can_service.create(serialized_request)
 
-        can_schema = CANSchema()
-        serialized_can = can_schema.dump(created_can)
-        return make_response_with_headers(serialized_can, 201)
+            can_schema = CANSchema()
+            serialized_can = can_schema.dump(created_can)
+            meta.metadata.update({"new_can": serialized_can})
+            return make_response_with_headers(serialized_can, 201)
 
 
 class CANsByPortfolioAPI(BaseItemAPI):
