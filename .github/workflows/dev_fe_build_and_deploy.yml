@@ -29,7 +29,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag-prefix:  '${{ env.ENVIRONMENT }}-v'
+          tag-prefix:  'ops-frontend-v'
           PACKAGEJSON_DIR:  'frontend'
 
       - name: Extract Version
@@ -45,7 +45,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }},${{ env.ENVIRONMENT }}"
+          image_tags: "unstable,${{ github.sha }},${{ env.ENVIRONMENT }},${{ env.ENVIRONMENT }}-${{ steps.extract_version.outputs.version }}"
           build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}"
 
   deploy-frontend:
