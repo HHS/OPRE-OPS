@@ -21,7 +21,8 @@ const CANTable = ({ cans }) => {
                 <CANTableRow
                     key={can.id}
                     canId={can.id}
-                    can={can.display_name}
+                    name={can.display_name}
+                    nickname={can.nick_name}
                     portfolio={can.portfolio.abbreviation}
                     FY={can.funding_budgets[0]?.fiscal_year ?? "TBD"}
                     activePeriod={can.active_period ?? "TBD"}

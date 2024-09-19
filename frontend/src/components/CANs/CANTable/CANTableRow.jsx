@@ -4,12 +4,14 @@ import { Link } from "react-router-dom";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
+import Tooltip from "../../UI/USWDS/Tooltip";
 
 /**
  * CanTableRow component of CANTable
  * @component
  * @param {Object} props
- * @param {string} props.can - CAN name
+ * @param {string} props.name - CAN name
+ * @param {string} props.nickname - Portfolio nickname
  * @param {string} props.portfolio - Portfolio abbreviation
  * @param {number} props.FY - Fiscal Year
  * @param {number} props.activePeriod - Active Period
@@ -19,18 +21,23 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {number} props.canId - CAN ID
  * @returns {JSX.Element}
  */
-const CANTableRow = ({ can, portfolio, FY, activePeriod, obligateBy, transfer, fyBudget, canId }) => {
+const CANTableRow = ({ name, nickname, portfolio, FY, activePeriod, obligateBy, transfer, fyBudget, canId }) => {
     const availableFunds = useGetCanFundingSummaryQuery(canId).data?.available_funding ?? 0;
 
     return (
         <tr>
             <th scope="row">
-                <Link
-                    to={`/cans/${canId}`}
-                    className="text-ink text-no-underline"
+                <Tooltip
+                    label={nickname}
+                    position="right"
                 >
-                    {can}
-                </Link>
+                    <Link
+                        to={`/cans/${canId}`}
+                        className="text-ink text-no-underline"
+                    >
+                        {name}
+                    </Link>
+                </Tooltip>
             </th>
             <td>{portfolio}</td>
             <td>{FY}</td>
@@ -62,7 +69,8 @@ const CANTableRow = ({ can, portfolio, FY, activePeriod, obligateBy, transfer, f
 };
 
 CANTableRow.propTypes = {
-    can: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    nickname: PropTypes.string.isRequired,
     portfolio: PropTypes.string.isRequired,
     FY: PropTypes.string.isRequired,
     activePeriod: PropTypes.number.isRequired,

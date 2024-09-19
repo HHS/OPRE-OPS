@@ -30,7 +30,7 @@ const CanList = () => {
                     subtitle={myCANsUrl ? "My CANs" : "All CANs"}
                     details={
                         myCANsUrl
-                            ? "This is a list of the CANs you are listed as a Team Member on within the selected Fiscal Year. Please select filter options to see CANs by Portfolio, Status, or Fiscal Year."
+                            ? "This is a list of CANs from agreements you are listed as a team member on. Please select filter options to see CANs by Portfolio, Fiscal Year, or other criteria."
                             : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
                     }
                     TabsSection={<CANTags />}
