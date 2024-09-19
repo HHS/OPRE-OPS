@@ -22,6 +22,7 @@ class BasicCANSchema(Schema):
     description = fields.String(allow_none=True)
     id = fields.Integer(required=True)
     portfolio_id = fields.Integer(required=True)
+    obligate_by = fields.DateTime(format="%Y-%m-%dT", allow_none=True)
     projects = fields.List(fields.Nested(ProjectSchema()), default=[])
 
 
