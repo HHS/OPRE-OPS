@@ -32,7 +32,21 @@ const CANTableRow = ({
     fyBudget,
     canId
 }) => {
-    const availableFunds = useGetCanFundingSummaryQuery(canId).data?.available_funding ?? 0;
+    const { data: fundingSummary, isError, isLoading } = useGetCanFundingSummaryQuery(canId);
+    const availableFunds = fundingSummary?.available_funding ?? 0;
+
+    if (isLoading)
+        return (
+            <tr>
+                <td colSpan={8}>Loading...</td>
+            </tr>
+        );
+    if (isError)
+        return (
+            <tr>
+                <td colSpan={8}>Error: {isError.valueOf()}</td>
+            </tr>
+        );
 
     return (
         <tr>
