@@ -11,7 +11,6 @@ class CreateUpdateCANRequestSchema(Schema):
     number = fields.String(required=True)
     description = fields.String(allow_none=True)
     portfolio_id = fields.Integer(required=True)
-    obligate_by = fields.DateTime(format="%Y-%m-%dT", allow_none=True)
     funding_details_id = fields.Integer(allow_none=True)
 
 
@@ -23,7 +22,7 @@ class BasicCANSchema(Schema):
     description = fields.String(allow_none=True)
     id = fields.Integer(required=True)
     portfolio_id = fields.Integer(required=True)
-    obligate_by = fields.DateTime(format="%Y-%m-%dT", allow_none=True)
+    obligate_by = fields.Integer(allow_none=True)
     projects = fields.List(fields.Nested(ProjectSchema()), default=[])
 
 

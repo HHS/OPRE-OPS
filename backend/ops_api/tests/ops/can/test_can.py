@@ -223,7 +223,6 @@ def test_basic_user_cannot_patch_cans(basic_user_auth_client):
 
 
 def test_service_patch_can(loaded_db):
-    test_can_id = 517
     update_data = {
         "description": "Test Test Test",
     }
@@ -240,7 +239,7 @@ def test_service_patch_can(loaded_db):
 
     can_service = CANService()
 
-    updated_can = can_service.update_by_fields(update_data, test_can_id)
+    updated_can = can_service.update_by_fields(update_data, new_can.id)
 
     can = loaded_db.execute(select(CAN).where(CAN.number == "G998235")).scalar_one()
 
