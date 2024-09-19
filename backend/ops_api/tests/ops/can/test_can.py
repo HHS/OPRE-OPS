@@ -179,25 +179,23 @@ def test_service_create_can(loaded_db):
     loaded_db.commit()
 
 
-# Testing updating CANs by field
+# Testing updating CANs by PATCH
 @pytest.mark.usefixtures("app_ctx")
-def test_can_patch_updates_can(budget_team_auth_client, mocker, unadded_can):
+def test_can_patch(budget_team_auth_client, mocker, unadded_can):
     test_can_id = 517
     update_data = {
         "description": "Test CAN Created by unit test",
     }
 
-    mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update_by_fields")
+    mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update")
     unadded_can.description = update_data["description"]
     mocker_update_can.return_value = unadded_can
     response = budget_team_auth_client.patch(f"/api/v1/cans/{test_can_id}", json=update_data)
 
     assert response.status_code == 200
     mocker_update_can.assert_called_once_with(update_data, test_can_id)
-    # Assert fields that should not have changed
     assert response.json["number"] == unadded_can.number
-    # Assert field that should have changed.
-    assert response.json["description"] == update_data["description"]
+    assert response.json["description"] == unadded_can.description
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -239,7 +237,7 @@ def test_service_patch_can(loaded_db):
 
     can_service = CANService()
 
-    updated_can = can_service.update_by_fields(update_data, new_can.id)
+    updated_can = can_service.update(update_data, new_can.id)
 
     can = loaded_db.execute(select(CAN).where(CAN.number == "G998235")).scalar_one()
 
@@ -260,4 +258,95 @@ def db_with_test_can(loaded_db, unadded_can):
     yield loaded_db
 
     loaded_db.delete(unadded_can)
+    loaded_db.commit()
+
+
+# Testing updating CANs by PUT
+@pytest.mark.usefixtures("app_ctx")
+def test_can_put(budget_team_auth_client, mocker, unadded_can):
+    test_can_id = 517
+    update_data = {
+        "number": "G123456",
+        "description": "Test CAN Created by unit test",
+        "portfolio_id": 6,
+        "funding_details_id": 1,
+    }
+
+    mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update")
+    unadded_can.description = update_data["description"]
+    mocker_update_can.return_value = unadded_can
+    response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
+
+    update_data["nick_name"] = None
+    assert response.status_code == 200
+    mocker_update_can.assert_called_once_with(update_data, test_can_id)
+    assert response.json["number"] == unadded_can.number
+    assert response.json["description"] == unadded_can.description
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_basic_user_cannot_put_cans(basic_user_auth_client):
+    data = {
+        "description": "An updated can description",
+    }
+    response = basic_user_auth_client.put("/api/v1/cans/517", json=data)
+
+    assert response.status_code == 401
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_put_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
+    test_can_id = 518
+    update_data = {
+        "number": "G123456",
+        "description": "Test CAN Created by unit test",
+        "portfolio_id": 6,
+        "funding_details_id": 1,
+    }
+
+    response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
+
+    assert response.status_code == 404
+
+
+def test_service_update_can_with_nones(loaded_db):
+    update_data = {
+        "nick_name": None,
+        "number": "G123456",
+        "description": "Test Test Test",
+        "portfolio_id": 6,
+        "funding_details_id": 1,
+    }
+
+    test_data = {
+        "portfolio_id": 6,
+        "number": "G998235",
+        "nick_name": "My Nickname",
+        "funding_details_id": 1,
+        "description": "Test CAN Created by unit test",
+    }
+
+    can_service = CANService()
+
+    new_can = can_service.create(test_data)
+
+    can_service = CANService()
+
+    updated_can = can_service.update(update_data, new_can.id)
+
+    can = loaded_db.execute(select(CAN).where(CAN.id == updated_can.id)).scalar_one()
+
+    assert can is not None
+    assert can.number == "G123456"
+    assert updated_can.number == "G123456"
+    assert can.nick_name is None
+    assert updated_can.nick_name is None
+    assert can.portfolio_id == 6
+    assert updated_can.portfolio_id == 6
+    assert can.description == "Test Test Test"
+    assert updated_can.description == "Test Test Test"
+    assert can.funding_details_id == 1
+    assert updated_can.funding_details_id == 1
+
+    loaded_db.delete(new_can)
     loaded_db.commit()

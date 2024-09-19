@@ -7,11 +7,11 @@ from ops_api.ops.schemas.users import SafeUserSchema
 
 
 class CreateUpdateCANRequestSchema(Schema):
-    nick_name = fields.String(allow_none=True)
+    nick_name = fields.String(load_default=None)
     number = fields.String(required=True)
-    description = fields.String(allow_none=True)
+    description = fields.String(allow_none=True, load_default=None)
     portfolio_id = fields.Integer(required=True)
-    funding_details_id = fields.Integer(allow_none=True)
+    funding_details_id = fields.Integer(allow_none=True, load_default=0)
 
 
 class BasicCANSchema(Schema):

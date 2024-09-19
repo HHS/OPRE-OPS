@@ -30,7 +30,7 @@ class CANService:
         current_app.db_session.commit()
         return new_can
 
-    def update_by_fields(self, updated_fields, id) -> CAN:
+    def update(self, updated_fields, id) -> CAN:
         """
         Update a CAN with only the provided values in updated_fields.
         """

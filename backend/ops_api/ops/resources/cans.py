@@ -54,7 +54,24 @@ class CANItemAPI(BaseItemAPI):
             serialized_request = schema.load(request_data)
 
             can_service = CANService()
-            updated_can = can_service.update_by_fields(serialized_request, id)
+            updated_can = can_service.update(serialized_request, id)
+            serialized_can = schema.dump(updated_can)
+            meta.metadata.update({"updated_can": serialized_can})
+            return make_response_with_headers(schema.dump(updated_can))
+
+    @is_authorized(PermissionType.PATCH, Permission.CAN)
+    def put(self, id: int) -> Response:
+        """
+        Update a CAN with only the fields provided in the request body.
+        """
+        with OpsEventHandler(OpsEventType.UPDATE_CAN) as meta:
+            request_data = request.get_json()
+            # Setting partial to true ignores any missing fields.
+            schema = CreateUpdateCANRequestSchema()
+            serialized_request = schema.load(request_data)
+
+            can_service = CANService()
+            updated_can = can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
             meta.metadata.update({"updated_can": serialized_can})
             return make_response_with_headers(schema.dump(updated_can))
