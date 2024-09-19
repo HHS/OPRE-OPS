@@ -6,11 +6,12 @@ import "./BLIDiffTable.scss";
 
 /**
  * A table component that displays budget lines.
+ * @typedef {import("../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The component props.
- * @param {Array<any>} [props.budgetLines] - An array of budget lines to display. - optional
+ * @param {BudgetLine[]} [props.budgetLines=[]] - The budget lines to display.
  * @param {string} props.changeType - The type of change request.
- * @param {string} [props.statusChangeTo=""] - The status change to. - optional
- * @returns {JSX.Element} - The rendered table component.
+ * @param {string} [props.statusChangeTo=""] - The status change to.
+ * @returns {JSX.Element} The rendered table component.
  */
 const BLIDiffTable = ({ budgetLines = [], changeType, statusChangeTo = "" }) => {
     const sortedBudgetLines = budgetLines

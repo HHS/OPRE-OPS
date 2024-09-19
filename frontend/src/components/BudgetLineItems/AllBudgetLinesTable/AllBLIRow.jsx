@@ -114,7 +114,6 @@ const AllBLIRow = ({
                     prefix={"$"}
                     decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
                     fixedDecimalScale={true}
-                    renderText={(value) => value}
                 />
             </td>
             <td
@@ -193,7 +192,6 @@ const AllBLIRow = ({
                                     prefix={"$"}
                                     decimalScale={getDecimalScale(budgetLine?.amount)}
                                     fixedDecimalScale={true}
-                                    renderText={(value) => value}
                                 />
                             </dd>
                         </dl>
@@ -207,7 +205,6 @@ const AllBLIRow = ({
                                     prefix={"$"}
                                     decimalScale={getDecimalScale(feeTotal)}
                                     fixedDecimalScale={true}
-                                    renderText={(value) => value}
                                 />
                             </dd>
                         </dl>
