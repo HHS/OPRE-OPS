@@ -6,6 +6,10 @@ from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
 
 
+class GetCANListRequestSchema(Schema):
+    search = fields.String(allow_none=True)
+
+
 class CreateUpdateCANRequestSchema(Schema):
     nick_name = fields.String(load_default=None)
     number = fields.String(required=True)

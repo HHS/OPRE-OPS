@@ -81,19 +81,37 @@ def test_can_is_inactive(loaded_db, mocker):
     assert can.status == CANStatus.INACTIVE
 
 
-def test_can_get_all(auth_client, loaded_db):
-    count = loaded_db.query(CAN).count()
-
+@pytest.mark.usefixtures("app_ctx")
+def test_can_get_all(auth_client, mocker, test_can):
+    mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
+    mocker_get_can.return_value = [test_can]
     response = auth_client.get("/api/v1/cans/")
     assert response.status_code == 200
-    assert len(response.json) == count
+    assert len(response.json) == 1
+    mocker_get_can.assert_called_once()
+
+
+def test_service_can_get_all(auth_client, loaded_db):
+    count = loaded_db.query(CAN).count()
+    can_service = CANService()
+    response = can_service.get_list()
+    assert len(response) == count
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_get_by_id(auth_client, loaded_db, test_can):
+def test_can_get_by_id(auth_client, mocker, test_can):
+    mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get")
+    mocker_get_can.return_value = test_can
     response = auth_client.get(f"/api/v1/cans/{test_can.id}")
     assert response.status_code == 200
     assert response.json["number"] == "G99HRF2"
+
+
+def test_can_service_get_by_id(test_can):
+    service = CANService()
+    can = service.get(test_can.id)
+    assert test_can.id == can.id
+    assert test_can.number == can.number
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -119,6 +137,20 @@ def test_get_cans_search_filter(auth_client, loaded_db, test_can):
     response = auth_client.get("/api/v1/cans/?search=")
     assert response.status_code == 200
     assert len(response.json) == 0
+
+
+def test_service_get_cans_search_filter(test_can):
+    can_service = CANService()
+    response = can_service.get_list("XXX8")
+    assert len(response) == 1
+    assert response[0].id == 512
+
+    response = can_service.get_list("G99HRF2")
+    assert len(response) == 1
+    assert response[0].id == test_can.id
+
+    response = can_service.get_list("")
+    assert len(response) == 0
 
 
 # Testing CAN Creation
@@ -288,7 +320,7 @@ def test_basic_user_cannot_put_cans(basic_user_auth_client):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_put_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
+def test_can_put_404(budget_team_auth_client):
     test_can_id = 518
     update_data = {
         "number": "G123456",
@@ -350,11 +382,11 @@ def test_service_update_can_with_nones(loaded_db):
 def test_can_delete(budget_team_auth_client, mocker, unadded_can):
     test_can_id = 517
 
-    mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.delete")
+    mocker_delete_can = mocker.patch("ops_api.ops.services.cans.CANService.delete")
     response = budget_team_auth_client.delete(f"/api/v1/cans/{test_can_id}")
 
     assert response.status_code == 200
-    mocker_update_can.assert_called_once_with(test_can_id)
+    mocker_delete_can.assert_called_once_with(test_can_id)
     assert response.json["message"] == "CAN deleted"
     assert response.json["id"] == test_can_id
 
