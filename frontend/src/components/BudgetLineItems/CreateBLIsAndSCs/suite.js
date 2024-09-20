@@ -4,8 +4,8 @@ const suite = create((data) => {
     only(data);
 
     // test to ensure at least one budget line item exists
-    test("data", "Must have at least one budget line item", () => {
-        enforce(data.budgetLines).longerThan(0);
+    test("data", "Must have at least one budget line", () => {
+        enforce(data.budgetLines.length).greaterThan(0);
     });
     // test budget_line_items array
     each(data.budgetLines, (item) => {

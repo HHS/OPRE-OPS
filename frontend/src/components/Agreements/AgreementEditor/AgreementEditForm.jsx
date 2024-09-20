@@ -328,8 +328,6 @@ export const AgreementEditForm = ({
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <h2 className="font-sans-lg margin-top-3 margin-bottom-0">Agreement Type</h2>
-            <p className="margin-top-1">Select the agreement type to get started.</p>
             <AgreementTypeSelect
                 messages={res.getErrors("agreement_type")}
                 className={cn("agreement_type")}

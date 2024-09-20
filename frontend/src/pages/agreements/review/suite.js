@@ -32,7 +32,8 @@ const suite = create((fieldName) => {
         enforce(fieldName.project_officer_id).isNotBlank();
     });
     test("contract-type", "This is required information", () => {
-        enforce(fieldName.contract_type).isNotBlank();
+        enforce(fieldName.contract_type).notEquals("-Select an option-");
+        enforce(fieldName.contract_type).isNotEmpty();
     });
     test("team-members", "This is required information", () => {
         enforce(fieldName.team_members).longerThan(0);
