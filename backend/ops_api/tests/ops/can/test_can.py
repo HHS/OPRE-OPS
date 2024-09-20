@@ -135,6 +135,9 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
     mocker_create_can.return_value = mock_output_data
     response = budget_team_auth_client.post("/api/v1/cans/", json=input_data)
 
+    # Add fields that are default populated on load.
+    input_data["nick_name"] = None
+    input_data["funding_details_id"] = None
     assert response.status_code == 201
     mocker_create_can.assert_called_once_with(input_data)
     assert response.json["id"] == mock_output_data.id
@@ -251,16 +254,6 @@ def test_service_patch_can(loaded_db):
     loaded_db.commit()
 
 
-@pytest.fixture()
-def db_with_test_can(loaded_db, unadded_can):
-    loaded_db.add(unadded_can)
-    loaded_db.commit()
-    yield loaded_db
-
-    loaded_db.delete(unadded_can)
-    loaded_db.commit()
-
-
 # Testing updating CANs by PUT
 @pytest.mark.usefixtures("app_ctx")
 def test_can_put(budget_team_auth_client, mocker, unadded_can):
@@ -350,3 +343,55 @@ def test_service_update_can_with_nones(loaded_db):
 
     loaded_db.delete(new_can)
     loaded_db.commit()
+
+
+# Testing updating CANs by PATCH
+@pytest.mark.usefixtures("app_ctx")
+def test_can_delete(budget_team_auth_client, mocker, unadded_can):
+    test_can_id = 517
+
+    mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.delete")
+    response = budget_team_auth_client.delete(f"/api/v1/cans/{test_can_id}")
+
+    assert response.status_code == 200
+    mocker_update_can.assert_called_once_with(test_can_id)
+    assert response.json["message"] == "CAN deleted"
+    assert response.json["id"] == test_can_id
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_can_delete_404(budget_team_auth_client):
+    test_can_id = 1
+
+    response = budget_team_auth_client.delete(f"/api/v1/cans/{test_can_id}")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_basic_user_cannot_delete_cans(basic_user_auth_client):
+    response = basic_user_auth_client.delete("/api/v1/cans/517")
+
+    assert response.status_code == 401
+
+
+def test_service_delete_can(loaded_db):
+
+    test_data = {
+        "portfolio_id": 6,
+        "number": "G998235",
+        "description": "Test CAN Created by unit test",
+    }
+
+    can_service = CANService()
+
+    new_can = can_service.create(test_data)
+
+    can_service = CANService()
+
+    can_service.delete(new_can.id)
+
+    stmt = select(CAN).where(CAN.id == new_can.id)
+    can = loaded_db.scalar(stmt)
+
+    assert can is None

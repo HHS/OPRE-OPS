@@ -76,6 +76,16 @@ class CANItemAPI(BaseItemAPI):
             meta.metadata.update({"updated_can": serialized_can})
             return make_response_with_headers(schema.dump(updated_can))
 
+    @is_authorized(PermissionType.DELETE, Permission.CAN)
+    def delete(self, id: int) -> Response:
+        """
+        Delete a CAN with given id."""
+        with OpsEventHandler(OpsEventType.DELETE_CAN) as meta:
+            can_service = CANService()
+            can_service.delete(id)
+            meta.metadata.update({"Deleted BudgetLineItem": id})
+            return make_response_with_headers({"message": "CAN deleted", "id": id}, 200)
+
 
 class CANListAPI(BaseListAPI):
     def __init__(self, model):

@@ -46,3 +46,14 @@ class CANService:
         except NoResultFound:
             current_app.logger.exception(f"Could not find a CAN with id {id}")
             raise NotFound()
+
+    def delete(self, id):
+        """
+        Delete a CAN with given id. Throw a NotFound error if no CAN corresponding to that ID exists."""
+        try:
+            old_can: CAN = current_app.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
+            current_app.db_session.delete(old_can)
+            current_app.db_session.commit()
+        except NoResultFound:
+            current_app.logger.exception(f"Could not find a CAN with id {id}")
+            raise NotFound()

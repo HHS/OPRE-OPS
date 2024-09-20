@@ -11,7 +11,7 @@ class CreateUpdateCANRequestSchema(Schema):
     number = fields.String(required=True)
     description = fields.String(allow_none=True, load_default=None)
     portfolio_id = fields.Integer(required=True)
-    funding_details_id = fields.Integer(allow_none=True, load_default=0)
+    funding_details_id = fields.Integer(allow_none=True, load_default=None)
 
 
 class BasicCANSchema(Schema):
