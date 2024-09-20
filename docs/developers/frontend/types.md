@@ -114,4 +114,5 @@ const CANTable = ({ cans }) => {
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 - [JSDocs TypeDefinition](https://jsdoc.app/tags-typedef)
 - [JSDocs Types](https://jsdoc.app/tags-type)
+- [ThePrimeTimeagen inspiration TY Short](https://www.youtube.com/shorts/tj5VW2xJsqU)
 ```
