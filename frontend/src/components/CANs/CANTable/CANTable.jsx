@@ -8,7 +8,7 @@ import styles from "./style.module.css";
 /**
  * CANTable component of CanList
  * @component
- * @typedef {import("../../CANs/CANTypes").CAN} CAN
+ * @typedef {import("../CANTypes").CAN} CAN
  * @param {Object} props
  * @param {CAN[]} props.cans - Array of CANs
  * @returns {JSX.Element}
