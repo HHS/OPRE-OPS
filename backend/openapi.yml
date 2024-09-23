@@ -2740,6 +2740,9 @@ components:
         can_id:
           type: integer
           example: 1
+        can: 
+          type: object
+          $ref: "#/components/schemas/BudgetLineItemCAN"
         comments:
           type: string
         date_needed:
@@ -2805,6 +2808,37 @@ components:
           description: optional notes added to a Change Request when a PATCH is made that creates a CR
           type: string
           writeOnly: true
+    BudgetLineItemCAN:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        portfolio:
+          type: object
+          $ref: "#/components/schemas/PortfolioBLISchema"
+        portfolio_id:
+          type: integer
+          example: 1
+        display_name:
+          type: string
+        nick_name:
+          type: string
+        number:
+          type: string
+        description:
+          type: string
+        active_period:
+          type: integer
+        expiration_date:
+          type: integer
+        appropriation_date:
+          type: integer
+    PortfolioBLISchema:
+      type: object
+      properties:
+        division_id:
+          type: integer
     BudgetLineItemRequest:
       type: object
       properties:
