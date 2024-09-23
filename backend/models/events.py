@@ -22,6 +22,11 @@ class OpsEventType(Enum):
     UPDATE_AGREEMENT = auto()
     DELETE_AGREEMENT = auto()
 
+    # CAN Related Events
+    CREATE_NEW_CAN = auto()
+    UPDATE_CAN = auto()
+    DELETE_CAN = auto()
+
     # Notification Related Events
     ACKNOWLEDGE_NOTIFICATION = auto()
 
