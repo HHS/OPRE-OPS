@@ -3,20 +3,21 @@ import { Portfolio } from "../Portfolios/PortfolioTypes";
 import { Project } from "../Projects/ProjectTypes";
 
 export type CAN = {
-    active_period: number;
+    active_period?: number;
     budget_line_items: BudgetLine[];
     created_by: number | null;
     created_by_user: number | null;
     created_on: Date;
-    description: string;
-    display_name: string;
+    description?: string;
+    display_name?: string;
     funding_budgets: CANFundingBudget[];
     funding_details: CANFundingDetails;
     funding_details_id: number;
     funding_received: CANFundingReceived[];
     id: number;
-    nick_name: string;
+    nick_name?: string;
     number: string;
+    obligate_by?: Date;
     portfolio: Portfolio;
     portfolio_id: number;
     projects: Project[];
