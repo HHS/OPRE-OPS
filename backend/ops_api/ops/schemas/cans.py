@@ -1,9 +1,22 @@
 from marshmallow import Schema, fields
 
-from models import PortfolioStatus, CANMethodOfTransfer
+from models import CANMethodOfTransfer, PortfolioStatus
+
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
+
+
+class GetCANListRequestSchema(Schema):
+    search = fields.String(allow_none=True)
+
+
+class CreateUpdateCANRequestSchema(Schema):
+    nick_name = fields.String(load_default=None)
+    number = fields.String(required=True)
+    description = fields.String(allow_none=True, load_default=None)
+    portfolio_id = fields.Integer(required=True)
+    funding_details_id = fields.Integer(allow_none=True, load_default=None)
 
 
 class BasicCANSchema(Schema):
@@ -14,6 +27,7 @@ class BasicCANSchema(Schema):
     description = fields.String(allow_none=True)
     id = fields.Integer(required=True)
     portfolio_id = fields.Integer(required=True)
+    obligate_by = fields.Integer(allow_none=True)
     projects = fields.List(fields.Nested(ProjectSchema()), default=[])
 
 
@@ -51,7 +65,7 @@ class FundingBudgetVersionSchema(Schema):
     can_id = fields.Integer(required=True)
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
-    id = fields.Integer(required=True)
+    id = fields.Integer()
     notes = fields.String(allow_none=True)
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
@@ -70,7 +84,7 @@ class FundingBudgetSchema(Schema):
     can_id = fields.Integer(required=True)
     display_name = fields.String(allow_none=True)
     fiscal_year = fields.Integer(required=True)
-    id = fields.Integer(required=True)
+    id = fields.Integer()
     notes = fields.String(allow_none=True)
     versions = fields.List(fields.Nested(FundingBudgetVersionSchema()), default=[])
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
