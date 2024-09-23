@@ -5,6 +5,7 @@ import logging
 import time
 from dataclasses import dataclass
 from io import StringIO
+from typing import Optional
 from urllib.parse import urlparse
 
 from azure.core.credentials import AzureNamedKeyCredential
@@ -43,9 +44,14 @@ def blob_to_records(storage_account: AzureStorageAccount, file_name: str, dialec
     blob_string = get_blob_string(storage_account, file_name)
     return csv.DictReader(StringIO(blob_string), dialect=dialect)
 
-def get_csv(
-    csv_path: str, dialect: str = "excel-tab", secret_vault_path: str = None, secret_name: str = None
-) -> csv.DictReader:
+
+@dataclass
+class AzureVaultPath:
+    url: str
+    secret_name: str
+
+
+def get_csv(csv_path: str, dialect: str = "excel-tab", vault_path: Optional[AzureVaultPath] = None) -> csv.DictReader:
     """
     Get a CSV file from a local path or a remote URL. If the path is a remote URL, the file will be downloaded from Azure Blob Storage.
 
@@ -56,12 +62,15 @@ def get_csv(
     """
     parts = urlparse(csv_path)
     if parts.scheme == "https":
-        storage_account = AzureStorageAccount(
-            name=parts.hostname.split(".")[0],
-            container_name=parts.path.split("/")[1],
-            account_url=f"https://{parts.hostname}",
-            access_key=get_secret(secret_vault_path, secret_name),
-        )
+        if vault_path:
+            storage_account = AzureStorageAccount(
+                name=parts.hostname.split(".")[0],
+                container_name=parts.path.split("/")[1],
+                account_url=f"https://{parts.hostname}",
+                access_key=get_secret(vault_path.url, vault_path.secret_name),
+            )
+        else:
+            raise ValueError("vault_path is required for remote CSV files.")
         return blob_to_records(storage_account, "/".join(parts.path.split("/")[2:]), dialect=dialect)
     else:
         return csv.DictReader(open(csv_path, "r") , dialect=dialect)

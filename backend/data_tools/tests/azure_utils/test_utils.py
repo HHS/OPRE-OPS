@@ -1,16 +1,20 @@
 from data_tools.src.azure_utils.utils import get_csv
 
+from azure_utils.utils import AzureVaultPath
+
 
 def test_get_csv(mocker):
-    # Test with a remote file
+    # Test with a remote file using storage key credentials
     csv_string = "id,name\n1,DIV1\n2,DIV2\n3,DIV3\n"
     mocker.patch("data_tools.src.azure_utils.utils.get_blob_string", return_value=csv_string)
     mocker.patch("data_tools.src.azure_utils.utils.get_secret", return_value="")
     result = get_csv(
         "https://xxxxxxx.xxxx.xxxx.xxxxx.net/xxxxxxxxxxx/cans.csv",
         dialect="excel",
-        secret_vault_path="https://xxxxx.xxxx.xxxx.net/",
-        secret_name="xxxxx",
+        vault_path=AzureVaultPath(
+            url="https://xxxxx.xxxx.xxxx.net/",
+            secret_name="xxxxx",
+        ),
     )
     assert result is not None
     data = list(result)
