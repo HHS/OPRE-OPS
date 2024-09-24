@@ -65,9 +65,9 @@ const ApproveAgreement = () => {
     const hasPermissionToViewPage =
         userIsDivisionDirector && agreementIsInReview && doesAgreementBelongToDivisionDirector;
 
-    // if (!hasPermissionToViewPage) {
-    //     return <ErrorPage />;
-    // }
+    if (!hasPermissionToViewPage) {
+        return <ErrorPage />;
+    }
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
