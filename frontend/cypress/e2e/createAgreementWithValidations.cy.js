@@ -74,10 +74,10 @@ describe("create agreement and test validations", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#contract-type").select("Firm Fixed Price (FFP)");
             // test service requirement select
-            cy.get("#serviceReqType").select("Severable");
-            cy.get("#serviceReqType").select("-Select Service Requirement Type-");
+            cy.get("#service_requirement_type").select("Severable");
+            cy.get("#service_requirement_type").select("-Select Service Requirement Type-");
             cy.get(".usa-error-message").should("exist");
-            cy.get("#serviceReqType").select("Severable");
+            cy.get("#service_requirement_type").select("Severable");
             // test product service code
             cy.get("#product_service_code_id").select(1);
             cy.get("#product_service_code_id").select(0);
