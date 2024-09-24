@@ -58,6 +58,12 @@ const ApproveAgreement = () => {
     if (!agreement) {
         return <div>No agreement data available.</div>;
     }
+
+    /*
+      TODO: Add FE validation to ensure that the user is authorized to approve the agreement
+      and if not, display an error page
+      to prevent unauthorized users from accessing this page
+    */
     const BeforeApprovalContent = React.memo(
         ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestTitle, urlChangeToStatus }) => (
             <>

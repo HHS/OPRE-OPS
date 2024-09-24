@@ -52,7 +52,6 @@ describe("create agreement and test validations", () => {
             cy.intercept("PATCH", "**/agreements/**").as("patchAgreement");
             cy.visit(`/agreements/review/${agreementId}?mode=review`).wait(1000);
             cy.get("h1").should("have.text", "Please resolve the errors outlined below");
-
             cy.get('[data-cy="error-list"]').should("exist");
             cy.get('[data-cy="error-item"]').should("have.length", 9);
             //send-to-approval button should be disabled
@@ -61,12 +60,33 @@ describe("create agreement and test validations", () => {
             //fix errors
             cy.get('[data-cy="edit-agreement-btn"]').click();
             cy.get("#continue").click();
-            // get all errors on page, should be 5
-            cy.get(".usa-form-group--error").should("have.length", 5);
+            // get all errors on page, should be 6
+            cy.get(".usa-form-group--error").should("have.length", 6);
+            // test description
             cy.get("#description").type("Test Description");
+            cy.get("#description").clear();
+            cy.get("#description").blur();
+            cy.get(".usa-error-message").should("exist");
+            cy.get("#description").type("Test Description");
+            // test contract type
             cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+            cy.get("#contract-type").select("-Select an option-");
+            cy.get(".usa-error-message").should("exist");
+            cy.get("#contract-type").select("Firm Fixed Price (FFP)");
+            // test service requirement select
+            cy.get("#service_requirement_type").select("Severable");
+            cy.get("#service_requirement_type").select("-Select Service Requirement Type-");
+            cy.get(".usa-error-message").should("exist");
+            cy.get("#service_requirement_type").select("Severable");
+            // test product service code
             cy.get("#product_service_code_id").select(1);
-            cy.get("#serviceReqType").select("Severable");
+            cy.get("#product_service_code_id").select(0);
+            cy.get(".usa-error-message").should("exist");
+            cy.get("#product_service_code_id").select(1);
+            // test agreement type
+            cy.get("#agreement_reason").select("NEW_REQ");
+            cy.get("#agreement_reason").select(0);
+            cy.get(".usa-error-message").should("exist");
             cy.get("#agreement_reason").select("NEW_REQ");
             cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
             cy.get("#team-member-combobox-input").type("Admin Demo{enter}");
