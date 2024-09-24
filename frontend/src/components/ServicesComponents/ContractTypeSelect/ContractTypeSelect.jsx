@@ -18,10 +18,10 @@ function ContractTypeSelect({ value, onChange, ...rest }) {
         <Select
             name="contract-type"
             label="Contract Type"
-            options={CONTRACT_TYPE_OPTIONS}
             onChange={onChange}
             value={value}
             messages={[]}
+            options={CONTRACT_TYPE_OPTIONS}
             {...rest}
         />
     );
