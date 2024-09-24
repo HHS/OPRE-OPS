@@ -8,7 +8,7 @@ import DocumentCollectionView from "../../../components/Agreements/Documents/Doc
 import BLIDiffTable from "../../../components/BudgetLineItems/BLIDiffTable";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
-import DebugCode from "../../../components/DebugCode";
+// import DebugCode from "../../../components/DebugCode";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -52,20 +52,26 @@ const ApproveAgreement = () => {
         approvedBudgetLinesPreview
     } = useApproveAgreement();
 
+    const is2849Ready = false; // feature flag for 2849 readiness
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
     const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
+
     // NOTE: May be able to get from agreement.change_requests_in_review.managing_division_id
     const allCanDivisionIDs = agreement?.budget_line_items?.map((bli) => bli.can.portfolio.division_id);
     const uniqueCanDivisionIDs = [...new Set(allCanDivisionIDs)];
     const doesAgreementBelongToDivisionDirector = uniqueCanDivisionIDs.includes(userDivisionId) ?? false;
-    console.log({ uniqueCanDivisionIDs, userDivisionId, doesAgreementBelongToDivisionDirector });
-    const agreementIsInReview = agreement?.in_review ?? false;
+    const agreementHasBLIsUnderReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
 
     const hasPermissionToViewPage =
-        userIsDivisionDirector && agreementIsInReview && doesAgreementBelongToDivisionDirector;
+        userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
+    // NOTE: This test is good enough for now until 2849 is ready
+    const isApproverAndAgreementInReview = userIsDivisionDirector && agreementHasBLIsUnderReview;
 
-    if (!hasPermissionToViewPage) {
+    if (!hasPermissionToViewPage && is2849Ready) {
+        return <ErrorPage />;
+    }
+    if (!isApproverAndAgreementInReview) {
         return <ErrorPage />;
     }
 
@@ -95,10 +101,12 @@ const ApproveAgreement = () => {
                 subTitle={agreement.name}
             />
 
-            <DebugCode
+            {/*
+              <DebugCode
                 title="Agreement"
                 data={agreement}
-            />
+              />
+            */}
 
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
