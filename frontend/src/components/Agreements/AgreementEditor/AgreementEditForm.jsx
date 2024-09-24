@@ -374,15 +374,15 @@ export const AgreementEditForm = ({
             />
             <ContractTypeSelect
                 messages={res.getErrors("contract-type")}
-                className="margin-top-3"
+                className={`margin-top-3 ${cn("contract-type")}`}
                 value={contractType}
                 onChange={(name, value) => {
                     setContractType(value);
                 }}
             />
             <ServiceReqTypeSelect
-                messages={res.getErrors("serviceReqType")}
-                className={`margin-top-3 ${cn("serviceReqType")}`}
+                messages={res.getErrors("service_requirement_type")}
+                className={`margin-top-3 ${cn("service_requirement_type")}`}
                 isRequired={true}
                 value={serviceReqType}
                 onChange={(name, value) => {
