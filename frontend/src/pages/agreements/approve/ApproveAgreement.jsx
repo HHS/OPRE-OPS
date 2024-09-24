@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import App from "../../../App";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
@@ -7,6 +8,7 @@ import DocumentCollectionView from "../../../components/Agreements/Documents/Doc
 import BLIDiffTable from "../../../components/BudgetLineItems/BLIDiffTable";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
+import DebugCode from "../../../components/DebugCode";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -16,9 +18,8 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { document } from "../../../tests/data";
-import useApproveAgreement from "./ApproveAgreement.hooks";
 import ErrorPage from "../../ErrorPage";
-import DebugCode from "../../../components/DebugCode";
+import useApproveAgreement from "./ApproveAgreement.hooks";
 
 const ApproveAgreement = () => {
     const {
@@ -51,15 +52,18 @@ const ApproveAgreement = () => {
         approvedBudgetLinesPreview
     } = useApproveAgreement();
 
-    const isLoggedInUserDivisionDirector = false;
-    const doesAgreementHaveChangeRequests = false;
-    const doesAgreementBelongToDivisionDirector = false;
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
+    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
+    // NOTE: May be able to get from agreement.change_requests_in_review.managing_division_id
+    const allCanDivisionIDs = agreement?.budget_line_items?.map((bli) => bli.can.portfolio.division_id);
+    const uniqueCanDivisionIDs = [...new Set(allCanDivisionIDs)];
+    const doesAgreementBelongToDivisionDirector = uniqueCanDivisionIDs.includes(userDivisionId) ?? false;
+    console.log({ uniqueCanDivisionIDs, userDivisionId, doesAgreementBelongToDivisionDirector });
+    const agreementIsInReview = agreement?.in_review ?? false;
 
     const hasPermissionToViewPage =
-        isLoggedInUserDivisionDirector &&
-        isUserATeamMember &&
-        doesAgreementHaveChangeRequests &&
-        doesAgreementBelongToDivisionDirector;
+        userIsDivisionDirector && agreementIsInReview && doesAgreementBelongToDivisionDirector;
 
     // if (!hasPermissionToViewPage) {
     //     return <ErrorPage />;
