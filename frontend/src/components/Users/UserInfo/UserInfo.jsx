@@ -10,8 +10,11 @@ import { setIsActive } from "../../UI/Alert/alertSlice.js";
 
 /**
  * Renders the user information.
- * @param {Object} user - The user object.
- * @param {Boolean} isEditable - Whether the user information is editable.
+ * @component
+ * @typedef {import("../UserTypes").SafeUser} User
+ * @param {Object} props - The component props.
+ * @param {User} props.user - The user object.
+ * @param {Boolean} props.isEditable - Whether the user information is editable.
  * @returns {JSX.Element} - The rendered component.
  */
 const UserInfo = ({ user, isEditable }) => {
