@@ -1,9 +1,9 @@
 import os
 
 import sqlalchemy.engine
+from data_tools.src.common.utils import get_config, init_db
 from sqlalchemy.orm import configure_mappers
 
-from common.utils import get_config, init_db
 from models import BaseModel
 
 configure_mappers()

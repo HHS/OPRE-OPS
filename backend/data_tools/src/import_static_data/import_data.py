@@ -2,11 +2,10 @@ import logging
 import os
 
 import json5
+from data_tools.src.common.utils import get_config, init_db
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
-
-from common.utils import get_config, init_db
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,6 +1,4 @@
-from data_tools.src.azure_utils.utils import get_csv
-
-from azure_utils.utils import AzureVaultPath
+from data_tools.src.azure_utils.utils import AzureVaultPath, get_csv
 
 
 def test_get_csv(mocker):
