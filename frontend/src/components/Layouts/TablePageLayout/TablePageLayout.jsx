@@ -16,8 +16,8 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {React.ReactNode} [props.FilterButton] - The filter button to display.
  * @param {React.ReactNode} [props.TableSection] - The table to display.
  * @param {React.ReactNode} [props.SummaryCardsSection] - The summary cards to display.
- * @param {string} props.buttonText - The text to display on the button.
- * @param {string} props.buttonLink - The link to navigate to when the button is clicked.
+ * @param {string} [props.buttonText] - The text to display on the button.
+ * @param {string} [props.buttonLink] - The link to navigate to when the button is clicked.
  * @returns {JSX.Element} - The rendered component.
  */
 export const TablePageLayout = ({
@@ -37,18 +37,20 @@ export const TablePageLayout = ({
         <>
             <div className="display-flex flex-align-center flex-justify margin-bottom-205">
                 <h1 className="margin-0 text-brand-primary font-sans-2xl">{title}</h1>
-                <Link
-                    to={buttonLink}
-                    className="usa-button usa-button--outline display-flex flex-align-center margin-0 padding-105"
-                >
-                    <svg
-                        className="height-2 width-2 margin-right-05 cursor-pointer"
-                        style={{ fill: "#005ea2" }}
+                {buttonLink && buttonText && (
+                    <Link
+                        to={buttonLink}
+                        className="usa-button usa-button--outline display-flex flex-align-center margin-0 padding-105"
                     >
-                        <use xlinkHref={`${icons}#add`}></use>
-                    </svg>
-                    <span>{buttonText}</span>
-                </Link>
+                        <svg
+                            className="height-2 width-2 margin-right-05 cursor-pointer"
+                            style={{ fill: "#005ea2" }}
+                        >
+                            <use xlinkHref={`${icons}#add`}></use>
+                        </svg>
+                        <span>{buttonText}</span>
+                    </Link>
+                )}
             </div>
             {TabsSection}
             <div className="display-flex flex-justify padding-y-1">
@@ -78,6 +80,6 @@ TablePageLayout.propTypes = {
     FilterButton: PropTypes.node,
     TableSection: PropTypes.node,
     SummaryCardsSection: PropTypes.node,
-    buttonText: PropTypes.string.isRequired,
-    buttonLink: PropTypes.string.isRequired
+    buttonText: PropTypes.string,
+    buttonLink: PropTypes.string
 };

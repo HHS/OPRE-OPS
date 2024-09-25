@@ -1,15 +1,4 @@
 {
-    "canList": {
-        "cans": []
-    },
-    "canDetail": {
-        "can": {},
-        "canFiscalYearObj": {},
-        "pendingFunds": "--",
-        "selectedFiscalYear": {
-            "value": null
-        }
-    },
     "portfolioList": {
         "portfolios": []
     },

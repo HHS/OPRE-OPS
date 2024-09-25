@@ -20,7 +20,7 @@ import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
 
 /**
- *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
+ *  @typedef {import('../../../components/ChangeRequests/ChangeRequests').ChangeRequest} ChangeRequest
  *  @type {ChangeRequest[]}
  */
 /**

@@ -892,3 +892,548 @@ export const budgetLineWithStatusChangeRequestToExecuting = {
     ],
     updated_on: "2024-07-26T14:07:14.544417"
 };
+
+export const cans = [
+    {
+        active_period: 1,
+        budget_line_items: [
+            {
+                agreement_id: 2,
+                amount: 2000000,
+                can: {
+                    active_period: 1,
+                    description: "Healthy Marriages Responsible Fatherhood - OPRE",
+                    display_name: "G99HRF2",
+                    id: 500,
+                    nick_name: "HMRF-OPRE",
+                    number: "G99HRF2",
+                    portfolio_id: 6
+                },
+                can_id: 500,
+                change_requests_in_review: null,
+                comments: "",
+                created_by: 503,
+                created_on: "2024-09-17T18:12:32.976627",
+                date_needed: "2043-06-13",
+                fiscal_year: 2043,
+                id: 15008,
+                in_review: false,
+                line_description: "Line Item 2",
+                portfolio_id: 6,
+                proc_shop_fee_percentage: 0.005,
+                services_component_id: null,
+                status: "IN_EXECUTION",
+                team_members: [
+                    {
+                        email: "chris.fortunato@example.com",
+                        full_name: "Chris Fortunato",
+                        id: 500
+                    },
+                    {
+                        email: "Amelia.Popham@example.com",
+                        full_name: "Amelia Popham",
+                        id: 503
+                    },
+                    {
+                        email: "admin.demo@email.com",
+                        full_name: "Admin Demo",
+                        id: 520
+                    }
+                ],
+                updated_on: "2024-09-17T18:12:32.976627"
+            }
+        ],
+        created_by: null,
+        created_by_user: null,
+        created_on: "2024-09-17T18:12:25.558006Z",
+        description: "Healthy Marriages Responsible Fatherhood - OPRE",
+        display_name: "G99HRF2",
+        funding_budgets: [
+            {
+                budget: 1140000,
+                can: {
+                    active_period: 1,
+                    description: "Healthy Marriages Responsible Fatherhood - OPRE",
+                    display_name: "G99HRF2",
+                    id: 500,
+                    nick_name: "HMRF-OPRE",
+                    number: "G99HRF2",
+                    portfolio_id: 6,
+                    projects: []
+                },
+                can_id: 500,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-09-17T18:12:25.781382Z",
+                display_name: "CANFundingBudget#1",
+                fiscal_year: 2023,
+                id: 1,
+                notes: null,
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-09-17T18:12:25.781382Z",
+                versions: [
+                    {
+                        budget: 1140000,
+                        can: {
+                            description: "Healthy Marriages Responsible Fatherhood - OPRE",
+                            id: 500,
+                            nick_name: "HMRF-OPRE",
+                            number: "G99HRF2",
+                            portfolio_id: 6,
+                            projects: []
+                        },
+                        can_id: 500,
+                        created_by: null,
+                        created_on: "2024-09-17T18:12:25.781382Z",
+                        end_transaction_id: null,
+                        fiscal_year: 2023,
+                        id: 1,
+                        notes: null,
+                        operation_type: 0,
+                        transaction_id: 186,
+                        updated_by: null,
+                        updated_on: "2024-09-17T18:12:25.781382Z"
+                    }
+                ]
+            }
+        ],
+        funding_details: {
+            allotment: null,
+            allowance: null,
+            created_by: null,
+            created_by_user: null,
+            created_on: "2024-09-17T18:12:25.370020Z",
+            display_name: "CANFundingDetails#1",
+            fiscal_year: 2023,
+            fund_code: "AAXXXX20231DAD",
+            funding_partner: null,
+            funding_source: "CANFundingSource.OPRE",
+            id: 1,
+            method_of_transfer: "DIRECT",
+            sub_allowance: null,
+            updated_by: null,
+            updated_by_user: null,
+            updated_on: "2024-09-17T18:12:25.370020Z"
+        },
+        funding_details_id: 1,
+        funding_received: [
+            {
+                can: {
+                    active_period: 1,
+                    description: "Healthy Marriages Responsible Fatherhood - OPRE",
+                    display_name: "G99HRF2",
+                    id: 500,
+                    nick_name: "HMRF-OPRE",
+                    number: "G99HRF2",
+                    portfolio_id: 6,
+                    projects: []
+                },
+                can_id: 500,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-09-17T18:12:26.088324Z",
+                display_name: "CANFundingReceived#500",
+                fiscal_year: 2023,
+                funding: 880000,
+                id: 500,
+                notes: null,
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-09-17T18:12:26.088324Z"
+            }
+        ],
+        id: 500,
+        nick_name: "HMRF-OPRE",
+        number: "G99HRF2",
+        portfolio: {
+            abbreviation: "HMRF",
+            created_by: null,
+            created_by_user: null,
+            created_on: "2024-09-17T18:12:16.659182Z",
+            division_id: 5,
+            id: 6,
+            name: "Healthy Marriage & Responsible Fatherhood",
+            status: "IN_PROCESS",
+            team_leaders: [
+                {
+                    full_name: "Katie Pahigiannis",
+                    id: 505
+                }
+            ],
+            updated_by: null,
+            updated_by_user: null,
+            updated_on: "2024-09-17T18:12:16.659182Z",
+            urls: [
+                {
+                    created_by: null,
+                    created_by_user: null,
+                    created_on: "2024-09-17T18:12:16.802256Z",
+                    id: 6,
+                    portfolio_id: 6,
+                    updated_by: null,
+                    updated_by_user: null,
+                    updated_on: "2024-09-17T18:12:16.802256Z",
+                    url: "https://www.acf.hhs.gov/opre/topic/strengthening-families-healthy-marriage-responsible-fatherhood"
+                }
+            ]
+        },
+        portfolio_id: 6,
+        projects: [],
+        updated_by: null,
+        updated_by_user: null,
+        updated_on: "2024-09-17T18:12:25.558006Z"
+    },
+    {
+        active_period: 5,
+        budget_line_items: [
+            {
+                agreement_id: 2,
+                amount: 2000000,
+                can: {
+                    active_period: 5,
+                    description: "Incoming Interagency Agreements",
+                    display_name: "G99IA14",
+                    id: 501,
+                    nick_name: "IAA-Incoming",
+                    number: "G99IA14",
+                    portfolio_id: 1
+                },
+                can_id: 501,
+                change_requests_in_review: null,
+                comments: "",
+                created_by: 503,
+                created_on: "2024-09-17T18:12:33.000154",
+                date_needed: "2043-06-13",
+                fiscal_year: 2043,
+                id: 15010,
+                in_review: false,
+                line_description: "Line Item 2",
+                portfolio_id: 1,
+                proc_shop_fee_percentage: 0.005,
+                services_component_id: null,
+                status: "IN_EXECUTION",
+                team_members: [
+                    {
+                        email: "chris.fortunato@example.com",
+                        full_name: "Chris Fortunato",
+                        id: 500
+                    },
+                    {
+                        email: "Amelia.Popham@example.com",
+                        full_name: "Amelia Popham",
+                        id: 503
+                    },
+                    {
+                        email: "admin.demo@email.com",
+                        full_name: "Admin Demo",
+                        id: 520
+                    }
+                ],
+                updated_on: "2024-09-17T18:12:33.000154"
+            },
+            {
+                agreement_id: 2,
+                amount: 1000000,
+                can: {
+                    active_period: 5,
+                    description: "Incoming Interagency Agreements",
+                    display_name: "G99IA14",
+                    id: 501,
+                    nick_name: "IAA-Incoming",
+                    number: "G99IA14",
+                    portfolio_id: 1
+                },
+                can_id: 501,
+                change_requests_in_review: null,
+                comments: "",
+                created_by: 503,
+                created_on: "2024-09-17T18:12:33.060480",
+                date_needed: "2043-06-13",
+                fiscal_year: 2043,
+                id: 15015,
+                in_review: false,
+                line_description: "Line Item 2",
+                portfolio_id: 1,
+                proc_shop_fee_percentage: 0.005,
+                services_component_id: null,
+                status: "PLANNED",
+                team_members: [
+                    {
+                        email: "chris.fortunato@example.com",
+                        full_name: "Chris Fortunato",
+                        id: 500
+                    },
+                    {
+                        email: "Amelia.Popham@example.com",
+                        full_name: "Amelia Popham",
+                        id: 503
+                    },
+                    {
+                        email: "admin.demo@email.com",
+                        full_name: "Admin Demo",
+                        id: 520
+                    }
+                ],
+                updated_on: "2024-09-17T18:12:33.060480"
+            },
+            {
+                agreement_id: 2,
+                amount: 3000000,
+                can: {
+                    active_period: 5,
+                    description: "Incoming Interagency Agreements",
+                    display_name: "G99IA14",
+                    id: 501,
+                    nick_name: "IAA-Incoming",
+                    number: "G99IA14",
+                    portfolio_id: 1
+                },
+                can_id: 501,
+                change_requests_in_review: null,
+                comments: "",
+                created_by: 503,
+                created_on: "2024-09-17T18:12:33.073854",
+                date_needed: "2043-06-13",
+                fiscal_year: 2043,
+                id: 15016,
+                in_review: false,
+                line_description: "Line Item 2",
+                portfolio_id: 1,
+                proc_shop_fee_percentage: 0.005,
+                services_component_id: null,
+                status: "OBLIGATED",
+                team_members: [
+                    {
+                        email: "chris.fortunato@example.com",
+                        full_name: "Chris Fortunato",
+                        id: 500
+                    },
+                    {
+                        email: "Amelia.Popham@example.com",
+                        full_name: "Amelia Popham",
+                        id: 503
+                    },
+                    {
+                        email: "admin.demo@email.com",
+                        full_name: "Admin Demo",
+                        id: 520
+                    }
+                ],
+                updated_on: "2024-09-17T18:12:33.073854"
+            }
+        ],
+        created_by: null,
+        created_by_user: null,
+        created_on: "2024-09-17T18:12:25.579527Z",
+        description: "Incoming Interagency Agreements",
+        display_name: "G99IA14",
+        funding_budgets: [
+            {
+                budget: 200000,
+                can: {
+                    active_period: 5,
+                    description: "Incoming Interagency Agreements",
+                    display_name: "G99IA14",
+                    id: 501,
+                    nick_name: "IAA-Incoming",
+                    number: "G99IA14",
+                    portfolio_id: 1,
+                    projects: []
+                },
+                can_id: 501,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-09-17T18:12:25.799918Z",
+                display_name: "CANFundingBudget#2",
+                fiscal_year: 2021,
+                id: 2,
+                notes: null,
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-09-17T18:12:25.799918Z",
+                versions: [
+                    {
+                        budget: 200000,
+                        can: {
+                            description: "Incoming Interagency Agreements",
+                            id: 501,
+                            nick_name: "IAA-Incoming",
+                            number: "G99IA14",
+                            portfolio_id: 1,
+                            projects: []
+                        },
+                        can_id: 501,
+                        created_by: null,
+                        created_on: "2024-09-17T18:12:25.799918Z",
+                        end_transaction_id: null,
+                        fiscal_year: 2021,
+                        id: 2,
+                        notes: null,
+                        operation_type: 0,
+                        transaction_id: 187,
+                        updated_by: null,
+                        updated_on: "2024-09-17T18:12:25.799918Z"
+                    }
+                ]
+            },
+            {
+                budget: 10000000,
+                can: {
+                    active_period: 5,
+                    description: "Incoming Interagency Agreements",
+                    display_name: "G99IA14",
+                    id: 501,
+                    nick_name: "IAA-Incoming",
+                    number: "G99IA14",
+                    portfolio_id: 1,
+                    projects: []
+                },
+                can_id: 501,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-09-17T18:12:25.903789Z",
+                display_name: "CANFundingBudget#13",
+                fiscal_year: 2023,
+                id: 13,
+                notes: null,
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-09-17T18:12:25.903789Z",
+                versions: [
+                    {
+                        budget: 10000000,
+                        can: {
+                            description: "Incoming Interagency Agreements",
+                            id: 501,
+                            nick_name: "IAA-Incoming",
+                            number: "G99IA14",
+                            portfolio_id: 1,
+                            projects: []
+                        },
+                        can_id: 501,
+                        created_by: null,
+                        created_on: "2024-09-17T18:12:25.903789Z",
+                        end_transaction_id: null,
+                        fiscal_year: 2023,
+                        id: 13,
+                        notes: null,
+                        operation_type: 0,
+                        transaction_id: 198,
+                        updated_by: null,
+                        updated_on: "2024-09-17T18:12:25.903789Z"
+                    }
+                ]
+            }
+        ],
+        funding_details: {
+            allotment: null,
+            allowance: null,
+            created_by: null,
+            created_by_user: null,
+            created_on: "2024-09-17T18:12:25.394257Z",
+            display_name: "CANFundingDetails#2",
+            fiscal_year: 2021,
+            fund_code: "BBXXXX20215DAD",
+            funding_partner: null,
+            funding_source: null,
+            id: 2,
+            method_of_transfer: "COST_SHARE",
+            sub_allowance: null,
+            updated_by: null,
+            updated_by_user: null,
+            updated_on: "2024-09-17T18:12:25.394257Z"
+        },
+        funding_details_id: 2,
+        funding_received: [
+            {
+                can: {
+                    active_period: 5,
+                    description: "Incoming Interagency Agreements",
+                    display_name: "G99IA14",
+                    id: 501,
+                    nick_name: "IAA-Incoming",
+                    number: "G99IA14",
+                    portfolio_id: 1,
+                    projects: []
+                },
+                can_id: 501,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-09-17T18:12:26.106152Z",
+                display_name: "CANFundingReceived#501",
+                fiscal_year: 2021,
+                funding: 200000,
+                id: 501,
+                notes: null,
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-09-17T18:12:26.106152Z"
+            },
+            {
+                can: {
+                    active_period: 5,
+                    description: "Incoming Interagency Agreements",
+                    display_name: "G99IA14",
+                    id: 501,
+                    nick_name: "IAA-Incoming",
+                    number: "G99IA14",
+                    portfolio_id: 1,
+                    projects: []
+                },
+                can_id: 501,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-09-17T18:12:26.216160Z",
+                display_name: "CANFundingReceived#512",
+                fiscal_year: 2023,
+                funding: 6000000,
+                id: 512,
+                notes: null,
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-09-17T18:12:26.216160Z"
+            }
+        ],
+        id: 501,
+        nick_name: "IAA-Incoming",
+        number: "G99IA14",
+        portfolio: {
+            abbreviation: "CWR",
+            created_by: null,
+            created_by_user: null,
+            created_on: "2024-09-17T18:12:16.472498Z",
+            division_id: 4,
+            id: 1,
+            name: "Child Welfare Research",
+            status: "IN_PROCESS",
+            team_leaders: [
+                {
+                    full_name: "Chris Fortunato",
+                    id: 500
+                }
+            ],
+            updated_by: null,
+            updated_by_user: null,
+            updated_on: "2024-09-17T18:12:16.472498Z",
+            urls: [
+                {
+                    created_by: null,
+                    created_by_user: null,
+                    created_on: "2024-09-17T18:12:16.760426Z",
+                    id: 1,
+                    portfolio_id: 1,
+                    updated_by: null,
+                    updated_by_user: null,
+                    updated_on: "2024-09-17T18:12:16.760426Z",
+                    url: "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
+                }
+            ]
+        },
+        portfolio_id: 1,
+        projects: [],
+        updated_by: null,
+        updated_by_user: null,
+        updated_on: "2024-09-17T18:12:25.579527Z"
+    }
+];
