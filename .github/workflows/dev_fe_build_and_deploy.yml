@@ -1,4 +1,4 @@
-name: Dev Frontend Build and Deploy
+name: Frontend Bump Build
 
 on:
   workflow_dispatch:
@@ -11,7 +11,6 @@ on:
 env:
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
-  ENVIRONMENT: dev
   DOMAIN_NAME: "ops.opre.acf.gov"
 
 jobs:
@@ -20,12 +19,16 @@ jobs:
       contents: write
       packages: write
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, stage, prod]  # Define your environments here
+
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@v4.1.7
 
       - name:  'Automated Version Bump'
         id: version_bump
-        uses:  'phips28/gh-action-bump-version@56588a3c4a1d62a068f308dfbc17f4ee55c69d41' #v11.0.4
+        uses:  'phips28/gh-action-bump-version@v11.0.4'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -45,27 +48,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }},${{ env.ENVIRONMENT }},${{ env.ENVIRONMENT }}-${{ steps.extract_version.outputs.version }}"
-          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.ENVIRONMENT }}"
+          image_tags: "unstable,${{ github.sha }},${{ matrix.environment }},${{ matrix.environment }}-${{ steps.extract_version.outputs.version }}"
+          build_args: "VITE_BACKEND_DOMAIN=https://${{ matrix.environment }}.${{ env.DOMAIN_NAME }}, MODE=${{ matrix.environment }}"
     
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
-
-  deploy-frontend:
-    needs: build-frontend
-
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Log in to Azure
-        uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
-        with:
-          creds: ${{ secrets.SDLC_AZURE_CREDS }}
-
-      - name: Deploy Container App
-        uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
-        with:
-            containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
-            resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
-            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}-${{ needs.build-frontend.outputs.version }}
