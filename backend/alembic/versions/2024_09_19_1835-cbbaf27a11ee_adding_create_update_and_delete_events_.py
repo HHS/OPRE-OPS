@@ -13,7 +13,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision: str = 'cbbaf27a11ee'
-down_revision: Union[str, None] = 'eb4261420779'
+down_revision: Union[str, None] = 'c03680353aa3'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
