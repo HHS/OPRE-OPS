@@ -17,10 +17,6 @@ env:
     prod=production
     stg=production
     dev=development
-  # JSON string representing the environments for build
-  BUILD_ENVIRONMENTS: '["dev", "stg", "prod"]'
-  # JSON string representing the environments to deploy to
-  DEPLOY_ENVIRONMENTS: '["dev", "stg"]'
 
 jobs:
   version-bump:
@@ -55,8 +51,8 @@ jobs:
       packages: write
     strategy:
       matrix:
-        # Use fromJSON to convert the environment variable into a matrix
-        environment: ${{ fromJSON(env.BUILD_ENVIRONMENTS) }}
+        # Define environments directly here
+        environment: ['dev', 'stg', 'prod']
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
@@ -81,13 +77,13 @@ jobs:
           image_tags: "unstable,${{ github.sha }},${{ matrix.environment }},${{ matrix.environment }}-${{ needs.version-bump.outputs.version }}"
           build_args: "VITE_BACKEND_DOMAIN=https://${{ matrix.environment }}.${{ env.DOMAIN_NAME }}, MODE=${{ env.MODE }}"
 
-  deploy-dev-frontend:
+  deploy-frontend:
     needs: [version-bump, build-and-push-image]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Use fromJSON to define which environments to deploy to
-        environment: ${{ fromJSON(env.DEPLOY_ENVIRONMENTS) }}
+        # Define deployment environments directly here
+        environment: ['dev', 'stg']
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
