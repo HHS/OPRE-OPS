@@ -1,5 +1,4 @@
 import React from "react";
-import { useSelector } from "react-redux";
 import App from "../../../App";
 import AgreementBLIAccordion from "../../../components/Agreements/AgreementBLIAccordion";
 import AgreementCANReviewAccordion from "../../../components/Agreements/AgreementCANReviewAccordion";
@@ -8,7 +7,6 @@ import DocumentCollectionView from "../../../components/Agreements/Documents/Doc
 import BLIDiffTable from "../../../components/BudgetLineItems/BLIDiffTable";
 import { CHANGE_REQUEST_ACTION } from "../../../components/ChangeRequests/ChangeRequests.constants";
 import ReviewChangeRequestAccordion from "../../../components/ChangeRequests/ReviewChangeRequestAccordion";
-// import DebugCode from "../../../components/DebugCode";
 import ServicesComponentAccordion from "../../../components/ServicesComponents/ServicesComponentAccordion";
 import Accordion from "../../../components/UI/Accordion";
 import TextArea from "../../../components/UI/Form/TextArea";
@@ -49,24 +47,11 @@ const ApproveAgreement = () => {
         statusChangeTo,
         errorAgreement,
         isLoadingAgreement,
-        approvedBudgetLinesPreview
+        approvedBudgetLinesPreview,
+        is2849Ready,
+        hasPermissionToViewPage,
+        isApproverAndAgreementInReview
     } = useApproveAgreement();
-
-    const is2849Ready = false; // feature flag for 2849 readiness
-    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
-    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
-
-    // NOTE: May be able to get from agreement.change_requests_in_review.managing_division_id
-    const allCanDivisionIDs = agreement?.budget_line_items?.map((bli) => bli.can.portfolio.division_id);
-    const uniqueCanDivisionIDs = [...new Set(allCanDivisionIDs)];
-    const doesAgreementBelongToDivisionDirector = uniqueCanDivisionIDs.includes(userDivisionId) ?? false;
-    const agreementHasBLIsUnderReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
-
-    const hasPermissionToViewPage =
-        userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
-    // NOTE: This test is good enough for now until 2849 is ready
-    const isApproverAndAgreementInReview = userIsDivisionDirector && agreementHasBLIsUnderReview;
 
     if (!hasPermissionToViewPage && is2849Ready) {
         return <ErrorPage />;
@@ -74,7 +59,6 @@ const ApproveAgreement = () => {
     if (!isApproverAndAgreementInReview) {
         return <ErrorPage />;
     }
-
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
     }
@@ -96,18 +80,11 @@ const ApproveAgreement = () => {
                     secondaryButtonText={modalProps.secondaryButtonText}
                 />
             )}
+
             <PageHeader
                 title={title}
                 subTitle={agreement.name}
             />
-
-            {/*
-              <DebugCode
-                title="Agreement"
-                data={agreement}
-              />
-            */}
-
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
