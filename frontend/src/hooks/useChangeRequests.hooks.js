@@ -1,7 +1,7 @@
 import { useGetAgreementByIdQuery, useGetCansQuery, useGetChangeRequestsListQuery } from "../api/opsAPI";
 import { renderField } from "../helpers/utils";
 /**
- * @typedef {import ('../components/ChangeRequests/ChangeRequestsList/ChangeRequests.d.ts').ChangeRequest} ChangeRequest
+ * @typedef {import ('../components/ChangeRequests/ChangeRequests').ChangeRequest} ChangeRequest
  */
 
 /**
@@ -61,7 +61,7 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
  * Custom hook that returns the change requests for a budget line.
  * @param {Object} budgetLine - The budget line.
  * @returns {string} The change requests messages.
- 
+
  */
 export const useChangeRequestsForTooltip = (budgetLine) => {
     const { data: cans, isSuccess: cansSuccess } = useGetCansQuery();

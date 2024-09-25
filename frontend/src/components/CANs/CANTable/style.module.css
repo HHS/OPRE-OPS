@@ -1,0 +1,4 @@
+.tableHover tbody tr:hover td,
+.tableHover tbody tr:hover th {
+    background-color: var(--base-light-variant);
+}
