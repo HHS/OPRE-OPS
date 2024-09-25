@@ -35,7 +35,7 @@ const testBli = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("division-director");
     cy.visit(`/`);
 });
 
@@ -158,7 +158,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
                     .should(
                         "have.text",
-                        `Admin Demo approved the status change on BL ${bliId} from Draft to Planned as requested by Admin Demo.`
+                        `Dave Director approved the status change on BL ${bliId} from Draft to Planned as requested by Dave Director.`
                     )
                     // TODO: add more tests
                     .then(() => {
@@ -303,7 +303,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
                     .should(
                         "have.text",
-                        `Admin Demo approved the status change on BL ${bliId} from Planned to Executing as requested by Admin Demo.`
+                        `Dave Director approved the status change on BL ${bliId} from Planned to Executing as requested by Dave Director.`
                     )
                     // TODO: add more tests
                     .then(() => {
@@ -463,18 +463,18 @@ describe("Approve Change Requests at the Agreement Level", () => {
 
                 checkHistoryItem(
                     /Budget Change to Amount Approved/,
-                    `Admin Demo approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Admin Demo.`
+                    `Dave Director approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Dave Director.`
                 )
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to CAN Approved/,
-                            `Admin Demo approved the budget change on BL ${bliId} from G99IA14 to G99PHS9 as requested by Admin Demo.`
+                            `Dave Director approved the budget change on BL ${bliId} from G99IA14 to G99PHS9 as requested by Dave Director.`
                         );
                     })
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Obligate Date/,
-                            `Admin Demo approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Admin Demo.`
+                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Dave Director.`
                         );
                     })
                     .then(() => {
