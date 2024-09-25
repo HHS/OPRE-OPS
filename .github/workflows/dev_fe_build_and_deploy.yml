@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        environment: [dev, stage, prod]  # Define your environments here
+        environment: [dev, stg, prod]
 
     steps:
       - uses: actions/checkout@v4.1.7
