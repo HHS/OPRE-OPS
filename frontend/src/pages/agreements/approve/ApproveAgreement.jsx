@@ -17,7 +17,6 @@ import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helper
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
-import ErrorPage from "../../ErrorPage";
 import DebugCode from "../../../components/DebugCode";
 
 const ApproveAgreement = () => {
@@ -51,19 +50,6 @@ const ApproveAgreement = () => {
         approvedBudgetLinesPreview
     } = useApproveAgreement();
 
-    const isLoggedInUserDivisionDirector = false;
-    const doesAgreementHaveChangeRequests = false;
-    const doesAgreementBelongToDivisionDirector = false;
-
-    const hasPermissionToViewPage =
-        isLoggedInUserDivisionDirector &&
-        isUserATeamMember &&
-        doesAgreementHaveChangeRequests &&
-        doesAgreementBelongToDivisionDirector;
-
-    // if (!hasPermissionToViewPage) {
-    //     return <ErrorPage />;
-    // }
 
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
