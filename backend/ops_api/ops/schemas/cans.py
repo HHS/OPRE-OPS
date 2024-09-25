@@ -94,6 +94,13 @@ class FundingBudgetSchema(Schema):
     updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
 
 
+class CreateUpdateFundingBudgetSchema(Schema):
+    fiscal_year = fields.Integer(required=True)
+    can_id = fields.Integer(required=True)
+    budget = fields.Integer(load_default=None)
+    notes = fields.String(load_default=None)
+
+
 class FundingDetailsSchema(Schema):
     allotment = fields.String(allow_none=True)
     allowance = fields.String(allow_none=True)
