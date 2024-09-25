@@ -14,42 +14,45 @@ env:
   DOMAIN_NAME: "ops.opre.acf.gov"
 
 jobs:
-  build-frontend:
+  version-bump:
     permissions:
       contents: write
-      packages: write
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment: [dev, stg, prod]
-
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
     steps:
       - uses: actions/checkout@v4.1.7
 
-      - name:  'Automated Version Bump'
+      - name: 'Automated Version Bump'
         id: version_bump
-        uses:  'phips28/gh-action-bump-version@v11.0.4'
+        uses: 'phips28/gh-action-bump-version@v11.0.4'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag-prefix:  'ops-frontend-v'
-          PACKAGEJSON_DIR:  'frontend'
+          tag-prefix: 'ops-frontend-v'
+          PACKAGEJSON_DIR: 'frontend'
 
       - name: Extract Version
         id: extract_version
         run: |
           VERSION=$(echo "${{ steps.version_bump.outputs.newTag }}" | sed -e 's/.*v\(.*\)/v\1/')
           echo "::set-output name=version::$VERSION"
-          
+
+  build-and-push:
+    needs: version-bump
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: ['dev', 'stg', 'prod']
+    steps:
+      - uses: actions/checkout@v4.1.7
+
       - name: Build and publish the Docker image for ${{ github.repository }}
         uses: ./.github/actions/build-and-push
         with:
-          image_name: ${{ github.repository }}/ops-${{ env.WORKING_DIR }} # it will be lowercased internally
+          image_name: ${{ github.repository }}/ops-${{ env.WORKING_DIR }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
-          image_tags: "unstable,${{ github.sha }},${{ matrix.environment }},${{ matrix.environment }}-${{ steps.extract_version.outputs.version }}"
+          image_tags: "unstable,${{ github.sha }},${{ matrix.environment }},${{ matrix.environment }}-${{ needs.version-bump.outputs.version }}"
           build_args: "VITE_BACKEND_DOMAIN=https://${{ matrix.environment }}.${{ env.DOMAIN_NAME }}, MODE=${{ matrix.environment }}"
-    
-    outputs:
-      version: ${{ steps.extract_version.outputs.version }}
