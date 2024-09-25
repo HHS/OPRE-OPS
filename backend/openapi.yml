@@ -218,6 +218,31 @@ paths:
       responses:
         "200":
           description: OK
+    post:
+      tags:
+        - CANs
+      operationId: createCAN
+      summary: Create a new CAN object
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/CreateCANRequestSchema"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CreateCANRequestSchema"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAN"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
   /api/v1/cans/{can_id}:
     get:
       tags:
@@ -2033,6 +2058,20 @@ components:
           type: string
         id:
           type: integer
+    CreateCANRequestSchema:
+      description: The request object for creating a new Common Accounting Number (CAN) object.
+      properties:
+        nick_name:
+          type: string
+        number:
+          type: string
+        description:
+          type: string
+        portfolio_id:
+          type: integer
+      required:
+        - number
+        - portfolio_id
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -3584,6 +3623,14 @@ components:
               "updated_by": 1
           }
         ]
+    CreateCanRequestSchema:
+      value: |
+        {
+          nick_name: "Very Good CAN",
+          number: "G998235",
+          portfolio_id: 6,
+          description: "A very good CAN to use for examples."
+        }
     Notifications:
       value: |
         [

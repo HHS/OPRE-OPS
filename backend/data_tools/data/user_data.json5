@@ -62,6 +62,10 @@
         "POST_BLI_PACKAGE",
 
         "GET_CAN",
+        "POST_CAN",
+        "PATCH_CAN",
+        "PUT_CAN",
+        "DELETE_CAN",
 
         "GET_DIVISION",
 
@@ -254,6 +258,7 @@
         "PUT_CAN",
         "PATCH_CAN",
         "POST_CAN",
+        "DELETE_CAN",
 
         "GET_DIVISION",
 
