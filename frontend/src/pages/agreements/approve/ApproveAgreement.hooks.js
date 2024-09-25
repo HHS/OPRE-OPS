@@ -178,10 +178,13 @@ const useApproveAgreement = () => {
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
     const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
-    const managingDivisionIds =
-        agreement?.budget_line_items?.flatMap((bli) =>
-            bli.change_requests_in_review.map((cr) => cr.managing_division_id)
-        ) ?? [];
+
+    const managingDivisionIds = agreement?.budget_line_items
+        ? agreement.budget_line_items.flatMap((bli) =>
+              bli.change_requests_in_review?.map((cr) => cr.managing_division_id) ?? []
+          )
+        : [];
+
     const doesAgreementBelongToDivisionDirector = managingDivisionIds.includes(userDivisionId) ?? false;
     const agreementHasBLIsUnderReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
     const hasPermissionToViewPage =
