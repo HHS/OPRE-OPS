@@ -2,19 +2,11 @@ import logging
 import os
 
 import json5
-import sqlalchemy.engine
-from data_tools.environment.azure import AzureConfig
-from data_tools.environment.cloudgov import CloudGovConfig
-from data_tools.environment.common import DataToolsConfig
-from data_tools.environment.dev import DevConfig
-from data_tools.environment.local import LocalConfig
-from data_tools.environment.local_migration import LocalMigrationConfig
-from data_tools.environment.pytest import PytestConfig
-from data_tools.environment.test import TestConfig
-from sqlalchemy import create_engine, insert, inspect, text
+from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
-from sqlalchemy.schema import MetaData
+
+from common.utils import get_config, init_db
 
 logging.basicConfig(level=logging.INFO)
 
@@ -79,40 +71,6 @@ ALLOWED_TABLES = [
 ]
 
 data = os.getenv("DATA")
-
-
-def init_db(
-    config: DataToolsConfig, db: Optional[Engine] = None
-) -> tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
-    if not db:
-        engine = create_engine(
-            config.db_connection_string,
-            echo=config.verbosity,
-            future=True,
-        )
-    else:
-        engine = db
-    return engine, BaseModel.metadata
-
-
-def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
-    config: DataToolsConfig
-    match environment_name:
-        case "azure":
-            config = AzureConfig()
-        case "cloudgov":
-            config = CloudGovConfig()
-        case "local":
-            config = LocalConfig()
-        case "local-migration":
-            config = LocalMigrationConfig()
-        case "test":
-            config = TestConfig()
-        case "pytest":
-            config = PytestConfig()
-        case _:
-            config = DevConfig()
-    return config
 
 
 def get_data_to_import(file_name: Optional[str] = data) -> dict[str, Any]:
