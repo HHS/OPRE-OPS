@@ -6,7 +6,6 @@ it("has expected state on initial load", () => {
     cy.visit("/login");
     cy.fixture("initial-state").then((initState) => {
         const currentFY = getCurrentFiscalYear();
-        initState.canDetail.selectedFiscalYear.value = currentFY;
         initState.portfolio.selectedFiscalYear.value = currentFY;
         initState.researchProjectFunding.selectedFiscalYear.value = currentFY;
 

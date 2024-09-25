@@ -75,6 +75,64 @@ const ApproveAgreement = () => {
         return <div>No agreement data available.</div>;
     }
 
+    /*
+      TODO: Add FE validation to ensure that the user is authorized to approve the agreement
+      and if not, display an error page
+      to prevent unauthorized users from accessing this page
+    */
+    const BeforeApprovalContent = React.memo(
+        ({ groupedBudgetLinesByServicesComponent, servicesComponents, changeRequestTitle, urlChangeToStatus }) => (
+            <>
+                {groupedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                    >
+                        <BLIDiffTable
+                            budgetLines={group.budgetLines}
+                            changeType={changeRequestTitle}
+                            statusChangeTo={urlChangeToStatus}
+                        />
+                    </ServicesComponentAccordion>
+                ))}
+            </>
+        )
+    );
+    BeforeApprovalContent.displayName = "BeforeApprovalContent";
+
+    const AfterApprovalContent = React.memo(
+        ({
+            groupedUpdatedBudgetLinesByServicesComponent,
+            servicesComponents,
+            changeRequestTitle,
+            urlChangeToStatus
+        }) => (
+            <>
+                {groupedUpdatedBudgetLinesByServicesComponent.map((group) => (
+                    <ServicesComponentAccordion
+                        key={group.servicesComponentId}
+                        servicesComponentId={group.servicesComponentId}
+                        withMetadata={true}
+                        periodStart={findPeriodStart(servicesComponents, group.servicesComponentId)}
+                        periodEnd={findPeriodEnd(servicesComponents, group.servicesComponentId)}
+                        description={findDescription(servicesComponents, group.servicesComponentId)}
+                    >
+                        <BLIDiffTable
+                            budgetLines={group.budgetLines}
+                            changeType={changeRequestTitle}
+                            statusChangeTo={urlChangeToStatus}
+                        />
+                    </ServicesComponentAccordion>
+                ))}
+            </>
+        )
+    );
+    AfterApprovalContent.displayName = "AfterApprovalContent";
+
     return (
         <App breadCrumbName={`Approve BLI ${changeRequestTitle} ${statusForTitle}`}>
             {showModal && (

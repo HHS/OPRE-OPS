@@ -35,7 +35,7 @@
     },
     "devDependencies": {
         "@eslint/compat": "1.1.1",
-        "@eslint/js": "9.10.0",
+        "@eslint/js": "9.11.1",
         "@testing-library/jest-dom": "6.5.0",
         "@testing-library/react": "16.0.1",
         "@testing-library/user-event": "14.5.2",
@@ -67,7 +67,7 @@
         "msw": "2.3.5",
         "prettier": "3.3.3",
         "redux-mock-store": "1.5.4",
-        "vite": "5.4.7",
+        "vite": "5.4.8",
         "vite-jsconfig-paths": "2.0.1",
         "vite-plugin-babel-macros": "1.0.6",
         "vite-plugin-eslint": "1.8.1",

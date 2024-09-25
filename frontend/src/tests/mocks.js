@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { changeRequests, divisions, roles } from "./data";
+import { changeRequests, divisions, roles, cans } from "./data";
 
 export const handlers = [
     http.get(`https://localhost:8000/api/v1/agreements/`, () => {
@@ -49,6 +49,10 @@ export const handlers = [
         const { body } = req;
 
         return res(ctx.status(200), ctx.json({ id, ...body }), ctx.delay(150));
+    }),
+
+    http.get("https://localhost:8000/api/v1/cans/", () => {
+        return HttpResponse.json(cans);
     })
 ];
 
