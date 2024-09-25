@@ -5,87 +5,104 @@
       fiscal_year: 2023,
       fund_code: "AAXXXX20231DAD",
       funding_source: "OPRE",
+      method_of_transfer: "DIRECT",
     },
     {
       // 2
       fiscal_year: 2021,
       fund_code: "BBXXXX20215DAD",
+      method_of_transfer: "COST_SHARE",
     },
     {
       // 3
       fiscal_year: 2022,
-      fund_code: "CCXXXX20225DAD"
+      fund_code: "CCXXXX20225DAD",
+      method_of_transfer: "IDDA",
     },
     {
       // 4
       fiscal_year: 2021,
       fund_code: "DDXXXX20215DAD",
+      method_of_transfer: "IAA",
     },
     {
       // 5
       fiscal_year: 2021,
       fund_code: "EEXXXX20215DAD",
+      method_of_transfer: "IDDA",
     },
     {
       // 6
       fiscal_year: 2021,
-      fund_code: "FFXXXX20215DAD"
+      fund_code: "FFXXXX20215DAD",
+      method_of_transfer: "DIRECT",
     },
     {
       // 7
       fiscal_year: 2023,
-      fund_code: "GGXXXX20231DAD"
+      fund_code: "GGXXXX20231DAD",
+      method_of_transfer: "DIRECT",
     },
     {
       // 8
       fiscal_year: 2023,
-      fund_code: "HHXXXX20231DAD"
+      fund_code: "HHXXXX20231DAD",
+      method_of_transfer: "IDDA",
     },
     {
       // 9
       fiscal_year: 2023,
-      fund_code: "IIXXXX20231DAD"
+      fund_code: "IIXXXX20231DAD",
+      method_of_transfer: "IAA",
     },
     {
       // 10
       fiscal_year: 2023,
-      fund_code: "JJXXXX20231DAD"
+      fund_code: "JJXXXX20231DAD",
+      method_of_transfer: "DIRECT",
     },
     {
       // 11
       fiscal_year: 2023,
-      fund_code: "KKXXXX20235DAD"
+      fund_code: "KKXXXX20235DAD",
+      method_of_transfer: "IDDA",
     },
     {
       // 12
       fiscal_year: 2022,
-      fund_code: "LLXXXX20225DAD"
+      fund_code: "LLXXXX20225DAD",
+      method_of_transfer: "IAA",
     },
     {
       // 13
       fiscal_year: 2023,
-      fund_code: "MMXXXX20235DAD"
+      fund_code: "MMXXXX20235DAD",
+      method_of_transfer: "DIRECT",
     },
     {
       // 14
       fiscal_year: 2023,
-      fund_code: "NNXXXX20231DAD"
+      fund_code: "NNXXXX20231DAD",
+      method_of_transfer: "IDDA",
     },
     {
       // 15
       fiscal_year: 2023,
-      fund_code: "OOXXXX20235DAD"
+      fund_code: "OOXXXX20235DAD",
+      method_of_transfer: "DIRECT",
     },
     {
       // 16
       fiscal_year: 2023,
-      fund_code: "PPXXXX20235DAD"
+      fund_code: "PPXXXX20235DAD",
+      method_of_transfer: "DIRECT",
     },
     {
       // 17
       fiscal_year: 2023,
-      fund_code: "QQXXXX20235DAD"
-    }
+      fund_code: "QQXXXX20235DAD",
+      method_of_transfer: "IDDA",
+    },
   ],
   can: [
     {
@@ -94,7 +111,7 @@
       description: "Healthy Marriages Responsible Fatherhood - OPRE",
       nick_name: "HMRF-OPRE",
       portfolio_id: 6,
-      funding_details_id: 1
+      funding_details_id: 1,
     },
     {
       // 501
@@ -102,7 +119,7 @@
       description: "Incoming Interagency Agreements",
       nick_name: "IAA-Incoming",
       portfolio_id: 1,
-      funding_details_id: 2
+      funding_details_id: 2,
     },
     {
       // 502
@@ -110,7 +127,7 @@
       description: "Social Science Research and Development",
       nick_name: "SSRD",
       portfolio_id: 8,
-      funding_details_id: 3
+      funding_details_id: 3,
     },
     {
       // 503
@@ -118,7 +135,7 @@
       description: "Child Development Research Fellowship Grant Program",
       nick_name: "ASPE SRCD-IDDA",
       portfolio_id: 1,
-      funding_details_id: 4
+      funding_details_id: 4,
     },
     {
       // 504
@@ -126,7 +143,7 @@
       description: "Head Start Research",
       nick_name: "HS",
       portfolio_id: 2,
-      funding_details_id: 5
+      funding_details_id: 5,
     },
     {
       // 505
@@ -134,7 +151,7 @@
       description: "Kinship Navigation",
       nick_name: "Kin-Nav",
       portfolio_id: 6,
-      funding_details_id: 6
+      funding_details_id: 6,
     },
     {
       // 506
@@ -142,7 +159,7 @@
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
       portfolio_id: 6,
-      funding_details_id: 7
+      funding_details_id: 7,
     },
     {
       // 507
@@ -150,7 +167,7 @@
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
       portfolio_id: 6,
-      funding_details_id: 8
+      funding_details_id: 8,
     },
     {
       // 508
@@ -158,7 +175,7 @@
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
       portfolio_id: 6,
-      funding_details_id: 9
+      funding_details_id: 9,
     },
     {
       // 509
@@ -166,7 +183,7 @@
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
       portfolio_id: 6,
-      funding_details_id: 10
+      funding_details_id: 10,
     },
     {
       // 510
@@ -174,7 +191,7 @@
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
       portfolio_id: 6,
-      funding_details_id: 11
+      funding_details_id: 11,
     },
     {
       // 511
@@ -182,15 +199,21 @@
       description: "Healthy Marriages Responsible Fatherhood - OFA",
       nick_name: "HMRF-OFA",
       portfolio_id: 6,
-      funding_details_id: 12
+      funding_details_id: 12,
     },
     {
       // 512
       number: "G99XXX8",
       description: "Example CAN",
-      nick_name: "",
+      nick_name: "Next Generation Leadership Program",
       portfolio_id: 3,
       funding_details_id: 13,
+      projects: [
+        {
+          tablename: "project",
+          id: 1000,
+        },
+      ],
     },
     {
       // 513
@@ -198,7 +221,7 @@
       description: "MIHOPE Check-in 2023",
       nick_name: "MIHOPE 23",
       portfolio_id: 3,
-      funding_details_id: 14
+      funding_details_id: 14,
     },
     {
       // 514
@@ -206,7 +229,7 @@
       description: "MIHOPE Check-in 2024",
       nick_name: "MIHOPE 24",
       portfolio_id: 3,
-      funding_details_id: 15
+      funding_details_id: 15,
     },
     {
       // 515
@@ -214,7 +237,7 @@
       description: "MOHOPE Long-Term",
       nick_name: "MIHOPE LT",
       portfolio_id: 3,
-      funding_details_id: 16
+      funding_details_id: 16,
     },
     {
       // 516
@@ -222,8 +245,8 @@
       description: "Shared CAN",
       nick_name: "SHARED",
       portfolio_id: 3,
-      funding_details_id: 17
-    }
+      funding_details_id: 17,
+    },
   ],
   can_funding_budget: [
     { // 1
@@ -380,7 +403,7 @@
       fiscal_year: 2023,
       can_id: 516,
       budget: 500000.0,
-    }
+    },
   ],
   can_funding_received: [
     { // 1
@@ -512,6 +535,6 @@
       fiscal_year: 2023,
       can_id: 515,
       funding: 1000000.0,
-    }
+    },
   ],
 }

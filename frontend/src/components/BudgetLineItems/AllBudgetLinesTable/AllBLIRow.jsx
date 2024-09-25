@@ -24,8 +24,9 @@ import ChangeIcons from "../ChangeIcons";
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @component
+ * @typedef {import("../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The props for the BLIRow component.
- * @param {Object} props.budgetLine - The budget line object.
+ * @param {BudgetLine} props.budgetLine - The budget line object.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
@@ -113,7 +114,6 @@ const AllBLIRow = ({
                     prefix={"$"}
                     decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
                     fixedDecimalScale={true}
-                    renderText={(value) => value}
                 />
             </td>
             <td
@@ -192,7 +192,6 @@ const AllBLIRow = ({
                                     prefix={"$"}
                                     decimalScale={getDecimalScale(budgetLine?.amount)}
                                     fixedDecimalScale={true}
-                                    renderText={(value) => value}
                                 />
                             </dd>
                         </dl>
@@ -206,7 +205,6 @@ const AllBLIRow = ({
                                     prefix={"$"}
                                     decimalScale={getDecimalScale(feeTotal)}
                                     fixedDecimalScale={true}
-                                    renderText={(value) => value}
                                 />
                             </dd>
                         </dl>

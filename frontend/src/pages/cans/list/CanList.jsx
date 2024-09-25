@@ -1,48 +1,42 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, Outlet } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
-import { getCanList } from "./getCanList";
-import TextClip from "../../../components/UI/Text/TextClip";
+import CANTable from "../../../components/CANs/CANTable";
+import CANTags from "../../../components/CANs/CanTabs";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import ErrorPage from "../../ErrorPage";
 
 const CanList = () => {
-    const dispatch = useDispatch();
-    const canList = useSelector((state) => state.canList.cans);
-
-    const tableClasses = "usa-table usa-table--borderless margin-x-auto";
-
-    useEffect(() => {
-        dispatch(getCanList());
-    }, [dispatch]);
-
+    const [searchParams] = useSearchParams();
+    const myCANsUrl = searchParams.get("filter") === "my-cans";
+    const { data: canList, isError, isLoading } = useGetCansQuery({});
+    if (isLoading) {
+        return (
+            <App>
+                <h1>Loading...</h1>
+            </App>
+        );
+    }
+    if (isError) {
+        return <ErrorPage />;
+    }
+    // TODO: remove flag once CANS are ready
     return (
-        <App>
-            <h1 className="text-center">CANs</h1>
-            <nav>
-                <table className={tableClasses}>
-                    <caption>List of all CANs</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">number</th>
-                            <th scope="col">description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {canList.map((can) => (
-                            <tr key={can.id}>
-                                <th scope="row">
-                                    <Link to={"./" + can.id}>{can.number}</Link>
-                                </th>
-                                <td>
-                                    <TextClip text={can.description} />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </nav>
-            <Outlet />
-        </App>
+        import.meta.env.DEV && (
+            <App breadCrumbName="CANs">
+                <TablePageLayout
+                    title="CANs"
+                    subtitle={myCANsUrl ? "My CANs" : "All CANs"}
+                    details={
+                        myCANsUrl
+                            ? "This is a list of CANs from agreements you are listed as a team member on. Please select filter options to see CANs by Portfolio, Fiscal Year, or other criteria."
+                            : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
+                    }
+                    TabsSection={<CANTags />}
+                    TableSection={<CANTable cans={canList} />}
+                />
+            </App>
+        )
     );
 };
 
