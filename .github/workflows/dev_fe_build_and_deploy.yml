@@ -55,4 +55,4 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "unstable,${{ github.sha }},${{ matrix.environment }},${{ matrix.environment }}-${{ needs.version-bump.outputs.version }}"
-          build_args: "VITE_BACKEND_DOMAIN=https://${{ matrix.environment }}.${{ env.DOMAIN_NAME }}, MODE=${{ matrix.environment }}"
+          build_args: "VITE_BACKEND_DOMAIN=https://${{ matrix.environment }}.${{ env.DOMAIN_NAME }}, MODE=${{ matrix.environment == 'prod' && 'production' || matrix.environment }}"
