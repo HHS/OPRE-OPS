@@ -254,6 +254,7 @@ class BLITeamMembersSchema(Schema):
 class PortfolioBLISchema(Schema):
     division_id = fields.Int(required=True)
 
+
 class BudgetLineItemCANSchema(Schema):
     id = fields.Int(required=True)
     portfolio = fields.Nested(PortfolioBLISchema())
