@@ -1,7 +1,9 @@
 import { useGetAgreementByIdQuery, useGetCansQuery, useGetChangeRequestsListQuery } from "../api/opsAPI";
 import { renderField } from "../helpers/utils";
 /**
- * @typedef {import ('../components/ChangeRequests/ChangeRequests').ChangeRequest} ChangeRequest
+ * @typedef {import ('../components/ChangeRequests/ChangeRequestsTypes').ChangeRequest} ChangeRequest
+ * @typedef {import ('../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+ * @typedef {import ('../components/CANs/CANTypes').CAN} CAN
  */
 
 /**
@@ -11,7 +13,7 @@ import { renderField } from "../helpers/utils";
  */
 export const useChangeRequestsForAgreement = (agreementId) => {
     const { data: agreement, isSuccess: agreementSuccess } = useGetAgreementByIdQuery(agreementId);
-    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery();
+    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
     const { budget_line_items: budgetLines } = agreement || {};
     if (!agreementSuccess || !cansSuccess) {
         return [];
@@ -24,21 +26,21 @@ export const useChangeRequestsForAgreement = (agreementId) => {
  * @returns {number} The total number of change requests.
  */
 export const useChangeRequestTotal = () => {
-    const { data: changeRequests } = useGetChangeRequestsListQuery();
+    const { data: changeRequests } = useGetChangeRequestsListQuery({});
 
     return changeRequests?.length || 0;
 };
 
 /**
  * Custom hook that returns the change requests for budget lines.
- * @param {Object[]} budgetLines - The budget lines.
+ * @param {BudgetLine[]} budgetLines - The budget lines.
  * @param {string | null} targetStatus - The target status to filter change requests.
  * @param {boolean} [isBudgetChange] - Whether to filter for budget changes.
  *
  * @returns {string} The change requests messages.
  */
 export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBudgetChange = false) => {
-    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery();
+    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
 
     if (!budgetLines || !cansSuccess) {
         return "";
@@ -59,12 +61,11 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
 
 /**
  * Custom hook that returns the change requests for a budget line.
- * @param {Object} budgetLine - The budget line.
+ * @param {BudgetLine} budgetLine - The budget line.
  * @returns {string} The change requests messages.
-
  */
 export const useChangeRequestsForTooltip = (budgetLine) => {
-    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery();
+    const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
     const { change_requests_in_review: changeRequests, in_review: isBLIInReview } = budgetLine || {};
     if (!cansSuccess) {
         return "";
@@ -75,8 +76,8 @@ export const useChangeRequestsForTooltip = (budgetLine) => {
 /**
  * Get change requests for tooltip.
  * @param {ChangeRequest[]} changeRequests - The change requests.
- * @param {Object} budgetLine - The budget line.
- * @param {Object[]} cans - The cans.
+ * @param {BudgetLine} budgetLine - The budget line.
+ * @param {CAN[]} cans - The cans.
  * @param {boolean} cansSuccess - Whether the cans were successfully fetched.
  * @param {boolean} isBLIInReview - Whether the budget line is in review.
  * @returns {string} The change requests messages.
@@ -128,8 +129,8 @@ export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, ca
 
 /**
  * Get change requests from budget lines.
- * @param {Object[]} budgetLines - The budget lines.
- * @param {Object[]} cans - The cans.
+ * @param {BudgetLine[]} budgetLines - The budget lines.
+ * @param {CAN[]} cans - The cans.
  *
  * @returns {string[]} The change requests messages.
  */
@@ -146,9 +147,7 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
     if (changeRequestsFromBudgetLines?.length > 0) {
         changeRequestsFromBudgetLines.forEach((budgetLine) => {
             budgetLine.change_requests_in_review.forEach(
-                /**
-                 * @param {ChangeRequest} changeRequest
-                 */
+                /** @param {ChangeRequest} changeRequest*/
                 (changeRequest) => {
                     let bliId = `BL ${budgetLine.id}`;
                     if (changeRequest?.requested_change_data?.amount) {
@@ -180,16 +179,9 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
 }
 
 /**
- * Get change requests from budget lines.
- * @param {Object[]} budgetLines - The budget lines.
- * @param {Object[]} cans - The cans.
- * @param {string} targetStatus - The target status to filter change requests.
- * @returns {string[]} The change requests messages.
- */
-/**
  * Get filtered change requests from budget lines.
- * @param {Object[]} budgetLines - The budget lines.
- * @param {Object[]} cans - The cans.
+ * @param {BudgetLine[]} budgetLines - The budget lines.
+ * @param {CAN[]} cans - The cans.
  * @param {string | null} [targetStatus] - The target status to filter change requests.
  * @param {boolean} [isBudgetChange] - Whether to filter for budget changes.
  * @returns {string[]} The change requests messages.
