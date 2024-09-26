@@ -45,7 +45,7 @@
     {
       name: "Head Start",
       abbreviation: "HS",
-      division_id: 4,
+      division_id: 1,
       status: "IN_PROCESS",
       team_leaders: [
         {
