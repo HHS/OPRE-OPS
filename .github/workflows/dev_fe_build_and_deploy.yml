@@ -96,5 +96,5 @@ jobs:
         uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
         with:
           containerAppName: opre-ops-${{ matrix.environment }}-app-${{ env.WORKING_DIR }}
-          resourceGroup: opre-ops-${{ matrix.environment }}-rg
+          resourceGroup: opre-ops-${{ matrix.environment }}-app-rg
           imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ matrix.environment }}-${{ needs.version-bump.outputs.version }}
