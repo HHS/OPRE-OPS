@@ -9,7 +9,7 @@ import {
     useReviewChangeRequestMutation
 } from "../../../api/opsAPI";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
-import { agreement, budgetLine, changeRequests, divisions } from "../../../tests/data";
+import { agreement, budgetLine, changeRequests } from "../../../tests/data";
 import ChangeRequestList from "./ChangeRequestsList";
 import { Provider } from "react-redux";
 import configureStore from "redux-mock-store";
