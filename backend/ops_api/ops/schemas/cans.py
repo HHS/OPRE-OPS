@@ -1,7 +1,6 @@
 from marshmallow import Schema, fields
 
 from models import CANMethodOfTransfer, PortfolioStatus
-
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.projects import ProjectSchema
 from ops_api.ops.schemas.users import SafeUserSchema
@@ -98,7 +97,7 @@ class FundingBudgetSchema(Schema):
 class CreateUpdateFundingBudgetSchema(Schema):
     fiscal_year = fields.Integer(required=True)
     can_id = fields.Integer(required=True)
-    budget = fields.Integer(load_default=None)
+    budget = fields.Float(load_default=None)
     notes = fields.String(load_default=None)
 
 
