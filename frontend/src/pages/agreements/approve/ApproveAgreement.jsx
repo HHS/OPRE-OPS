@@ -17,7 +17,6 @@ import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helper
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { document } from "../../../tests/data";
 import useApproveAgreement from "./ApproveAgreement.hooks";
-import DebugCode from "../../../components/DebugCode";
 
 const ApproveAgreement = () => {
     const {
@@ -133,11 +132,6 @@ const ApproveAgreement = () => {
             <PageHeader
                 title={title}
                 subTitle={agreement.name}
-            />
-
-            <DebugCode
-                title="Agreement"
-                data={agreement}
             />
 
             <ReviewChangeRequestAccordion
