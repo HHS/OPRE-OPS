@@ -44,28 +44,28 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             id: 1,
             label: "Draft",
             value: budgetLinesTotalsByStatus.DRAFT?.total ?? 0,
-            color: "#A9AEB1",
+            color: "var(--data-viz-bl-by-status-1)",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.DRAFT?.total ?? 0, totalFunding)}%`
         },
         {
             id: 2,
             label: "Planned",
             value: budgetLinesTotalsByStatus.PLANNED?.total ?? 0,
-            color: "#336A90",
+            color: "var(--data-viz-bl-by-status-2)",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.PLANNED?.total ?? 0, totalFunding)}%`
         },
         {
             id: 3,
             label: "Executing",
             value: budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0,
-            color: "#E5A000",
+            color: "var(--data-viz-bl-by-status-3)",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.IN_EXECUTION?.total ?? 0, totalFunding)}%`
         },
         {
             id: 4,
             label: "Obligated",
             value: budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0,
-            color: "#3A835B",
+            color: "var(--data-viz-bl-by-status-4)",
             percent: `${calculatePercent(budgetLinesTotalsByStatus.OBLIGATED?.total ?? 0, totalFunding)}%`
         }
     ];
@@ -148,14 +148,14 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
                 </div>
                 <div
                     id="budget-line-status-chart"
-                    className="width-card height-card margin-top-neg-2"
+                    className="width-card height-card margin-top-neg-1"
                     aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                     role="img"
                 >
                     <ResponsiveDonutWithInnerPercent
                         data={data}
-                        width={175}
-                        height={175}
+                        width={150}
+                        height={150}
                         margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
                         setPercent={setPercent}
                         setHoverId={setHoverId}

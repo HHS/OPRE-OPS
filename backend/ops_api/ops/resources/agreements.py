@@ -1,33 +1,30 @@
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
 from marshmallow import EXCLUDE, Schema
-from sqlalchemy.future import select
+from sqlalchemy import select
 from sqlalchemy.orm import object_session
-from typing_extensions import Any
 
 from models import (
+    Agreement,
+    AgreementReason,
+    AgreementType,
+    BaseModel,
+    BudgetLineItemStatus,
+    ContractAgreement,
     ContractType,
     DirectAgreement,
     GrantAgreement,
     IaaAaAgreement,
     IaaAgreement,
     OpsEventType,
+    ServiceRequirementType,
     User,
     Vendor,
-)
-from models.base import BaseModel
-from models.cans import (
-    Agreement,
-    AgreementReason,
-    AgreementType,
-    BudgetLineItemStatus,
-    ContractAgreement,
-    ServiceRequirementType,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized

@@ -15,6 +15,9 @@ class PortfolioFundingSummaryItemAPI(BaseItemAPI):
 
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
     def get(self, id: int) -> Response:
+        """
+        /portfolio-funding-summary/<int:id>
+        """
         fiscal_year = request.args.get("fiscal_year")
 
         if not fiscal_year:

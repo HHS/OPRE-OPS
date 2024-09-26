@@ -6,7 +6,7 @@ import Tooltip from "../USWDS/Tooltip";
 /**
  * A component that displays a tag with a background color based on the status code.
  * @component
- * @param {object} props - The component props.
+ * @param {Object} props - The component props.
  * @param {string} props.status - The status code to display.
  * @param {boolean} [props.inReview] - Whether or not the tag is in review.
  * @param {string} [props.lockedMessage] - The message to display when the tag is locked.
@@ -38,16 +38,16 @@ const TableTag = ({ status, inReview = false, lockedMessage }) => {
 
     switch (statusText) {
         case "Draft":
-            classNames += "bg-brand-neutral-lighter text-ink";
+            classNames += "bg-brand-data-viz-bl-by-status-1 text-ink";
             break;
         case "Planned":
-            classNames += "bg-brand-data-viz-primary-11 text-white";
+            classNames += "bg-brand-data-viz-bl-by-status-2 text-white";
             break;
         case "Executing":
-            classNames += "bg-brand-data-viz-primary-8 text-ink";
+            classNames += "bg-brand-data-viz-bl-by-status-3 text-ink";
             break;
         case "Obligated":
-            classNames += "bg-brand-data-viz-primary-6 text-white";
+            classNames += "bg-brand-data-viz-bl-by-status-4 text-white";
             break;
         default:
     }

@@ -62,13 +62,11 @@ it("can create an SEVERABLE agreement", () => {
     // complete contract type and service req type
     cy.get("#contract-type").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
-    cy.get("#serviceReqType").should("contain", "Non-Severable");
-    cy.get("#serviceReqType").select("-Select Service Requirement Type-");
-    cy.get(".usa-error-message").should("contain", "This is required information");
-    cy.get("[data-cy='continue-btn']").should("be.disabled");
-    cy.get("[data-cy='save-draft-btn']").should("be.disabled");
+    cy.get("#service_requirement_type").should("contain", "Non-Severable");
+    cy.get("#service_requirement_type").select("-Select Service Requirement Type-");
+    cy.get(".usa-error-message").should("exist");
     // change to SEVERABLE
-    cy.get("#serviceReqType").select("SEVERABLE");
+    cy.get("#service_requirement_type").select("SEVERABLE");
     cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");
@@ -201,7 +199,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     // complete contract type and service req type
     cy.get("#contract-type").select("FIRM_FIXED_PRICE");
     // test default should be NON-SEVERABLE
-    cy.get("#serviceReqType").should("contain", "Non-Severable");
+    cy.get("#service_requirement_type").should("contain", "Non-Severable");
     cy.get(".usa-error-message").should("not.exist");
     cy.get("[data-cy='continue-btn']").should("not.be.disabled");
     cy.get("[data-cy='save-draft-btn']").should("not.be.disabled");

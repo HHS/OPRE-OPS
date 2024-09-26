@@ -28,7 +28,7 @@ it.skip("renders without crashing", () => {
                         can={{
                             id: 1,
                             number: "1XXXX",
-                            nickname: "Can #1"
+                            nick_name: "Can #1"
                         }}
                         fiscalYear={2023}
                     />

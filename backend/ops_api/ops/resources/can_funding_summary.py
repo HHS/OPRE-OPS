@@ -16,5 +16,5 @@ class CANFundingSummaryItemAPI(BaseItemAPI):
     def get(self, id: int) -> Response:
         fiscal_year = request.args.get("fiscal_year")
         can = self._get_item(id)
-        can_funding_summary = get_can_funding_summary(can, fiscal_year)
+        can_funding_summary = get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None)
         return make_response_with_headers(can_funding_summary)

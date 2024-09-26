@@ -3,8 +3,7 @@ import pytest
 from flask import url_for
 from sqlalchemy import func, select, update
 
-from models import AgreementType, ContractAgreement, ContractType, GrantAgreement
-from models.cans import Agreement, ServiceRequirementType
+from models import Agreement, AgreementType, ContractAgreement, ContractType, GrantAgreement, ServiceRequirementType
 
 
 @pytest.mark.usefixtures("app_ctx")

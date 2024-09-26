@@ -3,7 +3,7 @@ import datetime
 import pytest
 from flask import url_for
 
-from models.cans import Agreement, BudgetLineItem, BudgetLineItemStatus
+from models import Agreement, BudgetLineItem, BudgetLineItemStatus
 
 test_user_id = 503
 test_user_name = "Amelia Popham"
@@ -89,7 +89,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     resp = auth_client.delete(f"/api/v1/agreements/{agreement_id}")
     assert resp.status_code == 200
 
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?offset=0&limit=20")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?offset=0&limit=20")
     assert resp.status_code == 200
     data = resp.json
     assert len(data) == 6
@@ -113,7 +113,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     assert len(data[5]["changes"]) == 11
 
 
-def test_agreement_history_log_items(auth_client, app, test_can):
+def test_agreement_history_log_items(auth_client, app, test_can, utc_today):
     session = app.db_session
 
     # create agreement (using API)
@@ -142,7 +142,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
 
     # verify agreement history (+1 agreement created)
     prev_hist_count = 0
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     resp_json = resp.json
     hist_count = len(resp_json)
@@ -157,7 +157,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     assert log_item["event_type"] == "NEW"
     assert log_item["scope"] == "OBJECT"
     assert log_item["created_on"] is not None
-    assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+    assert log_item["created_on"].startswith(utc_today)
 
     # update Agreement
     data = {
@@ -168,7 +168,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     assert resp.status_code == 200
 
     # verify agreement history (+1 agreement updated)
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     resp_json = resp.json
     hist_count = len(resp_json)
@@ -188,7 +188,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
         "old": "TEST: Agreement history with change requests",
     }
     assert log_item["created_on"] is not None
-    assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+    assert log_item["created_on"].startswith(utc_today)
 
     #  create BLI
     bli = BudgetLineItem(
@@ -205,7 +205,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     assert bli.id is not None
 
     # verify agreement history added (+1 BLI created)
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     resp_json = resp.json
     hist_count = len(resp_json)
@@ -219,7 +219,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     assert log_item["event_type"] == "NEW"
     assert log_item["scope"] == "OBJECT"
     assert log_item["created_on"] is not None
-    assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+    assert log_item["created_on"].startswith(utc_today)
 
     # update BLI
     bli.can_id = 501
@@ -229,7 +229,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     session.commit()
 
     # verify agreement history added (+1 BLI update with 3 log_item)
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     resp_json = resp.json
     hist_count = len(resp_json)
@@ -244,7 +244,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
         assert log_item["event_type"] == "UPDATED"
         assert log_item["scope"] == "PROPERTY"
         assert log_item["created_on"] is not None
-        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+        assert log_item["created_on"].startswith(utc_today)
         assert log_item["property_key"] in ["amount", "can_id", "date_needed"]
         if log_item["property_key"] == "amount":
             assert log_item["change"] == {"new": 222.22, "old": 111.11}
@@ -259,7 +259,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     session.commit()
 
     # verify agreement history added (+1 BLI created)
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     resp_json = resp.json
     hist_count = len(resp_json)
@@ -273,7 +273,7 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     assert log_item["property_key"] == "status"
     assert log_item["event_type"] == "UPDATED"
     assert log_item["created_on"] is not None
-    assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+    assert log_item["created_on"].startswith(utc_today)
     assert log_item["change"] == {"new": "PLANNED", "old": "DRAFT"}
 
     session.delete(bli)
@@ -282,9 +282,8 @@ def test_agreement_history_log_items(auth_client, app, test_can):
     session.commit()
 
 
-def test_agreement_history_log_items_with_change_requests(auth_client, app, test_can, test_project):
-    session = app.db_session
-
+@pytest.mark.usefixtures("app_ctx")
+def test_agreement_history_log_items_with_change_requests(auth_client, loaded_db, test_can, test_project, utc_today):
     # create agreement (using API)
     data = {
         "agreement_type": "CONTRACT",
@@ -320,17 +319,14 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
         created_by=test_user_id,
         date_needed=datetime.date(2025, 1, 1),
     )
-    session.add(bli)
-    session.commit()
-    session.flush()
-    assert bli.id is not None
-    bli_id = bli.id
+    loaded_db.add(bli)
+    loaded_db.commit()
 
     prev_hist_count = 2
 
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 333.33, "can_id": 502, "date_needed": "2032-03-03"}
-    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -338,7 +334,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
     assert len(change_requests_in_review) == 3
 
     # verify agreement history added (+3 change requests created)
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     hist_json = resp.json
     hist_count = len(hist_json)
@@ -357,7 +353,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
         assert log_item["event_type"] == "IN_REVIEW"
         assert log_item["scope"] == "PROPERTY"
         assert log_item["created_on"] is not None
-        assert log_item["created_on"].startswith(datetime.datetime.today().strftime("%Y-%m-%dT"))
+        assert log_item["created_on"].startswith(utc_today)
         assert log_item["property_key"] in ["amount", "can_id", "date_needed"]
         if log_item["property_key"] == "amount":
             assert log_item["change"] == {"new": 333.33, "old": 111.11}
@@ -374,7 +370,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews and 3 approved updates
-    resp = auth_client.get(f"/api/v1/agreements/{agreement_id}/history/?limit=100")
+    resp = auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     hist_json = resp.json
     hist_count = len(hist_json)
@@ -400,7 +396,7 @@ def test_agreement_history_log_items_with_change_requests(auth_client, app, test
             assert log_item["changes_requested_by_user_full_name"] is None
 
     # cleanup
-    session.delete(bli)
-    agreement = session.get(Agreement, agreement_id)
-    session.delete(agreement)
-    session.commit()
+    loaded_db.delete(bli)
+    agreement = loaded_db.get(Agreement, agreement_id)
+    loaded_db.delete(agreement)
+    loaded_db.commit()

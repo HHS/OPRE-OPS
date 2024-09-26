@@ -29,7 +29,10 @@ export const calculatePercent = (numerator, denominator) => {
 
     return Math.round((numerator / denominator) * 100);
 };
-
+/**
+ * This function formats a date into a string in the format MM/DD/YYYY.
+ * @param {Date} date - The date to format. This parameter is required.
+ */
 export const formatDate = (date) => {
     const options = { timeZone: "UTC" };
 
@@ -38,8 +41,8 @@ export const formatDate = (date) => {
 
 /**
  * Formats a date string into a date string in the format MM/DD/YYYY.
- * @param {string} dateNeeded - The date string to format. This parameter is required.
- * @returns {string} The formatted date string.
+ * @param {Date | string} dateNeeded - The date string to format. This parameter is required.
+ * @returns {string | undefined} The formatted date string or undefined if input is invalid.
  */
 export const formatDateNeeded = (dateNeeded) => {
     let formatted_date_needed;
@@ -176,12 +179,18 @@ export const codesToDisplayText = {
         can_id: "CAN",
         date_needed: "Obligate By Date",
         status: "Status"
+    },
+    methodOfTransfer: {
+        COST_SHARE: "Cost Share",
+        DIRECT: "Direct",
+        IAA: "IAA",
+        IDDA: "IDDA"
     }
 };
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
@@ -308,13 +317,13 @@ export const statusToClassName = (status, styleType = "text") => {
     if (styleType === "text") {
         switch (status) {
             case BLI_STATUS.DRAFT:
-                return "text-brand-neutral-lighter";
+                return "text-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
-                return "text-brand-data-viz-primary-11";
+                return "text-brand-data-viz-bl-by-status-2";
             case BLI_STATUS.EXECUTING:
-                return "text-brand-data-viz-primary-8";
+                return "text-brand-data-viz-bl-by-status-3";
             case BLI_STATUS.OBLIGATED:
-                return "text-brand-data-viz-primary-6";
+                return "text-brand-data-viz-bl-by-status-4";
             default:
                 return "";
         }
@@ -322,13 +331,13 @@ export const statusToClassName = (status, styleType = "text") => {
         // tag style with status color as the background and contrasting text
         switch (status) {
             case BLI_STATUS.DRAFT:
-                return "bg-brand-neutral-lighter";
+                return "bg-brand-brand-data-viz-bl-by-status-1";
             case BLI_STATUS.PLANNED:
-                return "bg-brand-data-viz-primary-11 text-white";
+                return "brand-data-viz-bl-by-status-2 text-white";
             case BLI_STATUS.EXECUTING:
-                return "bg-brand-data-viz-primary-8";
+                return "brand-data-viz-bl-by-status-3";
             case BLI_STATUS.OBLIGATED:
-                return "bg-brand-data-viz-primary-6 text-white";
+                return "brand-data-viz-bl-by-status-4 text-white";
             default:
                 return "";
         }
@@ -369,7 +378,7 @@ export function toSlugCase(str) {
  * This function takes a slug and returns a title case version of the string.
  * @param {string} slug - The slug to convert to title case.
  * @returns {string} The title case version of the slug.
- 
+
  */
 export function toTitleCaseFromSlug(slug) {
     if (!slug) return "";

@@ -33,10 +33,10 @@ describe("agreement change accordion", () => {
                 cy.wrap(checkbox).should("be.checked");
             });
         cy.get('[data-cy="can-funding-summary-card-504"]').within(() => {
-            cy.contains("$ 5,000,000");
+            cy.contains("$5,000,000");
             cy.contains("$ 35,000,000");
-            cy.contains("$40,000,000.00");
-            cy.contains("G994426 (1 Year)");
+            cy.contains("$40,000,000");
+            cy.contains("G994426-5Y");
         });
         cy.get('[data-cy="currency-summary-card"]').contains("$ 2,000,000.00");
         cy.get("h2").contains("Review Changes").as("info-accordion").should("exist");
@@ -73,16 +73,16 @@ describe("agreement change accordion", () => {
                 cy.wrap(checkbox).should("be.checked");
             });
         cy.get('[data-cy="can-funding-summary-card-502"]').within(() => {
-            cy.contains("$ 10,403,500");
+            cy.contains("$10,403,500");
             cy.contains("$ 13,596,500");
-            cy.contains("$24,000,000.00");
-            cy.contains("G99PHS9 (1 Year)");
+            cy.contains("$24,000,000");
+            cy.contains("G99PHS9-5Y");
         });
         cy.get('[data-cy="can-funding-summary-card-512"]').within(() => {
-            cy.contains("$ 602,000");
+            cy.contains("$602,000");
             cy.contains("$ 1,678,000");
-            cy.contains("$2,280,000.00");
-            cy.contains("G99XXX8 (1 Year)");
+            cy.contains("$2,280,000");
+            cy.contains("G99XXX8-5Y");
         });
         cy.get('[data-cy="currency-summary-card"]').within(() => {
             cy.contains("$ 1,005,000.00");
@@ -227,7 +227,7 @@ describe("agreement review CANS accordion", () => {
                 cy.wrap(checkbox).should("be.checked");
             });
         cy.get('[data-cy="can-funding-summary-card-504"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-504"]').contains("$40,000,000.00");
+        cy.get('[data-cy="can-funding-summary-card-504"]').contains("$40,000,000");
     });
 
     it("should handle after approval toggle", () => {
@@ -287,5 +287,18 @@ describe("Additional Information accordion", () => {
         // info-accordion should exist
         cy.get("h2").contains("Additional Information").as("info-accordion").should("exist");
         cy.get("h2").contains("Review Documents").as("info-accordion").should("exist");
+    });
+});
+
+describe("Should not allow non-team members from submitting status changes", () => {
+    it("should disable submit button", () => {
+        testLogin("basic");
+        cy.visit("/agreements/9/budget-lines").wait(1000);
+        cy.get("span").contains("Plan or Execute Budget Lines").should("have.attr", "aria-disabled", "true");
+    });
+    it("should show error page", () => {
+        testLogin("basic");
+        cy.visit("/agreements/review/9").wait(1000);
+        cy.get("h1").contains("Something went wrong").should("exist");
     });
 });

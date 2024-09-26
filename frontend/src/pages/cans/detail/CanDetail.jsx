@@ -25,7 +25,7 @@ const CanDetail = () => {
     return (
         <App breadCrumbName={`${can.description}`}>
             <h1>
-                {can?.number} ({can?.nickname})
+                {can?.number} ({can?.nick_name})
             </h1>
             <div className="grid-row">
                 <div className="grid-col">
@@ -36,7 +36,7 @@ const CanDetail = () => {
                     <h2>Arrangement type</h2>
                     {can?.arrangement_type?.name}
                     <h2>Funding source</h2>
-                    {can.funding_source?.[0]?.nickname || constants.notFilledInText}
+                    {can.funding_source?.[0]?.nick_name || constants.notFilledInText}
                     <h2>OPRE point of contact</h2>
                     {can.authorizer?.name}
                     <h2>OPRE division</h2>

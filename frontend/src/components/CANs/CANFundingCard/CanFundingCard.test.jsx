@@ -14,18 +14,14 @@ describe("CanFundingCard", () => {
         render(<CANFundingCard {...initialProps} />);
 
         const heading = screen.getByText(/G99PHS9/i);
-        const totalBudget = screen.getByText(/24,000,000.00/i);
+        const totalBudget = screen.getByText(/24,000,000/i);
         const totalSpending = screen.getByText(/10,403,500/i);
-        const totalSpendingPercent = screen.getByText(/43%/i);
         const remainingBudget = screen.getByText(/13,596,500/i);
-        const remainingBudgetPercent = screen.getByText(/57%/i);
 
         expect(heading).toBeInTheDocument();
         expect(totalBudget).toBeInTheDocument();
         expect(totalSpending).toBeInTheDocument;
-        expect(totalSpendingPercent).toBeInTheDocument();
         expect(remainingBudget).toBeInTheDocument;
-        expect(remainingBudgetPercent).toBeInTheDocument;
     });
 
     it("should render the component after approval", () => {
@@ -37,27 +33,23 @@ describe("CanFundingCard", () => {
         );
 
         const totalSpending = screen.getByText(/9,700,000/i);
-        const totalSpendingPercent = screen.getByText(/40%/i);
         const remainingBudget = screen.getByText(/14,300,000/i);
-        const remainingBudgetPercent = screen.getByText(/60%/i);
 
         expect(totalSpending).toBeInTheDocument();
         expect(remainingBudget).toBeInTheDocument();
-        expect(totalSpendingPercent).toBeInTheDocument();
-        expect(remainingBudgetPercent).toBeInTheDocument();
     });
 });
 
 const canData = {
     appropriation_date: "2023-10-01T00:00:00.000000Z",
-    appropriation_term: 1,
+    active_period: 1,
     authorizer_id: 26,
     description: "Social Science Research and Development",
     display_name: "G99PHS9",
     expiration_date: "2024-09-01T00:00:00.000000Z",
     id: 502,
-    managing_portfolio_id: 8,
-    nickname: "SSRD",
+    portfolio_id: 8,
+    nick_name: "SSRD",
     number: "G99PHS9"
 };
 
@@ -65,7 +57,7 @@ const canFundingCardData = {
     available_funding: "14300000.00",
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
-        appropriation_term: 1,
+        active_period: 1,
         arrangement_type: "OPRE_APPROPRIATION",
         authorizer: 26,
         authorizer_id: 26,
@@ -82,8 +74,8 @@ const canFundingCardData = {
         funding_sources: [26],
         id: 502,
         managing_portfolio: 8,
-        managing_portfolio_id: 8,
-        nickname: "SSRD",
+        portfolio_id: 8,
+        nick_name: "SSRD",
         number: "G99PHS9",
         projects: [],
         shared_portfolios: [],

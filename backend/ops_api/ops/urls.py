@@ -11,8 +11,6 @@ from ops_api.ops.views import (
     AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
-    CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC,
-    CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC,
     CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
     CAN_ITEM_API_VIEW_FUNC,
     CAN_LIST_API_VIEW_FUNC,
@@ -103,15 +101,6 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule(
         "/cans/portfolio/<int:id>",
         view_func=CANS_BY_PORTFOLIO_API_VIEW_FUNC,
-    )
-
-    api_bp.add_url_rule(
-        "/can-fiscal-year/<int:id>",
-        view_func=CAN_FISCAL_YEAR_ITEM_API_VIEW_FUNC,
-    )
-    api_bp.add_url_rule(
-        "/can-fiscal-year/",
-        view_func=CAN_FISCAL_YEAR_LIST_API_VIEW_FUNC,
     )
 
     api_bp.add_url_rule(
@@ -210,7 +199,7 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=AGREEMENT_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/agreements/<int:id>/history/",
+        "/agreement-history/<int:id>",
         view_func=AGREEMENT_HISTORY_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(

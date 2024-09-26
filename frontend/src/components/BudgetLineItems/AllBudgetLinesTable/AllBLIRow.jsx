@@ -13,7 +13,8 @@ import { useGetServicesComponentDisplayName } from "../../../hooks/useServicesCo
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
-    removeBorderBottomIfExpanded
+    removeBorderBottomIfExpanded,
+    expandedRowBGColor
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
@@ -23,8 +24,9 @@ import ChangeIcons from "../ChangeIcons";
 /**
  * BLIRow component that represents a single row in the Budget Lines table.
  * @component
+ * @typedef {import("../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The props for the BLIRow component.
- * @param {Object} props.budgetLine - The budget line object.
+ * @param {BudgetLine} props.budgetLine - The budget line object.
  * @param {boolean} [props.canUserEditBudgetLines] - Whether the user can edit budget lines.
  * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
  * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
@@ -112,7 +114,6 @@ const AllBLIRow = ({
                     prefix={"$"}
                     decimalScale={getDecimalScale(budgetLineTotalPlusFees)}
                     fixedDecimalScale={true}
-                    renderText={(value) => value}
                 />
             </td>
             <td
@@ -136,7 +137,7 @@ const AllBLIRow = ({
         <td
             colSpan={9}
             className="border-top-none"
-            style={{ backgroundColor: "var(--neutral-lightest)" }}
+            style={expandedRowBGColor}
         >
             <div className="display-flex padding-right-9">
                 <dl className="font-12px">
@@ -191,7 +192,6 @@ const AllBLIRow = ({
                                     prefix={"$"}
                                     decimalScale={getDecimalScale(budgetLine?.amount)}
                                     fixedDecimalScale={true}
-                                    renderText={(value) => value}
                                 />
                             </dd>
                         </dl>
@@ -205,7 +205,6 @@ const AllBLIRow = ({
                                     prefix={"$"}
                                     decimalScale={getDecimalScale(feeTotal)}
                                     fixedDecimalScale={true}
-                                    renderText={(value) => value}
                                 />
                             </dd>
                         </dl>
@@ -222,6 +221,7 @@ const AllBLIRow = ({
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
+            data-testid={`budget-line-row-${budgetLine?.id}`}
         />
     );
 };
