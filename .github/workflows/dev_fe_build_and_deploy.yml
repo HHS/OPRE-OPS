@@ -16,7 +16,7 @@ env:
   ENV_MODE_MAP: |
     prod=production
     stg=production
-    dev=development
+    dev=dev
 
 jobs:
   version-bump:
