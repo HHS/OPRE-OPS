@@ -26,7 +26,7 @@ const testAgreement = {
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 501,
+    can_id: 504,
     agreement_id: 11,
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
@@ -35,7 +35,7 @@ const testBli = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("division-director");
     cy.visit(`/`);
 });
 
