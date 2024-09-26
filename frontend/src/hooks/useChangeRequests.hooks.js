@@ -1,3 +1,4 @@
+import { useSelector } from "react-redux";
 import { useGetAgreementByIdQuery, useGetCansQuery, useGetChangeRequestsListQuery } from "../api/opsAPI";
 import { renderField } from "../helpers/utils";
 /**
@@ -26,9 +27,15 @@ export const useChangeRequestsForAgreement = (agreementId) => {
  * @returns {number} The total number of change requests.
  */
 export const useChangeRequestTotal = () => {
+    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? -1;
     const { data: changeRequests } = useGetChangeRequestsListQuery({});
 
-    return changeRequests?.length || 0;
+    const changeRequestsForUser = changeRequests?.filter(
+        /** @param {ChangeRequest} changeRequest */
+        (changeRequest) => changeRequest.managing_division_id === userDivisionId
+    );
+
+    return changeRequestsForUser?.length || 0;
 };
 
 /**
