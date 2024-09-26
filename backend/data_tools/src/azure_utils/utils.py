@@ -12,6 +12,8 @@ from azure.core.credentials import AzureNamedKeyCredential
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from azure.storage.blob import BlobServiceClient
+from data_tools.environment.pytest import PytestConfig
+from data_tools.environment.types import DataToolsConfig
 
 logger = logging.getLogger(__name__)
 LOGGER_FORMAT = "%(asctime)s %(name)s :: %(levelname)-8s :: %(message)s"
@@ -51,26 +53,31 @@ class AzureVaultPath:
     secret_name: str
 
 
-def get_csv(csv_path: str, dialect: str = "excel-tab", vault_path: Optional[AzureVaultPath] = None) -> csv.DictReader:
+def get_csv(csv_path: str, config: DataToolsConfig = PytestConfig(), dialect: str = "excel-tab") -> csv.DictReader:
     """
     Get a CSV file from a local path or a remote URL. If the path is a remote URL, the file will be downloaded from Azure Blob Storage.
 
     :param csv_path: The path to the CSV file. This can be a local path or a remote URL.
+    :param config: The configuration object.
     :param dialect: The CSV dialect to use when reading the file.
-    :param secret_vault_path: The URL of the Azure Key Vault where the secret is stored.
-    :param secret_name: The name of the secret that contains the Azure Storage Account access key.
     """
     parts = urlparse(csv_path)
     if parts.scheme == "https":
-        if vault_path:
+        # file is remote
+        if config.file_storage_auth_method == "rbac":
+            raise ValueError("RBAC is not supported for Azure Blob Storage.")
+
+        elif config.file_storage_auth_method == "access_key":
             storage_account = AzureStorageAccount(
                 name=parts.hostname.split(".")[0],
                 container_name=parts.path.split("/")[1],
                 account_url=f"https://{parts.hostname}",
-                access_key=get_secret(vault_path.url, vault_path.secret_name),
+                access_key=get_secret(config.vault_url, config.vault_file_storage_key),
             )
+            return blob_to_records(storage_account, "/".join(parts.path.split("/")[2:]), dialect=dialect)
+
         else:
-            raise ValueError("vault_path is required for remote CSV files.")
-        return blob_to_records(storage_account, "/".join(parts.path.split("/")[2:]), dialect=dialect)
+            raise ValueError("Invalid value for FILE_STORAGE_AUTH_METHOD. Must be either 'access_key' or 'rbac'.")
     else:
+        # file is local
         return csv.DictReader(open(csv_path, "r") , dialect=dialect)

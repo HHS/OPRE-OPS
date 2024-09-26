@@ -1,31 +1,50 @@
-import os
+import csv
 import sys
-from typing import Optional
+from csv import DictReader
 
 import click
+from data_tools.src.azure_utils.utils import get_csv
+from data_tools.src.common.utils import get_config, init_db
 from loguru import logger
-
-from common.utils import get_config, init_db
+from sqlalchemy import text
+from sqlalchemy.dialects.mssql.pymssql import dialect
 
 
 @click.command()
 @click.option("--env", help="The environment to use.")
-@click.option("--csv-file-path", help="The path to the CSV file.")
+@click.option("--input_csv", help="The path to the CSV input file.")
+@click.option("--output_csv", help="The path to the CSV output file.")
 def main(
-    connection_string: Optional[str],
-    connection_secret_name: Optional[str],
+    env: str,
+    input_csv: str,
+    output_csv: str,
 ):
     """
     Main entrypoint for the script.
     """
-    if not connection_string and not connection_secret_name:
-        logger.error("Either --connection-string or --secret_vault_path and --connection-secret-name must be provided.")
-        sys.exit(1)
-
     logger.info("Starting the ETL process.")
 
-    script_env = os.getenv("ENV")
-    script_config = get_config(script_env)
+    script_config = get_config(env)
     db_engine, db_metadata_obj = init_db(script_config)
 
+    if db_engine is None:
+        logger.error("Failed to initialize the database engine.")
+        sys.exit(1)
+
+    with db_engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+        logger.info("Successfully connected to the database.")
+
+    csv_f = get_csv(input_csv, script_config)
+
+    logger.info(f"Loaded CSV file from {input_csv}.")
+
+    # write csv_f DictReader to a file
+    with open(output_csv, "w") as f:
+        writer = csv.writer(f, dialect="excel-tab")
+        writer.writerows(csv_f)
+
     logger.info("Finished the ETL process.")
+
+if __name__ == "__main__":
+    main()

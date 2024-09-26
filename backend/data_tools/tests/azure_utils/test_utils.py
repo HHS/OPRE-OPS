@@ -1,3 +1,8 @@
+from unittest.mock import MagicMock
+
+from data_tools.environment.azure import AzureConfig
+from data_tools.environment.pytest import PytestConfig
+from data_tools.environment.types import DataToolsConfig
 from data_tools.src.azure_utils.utils import AzureVaultPath, get_csv
 
 
@@ -6,13 +11,15 @@ def test_get_csv(mocker):
     csv_string = "id,name\n1,DIV1\n2,DIV2\n3,DIV3\n"
     mocker.patch("data_tools.src.azure_utils.utils.get_blob_string", return_value=csv_string)
     mocker.patch("data_tools.src.azure_utils.utils.get_secret", return_value="")
+    config = MagicMock(spec=AzureConfig)
+    config.vault_url = "https://xxxxx.xxxx.xxxx.net/"
+    config.vault_file_storage_key = "xxxxx"
+    config.file_storage_auth_method = "access_key"
+
     result = get_csv(
         "https://xxxxxxx.xxxx.xxxx.xxxxx.net/xxxxxxxxxxx/cans.csv",
+        config,
         dialect="excel",
-        vault_path=AzureVaultPath(
-            url="https://xxxxx.xxxx.xxxx.net/",
-            secret_name="xxxxx",
-        ),
     )
     assert result is not None
     data = list(result)
