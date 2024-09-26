@@ -27,6 +27,7 @@ We're using aXe because it...
 
 - Finds more a11y issues than [pa11y](https://pa11y.org) and other tools.
 - Has the most active development.
+- Goes above and beyond our client-required standards of [section 508](https://www.section508.gov) and [WCAG](https://www.w3.org/TR/WCAG20/) compliance.
 - Integrates nicely with our existing end-to-end testing.  There doesn't seem to be a way to use pa11y with Cypress.
   Instead, it seems that one needs to use pa11y's custom navigation language.
 
