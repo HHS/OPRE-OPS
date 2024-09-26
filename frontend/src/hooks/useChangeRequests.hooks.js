@@ -30,10 +30,12 @@ export const useChangeRequestTotal = () => {
     const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? -1;
     const { data: changeRequests } = useGetChangeRequestsListQuery({});
 
-    const changeRequestsForUser = changeRequests?.filter(
-        /** @param {ChangeRequest} changeRequest */
-        (changeRequest) => changeRequest.managing_division_id === userDivisionId
-    );
+    const changeRequestsForUser = Array.isArray(changeRequests)
+        ? changeRequests?.filter(
+              /** @param {ChangeRequest} changeRequest */
+              (changeRequest) => changeRequest.managing_division_id === userDivisionId
+          )
+        : [];
 
     return changeRequestsForUser?.length || 0;
 };
