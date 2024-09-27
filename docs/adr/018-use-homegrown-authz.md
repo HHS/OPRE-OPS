@@ -1,14 +1,15 @@
 ## Status
 
-Tentative
+Accepted
 
 ## Context
 
-We considered a few options for how to handle policy/authorization decisions within OPS:
+We considered and evaluated a few options for how to handle policy/authorization decisions within OPS:
 
 * [Open Policy Agent (OPA)](https://www.openpolicyagent.org/)
 * [OSO](https://docs.osohq.com/index.html)
 * [Flask-Authorize](https://flask-authorize.readthedocs.io/en/latest/)
+* Creating our own simplified or "homegrown" authoziation provider
 
 There are many options to consider when it comes to handling authorization/permissions/policies within an application, and those decisions are heavily weighted on how complex those permissions need to be, how many different systems need to consider the permissions, the ability to customize the permissions, and whether changes can be done on the fly or not.
 
@@ -22,9 +23,9 @@ Using an external service-based system allows for a much easier to configure and
 
 ## Decision
 
-We've created an experiment to test out OPA in a dedicated branch [opa-experiment](https://github.com/HHS/OPRE-OPS/tree/opa-experiment), where we tested out a small use-case for using OPA. It works well, but does take quite a bit to get it up and running securely, and additional considerations would need to be made before it could be used in a production environment. But it represents the minimum needed in order to utilize OPA. This is a similar representation of what OSO would take, as they're similar competing services.
+We experimented with testing out OPA for some time but ultimately decided that for our very limited needs, a simplified custom/homegrown authorization provider was actually best for our overall needs. This provider is not tied to or specific to our Flask framework.
 
-After this experiment, we've decided to hold off on a final decision until we have a better understanding of the specific permission needs. Until then, we'll implement the minimum AuthN needs, since everything that's available in the application so far is read-only, and generally available to all authenticated users. Authentication has already been mapped out in the [Login.gov (AuthN)](./016-use-login.gov-for-authentication.md) ADR.
+Authentication has already been mapped out in the [Login.gov (AuthN)](./016-use-login.gov-for-authentication.md) ADR.
 
 ## Consequences
 
