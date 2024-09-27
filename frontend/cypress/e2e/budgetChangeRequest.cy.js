@@ -109,10 +109,6 @@ describe("Budget Change Requests", () => {
                     expect($alert).to.contain(`BL ${bliId} Obligate By Date: 1/1/2025 to 1/1/2048`);
                     expect($alert).to.contain(`BL ${bliId} CAN: G994426 to G99MVT3`);
                 });
-                // cy.get("[data-cy='close-alert']").click();
-                cy.visit("/agreements?filter=change-requests").wait(1000);
-                // see if there are any review cards
-                // cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
@@ -226,9 +222,6 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').contains("$2,222,222.00");
                 cy.get("[data-cy='close-alert']").first().click();
-                cy.visit("/agreements?filter=change-requests").wait(1000);
-                // see if there are any review cards
-                // cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
@@ -327,10 +320,6 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="alert"]').should(($alert) => {
                     expect($alert).to.contain(`BL ${bliId} Amount: $1,000,000.00 to $2,222,222.00`);
                 });
-                // cy.get("[data-cy='close-alert']").click();
-                cy.visit("/agreements?filter=change-requests").wait(1000);
-                // see if there are any review cards
-                // cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);

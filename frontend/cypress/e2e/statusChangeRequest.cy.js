@@ -109,10 +109,6 @@ it("BLI Status Change", () => {
                 .and("contain", `BL ${bliId} Status: Draft to Planned`)
                 .and("contain", "pls approve");
             cy.get("[data-cy='close-alert']").click();
-            cy.visit("/agreements?filter=change-requests").wait(1000);
-            // see if there are any review cards
-            // cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
-            // verify agreement history
             cy.visit(`/agreements/${agreementId}`);
             cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");
