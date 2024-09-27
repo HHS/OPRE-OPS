@@ -28,18 +28,12 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return <h1>Oops, an error occurred</h1>;
     }
 
-    const changeRequestManagingIds = Array.isArray(changeRequests)
-        ? changeRequests.map(
-              /** @param {ChangeRequest} changeRequest */ (changeRequest) => changeRequest.managing_division_id
-          )
-        : [];
     const changeRequestsForUser = Array.isArray(changeRequests)
         ? changeRequests.filter(
               /** @param {ChangeRequest} changeRequest */
               (changeRequest) => changeRequest.managing_division_id === userDivisionId
           )
         : [];
-    console.log({ userDivisionId, changeRequestManagingIds, changeRequestsForUser });
 
     return changeRequestsForUser.length > 0 ? (
         <>
