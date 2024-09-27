@@ -1,9 +1,9 @@
-import * as React from "react";
 import PropTypes from "prop-types";
+import * as React from "react";
+import { useSelector } from "react-redux";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
-import { useSelector } from "react-redux";
 
 /**
  * Change Requests List component.
