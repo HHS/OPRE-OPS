@@ -1,54 +1,12 @@
 import os
-from typing import Optional
 
 import sqlalchemy.engine
-from data_tools.environment.azure import AzureConfig
-from data_tools.environment.cloudgov import CloudGovConfig
-from data_tools.environment.common import DataToolsConfig
-from data_tools.environment.dev import DevConfig
-from data_tools.environment.local import LocalConfig
-from data_tools.environment.local_migration import LocalMigrationConfig
-from data_tools.environment.pytest import PytestConfig
-from data_tools.environment.test import TestConfig
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
+from data_tools.src.common.utils import get_config, init_db
 from sqlalchemy.orm import configure_mappers
 
 from models import BaseModel
 
 configure_mappers()
-
-
-def init_db(
-    config: DataToolsConfig, db: Optional[Engine] = None
-) -> tuple[sqlalchemy.engine.Engine, sqlalchemy.MetaData]:
-    if not db:
-        engine = create_engine(
-            config.db_connection_string, echo=config.verbosity, future=True
-        )
-    else:
-        engine = db
-    return engine, BaseModel.metadata
-
-
-def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
-    config: DataToolsConfig
-    match environment_name:
-        case "azure":
-            config = AzureConfig()
-        case "cloudgov":
-            config = CloudGovConfig()
-        case "local":
-            config = LocalConfig()
-        case "local-migration":
-            config = LocalMigrationConfig()
-        case "test":
-            config = TestConfig()
-        case "pytest":
-            config = PytestConfig()
-        case _:
-            config = DevConfig()
-    return config
 
 
 def delete_and_create(engine: sqlalchemy.engine.Engine) -> None:

@@ -16,6 +16,7 @@ def test_get_config_default():
     assert isinstance(get_config(), DevConfig)
 
 
+
 def test_load_new_data_empty():
     mock_conn = mock.MagicMock()
     load_new_data(mock_conn, {})
