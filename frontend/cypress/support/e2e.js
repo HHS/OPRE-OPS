@@ -26,10 +26,23 @@ Cypress.Commands.add("FakeAuth", (user) => {
     cy.session([user], async () => {
         cy.visit("/login");
         cy.contains("Sign in with FakeAuth").click();
-        if (user === "admin") {
-            cy.contains("Admin User").click();
-        } else if (user === "basic") {
-            cy.contains("Basic User").click();
+
+        switch (user) {
+            case "admin":
+                cy.contains("Admin User").click();
+                break;
+            case "basic":
+                cy.contains("Basic User").click();
+                break;
+            case "division-director":
+                cy.contains("Division Director").click();
+                break;
+            case "budget-team":
+                cy.contains("Budget Team Member").click();
+                break;
+            default:
+                // Handle any unspecified user types if necessary
+                break;
         }
 
         cy.wait(100);

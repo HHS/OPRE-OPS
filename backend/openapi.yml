@@ -227,11 +227,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANRequestSchema"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANRequestSchema"
       responses:
         "201":
           description: Created
@@ -707,7 +707,7 @@ paths:
             application/json:
               schema:
                 type: array
-                properties: { }
+                properties: {}
                 items:
                   type: string
               examples:
@@ -886,7 +886,7 @@ paths:
                     type: integer
                   first_name:
                     type: string
-                  updated: { }
+                  updated: {}
                   email:
                     type: string
               examples:
@@ -2325,6 +2325,10 @@ components:
           type: string
         id:
           type: integer
+      required:
+        - number
+        - portfolio_id
+        - id
     CreateUpdateCANRequestSchema:
       description: The request object for creating a new Common Accounting Number (CAN) object.
       properties:
@@ -2335,6 +2339,8 @@ components:
         description:
           type: string
         portfolio_id:
+          type: integer
+        funding_details_id:
           type: integer
       required:
         - number
@@ -2364,7 +2370,7 @@ components:
         funding_received:
           type: array
           items:
-              $ref: "#/components/schemas/FundingReceived"
+            $ref: "#/components/schemas/FundingReceived"
         number:
           type: string
         portfolio:
@@ -2841,16 +2847,8 @@ components:
             type: object
             example:
               [
-                {
-                  "id": 1,
-                  "full_name": "Chris Fortunato",
-                  "email": "chris.fortunato@example.com",
-                },
-                {
-                  "id": 2,
-                  "full_name": "Amy Madigan",
-                  "email": "Amy.Madigan@example.com",
-                },
+                { "id": 1, "full_name": "Chris Fortunato", "email": "chris.fortunato@example.com" },
+                { "id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com" },
                 {
                   "id": 3,
                   "full_name": "Ivelisse Martinez-Beck",
@@ -3022,6 +3020,9 @@ components:
         can_id:
           type: integer
           example: 1
+        can:
+          type: object
+          $ref: "#/components/schemas/BudgetLineItemCAN"
         comments:
           type: string
         date_needed:
@@ -3047,16 +3048,8 @@ components:
             type: object
             example:
               [
-                {
-                  "id": 1,
-                  "full_name": "Chris Fortunato",
-                  "email": "chris.fortunato@example.com",
-                },
-                {
-                  "id": 2,
-                  "full_name": "Amy Madigan",
-                  "email": "Amy.Madigan@example.com",
-                },
+                { "id": 1, "full_name": "Chris Fortunato", "email": "chris.fortunato@example.com" },
+                { "id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com" },
                 {
                   "id": 3,
                   "full_name": "Ivelisse Martinez-Beck",
@@ -3087,6 +3080,37 @@ components:
           description: optional notes added to a Change Request when a PATCH is made that creates a CR
           type: string
           writeOnly: true
+    BudgetLineItemCAN:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        portfolio:
+          type: object
+          $ref: "#/components/schemas/PortfolioBLISchema"
+        portfolio_id:
+          type: integer
+          example: 1
+        display_name:
+          type: string
+        nick_name:
+          type: string
+        number:
+          type: string
+        description:
+          type: string
+        active_period:
+          type: integer
+        expiration_date:
+          type: integer
+        appropriation_date:
+          type: integer
+    PortfolioBLISchema:
+      type: object
+      properties:
+        division_id:
+          type: integer
     BudgetLineItemRequest:
       type: object
       properties:
@@ -3211,7 +3235,7 @@ components:
           type: array
           items:
             type: object
-            example: [ { "id": 1 }, { "id": 2 }, { "id": 3 } ]
+            example: [{ "id": 1 }, { "id": 2 }, { "id": 3 }]
 
       required:
         - title
@@ -3530,7 +3554,8 @@ components:
         document_name:
           type: string
         document_size:
-          type: number(10, 2)
+          type: number
+          description: precision number with 10 digits and 2 decimal places
         status:
           type: string
         created_on:
@@ -3937,4 +3962,4 @@ components:
         [
         ]
 security:
-  - bearerAuth: [ ]
+  - bearerAuth: []
