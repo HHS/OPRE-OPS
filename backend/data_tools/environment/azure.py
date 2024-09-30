@@ -1,7 +1,6 @@
 import os
-import urllib.parse
 
-from data_tools.environment.common import DataToolsConfig
+from data_tools.environment.types import DataToolsConfig
 
 
 class AzureConfig(DataToolsConfig):
@@ -15,10 +14,6 @@ class AzureConfig(DataToolsConfig):
         return (
             f"postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
         )
-
-    @property
-    def opre_excel_connection_string(self) -> str:
-        return ""
 
     @property
     def verbosity(self) -> bool:

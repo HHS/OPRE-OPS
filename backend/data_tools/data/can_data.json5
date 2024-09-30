@@ -208,12 +208,6 @@
       nick_name: "Next Generation Leadership Program",
       portfolio_id: 3,
       funding_details_id: 13,
-      projects: [
-        {
-          tablename: "project",
-          id: 1000,
-        },
-      ],
     },
     {
       // 513
@@ -249,289 +243,289 @@
     },
   ],
   can_funding_budget: [
-    {
+    { // 1
       fiscal_year: 2023,
       can_id: 500,
       budget: 1140000.0,
     },
-    {
+    { // 2
       fiscal_year: 2021,
       can_id: 501,
       budget: 200000.0,
     },
-    {
+    { // 3
       fiscal_year: 2022,
       can_id: 502,
       budget: 7000000.0,
     },
-    {
+    { // 4
       fiscal_year: 2023,
       can_id: 502,
       budget: 10000000.0,
     },
-    {
+    { // 5
       fiscal_year: 2024,
       can_id: 502,
       budget: 7000000.0,
     },
-    {
+    { // 6
       fiscal_year: 2021,
       can_id: 503,
       budget: 10000000.0,
     },
-    {
+    { // 7
       fiscal_year: 2021,
       can_id: 504,
       budget: 10000000.0,
     },
-    {
+    { // 8
       fiscal_year: 2022,
       can_id: 504,
       budget: 10000000.0,
     },
-    {
+    { // 9
       fiscal_year: 2023,
       can_id: 504,
       budget: 10000000.0,
     },
-    {
+    { // 10
       fiscal_year: 2024,
       can_id: 504,
       budget: 10000000.0,
     },
-    {
+    { // 11
       fiscal_year: 2021,
       can_id: 505,
       budget: 10000000.0,
     },
-    {
+    { // 12
       fiscal_year: 2023,
       can_id: 506,
       budget: 10000000.0,
     },
-    {
+    { // 13
       fiscal_year: 2023,
       can_id: 501,
       budget: 10000000.0,
     },
-    {
+    { // 14
       fiscal_year: 2023,
       can_id: 503,
       budget: 10000000.0,
     },
-    {
+    { // 15
       fiscal_year: 2022,
       can_id: 510,
       budget: 10000000.0,
     },
-    {
+    { // 16
       fiscal_year: 2023,
       can_id: 510,
       budget: 10000000.0,
     },
-    {
+    { // 17
       fiscal_year: 2022,
       can_id: 511,
       budget: 10000000.0,
     },
-    {
+    { // 18
       fiscal_year: 2023,
       can_id: 511,
       budget: 10000000.0,
     },
-    {
+    { // 19
       fiscal_year: 2023,
       can_id: 512,
       budget: 1140000.0,
     },
-    {
+    { // 20
       fiscal_year: 2024,
       can_id: 512,
       budget: 1140000.0,
     },
-    {
+    { // 21
       fiscal_year: 2023,
       can_id: 507,
       budget: 1140000.0,
     },
-    {
+    { // 22
       fiscal_year: 2023,
       can_id: 508,
       budget: 1140000.0,
     },
-    {
+    { // 23
       fiscal_year: 2023,
       can_id: 505,
       budget: 1140000.0,
     },
-    {
+    { // 24
       fiscal_year: 2023,
       can_id: 513,
       budget: 1000000.0,
     },
-    {
+    { // 25
       fiscal_year: 2024,
       can_id: 514,
       budget: 1000000.0,
     },
-    {
+    { // 26
       fiscal_year: 2023,
       can_id: 515,
       budget: 1000000.0,
     },
-    {
+    { // 27
       fiscal_year: 2024,
       can_id: 515,
       budget: 1000000.0,
     },
-    {
+    { // 28
       fiscal_year: 2025,
       can_id: 515,
       budget: 1000000.0,
     },
-    {
+    { // 29
       fiscal_year: 2026,
       can_id: 515,
       budget: 500000.0,
     },
-    {
+    { // 30
       fiscal_year: 2027,
       can_id: 515,
       budget: 500000.0,
     },
-    {
+    { // 31
       fiscal_year: 2023,
       can_id: 516,
       budget: 500000.0,
     },
   ],
   can_funding_received: [
-    {
+    { // 1
       fiscal_year: 2023,
       can_id: 500,
       funding: 880000.0,
     },
-    {
+    { // 2
       fiscal_year: 2021,
       can_id: 501,
       funding: 200000.0,
     },
-    {
+    { // 3
       fiscal_year: 2022,
       can_id: 502,
       funding: 6000000.0,
     },
-    {
+    { // 4
       fiscal_year: 2023,
       can_id: 502,
       funding: 7000000.0,
     },
-    {
+    { // 5
       fiscal_year: 2024,
       can_id: 502,
       funding: 6000000.0,
     },
-    {
+    { // 6
       fiscal_year: 2021,
       can_id: 503,
       funding: 6000000.0,
     },
-    {
+    { // 7
       fiscal_year: 2021,
       can_id: 504,
       funding: 6000000.0,
     },
-    {
+    { // 8
       fiscal_year: 2022,
       can_id: 504,
       funding: 6000000.0,
     },
-    {
+    { // 9
       fiscal_year: 2023,
       can_id: 504,
       funding: 6000000.0,
     },
-    {
+    { // 10
       fiscal_year: 2024,
       can_id: 504,
       funding: 6000000.0,
     },
-    {
+    { // 11
       fiscal_year: 2021,
       can_id: 505,
       funding: 6000000.0,
     },
-    {
+    { // 12
       fiscal_year: 2023,
       can_id: 506,
       funding: 6000000.0,
     },
-    {
+    { // 13
       fiscal_year: 2023,
       can_id: 501,
       funding: 6000000.0,
     },
-    {
+    { // 14
       fiscal_year: 2023,
       can_id: 503,
       funding: 6000000.0,
     },
-    {
+    { // 15
       fiscal_year: 2022,
       can_id: 510,
       funding: 6000000.0,
     },
-    {
+    { // 16
       fiscal_year: 2023,
       can_id: 510,
       funding: 6000000.0,
     },
-    {
+    { // 17
       fiscal_year: 2022,
       can_id: 511,
       funding: 6000000.0,
     },
-    {
+    { // 18
       fiscal_year: 2023,
       can_id: 511,
       funding: 6000000.0,
     },
-    {
+    { // 19
       fiscal_year: 2023,
       can_id: 512,
       funding: 880000.0,
     },
-    {
+    { // 20
       fiscal_year: 2024,
       can_id: 512,
       funding: 880000.0,
     },
-    {
+    { // 21
       fiscal_year: 2023,
       can_id: 507,
       funding: 880000.0,
     },
-    {
+    { // 22
       fiscal_year: 2023,
       can_id: 508,
       funding: 880000.0,
     },
-    {
+    { // 23
       fiscal_year: 2023,
       can_id: 505,
       funding: 880000.0,
     },
-    {
+    { // 24
       fiscal_year: 2023,
       can_id: 513,
       funding: 1000000.0,
     },
-    {
+    { // 25
       fiscal_year: 2024,
       can_id: 514,
       funding: 1000000.0,
     },
-    {
+    { // 26
       fiscal_year: 2023,
       can_id: 515,
       funding: 1000000.0,
