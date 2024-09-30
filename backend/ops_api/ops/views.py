@@ -7,6 +7,7 @@ from models import (
     BaseModel,
     BudgetLineItem,
     CANFundingDetails,
+    CANFundingReceived,
     ChangeRequest,
     ContractAgreement,
     Division,
@@ -42,6 +43,7 @@ from ops_api.ops.resources.agreements import (
 )
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
+from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI, CANFundingReceivedListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
@@ -99,6 +101,12 @@ PORTFOLIO_LIST_API_VIEW_FUNC = PortfolioListAPI.as_view("portfolio-group", Portf
 CAN_ITEM_API_VIEW_FUNC = CANItemAPI.as_view("can-item", CAN)
 CAN_LIST_API_VIEW_FUNC = CANListAPI.as_view("can-group", CAN)
 CANS_BY_PORTFOLIO_API_VIEW_FUNC = CANsByPortfolioAPI.as_view("can-portfolio", BaseModel)
+CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC = CANFundingReceivedListAPI.as_view(
+    "can-funding-received-group", CANFundingReceived
+)
+CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC = CANFundingReceivedItemAPI.as_view(
+    "can-funding-received-item", CANFundingReceived
+)
 
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
