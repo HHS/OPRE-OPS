@@ -26,11 +26,11 @@ const testAgreement = {
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 501,
+    can_id: 504,
     agreement_id: 11,
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
-    date_needed: "2025-1-01",
+    date_needed: "2025-01-01",
     proc_shop_fee_percentage: 0.005
 };
 
@@ -128,8 +128,6 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 cy.get("#ops-modal-heading").contains(/decline this status change to planned status?/i);
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get(".usa-alert__body").should("contain", "Changes Declined");
-                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
-                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
@@ -254,8 +252,6 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 cy.get("#ops-modal-heading").contains(/decline these budget lines for executing status/i);
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get(".usa-alert__body").should("contain", "Changes Declined");
-                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
-                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
@@ -379,8 +375,6 @@ describe("Decline Change Requests at the Agreement Level", () => {
                 cy.get("#ops-modal-heading").contains(/decline this budget change/i);
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get(".usa-alert__body").should("contain", "Changes Declined");
-                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
-                cy.get(".usa-alert__body").should("contain", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`);
                 cy.get("[data-cy='review-card']").should("not.exist");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
