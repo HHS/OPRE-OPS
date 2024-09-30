@@ -48,6 +48,7 @@ jobs:
         uses: ./.github/actions/run-full-stack
         env:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
 
       # Install Cypress globally
       - name: Install Cypress globally
