@@ -2613,7 +2613,7 @@ components:
           type: integer
         can_id:
           type: integer
-        budget:
+        funding:
           type: number
         notes:
           type: string
@@ -4145,8 +4145,8 @@ components:
         {
           can_id: 500,
           fiscal_year: 2024,
-          budget: 123456,
-          notes: "A new test Funding Budget"
+          funding: 123456,
+          notes: "A new test Funding Funding"
         }
     FundingBudget:
       value: |
