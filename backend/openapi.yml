@@ -291,11 +291,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANRequestSchema"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANRequestSchema"
       responses:
         "200":
           description: CAN Updated
@@ -329,11 +329,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANRequestSchema"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANRequestSchema"
       responses:
         "200":
           description: CAN Updated
@@ -391,11 +391,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
       responses:
         "201":
           description: Created
@@ -457,11 +457,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
       responses:
         "200":
           description: CANFundingBudget Updated
@@ -495,11 +495,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
       responses:
         "200":
           description: CAN Updated
@@ -2651,8 +2651,16 @@ components:
           type: string
         full_name:
           type: string
-        role:
-          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+              - USER_ADMIN
+              - BUDGET_TEAM
+              - admin
+              - division-director
+              - user
         last_name:
           type: string
         id:
