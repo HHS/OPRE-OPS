@@ -7,6 +7,7 @@ import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import ErrorPage from "../../ErrorPage";
+import { sortCANs } from "./CanList.helpers";
 
 /**
  * Page for the CAN List.
@@ -20,17 +21,8 @@ const CanList = () => {
     const { data: canList, isError, isLoading } = useGetCansQuery({});
     const activeUser = useSelector((state) => state.auth.activeUser);
     // SORTS
-    let sortedCANs = [];
-    /**
-     * Sorts an array of CANs by obligateBy date in descending order.
-     * @param {CAN[]} cans - The array of CANs to sort.
-     * @returns {CAN[]} The sorted array of CANs.
-     */
-    const sortCANs = (cans) => {
-        return cans.sort((a, b) => {
-            return new Date(b.obligate_by) - new Date(a.obligate_by);
-        });
-    };
+    let sortedCANs = sortCANs(canList);
+
     // FILTERS
     let filteredCANs = _.cloneDeep(canList ?? []);
     if (myCANsUrl) {
