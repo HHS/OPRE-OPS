@@ -1,13 +1,13 @@
-import _ from "lodash";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
+import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import ErrorPage from "../../ErrorPage";
-import { sortCANs } from "./CanList.helpers";
+import { sortAndFilterCANs } from "./CanList.helpers";
 
 /**
  * Page for the CAN List.
@@ -20,22 +20,8 @@ const CanList = () => {
     const myCANsUrl = searchParams.get("filter") === "my-cans";
     const { data: canList, isError, isLoading } = useGetCansQuery({});
     const activeUser = useSelector((state) => state.auth.activeUser);
-    // SORTS
-    let sortedCANs = sortCANs(canList);
+    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser) || [];
 
-    // FILTERS
-    let filteredCANs = _.cloneDeep(canList ?? []);
-    if (myCANsUrl) {
-        const myCANs = filteredCANs.filter((can) => {
-            return can.team_members?.some((teamMember) => {
-                return teamMember.id === activeUser.id || can.project_officer_id === activeUser.id;
-            });
-        });
-        sortedCANs = sortCANs(myCANs);
-    } else {
-        // all CANs
-        sortedCANs = sortCANs(filteredCANs);
-    }
     if (isLoading) {
         return (
             <App>
@@ -61,6 +47,7 @@ const CanList = () => {
                     TabsSection={<CANTags />}
                     TableSection={<CANTable cans={sortedCANs} />}
                 />
+                <DebugCode data={canList} />
             </App>
         )
     );
