@@ -1,4 +1,4 @@
-name: Staging Backend Build and Deploy
+name: Production Backend Build and Deploy
 
 on:
   workflow_dispatch:

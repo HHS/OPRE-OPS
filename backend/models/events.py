@@ -27,6 +27,11 @@ class OpsEventType(Enum):
     UPDATE_CAN = auto()
     DELETE_CAN = auto()
 
+    # CAN Funding Budget Related Events
+    CREATE_CAN_FUNDING_BUDGET = auto()
+    UPDATE_CAN_FUNDING_BUDGET = auto()
+    DELETE_CAN_FUNDING_BUDGET = auto()
+
     # Notification Related Events
     ACKNOWLEDGE_NOTIFICATION = auto()
 

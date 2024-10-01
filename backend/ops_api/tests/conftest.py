@@ -13,7 +13,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from models import CAN, BudgetLineItem, OpsDBHistory, OpsEvent, Project, User, Vendor
+from models import CAN, BudgetLineItem, CANFundingBudget, OpsDBHistory, OpsEvent, Project, User, Vendor
 from ops_api.ops import create_app
 from tests.auth_client import AuthClient, BasicUserAuthClient, BudgetTeamAuthClient, NoPermsAuthClient
 
@@ -205,3 +205,9 @@ def test_bli(loaded_db) -> BudgetLineItem | None:
 @pytest.fixture
 def utc_today():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT")
+
+
+@pytest.fixture
+def test_can_funding_budget(loaded_db) -> CANFundingBudget | None:
+    """Get a test CANFundingBudget."""
+    return loaded_db.get(CANFundingBudget, 1)

@@ -52,7 +52,7 @@ const ApproveAgreement = () => {
         hasPermissionToViewPage,
         isApproverAndAgreementInReview
     } = useApproveAgreement();
-
+  
     if (!hasPermissionToViewPage && is2849Ready) {
         return <ErrorPage />;
     }
@@ -85,6 +85,7 @@ const ApproveAgreement = () => {
                 title={title}
                 subTitle={agreement.name}
             />
+
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
                 changeRequests={changeRequestsInReview}
