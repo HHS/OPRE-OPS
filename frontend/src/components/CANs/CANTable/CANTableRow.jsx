@@ -14,7 +14,7 @@ import Tooltip from "../../UI/USWDS/Tooltip";
  * @param {string} props.nickname - CAN nickname
  * @param {string} props.portfolio - Portfolio abbreviation
  * @param {number} props.fiscalYear - Fiscal Year
- * @param {number} props.activePeriod - Active Period in years
+ * @param {string} props.activePeriod - Active Period in years
  * @param {string} props.obligateBy - Obligate By Date
  * @param {string} props.transfer - Method of Transfer
  * @param {number} props.fyBudget - Fiscal Year Budget
