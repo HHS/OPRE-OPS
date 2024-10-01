@@ -4,7 +4,6 @@ import { useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
-import DebugCode from "../../../components/DebugCode";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import ErrorPage from "../../ErrorPage";
 import { sortAndFilterCANs } from "./CanList.helpers";
@@ -47,7 +46,6 @@ const CanList = () => {
                     TabsSection={<CANTags />}
                     TableSection={<CANTable cans={sortedCANs} />}
                 />
-                <DebugCode data={canList} />
             </App>
         )
     );

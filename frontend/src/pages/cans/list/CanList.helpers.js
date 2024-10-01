@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 /**
  * Sorts an array of CANs by obligateBy date in descending order.
  * @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
@@ -9,20 +7,12 @@ import _ from "lodash";
  * @returns {CAN[] | undefined} - The sorted array of CANs.
  */
 export const sortAndFilterCANs = (cans, myCANsUrl, activeUser) => {
-    let sortedCANs = [];
     if (!cans || cans.length === 0) {
         return [];
     }
-    let filteredCANs = _.cloneDeep(cans);
-    if (myCANsUrl) {
-        // can.portfolio.division_id === activeUser.division_id
-        const myCANs = filteredCANs.filter((can) => can.portfolio.division_id === activeUser.division);
-        sortedCANs = sortCANs(myCANs);
-    } else {
-        // all CANs
-        sortedCANs = sortCANs(filteredCANs);
-    }
-    return sortedCANs;
+    let filteredCANs = myCANsUrl ? cans.filter((can) => can.portfolio.division_id === activeUser.division) : cans;
+
+    return sortCANs(filteredCANs);
 };
 
 /**
