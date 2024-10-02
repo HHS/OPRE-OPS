@@ -5,6 +5,7 @@ import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { displayActivePeriod } from "./CANTableRow.helpers";
 
 /**
  * CanTableRow component of CANTable
@@ -65,7 +66,7 @@ const CANTableRow = ({
             </th>
             <td>{portfolio}</td>
             <td>{fiscalYear}</td>
-            <td>{activePeriod > 1 ? `${activePeriod} years` : `${activePeriod} year`}</td>
+            <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
             <td>{convertCodeForDisplay("methodOfTransfer", transfer)}</td>
             <td>
