@@ -2,7 +2,7 @@
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("division-director");
     cy.visit("/cans").wait(1000);
 });
 
@@ -26,6 +26,14 @@ describe("CAN List", () => {
 
         cy.url().should("include", "/cans/502");
         cy.get("h1").should("contain", canNumber);
+    });
+
+    it("should correctly filter all cans or my cans", () => {
+        cy.visit("/cans/");
+        cy.get("tbody").children().should("have.length.greaterThan", 2);
+
+        cy.visit("/cans/?filter=my-cans");
+        cy.get("tbody").children().should("have.length", 1);
     });
 
     it("pagination on the bli table works as expected", () => {
