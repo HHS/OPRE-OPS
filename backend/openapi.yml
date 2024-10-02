@@ -2656,10 +2656,11 @@ components:
           items:
             type: string
             enum:
-              - USER_ADMIN
               - BUDGET_TEAM
+              - USER_ADMIN
               - admin
               - division-director
+              - unassigned
               - user
         last_name:
           type: string

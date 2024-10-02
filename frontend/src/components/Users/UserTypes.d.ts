@@ -22,5 +22,5 @@ export type User = {
     updated_on: Date;
 };
 
-type UserRoles = "USER_ADMIN" | "BUDGET_TEAM" | "admin" | "division-director" | "user";
+type UserRoles = "USER_ADMIN" | "BUDGET_TEAM" | "admin" | "division-director" | "user" | "unassigned";
 type UserStatus = "ACTIVE" | "INACTIVE" | "LOCKED";
