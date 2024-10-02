@@ -2658,12 +2658,12 @@ components:
           items:
             type: string
             enum:
-              - BUDGET_TEAM
-              - USER_ADMIN
               - admin
+              - BUDGET_TEAM
               - division-director
               - unassigned
               - user
+              - USER_ADMIN
         last_name:
           type: string
         id:

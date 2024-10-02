@@ -5,8 +5,6 @@ export type SafeUser = {
 };
 
 export type User = {
-    created_by?: number;
-    created_on: Date;
     display_name: string;
     division: number;
     email: string;
@@ -18,6 +16,8 @@ export type User = {
     oidc_id: string;
     roles: UserRoles[];
     status: UserStatus;
+    created_by?: number;
+    created_on: Date;
     updated_by?: number;
     updated_on: Date;
 };
