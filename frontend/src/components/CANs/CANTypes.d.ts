@@ -5,8 +5,6 @@ import { Project } from "../Projects/ProjectTypes";
 export type CAN = {
     active_period?: number;
     budget_line_items: BudgetLine[];
-    created_by: number | null;
-    created_by_user: number | null;
     created_on: Date;
     description?: string;
     display_name?: string;
@@ -17,13 +15,15 @@ export type CAN = {
     id: number;
     nick_name?: string;
     number: string;
-    obligate_by?: Date;
+    obligate_by?: number;
     portfolio: Portfolio;
     portfolio_id: number;
     projects: Project[];
+    updated_on: Date;
+    created_by: number | null;
+    created_by_user: number | null;
     updated_by: number | null;
     updated_by_user: number | null;
-    updated_on: Date;
 };
 
 export type SimpleCAN = {
