@@ -2355,6 +2355,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BudgetLineItem"
+        description:
+          type: string
         display_name:
           type: string
         funding_budgets:
@@ -2371,8 +2373,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FundingReceived"
+        id:
+          type: integer
+        nick_name:
+          type: string
         number:
           type: string
+        obligate_by:
+          type: integer
         portfolio:
           type: integer
         portfolio_id:
@@ -2381,12 +2389,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Project"
-        nick_name:
-          type: string
-        description:
-          type: string
-        id:
-          type: integer
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
