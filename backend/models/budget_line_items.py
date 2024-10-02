@@ -140,6 +140,10 @@ class BudgetLineItem(BaseModel):
     def in_review(self):
         return self.change_requests_in_review is not None
 
+    @property
+    def project(self) -> Optional["Project"]:
+        return self.agreement.project if self.agreement else None
+
     @override
     def to_dict(self) -> dict[str, Any]:  # type: ignore[override]
         d: dict[str, Any] = super().to_dict()  # type: ignore[no-untyped-call]

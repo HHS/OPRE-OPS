@@ -1,4 +1,4 @@
-from data_tools.environment.common import DataToolsConfig
+from data_tools.environment.types import DataToolsConfig
 
 
 class PytestConfig(DataToolsConfig):
@@ -7,10 +7,6 @@ class PytestConfig(DataToolsConfig):
         return (
             "postgresql://ops:ops@unittest_db:5432/postgres"  # pragma: allowlist secret
         )
-
-    @property
-    def opre_excel_connection_string(self) -> str:
-        return ""
 
     @property
     def verbosity(self) -> bool:

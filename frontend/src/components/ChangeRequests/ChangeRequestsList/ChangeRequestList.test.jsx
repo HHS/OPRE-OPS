@@ -1,5 +1,7 @@
 import { render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
+import configureStore from "redux-mock-store";
 import { vi } from "vitest";
 import {
     useGetAgreementByIdQuery,
@@ -13,6 +15,8 @@ import { agreement, budgetLine, changeRequests } from "../../../tests/data";
 import ChangeRequestList from "./ChangeRequestsList";
 import { Provider } from "react-redux";
 import configureStore from "redux-mock-store";
+
+const mockStore = configureStore([]);
 
 const mockStore = configureStore([]);
 

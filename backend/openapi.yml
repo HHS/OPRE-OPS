@@ -227,11 +227,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateCANRequestSchema"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateCANRequestSchema"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANRequestSchema"
       responses:
         "201":
           description: Created
@@ -271,6 +271,273 @@ paths:
               example:
                 "0":
                   $ref: "#/components/examples/CAN"
+    patch:
+      tags:
+        - CANs
+      summary: Update an existing CAN with the provided fields
+      operationId: patchCan
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CreateUpdateCANRequestSchema"
+      responses:
+        "200":
+          description: CAN Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAN"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: CAN not found
+    put:
+      tags:
+        - CANs
+      summary: Update an existing CAN
+      operationId: putCan
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CreateUpdateCANRequestSchema"
+      responses:
+        "200":
+          description: CAN Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAN"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: CAN not found
+    delete:
+      tags:
+        - CANs
+      operationId: deleteCan
+      summary: Delete a Common Accounting Number (CAN)
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_id
+          description: Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+  /api/v1/can-funding-budgets/:
+    get:
+      tags:
+        - CAN Funding Budgets
+      operationId: getAllCANFundingBudgets
+      summary: Get a list of all the CAN funding budgets
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+      description: Get CANFundingBudgetss
+      responses:
+        "200":
+          description: OK
+    post:
+      tags:
+        - CAN Funding Budgets
+      operationId: createCANFundingBudget
+      summary: Create a new CANFundingBudget object
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingBudget"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+  /api/v1/can-funding-budgets/{can_funding_budget_id}:
+    get:
+      tags:
+        - CAN Funding Budgets
+      summary: Get an individual CANFundingBudget
+      operationId: getCANFundingBudgetById
+      description: Get CANFundingBudget by Id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_funding_budget_id
+          description: CAN Funding Budget Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingBudget"
+              example:
+                "0":
+                  $ref: "#/components/examples/FundingBudget"
+        "404":
+          description: The specified CANFundingBudget was not found.
+    patch:
+      tags:
+        - CAN Funding Budgets
+      summary: Update an existing CANFundingBudget with the provided fields
+      operationId: patchCanFundingBudget
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_funding_budget_id
+          description: CAN Funding Budget Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+      responses:
+        "200":
+          description: CANFundingBudget Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingBudget"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: CANFundingBudget not found
+    put:
+      tags:
+        - CAN Funding Budgets
+      summary: Update an existing CANFundingBudget
+      operationId: putCanFundingBudget
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_funding_budget_id
+          description: CAN Funding Budget Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+      responses:
+        "200":
+          description: CAN Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingBudget"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: CAN not found
+    delete:
+      tags:
+        - CAN Funding Budgets
+      operationId: deleteCanFundingBudget
+      summary: Delete a CANFundingBudget
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_funding_budget_id
+          description: CANFundingBudget ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Unable to find specified CANFundingBudget
   /api/v1/portfolios:
     get:
       tags:
@@ -440,7 +707,7 @@ paths:
             application/json:
               schema:
                 type: array
-                properties: { }
+                properties: {}
                 items:
                   type: string
               examples:
@@ -619,7 +886,7 @@ paths:
                     type: integer
                   first_name:
                     type: string
-                  updated: { }
+                  updated: {}
                   email:
                     type: string
               examples:
@@ -2058,7 +2325,11 @@ components:
           type: string
         id:
           type: integer
-    CreateCANRequestSchema:
+      required:
+        - number
+        - portfolio_id
+        - id
+    CreateUpdateCANRequestSchema:
       description: The request object for creating a new Common Accounting Number (CAN) object.
       properties:
         nick_name:
@@ -2068,6 +2339,8 @@ components:
         description:
           type: string
         portfolio_id:
+          type: integer
+        funding_details_id:
           type: integer
       required:
         - number
@@ -2097,7 +2370,7 @@ components:
         funding_received:
           type: array
           items:
-              $ref: "#/components/schemas/FundingReceived"
+            $ref: "#/components/schemas/FundingReceived"
         number:
           type: string
         portfolio:
@@ -2206,6 +2479,21 @@ components:
         - fiscal_year
         - fund_code
         - id
+    CreateUpdateCANFundingBudgetRequest:
+      description: A request object for the creation or updating of a FundingBudget
+      type: object
+      properties:
+        fiscal_year:
+          type: integer
+        can_id:
+          type: integer
+        budget:
+          type: number
+        notes:
+          type: string
+      required:
+        - fiscal_year
+        - can_id
     FundingBudget:
       description: Funding Budget Object
       type: object
@@ -2213,7 +2501,7 @@ components:
         budget:
           type: number
         can:
-          type: integer
+          $ref: "#/components/schemas/BasicCAN"
         can_id:
           type: integer
         display_name:
@@ -2559,16 +2847,8 @@ components:
             type: object
             example:
               [
-                {
-                  "id": 1,
-                  "full_name": "Chris Fortunato",
-                  "email": "chris.fortunato@example.com",
-                },
-                {
-                  "id": 2,
-                  "full_name": "Amy Madigan",
-                  "email": "Amy.Madigan@example.com",
-                },
+                { "id": 1, "full_name": "Chris Fortunato", "email": "chris.fortunato@example.com" },
+                { "id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com" },
                 {
                   "id": 3,
                   "full_name": "Ivelisse Martinez-Beck",
@@ -2740,6 +3020,9 @@ components:
         can_id:
           type: integer
           example: 1
+        can:
+          type: object
+          $ref: "#/components/schemas/BudgetLineItemCAN"
         comments:
           type: string
         date_needed:
@@ -2765,16 +3048,8 @@ components:
             type: object
             example:
               [
-                {
-                  "id": 1,
-                  "full_name": "Chris Fortunato",
-                  "email": "chris.fortunato@example.com",
-                },
-                {
-                  "id": 2,
-                  "full_name": "Amy Madigan",
-                  "email": "Amy.Madigan@example.com",
-                },
+                { "id": 1, "full_name": "Chris Fortunato", "email": "chris.fortunato@example.com" },
+                { "id": 2, "full_name": "Amy Madigan", "email": "Amy.Madigan@example.com" },
                 {
                   "id": 3,
                   "full_name": "Ivelisse Martinez-Beck",
@@ -2805,6 +3080,37 @@ components:
           description: optional notes added to a Change Request when a PATCH is made that creates a CR
           type: string
           writeOnly: true
+    BudgetLineItemCAN:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        portfolio:
+          type: object
+          $ref: "#/components/schemas/PortfolioBLISchema"
+        portfolio_id:
+          type: integer
+          example: 1
+        display_name:
+          type: string
+        nick_name:
+          type: string
+        number:
+          type: string
+        description:
+          type: string
+        active_period:
+          type: integer
+        expiration_date:
+          type: integer
+        appropriation_date:
+          type: integer
+    PortfolioBLISchema:
+      type: object
+      properties:
+        division_id:
+          type: integer
     BudgetLineItemRequest:
       type: object
       properties:
@@ -2929,7 +3235,7 @@ components:
           type: array
           items:
             type: object
-            example: [ { "id": 1 }, { "id": 2 }, { "id": 3 } ]
+            example: [{ "id": 1 }, { "id": 2 }, { "id": 3 }]
 
       required:
         - title
@@ -3248,7 +3554,8 @@ components:
         document_name:
           type: string
         document_size:
-          type: number(10, 2)
+          type: number
+          description: precision number with 10 digits and 2 decimal places
         status:
           type: string
         created_on:
@@ -3623,7 +3930,7 @@ components:
               "updated_by": 1
           }
         ]
-    CreateCanRequestSchema:
+    CreateUpdateCANRequestSchema:
       value: |
         {
           nick_name: "Very Good CAN",
@@ -3631,9 +3938,28 @@ components:
           portfolio_id: 6,
           description: "A very good CAN to use for examples."
         }
+    CreateUpdateCANFundingBudgetRequest:
+      value: |
+        {
+          can_id: 500,
+          fiscal_year: 2024,
+          budget: 123456,
+          notes: "A new test Funding Budget"
+        }
+    FundingBudget:
+      value: |
+        {
+          budget: 1234567.89
+          can: {}
+          can_id: 500
+          display_name: CANFundingBudget.1
+          fiscal_year: 2024
+          id: 1
+          notes: "A funding budget"
+          versions: {}
     Notifications:
       value: |
         [
         ]
 security:
-  - bearerAuth: [ ]
+  - bearerAuth: []

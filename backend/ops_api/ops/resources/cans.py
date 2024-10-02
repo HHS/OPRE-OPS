@@ -73,7 +73,7 @@ class CANItemAPI(BaseItemAPI):
         Delete a CAN with given id."""
         with OpsEventHandler(OpsEventType.DELETE_CAN) as meta:
             self.can_service.delete(id)
-            meta.metadata.update({"Deleted BudgetLineItem": id})
+            meta.metadata.update({"Deleted CAN": id})
             return make_response_with_headers({"message": "CAN deleted", "id": id}, 200)
 
 
