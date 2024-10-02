@@ -1,4 +1,4 @@
-# ADR 27: Management of Publick Key Infrastructure (PKI)
+# ADR 27: Management of Public Key Infrastructure (PKI)
 
 Date: 10-1-2024
 
@@ -16,7 +16,7 @@ We evaluated storing certificates as files and referencing using environment var
 
 OPS will have private and public keys stored in Azure Vault for its environments.
 
-For local development, developers can create their own key pairs via CLI using `openssl` and store them in their shell environment.
+For local development, developers can [create their own key pairs via CLI](../../README.md) using `openssl` and store them in their shell environment.
 In Azure, the key pairs can be created using our Terraform IaC.
 
 The relevant key data will be provided into a running container via environment variables.
@@ -28,5 +28,3 @@ This method also keeps key pairs used in persistent running environments out of 
 distributed in local caches, or any other independent configuration management.
 Storing and securing keys in this manner also allows for consistent and secure re-creation and rotation of keys
 as the need arises.
-
-## Other
