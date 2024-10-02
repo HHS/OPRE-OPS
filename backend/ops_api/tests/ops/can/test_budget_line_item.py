@@ -912,9 +912,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid(
-    division_director_auth_client, auth_client, app, test_can, test_project
-):
+def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -961,7 +959,7 @@ def test_budget_line_item_validation_patch_to_invalid(
         "amount": None,
         "date_needed": None,
     }
-    resp = division_director_auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == len(data)
@@ -975,9 +973,7 @@ def test_budget_line_item_validation_patch_to_invalid(
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
-    division_director_auth_client, app, test_can, test_project
-):
+def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -991,7 +987,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
         "project_id": test_project.id,
         "project_officer_id": 520,
     }
-    resp = division_director_auth_client.post("/api/v1/agreements/", json=data)
+    resp = auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     agreement_id = resp.json["id"]
@@ -1005,7 +1001,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
         "amount": 111.11,
         "date_needed": "2025-01-01",
     }
-    resp = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
+    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     bli_id = resp.json["id"]
@@ -1014,7 +1010,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
     data = {
         "amount": 0,
     }
-    resp = division_director_auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
@@ -1023,7 +1019,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
     data = {
         "amount": -222.22,
     }
-    resp = division_director_auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
@@ -1037,9 +1033,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid_date(
-    division_director_auth_client, auth_client, app, test_can, test_project
-):
+def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -1076,7 +1070,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(
     data = {
         "date_needed": "1900-01-01",
     }
-    resp = division_director_auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
