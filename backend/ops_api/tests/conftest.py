@@ -15,7 +15,13 @@ from sqlalchemy.orm import Session
 
 from models import CAN, BudgetLineItem, OpsDBHistory, OpsEvent, Project, User, Vendor
 from ops_api.ops import create_app
-from tests.auth_client import AuthClient, BasicUserAuthClient, BudgetTeamAuthClient, NoPermsAuthClient
+from tests.auth_client import (
+    AuthClient,
+    BasicUserAuthClient,
+    BudgetTeamAuthClient,
+    DivisionDirectorAuthClient,
+    NoPermsAuthClient,
+)
 
 
 @pytest.fixture()
@@ -62,6 +68,13 @@ def budget_team_auth_client(app: Flask) -> FlaskClient:
     """Get a user with just the budget team permissions and not admin perms."""
     app.testing = True
     app.test_client_class = BudgetTeamAuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def division_director_auth_client(app: Flask) -> FlaskClient:
+    app.testing = True
+    app.test_client_class = DivisionDirectorAuthClient
     return app.test_client()
 
 
@@ -159,6 +172,15 @@ def test_admin_user(loaded_db) -> User | None:
     N.B. This user has an ADMIN role whose status is ACTIVE.
     """
     return loaded_db.get(User, 503)
+
+
+@pytest.fixture()
+def test_division_director(loaded_db) -> User | None:
+    """Get a test admin user - also the user associated with the auth_client.
+
+    N.B. This user has an ADMIN role whose status is ACTIVE.
+    """
+    return loaded_db.get(User, 522)
 
 
 @pytest.fixture()

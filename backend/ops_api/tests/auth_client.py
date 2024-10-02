@@ -127,3 +127,35 @@ class BudgetTeamAuthClient(FlaskClient):
         current_app.db_session.commit()
 
         return super().open(*args, **kwargs)
+
+
+class DivisionDirectorAuthClient(FlaskClient):
+    """
+    A Division Director
+    """
+
+    def open(self, *args, **kwargs):
+        user = User(
+            id="522",
+            oidc_id="00000000-0000-1111-a111-000000000020",
+            email="dave.director@email.com",
+            first_name="Dave",
+            last_name="Director",
+            division=1,
+        )
+
+        additional_claims = {}
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=user)
+        kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
+
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
+        user_session.access_token = access_token
+        user_session.refresh_token = refresh_token
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+
+        return super().open(*args, **kwargs)

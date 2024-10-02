@@ -1,6 +1,5 @@
 import copy
 from datetime import datetime
-from functools import partial
 
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user, jwt_required
@@ -17,21 +16,6 @@ from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSche
 from ops_api.ops.utils import procurement_tracker_helper
 from ops_api.ops.utils.change_requests import create_notification_of_reviews_request_to_submitter
 from ops_api.ops.utils.response import make_response_with_headers
-
-
-def division_director_of_change_request(self) -> bool:
-    current_user_id = current_user.id
-    request_data = request.json
-    change_request_id = request_data.get("change_request_id", None)
-    if change_request_id is None:
-        return False
-    change_request: ChangeRequest = current_app.db_session.get(ChangeRequest, change_request_id)
-    if not change_request or not change_request.managing_division_id:
-        return False
-    division: Division = current_app.db_session.get(Division, change_request.managing_division_id)
-    if division is None:
-        return False
-    return division.division_director_id == current_user_id or division.deputy_division_director_id == current_user_id
 
 
 def review_change_request(
@@ -140,16 +124,28 @@ class ChangeRequestReviewAPI(BaseListAPI):
     def __init__(self, model: ChangeRequest = ChangeRequest):
         super().__init__(model)
 
-    @is_authorized(
-        PermissionType.POST,
-        Permission.CHANGE_REQUEST_REVIEW,
-        extra_check=partial(
-            division_director_of_change_request,
-        ),
-        groups=["Budget Team", "Admins"],
-    )
+    def division_director_of_change_request(self) -> bool:
+        current_user_id = current_user.id
+        request_data = request.json
+        change_request_id = request_data.get("change_request_id", None)
+        if change_request_id is None:
+            return False
+        change_request: ChangeRequest = current_app.db_session.get(ChangeRequest, change_request_id)
+        if not change_request or not change_request.managing_division_id:
+            return False
+        division: Division = current_app.db_session.get(Division, change_request.managing_division_id)
+        if division is None:
+            return False
+        return (
+            division.division_director_id == current_user_id or division.deputy_division_director_id == current_user_id
+        )
+
+    @is_authorized(PermissionType.POST, Permission.CHANGE_REQUEST_REVIEW)
     @jwt_required()
     def post(self) -> Response:
+        can_update_request = self.division_director_of_change_request()
+        if not can_update_request:
+            return make_response_with_headers({}, 401)
         request_json = request.get_json()
         change_request_id = request_json.get("change_request_id")
         reviewer_notes = request_json.get("reviewer_notes", None)

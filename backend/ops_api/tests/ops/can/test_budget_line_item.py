@@ -94,7 +94,7 @@ def test_post_budget_line_items_empty_post(auth_client):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items(loaded_db, auth_client, test_can):
+def test_post_budget_line_items(loaded_db, division_director_auth_client, test_can):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -106,7 +106,7 @@ def test_post_budget_line_items(loaded_db, auth_client, test_can):
         "proc_shop_fee_percentage": 1.23,
         "services_component_id": 1,
     }
-    response = auth_client.post("/api/v1/budget-line-items/", json=data)
+    response = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 201
     assert response.json["line_description"] == "LI 1"
     assert response.json["amount"] == 100.12
@@ -121,7 +121,7 @@ def test_post_budget_line_items(loaded_db, auth_client, test_can):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_bad_status(auth_client, test_can):
+def test_post_budget_line_items_bad_status(division_director_auth_client, test_can):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -132,13 +132,13 @@ def test_post_budget_line_items_bad_status(auth_client, test_can):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.post("/api/v1/budget-line-items/", json=data)
+    response = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 400
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_missing_agreement(auth_client, test_can):
+def test_post_budget_line_items_missing_agreement(division_director_auth_client, test_can):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -148,13 +148,13 @@ def test_post_budget_line_items_missing_agreement(auth_client, test_can):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.post("/api/v1/budget-line-items/", json=data)
+    response = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 400
 
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_missing_optional_comments(loaded_db, auth_client, test_can):
+def test_post_budget_line_items_missing_optional_comments(loaded_db, division_director_auth_client, test_can):
     data = {
         "line_description": "LI 1",
         "agreement_id": 1,
@@ -164,7 +164,7 @@ def test_post_budget_line_items_missing_optional_comments(loaded_db, auth_client
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.post("/api/v1/budget-line-items/", json=data)
+    response = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 201
 
     # cleanup
@@ -175,7 +175,7 @@ def test_post_budget_line_items_missing_optional_comments(loaded_db, auth_client
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_invalid_can(auth_client):
+def test_post_budget_line_items_invalid_can(division_director_auth_client):
     data = {
         "line_description": "LI 1",
         "comments": "blah blah",
@@ -186,7 +186,7 @@ def test_post_budget_line_items_invalid_can(auth_client):
         "date_needed": "2043-01-01",
         "proc_shop_fee_percentage": 1.23,
     }
-    response = auth_client.post("/api/v1/budget-line-items/", json=data)
+    response = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 400
 
 
@@ -209,9 +209,9 @@ def test_post_budget_line_items_auth_required(client, test_can):
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_post_budget_line_items_only_agreement_id_required(auth_client, loaded_db):
+def test_post_budget_line_items_only_agreement_id_required(division_director_auth_client, loaded_db):
     data = {"agreement_id": 1}
-    response = auth_client.post("/api/v1/budget-line-items/", json=data)
+    response = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 201
     assert response.json["id"] is not None
     assert response.json["agreement_id"] == 1
@@ -854,7 +854,7 @@ def test_delete_budget_line_items(auth_client, loaded_db, test_can):
     assert not sc
 
 
-def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, test_project):
+def test_budget_line_item_validation_create_invalid(division_director_auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -876,7 +876,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
         "project_id": test_project.id,
         "project_officer_id": 520,
     }
-    resp = auth_client.post("/api/v1/agreements/", json=data)
+    resp = division_director_auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     agreement_id = resp.json["id"]
@@ -887,7 +887,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
         "agreement_id": agreement_id,
         "status": "PLANNED",
     }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    resp = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 3
@@ -898,7 +898,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
         "amount": 111.11,
         "date_needed": "2025-01-01",
     }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    resp = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     bli_id = resp.json["id"]
@@ -912,7 +912,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can, test_project):
+def test_budget_line_item_validation_patch_to_invalid(division_director_auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -934,7 +934,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
         "project_id": test_project.id,
         "project_officer_id": 520,
     }
-    resp = auth_client.post("/api/v1/agreements/", json=data)
+    resp = division_director_auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     agreement_id = resp.json["id"]
@@ -948,7 +948,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
         "amount": 111.11,
         "date_needed": "2025-01-01",
     }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    resp = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     bli_id = resp.json["id"]
@@ -959,7 +959,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
         "amount": None,
         "date_needed": None,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = division_director_auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == len(data)
@@ -973,7 +973,9 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_client, app, test_can, test_project):
+def test_budget_line_item_validation_patch_to_zero_or_negative_amount(
+    division_director_auth_client, app, test_can, test_project
+):
     session = app.db_session
 
     # create agreement (using API)
@@ -987,7 +989,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
         "project_id": test_project.id,
         "project_officer_id": 520,
     }
-    resp = auth_client.post("/api/v1/agreements/", json=data)
+    resp = division_director_auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     agreement_id = resp.json["id"]
@@ -1001,7 +1003,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
         "amount": 111.11,
         "date_needed": "2025-01-01",
     }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    resp = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     bli_id = resp.json["id"]
@@ -1010,7 +1012,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
     data = {
         "amount": 0,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = division_director_auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
@@ -1019,7 +1021,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
     data = {
         "amount": -222.22,
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = division_director_auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
@@ -1033,7 +1035,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, test_can, test_project):
+def test_budget_line_item_validation_patch_to_invalid_date(division_director_auth_client, app, test_can, test_project):
     session = app.db_session
 
     # create agreement (using API)
@@ -1047,7 +1049,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
         "project_id": test_project.id,
         "project_officer_id": 520,
     }
-    resp = auth_client.post("/api/v1/agreements/", json=data)
+    resp = division_director_auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     agreement_id = resp.json["id"]
@@ -1061,7 +1063,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
         "amount": 111.11,
         "date_needed": "2025-01-01",
     }
-    resp = auth_client.post("/api/v1/budget-line-items/", json=data)
+    resp = division_director_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     bli_id = resp.json["id"]
@@ -1070,7 +1072,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
     data = {
         "date_needed": "1900-01-01",
     }
-    resp = auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
+    resp = division_director_auth_client.patch(f"/api/v1/budget-line-items/{bli_id}", json=data)
     assert resp.status_code == 400
     assert "_schema" in resp.json
     assert len(resp.json["_schema"]) == 1
