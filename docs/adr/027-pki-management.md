@@ -26,7 +26,7 @@ The relevant key data will be provided into a running container via environment 
 Key data can be secured using standardized and purpose-built Azure mechanisms and also providing resiliency mechanisms.
 This method also keeps key pairs used in persistent running environments out of our codebase, which would then be
 distributed in local caches, or any other independent configuration management.
-Storing and securing keys in this matter also allows for consistent and secure re-creation and rotation of keys
+Storing and securing keys in this manner also allows for consistent and secure re-creation and rotation of keys
 as the need arises.
 
 ## Other
