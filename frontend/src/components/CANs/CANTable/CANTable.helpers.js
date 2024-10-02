@@ -4,8 +4,8 @@
  * @returns {Date} The last day of the fiscal year
  */
 const getLastDayOfFiscalYear = (fiscalYear) => {
-    // Fiscal year ends on September 30
-    return new Date(fiscalYear, 8, 30); // Month is 0-indexed, so 8 is September
+    // Fiscal year ends on September 30 of the previous calendar year
+    return new Date(fiscalYear - 1, 8, 30); // Month is 0-indexed, so 8 is September
 };
 /**
  * Formats the obligate by date to the last day of the fiscal year.
