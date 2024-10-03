@@ -11,6 +11,8 @@ from ops_api.ops.views import (
     AZURE_SAS_TOKEN_VIEW_FUNC,
     BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC,
     BUDGET_LINE_ITEMS_LIST_API_VIEW_FUNC,
+    CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC,
+    CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC,
     CAN_FUNDING_BUDGET_ITEM_API_VIEW_FUNC,
     CAN_FUNDING_BUDGET_LIST_API_VIEW_FUNC,
     CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,
@@ -101,6 +103,14 @@ def register_api(api_bp: Blueprint) -> None:
 
     api_bp.add_url_rule("/can-funding-budgets/", view_func=CAN_FUNDING_BUDGET_LIST_API_VIEW_FUNC)
 
+    api_bp.add_url_rule(
+        "/cans-funding-received/",
+        view_func=CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC,
+    )
+    api_bp.add_url_rule(
+        "/cans-funding-received/<int:id>",
+        view_func=CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC,
+    )
     api_bp.add_url_rule(
         "/ops-db-histories/",
         view_func=OPS_DB_HISTORY_LIST_API_VIEW_FUNC,
