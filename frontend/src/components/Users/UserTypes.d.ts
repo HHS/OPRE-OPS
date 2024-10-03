@@ -1,3 +1,5 @@
+import { UserRoles } from "./User.constants";
+
 export type SafeUser = {
     email: string;
     full_name: string;
@@ -14,7 +16,7 @@ export type User = {
     id: number;
     last_name: string;
     oidc_id: string;
-    roles: UserRoles[];
+    roles: UserRolesValues[];
     status: UserStatus;
     created_by?: number;
     created_on: Date;
@@ -22,5 +24,6 @@ export type User = {
     updated_on: Date;
 };
 
-type UserRoles = "USER_ADMIN" | "BUDGET_TEAM" | "admin" | "division-director" | "user" | "unassigned";
+type UserRoleValues = (typeof UserRoles)[keyof typeof UserRoles];
+
 type UserStatus = "ACTIVE" | "INACTIVE" | "LOCKED";
