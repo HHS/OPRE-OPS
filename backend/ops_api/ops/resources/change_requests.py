@@ -145,7 +145,7 @@ class ChangeRequestReviewAPI(BaseListAPI):
     def post(self) -> Response:
         can_update_request = self.division_director_of_change_request()
         if not can_update_request:
-            return make_response_with_headers({}, 401)
+            return make_response_with_headers({}, 403)
         request_json = request.get_json()
         change_request_id = request_json.get("change_request_id")
         reviewer_notes = request_json.get("reviewer_notes", None)

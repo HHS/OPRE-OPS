@@ -159,3 +159,35 @@ class DivisionDirectorAuthClient(FlaskClient):
         current_app.db_session.commit()
 
         return super().open(*args, **kwargs)
+
+
+class Division6DirectorAuthClient(FlaskClient):
+    """
+    Auth Client for Director of Division 6
+    """
+
+    def open(self, *args, **kwargs):
+        user = User(
+            id="525",
+            oidc_id="00000000-0000-1111-a111-000000000022",
+            email="director.derrek@email.com",
+            first_name="Director",
+            last_name="Derrek",
+            division=6,
+        )
+
+        additional_claims = {}
+        if user.roles:
+            additional_claims["roles"] = [role.name for role in user.roles]
+
+        access_token = create_access_token(identity=user, additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=user)
+        kwargs.setdefault("headers", {"Authorization": f"Bearer {access_token}"})
+
+        user_session = _get_or_create_user_session(user, access_token=access_token, refresh_token=refresh_token)
+        user_session.access_token = access_token
+        user_session.refresh_token = refresh_token
+        current_app.db_session.add(user_session)
+        current_app.db_session.commit()
+
+        return super().open(*args, **kwargs)

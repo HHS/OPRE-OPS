@@ -549,29 +549,23 @@ def test_status_change_request_creates_procurement_workflow(
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_change_request_review_auth(no_perms_auth_client, division_director_auth_client, app, test_user, test_bli):
-    session = app.db_session
-
-    # create a change request
-    change_request1 = BudgetLineItemChangeRequest()
-    change_request1.status = ChangeRequestStatus.IN_REVIEW
-    change_request1.budget_line_item_id = test_bli.id
-    change_request1.agreement_id = 1
-    change_request1.created_by = test_user.id
-    change_request1.managing_division_id = 1
-    change_request1.requested_change_data = {"key": "value"}
-    session.add(change_request1)
-    session.commit()
-
-    assert change_request1.id is not None
-    change_request_id = change_request1.id
+def test_change_request_review_auth(
+    no_perms_auth_client, division_director_auth_client, division_6_director_auth_client, test_change_request
+):
 
     # verify access denied for use with no permissions (no roles) and not a DD or DDD
-    data = {"change_request_id": change_request_id, "action": "APPROVE"}
+    data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
     response = no_perms_auth_client.post(url_for("api.change-request-review-list"), json=data)
     assert response.status_code == 401  # The app is using 401 where it should be 403s
 
+    # verify that division directors cannot approve/deny change requests outside their division.
+    data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
+    response = division_6_director_auth_client.post(url_for("api.change-request-review-list"), json=data)
+    assert response.status_code == 403
+
     # verify access now granted
-    data = {"change_request_id": change_request_id, "action": "APPROVE"}
+    data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
     response = division_director_auth_client.post(url_for("api.change-request-review-list"), json=data)
     assert response.status_code == 200
+
+    # delete change request
