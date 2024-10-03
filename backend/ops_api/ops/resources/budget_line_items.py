@@ -37,42 +37,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 ENDPOINT_STRING = "/budget-line-items"
 
 
-# def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
-#     jwt_identity = get_jwt_identity()
-#     budget_line_item: BudgetLineItem = current_app.db_session.get(BudgetLineItem, id)
-#     try:
-#         agreement = budget_line_item.agreement
-#     except AttributeError as e:
-#         # No BLI found in the DB. Erroring out.
-#         raise ExtraCheckError({}) from e
-
-#     if agreement is None:
-#         # We are faking a validation check at this point. We know there is no agreement associated with the BLI.
-#         # This is made to emulate the validation check from a marshmallow schema.
-#         if permission_type == PermissionType.PUT:
-#             raise ExtraCheckError(
-#                 {
-#                     "_schema": ["BLI must have an Agreement when status is not DRAFT"],
-#                     "agreement_id": ["Missing data for required field."],
-#                 }
-#             )
-#         elif permission_type == PermissionType.PATCH:
-#             raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
-#         else:
-#             raise ExtraCheckError({})
-
-#     oidc_ids = set()
-#     if agreement.created_by_user:
-#         oidc_ids.add(str(agreement.created_by_user.oidc_id))
-#     if agreement.project_officer:
-#         oidc_ids.add(str(agreement.project_officer.oidc_id))
-#     oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-#     ret = jwt_identity in oidc_ids
-
-#     return ret
-
-
 def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
     division = (
         current_app.db_session.query(Division)
