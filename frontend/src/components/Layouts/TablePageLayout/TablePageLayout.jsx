@@ -7,31 +7,33 @@ import icons from "../../../uswds/img/sprite.svg";
  *
  * @component
  * @param {object} props - The component props.
- * @param {React.ReactNode} [props.children] - The children to render - optional.
- * @param {string} props.title - The title to display.
- * @param {string} props.subtitle - The subtitle to display.
- * @param {string} props.details - The details to display.
- * @param {React.ReactNode} props.TabsSection - The tabs to display.
- * @param {React.ReactNode} [props.FilterTags] - The filter tags to display.
  * @param {React.ReactNode} [props.FilterButton] - The filter button to display.
- * @param {React.ReactNode} [props.TableSection] - The table to display.
+ * @param {React.ReactNode} [props.FilterTags] - The filter tags to display.
+ * @param {React.ReactNode} [props.FYSelect] - The fiscal year select to display.
  * @param {React.ReactNode} [props.SummaryCardsSection] - The summary cards to display.
- * @param {string} [props.buttonText] - The text to display on the button.
+ * @param {React.ReactNode} [props.TableSection] - The table to display.
+ * @param {React.ReactNode} [props.children] - The children to render - optional.
+ * @param {React.ReactNode} props.TabsSection - The tabs to display.
  * @param {string} [props.buttonLink] - The link to navigate to when the button is clicked.
+ * @param {string} [props.buttonText] - The text to display on the button.
+ * @param {string} props.details - The details to display.
+ * @param {string} props.subtitle - The subtitle to display.
+ * @param {string} props.title - The title to display.
  * @returns {JSX.Element} - The rendered component.
  */
 export const TablePageLayout = ({
-    children,
-    title,
-    subtitle,
-    details,
-    TabsSection,
-    FilterTags = null,
-    SummaryCardsSection,
     FilterButton = null,
+    FilterTags = null,
+    FYSelect,
+    SummaryCardsSection,
     TableSection = null,
+    TabsSection,
+    buttonLink,
     buttonText,
-    buttonLink
+    children,
+    details,
+    subtitle,
+    title
 }) => {
     return (
         <>
@@ -52,7 +54,10 @@ export const TablePageLayout = ({
                     </Link>
                 )}
             </div>
-            {TabsSection}
+            <div className="display-flex flex-align-center flex-justify padding-y-1">
+                {TabsSection}
+                {FYSelect && FYSelect}
+            </div>
             <div className="display-flex flex-justify padding-y-1">
                 <div>
                     <h2 className="margin-0">{subtitle}</h2>
@@ -71,15 +76,16 @@ export const TablePageLayout = ({
 export default TablePageLayout;
 
 TablePageLayout.propTypes = {
-    children: PropTypes.node,
-    title: PropTypes.string.isRequired,
-    subtitle: PropTypes.string.isRequired,
-    details: PropTypes.string.isRequired,
-    TabsSection: PropTypes.node.isRequired,
-    FilterTags: PropTypes.node,
     FilterButton: PropTypes.node,
-    TableSection: PropTypes.node,
+    FilterTags: PropTypes.node,
+    FYSelect: PropTypes.node,
     SummaryCardsSection: PropTypes.node,
+    TableSection: PropTypes.node,
+    TabsSection: PropTypes.node.isRequired,
+    buttonLink: PropTypes.string,
     buttonText: PropTypes.string,
-    buttonLink: PropTypes.string
+    children: PropTypes.node,
+    details: PropTypes.string.isRequired,
+    subtitle: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired
 };

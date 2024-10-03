@@ -5,6 +5,8 @@ import App from "../../../App";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import FiscalYear from "../../../components/UI/FiscalYear";
+import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import ErrorPage from "../../ErrorPage";
 import { sortAndFilterCANs } from "./CanList.helpers";
 
@@ -20,6 +22,7 @@ const CanList = () => {
     const { data: canList, isError, isLoading } = useGetCansQuery({});
     const activeUser = useSelector((state) => state.auth.activeUser);
     const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser) || [];
+    const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
 
     if (isLoading) {
         return (
@@ -31,6 +34,15 @@ const CanList = () => {
     if (isError) {
         return <ErrorPage />;
     }
+
+    const CANFiscalYearSelect = () => {
+        return (
+            <FiscalYear
+                fiscalYear={selectedFiscalYear}
+                handleChangeFiscalYear={setSelectedFiscalYear}
+            />
+        );
+    };
     // TODO: remove flag once CANS are ready
     return (
         import.meta.env.DEV && (
@@ -45,6 +57,7 @@ const CanList = () => {
                     }
                     TabsSection={<CANTags />}
                     TableSection={<CANTable cans={sortedCANs} />}
+                    FYSelect={<CANFiscalYearSelect />}
                 />
             </App>
         )
