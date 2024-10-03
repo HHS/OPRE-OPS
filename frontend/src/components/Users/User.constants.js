@@ -18,3 +18,17 @@ export const USER_ROLES = {
     USER: "user",
     UNASSIGNED: "unassigned"
 };
+
+/**
+ * Enum for User statuses.
+ * This object maps the statuses that can be assigned to a user to their string representations.
+ * @enum {string}
+ * @property {string} ACTIVE - Represents an active status.
+ * @property {string} INACTIVE - Represents an inactive status.
+ * @property {string} LOCKED - Represents a locked status.
+ */
+export const USER_STATUS = {
+    ACTIVE: "ACTIVE",
+    INACTIVE: "INACTIVE",
+    LOCKED: "LOCKED"
+};
