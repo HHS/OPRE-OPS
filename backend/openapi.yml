@@ -2836,8 +2836,17 @@ components:
           type: string
         full_name:
           type: string
-        role:
-          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+              - admin
+              - BUDGET_TEAM
+              - division-director
+              - unassigned
+              - user
+              - USER_ADMIN
         last_name:
           type: string
         id:
