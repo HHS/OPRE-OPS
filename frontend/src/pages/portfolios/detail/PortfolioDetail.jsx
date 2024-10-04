@@ -20,7 +20,8 @@ const PortfolioDetail = () => {
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id);
     const portfolioCans = useSelector((state) => state.portfolio.portfolioCans);
-    const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
+    const selectedFiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
+    const fiscalYear = Number(selectedFiscalYear.value);
     const portfolio = useSelector((state) => state.portfolio.portfolio);
 
     // Get initial Portfolio data (not dependent on fiscal year)
