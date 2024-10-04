@@ -21,8 +21,9 @@ const CanList = () => {
     const myCANsUrl = searchParams.get("filter") === "my-cans";
     const { data: canList, isError, isLoading } = useGetCansQuery({});
     const activeUser = useSelector((state) => state.auth.activeUser);
-    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser) || [];
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
+    const fiscalYear = Number(selectedFiscalYear.value);
+    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, fiscalYear) || [];
 
     if (isLoading) {
         return (
@@ -56,7 +57,12 @@ const CanList = () => {
                             : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
                     }
                     TabsSection={<CANTags />}
-                    TableSection={<CANTable cans={sortedCANs} />}
+                    TableSection={
+                        <CANTable
+                            cans={sortedCANs}
+                            fiscalYear={fiscalYear}
+                        />
+                    }
                     FYSelect={<CANFiscalYearSelect />}
                 />
             </App>
