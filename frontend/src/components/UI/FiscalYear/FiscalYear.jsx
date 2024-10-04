@@ -22,7 +22,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
     return (
         <div
             className="display-flex flex-justify flex-align-center"
-            style={{ width: "170px" }}
+            style={{ width: "10.625rem" }}
         >
             <label
                 className="font-sans-xs"
@@ -33,7 +33,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
             <select
                 id="fiscal-year-select"
                 className="usa-select margin-left-1"
-                style={{ width: "80px" }}
+                style={{ width: "5rem" }}
                 onChange={onChangeFiscalYear}
                 value={fiscalYear?.value}
             >
