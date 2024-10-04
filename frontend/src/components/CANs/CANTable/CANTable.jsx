@@ -15,6 +15,7 @@ import { formatObligateBy } from "./CANTable.helpers";
  * @returns {JSX.Element}
  */
 const CANTable = ({ cans }) => {
+    // TODO: once in prod, change this to 25
     const CANS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = React.useState(1);
     let cansPerPage = [...cans];

@@ -1,6 +1,5 @@
 import constants from "../../../constants";
 import { useDispatch } from "react-redux";
-import styles from "./FiscalYear.module.css";
 
 /**
  * FiscalYear component for selecting a fiscal year
@@ -20,19 +19,21 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
         dispatch(handleChangeFiscalYear({ value: event.target.value }));
     };
 
-    const fiscalYearClasses = `usa-select ${styles.fiscalYearSelector}`;
-
     return (
-        <div className={styles.container}>
+        <div
+            className="display-flex flex-justify flex-align-center"
+            style={{ width: "170px" }}
+        >
             <label
-                className="font-sans-xs text-bold"
+                className="font-sans-xs"
                 htmlFor="fiscal-year-select"
             >
                 Fiscal Year
             </label>
             <select
                 id="fiscal-year-select"
-                className={fiscalYearClasses}
+                className="usa-select margin-left-1"
+                style={{ width: "80px" }}
                 onChange={onChangeFiscalYear}
                 value={fiscalYear?.value}
             >
