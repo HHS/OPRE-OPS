@@ -23,7 +23,7 @@ const CanList = () => {
     const activeUser = useSelector((state) => state.auth.activeUser);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
-    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, fiscalYear) || [];
+    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser) || [];
 
     if (isLoading) {
         return (
@@ -39,7 +39,7 @@ const CanList = () => {
     const CANFiscalYearSelect = () => {
         return (
             <FiscalYear
-                fiscalYear={selectedFiscalYear}
+                fiscalYear={fiscalYear}
                 handleChangeFiscalYear={setSelectedFiscalYear}
             />
         );

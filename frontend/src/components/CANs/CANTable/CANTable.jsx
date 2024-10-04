@@ -37,7 +37,7 @@ const CANTable = ({ cans, fiscalYear }) => {
      */
     function findFundingBudgetFYByFiscalYear(can) {
         const matchingBudget = can.funding_budgets.find((budget) => budget.fiscal_year === fiscalYear);
-        return matchingBudget ? matchingBudget.fiscal_year : -1;
+        return matchingBudget ? matchingBudget.fiscal_year : 0;
     }
     /**
      * function to filter funding_budgets budget by fiscal year
