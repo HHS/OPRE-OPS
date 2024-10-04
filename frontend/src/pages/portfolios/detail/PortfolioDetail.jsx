@@ -41,7 +41,7 @@ const PortfolioDetail = () => {
     // Get CAN data for the Portfolio (dependent on fiscal year)
     useEffect(() => {
         const getPortfolioCansAndSetState = async () => {
-            const result = await getPortfolioCans(portfolioId, fiscalYear.value);
+            const result = await getPortfolioCans(portfolioId, fiscalYear);
             dispatch(setPortfolioCans(result));
         };
 
@@ -50,7 +50,7 @@ const PortfolioDetail = () => {
         return () => {
             dispatch(setPortfolioCans([]));
         };
-    }, [dispatch, portfolioId, fiscalYear]);
+    }, [dispatch, portfolioId, selectedFiscalYear]);
 
     // Get CAN Funding Data (dependent on fiscal year)
     useEffect(() => {
@@ -59,7 +59,7 @@ const PortfolioDetail = () => {
             dispatch(setPortfolioCansFundingDetails(result));
         };
 
-        const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: fiscalYear.value }));
+        const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: fiscalYear }));
 
         if (canData.length > 0) {
             getPortfolioCansFundingDetailsAndSetState(canData).catch(console.error);
@@ -67,13 +67,13 @@ const PortfolioDetail = () => {
         return () => {
             dispatch(setPortfolioCansFundingDetails([]));
         };
-    }, [dispatch, fiscalYear, portfolioCans]);
+    }, [dispatch, selectedFiscalYear, portfolioCans]);
 
     const canCards = portfolioCans.length
         ? portfolioCans.map((can, i) => (
               <CanCard
                   can={can}
-                  fiscalYear={fiscalYear.value}
+                  fiscalYear={fiscalYear}
                   key={i}
               />
           ))
