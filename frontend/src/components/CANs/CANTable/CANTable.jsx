@@ -1,7 +1,11 @@
 import PropTypes from "prop-types";
 import React from "react";
 import PaginationNav from "../../UI/PaginationNav";
-import { formatObligateBy } from "./CANTable.helpers";
+import {
+    formatObligateBy,
+    findFundingBudgetBudgetByFiscalYear,
+    findFundingBudgetFYByFiscalYear
+} from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
@@ -12,7 +16,7 @@ import styles from "./style.module.css";
  * @typedef {import("../CANTypes").CAN} CAN
  * @param {Object} props
  * @param {CAN[]} props.cans - Array of CANs
- * @param {number|null} props.fiscalYear - Fiscal year to filter by
+ * @param {number} props.fiscalYear - Fiscal year to filter by
  * @returns {JSX.Element}
  */
 const CANTable = ({ cans, fiscalYear }) => {
@@ -27,26 +31,8 @@ const CANTable = ({ cans, fiscalYear }) => {
     let cansPerPage = [...filteredCANsByFiscalYear];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
 
-    if (cans.length === 0) {
+    if (cansPerPage.length === 0) {
         return <p className="text-center">No CANs found</p>;
-    }
-    /**
-     * function to filter funding_budgets fiscal year by fiscal year
-     * @param {CAN} can - CAN object
-     * @returns {number} - Fiscal year of the funding budget
-     */
-    function findFundingBudgetFYByFiscalYear(can) {
-        const matchingBudget = can.funding_budgets.find((budget) => budget.fiscal_year === fiscalYear);
-        return matchingBudget ? matchingBudget.fiscal_year : 0;
-    }
-    /**
-     * function to filter funding_budgets budget by fiscal year
-     * @param {CAN} can - CAN object
-     * @returns {number} - Fiscal year of the funding budget
-     */
-    function findFundingBudgetBudgetByFiscalYear(can) {
-        const matchingBudget = can.funding_budgets.find((budget) => budget.fiscal_year === fiscalYear);
-        return matchingBudget ? matchingBudget.budget : 0;
     }
 
     return (
@@ -61,11 +47,11 @@ const CANTable = ({ cans, fiscalYear }) => {
                             name={can.display_name ?? "TBD"}
                             nickname={can.nick_name ?? "TBD"}
                             portfolio={can.portfolio.abbreviation}
-                            fiscalYear={findFundingBudgetFYByFiscalYear(can)}
+                            fiscalYear={findFundingBudgetFYByFiscalYear(can, fiscalYear)}
                             activePeriod={can.active_period ?? 0}
                             obligateBy={formatObligateBy(can.obligate_by)}
                             transfer={can.funding_details.method_of_transfer ?? "TBD"}
-                            fyBudget={findFundingBudgetBudgetByFiscalYear(can)}
+                            fyBudget={findFundingBudgetBudgetByFiscalYear(can, fiscalYear)}
                         />
                     ))}
                 </tbody>
