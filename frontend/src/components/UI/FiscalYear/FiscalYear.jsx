@@ -1,10 +1,10 @@
-import constants from "../../../constants";
 import { useDispatch } from "react-redux";
+import constants from "../../../constants";
 
 /**
  * FiscalYear component for selecting a fiscal year
  * @param {Object} props - Component props
- * @param {Object} props.fiscalYear - Current fiscal year object
+ * @param {number} props.fiscalYear - Current fiscal year selected
  * @param {Function} props.handleChangeFiscalYear - Function to handle fiscal year change
  * @returns {JSX.Element} FiscalYear component
  */
@@ -35,7 +35,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
                 className="usa-select margin-left-1"
                 style={{ width: "5rem" }}
                 onChange={onChangeFiscalYear}
-                value={fiscalYear?.value}
+                value={fiscalYear}
             >
                 {constants.fiscalYears.map((year) => {
                     return (
