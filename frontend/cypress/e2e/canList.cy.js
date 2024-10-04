@@ -30,10 +30,9 @@ describe("CAN List", () => {
     });
 
     it("should correctly filter all cans or my cans", () => {
-        cy.visit("/cans/");
         cy.get("tbody").children().should("have.length.greaterThan", 2);
-
         cy.visit("/cans/?filter=my-cans");
+        cy.get("#fiscal-year-select").select("2023");
         cy.get("tbody").children().should("have.length", 1);
     });
 
