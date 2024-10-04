@@ -4,6 +4,7 @@ import { terminalLog, testLogin } from "./utils";
 beforeEach(() => {
     testLogin("division-director");
     cy.visit("/cans").wait(1000);
+    cy.get("#fiscal-year-select").select("2023");
 });
 
 afterEach(() => {
