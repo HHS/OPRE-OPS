@@ -1,11 +1,10 @@
 import PropTypes from "prop-types";
 import React from "react";
 import PaginationNav from "../../UI/PaginationNav";
+import { formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
-import { formatObligateBy } from "./CANTable.helpers";
-import DebugCode from "../../DebugCode";
 
 /**
  * CANTable component of CanList
@@ -79,7 +78,6 @@ const CANTable = ({ cans, fiscalYear }) => {
                     itemsPerPage={CANS_PER_PAGE}
                 />
             )}
-            <DebugCode data={filteredCANsByFiscalYear} />
         </>
     );
 };
