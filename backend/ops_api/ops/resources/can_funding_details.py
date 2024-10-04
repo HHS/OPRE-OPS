@@ -5,7 +5,7 @@ from models import OpsEventType
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
-from ops_api.ops.schemas.cans import CreateUpdateFundingBudgetSchema, FundingDetailsSchema
+from ops_api.ops.schemas.cans import CreateUpdateFundingDetailsSchema, FundingDetailsSchema
 from ops_api.ops.services.can_funding_details import CANFundingDetailsService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.events import OpsEventHandler
@@ -31,7 +31,7 @@ class CANFundingDetailsItemAPI(BaseItemAPI):
         with OpsEventHandler(OpsEventType.UPDATE_CAN_FUNDING_DETAILS) as meta:
             request_data = request.get_json()
             # Setting partial to true ignores any missing fields.
-            schema = CreateUpdateFundingBudgetSchema(partial=True)
+            schema = CreateUpdateFundingDetailsSchema(partial=True)
             serialized_request = schema.load(request_data)
 
             updated_funding_details = self.service.update(serialized_request, id)
@@ -46,7 +46,7 @@ class CANFundingDetailsItemAPI(BaseItemAPI):
         """
         with OpsEventHandler(OpsEventType.UPDATE_CAN_FUNDING_DETAILS) as meta:
             request_data = request.get_json()
-            schema = CreateUpdateFundingBudgetSchema()
+            schema = CreateUpdateFundingDetailsSchema()
             serialized_request = schema.load(request_data)
 
             updated_funding_details = self.service.update(serialized_request, id)
@@ -84,7 +84,7 @@ class CANFundingDetailsListAPI(BaseListAPI):
         """
         with OpsEventHandler(OpsEventType.CREATE_CAN_FUNDING_DETAILS) as meta:
             request_data = request.get_json()
-            schema = CreateUpdateFundingBudgetSchema()
+            schema = CreateUpdateFundingDetailsSchema()
             serialized_request = schema.load(request_data)
 
             created_funding_details = self.service.create(serialized_request)
