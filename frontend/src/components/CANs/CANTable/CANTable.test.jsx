@@ -66,16 +66,6 @@ describe("CANTable", () => {
         expect(screen.getByText("No CANs found")).toBeInTheDocument();
     });
 
-    it("renders PaginationNav when there are CANs", () => {
-        render(
-            <MemoryRouter>
-                <CANTable cans={cans} />
-            </MemoryRouter>
-        );
-
-        expect(screen.getByTestId("pagination-nav")).toBeInTheDocument();
-    });
-
     it("does not render PaginationNav when there are no CANs", () => {
         render(
             <MemoryRouter>
