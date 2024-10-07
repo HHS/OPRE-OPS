@@ -1,12 +1,15 @@
-import store from "../../../store";
-import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
+import { Provider } from "react-redux";
+import store from "../../../store";
 import FiscalYear from "./FiscalYear";
 
 it("renders without crashing", () => {
     render(
         <Provider store={store}>
-            <FiscalYear />
+            <FiscalYear
+                fiscalYear={2024}
+                handleChangeFiscalYear={() => {}}
+            />
         </Provider>
     );
 });

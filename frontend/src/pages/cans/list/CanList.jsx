@@ -5,6 +5,8 @@ import App from "../../../App";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import FiscalYear from "../../../components/UI/FiscalYear";
+import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import ErrorPage from "../../ErrorPage";
 import { sortAndFilterCANs } from "./CanList.helpers";
 
@@ -19,6 +21,8 @@ const CanList = () => {
     const myCANsUrl = searchParams.get("filter") === "my-cans";
     const { data: canList, isError, isLoading } = useGetCansQuery({});
     const activeUser = useSelector((state) => state.auth.activeUser);
+    const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
+    const fiscalYear = Number(selectedFiscalYear.value);
     const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser) || [];
 
     if (isLoading) {
@@ -31,6 +35,15 @@ const CanList = () => {
     if (isError) {
         return <ErrorPage />;
     }
+
+    const CANFiscalYearSelect = () => {
+        return (
+            <FiscalYear
+                fiscalYear={fiscalYear}
+                handleChangeFiscalYear={setSelectedFiscalYear}
+            />
+        );
+    };
     // TODO: remove flag once CANS are ready
     return (
         import.meta.env.DEV && (
@@ -44,7 +57,13 @@ const CanList = () => {
                             : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
                     }
                     TabsSection={<CANTags />}
-                    TableSection={<CANTable cans={sortedCANs} />}
+                    TableSection={
+                        <CANTable
+                            cans={sortedCANs}
+                            fiscalYear={fiscalYear}
+                        />
+                    }
+                    FYSelect={<CANFiscalYearSelect />}
                 />
             </App>
         )

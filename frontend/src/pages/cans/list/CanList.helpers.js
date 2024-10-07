@@ -28,6 +28,7 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser) => {
         }
         // Filter based on team members
         // TODO: add project officers per #2884
+
         if (roles.includes(USER_ROLES.USER)) {
             return can.budget_line_items.some((bli) => bli.team_members.some((member) => member.id === userId));
         }
