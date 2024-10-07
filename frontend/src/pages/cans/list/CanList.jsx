@@ -25,11 +25,10 @@ const CanList = () => {
     const activeUser = useSelector((state) => state.auth.activeUser);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
-    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser) || [];
-
     const [filters, setFilters] = React.useState({
         activePeriod: []
     });
+    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, filters) || [];
 
     if (isLoading) {
         return (

@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "react-modal";
 import FilterButton from "../../../../components/UI/FilterButton";
+import CANActivePeriodComboBox from "../../../../components/CANs/CANActivePeriodComboBox";
 
 /**
  * A filter for CANs list.
@@ -21,7 +22,7 @@ export const CANFilterButton = ({ filters, setFilters }) => {
         setFilters((prevState) => {
             return {
                 ...prevState,
-                setActivePeriod: activePeriod
+                activePeriod: activePeriod
             };
         });
     };
@@ -37,10 +38,14 @@ export const CANFilterButton = ({ filters, setFilters }) => {
 
     const fieldsetList = [
         <fieldset
-            key="field2"
+            key="field-1"
             className={fieldStyles}
         >
-            <p>todo: Add select</p>
+            <CANActivePeriodComboBox
+                activePeriod={activePeriod}
+                setActivePeriod={setActivePeriod}
+                overrideStyles={{ width: "187px" }}
+            />
         </fieldset>
     ];
 

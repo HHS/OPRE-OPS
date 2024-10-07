@@ -1,4 +1,14 @@
 import { USER_ROLES } from "../../../components/Users/User.constants";
+/**
+ * @typedef {Object} FilterOption
+ * @property {number} id
+ * @property {number|string} title
+ */
+/**
+ * @typedef {Object} Filters
+ * @property {FilterOption[]} [activePeriod]
+ * // Add other filter types here
+ */
 
 /**
  * Sorts an array of CANs by obligateBy date in descending order.
@@ -6,16 +16,18 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
  * @param {CAN[]} cans - The array of CANs to sort.
  * @param {boolean} myCANsUrl - The URL parameter to filter by "my-CANs".
  * @param {import("../../../components/Users/UserTypes").User} activeUser - The active user.
- * @returns {CAN[] | undefined} - The sorted array of CANs.
+ * @param {Filters} filters - The filters to apply.
+ * @returns {CAN[]} - The sorted array of CANs.
  */
-export const sortAndFilterCANs = (cans, myCANsUrl, activeUser) => {
+export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
     if (!cans || cans.length === 0) {
         return [];
     }
+    console.log({ filters });
 
     const { roles, id: userId, division: userDivisionId } = activeUser;
-
-    const filteredCANs = cans.filter((can) => {
+    // NOTE: Role-based filtering
+    let filteredCANs = cans.filter((can) => {
         // Always include CAN if the user is not filtering by "my-CANs"
         if (!myCANsUrl) return true;
 
@@ -36,6 +48,9 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser) => {
         return false;
     });
 
+    // NOTE: Filter by filter prop
+    filteredCANs = applyAdditionalFilters(filteredCANs, filters);
+
     return sortCANs(filteredCANs);
 };
 
@@ -54,4 +69,31 @@ const sortCANs = (cans) => {
         const dateB = b.obligate_by ? new Date(b.obligate_by).getTime() : 0;
         return dateB - dateA;
     });
+};
+
+/**
+ * Applies additional filters to the CANs.
+ * @param {CAN[]} cans - The array of CANs to filter.
+ * @param {Filters} filters - The filters to apply.
+ * @returns {CAN[]} - The filtered array of CANs.
+ */
+const applyAdditionalFilters = (cans, filters) => {
+    let filteredCANs = cans;
+
+    // Filter by active period
+    if (filters.activePeriod && filters.activePeriod.length > 0) {
+        filteredCANs = filteredCANs.filter((can) =>
+            filters.activePeriod.some((period) => period.id === can.active_period)
+        );
+    }
+
+    // TODO: Add other filters here
+    // Example:
+    // if (filters.someOtherFilter && filters.someOtherFilter.length > 0) {
+    //     filteredCANs = filteredCANs.filter((can) => {
+    //         // Apply some other filter logic
+    //     });
+    // }
+
+    return filteredCANs;
 };
