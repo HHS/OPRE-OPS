@@ -35,14 +35,14 @@ def main(
         conn.execute(text("SELECT 1"))
         logger.info("Successfully connected to the database.")
 
-    csv_f = get_csv(input_csv, script_config)
-
-    logger.info(f"Loaded CSV file from {input_csv}.")
-
-    # write csv_f DictReader to a file
-    with open(output_csv, "w") as f:
-        writer = csv.writer(f, dialect="excel-tab")
-        writer.writerows(csv_f)
+    # csv_f = get_csv(input_csv, script_config)
+    #
+    # logger.info(f"Loaded CSV file from {input_csv}.")
+    #
+    # # write csv_f DictReader to a file
+    # with open(output_csv, "w") as f:
+    #     writer = csv.writer(f, dialect="excel-tab")
+    #     writer.writerows(csv_f)
 
     logger.info("Finished the ETL process.")
 
