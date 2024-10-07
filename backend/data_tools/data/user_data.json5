@@ -539,6 +539,15 @@
       roles: [{"tablename":  "role", "id": 5}, {"tablename":  "role", "id": 6}],
       groups: [],
       status: "ACTIVE"
+    },
+    { // 524
+      first_name: "John",
+      last_name: "McDill",
+      division: 1,
+      email: "john.mcdill@acf.hhs.gov",
+      roles: [{"tablename":  "role", "id": 2}],
+      groups: [],
+      status: "ACTIVE"
     }
   ],
   notification: [

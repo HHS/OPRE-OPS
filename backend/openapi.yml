@@ -291,11 +291,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANRequestSchema"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANRequestSchema"
       responses:
         "200":
           description: CAN Updated
@@ -329,11 +329,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANRequestSchema"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANRequestSchema"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANRequestSchema"
       responses:
         "200":
           description: CAN Updated
@@ -559,11 +559,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
       responses:
         "201":
           description: Created
@@ -625,11 +625,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
       responses:
         "200":
           description: CANFundingBudget Updated
@@ -663,11 +663,11 @@ paths:
         required: true
         content:
           application/json:
-              schema:
-                $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
-              examples:
-                "0":
-                  $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
+            schema:
+              $ref: "#/components/schemas/CreateUpdateCANFundingBudgetRequest"
+            examples:
+              "0":
+                $ref: "#/components/examples/CreateUpdateCANFundingBudgetRequest"
       responses:
         "200":
           description: CAN Updated
@@ -2523,6 +2523,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BudgetLineItem"
+        description:
+          type: string
         display_name:
           type: string
         funding_budgets:
@@ -2539,8 +2541,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FundingReceived"
+        id:
+          type: integer
+        nick_name:
+          type: string
         number:
           type: string
+        obligate_by:
+          type: integer
         portfolio:
           type: integer
         portfolio_id:
@@ -2549,12 +2557,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Project"
-        nick_name:
-          type: string
-        description:
-          type: string
-        id:
-          type: integer
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -2834,8 +2836,17 @@ components:
           type: string
         full_name:
           type: string
-        role:
-          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+              - admin
+              - BUDGET_TEAM
+              - division-director
+              - unassigned
+              - user
+              - USER_ADMIN
         last_name:
           type: string
         id:

@@ -5,32 +5,33 @@ import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { displayActivePeriod } from "./CANTableRow.helpers";
 
 /**
  * CanTableRow component of CANTable
  * @component
  * @param {Object} props
+ * @param {number} props.activePeriod - Active Period in years
+ * @param {number} props.canId - CAN ID
+ * @param {number} props.fiscalYear - Fiscal Year
+ * @param {number} props.fyBudget - Fiscal Year Budget
  * @param {string} props.name - CAN name
  * @param {string} props.nickname - CAN nickname
- * @param {string} props.portfolio - Portfolio abbreviation
- * @param {number} props.fiscalYear - Fiscal Year
- * @param {number} props.activePeriod - Active Period in years
  * @param {string} props.obligateBy - Obligate By Date
+ * @param {string} props.portfolio - Portfolio abbreviation
  * @param {string} props.transfer - Method of Transfer
- * @param {number} props.fyBudget - Fiscal Year Budget
- * @param {number} props.canId - CAN ID
  * @returns {JSX.Element}
  */
 const CANTableRow = ({
+    activePeriod,
+    canId,
+    fiscalYear,
+    fyBudget,
     name,
     nickname,
-    portfolio,
-    fiscalYear,
-    activePeriod,
     obligateBy,
-    transfer,
-    fyBudget,
-    canId
+    portfolio,
+    transfer
 }) => {
     const { data: fundingSummary, isError, isLoading } = useGetCanFundingSummaryQuery(canId);
     const availableFunds = fundingSummary?.available_funding ?? 0;
@@ -65,7 +66,7 @@ const CANTableRow = ({
             </th>
             <td>{portfolio}</td>
             <td>{fiscalYear}</td>
-            <td>{activePeriod > 1 ? `${activePeriod} years` : `${activePeriod} year`}</td>
+            <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
             <td>{convertCodeForDisplay("methodOfTransfer", transfer)}</td>
             <td>
@@ -93,15 +94,15 @@ const CANTableRow = ({
 };
 
 CANTableRow.propTypes = {
+    activePeriod: PropTypes.number.isRequired,
+    canId: PropTypes.number.isRequired,
+    fiscalYear: PropTypes.number.isRequired,
+    fyBudget: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     nickname: PropTypes.string.isRequired,
-    portfolio: PropTypes.string.isRequired,
-    fiscalYear: PropTypes.number.isRequired,
-    activePeriod: PropTypes.number.isRequired,
     obligateBy: PropTypes.string.isRequired,
-    transfer: PropTypes.string.isRequired,
-    fyBudget: PropTypes.number.isRequired,
-    canId: PropTypes.number.isRequired
+    portfolio: PropTypes.string.isRequired,
+    transfer: PropTypes.string.isRequired
 };
 
 export default CANTableRow;

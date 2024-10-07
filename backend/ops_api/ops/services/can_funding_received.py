@@ -53,20 +53,23 @@ class CANFundingReceivedService:
         """
         Delete a CANFundingReceived with given id. Throw a NotFound error if no CAN corresponding to that ID exists."""
         try:
-            old_funding: CANFundingReceived = current_app.db_session.execute(
-                select(CANFundingReceived).where(CANFundingReceived.id == id)
-            ).scalar_one()
+            old_funding = current_app.db_session.get(CANFundingReceived, id)
+
+            if old_funding is None:
+                raise NotFound(f"No CANFundingReceived found with id {id}")
+
             current_app.db_session.delete(old_funding)
             current_app.db_session.commit()
-        except NoResultFound:
+
+        except NotFound as e:
             current_app.logger.exception(f"Could not find a CANFundingReceived with id {id}")
-            raise NotFound()
+            raise e
 
     def get(self, id: int) -> CANFundingReceived:
         """
         Get an individual CANFundingReceived object by id.
         """
-        stmt = select(CANFundingReceived).where(CANFundingReceived.id == id).order_by(CANFundingReceived.id)
+        stmt = select(CANFundingReceived).where(CANFundingReceived.id == id)
         can_funding_received = current_app.db_session.scalar(stmt)
 
         if can_funding_received:
