@@ -36,6 +36,34 @@ describe("CAN List", () => {
         cy.get("tbody").children().should("have.length", 1);
     });
 
+    it("the filter button works as expected", () => {
+        cy.get("button").contains("Filter").click();
+
+        // set a number of filters
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(".can-active-period-combobox__control")
+            .click()
+            .get(".can-active-period-combobox__menu")
+            .find(".can-active-period-combobox__option")
+            .first()
+            .click();
+        // click the button that has text Apply
+        cy.get("button").contains("Apply").click();
+
+        // check that the table is filtered correctly
+        // table should contain 5 rows
+        cy.get("tbody").find("tr").should("have.length", 5);
+
+        // reset
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // check that the table is filtered correctly
+        // table should have more than 5 rows
+        cy.get("tbody").find("tr").should("have.length.greaterThan", 5);
+    });
+
     it("pagination on the bli table works as expected", () => {
         cy.get("ul").should("have.class", "usa-pagination__list");
         cy.get("li").should("have.class", "usa-pagination__item").contains("1");
