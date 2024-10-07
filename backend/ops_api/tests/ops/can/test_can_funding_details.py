@@ -38,10 +38,10 @@ def test_funding_details_get_by_id(auth_client, mocker, test_can_funding_details
 
 def test_funding_details_service_get_by_id(test_can_funding_details):
     service = CANFundingDetailsService()
-    funding_budget = service.get(test_can_funding_details.id)
-    assert test_can_funding_details.id == funding_budget.id
-    assert test_can_funding_details.fund_code == funding_budget.fund_code
-    assert test_can_funding_details.method_of_transfer == funding_budget.method_of_transfer
+    funding_details = service.get(test_can_funding_details.id)
+    assert test_can_funding_details.id == funding_details.id
+    assert test_can_funding_details.fund_code == funding_details.fund_code
+    assert test_can_funding_details.method_of_transfer == funding_details.method_of_transfer
 
 
 # Testing CANFundingDetails Creation
@@ -83,16 +83,16 @@ def test_service_create_funding_details(loaded_db):
 
     new_budget = service.create(input_data)
 
-    funding_budget = loaded_db.execute(
+    funding_details = loaded_db.execute(
         select(CANFundingDetails).where(CANFundingDetails.id == new_budget.id)
     ).scalar_one()
 
-    assert funding_budget is not None
-    assert funding_budget.fund_code == "AAXXXX20241DAD"
-    assert funding_budget.method_of_transfer == CANMethodOfTransfer.DIRECT
-    assert funding_budget.fiscal_year == 2024
-    assert funding_budget.active_period == 1
-    assert funding_budget == new_budget
+    assert funding_details is not None
+    assert funding_details.fund_code == "AAXXXX20241DAD"
+    assert funding_details.method_of_transfer == CANMethodOfTransfer.DIRECT
+    assert funding_details.fiscal_year == 2024
+    assert funding_details.active_period == 1
+    assert funding_details == new_budget
 
     loaded_db.delete(new_budget)
     loaded_db.commit()
@@ -101,33 +101,35 @@ def test_service_create_funding_details(loaded_db):
 # Testing updating CANs by PATCH
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_details_patch(budget_team_auth_client, mocker):
-    test_budget_id = 600
+    test_details_id = 600
     update_data = {
-        "notes": "Fake test update",
+        "method_of_transfer": "COST_SHARE",
     }
 
-    funding_budget = CANFundingDetails(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
+    funding_details = CANFundingDetails(
+        fund_code="AAXXXX20241DAD", fiscal_year=2024, method_of_transfer=CANMethodOfTransfer.DIRECT
+    )
     mocker_update_funding_details = mocker.patch(
         "ops_api.ops.services.can_funding_details.CANFundingDetailsService.update"
     )
-    funding_budget.notes = update_data["notes"]
-    mocker_update_funding_details.return_value = funding_budget
-    response = budget_team_auth_client.patch(f"/api/v1/can-funding-details/{test_budget_id}", json=update_data)
+    funding_details.method_of_transfer = update_data["method_of_transfer"]
+    mocker_update_funding_details.return_value = funding_details
+    response = budget_team_auth_client.patch(f"/api/v1/can-funding-details/{test_details_id}", json=update_data)
 
     assert response.status_code == 200
-    mocker_update_funding_details.assert_called_once_with(update_data, test_budget_id)
-    assert response.json["budget"] == funding_budget.budget
-    assert response.json["notes"] == funding_budget.notes
+    mocker_update_funding_details.assert_called_once_with(update_data, test_details_id)
+    assert response.json["method_of_transfer"] == funding_details.method_of_transfer
+    assert response.json["fund_code"] == funding_details.fund_code
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_details_patch_404(budget_team_auth_client):
-    test_budget_id = 518
+    test_details_id = 518
     update_data = {
         "notes": "Test CANFundingDetails Created by unit test",
     }
 
-    response = budget_team_auth_client.patch(f"/api/v1/can-funding-details/{test_budget_id}", json=update_data)
+    response = budget_team_auth_client.patch(f"/api/v1/can-funding-details/{test_details_id}", json=update_data)
 
     assert response.status_code == 404
 
@@ -155,14 +157,14 @@ def test_service_patch_funding_details(loaded_db):
 
     updated_funding_details = budget_service.update(update_data, new_funding_details.id)
 
-    funding_budget = loaded_db.execute(
+    funding_details = loaded_db.execute(
         select(CANFundingDetails).where(CANFundingDetails.id == new_funding_details.id)
     ).scalar_one()
 
-    assert funding_budget is not None
-    assert funding_budget.budget == 123456
+    assert funding_details is not None
+    assert funding_details.budget == 123456
     assert updated_funding_details.budget == 123456
-    assert funding_budget.notes == "Test Test Test"
+    assert funding_details.notes == "Test Test Test"
     assert updated_funding_details.notes == "Test Test Test"
 
     loaded_db.delete(new_funding_details)
@@ -179,20 +181,20 @@ def test_funding_details_put(budget_team_auth_client, mocker):
         "budget": 234567,
     }
 
-    funding_budget = CANFundingDetails(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
+    funding_details = CANFundingDetails(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
 
     mocker_update_funding_details = mocker.patch(
         "ops_api.ops.services.can_funding_details.CANFundingDetailsService.update"
     )
-    funding_budget.budget = update_data["budget"]
-    mocker_update_funding_details.return_value = funding_budget
+    funding_details.budget = update_data["budget"]
+    mocker_update_funding_details.return_value = funding_details
     response = budget_team_auth_client.put(f"/api/v1/can-funding-details/{test_funding_details_id}", json=update_data)
 
     update_data["notes"] = None
     assert response.status_code == 200
     mocker_update_funding_details.assert_called_once_with(update_data, test_funding_details_id)
-    assert response.json["budget"] == funding_budget.budget
-    assert response.json["can_id"] == funding_budget.can_id
+    assert response.json["budget"] == funding_details.budget
+    assert response.json["can_id"] == funding_details.can_id
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -220,24 +222,24 @@ def test_service_update_funding_details_with_nones(loaded_db):
 
     test_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test Notes"}
 
-    funding_budget_service = CANFundingDetailsService()
+    funding_details_service = CANFundingDetailsService()
 
-    new_funding_details = funding_budget_service.create(test_data)
+    new_funding_details = funding_details_service.create(test_data)
 
-    updated_funding_details = funding_budget_service.update(update_data, new_funding_details.id)
+    updated_funding_details = funding_details_service.update(update_data, new_funding_details.id)
 
-    funding_budget = loaded_db.execute(
+    funding_details = loaded_db.execute(
         select(CANFundingDetails).where(CANFundingDetails.id == updated_funding_details.id)
     ).scalar_one()
 
-    assert funding_budget is not None
-    assert funding_budget.can_id == 500
+    assert funding_details is not None
+    assert funding_details.can_id == 500
     assert updated_funding_details.can_id == 500
-    assert funding_budget.notes is None
+    assert funding_details.notes is None
     assert updated_funding_details.notes is None
-    assert funding_budget.fiscal_year == 2024
+    assert funding_details.fiscal_year == 2024
     assert updated_funding_details.fiscal_year == 2024
-    assert funding_budget.budget == 123456
+    assert funding_details.budget == 123456
     assert updated_funding_details.budget == 123456
 
     loaded_db.delete(new_funding_details)
@@ -279,11 +281,11 @@ def test_basic_user_cannot_delete_cans(basic_user_auth_client):
 def test_service_delete_can(loaded_db):
     test_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test Notes"}
 
-    funding_budget_service = CANFundingDetailsService()
+    funding_details_service = CANFundingDetailsService()
 
-    new_funding_details = funding_budget_service.create(test_data)
+    new_funding_details = funding_details_service.create(test_data)
 
-    funding_budget_service.delete(new_funding_details.id)
+    funding_details_service.delete(new_funding_details.id)
 
     stmt = select(CANFundingDetails).where(CANFundingDetails.id == new_funding_details.id)
     can = loaded_db.scalar(stmt)
