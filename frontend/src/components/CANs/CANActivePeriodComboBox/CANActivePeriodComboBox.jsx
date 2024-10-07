@@ -1,5 +1,20 @@
 import ComboBox from "../../UI/Form/ComboBox";
+/**
+ * @typedef {Object} DataProps
+ * @property {number} id - The identifier of the data item
+ * @property {string | number} title - The title of the data item
+ */
 
+/**
+ * @component
+ * @param {Object} props - The component props.
+ * @param {DataProps} props.activePeriod - The current active period.
+ * @param {Function} props.setActivePeriod - A function to call to set the active period.
+ * @param {string} [props.legendClassname] - The class name for the legend (optional).
+ * @param {string} [props.defaultString] - The default string to display (optional).
+ * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
+ * @returns {JSX.Element} - The rendered component.
+ */
 const CANActivePeriodComboBox = ({
     activePeriod,
     setActivePeriod,
