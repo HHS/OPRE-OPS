@@ -23,7 +23,6 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
     if (!cans || cans.length === 0) {
         return [];
     }
-    console.log({ filters });
 
     const { roles, id: userId, division: userDivisionId } = activeUser;
     // NOTE: Role-based filtering
@@ -83,7 +82,7 @@ const applyAdditionalFilters = (cans, filters) => {
     // Filter by active period
     if (filters.activePeriod && filters.activePeriod.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
-            filters.activePeriod.some((period) => period.id === can.active_period)
+            filters.activePeriod?.some((period) => period.id === can.active_period)
         );
     }
 
