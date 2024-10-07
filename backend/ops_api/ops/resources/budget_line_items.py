@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_current_user, verify_jwt_in_request
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any
@@ -17,6 +17,7 @@ from models import (
     Division,
     OpsEventType,
     Portfolio,
+    User,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -57,7 +58,10 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         self._patch_schema = PATCHRequestBodySchema()
 
     def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
-        jwt_identity = get_jwt_identity()
+        verify_jwt_in_request()
+        user = get_current_user()
+        if not user:
+            return False
         budget_line_item: BudgetLineItem = current_app.db_session.get(BudgetLineItem, id)
         try:
             agreement = budget_line_item.agreement
@@ -83,11 +87,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         oidc_ids = set()
         if agreement.created_by_user:
             oidc_ids.add(str(agreement.created_by_user.oidc_id))
+        if agreement.created_by:
+            user = current_app.db_session.get(User, agreement.created_by)
+            oidc_ids.add(str(user.oidc_id))
         if agreement.project_officer:
             oidc_ids.add(str(agreement.project_officer.oidc_id))
         oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
 
-        ret = jwt_identity in oidc_ids
+        ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
 
         return ret
 
