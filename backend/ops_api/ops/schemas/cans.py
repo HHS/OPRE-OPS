@@ -150,6 +150,13 @@ class FundingReceivedSchema(Schema):
     updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
 
 
+class CreateUpdateFundingReceivedSchema(Schema):
+    fiscal_year = fields.Integer(required=True)
+    can_id = fields.Integer(required=True)
+    funding = fields.Integer(load_default=None)
+    notes = fields.String(load_default=None)
+
+
 class CANSchema(BasicCANSchema):
     budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema()), default=[])
     funding_budgets = fields.List(fields.Nested(FundingBudgetSchema()), default=[])

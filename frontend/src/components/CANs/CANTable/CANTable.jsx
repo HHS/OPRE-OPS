@@ -33,11 +33,11 @@ const CANTable = ({ cans }) => {
                         <CANTableRow
                             key={can.id}
                             canId={can.id}
-                            name={can.display_name ?? ""}
-                            nickname={can.nick_name ?? ""}
+                            name={can.display_name ?? "TBD"}
+                            nickname={can.nick_name ?? "TBD"}
                             portfolio={can.portfolio.abbreviation}
                             fiscalYear={can.funding_budgets[0]?.fiscal_year ?? "TBD"}
-                            activePeriod={can.active_period?.toString() ?? "TBD"}
+                            activePeriod={can.active_period ?? 0}
                             obligateBy={formatObligateBy(can.obligate_by)}
                             transfer={can.funding_details.method_of_transfer ?? "TBD"}
                             fyBudget={can.funding_budgets[0]?.budget ?? 0}
