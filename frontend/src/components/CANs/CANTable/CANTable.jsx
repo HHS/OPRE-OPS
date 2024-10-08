@@ -1,11 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import PaginationNav from "../../UI/PaginationNav";
-import {
-    formatObligateBy,
-    findFundingBudgetBudgetByFiscalYear,
-    findFundingBudgetFYByFiscalYear
-} from "./CANTable.helpers";
+import { findFundingBudgetBudgetByFiscalYear, formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
