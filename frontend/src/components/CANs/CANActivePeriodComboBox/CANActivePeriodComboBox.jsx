@@ -2,7 +2,7 @@ import ComboBox from "../../UI/Form/ComboBox";
 /**
  * @typedef {Object} DataProps
  * @property {number} id - The identifier of the data item
- * @property {string | number} title - The title of the data item
+ * @property {string} title - The title of the data item
  */
 
 /**

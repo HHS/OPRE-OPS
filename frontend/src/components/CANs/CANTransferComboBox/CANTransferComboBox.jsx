@@ -36,13 +36,13 @@ const CANTransferComboBox = ({
             <div>
                 <label
                     className={legendClassname}
-                    htmlFor="can-active-period-combobox-input"
+                    htmlFor="can-transfer-combobox-input"
                 >
                     Transfer
                 </label>
                 <div>
                     <ComboBox
-                        namespace="can-active-period-combobox"
+                        namespace="can-transfer-combobox"
                         data={options}
                         selectedData={transfer}
                         setSelectedData={setTransfer}
