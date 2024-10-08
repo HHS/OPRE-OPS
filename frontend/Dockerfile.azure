@@ -17,7 +17,8 @@ COPY . .
 # Build the application
 ARG MODE
 ARG VITE_BACKEND_DOMAIN
-COPY vite-env/env.${MODE}.local .env
+COPY vite-env/env.local .
+COPY vite-env/env.${MODE}.local .
 RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=${MODE} bun run build --mode ${MODE}
 
 # ---- Release Stage ----
