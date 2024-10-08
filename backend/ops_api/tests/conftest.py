@@ -16,8 +16,10 @@ from sqlalchemy.orm import Session
 from models import (
     CAN,
     BudgetLineItem,
+    BudgetLineItemChangeRequest,
     CANFundingBudget,
     CANFundingDetails,
+    ChangeRequestStatus,
     OpsDBHistory,
     OpsEvent,
     Project,
@@ -25,7 +27,14 @@ from models import (
     Vendor,
 )
 from ops_api.ops import create_app
-from tests.auth_client import AuthClient, BasicUserAuthClient, BudgetTeamAuthClient, NoPermsAuthClient
+from tests.auth_client import (
+    AuthClient,
+    BasicUserAuthClient,
+    BudgetTeamAuthClient,
+    Division6DirectorAuthClient,
+    DivisionDirectorAuthClient,
+    NoPermsAuthClient,
+)
 
 
 @pytest.fixture()
@@ -73,6 +82,41 @@ def budget_team_auth_client(app: Flask) -> FlaskClient:
     app.testing = True
     app.test_client_class = BudgetTeamAuthClient
     return app.test_client()
+
+
+@pytest.fixture()
+def division_director_auth_client(app: Flask) -> FlaskClient:
+    app.testing = True
+    app.test_client_class = DivisionDirectorAuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def division_6_director_auth_client(app: Flask) -> FlaskClient:
+    app.testing = True
+    app.test_client_class = Division6DirectorAuthClient
+    return app.test_client()
+
+
+@pytest.fixture()
+def test_change_request(app: Flask, test_user, test_bli) -> BudgetLineItemChangeRequest:
+    session = app.db_session
+
+    # create a change request
+    change_request1 = BudgetLineItemChangeRequest()
+    change_request1.status = ChangeRequestStatus.IN_REVIEW
+    change_request1.budget_line_item_id = test_bli.id
+    change_request1.agreement_id = 1
+    change_request1.created_by = test_user.id
+    change_request1.managing_division_id = 1
+    change_request1.requested_change_data = {"key": "value"}
+    session.add(change_request1)
+    session.commit()
+
+    yield change_request1
+
+    session.delete(change_request1)
+    session.commit()
 
 
 def is_responsive(db: Engine) -> bool:
@@ -169,6 +213,15 @@ def test_admin_user(loaded_db) -> User | None:
     N.B. This user has an ADMIN role whose status is ACTIVE.
     """
     return loaded_db.get(User, 503)
+
+
+@pytest.fixture()
+def test_division_director(loaded_db) -> User | None:
+    """Get a test admin user - also the user associated with the auth_client.
+
+    N.B. This user has an ADMIN role whose status is ACTIVE.
+    """
+    return loaded_db.get(User, 522)
 
 
 @pytest.fixture()
