@@ -7,7 +7,7 @@ from flask_jwt_extended import current_user, jwt_required
 
 from models import User, UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.authorization_providers import _check_extra, _check_groups, _check_role
+from ops_api.ops.auth.authorization_providers import _check_role
 from ops_api.ops.auth.exceptions import ExtraCheckError, InvalidUserSessionError, NotActiveUserError
 from ops_api.ops.auth.utils import (
     deactivate_all_user_sessions,
@@ -83,8 +83,8 @@ class is_authorized:
             try:
                 if (
                     _check_role(self.permission_type, self.permission)
-                    or _check_groups(self.groups)
-                    or _check_extra(self.extra_check, args, kwargs)
+                    # or _check_groups(self.groups)
+                    # or _check_extra(self.extra_check, args, kwargs)
                 ):
                     response = func(*args, **kwargs)
 

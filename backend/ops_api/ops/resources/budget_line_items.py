@@ -58,6 +58,13 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         self._patch_schema = PATCHRequestBodySchema()
 
     def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
+        """
+        In order to edit a budget line, the user must be authenticated and meet on of these conditions:
+            -  The user is the agreement creator.
+            -  The user is the project officer of the agreement.
+            -  The user is a team member on the agreement.
+            -  The user is a budget team member.
+        """
         verify_jwt_in_request()
         user = get_current_user()
         if not user:
