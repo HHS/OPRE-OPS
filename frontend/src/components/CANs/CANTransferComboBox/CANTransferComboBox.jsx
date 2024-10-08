@@ -4,18 +4,18 @@ import { CAN_TRANSFER } from "../CAN.constants";
 /**
  * @typedef {Object} DataProps
  * @property {number} id - The identifier of the data item
- * @property {string | number} title - The title of the data item
+ * @property {string} title - The title of the data item
  */
 
 /**
  * @component
  * @param {Object} props - The component props.
- * @param {DataProps[]} props.transfer - The current active period.
- * @param {Function} props.setTransfer - A function to call to set the active period.
+ * @param {DataProps[]} props.transfer - The current transfer.
+ * @param {Function} props.setTransfer - A function to call to set the transfer.
  * @param {string} [props.legendClassname] - The class name for the legend (optional).
  * @param {string} [props.defaultString] - The default string to display (optional).
  * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
- * @returns {JSX.Element} - The rendered component.
+ * @returns {JSX.Element} - The rendered CAN transfer combo box.
  */
 const CANTransferComboBox = ({
     transfer,
@@ -27,8 +27,8 @@ const CANTransferComboBox = ({
     const options = [
         { id: 1, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.DIRECT) },
         { id: 2, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.COST_SHARE) },
-        { id: 3, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IDDA) },
-        { id: 4, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IAA) }
+        { id: 3, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IAA) },
+        { id: 4, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IDDA) }
     ];
 
     return (
