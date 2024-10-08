@@ -47,7 +47,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                             name={can.display_name ?? "TBD"}
                             nickname={can.nick_name ?? "TBD"}
                             portfolio={can.portfolio.abbreviation}
-                            fiscalYear={findFundingBudgetFYByFiscalYear(can, fiscalYear)}
+                            fiscalYear={can.funding_details.fiscal_year}
                             activePeriod={can.active_period ?? 0}
                             obligateBy={formatObligateBy(can.obligate_by)}
                             transfer={can.funding_details.method_of_transfer ?? "TBD"}
