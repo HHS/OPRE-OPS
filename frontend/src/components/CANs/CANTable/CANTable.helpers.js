@@ -25,3 +25,28 @@ export const formatObligateBy = (obligateBy) => {
         year: "2-digit"
     });
 };
+
+/**
+ * function to filter funding_budgets fiscal year by fiscal year
+ * @param {import("../CANTypes").CAN} can - CAN object
+ * @param {number} fiscalYear - Fiscal year to filter by
+ * @returns {number} - Fiscal year of the funding budget
+ */
+export function findFundingBudgetFYByFiscalYear(can, fiscalYear) {
+    if (!can || !fiscalYear) return 0;
+    const matchingBudget = can.funding_budgets.find((budget) => budget.fiscal_year === fiscalYear);
+
+    return matchingBudget ? matchingBudget.fiscal_year : 0;
+}
+/**
+ * function to filter funding_budgets budget by fiscal year
+ * @param {import("../CANTypes").CAN} can - CAN object
+ * @param {number} fiscalYear - Fiscal year to filter by
+ * @returns {number} - Fiscal year of the funding budget
+ */
+export function findFundingBudgetBudgetByFiscalYear(can, fiscalYear) {
+    if (!can || !fiscalYear) return 0;
+    const matchingBudget = can.funding_budgets.find((budget) => budget.fiscal_year === fiscalYear);
+
+    return matchingBudget ? matchingBudget.budget : 0;
+}
