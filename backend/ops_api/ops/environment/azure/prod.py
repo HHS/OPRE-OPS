@@ -22,7 +22,7 @@ AUTHLIB_OAUTH_CLIENTS = {
         "server_metadata_url": "https://sso.acf.hhs.gov/auth/realms/ACF-AMS/.well-known/openid-configuration",
         "token_endpoint": "https://sso.acf.hhs.gov/auth/realms/ACF-AMS/protocol/openid-connect/token",
         "user_info_url": "https://sso.acf.hhs.gov/auth/realms/ACF-AMS/protocol/openid-connect/userinfo",
-        "client_id": "https://ops.opre.acf.gov/",
+        "client_id": "https://ops.opre.acf.gov",
         "client_kwargs": {"scope": "openid email"},
         "aud": "https://sso.acf.hhs.gov/auth/realms/ACF-AMS/protocol/openid-connect/token",
         "redirect_uri": "https://ops.opre.acf.gov/login",
