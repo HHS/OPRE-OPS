@@ -26,7 +26,8 @@ const CanList = () => {
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
     const [filters, setFilters] = React.useState({
-        activePeriod: []
+        activePeriod: [],
+        transfer: []
     });
     const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, filters) || [];
 

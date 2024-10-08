@@ -2,11 +2,12 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 /**
  * @typedef {Object} FilterOption
  * @property {number} id
- * @property {number|string} title
+ * @property {string} title
  */
 /**
  * @typedef {Object} Filters
  * @property {FilterOption[]} [activePeriod]
+ * @property {FilterOption[]} [transfer]
  * // Add other filter types here
  */
 
@@ -86,13 +87,13 @@ const applyAdditionalFilters = (cans, filters) => {
         );
     }
 
-    // TODO: Add other filters here
-    // Example:
-    // if (filters.someOtherFilter && filters.someOtherFilter.length > 0) {
-    //     filteredCANs = filteredCANs.filter((can) => {
-    //         // Apply some other filter logic
-    //     });
-    // }
+    if (filters.transfer && filters.transfer.length > 0) {
+        filteredCANs = filteredCANs.filter((can) =>
+            filters.transfer?.some(
+                (transfer) => transfer.title.toUpperCase() === can.funding_details.method_of_transfer
+            )
+        );
+    }
 
     return filteredCANs;
 };
