@@ -21,11 +21,11 @@ describe("CAN List", () => {
 
     it("clicking on a CAN takes you to the detail page", () => {
         // beforeEach has ran...
-        const canNumber = "G99PHS9";
+        const canNumber = "G99XXX4";
 
         cy.contains(canNumber).click();
 
-        cy.url().should("include", "/cans/502");
+        cy.url().should("include", "/cans/510");
         cy.get("h1").should("contain", canNumber);
     });
 
@@ -33,7 +33,8 @@ describe("CAN List", () => {
         cy.get("tbody").children().should("have.length.greaterThan", 2);
         cy.visit("/cans/?filter=my-cans");
         cy.get("#fiscal-year-select").select("2023");
-        cy.get("tbody").children().should("have.length", 1);
+        // table should not exist
+        cy.get("tbody").should("not.exist");
     });
 
     it("the filter button works as expected", () => {
@@ -51,8 +52,8 @@ describe("CAN List", () => {
         cy.get("button").contains("Apply").click();
 
         // check that the table is filtered correctly
-        // table should contain 5 rows
-        cy.get("tbody").find("tr").should("have.length", 5);
+        // table should contain 6 rows
+        cy.get("tbody").find("tr").should("have.length", 6);
 
         // reset
         cy.get("button").contains("Filter").click();
@@ -61,7 +62,7 @@ describe("CAN List", () => {
 
         // check that the table is filtered correctly
         // table should have more than 5 rows
-        cy.get("tbody").find("tr").should("have.length.greaterThan", 5);
+        cy.get("tbody").find("tr").should("have.length.greaterThan", 6);
     });
 
     it("pagination on the bli table works as expected", () => {
