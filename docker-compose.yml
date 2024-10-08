@@ -45,6 +45,24 @@ services:
       db:
         condition: service_healthy
 
+  disable-inactive-users:
+    profiles:
+      - ''  # This is the default profile, which is used for development
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile.data-tools
+    platform: linux/amd64
+    container_name: disable-inactive-users
+    environment:
+      - ENV=local
+      - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
+    command: ["/home/app/.venv/bin/python", "./data_tools/src/disable_inactive_users/disable_inactive_users.py"]
+    depends_on:
+      db:
+        condition: service_healthy
+      data-import:
+        condition: service_completed_successfully
+
   backend:
     profiles:
         - ''  # This is the default profile, which is used for development
