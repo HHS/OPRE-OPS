@@ -55,6 +55,12 @@ def test_funding_details_post_creates_funding_details(budget_team_auth_client, m
     mocker_create_funding_details = mocker.patch(
         "ops_api.ops.services.can_funding_details.CANFundingDetailsService.create"
     )
+    input_data["allotment"] = None
+    input_data["allowance"] = None
+    input_data["display_name"] = None
+    input_data["funding_partner"] = None
+    input_data["funding_source"] = None
+    input_data["sub_allowance"] = None
     mocker_create_funding_details.return_value = mock_output_data
     response = budget_team_auth_client.post("/api/v1/can-funding-details/", json=input_data)
 
@@ -101,7 +107,7 @@ def test_service_create_funding_details(loaded_db):
 # Testing updating CANs by PATCH
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_details_patch(budget_team_auth_client, mocker):
-    test_details_id = 600
+    test_details_id = 1
     update_data = {
         "method_of_transfer": "COST_SHARE",
     }
@@ -112,13 +118,14 @@ def test_funding_details_patch(budget_team_auth_client, mocker):
     mocker_update_funding_details = mocker.patch(
         "ops_api.ops.services.can_funding_details.CANFundingDetailsService.update"
     )
-    funding_details.method_of_transfer = update_data["method_of_transfer"]
+    funding_details.method_of_transfer = CANMethodOfTransfer.COST_SHARE
     mocker_update_funding_details.return_value = funding_details
     response = budget_team_auth_client.patch(f"/api/v1/can-funding-details/{test_details_id}", json=update_data)
 
+    deserialized_update_data = {"method_of_transfer": CANMethodOfTransfer.COST_SHARE}
     assert response.status_code == 200
-    mocker_update_funding_details.assert_called_once_with(update_data, test_details_id)
-    assert response.json["method_of_transfer"] == funding_details.method_of_transfer
+    mocker_update_funding_details.assert_called_once_with(deserialized_update_data, test_details_id)
+    assert response.json["method_of_transfer"] == "COST_SHARE"
     assert response.json["fund_code"] == funding_details.fund_code
 
 
@@ -126,7 +133,7 @@ def test_funding_details_patch(budget_team_auth_client, mocker):
 def test_funding_details_patch_404(budget_team_auth_client):
     test_details_id = 518
     update_data = {
-        "notes": "Test CANFundingDetails Created by unit test",
+        "method_of_transfer": "COST_SHARE",
     }
 
     response = budget_team_auth_client.patch(f"/api/v1/can-funding-details/{test_details_id}", json=update_data)
@@ -136,20 +143,20 @@ def test_funding_details_patch_404(budget_team_auth_client):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_basic_user_cannot_patch_funding_detailss(basic_user_auth_client):
-    data = {
-        "notes": "An updated can description",
+    update_data = {
+        "method_of_transfer": "COST_SHARE",
     }
-    response = basic_user_auth_client.patch("/api/v1/can-funding-details/517", json=data)
+    response = basic_user_auth_client.patch("/api/v1/can-funding-details/517", json=update_data)
 
     assert response.status_code == 401
 
 
 def test_service_patch_funding_details(loaded_db):
     update_data = {
-        "notes": "Test Test Test",
+        "method_of_transfer": CANMethodOfTransfer.COST_SHARE,
     }
 
-    input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
+    input_data = {"fund_code": "AAXXXX20241DAD", "fiscal_year": 2024, "method_of_transfer": CANMethodOfTransfer.DIRECT}
 
     budget_service = CANFundingDetailsService()
 
@@ -162,10 +169,10 @@ def test_service_patch_funding_details(loaded_db):
     ).scalar_one()
 
     assert funding_details is not None
-    assert funding_details.budget == 123456
-    assert updated_funding_details.budget == 123456
-    assert funding_details.notes == "Test Test Test"
-    assert updated_funding_details.notes == "Test Test Test"
+    assert funding_details.fund_code == "AAXXXX20241DAD"
+    assert updated_funding_details.fund_code == "AAXXXX20241DAD"
+    assert funding_details.method_of_transfer == CANMethodOfTransfer.COST_SHARE
+    assert updated_funding_details.method_of_transfer == CANMethodOfTransfer.COST_SHARE
 
     loaded_db.delete(new_funding_details)
     loaded_db.commit()
@@ -174,43 +181,45 @@ def test_service_patch_funding_details(loaded_db):
 # Testing updating CANFundingDetailss by PUT
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_details_put(budget_team_auth_client, mocker):
-    test_funding_details_id = 517
-    update_data = {
-        "can_id": 500,
-        "fiscal_year": 2024,
-        "budget": 234567,
-    }
+    test_funding_details_id = 1
+    update_data = {"method_of_transfer": "COST_SHARE", "fiscal_year": 2024, "fund_code": "AAXXXX20241DAD"}
 
-    funding_details = CANFundingDetails(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
+    funding_details = CANFundingDetails(
+        fund_code="AAXXXX20241DAD", fiscal_year=2024, method_of_transfer=CANMethodOfTransfer.DIRECT
+    )
 
     mocker_update_funding_details = mocker.patch(
         "ops_api.ops.services.can_funding_details.CANFundingDetailsService.update"
     )
-    funding_details.budget = update_data["budget"]
+    funding_details.method_of_transfer = CANMethodOfTransfer.COST_SHARE
     mocker_update_funding_details.return_value = funding_details
     response = budget_team_auth_client.put(f"/api/v1/can-funding-details/{test_funding_details_id}", json=update_data)
 
-    update_data["notes"] = None
+    update_data["method_of_transfer"] = CANMethodOfTransfer.COST_SHARE
+    update_data["allotment"] = None
+    update_data["allowance"] = None
+    update_data["display_name"] = None
+    update_data["funding_partner"] = None
+    update_data["funding_source"] = None
+    update_data["sub_allowance"] = None
     assert response.status_code == 200
     mocker_update_funding_details.assert_called_once_with(update_data, test_funding_details_id)
-    assert response.json["budget"] == funding_details.budget
-    assert response.json["can_id"] == funding_details.can_id
+    assert response.json["method_of_transfer"] == "COST_SHARE"
+    assert response.json["fund_code"] == funding_details.fund_code
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_basic_user_cannot_put_funding_details(basic_user_auth_client):
-    data = {
-        "notes": "An updated can description",
-    }
-    response = basic_user_auth_client.put("/api/v1/can-funding-details/517", json=data)
+    update_data = {"method_of_transfer": "COST_SHARE", "fiscal_year": 2024, "fund_code": "AAXXXX20241DAD"}
+    response = basic_user_auth_client.put("/api/v1/can-funding-details/517", json=update_data)
 
     assert response.status_code == 401
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_details_put_404(budget_team_auth_client):
-    test_funding_details_id = 518
-    update_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test test test"}
+    test_funding_details_id = 900
+    update_data = {"method_of_transfer": "COST_SHARE", "fiscal_year": 2024, "fund_code": "AAXXXX20241DAD"}
 
     response = budget_team_auth_client.put(f"/api/v1/can-funding-details/{test_funding_details_id}", json=update_data)
 
@@ -218,9 +227,19 @@ def test_funding_details_put_404(budget_team_auth_client):
 
 
 def test_service_update_funding_details_with_nones(loaded_db):
-    update_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": None}
+    update_data = {
+        "method_of_transfer": CANMethodOfTransfer.COST_SHARE,
+        "fiscal_year": 2024,
+        "fund_code": "AAXXXX20241DAD",
+        "allotment": None,
+    }
 
-    test_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test Notes"}
+    test_data = {
+        "fund_code": "AAXXXX20241DAD",
+        "fiscal_year": 2024,
+        "method_of_transfer": CANMethodOfTransfer.DIRECT,
+        "allotment": "abcd",
+    }
 
     funding_details_service = CANFundingDetailsService()
 
@@ -233,14 +252,14 @@ def test_service_update_funding_details_with_nones(loaded_db):
     ).scalar_one()
 
     assert funding_details is not None
-    assert funding_details.can_id == 500
-    assert updated_funding_details.can_id == 500
-    assert funding_details.notes is None
-    assert updated_funding_details.notes is None
+    assert funding_details.method_of_transfer == CANMethodOfTransfer.COST_SHARE
+    assert updated_funding_details.method_of_transfer == CANMethodOfTransfer.COST_SHARE
+    assert funding_details.allotment is None
+    assert updated_funding_details.allotment is None
     assert funding_details.fiscal_year == 2024
     assert updated_funding_details.fiscal_year == 2024
-    assert funding_details.budget == 123456
-    assert updated_funding_details.budget == 123456
+    assert funding_details.fund_code == "AAXXXX20241DAD"
+    assert updated_funding_details.fund_code == "AAXXXX20241DAD"
 
     loaded_db.delete(new_funding_details)
     loaded_db.commit()
@@ -264,7 +283,7 @@ def test_funding_details_delete(budget_team_auth_client, mocker):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_delete_404(budget_team_auth_client):
-    test_can_id = 500
+    test_can_id = 900
 
     response = budget_team_auth_client.delete(f"/api/v1/can-funding-details/{test_can_id}")
 
@@ -279,7 +298,12 @@ def test_basic_user_cannot_delete_cans(basic_user_auth_client):
 
 
 def test_service_delete_can(loaded_db):
-    test_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "Test Notes"}
+    test_data = {
+        "fund_code": "AAXXXX20241DAD",
+        "fiscal_year": 2024,
+        "method_of_transfer": CANMethodOfTransfer.DIRECT,
+        "allotment": "abcd",
+    }
 
     funding_details_service = CANFundingDetailsService()
 
