@@ -37,7 +37,7 @@ const CANActivePeriodComboBox = ({
                     className={legendClassname}
                     htmlFor="can-active-period-combobox-input"
                 >
-                    Fiscal Year
+                    Active Period
                 </label>
                 <div>
                     <ComboBox
