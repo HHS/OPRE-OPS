@@ -23,7 +23,7 @@ const CANTable = ({ cans, fiscalYear }) => {
     // Filter CANs by fiscal year
     const filteredCANsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear) return cans;
-        return cans.filter((can) => can.funding_budgets.some((budget) => budget.fiscal_year === fiscalYear));
+        return cans.filter((can) => can.funding_details.fiscal_year === fiscalYear);
     }, [cans, fiscalYear]);
     // TODO: once in prod, change this to 25
     const CANS_PER_PAGE = 10;

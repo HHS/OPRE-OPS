@@ -35,6 +35,7 @@ const CANTableRow = ({
 }) => {
     const { data: fundingSummary, isError, isLoading } = useGetCanFundingSummaryQuery(canId);
     const availableFunds = fundingSummary?.available_funding ?? 0;
+    const displayFiscalYear = fiscalYear > 0 ? fiscalYear : "TBD";
 
     if (isLoading)
         return (
@@ -65,7 +66,7 @@ const CANTableRow = ({
                 </Tooltip>
             </th>
             <td>{portfolio}</td>
-            <td>{fiscalYear}</td>
+            <td>{displayFiscalYear}</td>
             <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
             <td>{convertCodeForDisplay("methodOfTransfer", transfer)}</td>
