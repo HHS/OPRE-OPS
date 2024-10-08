@@ -16,7 +16,7 @@ describe("CAN List", () => {
     it("loads", () => {
         // beforeEach has ran...
         cy.get("h1").should("have.text", "CANs");
-        cy.get('a[href="/cans/502"]').should("exist");
+        cy.get('a[href="/cans/510"]').should("exist");
     });
 
     it("clicking on a CAN takes you to the detail page", () => {
