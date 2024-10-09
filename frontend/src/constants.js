@@ -1,9 +1,16 @@
 const constants = {
     notFilledInText: "--",
-    fiscalYears: [
-        2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029,
-        2030, 2043
-    ],
+    fiscalYears: (() => {
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+        const currentFiscalYear = currentMonth >= 9 ? currentYear + 1 : currentYear;
+        const years = [];
+        for (let i = currentFiscalYear - 5; i <= currentFiscalYear + 5; i++) {
+            years.push(i);
+        }
+        return years;
+    })(),
     barChartColors: [
         { color: "var(--feedback-success-dark)" },
         { color: "var(--feedback-success)" },

@@ -1,11 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import PaginationNav from "../../UI/PaginationNav";
-import {
-    formatObligateBy,
-    findFundingBudgetBudgetByFiscalYear,
-    findFundingBudgetFYByFiscalYear
-} from "./CANTable.helpers";
+import { findFundingBudgetBudgetByFiscalYear, formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
@@ -23,7 +19,7 @@ const CANTable = ({ cans, fiscalYear }) => {
     // Filter CANs by fiscal year
     const filteredCANsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear) return cans;
-        return cans.filter((can) => can.funding_budgets.some((budget) => budget.fiscal_year === fiscalYear));
+        return cans.filter((can) => can.funding_details.fiscal_year === fiscalYear);
     }, [cans, fiscalYear]);
     // TODO: once in prod, change this to 25
     const CANS_PER_PAGE = 10;
@@ -47,7 +43,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                             name={can.display_name ?? "TBD"}
                             nickname={can.nick_name ?? "TBD"}
                             portfolio={can.portfolio.abbreviation}
-                            fiscalYear={findFundingBudgetFYByFiscalYear(can, fiscalYear)}
+                            fiscalYear={can.funding_details.fiscal_year}
                             activePeriod={can.active_period ?? 0}
                             obligateBy={formatObligateBy(can.obligate_by)}
                             transfer={can.funding_details.method_of_transfer ?? "TBD"}
