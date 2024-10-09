@@ -1,52 +1,32 @@
-import React from "react";
 import Modal from "react-modal";
-import FilterButton from "../../../../components/UI/FilterButton";
 import CANActivePeriodComboBox from "../../../../components/CANs/CANActivePeriodComboBox";
+import CANPortfolioComboBox from "../../../../components/CANs/CANPortfolioComboBox";
 import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox";
+import FilterButton from "../../../../components/UI/FilterButton";
+import useCANFilterButton from "./CANFilterButton.hooks";
 /**
- * @typedef {Object} DataProps
- * @property {number} id - The identifier of the data item
- * @property {string | number} title - The title of the data item
+ * @typedef {Object} FilterOption
+ * @property {number} id
+ * @property {string} title
  */
-
+/**
+ * @typedef {Object} Filters
+ * @property {FilterOption[]} [activePeriod]
+ * @property {FilterOption[]} [transfer]
+ * @property {FilterOption[]} [portfolio]
+ * // Add other filter types here
+ */
 /**
  * A filter for CANs list.
  * @param {Object} props - The component props.
- * @param {DataProps[]} props.filters - The current filters.
+ * @param {Filters} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
+ * @param {FilterOption[]} props.portfolioOptions - The portfolio options.
  * @returns {JSX.Element} - The CAN filter button.
  */
-export const CANFilterButton = ({ filters, setFilters }) => {
-    const [activePeriod, setActivePeriod] = React.useState([]);
-    const [transfer, setTransfer] = React.useState([]);
-
-    // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
-    React.useEffect(() => {
-        setActivePeriod(filters.activePeriod);
-    }, [filters.activePeriod]);
-
-    React.useEffect(() => {
-        setTransfer(filters.transfer);
-    }, [filters.transfer]);
-
-    const applyFilter = () => {
-        setFilters((prevState) => {
-            return {
-                ...prevState,
-                activePeriod: activePeriod,
-                transfer: transfer
-            };
-        });
-    };
-    const resetFilter = () => {
-        setFilters({
-            activePeriod: [],
-            transfer: []
-        });
-        setActivePeriod([]);
-        setTransfer([]);
-    };
-
+export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
+    const { activePeriod, setActivePeriod, transfer, setTransfer, portfolio, setPortfolio, applyFilter, resetFilter } =
+        useCANFilterButton(filters, setFilters);
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = "usa-legend font-sans-3xs margin-top-0 padding-bottom-1 text-base-dark";
 
@@ -59,6 +39,7 @@ export const CANFilterButton = ({ filters, setFilters }) => {
                 activePeriod={activePeriod}
                 setActivePeriod={setActivePeriod}
                 legendClassname={legendStyles}
+                overrideStyles={{ width: "187px" }}
             />
         </fieldset>,
         <fieldset
@@ -69,6 +50,19 @@ export const CANFilterButton = ({ filters, setFilters }) => {
                 transfer={transfer}
                 setTransfer={setTransfer}
                 legendClassname={legendStyles}
+                overrideStyles={{ width: "187px" }}
+            />
+        </fieldset>,
+        <fieldset
+            key="field-3"
+            className={fieldStyles}
+        >
+            <CANPortfolioComboBox
+                portfolio={portfolio}
+                setPortfolio={setPortfolio}
+                portfolioOptions={portfolioOptions}
+                legendClassname={legendStyles}
+                overrideStyles={{ width: "187px" }}
             />
         </fieldset>
     ];

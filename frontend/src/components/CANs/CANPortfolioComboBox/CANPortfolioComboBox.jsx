@@ -1,6 +1,5 @@
-import { convertCodeForDisplay } from "../../../helpers/utils";
 import ComboBox from "../../UI/Form/ComboBox";
-import { CAN_TRANSFER } from "../CAN.constants";
+
 /**
  * @typedef {Object} DataProps
  * @property {number} id - The identifier of the data item
@@ -10,42 +9,37 @@ import { CAN_TRANSFER } from "../CAN.constants";
 /**
  * @component
  * @param {Object} props - The component props.
- * @param {DataProps[]} props.transfer - The current transfer.
- * @param {Function} props.setTransfer - A function to call to set the transfer.
+ * @param {DataProps[]} props.portfolioOptions - All the portfolio options.
+ * @param {DataProps[]} props.portfolio - The current portfolio.
+ * @param {Function} props.setPortfolio - A function to call to set the portfolio.
  * @param {string} [props.legendClassname] - The class name for the legend (optional).
  * @param {string} [props.defaultString] - The default string to display (optional).
  * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
  * @returns {JSX.Element} - The rendered CAN transfer combo box.
  */
-const CANTransferComboBox = ({
-    transfer,
-    setTransfer,
+const CANPortfolioComboBox = ({
+    portfolioOptions,
+    portfolio,
+    setPortfolio,
     legendClassname = "usa-label margin-top-0",
-    defaultString = "All Transfers",
+    defaultString = "All Portfolios",
     overrideStyles = {}
 }) => {
-    const options = [
-        { id: 1, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.DIRECT) },
-        { id: 2, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.COST_SHARE) },
-        { id: 3, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IAA) },
-        { id: 4, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IDDA) }
-    ];
-
     return (
         <div className="display-flex flex-justify">
             <div>
                 <label
                     className={legendClassname}
-                    htmlFor="can-transfer-combobox-input"
+                    htmlFor="can-portfolio-combobox-input"
                 >
                     Transfer
                 </label>
                 <div>
                     <ComboBox
-                        namespace="can-transfer-combobox"
-                        data={options}
-                        selectedData={transfer}
-                        setSelectedData={setTransfer}
+                        namespace="can-portfolio-combobox"
+                        data={portfolioOptions}
+                        selectedData={portfolio}
+                        setSelectedData={setPortfolio}
                         defaultString={defaultString}
                         overrideStyles={overrideStyles}
                         isMulti={true}
@@ -56,4 +50,4 @@ const CANTransferComboBox = ({
     );
 };
 
-export default CANTransferComboBox;
+export default CANPortfolioComboBox;

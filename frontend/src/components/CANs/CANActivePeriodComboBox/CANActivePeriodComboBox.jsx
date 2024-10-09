@@ -19,8 +19,8 @@ const CANActivePeriodComboBox = ({
     activePeriod,
     setActivePeriod,
     legendClassname = "usa-label margin-top-0",
-    defaultString = "",
-    overrideStyles = { width: "187px" }
+    defaultString = "All Periods",
+    overrideStyles = {}
 }) => {
     const periods = [
         { id: 1, title: "1 Year" },
