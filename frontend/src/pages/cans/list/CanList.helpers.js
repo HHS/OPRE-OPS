@@ -1,15 +1,7 @@
 import { USER_ROLES } from "../../../components/Users/User.constants";
 /**
- * @typedef {Object} FilterOption
- * @property {number} id
- * @property {string} title
- */
-/**
- * @typedef {Object} Filters
- * @property {FilterOption[]} [activePeriod]
- * @property {FilterOption[]} [transfer]
- * @property {FilterOption[]} [portfolio]
- * // Add other filter types here
+ * @typedef {import('./././CANFilterButton/CANFilterTypes').FilterOption} FilterOption
+ * @typedef {import('./././CANFilterButton/CANFilterTypes').Filters} Filters
  */
 
 /**
