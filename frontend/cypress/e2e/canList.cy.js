@@ -60,6 +60,7 @@ describe("CAN List", () => {
 
         // check that the table is filtered correctly
         // table should contain 6 rows
+
         cy.get("tbody").find("tr").should("have.length", 3);
 
         // reset
@@ -69,6 +70,7 @@ describe("CAN List", () => {
 
         // check that the table is filtered correctly
         // table should have more than 5 rows
+
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });
 

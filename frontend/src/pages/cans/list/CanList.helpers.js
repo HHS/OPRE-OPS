@@ -94,6 +94,13 @@ const applyAdditionalFilters = (cans, filters) => {
             )
         );
     }
+    // TODO: Add other filters here
+    // Example:
+    // if (filters.someOtherFilter && filters.someOtherFilter.length > 0) {
+    //     filteredCANs = filteredCANs.filter((can) => {
+    //         // Apply some other filter logic
+    //     });
+    // }
 
     return filteredCANs;
 };

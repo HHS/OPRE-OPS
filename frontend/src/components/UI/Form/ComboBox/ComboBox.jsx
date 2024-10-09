@@ -14,6 +14,7 @@ import useComboBox from "./ComboBox.hooks";
  * @param {Object} props - The component props.
  * @param {string} props.namespace - A unique name to use as a prefix for id, name, class, etc.
  * @param {DataProps[]} props.data - The data to choose from.
+
  * @param {DataProps[]} props.selectedData - The currently selected data item.
  * @param {Function} props.setSelectedData - A function to call when the selected item changes.
  * @param {Function} [props.optionText] - A function to call that returns a string that provides the option text.

@@ -38,7 +38,6 @@ export const CANFilterButton = ({ filters, setFilters }) => {
             };
         });
     };
-
     const resetFilter = () => {
         setFilters({
             activePeriod: [],
