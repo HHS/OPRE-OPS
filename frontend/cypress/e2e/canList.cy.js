@@ -55,6 +55,13 @@ describe("CAN List", () => {
             .find(".can-transfer-combobox__option")
             .first()
             .click();
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(".can-portfolio-combobox__control")
+            .click()
+            .get(".can-portfolio-combobox__menu")
+            .find(".can-portfolio-combobox__option")
+            .first()
+            .click();
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
 
