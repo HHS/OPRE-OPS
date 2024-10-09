@@ -49,7 +49,9 @@ function Login() {
                                             <MultiAuthSectionWithDebugging />
                                         )}
                                     {!import.meta.env.VITE_AUTH_DEBUG ||
-                                        (window.location.href.startsWith("https:/stg") && <MultiAuthSection />)}
+                                        window.location.href.startsWith("https:/stg") ||
+                                        (import.meta.env.MODE.trim() === "test" && <MultiAuthSection />)}
+                                    {import.meta.env.MODE === "test" && <MultiAuthSection />}
                                 </div>
                                 <div className="grid-col-6 padding-x-205">
                                     <h2>Access to OPS requires proper authentication.</h2>
