@@ -1,3 +1,4 @@
+import React from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { useGetCansQuery } from "../../../api/opsAPI";
@@ -8,6 +9,7 @@ import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import FiscalYear from "../../../components/UI/FiscalYear";
 import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import ErrorPage from "../../ErrorPage";
+import CANFilterButton from "./CANFilterButton";
 import { sortAndFilterCANs } from "./CanList.helpers";
 
 /**
@@ -23,7 +25,10 @@ const CanList = () => {
     const activeUser = useSelector((state) => state.auth.activeUser);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
-    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser) || [];
+    const [filters, setFilters] = React.useState({
+        activePeriod: []
+    });
+    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, filters) || [];
 
     if (isLoading) {
         return (
@@ -61,6 +66,12 @@ const CanList = () => {
                         <CANTable
                             cans={sortedCANs}
                             fiscalYear={fiscalYear}
+                        />
+                    }
+                    FilterButton={
+                        <CANFilterButton
+                            filters={filters}
+                            setFilters={setFilters}
                         />
                     }
                     FYSelect={<CANFiscalYearSelect />}
