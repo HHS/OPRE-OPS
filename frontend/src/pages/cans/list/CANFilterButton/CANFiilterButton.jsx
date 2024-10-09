@@ -4,22 +4,14 @@ import CANPortfolioComboBox from "../../../../components/CANs/CANPortfolioComboB
 import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox";
 import FilterButton from "../../../../components/UI/FilterButton";
 import useCANFilterButton from "./CANFilterButton.hooks";
+
 /**
- * @typedef {Object} FilterOption
- * @property {number} id
- * @property {string} title
- */
-/**
- * @typedef {Object} Filters
- * @property {FilterOption[]} [activePeriod]
- * @property {FilterOption[]} [transfer]
- * @property {FilterOption[]} [portfolio]
- * // Add other filter types here
+ * @typedef {import('./CANFilterTypes').FilterOption} FilterOption
  */
 /**
  * A filter for CANs list.
  * @param {Object} props - The component props.
- * @param {Filters} props.filters - The current filters.
+ * @param {import ('./CANFilterTypes').Filters} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {FilterOption[]} props.portfolioOptions - The portfolio options.
  * @returns {JSX.Element} - The CAN filter button.

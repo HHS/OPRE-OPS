@@ -1,20 +1,8 @@
 import React from "react";
-/**
- * @typedef {Object} FilterOption
- * @property {number} id
- * @property {string} title
- */
-/**
- * @typedef {Object} Filters
- * @property {FilterOption[]} [activePeriod]
- * @property {FilterOption[]} [transfer]
- * @property {FilterOption[]} [portfolio]
- * // Add other filter types here
- */
 
 /**
  * A filter for CANs list.
- * @param {Filters} filters - The current filters.
+ * @param {import ('./CANFilterTypes').Filters} filters - The current filters.
  * @param {Function} setFilters - A function to call to set the filters.
  */
 export const useCANFilterButton = (filters, setFilters) => {
