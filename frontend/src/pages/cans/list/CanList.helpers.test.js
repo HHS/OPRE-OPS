@@ -21,64 +21,79 @@ describe("sortAndFilterCANs", () => {
             id: 1,
             obligate_by: "2023-12-31",
             portfolio: { division_id: 1 },
-            budget_line_items: [{ team_members: [{ id: 1 }] }]
+            budget_line_items: [{ team_members: [{ id: 1 }] }],
+            active_period: 1
         },
         {
             id: 2,
             obligate_by: "2023-11-30",
             portfolio: { division_id: 2 },
-            budget_line_items: []
+            budget_line_items: [],
+            active_period: 2
         },
         {
             id: 3,
             obligate_by: "2023-10-31",
             portfolio: { division_id: 1 },
-            budget_line_items: [{ team_members: [{ id: 2 }] }]
+            budget_line_items: [{ team_members: [{ id: 2 }] }],
+            active_period: 1
         },
         {
             id: 4,
             obligate_by: null,
             portfolio: { division_id: 1 },
-            budget_line_items: []
+            budget_line_items: [],
+            active_period: 3
         }
     ];
 
+    const mockFilters = {};
+
     it("should return an empty array when input is null or empty", () => {
-        expect(sortAndFilterCANs(null, false, mockUser)).toEqual([]);
-        expect(sortAndFilterCANs([], false, mockUser)).toEqual([]);
+        expect(sortAndFilterCANs(null, false, mockUser, mockFilters)).toEqual([]);
+        expect(sortAndFilterCANs([], false, mockUser, mockFilters)).toEqual([]);
     });
 
     it("should sort CANs by obligate_by date in descending order", () => {
-        const result = sortAndFilterCANs(mockCANs, false, mockUser);
-        expect(result?.map((can) => can.id)).toEqual([1, 2, 3, 4]);
+        const result = sortAndFilterCANs(mockCANs, false, mockUser, mockFilters);
+        expect(result.map((can) => can.id)).toEqual([1, 2, 3, 4]);
     });
 
     it("should filter CANs by user's team membership when myCANsUrl is true", () => {
-        const result = sortAndFilterCANs(mockCANs, true, mockUser);
-        expect(result?.length).toBe(1);
-        expect(result?.[0].id).toBe(1);
+        const result = sortAndFilterCANs(mockCANs, true, mockUser, mockFilters);
+        expect(result.length).toBe(1);
+        expect(result[0].id).toBe(1);
     });
 
     it("should not filter CANs when myCANsUrl is false", () => {
-        const result = sortAndFilterCANs(mockCANs, false, mockUser);
-        expect(result?.length).toBe(4);
+        const result = sortAndFilterCANs(mockCANs, false, mockUser, mockFilters);
+        expect(result.length).toBe(4);
     });
 
     it("should handle CANs with null obligate_by dates", () => {
-        const result = sortAndFilterCANs(mockCANs, false, mockUser);
-        expect(result?.[result.length - 1].id).toBe(4);
+        const result = sortAndFilterCANs(mockCANs, false, mockUser, mockFilters);
+        expect(result[result.length - 1].id).toBe(4);
     });
 
     it("should allow admin to see all CANs when myCANsUrl is true", () => {
         const adminUser = { ...mockUser, roles: [USER_ROLES.ADMIN] };
-        const result = sortAndFilterCANs(mockCANs, true, adminUser);
-        expect(result?.length).toBe(4);
+        const result = sortAndFilterCANs(mockCANs, true, adminUser, mockFilters);
+        expect(result.length).toBe(4);
     });
 
     it("should filter CANs by division for division directors and budget team", () => {
         const divisionDirector = { ...mockUser, roles: [USER_ROLES.DIVISION_DIRECTOR] };
-        const result = sortAndFilterCANs(mockCANs, true, divisionDirector);
-        expect(result?.length).toBe(3);
-        expect(result?.every((can) => can.portfolio.division_id === 1)).toBe(true);
+        const result = sortAndFilterCANs(mockCANs, true, divisionDirector, mockFilters);
+        expect(result.length).toBe(3);
+        expect(result.every((can) => can.portfolio.division_id === 1)).toBe(true);
+    });
+
+    it("should filter CANs by active period", () => {
+        const filtersWithActivePeriod = {
+            activePeriod: [{ id: 1, title: "Period 1" }]
+        };
+        const result = sortAndFilterCANs(mockCANs, false, mockUser, filtersWithActivePeriod);
+        expect(result.length).toBe(2);
+        expect(result.every((can) => can.active_period === 1)).toBe(true);
     });
 });
