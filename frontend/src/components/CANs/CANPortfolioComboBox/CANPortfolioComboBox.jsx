@@ -15,7 +15,7 @@ import ComboBox from "../../UI/Form/ComboBox";
  * @param {string} [props.legendClassname] - The class name for the legend (optional).
  * @param {string} [props.defaultString] - The default string to display (optional).
  * @param {Object} [props.overrideStyles] - The CSS styles to override the default (optional).
- * @returns {JSX.Element} - The rendered CAN transfer combo box.
+ * @returns {JSX.Element} - The rendered CAN Portfolio ComboBox component.
  */
 const CANPortfolioComboBox = ({
     portfolioOptions,
