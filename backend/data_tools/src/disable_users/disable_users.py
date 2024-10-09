@@ -1,7 +1,7 @@
 import logging
 import os
 
-from data_tools.src.disable_inactive_users.queries import (
+from data_tools.src.disable_users.queries import (
     ALL_ACTIVE_USER_SESSIONS_QUERY,
     EXCLUDED_USER_IDS,
     INACTIVE_USER_QUERY,
@@ -41,7 +41,7 @@ def create_system_user(se):
     return system_user[0]
 
 
-def deactivate_user(se, user_id, system_user_id):
+def disable_user(se, user_id, system_user_id):
     """Deactivate a single user and log the change."""
     updated_user = User(id=user_id, status=UserStatus.INACTIVE, updated_by=system_user_id)
     se.merge(updated_user)
@@ -91,7 +91,7 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
 
         for user_id in user_ids:
             logger.info("Deactivating user", user_id)
-            deactivate_user(se, user_id, system_user_id)
+            disable_user(se, user_id, system_user_id)
 
         se.commit()
 

@@ -1,11 +1,7 @@
 from unittest.mock import MagicMock, patch
 
-from data_tools.src.disable_inactive_users.disable_inactive_users import (
-    create_system_user,
-    deactivate_user,
-    update_disabled_users_status,
-)
-from data_tools.src.disable_inactive_users.queries import SYSTEM_USER_EMAIL, SYSTEM_USER_ID, SYSTEM_USER_OIDC_ID
+from data_tools.src.disable_users.disable_users import create_system_user, disable_user, update_disabled_users_status
+from data_tools.src.disable_users.queries import SYSTEM_USER_EMAIL, SYSTEM_USER_ID, SYSTEM_USER_OIDC_ID
 
 from models import OpsDBHistoryType, OpsEventStatus, OpsEventType, UserStatus
 
@@ -58,7 +54,7 @@ def test_deactivate_user():
     mock_se = MagicMock()
     mock_se.execute.return_value = [(1,), (2,)]
 
-    deactivate_user(mock_se, user_id, system_user_id)
+    disable_user(mock_se, user_id, system_user_id)
 
     assert mock_se.merge.call_count == 3
     assert mock_se.add.call_count == 2
@@ -90,7 +86,7 @@ def test_deactivate_user():
     assert ops_events_call[0][0].event_status == OpsEventStatus.SUCCESS
     assert ops_events_call[0][0].created_by == system_user_id
 
-@patch("data_tools.src.disable_inactive_users.disable_inactive_users.logger")
+@patch("data_tools.src.disable_users.disable_users.logger")
 def test_no_inactive_users(mock_logger):
     mock_conn = MagicMock()
     mock_se = MagicMock()
