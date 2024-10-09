@@ -29,7 +29,7 @@ else
   echo "Local environment detected. Loading seed data..."
   for file in $(ls ./data_tools/initial_data/*.sql | sort -g); do
     echo "Loading $file..."
-    psql postgresql://"$ADMIN_PGUSER":"$ADMIN_PGPASSWORD"@"$PGHOST":"$PGPORT"/"$PGDATABASE" -f $file
+    psql postgresql://"$PGUSER":"$PGPASSWORD"@"$PGHOST":"$PGPORT"/"$PGDATABASE" -f $file
   done
 fi
 
