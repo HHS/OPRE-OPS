@@ -4,7 +4,6 @@ import logo from "../components/UI/Header/OPRE_Logo.png";
 import MultiAuthSectionWithDebugging from "../components/Auth/MultiAuthSectionWithDebugging.jsx";
 
 const debuggingEnabled = import.meta.env.VITE_AUTH_DEBUG && !window.location.href.startsWith("https:/stg");
-const debuggingDisabled = !debuggingEnabled;
 
 function Login() {
     const styles = {
@@ -48,7 +47,7 @@ function Login() {
                             <div className="grid-row margin-x-neg-205 margin-bottom-6 flex-justify-center">
                                 <div className="grid-col-6 padding-x-205 margin-bottom-4">
                                     {debuggingEnabled && <MultiAuthSectionWithDebugging />}
-                                    {debuggingDisabled && <MultiAuthSection />}
+                                    {!debuggingEnabled && <MultiAuthSection />}
                                 </div>
                                 <div className="grid-col-6 padding-x-205">
                                     <h2>Access to OPS requires proper authentication.</h2>
