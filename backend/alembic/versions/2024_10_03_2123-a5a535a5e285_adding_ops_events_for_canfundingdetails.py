@@ -1,7 +1,7 @@
 """Adding OPS events for CANFundingDetails
 
 Revision ID: a5a535a5e285
-Revises: d5610e0988b0
+Revises: acfeadc7868c
 Create Date: 2024-10-03 21:23:21.134273+00:00
 
 """
@@ -13,7 +13,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision: str = 'a5a535a5e285'
-down_revision: Union[str, None] = 'd5610e0988b0'
+down_revision: Union[str, None] = 'acfeadc7868c'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
