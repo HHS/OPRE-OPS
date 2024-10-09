@@ -96,4 +96,40 @@ describe("sortAndFilterCANs", () => {
         expect(result.length).toBe(2);
         expect(result.every((can) => can.active_period === 1)).toBe(true);
     });
+    it("should filter CANs by transfer method", () => {
+        const mockCANsWithTransfer = [
+            {
+                id: 1,
+                obligate_by: "2023-12-31",
+                portfolio: { division_id: 1 },
+                budget_line_items: [{ team_members: [{ id: 1 }] }],
+                active_period: 1,
+                funding_details: { method_of_transfer: "IAA" }
+            },
+            {
+                id: 2,
+                obligate_by: "2023-11-30",
+                portfolio: { division_id: 2 },
+                budget_line_items: [],
+                active_period: 2,
+                funding_details: { method_of_transfer: "CONTRACT" }
+            },
+            {
+                id: 3,
+                obligate_by: "2023-10-31",
+                portfolio: { division_id: 1 },
+                budget_line_items: [{ team_members: [{ id: 2 }] }],
+                active_period: 1,
+                funding_details: { method_of_transfer: "IAA" }
+            }
+        ];
+
+        const filtersWithTransfer = {
+            transfer: [{ id: 1, title: "IAA" }]
+        };
+
+        const result = sortAndFilterCANs(mockCANsWithTransfer, false, mockUser, filtersWithTransfer);
+        expect(result.length).toBe(2);
+        expect(result.every((can) => can.funding_details.method_of_transfer === "IAA")).toBe(true);
+    });
 });
