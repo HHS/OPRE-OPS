@@ -1,18 +1,11 @@
 import { USER_ROLES } from "../../../components/Users/User.constants";
 /**
- * @typedef {Object} FilterOption
- * @property {number} id
- * @property {string} title
- */
-/**
- * @typedef {Object} Filters
- * @property {FilterOption[]} [activePeriod]
- * @property {FilterOption[]} [transfer]
- * // Add other filter types here
+ * @typedef {import('./././CANFilterButton/CANFilterTypes').FilterOption} FilterOption
+ * @typedef {import('./././CANFilterButton/CANFilterTypes').Filters} Filters
  */
 
 /**
- * Sorts an array of CANs by obligateBy date in descending order.
+ * @description Sorts and filters the array of CANs.
  * @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
  * @param {CAN[]} cans - The array of CANs to sort.
  * @param {boolean} myCANsUrl - The URL parameter to filter by "my-CANs".
@@ -55,7 +48,7 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
 };
 
 /**
- * Sorts an array of CANs by obligateBy date in descending order.
+ * @description Sorts an array of CANs by obligateBy date in descending order.
  * @param {CAN[]} cans - The array of CANs to sort.
  * @returns {CAN[] | []} - The sorted array of CANs.
  */
@@ -72,7 +65,7 @@ const sortCANs = (cans) => {
 };
 
 /**
- * Applies additional filters to the CANs.
+ * @description Applies additional filters to the CANs.
  * @param {CAN[]} cans - The array of CANs to filter.
  * @param {Filters} filters - The filters to apply.
  * @returns {CAN[]} - The filtered array of CANs.
@@ -94,6 +87,11 @@ const applyAdditionalFilters = (cans, filters) => {
             )
         );
     }
+    if (filters.portfolio && filters.portfolio.length > 0) {
+        filteredCANs = filteredCANs.filter((can) =>
+            filters.portfolio?.some((portfolio) => portfolio.title.toUpperCase() === can.portfolio.abbreviation)
+        );
+    }
     // TODO: Add other filters here
     // Example:
     // if (filters.someOtherFilter && filters.someOtherFilter.length > 0) {
@@ -103,4 +101,24 @@ const applyAdditionalFilters = (cans, filters) => {
     // }
 
     return filteredCANs;
+};
+
+/**
+ * @description Returns a set of unique portfolios from the CANs list
+ * @param {CAN[]} cans - The array of CANs to filter.
+ * @returns {FilterOption[]} - The filtered array of portfolios.
+ */
+export const getPortfolioOptions = (cans) => {
+    if (!cans || cans.length === 0) {
+        return [];
+    }
+    const portfolios = cans.reduce((acc, can) => {
+        acc.add(can.portfolio.abbreviation);
+        return acc;
+    }, new Set());
+
+    return Array.from(portfolios).map((portfolio, index) => ({
+        id: index,
+        title: portfolio
+    }));
 };
