@@ -151,8 +151,8 @@ def setup_and_teardown(loaded_db, context):
     "I am logged in as an OPS user",
     target_fixture="bdd_client",
 )
-def bdd_client(auth_client):
-    return auth_client
+def bdd_client(budget_team_auth_client):
+    return budget_team_auth_client
 
 
 @given("I have an Agreement with a NULL Project")
@@ -959,6 +959,7 @@ def error_message_amount_put_only(context, setup_and_teardown):
 def error_message_agreement(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
+        "_schema": ["BLI must have an Agreement when status is not DRAFT"],
         "agreement_id": ["Missing data for required field."],
     }
     assert context["response_patch"].status_code == 400

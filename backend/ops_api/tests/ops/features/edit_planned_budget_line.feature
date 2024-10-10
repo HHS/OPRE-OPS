@@ -28,7 +28,7 @@ Feature: Edit Planned Budget Line Item
     Then I should get a message that it was successful
 
   Scenario: Successful Edit as a member of the Budget Team
-    Given I am logged in as an OPS user
+    Given I am logged in as an budget team member
     And I have a Contract Agreement as a member of the Budget Team
     And I have a budget line item in Planned status
     And I edit the budget line item to change a value

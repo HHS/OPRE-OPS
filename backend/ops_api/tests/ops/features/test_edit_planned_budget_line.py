@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+from flask import current_app
 from pytest_bdd import given, scenario, then, when
 
 from models import AgreementReason, AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
@@ -30,6 +31,14 @@ def original_agreement(test_user, test_project):
 )
 def bdd_client(auth_client):
     yield auth_client
+
+
+@given(
+    "I am logged in as an budget team member",
+    target_fixture="bdd_client",
+)
+def bdd_budget_team_client(budget_team_auth_client):
+    yield budget_team_auth_client
 
 
 @given(
@@ -65,6 +74,7 @@ def test_edit_planned_budget_line_unauthorized(): ...
     target_fixture="agreement",
 )
 def agreement_owner(loaded_db, original_agreement, test_admin_user):
+    current_app.config["SKIP_SETTING_CREATED_BY"] = True
     original_agreement["created_by"] = test_admin_user.id
     contract_agreement = ContractAgreement(**original_agreement)
     loaded_db.add(contract_agreement)

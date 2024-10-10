@@ -1,5 +1,3 @@
-from functools import partial
-
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import get_jwt_identity
@@ -29,42 +27,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 ENDPOINT_STRING = "/services-components"
 
 
-def sc_associated_with_contract_agreement(self, id: int, permission_type: PermissionType) -> bool:
-    jwt_identity = get_jwt_identity()
-    sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
-    try:
-        contract_agreement = sc.contract_agreement
-    except AttributeError as e:
-        # No SC found in the DB. Erroring out.
-        raise ExtraCheckError({}) from e
-
-    if contract_agreement is None:
-        # We are faking a validation check at this point. We know there is no agreement associated with the SC.
-        # This is made to emulate the validation check from a marshmallow schema.
-        if permission_type == PermissionType.PUT:
-            raise ExtraCheckError(
-                {
-                    "_schema": ["Services Component must have a Contract Agreement"],
-                    "contract_agreement_id": ["Missing data for required field."],
-                }
-            )
-        elif permission_type == PermissionType.PATCH:
-            raise ExtraCheckError({"_schema": ["Services Component must have a Contract Agreement"]})
-        else:
-            raise ExtraCheckError({})
-
-    oidc_ids = set()
-    if contract_agreement.created_by_user:
-        oidc_ids.add(str(contract_agreement.created_by_user.oidc_id))
-    if contract_agreement.project_officer:
-        oidc_ids.add(str(contract_agreement.project_officer.oidc_id))
-    oidc_ids |= set(str(tm.oidc_id) for tm in contract_agreement.team_members)
-
-    ret = jwt_identity in oidc_ids
-
-    return ret
-
-
 # TODO: Permissions (stop using BLI perms and events and sort out rules for SCs)
 class ServicesComponentItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
@@ -72,6 +34,41 @@ class ServicesComponentItemAPI(BaseItemAPI):
         self._response_schema = mmdc.class_schema(ServicesComponentItemResponse)()
         self._put_schema = mmdc.class_schema(POSTRequestBody)()
         self._patch_schema = mmdc.class_schema(PATCHRequestBody)()
+
+    def sc_associated_with_contract_agreement(self, id: int, permission_type: PermissionType) -> bool:
+        jwt_identity = get_jwt_identity()
+        sc: ServicesComponent = current_app.db_session.get(ServicesComponent, id)
+        try:
+            contract_agreement = sc.contract_agreement
+        except AttributeError as e:
+            # No SC found in the DB. Erroring out.
+            raise ExtraCheckError({}) from e
+
+        if contract_agreement is None:
+            # We are faking a validation check at this point. We know there is no agreement associated with the SC.
+            # This is made to emulate the validation check from a marshmallow schema.
+            if permission_type == PermissionType.PUT:
+                raise ExtraCheckError(
+                    {
+                        "_schema": ["Services Component must have a Contract Agreement"],
+                        "contract_agreement_id": ["Missing data for required field."],
+                    }
+                )
+            elif permission_type == PermissionType.PATCH:
+                raise ExtraCheckError({"_schema": ["Services Component must have a Contract Agreement"]})
+            else:
+                raise ExtraCheckError({})
+
+        oidc_ids = set()
+        if contract_agreement.created_by_user:
+            oidc_ids.add(str(contract_agreement.created_by_user.oidc_id))
+        if contract_agreement.project_officer:
+            oidc_ids.add(str(contract_agreement.project_officer.oidc_id))
+        oidc_ids |= set(str(tm.oidc_id) for tm in contract_agreement.team_members)
+
+        ret = jwt_identity in oidc_ids
+
+        return ret
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -121,28 +118,29 @@ class ServicesComponentItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.PUT,
         Permission.SERVICES_COMPONENT,
-        extra_check=partial(sc_associated_with_contract_agreement, permission_type=PermissionType.PUT),
-        groups=["Budget Team", "Admins"],
     )
     def put(self, id: int) -> Response:
+        if not self.sc_associated_with_contract_agreement(id, PermissionType.PUT):
+            return make_response_with_headers({}, 403)
         return self._update(id, "PUT", self._put_schema)
 
     @is_authorized(
         PermissionType.PATCH,
         Permission.SERVICES_COMPONENT,
-        extra_check=partial(sc_associated_with_contract_agreement, permission_type=PermissionType.PATCH),
-        groups=["Budget Team", "Admins"],
     )
     def patch(self, id: int) -> Response:
+        if not self.sc_associated_with_contract_agreement(id, PermissionType.PATCH):
+            return make_response_with_headers({}, 403)
         return self._update(id, "PATCH", self._patch_schema)
 
     @is_authorized(
         PermissionType.DELETE,
         Permission.AGREEMENT,
-        extra_check=partial(sc_associated_with_contract_agreement, permission_type=PermissionType.PATCH),
-        groups=["Budget Team", "Admins"],
     )
     def delete(self, id: int) -> Response:
+        if not self.sc_associated_with_contract_agreement(id, PermissionType.DELETE):
+            return make_response_with_headers({}, 403)
+
         with OpsEventHandler(OpsEventType.DELETE_SERVICES_COMPONENT) as meta:
             sc: ServicesComponent = self._get_item(id)
 
