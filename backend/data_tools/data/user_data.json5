@@ -548,6 +548,16 @@
       roles: [{"tablename":  "role", "id": 2}],
       groups: [],
       status: "ACTIVE"
+    },
+    { // 525
+      first_name: "Director",
+      last_name: "Derrek",
+      division: 6,
+      email: "director.derrek@email.com",
+      roles: [{"tablename":  "role", "id": 4}],
+      oidc_id: "00000000-0000-1111-a111-000000000022",
+      groups: [],
+      status: "ACTIVE"
     }
   ],
   notification: [
