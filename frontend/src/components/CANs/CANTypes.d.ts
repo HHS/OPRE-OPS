@@ -1,6 +1,7 @@
 import { BudgetLine } from "../BudgetLineItems/BudgetLineTypes";
 import { Portfolio } from "../Portfolios/PortfolioTypes";
 import { Project } from "../Projects/ProjectTypes";
+import { CAN_TRANSFER } from "./CAN.constants";
 
 export type CAN = {
     active_period?: number;
@@ -77,7 +78,7 @@ export type CANFundingDetails = {
     funding_partner: null;
     funding_source: string;
     id: number;
-    method_of_transfer: "DIRECT" | "COST_SHARE" | "IDDA" | "IAA";
+    method_of_transfer: keyof typeof CAN_TRANSFER;
     sub_allowance: null;
     updated_by: null;
     updated_by_user: null;

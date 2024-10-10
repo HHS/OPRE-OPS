@@ -81,6 +81,7 @@ export const draftBudgetLineStatuses = ["DRAFT"];
  * @property {Object.<string, string>} contractType - Display text for contract types.
  * @property {Object.<string, string>} serviceRequirementType - Display text for service requirement types.
  * @property {Object.<string, string>} changeToTypes - Display text for change to types.
+ * @property {Object.<string, string>} methodOfTransfer - Display text for change to statuses.
  *
  */
 
@@ -181,8 +182,8 @@ export const codesToDisplayText = {
         status: "Status"
     },
     methodOfTransfer: {
-        COST_SHARE: "Cost Share",
         DIRECT: "Direct",
+        COST_SHARE: "MOU",
         IAA: "IAA",
         IDDA: "IDDA"
     }

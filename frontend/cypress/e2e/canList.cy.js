@@ -48,12 +48,20 @@ describe("CAN List", () => {
             .find(".can-active-period-combobox__option")
             .first()
             .click();
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(".can-transfer-combobox__control")
+            .click()
+            .get(".can-transfer-combobox__menu")
+            .find(".can-transfer-combobox__option")
+            .first()
+            .click();
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
 
         // check that the table is filtered correctly
         // table should contain 6 rows
-        cy.get("tbody").find("tr").should("have.length", 6);
+
+        cy.get("tbody").find("tr").should("have.length", 3);
 
         // reset
         cy.get("button").contains("Filter").click();
@@ -62,7 +70,8 @@ describe("CAN List", () => {
 
         // check that the table is filtered correctly
         // table should have more than 5 rows
-        cy.get("tbody").find("tr").should("have.length.greaterThan", 6);
+
+        cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });
 
     it("pagination on the bli table works as expected", () => {
