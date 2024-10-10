@@ -1,21 +1,21 @@
 import { describe, it, expect } from "vitest";
-import { sortAndFilterCANs } from "./CanList.helpers";
+import { sortAndFilterCANs, getPortfolioOptions } from "./CanList.helpers";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 
-describe("sortAndFilterCANs", () => {
-    const mockUser = {
-        id: 1,
-        roles: [USER_ROLES.USER],
-        division: 1,
-        display_name: "Test User",
-        email: "test@example.com",
-        first_name: "Test",
-        full_name: "Test User",
-        last_name: "User",
-        permissions: [],
-        username: "testuser"
-    };
+const mockUser = {
+    id: 1,
+    roles: [USER_ROLES.USER],
+    division: 1,
+    display_name: "Test User",
+    email: "test@example.com",
+    first_name: "Test",
+    full_name: "Test User",
+    last_name: "User",
+    permissions: [],
+    username: "testuser"
+};
 
+describe("sortAndFilterCANs", () => {
     const mockCANs = [
         {
             id: 1,
@@ -131,5 +131,64 @@ describe("sortAndFilterCANs", () => {
         const result = sortAndFilterCANs(mockCANsWithTransfer, false, mockUser, filtersWithTransfer);
         expect(result.length).toBe(2);
         expect(result.every((can) => can.funding_details.method_of_transfer === "IAA")).toBe(true);
+    });
+});
+
+describe("Portfolio filtering and options", () => {
+    const mockCANsWithPortfolios = [
+        {
+            id: 1,
+            obligate_by: "2023-12-31",
+            portfolio: { division_id: 1, abbreviation: "ABC" },
+            budget_line_items: [{ team_members: [{ id: 1 }] }],
+            active_period: 1
+        },
+        {
+            id: 2,
+            obligate_by: "2023-11-30",
+            portfolio: { division_id: 2, abbreviation: "XYZ" },
+            budget_line_items: [],
+            active_period: 2
+        },
+        {
+            id: 3,
+            obligate_by: "2023-10-31",
+            portfolio: { division_id: 1, abbreviation: "ABC" },
+            budget_line_items: [{ team_members: [{ id: 2 }] }],
+            active_period: 1
+        }
+    ];
+
+    it("should filter CANs by portfolio", () => {
+        const filtersWithPortfolio = {
+            portfolio: [{ id: 1, title: "ABC" }]
+        };
+        const result = sortAndFilterCANs(mockCANsWithPortfolios, false, mockUser, filtersWithPortfolio);
+        expect(result.length).toBe(2);
+        expect(result.every((can) => can.portfolio.abbreviation === "ABC")).toBe(true);
+    });
+
+    it("should return unique portfolio options", () => {
+        const portfolioOptions = getPortfolioOptions(mockCANsWithPortfolios);
+        expect(portfolioOptions).toEqual([
+            { id: 0, title: "ABC" },
+            { id: 1, title: "XYZ" }
+        ]);
+    });
+
+    it("should return an empty array for getPortfolioOptions when input is null or empty", () => {
+        expect(getPortfolioOptions(null)).toEqual([]);
+        expect(getPortfolioOptions([])).toEqual([]);
+    });
+
+    it("should handle multiple portfolios in filter", () => {
+        const filtersWithMultiplePortfolios = {
+            portfolio: [
+                { id: 1, title: "ABC" },
+                { id: 2, title: "XYZ" }
+            ]
+        };
+        const result = sortAndFilterCANs(mockCANsWithPortfolios, false, mockUser, filtersWithMultiplePortfolios);
+        expect(result.length).toBe(3);
     });
 });
