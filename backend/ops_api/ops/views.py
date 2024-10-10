@@ -46,6 +46,7 @@ from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
 from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI, CANFundingReceivedListAPI
 from ops_api.ops.resources.can_funding_budget import CANFundingBudgetItemAPI, CANFundingBudgetListAPI
+from ops_api.ops.resources.can_funding_details import CANFundingDetailsItemAPI, CANFundingDetailsListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
@@ -157,6 +158,12 @@ RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSumm
 # FUNDING BUDGET ENDPOINTS
 CAN_FUNDING_BUDGET_ITEM_API_VIEW_FUNC = CANFundingBudgetItemAPI.as_view("can-funding-budget-item", CANFundingBudget)
 CAN_FUNDING_BUDGET_LIST_API_VIEW_FUNC = CANFundingBudgetListAPI.as_view("can-funding-budget-group", CANFundingBudget)
+
+# FUNDING DETAILS ENDPOINTS
+CAN_FUNDING_DETAILS_ITEM_API_VIEW_FUNC = CANFundingDetailsItemAPI.as_view("can-funding-details-item", CANFundingDetails)
+CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC = CANFundingDetailsListAPI.as_view(
+    "can-funding-details-group", CANFundingDetails
+)
 
 # PROJECT ENDPOINTS
 PROJECT_ITEM_API_VIEW_FUNC = ProjectItemAPI.as_view("projects-item", Project)
