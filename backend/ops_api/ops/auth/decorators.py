@@ -81,11 +81,7 @@ class is_authorized:
         @error_simulator
         def wrapper(*args, **kwargs) -> Response:
             try:
-                if (
-                    _check_role(self.permission_type, self.permission)
-                    # or _check_groups(self.groups)
-                    # or _check_extra(self.extra_check, args, kwargs)
-                ):
+                if _check_role(self.permission_type, self.permission):
                     response = func(*args, **kwargs)
 
                 else:

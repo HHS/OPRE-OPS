@@ -28,17 +28,3 @@ def _check_role(permission_type: PermissionType, permission: Permission) -> bool
     auth_gateway = AuthorizationGateway(BasicAuthorizationProvider())
     identity = get_jwt_identity()
     return auth_gateway.is_authorized(identity, f"{permission_type.name}_{permission.name}".upper())
-
-
-# def _check_groups(groups: Optional[list[str]]) -> bool:
-#     auth_group = False
-#     if groups is not None:
-#         auth_group = len(set(groups) & {g.name for g in current_user.groups}) > 0
-#     return auth_group
-
-
-# def _check_extra(extra_check: Optional[Callable[..., bool]], args, kwargs) -> bool:
-#     valid = False
-#     if extra_check is not None:
-#         valid = extra_check(*args, **kwargs)
-#     return valid
