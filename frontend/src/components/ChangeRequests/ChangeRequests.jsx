@@ -1,5 +1,5 @@
 import ConfirmationModal from "../UI/Modals/ConfirmationModal";
-import useChangeRequest from "./ChangeRequest.hooks";
+import useChangeRequest from "./ChangeRequests.hooks";
 import ChangeRequestsList from "./ChangeRequestsList";
 
 function ChangeRequests() {

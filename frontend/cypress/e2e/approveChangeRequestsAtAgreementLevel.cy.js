@@ -26,7 +26,7 @@ const testAgreement = {
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 501,
+    can_id: 504,
     agreement_id: 11,
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
@@ -35,8 +35,7 @@ const testBli = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
-    cy.visit(`/`);
+    testLogin("division-director");
 });
 
 afterEach(() => {
@@ -140,7 +139,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("#ops-modal-heading").contains(/approve this status change to planned status?/i);
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get(".usa-alert__body").should("contain", "Changes Approved");
-                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", testAgreement.name);
                 cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Draft to Planned`);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
@@ -158,7 +157,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
                     .should(
                         "have.text",
-                        `Admin Demo approved the status change on BL ${bliId} from Draft to Planned as requested by Admin Demo.`
+                        `Dave Director approved the status change on BL ${bliId} from Draft to Planned as requested by Dave Director.`
                     )
                     // TODO: add more tests
                     .then(() => {
@@ -285,7 +284,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("#ops-modal-heading").contains(/approve this status change to executing status?/i);
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get(".usa-alert__body").should("contain", "Changes Approved");
-                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", testAgreement.name);
                 cy.get(".usa-alert__body").should("contain", `BL ${bliId} Status: Planned to Executing`);
                 cy.get("[data-cy='close-alert']").click();
                 cy.get("[data-cy='review-card']").should("not.exist");
@@ -303,7 +302,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
                     .should(
                         "have.text",
-                        `Admin Demo approved the status change on BL ${bliId} from Planned to Executing as requested by Admin Demo.`
+                        `Dave Director approved the status change on BL ${bliId} from Planned to Executing as requested by Dave Director.`
                     )
                     // TODO: add more tests
                     .then(() => {
@@ -419,7 +418,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains("$2,000,000.00");
                 // next card
                 cy.get("[data-cy='review-card']").contains(/can/i);
-                cy.get("[data-cy='review-card']").contains("G99IA14");
+                cy.get("[data-cy='review-card']").contains("G994426");
                 cy.get("[data-cy='review-card']").contains("G99PHS9");
                 // next card
                 cy.get("[data-cy='review-card']").contains(/obligate by date/i);
@@ -435,7 +434,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".table-item-diff").contains("9/15/2025");
                 cy.get('[data-cy="button-toggle-After Approval"]').click();
                 cy.get(".table-item-diff").contains("1,000,000.00");
-                cy.get(".table-item-diff").contains("G99IA14");
+                cy.get(".table-item-diff").contains("G994426");
                 cy.get(".table-item-diff").contains("1/1/2025");
                 // TODO: add more tests
                 // click on checkbox with id approve-confirmation
@@ -445,11 +444,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("#ops-modal-heading").contains(/approve this budget change/i);
                 cy.get('[data-cy="confirm-action"]').click();
                 cy.get(".usa-alert__body").should("contain", "Changes Approved");
-                cy.get(".usa-alert__body").should("contain", "E2E Test agreementWorkflow 1");
+                cy.get(".usa-alert__body").should("contain", testAgreement.name);
                 cy.get(".usa-alert__body")
                     .should("include.text", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`)
                     .and("include.text", `BL ${bliId} Obligate By Date: 1/1/2025 to 9/15/2025`)
-                    .and("include.text", `BL ${bliId} CAN: G99IA14 to G99PHS9`);
+                    .and("include.text", `BL ${bliId} CAN: G994426 to G99PHS9`);
                 cy.get("[data-cy='close-alert']").click();
                 // nav element should not contain the text 1
                 cy.get('[role="navigation"]').should("not.contain", "1");
@@ -463,18 +462,18 @@ describe("Approve Change Requests at the Agreement Level", () => {
 
                 checkHistoryItem(
                     /Budget Change to Amount Approved/,
-                    `Admin Demo approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Admin Demo.`
+                    `Dave Director approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Dave Director.`
                 )
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to CAN Approved/,
-                            `Admin Demo approved the budget change on BL ${bliId} from G99IA14 to G99PHS9 as requested by Admin Demo.`
+                            `Dave Director approved the budget change on BL ${bliId} from G994426 to G99PHS9 as requested by Dave Director.`
                         );
                     })
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Obligate Date/,
-                            `Admin Demo approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Admin Demo.`
+                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Dave Director.`
                         );
                     })
                     .then(() => {

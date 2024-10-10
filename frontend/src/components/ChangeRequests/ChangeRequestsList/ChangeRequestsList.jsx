@@ -1,5 +1,6 @@
-import * as React from "react";
 import PropTypes from "prop-types";
+import * as React from "react";
+import { useSelector } from "react-redux";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
@@ -7,16 +8,19 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
 /**
  * Change Requests List component.
  * @component
+ * @typedef {import("../ChangeRequestsTypes").ChangeRequest} ChangeRequest
  * @param {Object} props
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
  * @returns {JSX.Element} - The rendered component
  */
 function ChangeRequestsList({ handleReviewChangeRequest }) {
+    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? -1;
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
     } = useGetChangeRequestsListQuery({ refetchOnMountOrArgChange: true });
+
     if (loadingChangeRequests) {
         return <h1>Loading...</h1>;
     }
@@ -24,16 +28,17 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return <h1>Oops, an error occurred</h1>;
     }
 
-    /**
-     *  @typedef {import('./ChangeRequests').ChangeRequest} ChangeRequest
-     *  @type {ChangeRequest[]}
-     */
-    return changeRequests.length > 0 ? (
+    const changeRequestsForUser = Array.isArray(changeRequests)
+        ? changeRequests.filter(
+              /** @param {ChangeRequest} changeRequest */
+              (changeRequest) => changeRequest.managing_division_id === userDivisionId
+          )
+        : [];
+
+    return changeRequestsForUser.length > 0 ? (
         <>
-            {changeRequests.map(
-                /**
-                 *  @param {ChangeRequest} changeRequest
-                 */
+            {changeRequestsForUser.map(
+                /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>
                         {changeRequest.has_budget_change && (

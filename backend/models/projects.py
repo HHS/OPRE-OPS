@@ -34,17 +34,6 @@ class ResearchType(Enum):
     PROGRAM_SUPPORT = 3
 
 
-class ProjectCANs(BaseModel):
-    __tablename__ = "project_cans"
-
-    project_id: Mapped[int] = mapped_column(ForeignKey("project.id"), primary_key=True)
-    can_id: Mapped[int] = mapped_column(ForeignKey("can.id"), primary_key=True)
-
-    @BaseModel.display_name.getter
-    def display_name(self):
-        return f"project_id={self.project_id};can_id={self.can_id}"
-
-
 class ProjectTeamLeaders(BaseModel):
     __tablename__ = "project_team_leaders"
 
@@ -88,9 +77,6 @@ class Project(BaseModel):
         secondary="project_team_leaders",
         primaryjoin="Project.id == ProjectTeamLeaders.project_id",
         secondaryjoin="User.id == ProjectTeamLeaders.team_lead_id",
-    )
-    cans: Mapped[List["CAN"]] = relationship(
-        "CAN", secondary="project_cans", back_populates="projects"
     )
 
     @BaseModel.display_name.getter

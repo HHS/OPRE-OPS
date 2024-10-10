@@ -6,7 +6,9 @@ from models import (
     Award,
     BaseModel,
     BudgetLineItem,
+    CANFundingBudget,
     CANFundingDetails,
+    CANFundingReceived,
     ChangeRequest,
     ContractAgreement,
     Division,
@@ -42,6 +44,8 @@ from ops_api.ops.resources.agreements import (
 )
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
+from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI, CANFundingReceivedListAPI
+from ops_api.ops.resources.can_funding_budget import CANFundingBudgetItemAPI, CANFundingBudgetListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
@@ -99,6 +103,12 @@ PORTFOLIO_LIST_API_VIEW_FUNC = PortfolioListAPI.as_view("portfolio-group", Portf
 CAN_ITEM_API_VIEW_FUNC = CANItemAPI.as_view("can-item", CAN)
 CAN_LIST_API_VIEW_FUNC = CANListAPI.as_view("can-group", CAN)
 CANS_BY_PORTFOLIO_API_VIEW_FUNC = CANsByPortfolioAPI.as_view("can-portfolio", BaseModel)
+CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC = CANFundingReceivedListAPI.as_view(
+    "can-funding-received-group", CANFundingReceived
+)
+CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC = CANFundingReceivedItemAPI.as_view(
+    "can-funding-received-item", CANFundingReceived
+)
 
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
@@ -143,6 +153,10 @@ PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as
 RESEARCH_PROJECT_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = ResearchProjectFundingSummaryListAPI.as_view(
     "research-project-funding-summary-group", ResearchProject
 )
+
+# FUNDING BUDGET ENDPOINTS
+CAN_FUNDING_BUDGET_ITEM_API_VIEW_FUNC = CANFundingBudgetItemAPI.as_view("can-funding-budget-item", CANFundingBudget)
+CAN_FUNDING_BUDGET_LIST_API_VIEW_FUNC = CANFundingBudgetListAPI.as_view("can-funding-budget-group", CANFundingBudget)
 
 # PROJECT ENDPOINTS
 PROJECT_ITEM_API_VIEW_FUNC = ProjectItemAPI.as_view("projects-item", Project)

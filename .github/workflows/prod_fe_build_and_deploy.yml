@@ -1,4 +1,4 @@
-name: Staging Frontend Build and Deploy
+name: Production Frontend Build and Deploy
 
 on:
   workflow_dispatch:

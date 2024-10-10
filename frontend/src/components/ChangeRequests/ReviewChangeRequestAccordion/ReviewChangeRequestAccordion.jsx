@@ -7,7 +7,7 @@ import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
 /**
- *  @typedef {import('../ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
+ *  @typedef {import('../ChangeRequestsTypes').ChangeRequest} ChangeRequest
  *  @type {ChangeRequest[]}
  */
 /**
