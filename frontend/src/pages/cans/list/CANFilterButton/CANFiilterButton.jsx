@@ -58,10 +58,15 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
                 overrideStyles={{ width: "187px" }}
             />
         </fieldset>,
-        <div
-            key="field-4">
-            <DoubleRangeSlider min={25} max={75}/>
-        </div>
+        <fieldset
+            key="field-4"
+            className={fieldStyles}
+        >
+            <DoubleRangeSlider
+                min={25}
+                max={75}
+            />
+        </fieldset>
     ];
 
     Modal.setAppElement("#root");
