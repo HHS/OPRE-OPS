@@ -1,12 +1,11 @@
 import { BudgetLine } from "../BudgetLineItems/BudgetLineTypes";
 import { Portfolio } from "../Portfolios/PortfolioTypes";
 import { Project } from "../Projects/ProjectTypes";
+import { CAN_TRANSFER } from "./CAN.constants";
 
 export type CAN = {
     active_period?: number;
     budget_line_items: BudgetLine[];
-    created_by: number | null;
-    created_by_user: number | null;
     created_on: Date;
     description?: string;
     display_name?: string;
@@ -17,13 +16,15 @@ export type CAN = {
     id: number;
     nick_name?: string;
     number: string;
-    obligate_by?: Date;
+    obligate_by?: number;
     portfolio: Portfolio;
     portfolio_id: number;
     projects: Project[];
+    updated_on: Date;
+    created_by: number | null;
+    created_by_user: number | null;
     updated_by: number | null;
     updated_by_user: number | null;
-    updated_on: Date;
 };
 
 export type SimpleCAN = {
@@ -77,7 +78,7 @@ export type CANFundingDetails = {
     funding_partner: null;
     funding_source: string;
     id: number;
-    method_of_transfer: "DIRECT" | "COST_SHARE" | "IDDA" | "IAA";
+    method_of_transfer: keyof typeof CAN_TRANSFER;
     sub_allowance: null;
     updated_by: null;
     updated_by_user: null;

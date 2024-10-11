@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import CANTable from "./CANTable";
-import { cans } from "../../../tests/data";
-import { useGetCansQuery, useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
+import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
+import { cans } from "../../../tests/data";
+import CANTable from "./CANTable";
 
 // Mock the PaginationNav component
 vi.mock("../../UI/PaginationNav", () => ({
@@ -64,16 +64,6 @@ describe("CANTable", () => {
         );
 
         expect(screen.getByText("No CANs found")).toBeInTheDocument();
-    });
-
-    it("renders PaginationNav when there are CANs", () => {
-        render(
-            <MemoryRouter>
-                <CANTable cans={cans} />
-            </MemoryRouter>
-        );
-
-        expect(screen.getByTestId("pagination-nav")).toBeInTheDocument();
     });
 
     it("does not render PaginationNav when there are no CANs", () => {

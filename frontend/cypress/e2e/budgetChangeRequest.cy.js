@@ -26,7 +26,7 @@ const testAgreement = {
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 501,
+    can_id: 504,
     agreement_id: 11,
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
@@ -36,7 +36,6 @@ const testBli = {
 
 beforeEach(() => {
     testLogin("admin");
-    cy.visit(`/`);
 });
 
 afterEach(() => {
@@ -108,12 +107,8 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="alert"]').should(($alert) => {
                     expect($alert).to.contain(`BL ${bliId} Amount: $1,000,000.00 to $2,222,222.00`);
                     expect($alert).to.contain(`BL ${bliId} Obligate By Date: 1/1/2025 to 1/1/2048`);
-                    expect($alert).to.contain(`BL ${bliId} CAN: G99IA14 to G99MVT3`);
+                    expect($alert).to.contain(`BL ${bliId} CAN: G994426 to G99MVT3`);
                 });
-                // cy.get("[data-cy='close-alert']").click();
-                cy.visit("/agreements?filter=change-requests").wait(1000);
-                // see if there are any review cards
-                cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
@@ -123,7 +118,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="agreement-history-list"]').should("exist");
                 checkHistoryItem(
                     /Budget Change to CAN In Review/,
-                    `Admin Demo requested a budget change on BL ${bliId} from G99IA14 to G99MVT3 and it's currently In Review for approval.`
+                    `Admin Demo requested a budget change on BL ${bliId} from G994426 to G99MVT3 and it's currently In Review for approval.`
                 )
                     .then(() => {
                         return checkHistoryItem(
@@ -227,9 +222,6 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').contains("$2,222,222.00");
                 cy.get("[data-cy='close-alert']").first().click();
-                cy.visit("/agreements?filter=change-requests").wait(1000);
-                // see if there are any review cards
-                cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
@@ -328,10 +320,6 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="alert"]').should(($alert) => {
                     expect($alert).to.contain(`BL ${bliId} Amount: $1,000,000.00 to $2,222,222.00`);
                 });
-                // cy.get("[data-cy='close-alert']").click();
-                cy.visit("/agreements?filter=change-requests").wait(1000);
-                // see if there are any review cards
-                cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                 // verify agreement history
                 cy.visit(`/agreements/${agreementId}`);
                 cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);

@@ -1,4 +1,4 @@
-name: Staging Frontend Build and Deploy
+name: Production Frontend Build and Deploy
 
 on:
   workflow_dispatch:
@@ -26,7 +26,7 @@ jobs:
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.DOCKER_FILE }}
           image_tags: "${{ github.sha }},${{ env.ENVIRONMENT }}"
-          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.ENVIRONMENT }}.${{ env.DOMAIN_NAME }}, MODE=production"
+          build_args: "VITE_BACKEND_DOMAIN=https://${{ env.DOMAIN_NAME }}, MODE=production"
 
   deploy-frontend:
     needs: build-frontend

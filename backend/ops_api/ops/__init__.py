@@ -51,11 +51,6 @@ def create_app() -> Flask:
         app.config.from_envvar("OPS_CONFIG")
     app.config.from_prefixed_env()  # type: ignore [attr-defined]
 
-    # manually setting the public key path here, until we know where it will live longterm
-    app.config.setdefault(
-        "JWT_PUBLIC_KEY",
-        app.open_resource(app.config.get("JWT_PUBLIC_KEY_PATH")).read(),
-    )
     # fall back for pytest to use
     app.config.setdefault(
         "SQLALCHEMY_DATABASE_URI",

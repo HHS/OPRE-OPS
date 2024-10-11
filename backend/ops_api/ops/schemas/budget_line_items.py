@@ -251,8 +251,13 @@ class BLITeamMembersSchema(Schema):
     email = fields.Str(default=None, allow_none=True)
 
 
+class PortfolioBLISchema(Schema):
+    division_id = fields.Int(required=True)
+
+
 class BudgetLineItemCANSchema(Schema):
     id = fields.Int(required=True)
+    portfolio = fields.Nested(PortfolioBLISchema())
     display_name = fields.Str(required=True)
     number = fields.Str(required=True)
     description = fields.Str(required=True)

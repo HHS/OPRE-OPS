@@ -1,50 +1,58 @@
-import _ from "lodash";
 import PropTypes from "prop-types";
 import React from "react";
 import PaginationNav from "../../UI/PaginationNav";
-import Tooltip from "../../UI/USWDS/Tooltip";
+import { findFundingBudgetBudgetByFiscalYear, formatObligateBy } from "./CANTable.helpers";
+import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
+
 /**
  * CANTable component of CanList
  * @component
  * @typedef {import("../CANTypes").CAN} CAN
  * @param {Object} props
  * @param {CAN[]} props.cans - Array of CANs
+ * @param {number} props.fiscalYear - Fiscal year to filter by
  * @returns {JSX.Element}
  */
-const CANTable = ({ cans }) => {
+const CANTable = ({ cans, fiscalYear }) => {
+    // Filter CANs by fiscal year
+    const filteredCANsByFiscalYear = React.useMemo(() => {
+        if (!fiscalYear) return cans;
+        return cans.filter((can) => can.funding_details.fiscal_year === fiscalYear);
+    }, [cans, fiscalYear]);
+    // TODO: once in prod, change this to 25
     const CANS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = React.useState(1);
-    let cansPerPage = _.cloneDeep(cans);
+    let cansPerPage = [...filteredCANsByFiscalYear];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
 
-    if (cans.length === 0) {
+    if (cansPerPage.length === 0) {
         return <p className="text-center">No CANs found</p>;
     }
 
     return (
         <>
             <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
-                <TableHead />
+                <CANTableHead />
                 <tbody>
                     {cansPerPage.map((can) => (
                         <CANTableRow
                             key={can.id}
                             canId={can.id}
-                            name={can.display_name}
-                            nickname={can.nick_name}
+                            name={can.display_name ?? "TBD"}
+                            nickname={can.nick_name ?? "TBD"}
                             portfolio={can.portfolio.abbreviation}
-                            fiscalYear={can.funding_budgets[0]?.fiscal_year ?? "TBD"}
-                            activePeriod={can.active_period ?? "TBD"}
-                            obligateBy={can.obligate_by ?? "09/30/25"}
+                            fiscalYear={can.funding_details.fiscal_year}
+                            activePeriod={can.active_period ?? 0}
+                            obligateBy={formatObligateBy(can.obligate_by)}
                             transfer={can.funding_details.method_of_transfer ?? "TBD"}
-                            fyBudget={can.funding_budgets[0]?.budget ?? 0}
+                            fyBudget={findFundingBudgetBudgetByFiscalYear(can, fiscalYear)}
                         />
                     ))}
                 </tbody>
             </table>
-            {cans.length > 0 && (
+            {filteredCANsByFiscalYear.length > CANS_PER_PAGE && (
                 <PaginationNav
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
@@ -56,69 +64,9 @@ const CANTable = ({ cans }) => {
     );
 };
 
-const TableHead = () => {
-    const availbleTooltip =
-        "$ Available is the remaining amount of the total budget that is available to plan from (Total FY Budget minus budget lines in Planned, Executing or Obligated Status)";
-    return (
-        <thead>
-            <tr>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
-                    CAN
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
-                    Portfolio
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
-                    FY
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
-                    Active Period
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
-                    Obligate By
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
-                    Transfer
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
-                    FY Budget
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
-                    <Tooltip label={availbleTooltip}>
-                        <span>$ Available</span>
-                    </Tooltip>
-                </th>
-            </tr>
-        </thead>
-    );
-};
-
 CANTable.propTypes = {
-    cans: PropTypes.array.isRequired
+    cans: PropTypes.array.isRequired,
+    fiscalYear: PropTypes.number
 };
 
 export default CANTable;
