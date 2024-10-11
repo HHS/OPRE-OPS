@@ -85,7 +85,7 @@ class is_authorized:
                     response = func(*args, **kwargs)
 
                 else:
-                    response = make_response_with_headers({}, 401)
+                    response = make_response_with_headers({}, 403)
 
             except ExtraCheckError as e:
                 response = make_response_with_headers(e.response_data, 400)

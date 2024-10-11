@@ -187,7 +187,7 @@ def test_basic_user_cannot_post_creates_can(basic_user_auth_client):
     }
     response = basic_user_auth_client.post("/api/v1/cans/", json=data)
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 def test_service_create_can(loaded_db):
@@ -252,7 +252,7 @@ def test_basic_user_cannot_patch_cans(basic_user_auth_client):
     }
     response = basic_user_auth_client.patch("/api/v1/cans/517", json=data)
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 def test_service_patch_can(loaded_db):
@@ -314,7 +314,7 @@ def test_basic_user_cannot_put_cans(basic_user_auth_client):
     }
     response = basic_user_auth_client.put("/api/v1/cans/517", json=data)
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -400,7 +400,7 @@ def test_can_delete_404(budget_team_auth_client):
 def test_basic_user_cannot_delete_cans(basic_user_auth_client):
     response = basic_user_auth_client.delete("/api/v1/cans/517")
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 def test_service_delete_can(loaded_db):
