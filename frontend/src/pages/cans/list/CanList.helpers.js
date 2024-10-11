@@ -1,4 +1,4 @@
-import { USER_ROLES } from "../../../components/Users/User.constants";
+import {USER_ROLES} from "../../../components/Users/User.constants";
 /**
  * @typedef {import('./././CANFilterButton/CANFilterTypes').FilterOption} FilterOption
  * @typedef {import('./././CANFilterButton/CANFilterTypes').Filters} Filters
@@ -122,3 +122,18 @@ export const getPortfolioOptions = (cans) => {
         title: portfolio
     }));
 };
+
+export const getSortedFYBudgets = (cans) => {
+    if (!cans || cans.length === 0) {
+        return [];
+    }
+
+    const funding_budgets = cans.reduce((acc, can) => {
+        acc.add(can.funding_budgets);
+        return acc;
+    }, new Set());
+
+    return Array.from(funding_budgets).flatMap(itemArray =>
+        itemArray.map(item => item.budget)
+    ).sort((a, b) => a - b);
+}

@@ -24,7 +24,8 @@ const StyledSlider = styled(ReactSlider)`
     height: 25px;
 `;
 
-const DoubleRangeSlider = ({min, max, onValueChange}) => {
+// const DoubleRangeSlider = ({min, max, onValueChange}) => {
+const DoubleRangeSlider = ({onValueChange}) => {
     const Thumb = ({ key, ...props }) => (
         <StyledThumb key={key} {...props}/>
     );
@@ -36,12 +37,17 @@ const DoubleRangeSlider = ({min, max, onValueChange}) => {
     return (
         <div>
             <StyledSlider
+                onBeforeChange={(value, index) => {
+                    console.log('Before change:', value)
+                    console.log('Index:', index)
+                }}
                 onAfterChange={(value) =>{
                     if (onValueChange) {
                         onValueChange(value);
                     }
+                    console.log('New range:', value);
                 }}
-                defaultValue={[min, max]}
+                defaultValue={[25, 75]}
                 renderTrack={Track}
                 renderThumb={Thumb} />
         </div>

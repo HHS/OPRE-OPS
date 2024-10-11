@@ -4,7 +4,7 @@ import CANPortfolioComboBox from "../../../../components/CANs/CANPortfolioComboB
 import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox";
 import FilterButton from "../../../../components/UI/FilterButton";
 import useCANFilterButton from "./CANFilterButton.hooks";
-import CANFYBudgetComboBox from "../../../../components/CANs/CANFYBudgetComboBox/index.js";
+import CANFYBudgetRangeSlider from "../../../../components/CANs/CANFYBudgetRangeSlider";
 
 /**
  * @typedef {import('./CANFilterTypes').FilterOption} FilterOption
@@ -17,7 +17,7 @@ import CANFYBudgetComboBox from "../../../../components/CANs/CANFYBudgetComboBox
  * @param {FilterOption[]} props.portfolioOptions - The portfolio options.
  * @returns {JSX.Element} - The CAN filter button.
  */
-export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
+export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudgetRange }) => {
     const { activePeriod, setActivePeriod, transfer, setTransfer, portfolio, setPortfolio, applyFilter, resetFilter } =
         useCANFilterButton(filters, setFilters);
     const fieldStyles = "usa-fieldset margin-bottom-205";
@@ -62,10 +62,10 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
             key="field-4"
             className={fieldStyles}
         >
-            <CANFYBudgetComboBox
+            <CANFYBudgetRangeSlider
                 legendClassname={legendStyles}
                 overrideStyles={{ width: "187px" }}
-                maxFYBudget={100}
+                fyBudgetRange={fyBudgetRange}
             />
         </fieldset>
     ];
