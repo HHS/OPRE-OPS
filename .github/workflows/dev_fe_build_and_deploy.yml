@@ -42,8 +42,8 @@ jobs:
       
       - name: Format Revision Label
         run : |
-          ORIGINAL_TAG = "${{ github.sha }}"
-          MODIFIED_TAG=$(echo "$ORIGINAL_TAG" | sed 's/\./-/g' | cut -c1-8 | tr '[:upper:]' '[:lower:]')
+          TAG="${{ github.sha }}"
+          MODIFIED_TAG=$(echo "$TAG" | sed 's/\./-/g' | cut -c1-8 | tr '[:upper:]' '[:lower:]')
           echo "::set-output name=modified_tag::$MODIFIED_TAG"
           
       - name: Log in to Azure
