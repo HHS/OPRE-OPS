@@ -39,7 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
+      
+      - name: Format Revision Label
+        run : |
+          TAG = "${{ github.sha }}"
+          MODIFIED_TAG=$(echo "$TAG" | sed 's/\./-/g' | cut -c1-8 | tr '[:upper:]' '[:lower:]')
+          echo "::set-output name=modified_tag::$MODIFIED_TAG"
+          
       - name: Log in to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
