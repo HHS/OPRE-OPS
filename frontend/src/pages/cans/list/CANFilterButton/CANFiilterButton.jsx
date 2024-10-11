@@ -4,6 +4,7 @@ import CANPortfolioComboBox from "../../../../components/CANs/CANPortfolioComboB
 import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox";
 import FilterButton from "../../../../components/UI/FilterButton";
 import useCANFilterButton from "./CANFilterButton.hooks";
+import DoubleRangeSlider from "../../../../components/UI/DoubleRangeSlider/DoubleRangeSlider.jsx";
 
 /**
  * @typedef {import('./CANFilterTypes').FilterOption} FilterOption
@@ -56,7 +57,11 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
                 legendClassname={legendStyles}
                 overrideStyles={{ width: "187px" }}
             />
-        </fieldset>
+        </fieldset>,
+        <div
+            key="field-4">
+            <DoubleRangeSlider min={25} max={75}/>
+        </div>
     ];
 
     Modal.setAppElement("#root");
