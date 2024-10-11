@@ -49,9 +49,6 @@ def get_current_user_id():
     return current_user.id
 
 
-# TODO: considering refactoring to DRYer along with similar code in services_component.py and budget_line_items.py
-
-
 # Base Procurement Step APIs
 
 
