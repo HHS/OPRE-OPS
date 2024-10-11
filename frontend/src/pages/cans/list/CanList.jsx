@@ -10,7 +10,8 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
-import { sortAndFilterCANs, getPortfolioOptions } from "./CanList.helpers";
+import CANFilterTags from "./CANFilterTags";
+import { getPortfolioOptions, sortAndFilterCANs } from "./CanList.helpers";
 
 /**
  * Page for the CAN List.
@@ -79,6 +80,12 @@ const CanList = () => {
                         />
                     }
                     FYSelect={<CANFiscalYearSelect />}
+                    FilterTags={
+                        <CANFilterTags
+                            filters={filters}
+                            setFilters={setFilters}
+                        />
+                    }
                 />
             </App>
         )
