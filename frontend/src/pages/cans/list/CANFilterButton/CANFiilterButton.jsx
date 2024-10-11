@@ -4,7 +4,7 @@ import CANPortfolioComboBox from "../../../../components/CANs/CANPortfolioComboB
 import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox";
 import FilterButton from "../../../../components/UI/FilterButton";
 import useCANFilterButton from "./CANFilterButton.hooks";
-import DoubleRangeSlider from "../../../../components/UI/DoubleRangeSlider/DoubleRangeSlider.jsx";
+import CANFYBudgetComboBox from "../../../../components/CANs/CANFYBudgetComboBox/index.js";
 
 /**
  * @typedef {import('./CANFilterTypes').FilterOption} FilterOption
@@ -62,9 +62,10 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
             key="field-4"
             className={fieldStyles}
         >
-            <DoubleRangeSlider
-                min={25}
-                max={75}
+            <CANFYBudgetComboBox
+                legendClassname={legendStyles}
+                overrideStyles={{ width: "187px" }}
+                maxFYBudget={100}
             />
         </fieldset>
     ];
