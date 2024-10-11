@@ -1,33 +1,23 @@
-import {useState} from "react";
-import DoubleRangeSlider from "../../UI/DoubleRangeSlider/DoubleRangeSlider.jsx";
+import { useState } from "react";
+import DoubleRangeSlider from "../../UI/DoubleRangeSlider";
 
-const CANFYBudgetRangeSlider = ({
-    fyBudgetRange,
-    legendClassname = "usa-label margin-top-0",
-    // overrideStyles = {}
-}) => {
-    console.log(fyBudgetRange);
+const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0" }) => {
     const [range, setRange] = useState([fyBudgetRange[0], fyBudgetRange[1]]);
 
-    const handleValueChange = (newRange) => {
-        console.log('Old range:', range);
-        console.log('New range:', newRange);
-        let selectedMinFYBudget = (newRange[0]/100)*fyBudgetRange[1];
-        const selectedMaxFYBudget = (newRange[1]/100)*fyBudgetRange[1];
-        if (selectedMinFYBudget === 0) {
-            selectedMinFYBudget = fyBudgetRange[0];
-        } else {
-            // Todo: Determine the difference between the smallest FY budget value and where the left thumb is
-            const difference = 0
-            selectedMinFYBudget = fyBudgetRange[0] + difference
-        }
+    const handleChange = (newRange) => {
+        const [minPercentage, maxPercentage] = newRange;
+        const fyBudgetMin = fyBudgetRange[0];
+        const fyBudgetMax = fyBudgetRange[1];
+        const fyBudgetDiff = fyBudgetMax - fyBudgetMin;
 
-        console.log({selectedMinFYBudget, selectedMaxFYBudget});
+        const selectedMinFYBudget = Math.round(fyBudgetMin + (minPercentage / 100) * fyBudgetDiff);
+        const selectedMaxFYBudget = Math.round(fyBudgetMin + (maxPercentage / 100) * fyBudgetDiff);
+
         setRange([selectedMinFYBudget, selectedMaxFYBudget]);
     };
 
     return (
-        <div >
+        <>
             <div className="display-flex flex-justify">
                 <label
                     className={legendClassname}
@@ -37,13 +27,11 @@ const CANFYBudgetRangeSlider = ({
                 </label>
             </div>
             <div>
-                <DoubleRangeSlider
-                    // min={range[0]}
-                    // max={range[1]}
-                    onValueChange={handleValueChange}/>
+                <DoubleRangeSlider handleChange={handleChange} />
+                <span>{`range: ${range}`}</span>
             </div>
-        </div>
-    )
+        </>
+    );
 };
 
 export default CANFYBudgetRangeSlider;
