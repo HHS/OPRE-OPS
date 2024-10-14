@@ -2,10 +2,10 @@ import PropTypes from "prop-types";
 import { renderChangeValues } from "../../../helpers/changeRequests.helpers";
 import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
 import { useGetBLITotal, useGetNameForCanId } from "../../../hooks/lookup.hooks";
+import { useGetLoggedInUserFullName } from "../../../hooks/user.hooks";
 import { CHANGE_REQUEST_TYPES } from "../ChangeRequests.constants";
 import ReviewCard from "../ReviewCard";
 import TermTag from "../TermTag";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 /**
  * BudgetChangeReviewCard component
@@ -20,7 +20,6 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests
  * @param {boolean} [props.isCondensed=false] - Whether the card is condensed
  * @param {boolean} [props.forceHover=false] - Whether to force hover state
- * @param {number} [props.createdById] - The ID of the user who created the change request
  * @returns {JSX.Element} - The rendered component
  */
 function StatusChangeReviewCard({
@@ -32,8 +31,7 @@ function StatusChangeReviewCard({
     changeTo,
     handleReviewChangeRequest,
     isCondensed = false,
-    forceHover = false,
-    createdById
+    forceHover = false
 }) {
     const keyName = Object.keys(changeTo)[0];
     const totalAmount = useGetBLITotal(bliId);
@@ -41,18 +39,15 @@ function StatusChangeReviewCard({
     const newCan = useGetNameForCanId(changeTo.can_id?.new);
     const { oldValue, newValue } = renderChangeValues(keyName, changeTo, oldCan, newCan);
     const changeMsg = `\u2022 BL ${bliId} ${convertCodeForDisplay("changeToTypes", keyName)}: ${oldValue} to ${newValue}`;
-    const createdBy = useGetUserFullNameFromId(createdById);
-    if (createdById === null && !requesterName) {
-        requesterName = createdBy;
-    }
-
+    const loggedInUserFullName = useGetLoggedInUserFullName();
+    const displayedRequesterName = requesterName ?? loggedInUserFullName;
     return (
         <ReviewCard
             changeRequestId={changeRequestId}
             type={CHANGE_REQUEST_TYPES.STATUS}
             agreementId={agreementId}
             actionIcons={true}
-            requesterName={requesterName}
+            requesterName={displayedRequesterName}
             requestDate={requestDate}
             handleReviewChangeRequest={handleReviewChangeRequest}
             bliToStatus={newValue}
@@ -98,7 +93,6 @@ StatusChangeReviewCard.propTypes = {
     changeTo: PropTypes.object.isRequired,
     handleReviewChangeRequest: PropTypes.func.isRequired,
     isCondensed: PropTypes.bool,
-    forceHover: PropTypes.bool,
-    createdById: PropTypes.number
+    forceHover: PropTypes.bool
 };
 export default StatusChangeReviewCard;

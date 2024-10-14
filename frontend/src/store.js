@@ -1,5 +1,4 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import canListSlice from "./pages/cans/list/canListSlice";
 import canDetailSlice from "./pages/cans/detail/canDetailSlice";
 import portfolioListSlice from "./pages/portfolios/list/portfolioListSlice";
 import portfolioBudgetSummarySlice from "./components/Portfolios/PortfolioBudgetSummary/portfolioBudgetSummarySlice";
@@ -17,7 +16,6 @@ import { opsAuthApi } from "./api/opsAuthAPI.js";
 const rootReducer = combineReducers({
     [opsApi.reducerPath]: opsApi.reducer,
     [opsAuthApi.reducerPath]: opsAuthApi.reducer,
-    canList: canListSlice,
     canDetail: canDetailSlice,
     portfolioList: portfolioListSlice,
     portfolioBudgetSummary: portfolioBudgetSummarySlice,

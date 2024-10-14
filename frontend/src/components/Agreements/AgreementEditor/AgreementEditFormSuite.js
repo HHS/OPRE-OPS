@@ -9,8 +9,8 @@ const suite = create((data = {}, fieldName) => {
     test("name", "This is required information", () => {
         enforce(data.name).isNotBlank();
     });
-    test("serviceReqType", "This is required information", () => {
-        enforce(data.serviceReqType).notEquals("-Select Service Requirement Type-");
+    test("service_requirement_type", "This is required information", () => {
+        enforce(data.service_requirement_type).notEquals("-Select Service Requirement Type-");
     });
     test("description", "This is required information", () => {
         enforce(data.description).isNotBlank();
@@ -20,8 +20,6 @@ const suite = create((data = {}, fieldName) => {
     });
     test("agreement_reason", "This is required information", () => {
         enforce(data.agreement_reason).isNotBlank();
-    });
-    test("agreement_reason", "This is required information", () => {
         enforce(data.agreement_reason).notEquals("0");
     });
     test("incumbent", "This is required information", () => {
@@ -37,6 +35,7 @@ const suite = create((data = {}, fieldName) => {
     });
     test("contract-type", "This is required information", () => {
         enforce(data.contract_type).notEquals("-Select an option-");
+        enforce(data.contract_type).isNotEmpty();
     });
     test("team-members", "This is required information", () => {
         enforce(data.team_members).lengthNotEquals(0);

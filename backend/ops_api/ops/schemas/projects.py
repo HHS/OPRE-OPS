@@ -3,7 +3,7 @@ from marshmallow import Schema, fields
 from models.projects import ProjectType
 
 
-class Project(Schema):
+class ProjectSchema(Schema):
     id = fields.Integer(required=True)
     project_type = fields.Enum(ProjectType, required=True)
     title = fields.String(required=True)

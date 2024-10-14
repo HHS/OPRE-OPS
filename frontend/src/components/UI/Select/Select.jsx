@@ -10,10 +10,11 @@ import IsRequiredHelper from "../Form/IsRequiredHelper";
  * @param {Function} props.onChange - A function to call when the input value changes.
  * @param {string} props.value - The currently selected option
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
- * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
- * @param {Array<Object>} [props.options] - An array of options to display (optional).
+ * @param {string[]} [props.messages] - An array of error messages to display (optional).
+ * @param {Object[]} [props.options] - An array of options to display (optional).
  * @param {boolean} [props.valueOverride] - A flag to indicate if the value should be an index (optional).
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
+ * @param {string} [props.legendClassname] - Additional CSS classes to apply to the legend (optional).
  * @param {string} [props.defaultOption] - The default option to display (optional).
  * @param {boolean} [props.isRequired] - A flag to indicate if the input is required (optional).
  * @param {boolean} [props.isRequiredNoShow] - A flag to indicate if the input is required but should not show (optional).
@@ -37,6 +38,7 @@ const Select = ({
         }
     ],
     className,
+    legendClassname,
     defaultOption = "-Select an option-",
     isRequired = false,
     isRequiredNoShow = false
@@ -48,7 +50,7 @@ const Select = ({
     return (
         <fieldset className={cx("usa-fieldset", pending && "pending", className)}>
             <label
-                className={`usa-label margin-top-0 ${messages.length ? "usa-label--error" : ""} `}
+                className={`usa-label margin-top-0 ${legendClassname ? legendClassname : ""} ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
             >
                 {label}
@@ -109,6 +111,7 @@ Select.propTypes = {
     ),
     valueOverride: PropTypes.bool,
     className: PropTypes.string,
+    legendClassname: PropTypes.string,
     defaultOption: PropTypes.string,
     isRequired: PropTypes.bool,
     isRequiredNoShow: PropTypes.bool

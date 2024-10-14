@@ -1,14 +1,14 @@
 import TeamLeaders from "../../UI/TeamLeaders/TeamLeaders";
 import HeroDescription from "../../UI/HeroDescription/HeroDescription";
-import cssClasses from "./styles.module.css";
-
+/**
+ *
+ * @component Hero
+ * @param {Object} props
+ * @returns {JSX.Element}
+ */
 const Hero = (props) => {
     return (
-        <section
-            className={`${props.backgroundColor && "padding-4"} radius-md ${cssClasses.cardBorder} ${
-                props.backgroundColor
-            }`}
-        >
+        <section className="bg-brand-base-light-variant border-base-light border-2px padding-4 radius-md ">
             <h1
                 className={`font-sans-2xl margin-0 text-brand-primary`}
                 style={{ maxWidth: "70%" }}

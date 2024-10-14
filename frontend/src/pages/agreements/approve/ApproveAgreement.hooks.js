@@ -18,11 +18,12 @@ import { useChangeRequestsForBudgetLines } from "../../../hooks/useChangeRequest
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import useToggle from "../../../hooks/useToggle";
 import { getTotalByCans } from "../review/ReviewAgreement.helpers";
+import { useSelector } from "react-redux";
 
 /**
- *  @typedef {import('../../../components/ChangeRequests/ChangeRequestsList/ChangeRequests').ChangeRequest} ChangeRequest
- *  @type {ChangeRequest[]}
+ * @typedef {import('../../../components/ChangeRequests/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  */
+
 /**
  * Custom hook for managing the approval process of an agreement
  * @typedef {Object} ApproveAgreementHookResult
@@ -32,32 +33,35 @@ import { getTotalByCans } from "../review/ReviewAgreement.helpers";
  * @property {Object[]} groupedBudgetLinesByServicesComponent - The budget lines grouped by services component
  * @property {Object[]} groupedUpdatedBudgetLinesByServicesComponent - The updated budget lines grouped by services component
  * @property {Object[]} budgetLinesInReview - The budget lines in review
- * @property {ChangeRequest[]} changeRequestsInReview - The change requests in review
+ * @property {Object[]} changeRequestsInReview - The change requests in review
  * @property {Object} changeInCans - The change in CANs
  * @property {string} notes - The reviewer notes
- * @property {Function} setNotes - The setter for reviewer notes
+ * @property {React.Dispatch<React.SetStateAction<string>>} setNotes - The setter for reviewer notes
  * @property {boolean} confirmation - The confirmation state
- * @property {function(boolean): void} setConfirmation - The setter for confirmation state
+ * @property {React.Dispatch<React.SetStateAction<boolean>>} setConfirmation - The setter for confirmation state
  * @property {boolean} showModal - The modal visibility state
- * @property {function(boolean): void} setShowModal - The setter for modal visibility
+ * @property {React.Dispatch<React.SetStateAction<boolean>>} setShowModal - The setter for modal visibility
  * @property {Object} modalProps - The modal properties
  * @property {string} checkBoxText - The text for the confirmation checkbox
- * @property {function (): void} handleCancel - Function to handle cancellation of the approval process
- * @property {Function} handleApproveChangeRequests - Function to handle approval of change requests
+ * @property {() => void} handleCancel - Function to handle cancellation of the approval process
+ * @property {(action: 'APPROVE' | 'REJECT') => void} handleApproveChangeRequests - Function to handle approval of change requests
  * @property {string} title - The title of the approval page
  * @property {boolean} afterApproval - The after approval state
- * @property {Function} setAfterApproval - The setter for after approval state
+ * @property {() => void} setAfterApproval - The setter for after approval state
  * @property {string} requestorNoters - The submitter's notes
  * @property {string} urlChangeToStatus - The status change to from the URL
  * @property {string} statusForTitle - The status for the title
- * @property {string} changeRequestTitle - The title of the change request,
- * @property {typeof CHANGE_REQUEST_SLUG_TYPES.BUDGET | typeof CHANGE_REQUEST_SLUG_TYPES.STATUS} statusChangeTo - The type of change request
- * @property { import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
+ * @property {string} changeRequestTitle - The title of the change request
+ * @property {typeof import('../../../components/ChangeRequests/ChangeRequests.constants').CHANGE_REQUEST_SLUG_TYPES.BUDGET | typeof import('../../../components/ChangeRequests/ChangeRequests.constants').CHANGE_REQUEST_SLUG_TYPES.STATUS} statusChangeTo - The type of change request
+ * @property {import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
  * @property {boolean} isLoadingAgreement - The loading state for the agreement
  * @property {Object[]} approvedBudgetLinesPreview - The updated budget lines
- *
+ * @property {boolean} is2849Ready - The readiness state for the 2849 form
+ * @property {boolean} hasPermissionToViewPage - The permission to view the page. Dependant on 2849
+ * @property {boolean} isApproverAndAgreementInReview - If logged in user has role of division director and agreement is in review state
  * @returns {ApproveAgreementHookResult} The data and functions for the approval process
  */
+
 const useApproveAgreement = () => {
     const { setAlert } = useAlert();
     const urlPathParams = useParams();
@@ -168,6 +172,25 @@ const useApproveAgreement = () => {
     const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines, null, true);
     const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
     const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
+
+    // NOTE: Permission checks
+    const is2849Ready = false; // feature flag for 2849 readiness
+    const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
+    const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
+    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
+
+    const managingDivisionIds = agreement?.budget_line_items
+        ? agreement.budget_line_items.flatMap((bli) =>
+              bli.change_requests_in_review?.map((cr) => cr.managing_division_id) ?? []
+          )
+        : [];
+
+    const doesAgreementBelongToDivisionDirector = managingDivisionIds.includes(userDivisionId) ?? false;
+    const agreementHasBLIsUnderReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
+    const hasPermissionToViewPage =
+        userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
+    // NOTE: This test is good enough for now until 2849 is ready
+    const isApproverAndAgreementInReview = userIsDivisionDirector && agreementHasBLIsUnderReview;
 
     const relevantMessages = React.useMemo(() => {
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
@@ -434,7 +457,10 @@ const useApproveAgreement = () => {
         statusChangeTo,
         errorAgreement,
         isLoadingAgreement,
-        approvedBudgetLinesPreview
+        approvedBudgetLinesPreview,
+        is2849Ready,
+        hasPermissionToViewPage,
+        isApproverAndAgreementInReview
     };
 };
 

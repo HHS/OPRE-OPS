@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { convertCodeForDisplay } from "../../../helpers/utils";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
 import AgreementTotalCard from "../../Agreements/AgreementDetailsCards/AgreementTotalCard";
@@ -61,7 +60,6 @@ export const CreateBLIsAndSCs = ({
     setIncludeDrafts
 }) => {
     const {
-        budgetLinePageErrorsExist,
         handleDeleteBudgetLine,
         handleDuplicateBudgetLine,
         handleEditBLI,
@@ -148,7 +146,6 @@ export const CreateBLIsAndSCs = ({
                         />
                     </div>
                     <div className="display-flex flex-justify margin-y-2">
-                        <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                         <AgreementTotalCard
                             total={totalsForCards(subTotalForCards(tempBudgetLines), tempBudgetLines)}
                             subtotal={subTotalForCards(tempBudgetLines)}
@@ -156,6 +153,7 @@ export const CreateBLIsAndSCs = ({
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />
+                        <BLIsByFYSummaryCard budgetLineItems={tempBudgetLines} />
                     </div>
                 </>
             )}
@@ -175,7 +173,6 @@ export const CreateBLIsAndSCs = ({
                         isEditable={false}
                     />
                     <div className="display-flex flex-justify margin-y-2">
-                        <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                         <AgreementTotalCard
                             total={totalsForCards(subTotalForCards(budgetLinesForCards), budgetLinesForCards)}
                             subtotal={subTotalForCards(budgetLinesForCards)}
@@ -183,6 +180,7 @@ export const CreateBLIsAndSCs = ({
                             procurementShopAbbr={selectedProcurementShop?.abbr}
                             procurementShopFee={selectedProcurementShop?.fee}
                         />
+                        <BLIsByFYSummaryCard budgetLineItems={budgetLinesForCards} />
                     </div>
                 </>
             )}
@@ -210,7 +208,7 @@ export const CreateBLIsAndSCs = ({
                 />
             )}
 
-            {budgetLinePageErrorsExist && (
+            {pageErrors && (
                 <ul
                     className="usa-list--unstyled font-12px text-error"
                     data-cy="error-list"
@@ -221,7 +219,6 @@ export const CreateBLIsAndSCs = ({
                             className="border-left-2px padding-left-1"
                             data-cy="error-item"
                         >
-                            <strong>{convertCodeForDisplay("validation", key)}: </strong>
                             {
                                 <span>
                                     {value.map((message, index) => (

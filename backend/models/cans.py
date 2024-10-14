@@ -77,10 +77,6 @@ class CAN(BaseModel):
         "BudgetLineItem", back_populates="can"
     )
 
-    projects: Mapped[List["Project"]] = relationship(
-        "Project", secondary="project_cans", back_populates="cans"
-    )
-
     @property
     def is_expired(self):
         today = date.today()
@@ -119,6 +115,10 @@ class CAN(BaseModel):
             return None
         return self.funding_details.obligate_by
 
+    @property
+    def projects(self) -> set["Project"]:
+        return set([bli.project for bli in self.budget_line_items if bli.project])
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.number
@@ -140,6 +140,7 @@ class CAN(BaseModel):
                 "appropriation_date": (
                     self.funding_details.fiscal_year if self.funding_details else None
                 ),
+                "projects": [p.id for p in self.projects],
             }
         )
 

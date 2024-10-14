@@ -41,7 +41,7 @@ export const summaryCard = (budgetLineItems) => {
     const BLIsByFiscalYear = addFiscalYearToBudgetLineItems(budgetLineItems);
     const fyTotalsMap = calculateFYTotalsMap(BLIsByFiscalYear);
     const fyTotalsAll = calculateFyTotalsAll(fyTotalsMap);
-    const fyTotals = fyTotalsAll.slice(0, 5);
+    const fyTotals = fyTotalsAll.slice(0, 5).reverse();
     const maxFyTotal = getMaxFyTotal(fyTotals);
     const chartData = fyTotals.map((fyVal, index) => {
         return {

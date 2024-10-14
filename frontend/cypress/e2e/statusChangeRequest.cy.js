@@ -27,17 +27,16 @@ const testAgreement = {
 const testBli = {
     line_description: "SC1",
     comments: "",
-    can_id: 501,
+    can_id: 504,
     agreement_id: 11,
-    amount: 1000000,
+    amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
-    date_needed: "2025-1-01",
+    date_needed: "2025-01-01",
     proc_shop_fee_percentage: 0.005
 };
 
 beforeEach(() => {
     testLogin("admin");
-    cy.visit(`/`);
 });
 
 afterEach(() => {
@@ -94,6 +93,14 @@ it("BLI Status Change", () => {
                 cy.wait(1);
             });
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
+            cy.get('[data-cy="review-card"]').within(() => {
+                cy.contains(bliId);
+                cy.contains("Admin Demo");
+                cy.contains("Status");
+                cy.contains("Draft");
+                cy.contains("Planned");
+                cy.contains("$1,005,000.00");
+            });
             // type pls approve in the #submitter-notes textarea
             cy.get("#submitter-notes").type("pls approve");
             cy.get('[data-cy="send-to-approval-btn"]').click();
@@ -102,10 +109,6 @@ it("BLI Status Change", () => {
                 .and("contain", `BL ${bliId} Status: Draft to Planned`)
                 .and("contain", "pls approve");
             cy.get("[data-cy='close-alert']").click();
-            cy.visit("/agreements?filter=change-requests").wait(1000);
-            // see if there are any review cards
-            cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
-            // verify agreement history
             cy.visit(`/agreements/${agreementId}`);
             cy.get(".usa-breadcrumb__list > :nth-child(3)").should("have.text", testAgreement.name);
             cy.get('[data-cy="details-left-col"] > :nth-child(4)').should("have.text", "History");

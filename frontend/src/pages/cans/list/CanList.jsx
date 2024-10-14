@@ -1,48 +1,87 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, Outlet } from "react-router-dom";
+import React from "react";
+import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
+import { useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
-import { getCanList } from "./getCanList";
-import TextClip from "../../../components/UI/Text/TextClip";
+import CANTable from "../../../components/CANs/CANTable";
+import CANTags from "../../../components/CANs/CanTabs";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import FiscalYear from "../../../components/UI/FiscalYear";
+import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
+import ErrorPage from "../../ErrorPage";
+import CANFilterButton from "./CANFilterButton";
+import { sortAndFilterCANs, getPortfolioOptions } from "./CanList.helpers";
 
+/**
+ * Page for the CAN List.
+ * @component
+ * @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+ * @returns {JSX.Element | boolean} - The component JSX.
+ */
 const CanList = () => {
-    const dispatch = useDispatch();
-    const canList = useSelector((state) => state.canList.cans);
+    const [searchParams] = useSearchParams();
+    const myCANsUrl = searchParams.get("filter") === "my-cans";
+    const { data: canList, isError, isLoading } = useGetCansQuery({});
+    const activeUser = useSelector((state) => state.auth.activeUser);
+    const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
+    const fiscalYear = Number(selectedFiscalYear.value);
+    const [filters, setFilters] = React.useState({
+        activePeriod: [],
+        transfer: [],
+        portfolio: []
+    });
+    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, filters) || [];
+    const portfolioOptions = getPortfolioOptions(canList);
 
-    const tableClasses = "usa-table usa-table--borderless margin-x-auto";
+    if (isLoading) {
+        return (
+            <App>
+                <h1>Loading...</h1>
+            </App>
+        );
+    }
+    if (isError) {
+        return <ErrorPage />;
+    }
 
-    useEffect(() => {
-        dispatch(getCanList());
-    }, [dispatch]);
-
+    const CANFiscalYearSelect = () => {
+        return (
+            <FiscalYear
+                fiscalYear={fiscalYear}
+                handleChangeFiscalYear={setSelectedFiscalYear}
+            />
+        );
+    };
+    // TODO: remove flag once CANS are ready
     return (
-        <App>
-            <h1 className="text-center">CANs</h1>
-            <nav>
-                <table className={tableClasses}>
-                    <caption>List of all CANs</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">number</th>
-                            <th scope="col">description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {canList.map((can) => (
-                            <tr key={can.id}>
-                                <th scope="row">
-                                    <Link to={"./" + can.id}>{can.number}</Link>
-                                </th>
-                                <td>
-                                    <TextClip text={can.description} />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </nav>
-            <Outlet />
-        </App>
+        import.meta.env.DEV && (
+            <App breadCrumbName="CANs">
+                <TablePageLayout
+                    title="CANs"
+                    subtitle={myCANsUrl ? "My CANs" : "All CANs"}
+                    details={
+                        myCANsUrl
+                            ? "This is a list of CANs from agreements you are listed as a team member on. Please select filter options to see CANs by Portfolio, Fiscal Year, or other criteria."
+                            : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
+                    }
+                    TabsSection={<CANTags />}
+                    TableSection={
+                        <CANTable
+                            cans={sortedCANs}
+                            fiscalYear={fiscalYear}
+                        />
+                    }
+                    FilterButton={
+                        <CANFilterButton
+                            filters={filters}
+                            setFilters={setFilters}
+                            portfolioOptions={portfolioOptions}
+                        />
+                    }
+                    FYSelect={<CANFiscalYearSelect />}
+                />
+            </App>
+        )
     );
 };
 
