@@ -556,6 +556,13 @@
       oidc_id: "00000000-0000-1111-a111-000000000022",
       groups: [],
       status: "ACTIVE"
+    },
+    { // 526
+      first_name: "System",
+      last_name: "Admin",
+      email: "system.admin@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000026",
+      status: "LOCKED"
     }
   ],
   notification: [
