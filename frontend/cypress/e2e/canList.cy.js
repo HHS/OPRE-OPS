@@ -73,7 +73,7 @@ describe("CAN List", () => {
 
         cy.get("span").contains("1 Year").should("exist");
         cy.get("span").contains("Direct").should("exist");
-        cy.get("span").contains("CC").should("exist");
+        cy.get("span").contains("Child Care (CC)").should("exist");
 
         // No CANs found
         cy.get("tbody").should("not.exist");

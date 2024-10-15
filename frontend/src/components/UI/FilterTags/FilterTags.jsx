@@ -16,12 +16,13 @@ import Tag from "../Tag";
  * @returns {JSX.Element} - The filter tag component. (A pill with an 'x' to remove it)
  */
 const FilterTag = ({ tag, removeFilter }) => (
-    <Tag className="bg-brand-primary-light display-flex flex-align-center">
+    <Tag className="bg-brand-primary-light text-brand-primary-dark display-flex flex-align-center">
         {tag.tagText}
         <svg
-            className="height-2 width-2 text-brand-primary-dark margin-left-05 cursor-pointer"
+            className="height-2 width-2 margin-left-05 cursor-pointer"
             onClick={() => removeFilter(tag)}
             id={`filter-tag-${tag.filter}`}
+            style={{ fill: "currentColor" }}
         >
             <use xlinkHref={`${icons}#cancel`}></use>
         </svg>

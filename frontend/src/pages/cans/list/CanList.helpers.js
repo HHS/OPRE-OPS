@@ -89,7 +89,9 @@ const applyAdditionalFilters = (cans, filters) => {
     }
     if (filters.portfolio && filters.portfolio.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
-            filters.portfolio?.some((portfolio) => portfolio.title.toUpperCase() === can.portfolio.name.toUpperCase())
+            filters.portfolio?.some(
+                (portfolio) => portfolio.title == `${can.portfolio.name} (${can.portfolio.abbreviation})`
+            )
         );
     }
     // TODO: Add other filters here
@@ -113,7 +115,7 @@ export const getPortfolioOptions = (cans) => {
         return [];
     }
     const portfolios = cans.reduce((acc, can) => {
-        acc.add(can.portfolio.name);
+        acc.add(`${can.portfolio.name} (${can.portfolio.abbreviation})`);
         return acc;
     }, new Set());
 
