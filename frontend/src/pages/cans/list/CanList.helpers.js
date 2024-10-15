@@ -117,8 +117,10 @@ export const getPortfolioOptions = (cans) => {
         return acc;
     }, new Set());
 
-    return Array.from(portfolios).map((portfolio, index) => ({
-        id: index,
-        title: portfolio
-    }));
+    return Array.from(portfolios)
+        .sort((a, b) => a.localeCompare(b))
+        .map((portfolio, index) => ({
+            id: index,
+            title: portfolio
+        }));
 };
