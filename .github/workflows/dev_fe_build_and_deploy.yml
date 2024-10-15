@@ -44,8 +44,9 @@ jobs:
         run : |
           TAG="${{ github.sha }}"
           MODIFIED_TAG=$(echo "$TAG" | sed 's/\./-/g' | cut -c1-8 | tr '[:upper:]' '[:lower:]')
-          echo "::set-output name=modified_tag::$MODIFIED_TAG"
-      
+          # echo "::set-output name=modified_tag::$MODIFIED_TAG"
+          echo "MODIFIED_TAG=$MODIFIED_TAG" >> $GITHUB_ENV  # Save to environment
+
       - name: Install gettext for envsubst
         run: sudo apt-get install gettext
 
@@ -67,4 +68,4 @@ jobs:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
-            yamlConfigPath: testlabelling.yaml
+            yamlConfigPath: rendered-containerapp.yaml
