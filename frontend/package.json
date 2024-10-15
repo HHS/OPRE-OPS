@@ -54,6 +54,9 @@
     "vite-plugin-eslint": "1.8.1",
     "vite-plugin-svgr": "4.2.0"
   },
+  "overrides": {
+    "rollup": "^3.29.5"
+  },
   "devDependencies": {
     "@testing-library/jest-dom": "6.5.0",
     "@testing-library/react": "16.0.1",
@@ -104,8 +107,5 @@
     "fontawesome-svg-core": {
       "license": "free"
     }
-  },
-  "overrides": {
-    "rollup": "^4.22.4"
   }
 }
