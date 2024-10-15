@@ -2,8 +2,9 @@
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("division-director");
     cy.visit("/cans").wait(1000);
+    cy.get("#fiscal-year-select").select("2023");
 });
 
 afterEach(() => {
@@ -15,17 +16,84 @@ describe("CAN List", () => {
     it("loads", () => {
         // beforeEach has ran...
         cy.get("h1").should("have.text", "CANs");
-        cy.get('a[href="/cans/502"]').should("exist");
+        cy.get('a[href="/cans/510"]').should("exist");
     });
 
     it("clicking on a CAN takes you to the detail page", () => {
         // beforeEach has ran...
-        const canNumber = "G99PHS9";
+        const canNumber = "G99XXX4";
 
         cy.contains(canNumber).click();
 
-        cy.url().should("include", "/cans/502");
+        cy.url().should("include", "/cans/510");
         cy.get("h1").should("contain", canNumber);
+    });
+
+    it("should correctly filter all cans or my cans", () => {
+        cy.get("tbody").children().should("have.length.greaterThan", 2);
+        cy.visit("/cans/?filter=my-cans");
+        cy.get("#fiscal-year-select").select("2023");
+        // table should not exist
+        cy.get("tbody").should("not.exist");
+    });
+
+    it("the filter button works as expected", () => {
+        cy.get("button").contains("Filter").click();
+
+        // set a number of filters
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(".can-active-period-combobox__control")
+            .click()
+            .get(".can-active-period-combobox__menu")
+            .find(".can-active-period-combobox__option")
+            .first()
+            .click();
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(".can-transfer-combobox__control")
+            .click()
+            .get(".can-transfer-combobox__menu")
+            .find(".can-transfer-combobox__option")
+            .first()
+            .click();
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(".can-portfolio-combobox__control")
+            .click()
+            .get(".can-portfolio-combobox__menu")
+            .find(".can-portfolio-combobox__option")
+            .first()
+            .click();
+        // click the button that has text Apply
+        cy.get("button").contains("Apply").click();
+
+        // check that the correct tags are displayed
+        cy.get("div").contains("Filters Applied:").should("exist");
+        cy.get("svg[id='filter-tag-activePeriod']").should("exist");
+        cy.get("svg[id='filter-tag-transfer']").should("exist");
+        cy.get("svg[id='filter-tag-portfolio']").should("exist");
+
+        cy.get("span").contains("1 Year").should("exist");
+        cy.get("span").contains("Direct").should("exist");
+        cy.get("span").contains("HMRF").should("exist");
+
+        // check that the table is filtered correctly
+        // table should contain 6 rows
+
+        cy.get("tbody").find("tr").should("have.length", 3);
+
+        // reset
+        cy.get("button").contains("Filter").click();
+        cy.get("button").contains("Reset").click();
+        cy.get("button").contains("Apply").click();
+
+        // check that the table is filtered correctly
+        // table should have more than 5 rows
+        /// check that the correct tags are displayed
+        cy.get("div").contains("Filters Applied:").should("not.exist");
+        cy.get("svg[id='filter-tag-activePeriod']").should("not.exist");
+        cy.get("svg[id='filter-tag-transfer']").should("not.exist");
+        cy.get("svg[id='filter-tag-portfolio']").should("not.exist");
+
+        cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });
 
     it("pagination on the bli table works as expected", () => {

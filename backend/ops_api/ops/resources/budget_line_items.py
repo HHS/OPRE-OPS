@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from functools import partial
 from typing import Optional
 
 from flask import Response, current_app, request
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_current_user, verify_jwt_in_request
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any
@@ -18,6 +17,7 @@ from models import (
     Division,
     OpsEventType,
     Portfolio,
+    User,
 )
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -38,42 +38,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 ENDPOINT_STRING = "/budget-line-items"
 
 
-def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
-    jwt_identity = get_jwt_identity()
-    budget_line_item: BudgetLineItem = current_app.db_session.get(BudgetLineItem, id)
-    try:
-        agreement = budget_line_item.agreement
-    except AttributeError as e:
-        # No BLI found in the DB. Erroring out.
-        raise ExtraCheckError({}) from e
-
-    if agreement is None:
-        # We are faking a validation check at this point. We know there is no agreement associated with the BLI.
-        # This is made to emulate the validation check from a marshmallow schema.
-        if permission_type == PermissionType.PUT:
-            raise ExtraCheckError(
-                {
-                    "_schema": ["BLI must have an Agreement when status is not DRAFT"],
-                    "agreement_id": ["Missing data for required field."],
-                }
-            )
-        elif permission_type == PermissionType.PATCH:
-            raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
-        else:
-            raise ExtraCheckError({})
-
-    oidc_ids = set()
-    if agreement.created_by_user:
-        oidc_ids.add(str(agreement.created_by_user.oidc_id))
-    if agreement.project_officer:
-        oidc_ids.add(str(agreement.project_officer.oidc_id))
-    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-    ret = jwt_identity in oidc_ids
-
-    return ret
-
-
 def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
     division = (
         current_app.db_session.query(Division)
@@ -92,6 +56,54 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         self._response_schema = BudgetLineItemResponseSchema()
         self._put_schema = POSTRequestBodySchema()
         self._patch_schema = PATCHRequestBodySchema()
+
+    def bli_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
+        """
+        In order to edit a budget line, the user must be authenticated and meet on of these conditions:
+            -  The user is the agreement creator.
+            -  The user is the project officer of the agreement.
+            -  The user is a team member on the agreement.
+            -  The user is a budget team member.
+        """
+        verify_jwt_in_request()
+        user = get_current_user()
+        if not user:
+            return False
+        budget_line_item: BudgetLineItem = current_app.db_session.get(BudgetLineItem, id)
+        try:
+            agreement = budget_line_item.agreement
+        except AttributeError as e:
+            # No BLI found in the DB. Erroring out.
+            raise ExtraCheckError({}) from e
+
+        if agreement is None:
+            # We are faking a validation check at this point. We know there is no agreement associated with the BLI.
+            # This is made to emulate the validation check from a marshmallow schema.
+            if permission_type == PermissionType.PUT:
+                raise ExtraCheckError(
+                    {
+                        "_schema": ["BLI must have an Agreement when status is not DRAFT"],
+                        "agreement_id": ["Missing data for required field."],
+                    }
+                )
+            elif permission_type == PermissionType.PATCH:
+                raise ExtraCheckError({"_schema": ["BLI must have an Agreement when status is not DRAFT"]})
+            else:
+                raise ExtraCheckError({})
+
+        oidc_ids = set()
+        if agreement.created_by_user:
+            oidc_ids.add(str(agreement.created_by_user.oidc_id))
+        if agreement.created_by:
+            user = current_app.db_session.get(User, agreement.created_by)
+            oidc_ids.add(str(user.oidc_id))
+        if agreement.project_officer:
+            oidc_ids.add(str(agreement.project_officer.oidc_id))
+        oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+        ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
+
+        return ret
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -219,19 +231,19 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.PUT,
         Permission.BUDGET_LINE_ITEM,
-        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PUT),
-        groups=["Budget Team", "Admins"],
     )
     def put(self, id: int) -> Response:
+        if not self.bli_associated_with_agreement(id, PermissionType.PUT):
+            return make_response_with_headers({}, 403)
         return self._update(id, "PUT", self._put_schema)
 
     @is_authorized(
         PermissionType.PATCH,
         Permission.BUDGET_LINE_ITEM,
-        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.PATCH),
-        groups=["Budget Team", "Admins"],
     )
     def patch(self, id: int) -> Response:
+        if not self.bli_associated_with_agreement(id, PermissionType.PATCH):
+            return make_response_with_headers({}, 403)
         return self._update(id, "PATCH", self._patch_schema)
 
     def update_and_commit_budget_line_item(self, data, id):
@@ -243,10 +255,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     @is_authorized(
         PermissionType.DELETE,
         Permission.BUDGET_LINE_ITEM,
-        extra_check=partial(bli_associated_with_agreement, permission_type=PermissionType.DELETE),
-        groups=["Budget Team", "Admins"],
     )
     def delete(self, id: int) -> Response:
+        if not self.bli_associated_with_agreement(id, PermissionType.DELETE):
+            return make_response_with_headers({}, 403)
+
         with OpsEventHandler(OpsEventType.DELETE_BLI) as meta:
             bli: BudgetLineItem = self._get_item(id)
 

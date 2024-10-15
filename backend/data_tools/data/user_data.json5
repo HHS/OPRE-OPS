@@ -50,6 +50,8 @@
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
         "POST_BUDGET_LINE_ITEM",
+        // Delete permissions are only for local, not for prod. Users should not have delete BLI permissions in prod.
+        "DELETE_BUDGET_LINE_ITEM",
 
         "GET_SERVICES_COMPONENT",
         "PUT_SERVICES_COMPONENT",
@@ -172,11 +174,15 @@
         "PUT_AGREEMENT",
         "PATCH_AGREEMENT",
         "POST_AGREEMENT",
+      // Delete permissions are only for local, not for prod. Users should not have delete Agreement permissions in prod.
+        "DELETE_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
         "POST_BUDGET_LINE_ITEM",
+      // Delete permissions are only for local, not for prod. Users should not have delete BLI permissions in prod.
+        "DELETE_BUDGET_LINE_ITEM",
 
         "GET_SERVICES_COMPONENT",
         "PUT_SERVICES_COMPONENT",
@@ -544,6 +550,16 @@
       division: 1,
       email: "john.mcdill@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 2}],
+      groups: [],
+      status: "ACTIVE"
+    },
+    { // 525
+      first_name: "Director",
+      last_name: "Derrek",
+      division: 6,
+      email: "director.derrek@email.com",
+      roles: [{"tablename":  "role", "id": 4}],
+      oidc_id: "00000000-0000-1111-a111-000000000022",
       groups: [],
       status: "ACTIVE"
     }
