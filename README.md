@@ -64,7 +64,7 @@ To install the dependencies, run...
 
 ```shell
 cd ./frontend/
-bun install
+bun install --frozen-lockfile
 ```
 
 ## Run
