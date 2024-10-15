@@ -21,8 +21,8 @@ const CANTransferComboBox = ({
     transfer,
     setTransfer,
     legendClassname = "usa-label margin-top-0",
-    defaultString = "",
-    overrideStyles = { width: "187px" }
+    defaultString = "All Transfers",
+    overrideStyles = {}
 }) => {
     const options = [
         { id: 1, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.DIRECT) },

@@ -55,8 +55,25 @@ describe("CAN List", () => {
             .find(".can-transfer-combobox__option")
             .first()
             .click();
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(".can-portfolio-combobox__control")
+            .click()
+            .get(".can-portfolio-combobox__menu")
+            .find(".can-portfolio-combobox__option")
+            .first()
+            .click();
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
+
+        // check that the correct tags are displayed
+        cy.get("div").contains("Filters Applied:").should("exist");
+        cy.get("svg[id='filter-tag-activePeriod']").should("exist");
+        cy.get("svg[id='filter-tag-transfer']").should("exist");
+        cy.get("svg[id='filter-tag-portfolio']").should("exist");
+
+        cy.get("span").contains("1 Year").should("exist");
+        cy.get("span").contains("Direct").should("exist");
+        cy.get("span").contains("HMRF").should("exist");
 
         // check that the table is filtered correctly
         // table should contain 6 rows
@@ -70,6 +87,11 @@ describe("CAN List", () => {
 
         // check that the table is filtered correctly
         // table should have more than 5 rows
+        /// check that the correct tags are displayed
+        cy.get("div").contains("Filters Applied:").should("not.exist");
+        cy.get("svg[id='filter-tag-activePeriod']").should("not.exist");
+        cy.get("svg[id='filter-tag-transfer']").should("not.exist");
+        cy.get("svg[id='filter-tag-portfolio']").should("not.exist");
 
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });
