@@ -1,4 +1,4 @@
-import {USER_ROLES} from "../../../components/Users/User.constants";
+import { USER_ROLES } from "../../../components/Users/User.constants";
 /**
  * @typedef {import('./././CANFilterButton/CANFilterTypes').FilterOption} FilterOption
  * @typedef {import('./././CANFilterButton/CANFilterTypes').Filters} Filters
@@ -13,7 +13,7 @@ import {USER_ROLES} from "../../../components/Users/User.constants";
  * @param {Filters} filters - The filters to apply.
  * @returns {CAN[]} - The sorted array of CANs.
  */
-export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
+export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYear) => {
     if (!cans || cans.length === 0) {
         return [];
     }
@@ -70,8 +70,9 @@ const sortCANs = (cans) => {
  * @param {Filters} filters - The filters to apply.
  * @returns {CAN[]} - The filtered array of CANs.
  */
-const applyAdditionalFilters = (cans, filters) => {
+const applyAdditionalFilters = (cans, filters, fiscalYear) => {
     let filteredCANs = cans;
+    console.log({ filters, cans });
 
     // Filter by active period
     if (filters.activePeriod && filters.activePeriod.length > 0) {
@@ -94,6 +95,20 @@ const applyAdditionalFilters = (cans, filters) => {
             )
         );
     }
+    // filter by budget
+    // check cans.funding_budgets.fiscal_year to match the selectedFiscalYear
+    // then check cans.funding_budgets.budget to be in the range of the filters.budget[0] for min and filters.budget[1] for max
+    if (filters.budget && filters.budget.length > 0) {
+        filteredCANs = filteredCANs.filter((can) => {
+            return can.funding_budgets.some((budget) => {
+                return (
+                    // budget.fiscal_year === fiscalYear &&
+                    budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1]
+                );
+            });
+        });
+    }
+
     // TODO: Add other filters here
     // Example:
     // if (filters.someOtherFilter && filters.someOtherFilter.length > 0) {
@@ -137,7 +152,7 @@ export const getSortedFYBudgets = (cans) => {
         return acc;
     }, new Set());
 
-    return Array.from(funding_budgets).flatMap(itemArray =>
-        itemArray.map(item => item.budget)
-    ).sort((a, b) => a - b);
-}
+    return Array.from(funding_budgets)
+        .flatMap((itemArray) => itemArray.map((item) => item.budget))
+        .sort((a, b) => a - b);
+};

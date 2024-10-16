@@ -9,6 +9,7 @@ export const useCANFilterButton = (filters, setFilters) => {
     const [activePeriod, setActivePeriod] = React.useState([]);
     const [transfer, setTransfer] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
+    const [budget, setBudget] = React.useState([]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     React.useEffect(() => {
@@ -29,13 +30,20 @@ export const useCANFilterButton = (filters, setFilters) => {
         }
     }, [filters.portfolio]);
 
+    React.useEffect(() => {
+        if (filters.budget) {
+            setBudget(filters.budget);
+        }
+    }, [filters.budget]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
                 ...prevState,
                 activePeriod: activePeriod,
                 transfer: transfer,
-                portfolio: portfolio
+                portfolio: portfolio,
+                budget: budget
             };
         });
     };
@@ -43,11 +51,13 @@ export const useCANFilterButton = (filters, setFilters) => {
         setFilters({
             activePeriod: [],
             transfer: [],
-            portfolio: []
+            portfolio: [],
+            budget: []
         });
         setActivePeriod([]);
         setTransfer([]);
         setPortfolio([]);
+        setBudget([]);
     };
 
     return {
@@ -57,6 +67,8 @@ export const useCANFilterButton = (filters, setFilters) => {
         setTransfer,
         portfolio,
         setPortfolio,
+        budget,
+        setBudget,
         applyFilter,
         resetFilter
     };

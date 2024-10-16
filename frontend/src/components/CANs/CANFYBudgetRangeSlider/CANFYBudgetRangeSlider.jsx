@@ -1,12 +1,15 @@
-import { useState } from "react";
+import React from "react";
 import DoubleRangeSlider from "../../UI/DoubleRangeSlider";
 import CurrencyFormat from "react-currency-format";
 
-const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0" }) => {
-    const [range, setRange] = useState([fyBudgetRange[0], fyBudgetRange[1]]);
-    const [minValue, maxValue] = range;
+const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0", budget, setBudget }) => {
+    React.useEffect(() => {
+        setBudget([fyBudgetRange[0], fyBudgetRange[1]]);
+    }, [fyBudgetRange]);
 
-    const handleChange = (newRange) => {
+    const [minValue, maxValue] = budget;
+
+    const calculateBudgetRange = (newRange) => {
         const [minPercentage, maxPercentage] = newRange;
         const fyBudgetMin = fyBudgetRange[0];
         const fyBudgetMax = fyBudgetRange[1];
@@ -15,7 +18,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
         const selectedMinFYBudget = Math.round(fyBudgetMin + (minPercentage / 100) * fyBudgetDiff);
         const selectedMaxFYBudget = Math.round(fyBudgetMin + (maxPercentage / 100) * fyBudgetDiff);
 
-        setRange([selectedMinFYBudget, selectedMaxFYBudget]);
+        setBudget([selectedMinFYBudget, selectedMaxFYBudget]);
     };
 
     return (
@@ -28,11 +31,13 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                     FY Budget
                 </label>
             </div>
-            <DoubleRangeSlider
-                handleChange={handleChange}
-                defaultValue={[0, 100]}
-            />
-            <div className="margin-top-1 display-flex flex-justify-center">
+            <div className="padding-right-10">
+                <DoubleRangeSlider
+                    handleChange={calculateBudgetRange}
+                    defaultValue={[0, 100]}
+                />
+            </div>
+            <div className="margin-top-1 display-flex flex-justify-center font-12px padding-right-10">
                 <span>
                     <CurrencyFormat
                         value={minValue}
