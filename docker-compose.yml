@@ -106,8 +106,6 @@ services:
       - "3000:3000"
     depends_on:
       - backend
-    volumes:
-      - ./frontend/src:/home/app/src
 
 
   # The following services are used to initialize the database with initial data using the data-initial profile.
@@ -127,8 +125,6 @@ services:
       - "3000:3000"
     depends_on:
       - backend-initial
-    volumes:
-      - ./frontend/src:/home/app/src
 
 
   backend-initial:

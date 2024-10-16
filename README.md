@@ -60,7 +60,14 @@ pipenv install --dev
 
 We use [bun](https://bun.sh/docs) to manage our Node.js dependencies.
 
-To install the dependencies, run...
+To install the dependencies using the latest baseline and tested versions, run...
+
+```shell
+cd ./frontend/
+bun install --frozen-lockfile
+```
+
+To install, or upgrade, the dependencies using the cutting-edge, but compatible versions, run...
 
 ```shell
 cd ./frontend/

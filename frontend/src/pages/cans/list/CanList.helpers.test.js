@@ -139,21 +139,21 @@ describe("Portfolio filtering and options", () => {
         {
             id: 1,
             obligate_by: "2023-12-31",
-            portfolio: { division_id: 1, abbreviation: "ABC" },
+            portfolio: { division_id: 1, name: "Portfolio A", abbreviation: "ABC" },
             budget_line_items: [{ team_members: [{ id: 1 }] }],
             active_period: 1
         },
         {
             id: 2,
             obligate_by: "2023-11-30",
-            portfolio: { division_id: 2, abbreviation: "XYZ" },
+            portfolio: { division_id: 2, name: "Portfolio X", abbreviation: "XYZ" },
             budget_line_items: [],
             active_period: 2
         },
         {
             id: 3,
             obligate_by: "2023-10-31",
-            portfolio: { division_id: 1, abbreviation: "ABC" },
+            portfolio: { division_id: 1, name: "Portfolio A", abbreviation: "ABC" },
             budget_line_items: [{ team_members: [{ id: 2 }] }],
             active_period: 1
         }
@@ -161,18 +161,20 @@ describe("Portfolio filtering and options", () => {
 
     it("should filter CANs by portfolio", () => {
         const filtersWithPortfolio = {
-            portfolio: [{ id: 1, title: "ABC" }]
+            portfolio: [{ id: 1, title: "Portfolio A (ABC)" }]
         };
         const result = sortAndFilterCANs(mockCANsWithPortfolios, false, mockUser, filtersWithPortfolio);
         expect(result.length).toBe(2);
-        expect(result.every((can) => can.portfolio.abbreviation === "ABC")).toBe(true);
+        expect(
+            result.every((can) => can.portfolio.name === "Portfolio A" && can.portfolio.abbreviation === "ABC")
+        ).toBe(true);
     });
 
     it("should return unique portfolio options", () => {
         const portfolioOptions = getPortfolioOptions(mockCANsWithPortfolios);
         expect(portfolioOptions).toEqual([
-            { id: 0, title: "ABC" },
-            { id: 1, title: "XYZ" }
+            { id: 0, title: "Portfolio A (ABC)" },
+            { id: 1, title: "Portfolio X (XYZ)" }
         ]);
     });
 
@@ -184,8 +186,8 @@ describe("Portfolio filtering and options", () => {
     it("should handle multiple portfolios in filter", () => {
         const filtersWithMultiplePortfolios = {
             portfolio: [
-                { id: 1, title: "ABC" },
-                { id: 2, title: "XYZ" }
+                { id: 1, title: "Portfolio A (ABC)" },
+                { id: 2, title: "Portfolio X (XYZ)" }
             ]
         };
         const result = sortAndFilterCANs(mockCANsWithPortfolios, false, mockUser, filtersWithMultiplePortfolios);

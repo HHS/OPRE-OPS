@@ -7,8 +7,12 @@ WORKDIR /home/app
 
 COPY --chown=app:app ./package.json ./bun.lockb /home/app/
 
-RUN bun install
+RUN bun install --production --frozen-lockfile
 
-COPY --chown=app:app ./ /home/app/
+COPY --chown=app:app index.html /home/app/
+COPY --chown=app:app src /home/app/src
+COPY --chown=app:app public /home/app/public
+COPY --chown=app:app vite.config.mjs /home/app/
+COPY --chown=app:app eslint.config.js /home/app/
 
 CMD ["bun", "start"]
