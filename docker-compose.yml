@@ -5,7 +5,7 @@ services:
       - ''  # This is the default profile, which is used for development
       - data-initial  # This profile is used to initialize the database with initial data
       - data-demo  # This profile is used to initialize the database with demo data
-    image: "postgres:16"
+    image: "postgres:17"
     platform: linux/amd64
     container_name: ops-db
     security_opt:
