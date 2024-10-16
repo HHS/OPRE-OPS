@@ -8,9 +8,9 @@ properties:
       traffic:
         - weight: 100
           label: $MODIFIED_TAG
-          LatestRevision: true    # Route 100% of traffic to the latest revision
+          latestRevision: true
   template:
-    revisionSuffix: mycustomrevision      # Custom revision suffix
+    revisionSuffix: $TAG     # Custom revision suffix
     containers:
       - image: ghcr.io/hhs/opre-ops/ops-$WORKING_DIR:$TAG
-        name: $TAG
+        name: opre-ops-$ENVIRONMENT-app-$WORKING_DIR
