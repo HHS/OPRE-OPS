@@ -13,6 +13,7 @@ env:
   DOCKER_FILE: "Dockerfile.azure"
   ENVIRONMENT: dev
   DOMAIN_NAME: "ops.opre.acf.gov"
+  TAG: "${{ github.sha }}"
 
 jobs:
   build-frontend:
@@ -42,8 +43,7 @@ jobs:
       
       - name: Format Revision Label
         run : |
-          TAG="${{ github.sha }}"
-          MODIFIED_TAG=$(echo "$TAG" | sed 's/\./-/g' | cut -c1-8 | tr '[:upper:]' '[:lower:]')
+          MODIFIED_TAG=$(echo "${{ env.TAG }}" | sed 's/\./-/g' | cut -c1-8 | tr '[:upper:]' '[:lower:]')
           # echo "::set-output name=modified_tag::$MODIFIED_TAG"
           echo "MODIFIED_TAG=$MODIFIED_TAG" >> $GITHUB_ENV  # Save to environment
 
@@ -67,5 +67,5 @@ jobs:
         with:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
-            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
+            #imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
             yamlConfigPath: rendered-containerapp.yaml

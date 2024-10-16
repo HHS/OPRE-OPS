@@ -11,5 +11,5 @@ properties:
   template:
     revisionSuffix: mycustomrevision      # Custom revision suffix
     containers:
-      - image: ghcr.io/hhs/opre-ops/ops-$WORKING_DIR:latest
-        # name: updatedwithimagecontainer
+      - image: ghcr.io/hhs/opre-ops/ops-$WORKING_DIR:$TAG
+        name: $TAG
