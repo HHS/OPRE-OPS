@@ -7,7 +7,8 @@ properties:
       targetPort: 80
       traffic:
         - weight: 100
-          label: $MODIFIED_TAG    # Route 100% of traffic to the latest revision
+          label: $MODIFIED_TAG
+          LatestRevision: true    # Route 100% of traffic to the latest revision
   template:
     revisionSuffix: mycustomrevision      # Custom revision suffix
     containers:
