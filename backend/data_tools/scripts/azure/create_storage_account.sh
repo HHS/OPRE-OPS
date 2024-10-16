@@ -6,10 +6,10 @@ RESOURCE_GROUP_NAME=$1
 STORAGE_ACCOUNT_NAME=$2
 ROLE_EMAIL=$3
 SUBSCRIPTION_ID=$4
-MI_ID=$5
+MI_NAME=$5
 
 # Create a resource group
-#az group create --name "${RESOURCE_GROUP_NAME}" --location eastus
+az group create --name "${RESOURCE_GROUP_NAME}" --location eastus
 
 # Create a storage account
 az storage account create \
@@ -21,6 +21,8 @@ az storage account create \
   --min-tls-version TLS1_2 \
   --allow-blob-public-access false
 
+MI_ID=$(az identity show --name "${MI_NAME}" --resource-group "${RESOURCE_GROUP_NAME}" --query principalId --output tsv)
+
 # Assign a role with managed identity to the storage account
 az role assignment create \
   --role "Storage Blob Data Contributor" \
@@ -28,10 +30,10 @@ az role assignment create \
   --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Storage/storageAccounts/${STORAGE_ACCOUNT_NAME}"
 
 # Get storage account key
-az storage account keys list \
-  --resource-group "${RESOURCE_GROUP_NAME}" \
-  --account-name "${STORAGE_ACCOUNT_NAME}" \
-  --query "[0].value" --output json
+#az storage account keys list \
+#  --resource-group "${RESOURCE_GROUP_NAME}" \
+#  --account-name "${STORAGE_ACCOUNT_NAME}" \
+#  --query "[0].value" --output json
 
 # Create a container
 az storage container create \

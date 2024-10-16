@@ -48,9 +48,9 @@ class AzureConfig(DataToolsConfig):
         access_key = os.getenv("FILE_STORAGE_AUTH_METHOD")
 
         if not access_key:
-            raise ValueError("Missing environment variable for Azure Access Key or RBAC.")
+            raise ValueError("Missing environment variable for FILE_STORAGE_AUTH_METHOD.")
 
-        if access_key not in ["access_key", "rbac"]:
-            raise ValueError("Invalid value for FILE_STORAGE_AUTH_METHOD. Must be either 'access_key' or 'rbac'.")
+        if access_key not in ["access_key", "rbac", "mi"]:
+            raise ValueError("Invalid value for FILE_STORAGE_AUTH_METHOD. Must be either 'access_key' or 'rbac' or 'mi'.")
 
         return access_key

@@ -1,24 +1,23 @@
 from __future__ import annotations
 
 import csv
-import logging
-import time
+import io
+import os
+import sys
 from dataclasses import dataclass
 from io import StringIO
-from typing import Optional
 from urllib.parse import urlparse
 
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, ContainerClient
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.types import DataToolsConfig
+from loguru import logger
 
-logger = logging.getLogger(__name__)
-LOGGER_FORMAT = "%(asctime)s %(name)s :: %(levelname)-8s :: %(message)s"
-logging.Formatter.converter = time.gmtime
-
+logger.add(sys.stdout, format="{time} {level} {message}", level="DEBUG")
+logger.add(sys.stderr, format="{time} {level} {message}", level="DEBUG")
 
 @dataclass
 class AzureStorageAccount:
@@ -61,7 +60,12 @@ def get_csv(csv_path: str, config: DataToolsConfig = PytestConfig(), dialect: st
     :param config: The configuration object.
     :param dialect: The CSV dialect to use when reading the file.
     """
+    logger.debug(f"Getting CSV file from {csv_path}.")
+    logger.debug(f"Using config: {config}")
+    logger.debug(f"Using dialect: {dialect}")
+
     parts = urlparse(csv_path)
+
     if parts.scheme == "https":
         # file is remote
         if config.file_storage_auth_method == "rbac":
@@ -75,9 +79,49 @@ def get_csv(csv_path: str, config: DataToolsConfig = PytestConfig(), dialect: st
                 access_key=get_secret(config.vault_url, config.vault_file_storage_key),
             )
             return blob_to_records(storage_account, "/".join(parts.path.split("/")[2:]), dialect=dialect)
-
+        elif config.file_storage_auth_method == "mi":
+            return get_csv_using_mi(parts, dialect=dialect)
         else:
-            raise ValueError("Invalid value for FILE_STORAGE_AUTH_METHOD. Must be either 'access_key' or 'rbac'.")
+            raise ValueError("Invalid value for FILE_STORAGE_AUTH_METHOD.")
     else:
         # file is local
         return csv.DictReader(open(csv_path, "r") , dialect=dialect)
+
+
+def get_csv_using_mi(parts: tuple, dialect: str = "excel-tab", client_id: str = os.getenv("MI_CLIENT_ID")) -> csv.DictReader:
+    """
+    Get a CSV file from a remote URL using Managed Identity.
+
+    :param parts: The parsed URL parts.
+    :param dialect: The CSV dialect to use when reading the file.
+    :param client_id: The client ID to use for Managed Identity.
+    """
+    account_url = f"https://{parts.hostname}"
+    logger.debug(f"Using Managed Identity with account URL: {account_url}")
+    container_name = parts.path.split("/")[1]
+    logger.debug(f"Container name: {container_name}")
+    blob_name = "/".join(parts.path.split("/")[2:])
+    logger.debug(f"Blob name: {blob_name}")
+    logger.info(f"Using Managed Identity with client ID: {client_id}")
+
+    credential = DefaultAzureCredential(managed_identity_client_id=client_id)
+    with BlobServiceClient(account_url, credential=credential) as blob_service_client:
+        container_client = blob_service_client.get_container_client(container=container_name)
+        bytes_data = get_blob(container_client, blob_name)
+        stream_str = bytes_data.decode("utf-8")
+        logger.debug(f"Stream: {stream_str}")
+        return csv.DictReader(io.StringIO(stream_str), dialect=dialect)
+
+
+def get_blob(container_client: ContainerClient, blob_name: str) -> bytes:
+    """
+    Download a blob to bytes.
+
+    :param container_client: The blob client.
+    :param blob_name: The name of the blob.
+
+    :return: The blob bytes.
+    """
+    bytes_data = container_client.download_blob(blob_name).readall()
+    logger.info(f"Downloaded {len(bytes_data)} bytes.")
+    return bytes_data

@@ -1,19 +1,16 @@
-import csv
 import sys
-from csv import DictReader
 
 import click
 from data_tools.src.azure_utils.utils import get_csv
 from data_tools.src.common.utils import get_config, init_db
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.dialects.mssql.pymssql import dialect
 
 
 @click.command()
 @click.option("--env", help="The environment to use.")
-@click.option("--input_csv", help="The path to the CSV input file.")
-@click.option("--output_csv", help="The path to the CSV output file.")
+@click.option("--input-csv", help="The path to the CSV input file.")
+@click.option("--output-csv", help="The path to the CSV output file.")
 def main(
     env: str,
     input_csv: str,
@@ -22,6 +19,12 @@ def main(
     """
     Main entrypoint for the script.
     """
+    logger.add(sys.stdout, format="{time} {level} {message}", level="DEBUG")
+    logger.add(sys.stderr, format="{time} {level} {message}", level="DEBUG")
+    logger.debug(f"Environment: {env}")
+    logger.debug(f"Input CSV: {input_csv}")
+    logger.debug(f"Output CSV: {output_csv}")
+
     logger.info("Starting the ETL process.")
 
     script_config = get_config(env)
@@ -35,14 +38,12 @@ def main(
         conn.execute(text("SELECT 1"))
         logger.info("Successfully connected to the database.")
 
-    # csv_f = get_csv(input_csv, script_config)
-    #
-    # logger.info(f"Loaded CSV file from {input_csv}.")
-    #
-    # # write csv_f DictReader to a file
-    # with open(output_csv, "w") as f:
-    #     writer = csv.writer(f, dialect="excel-tab")
-    #     writer.writerows(csv_f)
+    csv_f = get_csv(input_csv, script_config)
+
+    logger.info(f"Loaded CSV file from {input_csv}.")
+
+    for row in csv_f:
+        logger.debug(f"row={row}")
 
     logger.info("Finished the ETL process.")
 

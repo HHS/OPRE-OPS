@@ -21,6 +21,7 @@ azure-identity = "==1.17.1"
 azure-keyvault-secrets = "==4.8.0"
 loguru = "==0.7.2"
 click = "==8.1.7"
+aiohttp = "==3.10.10"
 
 [dev-packages]
 nox = "==2024.4.15"
