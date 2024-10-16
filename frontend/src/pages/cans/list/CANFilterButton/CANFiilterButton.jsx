@@ -31,7 +31,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
                 activePeriod={activePeriod}
                 setActivePeriod={setActivePeriod}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "187px" }}
+                overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
         <fieldset
@@ -42,7 +42,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
                 transfer={transfer}
                 setTransfer={setTransfer}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "187px" }}
+                overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>,
         <fieldset
@@ -54,7 +54,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
                 setPortfolio={setPortfolio}
                 portfolioOptions={portfolioOptions}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "187px" }}
+                overrideStyles={{ width: "22.7rem" }}
             />
         </fieldset>
     ];
