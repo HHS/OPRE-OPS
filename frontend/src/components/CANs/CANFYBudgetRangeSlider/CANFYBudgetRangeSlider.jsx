@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DoubleRangeSlider from "../../UI/DoubleRangeSlider";
+import CurrencyFormat from "react-currency-format";
 
 const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0" }) => {
     const [range, setRange] = useState([fyBudgetRange[0], fyBudgetRange[1]]);
@@ -26,9 +27,28 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                     FY Budget
                 </label>
             </div>
-            <div>
-                <DoubleRangeSlider handleChange={handleChange} />
-                <span>{`range: ${range}`}</span>
+            <DoubleRangeSlider
+                handleChange={handleChange}
+                defaultValue={[0, 100]}
+            />
+            <div className="margin-top-1 display-flex flex-justify-center">
+                <span>
+                    <CurrencyFormat
+                        value={range[0]}
+                        decimalScale={2}
+                        thousandSeparator={true}
+                        displayType="text"
+                        prefix={"$ "}
+                    />
+                    <span> - </span>
+                    <CurrencyFormat
+                        value={range[1]}
+                        decimalScale={2}
+                        thousandSeparator={true}
+                        displayType="text"
+                        prefix={"$ "}
+                    />
+                </span>
             </div>
         </>
     );

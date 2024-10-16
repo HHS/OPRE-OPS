@@ -1,10 +1,10 @@
 import ReactSlider from "react-slider";
 import styled from "styled-components";
 
-const DoubleRangeSlider = ({ handleChange }) => (
+const DoubleRangeSlider = ({ handleChange, defaultValue = [25, 75] }) => (
     <StyledSlider
         onChange={handleChange}
-        defaultValue={[25, 75]}
+        defaultValue={defaultValue}
         renderTrack={Track}
         renderThumb={Thumb}
     />
@@ -12,6 +12,7 @@ const DoubleRangeSlider = ({ handleChange }) => (
 const StyledSlider = styled(ReactSlider)`
     width: 100%;
     height: 25px;
+    z-index: 0;
 `;
 
 const Thumb = ({ key, ...props }) => (
