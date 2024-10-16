@@ -4,6 +4,7 @@ import CurrencyFormat from "react-currency-format";
 
 const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0" }) => {
     const [range, setRange] = useState([fyBudgetRange[0], fyBudgetRange[1]]);
+    const [minValue, maxValue] = range;
 
     const handleChange = (newRange) => {
         const [minPercentage, maxPercentage] = newRange;
@@ -34,7 +35,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
             <div className="margin-top-1 display-flex flex-justify-center">
                 <span>
                     <CurrencyFormat
-                        value={range[0]}
+                        value={minValue}
                         decimalScale={2}
                         thousandSeparator={true}
                         displayType="text"
@@ -42,7 +43,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                     />
                     <span> - </span>
                     <CurrencyFormat
-                        value={range[1]}
+                        value={maxValue}
                         decimalScale={2}
                         thousandSeparator={true}
                         displayType="text"
