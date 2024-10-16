@@ -485,7 +485,7 @@ def test_budget_line_item_patch_with_status_change_requests(
 
 @pytest.mark.usefixtures("app_ctx", "loaded_db")
 def test_status_change_request_creates_procurement_workflow(
-    division_director_auth_client, loaded_db, test_admin_user, test_can, test_project
+    division_director_auth_client, loaded_db, test_admin_user, test_can, test_project, auth_client
 ):
     # create Agreement
     agreement = ContractAgreement(
@@ -523,7 +523,7 @@ def test_status_change_request_creates_procurement_workflow(
 
     #  submit PATCH BLI which creates change request for status change
     data = {"status": "IN_EXECUTION"}
-    response = division_director_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     assert "change_requests_in_review" in response.json
     change_requests_in_review = response.json["change_requests_in_review"]

@@ -18,6 +18,7 @@ from models import (
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     CANFundingBudget,
+    CANFundingDetails,
     ChangeRequestStatus,
     OpsDBHistory,
     OpsEvent,
@@ -273,3 +274,9 @@ def utc_today():
 def test_can_funding_budget(loaded_db) -> CANFundingBudget | None:
     """Get a test CANFundingBudget."""
     return loaded_db.get(CANFundingBudget, 1)
+
+
+@pytest.fixture
+def test_can_funding_details(loaded_db) -> CANFundingDetails | None:
+    """Get a test CANFundingDetail."""
+    return loaded_db.get(CANFundingDetails, 1)

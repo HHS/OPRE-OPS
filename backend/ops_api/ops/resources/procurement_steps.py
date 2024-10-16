@@ -1,5 +1,3 @@
-from functools import partial
-
 import marshmallow_dataclass as mmdc
 from flask import Response, current_app, request
 from flask_jwt_extended import current_user, get_jwt_identity
@@ -49,45 +47,6 @@ from ops_api.ops.utils.response import make_response_with_headers
 
 def get_current_user_id():
     return current_user.id
-
-
-# TODO: considering refactoring to DRYer along with similar code in services_component.py and budget_line_items.py
-def step_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
-    jwt_identity = get_jwt_identity()
-    step: ProcurementStep = current_app.db_session.get(ProcurementStep, id)
-    try:
-        # should there be a step.agreement ?
-        agreement_id = step.agreement_id
-        agreement: Agreement = current_app.db_session.get(Agreement, agreement_id)
-    except AttributeError as e:
-        # No step found in the DB. Erroring out.
-        raise ExtraCheckError({}) from e
-
-    if agreement is None:
-        # We are faking a validation check at this point. We know there is no agreement associated with the SC.
-        # This is made to emulate the validation check from a marshmallow schema.
-        if permission_type == PermissionType.PUT:
-            raise ExtraCheckError(
-                {
-                    "_schema": ["ProcurementStep must have an Agreement"],
-                    "contract_agreement_id": ["Missing data for required field."],
-                }
-            )
-        elif permission_type == PermissionType.PATCH:
-            raise ExtraCheckError({"_schema": ["ProcurementStep must have an Agreement"]})
-        else:
-            raise ExtraCheckError({})
-
-    oidc_ids = set()
-    if agreement.created_by_user:
-        oidc_ids.add(str(agreement.created_by_user.oidc_id))
-    if agreement.project_officer:
-        oidc_ids.add(str(agreement.project_officer.oidc_id))
-    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-    ret = jwt_identity in oidc_ids
-
-    return ret
 
 
 # Base Procurement Step APIs
@@ -145,6 +104,43 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
         self._response_schema = mmdc.class_schema(ProcurementStepResponse)()
         self._patch_schema = mmdc.class_schema(ProcurementStepRequest)(dump_only=["type"])
 
+    def step_associated_with_agreement(self, id: int, permission_type: PermissionType) -> bool:
+        jwt_identity = get_jwt_identity()
+        step: ProcurementStep = current_app.db_session.get(ProcurementStep, id)
+        try:
+            # should there be a step.agreement ?
+            agreement_id = step.agreement_id
+            agreement: Agreement = current_app.db_session.get(Agreement, agreement_id)
+        except AttributeError as e:
+            # No step found in the DB. Erroring out.
+            raise ExtraCheckError({}) from e
+
+        if agreement is None:
+            # We are faking a validation check at this point. We know there is no agreement associated with the SC.
+            # This is made to emulate the validation check from a marshmallow schema.
+            if permission_type == PermissionType.PUT:
+                raise ExtraCheckError(
+                    {
+                        "_schema": ["ProcurementStep must have an Agreement"],
+                        "contract_agreement_id": ["Missing data for required field."],
+                    }
+                )
+            elif permission_type == PermissionType.PATCH:
+                raise ExtraCheckError({"_schema": ["ProcurementStep must have an Agreement"]})
+            else:
+                raise ExtraCheckError({})
+
+        oidc_ids = set()
+        if agreement.created_by_user:
+            oidc_ids.add(str(agreement.created_by_user.oidc_id))
+        if agreement.project_officer:
+            oidc_ids.add(str(agreement.project_officer.oidc_id))
+        oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+        ret = jwt_identity in oidc_ids
+
+        return ret
+
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{request.method} to {request.path}"
         with OpsEventHandler(OpsEventType.UPDATE_PROCUREMENT_ACQUISITION_PLANNING) as meta:
@@ -165,10 +161,10 @@ class EditableProcurementStepItemAPI(BaseProcurementStepItemAPI):
     @is_authorized(
         PermissionType.PATCH,
         Permission.WORKFLOW,
-        extra_check=partial(step_associated_with_agreement, permission_type=PermissionType.PATCH),
-        groups=["Budget Team", "Admins"],
     )
     def patch(self, id: int) -> Response:
+        if not self.step_associated_with_agreement(id, PermissionType.PATCH):
+            return make_response_with_headers({}, 403)
         return self._update(id, "PATCH", self._patch_schema)
 
 

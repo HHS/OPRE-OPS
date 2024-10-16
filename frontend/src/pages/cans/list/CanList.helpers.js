@@ -89,7 +89,9 @@ const applyAdditionalFilters = (cans, filters) => {
     }
     if (filters.portfolio && filters.portfolio.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
-            filters.portfolio?.some((portfolio) => portfolio.title.toUpperCase() === can.portfolio.abbreviation)
+            filters.portfolio?.some(
+                (portfolio) => portfolio.title == `${can.portfolio.name} (${can.portfolio.abbreviation})`
+            )
         );
     }
     // TODO: Add other filters here
@@ -113,14 +115,16 @@ export const getPortfolioOptions = (cans) => {
         return [];
     }
     const portfolios = cans.reduce((acc, can) => {
-        acc.add(can.portfolio.abbreviation);
+        acc.add(`${can.portfolio.name} (${can.portfolio.abbreviation})`);
         return acc;
     }, new Set());
 
-    return Array.from(portfolios).map((portfolio, index) => ({
-        id: index,
-        title: portfolio
-    }));
+    return Array.from(portfolios)
+        .sort((a, b) => a.localeCompare(b))
+        .map((portfolio, index) => ({
+            id: index,
+            title: portfolio
+        }));
 };
 
 export const getSortedFYBudgets = (cans) => {

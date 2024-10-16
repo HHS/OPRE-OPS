@@ -538,6 +538,171 @@ paths:
           description: Unauthorized
         "404":
           description: Unable to find specified CANFundingReceived
+  /api/v1/cans-funding-details/:
+      get:
+        tags:
+          - CANs Funding Details
+        operationId: getAllCANFundingDetails
+        summary: Get a list all CANs funding details objects
+        parameters:
+          - $ref: "#/components/parameters/simulatedError"
+        description: Get CANFundingDetails
+        responses:
+          "200":
+            description: OK
+      post:
+        tags:
+          - CANs Funding Details
+        operationId: createCANFundingDetails
+        summary: Create a new CANFundingDetails object
+        requestBody:
+          required: true
+          content:
+            application/json:
+                schema:
+                  $ref: "#/components/schemas/CreateUpdateFundingDetails"
+                examples:
+                  "0":
+                    $ref: "#/components/examples/CreateUpdateFundingDetails"
+        responses:
+          "201":
+            description: Created
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/FundingDetails"
+          "400":
+            description: Bad Request
+          "401":
+            description: Insufficient Privileges to use this endpoint.
+  /api/v1/can-funding-details/{can_funding_details_id}:
+    get:
+      tags:
+        - CANs Funding Details
+      summary: Get an individual CANFundingDetails
+      operationId: getCANFundingDetailsById
+      description: Get CANFundingDetails by Id
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_funding_details_id
+          description: CAN Funding Details Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingDetails"
+        "404":
+          description: The specified CANFundingDetails was not found.
+    patch:
+      tags:
+        - CANs Funding Details
+      summary: Update an existing CANFundingDetails with the provided fields
+      operationId: patchCANFundingDetails
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_funding_details_id
+          description: CAN Funding Details Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUpdateFundingDetails"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CreateUpdateFundingDetails"
+      responses:
+        "200":
+          description: CANFundingDetails Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingDetails"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: CANFundingDetails not found
+    put:
+      tags:
+        - CANs Funding Details
+      summary: Update an existing CANFundingDetails
+      operationId: putCanFundingDetails
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_funding_details_id
+          description: CAN Funding Details Id
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUpdateFundingDetails"
+              examples:
+                "0":
+                  $ref: "#/components/examples/CreateUpdateFundingDetails"
+      responses:
+        "200":
+          description: CAN Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FundingDetails"
+        "400":
+          description: Bad Request
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "404":
+          description: CAN not found
+    delete:
+      tags:
+        - CANs Funding Details
+      operationId: deleteCanFundingDetails
+      summary: Delete a CANFundingDetails
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: can_funding_details_id
+          description: CANFundingDetails ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Unable to find specified CANFundingDetails
   /api/v1/can-funding-budgets/:
     get:
       tags:
@@ -2622,6 +2787,37 @@ components:
       required:
         - fiscal_year
         - can_id
+    CreateUpdateFundingDetails:
+      description: A request object for the creation or updating of a FundingDetails object
+      type: object
+      properties:
+        allotment:
+          type: string
+        allowance:
+          type: string
+        display_name:
+          type: string
+        fiscal_year:
+          type: integer
+        fund_code:
+          type: string
+        funding_partner:
+          type: string
+        funding_source:
+          type: string
+          enum:
+            - OPRE
+            - ACF
+            - HHS
+        method_of_transfer:
+          type: string
+          enum:
+            - DIRECT
+            - COST_SHARE
+            - IAA
+            - IDDA
+        sub_allowance:
+          type: string
     FundingDetails:
       description: Funding Detail Object
       type: object
@@ -2642,10 +2838,19 @@ components:
           type: string
         funding_source:
           type: string
+          enum:
+            - OPRE
+            - ACF
+            - HHS
         id:
           type: integer
         method_of_transfer:
           type: string
+          enum:
+            - DIRECT
+            - COST_SHARE
+            - IAA
+            - IDDA
         sub_allowance:
           type: string
         created_on:
@@ -4158,6 +4363,20 @@ components:
           fiscal_year: 2024,
           funding: 123456,
           notes: "A new test Funding Funding"
+        }
+
+    CreateUpdateFundingDetails:
+      value: |
+        {
+          allotment: "Allotment"
+          allowance: "Allowance"
+          display_name: "Display name"
+          fiscal_year: 2024
+          fund_code: "AAXXXX20231DAD"
+          funding_partner: "OPRE Partner"
+          funding_source: "OPRE"
+          method_of_transfer: "DIRECT"
+          sub_allowance: "Money"
         }
     FundingBudget:
       value: |

@@ -65,11 +65,19 @@ describe("CAN List", () => {
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
 
-        // check that the table is filtered correctly
-        // table should contain 6 rows
+        // check that the correct tags are displayed
+        cy.get("div").contains("Filters Applied:").should("exist");
+        cy.get("svg[id='filter-tag-activePeriod']").should("exist");
+        cy.get("svg[id='filter-tag-transfer']").should("exist");
+        cy.get("svg[id='filter-tag-portfolio']").should("exist");
 
-        cy.get("tbody").find("tr").should("have.length", 3);
+        cy.get("span").contains("1 Year").should("exist");
+        cy.get("span").contains("Direct").should("exist");
+        cy.get("span").contains("Child Care (CC)").should("exist");
 
+        // No CANs found
+        cy.get("tbody").should("not.exist");
+        cy.get("p.text-center").contains("No CANs found").should("exist");
         // reset
         cy.get("button").contains("Filter").click();
         cy.get("button").contains("Reset").click();
@@ -77,6 +85,11 @@ describe("CAN List", () => {
 
         // check that the table is filtered correctly
         // table should have more than 5 rows
+        /// check that the correct tags are displayed
+        cy.get("div").contains("Filters Applied:").should("not.exist");
+        cy.get("svg[id='filter-tag-activePeriod']").should("not.exist");
+        cy.get("svg[id='filter-tag-transfer']").should("not.exist");
+        cy.get("svg[id='filter-tag-portfolio']").should("not.exist");
 
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });

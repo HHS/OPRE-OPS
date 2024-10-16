@@ -11,6 +11,8 @@ import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice
 import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
 import {sortAndFilterCANs, getPortfolioOptions, getSortedFYBudgets} from "./CanList.helpers";
+import CANFilterTags from "./CANFilterTags";
+
 
 /**
  * Page for the CAN List.
@@ -81,6 +83,12 @@ const CanList = () => {
                         />
                     }
                     FYSelect={<CANFiscalYearSelect />}
+                    FilterTags={
+                        <CANFilterTags
+                            filters={filters}
+                            setFilters={setFilters}
+                        />
+                    }
                 />
             </App>
         )
