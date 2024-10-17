@@ -1,10 +1,11 @@
-import logging.config
 import os
+import sys
 
 from authlib.integrations.flask_client import OAuth
 from flask import Blueprint, Flask, current_app, request
 from flask_cors import CORS
 from flask_jwt_extended import current_user, verify_jwt_in_request
+from loguru import logger
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
@@ -18,32 +19,13 @@ from ops_api.ops.urls import register_api
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
 
-def configure_logging(log_level: str = "INFO") -> None:
-    logging.config.dictConfig(
-        {
-            "version": 1,
-            "formatters": {
-                "default": {
-                    "format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
-                }
-            },
-            "handlers": {
-                "wsgi": {
-                    "class": "logging.StreamHandler",
-                    "stream": "ext://sys.stdout",
-                    "formatter": "default",
-                }
-            },
-            "root": {"level": f"{log_level}", "handlers": ["wsgi"]},
-        }
-    )
-
-
 def create_app() -> Flask:
     from ops_api.ops.utils.core import is_unit_test
 
     log_level = "INFO" if not is_unit_test() else "DEBUG"
-    configure_logging(log_level)  # should be configured before any access to app.logger
+    logger.add(sys.stdout, format="{time} {level} {message}", level=log_level)
+    logger.add(sys.stderr, format="{time} {level} {message}", level=log_level)
+
     app = Flask(__name__)
 
     app.config.from_object("ops_api.ops.environment.default_settings")
@@ -115,7 +97,7 @@ def create_app() -> Flask:
 
     @app.after_request
     def after_request(response):
-        log_response(app.logger, response)
+        log_response(response)
         return response
 
     register_error_handlers(app)
@@ -123,7 +105,7 @@ def create_app() -> Flask:
     return app
 
 
-def log_response(log, response):
+def log_response(response):
     if request.url != request.url_root:
         response_data = {
             "method": request.method,
@@ -133,10 +115,10 @@ def log_response(log, response):
             "json": response.get_data(as_text=True),
             "response_headers": response.headers,
         }
-        log.info(f"Response: {response_data}")
+        logger.info(f"Response: {response_data}")
 
 
-def log_request(log: logging.Logger):
+def log_request():
     request_data = {
         "method": request.method,
         "url": request.url,
@@ -144,11 +126,11 @@ def log_request(log: logging.Logger):
         "args": request.args,
         "headers": request.headers,
     }
-    log.info(f"Request: {request_data}")
+    logger.info(f"Request: {request_data}")
 
 
 def before_request_function(app: Flask, request: request):
-    log_request(app.logger)
+    log_request()
     # check that the UserSession is valid
     all_valid_endpoints = [
         rule.endpoint
