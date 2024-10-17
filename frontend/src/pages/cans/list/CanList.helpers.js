@@ -13,7 +13,7 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
  * @param {Filters} filters - The filters to apply.
  * @returns {CAN[]} - The sorted array of CANs.
  */
-export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYear) => {
+export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
     if (!cans || cans.length === 0) {
         return [];
     }
@@ -70,7 +70,7 @@ const sortCANs = (cans) => {
  * @param {Filters} filters - The filters to apply.
  * @returns {CAN[]} - The filtered array of CANs.
  */
-const applyAdditionalFilters = (cans, filters, fiscalYear) => {
+const applyAdditionalFilters = (cans, filters) => {
     let filteredCANs = cans;
     console.log({ filters, cans });
 

@@ -3,6 +3,8 @@ import DoubleRangeSlider from "../../UI/DoubleRangeSlider";
 import CurrencyFormat from "react-currency-format";
 
 const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0", budget, setBudget }) => {
+    const isValidBudgetRange = fyBudgetRange[0] !== undefined && fyBudgetRange[1] !== undefined;
+
     React.useEffect(() => {
         setBudget([fyBudgetRange[0], fyBudgetRange[1]]);
     }, [fyBudgetRange]);
@@ -40,25 +42,27 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                     value={sliderValue}
                 />
             </div>
-            <div className="margin-top-1 display-flex flex-justify-center font-12px padding-right-10">
-                <span>
-                    <CurrencyFormat
-                        value={minValue}
-                        decimalScale={2}
-                        thousandSeparator={true}
-                        displayType="text"
-                        prefix={"$ "}
-                    />
-                    <span> - </span>
-                    <CurrencyFormat
-                        value={maxValue}
-                        decimalScale={2}
-                        thousandSeparator={true}
-                        displayType="text"
-                        prefix={"$ "}
-                    />
-                </span>
-            </div>
+            {isValidBudgetRange && (
+                <div className="margin-top-1 display-flex flex-justify-center font-12px padding-right-10">
+                    <span>
+                        <CurrencyFormat
+                            value={minValue}
+                            decimalScale={2}
+                            thousandSeparator={true}
+                            displayType="text"
+                            prefix={"$ "}
+                        />
+                        <span> - </span>
+                        <CurrencyFormat
+                            value={maxValue}
+                            decimalScale={2}
+                            thousandSeparator={true}
+                            displayType="text"
+                            prefix={"$ "}
+                        />
+                    </span>
+                </div>
+            )}
         </>
     );
 };
