@@ -177,7 +177,7 @@ def submit(bdd_client, edited_bli):
 
 @then("I should get an error that I am not authorized")
 def invalid(submit_response):
-    assert submit_response.status_code == 401
+    assert submit_response.status_code == 403
 
 
 @then("I should get a message that it was successful")
