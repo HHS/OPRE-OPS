@@ -5,7 +5,7 @@ import CurrencyFormat from "react-currency-format";
 const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0", budget, setBudget }) => {
     React.useEffect(() => {
         setBudget([fyBudgetRange[0], fyBudgetRange[1]]);
-    }, []);
+    }, [fyBudgetRange]);
 
     const [minValue, maxValue] = budget;
     const [sliderValue, setSliderValue] = React.useState([0, 100]);
