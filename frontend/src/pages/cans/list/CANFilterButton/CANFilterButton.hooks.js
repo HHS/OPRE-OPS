@@ -59,7 +59,9 @@ export const useCANFilterButton = (filters, setFilters, minBudget, maxBudget) =>
         setActivePeriod([]);
         setTransfer([]);
         setPortfolio([]);
-        setBudget([]);
+        if (minBudget !== undefined && maxBudget !== undefined) {
+            setBudget([minBudget, maxBudget]);
+        }
     };
 
     return {
