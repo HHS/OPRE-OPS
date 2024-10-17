@@ -38,7 +38,7 @@ const CanList = () => {
     }, [canList, fiscalYear]);
     const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
     const portfolioOptions = getPortfolioOptions(canList);
-    const sortedFYBudgets = getSortedFYBudgets(sortedCANs);
+    const sortedFYBudgets = getSortedFYBudgets(filteredCANsByFiscalYear);
 
     if (isLoading) {
         return (
