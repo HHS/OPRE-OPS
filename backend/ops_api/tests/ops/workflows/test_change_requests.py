@@ -556,7 +556,7 @@ def test_change_request_review_auth(
     # verify access denied for use with no permissions (no roles) and not a DD or DDD
     data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
     response = no_perms_auth_client.post(url_for("api.change-request-review-list"), json=data)
-    assert response.status_code == 401  # The app is using 401 where it should be 403s
+    assert response.status_code == 403
 
     # verify that division directors cannot approve/deny change requests outside their division.
     data = {"change_request_id": test_change_request.id, "action": "APPROVE"}
