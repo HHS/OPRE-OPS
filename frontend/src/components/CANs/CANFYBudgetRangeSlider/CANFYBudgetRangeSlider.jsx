@@ -3,21 +3,29 @@ import DoubleRangeSlider from "../../UI/DoubleRangeSlider";
 import CurrencyFormat from "react-currency-format";
 
 const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0", budget, setBudget }) => {
-    // React.useEffect(() => {
-    //     setBudget([fyBudgetRange[0], fyBudgetRange[1]]);
-    // }, [fyBudgetRange]);
-
     const [minValue, maxValue] = budget;
+    const [fyBudgetMin, fyBudgetMax] = fyBudgetRange;
     const [sliderValue, setSliderValue] = React.useState([0, 100]);
+
+    const calculatePercentage = (value, min, max) => {
+        return ((value - min) / (max - min)) * 100;
+    };
+
+    const calculateValue = (percentage, min, max) => {
+        return Math.round(min + (percentage / 100) * (max - min));
+    };
+
+    React.useEffect(() => {
+        const minPercentage = calculatePercentage(minValue, fyBudgetMin, fyBudgetMax);
+        const maxPercentage = calculatePercentage(maxValue, fyBudgetMin, fyBudgetMax);
+
+        setSliderValue([minPercentage, maxPercentage]);
+    }, [budget, fyBudgetRange]);
 
     const calculateBudgetRange = (newRange) => {
         const [minPercentage, maxPercentage] = newRange;
-        const fyBudgetMin = fyBudgetRange[0];
-        const fyBudgetMax = fyBudgetRange[1];
-        const fyBudgetDiff = fyBudgetMax - fyBudgetMin;
-
-        const selectedMinFYBudget = Math.round(fyBudgetMin + (minPercentage / 100) * fyBudgetDiff);
-        const selectedMaxFYBudget = Math.round(fyBudgetMin + (maxPercentage / 100) * fyBudgetDiff);
+        const selectedMinFYBudget = calculateValue(minPercentage, fyBudgetMin, fyBudgetMax);
+        const selectedMaxFYBudget = calculateValue(maxPercentage, fyBudgetMin, fyBudgetMax);
 
         setBudget([selectedMinFYBudget, selectedMaxFYBudget]);
         setSliderValue(newRange);
