@@ -95,16 +95,11 @@ const applyAdditionalFilters = (cans, filters) => {
             )
         );
     }
-    // filter by budget
-    // check cans.funding_budgets.fiscal_year to match the selectedFiscalYear
-    // then check cans.funding_budgets.budget to be in the range of the filters.budget[0] for min and filters.budget[1] for max
+
     if (filters.budget && filters.budget.length > 0) {
         filteredCANs = filteredCANs.filter((can) => {
             return can.funding_budgets.some((budget) => {
-                return (
-                    // budget.fiscal_year === fiscalYear &&
-                    budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1]
-                );
+                return budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1];
             });
         });
     }
