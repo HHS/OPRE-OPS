@@ -45,7 +45,7 @@
     "eslint-plugin-react": "7.37.1",
     "eslint-plugin-react-hooks": "5.0.0",
     "eslint-plugin-react-refresh": "0.4.12",
-    "eslint-plugin-testing-library": "6.3.0",
+    "eslint-plugin-testing-library": "6.3.2",
     "jose": "5.9.4",
     "jsdom": "25.0.1",
     "vite": "5.4.9",
