@@ -8,11 +8,11 @@ from flask_jwt_extended import current_user, verify_jwt_in_request
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
+from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.auth.decorators import check_user_session_function
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.error_handlers import register_error_handlers
-from ops_api.ops.history import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
@@ -95,11 +95,11 @@ def create_app() -> Flask:
 
     @event.listens_for(db_session, "before_commit")
     def receive_before_commit(session: Session):
-        track_db_history_before(session)
+        track_db_history_before(session, current_user)
 
     @event.listens_for(db_session, "after_flush")
     def receive_after_flush(session: Session, flush_context):
-        track_db_history_after(session)
+        track_db_history_after(session, current_user)
 
     @event.listens_for(engine, "handle_error")
     def receive_error(exception_context):

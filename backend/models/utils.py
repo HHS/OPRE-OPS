@@ -1,13 +1,11 @@
 import json
-import logging
 from collections import namedtuple
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from types import NoneType
 
-from flask import current_app
-from flask_jwt_extended import current_user
+from loguru import logger
 from sqlalchemy import inspect
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
@@ -22,6 +20,7 @@ from models import (
     OpsDBHistory,
     OpsDBHistoryType,
     OpsEvent,
+    User,
 )
 
 DbRecordAudit = namedtuple("DbRecordAudit", "row_key changes")
@@ -113,13 +112,13 @@ def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C9
     return DbRecordAudit(row_key, changes)
 
 
-def track_db_history_before(session: Session):
-    session.add_all(add_obj_to_db_history(session.deleted, OpsDBHistoryType.DELETED))
-    session.add_all(add_obj_to_db_history(session.dirty, OpsDBHistoryType.UPDATED))
+def track_db_history_before(session: Session, user: User | None):
+    session.add_all(add_obj_to_db_history(session.deleted, OpsDBHistoryType.DELETED, user))
+    session.add_all(add_obj_to_db_history(session.dirty, OpsDBHistoryType.UPDATED, user))
 
 
-def track_db_history_after(session: Session):
-    session.add_all(add_obj_to_db_history(session.new, OpsDBHistoryType.NEW))
+def track_db_history_after(session: Session, user: User | None):
+    session.add_all(add_obj_to_db_history(session.new, OpsDBHistoryType.NEW, user))
 
 
 def track_db_history_catch_errors(exception_context):
@@ -138,20 +137,20 @@ def track_db_history_catch_errors(exception_context):
             "sqlalchemy_exception": f"{exception_context.sqlalchemy_exception}",
         },
     )
-    with Session(current_app.engine) as session:
+    with Session(exception_context.engine) as session:
         session.add(ops_db)
         session.commit()
-        current_app.logger.error(f"SQLAlchemy error added to {OpsDBHistory.__tablename__} with id {ops_db.id}")
+        logger.error(f"SQLAlchemy error added to {OpsDBHistory.__tablename__} with id {ops_db.id}")
 
 
-def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
+def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType, user: User | None):
     result = []
 
     for obj in objs:
         if not isinstance(obj, (OpsEvent, OpsDBHistory, AgreementOpsDbHistory)):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
-                logging.info(
+                logger.info(
                     f"No changes found for {obj.__class__.__name__} with row_key={db_audit.row_key}, "
                     f"an OpsDBHistory record will not be created for this UPDATED event."
                 )
@@ -160,7 +159,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType):
             ops_db = OpsDBHistory(
                 event_type=event_type,
                 event_details=obj.to_dict(),
-                created_by=current_user.id if current_user else None,
+                created_by=user.id if user else None,
                 class_name=obj.__class__.__name__,
                 row_key=db_audit.row_key,
                 changes=db_audit.changes,
