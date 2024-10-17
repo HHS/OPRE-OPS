@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from authlib.integrations.flask_client import OAuth
 from flask import Blueprint, Flask, current_app, request
@@ -18,13 +19,25 @@ from ops_api.ops.home_page.views import home
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
+# Set the timezone to UTC
+os.environ["TZ"] = "UTC"
+time.tzset()
+
 
 def create_app() -> Flask:
     from ops_api.ops.utils.core import is_unit_test
 
     log_level = "INFO" if not is_unit_test() else "DEBUG"
-    logger.add(sys.stdout, format="{time} {level} {message}", level=log_level)
-    logger.add(sys.stderr, format="{time} {level} {message}", level=log_level)
+
+    # logger configuration
+    format = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+        "<level>{message}</level>"
+    )
+    logger.add(sys.stdout, format=format, level=log_level)
+    logger.add(sys.stderr, format=format, level=log_level)
 
     app = Flask(__name__)
 
