@@ -5,9 +5,10 @@ import CurrencyFormat from "react-currency-format";
 const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label margin-top-0", budget, setBudget }) => {
     React.useEffect(() => {
         setBudget([fyBudgetRange[0], fyBudgetRange[1]]);
-    }, [fyBudgetRange]);
+    }, []);
 
     const [minValue, maxValue] = budget;
+    const [sliderValue, setSliderValue] = React.useState([0, 100]);
 
     const calculateBudgetRange = (newRange) => {
         const [minPercentage, maxPercentage] = newRange;
@@ -19,6 +20,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
         const selectedMaxFYBudget = Math.round(fyBudgetMin + (maxPercentage / 100) * fyBudgetDiff);
 
         setBudget([selectedMinFYBudget, selectedMaxFYBudget]);
+        setSliderValue(newRange);
     };
 
     return (
@@ -35,6 +37,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                 <DoubleRangeSlider
                     handleChange={calculateBudgetRange}
                     defaultValue={[0, 100]}
+                    value={sliderValue}
                 />
             </div>
             <div className="margin-top-1 display-flex flex-justify-center font-12px padding-right-10">

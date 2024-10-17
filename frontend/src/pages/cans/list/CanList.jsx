@@ -32,7 +32,11 @@ const CanList = () => {
         portfolio: [],
         budget: []
     });
-    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, filters, fiscalYear) || [];
+    const filteredCANsByFiscalYear = React.useMemo(() => {
+        if (!fiscalYear || !canList) return [];
+        return canList.filter((can) => can.funding_details.fiscal_year === fiscalYear);
+    }, [canList, fiscalYear]);
+    const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
     const portfolioOptions = getPortfolioOptions(canList);
     const sortedFYBudgets = getSortedFYBudgets(sortedCANs);
 
