@@ -40,6 +40,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                     value={sliderValue}
                 />
             </div>
+
             <div className="margin-top-1 display-flex flex-justify-center font-12px padding-right-10">
                 <span>
                     <CurrencyFormat
