@@ -84,6 +84,7 @@ const CanList = () => {
                             setFilters={setFilters}
                             portfolioOptions={portfolioOptions}
                             fyBudgetRange={[sortedFYBudgets[0], sortedFYBudgets.pop()]}
+                            disabled={sortedCANs.length === 0}
                         />
                     }
                     FYSelect={<CANFiscalYearSelect />}

@@ -17,9 +17,19 @@ import CANFYBudgetRangeSlider from "../../../../components/CANs/CANFYBudgetRange
  * @param {FilterOption[]} props.portfolioOptions - The portfolio options.
  * @returns {JSX.Element} - The CAN filter button.
  */
-export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudgetRange }) => {
-    const { activePeriod, setActivePeriod, transfer, setTransfer, portfolio, setPortfolio, budget, setBudget, applyFilter, resetFilter } =
-        useCANFilterButton(filters, setFilters);
+export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudgetRange, disabled }) => {
+    const {
+        activePeriod,
+        setActivePeriod,
+        transfer,
+        setTransfer,
+        portfolio,
+        setPortfolio,
+        budget,
+        setBudget,
+        applyFilter,
+        resetFilter
+    } = useCANFilterButton(filters, setFilters);
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = "usa-legend font-sans-3xs margin-top-0 padding-bottom-1 text-base-dark";
 
@@ -79,6 +89,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudge
             applyFilter={applyFilter}
             resetFilter={resetFilter}
             fieldsetList={fieldsetList}
+            disabled={disabled}
         />
     );
 };
