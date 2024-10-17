@@ -72,6 +72,7 @@ const sortCANs = (cans) => {
  */
 const applyAdditionalFilters = (cans, filters) => {
     let filteredCANs = cans;
+    console.log({ filters, cans });
 
     // Filter by active period
     if (filters.activePeriod && filters.activePeriod.length > 0) {
@@ -94,6 +95,15 @@ const applyAdditionalFilters = (cans, filters) => {
             )
         );
     }
+
+    if (filters.budget && filters.budget.length > 0) {
+        filteredCANs = filteredCANs.filter((can) => {
+            return can.funding_budgets.some((budget) => {
+                return budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1];
+            });
+        });
+    }
+
     // TODO: Add other filters here
     // Example:
     // if (filters.someOtherFilter && filters.someOtherFilter.length > 0) {
@@ -125,4 +135,19 @@ export const getPortfolioOptions = (cans) => {
             id: index,
             title: portfolio
         }));
+};
+
+export const getSortedFYBudgets = (cans) => {
+    if (!cans || cans.length === 0) {
+        return [];
+    }
+
+    const funding_budgets = cans.reduce((acc, can) => {
+        acc.add(can.funding_budgets);
+        return acc;
+    }, new Set());
+
+    return Array.from(funding_budgets)
+        .flatMap((itemArray) => itemArray.map((item) => item.budget))
+        .sort((a, b) => a - b);
 };

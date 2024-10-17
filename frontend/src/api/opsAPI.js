@@ -24,7 +24,8 @@ export const opsApi = createApi({
         "ServicesComponents",
         "ChangeRequests",
         "Divisions",
-        "Documents"
+        "Documents",
+        "Cans"
     ],
     baseQuery: fetchBaseQuery({
         baseUrl: `${BACKEND_DOMAIN}/api/v1/`,

@@ -3,12 +3,15 @@ import React from "react";
 /**
  * A filter for CANs list.
  * @param {import ('./CANFilterTypes').Filters} filters - The current filters.
+ * @param {number } minBudget - The minimum budget.
+ * @param {number } maxBudget - The maximum budget.
  * @param {Function} setFilters - A function to call to set the filters.
  */
-export const useCANFilterButton = (filters, setFilters) => {
+export const useCANFilterButton = (filters, setFilters, minBudget, maxBudget) => {
     const [activePeriod, setActivePeriod] = React.useState([]);
     const [transfer, setTransfer] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
+    const [budget, setBudget] = React.useState([]);
 
     // The useEffect() hook calls below are used to set the state appropriately when the filter tags (X) are clicked.
     React.useEffect(() => {
@@ -29,13 +32,20 @@ export const useCANFilterButton = (filters, setFilters) => {
         }
     }, [filters.portfolio]);
 
+    React.useEffect(() => {
+        if (minBudget !== undefined && maxBudget !== undefined) {
+            setBudget([minBudget, maxBudget]);
+        }
+    }, [minBudget, maxBudget]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
                 ...prevState,
                 activePeriod: activePeriod,
                 transfer: transfer,
-                portfolio: portfolio
+                portfolio: portfolio,
+                budget: budget
             };
         });
     };
@@ -43,11 +53,15 @@ export const useCANFilterButton = (filters, setFilters) => {
         setFilters({
             activePeriod: [],
             transfer: [],
-            portfolio: []
+            portfolio: [],
+            budget: []
         });
         setActivePeriod([]);
         setTransfer([]);
         setPortfolio([]);
+        if (minBudget !== undefined && maxBudget !== undefined) {
+            setBudget([minBudget, maxBudget]);
+        }
     };
 
     return {
@@ -57,6 +71,8 @@ export const useCANFilterButton = (filters, setFilters) => {
         setTransfer,
         portfolio,
         setPortfolio,
+        budget,
+        setBudget,
         applyFilter,
         resetFilter
     };

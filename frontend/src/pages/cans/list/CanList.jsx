@@ -10,8 +10,8 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
+import { sortAndFilterCANs, getPortfolioOptions, getSortedFYBudgets } from "./CanList.helpers";
 import CANFilterTags from "./CANFilterTags";
-import { getPortfolioOptions, sortAndFilterCANs } from "./CanList.helpers";
 
 /**
  * Page for the CAN List.
@@ -29,10 +29,16 @@ const CanList = () => {
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
-        portfolio: []
+        portfolio: [],
+        budget: []
     });
-    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, filters) || [];
+    const filteredCANsByFiscalYear = React.useMemo(() => {
+        if (!fiscalYear || !canList) return [];
+        return canList.filter((can) => can.funding_details.fiscal_year === fiscalYear);
+    }, [canList, fiscalYear]);
+    const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
     const portfolioOptions = getPortfolioOptions(canList);
+    const sortedFYBudgets = getSortedFYBudgets(filteredCANsByFiscalYear);
 
     if (isLoading) {
         return (
@@ -77,6 +83,8 @@ const CanList = () => {
                             filters={filters}
                             setFilters={setFilters}
                             portfolioOptions={portfolioOptions}
+                            fyBudgetRange={[sortedFYBudgets[0], sortedFYBudgets.pop()]}
+                            disabled={sortedCANs.length === 0}
                         />
                     }
                     FYSelect={<CANFiscalYearSelect />}

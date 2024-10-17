@@ -16,15 +16,10 @@ import styles from "./style.module.css";
  * @returns {JSX.Element}
  */
 const CANTable = ({ cans, fiscalYear }) => {
-    // Filter CANs by fiscal year
-    const filteredCANsByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear) return cans;
-        return cans.filter((can) => can.funding_details.fiscal_year === fiscalYear);
-    }, [cans, fiscalYear]);
     // TODO: once in prod, change this to 25
     const CANS_PER_PAGE = 10;
     const [currentPage, setCurrentPage] = React.useState(1);
-    let cansPerPage = [...filteredCANsByFiscalYear];
+    let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
 
     if (cansPerPage.length === 0) {
@@ -52,7 +47,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                     ))}
                 </tbody>
             </table>
-            {filteredCANsByFiscalYear.length > CANS_PER_PAGE && (
+            {cans.length > CANS_PER_PAGE && (
                 <PaginationNav
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
