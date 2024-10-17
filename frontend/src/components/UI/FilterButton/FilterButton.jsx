@@ -9,6 +9,7 @@ import customStyles from "./FilterButton.module.css";
  * @param {Function} props.applyFilter - A function to call after clicking the Apply button.
  * @param {Function} props.resetFilter - A function to call after clicking the Reset button.
  * @param {Object []} props.fieldsetList - An array of fieldsets to display in the modal.
+ * @param {boolean} props.disabled - Whether the button is disabled.
  * @returns {JSX.Element} - The procurement shop select element.
  */
 export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled = false }) => {

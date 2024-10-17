@@ -15,6 +15,8 @@ import CANFYBudgetRangeSlider from "../../../../components/CANs/CANFYBudgetRange
  * @param {import ('./CANFilterTypes').Filters} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {FilterOption[]} props.portfolioOptions - The portfolio options.
+ * @param {number[]} props.fyBudgetRange - The fiscal year budget range.
+ * @param {boolean} props.disabled - Whether the button is disabled.
  * @returns {JSX.Element} - The CAN filter button.
  */
 export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudgetRange, disabled }) => {
