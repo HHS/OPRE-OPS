@@ -1,10 +1,26 @@
+import os
 import sys
+import time
 
 import click
 from data_tools.src.azure_utils.utils import get_csv
 from data_tools.src.common.utils import get_config, init_db
 from loguru import logger
 from sqlalchemy import text
+
+# Set the timezone to UTC
+os.environ["TZ"] = "UTC"
+time.tzset()
+
+# logger configuration
+format = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+    "<level>{level: <8}</level> | "
+    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+    "<level>{message}</level>"
+)
+logger.add(sys.stdout, format=format, level="DEBUG")
+logger.add(sys.stderr, format=format, level="DEBUG")
 
 
 @click.command()
@@ -19,8 +35,6 @@ def main(
     """
     Main entrypoint for the script.
     """
-    logger.add(sys.stdout, format="{time} {level} {message}", level="DEBUG")
-    logger.add(sys.stderr, format="{time} {level} {message}", level="DEBUG")
     logger.debug(f"Environment: {env}")
     logger.debug(f"Input CSV: {input_csv}")
     logger.debug(f"Output CSV: {output_csv}")
@@ -41,9 +55,6 @@ def main(
     csv_f = get_csv(input_csv, script_config)
 
     logger.info(f"Loaded CSV file from {input_csv}.")
-
-    for row in csv_f:
-        logger.debug(f"row={row}")
 
     logger.info("Finished the ETL process.")
 
