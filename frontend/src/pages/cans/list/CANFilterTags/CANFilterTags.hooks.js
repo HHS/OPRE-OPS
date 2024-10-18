@@ -9,7 +9,7 @@ import { useState, useEffect, useCallback } from "react";
  * @property {FilterItem[]} activePeriod
  * @property {FilterItem[]} portfolio
  * @property {FilterItem[]} transfer
- * @property {[number, number | null]} budget
+ * @property {[number, number]} budget
  */
 
 /**
@@ -31,15 +31,10 @@ export const useTagsList = (filters, fyBudgetRange) => {
      * @param {keyof Filters} filterKey
      * @param {string} filterName
      */
-
     const updateTags = useCallback(
         (filterKey, filterName) => {
             if (filterKey === "budget") {
-                if (
-                    Array.isArray(filters.budget) &&
-                    filters.budget.length === 2 &&
-                    (filters.budget[0] !== fyBudgetRange[0] || filters.budget[1] !== fyBudgetRange[1])
-                ) {
+                if (Array.isArray(filters.budget) && filters.budget.length === 2) {
                     const [min, max] = filters.budget;
                     setTagsList((prevState) => [
                         ...prevState.filter((t) => t.filter !== filterName),
@@ -83,10 +78,8 @@ export const useTagsList = (filters, fyBudgetRange) => {
  * Removes a filter tag
  * @param {Tag} tag - The tag to remove
  * @param {function(function(Filters): Filters): void} setFilters - Function to update filters
- * @param {[number, number]} fyBudgetRange - The initial budget range to reset to
  */
-export const removeFilter = (tag, setFilters, fyBudgetRange) => {
-    console.log({ tag, fyBudgetRange });
+export const removeFilter = (tag, setFilters) => {
     switch (tag.filter) {
         case "activePeriod":
             setFilters((prevState) => ({
@@ -109,7 +102,7 @@ export const removeFilter = (tag, setFilters, fyBudgetRange) => {
         case "budget":
             setFilters((prevState) => ({
                 ...prevState,
-                budget: fyBudgetRange
+                budget: []
             }));
             break;
         default:
