@@ -36,7 +36,7 @@ const CanList = () => {
         if (!fiscalYear || !canList) return [];
         return canList.filter((can) => can.funding_details.fiscal_year === fiscalYear);
     }, [canList, fiscalYear]);
-    const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
+    const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters) || [];
     const portfolioOptions = getPortfolioOptions(canList);
     const sortedFYBudgets = getSortedFYBudgets(filteredCANsByFiscalYear);
 
@@ -50,7 +50,6 @@ const CanList = () => {
     if (isError) {
         return <ErrorPage />;
     }
-
     const CANFiscalYearSelect = () => {
         return (
             <FiscalYear
