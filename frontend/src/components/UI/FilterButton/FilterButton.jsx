@@ -39,8 +39,8 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
                 disabled={disabled}
             >
                 <svg
-                    className="height-2 width-2 margin-right-05 hover: cursor-pointer"
-                    style={!showModal ? { fill: "#005EA2" } : { fill: "white" }}
+                    className={`height-2 width-2 margin-right-05 ${!disabled ? "cursor-pointer" : ""}`}
+                    style={disabled ? { fill: "grey" } : !showModal ? { fill: "#005EA2" } : { fill: "white" }}
                 >
                     <use xlinkHref={`${icons}#filter_list`}></use>
                 </svg>
