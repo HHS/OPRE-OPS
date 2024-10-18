@@ -12,5 +12,5 @@ properties:
   template:
     revisionSuffix: $TAG     # Custom revision suffix
     containers:
-      - image: ghcr.io/hhs/opre-ops/ops-$WORKING_DIR:$TAG
+      - image: ghcr.io/hhs/opre-ops/ops-$WORKING_DIR:$SHA
         name: opre-ops-$ENVIRONMENT-app-$WORKING_DIR
