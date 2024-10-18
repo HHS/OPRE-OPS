@@ -8,7 +8,7 @@ properties:
       traffic:
         - weight: 100
           label: $MODIFIED_TAG
-          latestRevision: true
+          revisionSuffix: $TAG     
   template:
     revisionSuffix: $TAG     # Custom revision suffix
     containers:
