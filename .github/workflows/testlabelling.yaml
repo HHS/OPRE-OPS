@@ -8,7 +8,7 @@ properties:
       traffic:
         - weight: 100
           label: $MODIFIED_TAG
-          revisionSuffix: $TAG     
+          revisionName: opre-ops-$ENVIRONMENT-app-$WORKING_DIR--$TAG     
   template:
     revisionSuffix: $TAG     # Custom revision suffix
     containers:
