@@ -15,7 +15,7 @@ env:
   DOCKER_FILE: "Dockerfile.azure"
   ENVIRONMENT: dev
   DOMAIN_NAME: "ops.opre.acf.gov"
-  TAG: "${{ github.sha }}"
+  TAG: "${{ github.sha::8 }}"
 
 jobs:
   build-frontend:
