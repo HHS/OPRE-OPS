@@ -15,7 +15,7 @@ env:
   DOCKER_FILE: "Dockerfile.azure"
   ENVIRONMENT: dev
   DOMAIN_NAME: "ops.opre.acf.gov"
-  TAG: "${{ github.sha::8 }}"
+  TAG: "${{ github.sha }}"
 
 jobs:
   build-frontend:
@@ -43,6 +43,13 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       
+      - name: Truncate Commit SHA in Bash
+        id: modify_string
+        run: |
+          SHORT_SHA=${{ github.sha }}
+          SHORT_SHA=${SHORT_SHA:0:8}
+          echo "TAG=$SHORT_SHA" >> $GITHUB_ENV
+
       - name: Format Revision Label
         run : |
           MODIFIED_TAG=$(echo "${{ env.TAG }}" | sed 's/\./-/g' | cut -c1-8 | tr '[:upper:]' '[:lower:]')
