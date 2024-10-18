@@ -80,7 +80,6 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudge
                 budget={budget}
                 setBudget={setBudget}
                 legendClassname={legendStyles}
-                overrideStyles={{ width: "187px" }}
                 fyBudgetRange={fyBudgetRange}
             />
         </fieldset>
