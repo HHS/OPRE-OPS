@@ -4,7 +4,7 @@ properties:
     ingress:
       external: true
       allowInsecure: false
-      targetPort: 80
+      targetPort: 3000
       traffic:
         - weight: 100
           label: $MODIFIED_TAG
