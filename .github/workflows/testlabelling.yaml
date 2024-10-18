@@ -10,7 +10,7 @@ properties:
           label: $MODIFIED_TAG
           revisionName: opre-ops-$ENVIRONMENT-app-$WORKING_DIR--$TAG     
   template:
-    revisionSuffix: $TAG     # Custom revision suffix
+    revisionSuffix: $TAG
     containers:
       - image: ghcr.io/hhs/opre-ops/ops-$WORKING_DIR:$SHA
         name: opre-ops-$ENVIRONMENT-app-$WORKING_DIR
