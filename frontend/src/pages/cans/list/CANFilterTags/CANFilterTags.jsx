@@ -24,7 +24,7 @@ const CANFilterTags = ({ filters, setFilters, fyBudgetRange }) => {
     return (
         <FilterTagsWrapper>
             <FilterTags
-                removeFilter={(tag) => removeFilter(tag, setFilters, fyBudgetRange)}
+                removeFilter={(tag) => removeFilter(tag, setFilters)}
                 tagsList={tagsListByFilterMerged}
             />
         </FilterTagsWrapper>

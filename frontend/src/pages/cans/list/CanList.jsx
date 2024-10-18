@@ -39,6 +39,7 @@ const CanList = () => {
     const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters) || [];
     const portfolioOptions = getPortfolioOptions(canList);
     const sortedFYBudgets = getSortedFYBudgets(filteredCANsByFiscalYear);
+    const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
 
     if (isLoading) {
         return (
@@ -82,7 +83,7 @@ const CanList = () => {
                             filters={filters}
                             setFilters={setFilters}
                             portfolioOptions={portfolioOptions}
-                            fyBudgetRange={[sortedFYBudgets[0], sortedFYBudgets.pop()]}
+                            fyBudgetRange={[minFYBudget, maxFYBudget]}
                             disabled={sortedCANs.length === 0}
                         />
                     }
@@ -91,7 +92,7 @@ const CanList = () => {
                         <CANFilterTags
                             filters={filters}
                             setFilters={setFilters}
-                            fyBudgetRange={[sortedFYBudgets[0], sortedFYBudgets.pop()]}
+                            fyBudgetRange={[minFYBudget, maxFYBudget]}
                         />
                     }
                 />
