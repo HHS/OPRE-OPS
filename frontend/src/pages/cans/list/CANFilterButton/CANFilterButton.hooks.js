@@ -7,7 +7,7 @@ import React from "react";
  * @param {number } maxBudget - The maximum budget.
  * @param {Function} setFilters - A function to call to set the filters.
  */
-export const useCANFilterButton = (filters, setFilters, minBudget, maxBudget) => {
+export const useCANFilterButton = (filters, setFilters, minBudget, maxBudget, fyBudgetRange) => {
     const [activePeriod, setActivePeriod] = React.useState([]);
     const [transfer, setTransfer] = React.useState([]);
     const [portfolio, setPortfolio] = React.useState([]);
@@ -38,6 +38,12 @@ export const useCANFilterButton = (filters, setFilters, minBudget, maxBudget) =>
         }
     }, [minBudget, maxBudget]);
 
+    React.useEffect(() => {
+        if (filters.budget) {
+            setBudget([filters.budget[0], filters.budget[1]]);
+        }
+    }, [filters.budget]);
+
     const applyFilter = () => {
         setFilters((prevState) => {
             return {
@@ -54,14 +60,12 @@ export const useCANFilterButton = (filters, setFilters, minBudget, maxBudget) =>
             activePeriod: [],
             transfer: [],
             portfolio: [],
-            budget: []
+            budget: fyBudgetRange
         });
         setActivePeriod([]);
         setTransfer([]);
         setPortfolio([]);
-        if (minBudget !== undefined && maxBudget !== undefined) {
-            setBudget([minBudget, maxBudget]);
-        }
+        setBudget(fyBudgetRange);
     };
 
     return {

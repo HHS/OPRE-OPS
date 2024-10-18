@@ -92,6 +92,7 @@ const CanList = () => {
                         <CANFilterTags
                             filters={filters}
                             setFilters={setFilters}
+                            fyBudgetRange={[sortedFYBudgets[0], sortedFYBudgets.pop()]}
                         />
                     }
                 />
