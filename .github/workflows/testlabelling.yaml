@@ -1,5 +1,5 @@
 properties:
-  # managedEnvironmentId: /subscriptions/$SUBSCRIPTION_ID$/resourceGroups/$RESOURCE_GROUP$/providers/Microsoft.App/managedEnvironments/$CONTAINER_APP_ENV$
+  environmentId: "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RG/providers/Microsoft.App/managedEnvironments/opre-ops-$WORKING_DIR-app-cae"
   configuration:
     ingress:
       external: true
