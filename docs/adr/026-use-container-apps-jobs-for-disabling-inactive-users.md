@@ -6,16 +6,14 @@ Date: 09\30\2024
 Accepted
 
 ## Context
-
 We want to set up a process to automatically disable user accounts after 60 days of inactivity.
 This pertains to the security compliance Access Control AC-02(03) Disable Accounts.
 
 ## Context and explanation of the tech concepts
+Each row in the **ops_user** table represents a user account with a status of `ACTIVE, INACTIVE, or LOCKED`.
+An `INACTIVE` status indicates a disabled account.
 
-Each row in the ops_user table represents a user account with a status of ACTIVE, INACTIVE, or LOCKED.
-An INACTIVE status indicates a disabled account.
-
-To check for inactivity, we'll use the last_active_at timestamp from the user_session table, which is updated whenever a user logs into OPS.
+To check for inactivity, we'll use the _last_active_at_ timestamp from the **user_session** table, which is updated whenever a user logs into OPS.
 If the timestamp shows that a user hasn't logged in or started a session in 60 days or more, their account will be flagged for disabling.
 
 OPS runs in a Container App that includes a Data Import process executed through a Container Apps Job.
@@ -50,18 +48,23 @@ The image deployed to this Container App is built from the Dockerfile.data-tools
 * We will use Container Apps Jobs to disable inactive user accounts.
 * The process will be scheduled hourly and ignore FakeAuth users.
 * Database changes executed by this process will be implemented with a SQLAlchemy script.
+* Automatic processes will use the System Admin as the user.
 * OPS engineers will be notified if the process fails.
 
+
 * The following ensures changes in user account status made by this process are recorded and logged in the same way as if a System Admin had manually disabled the user account:
-  * A UPDATE_USER event record is added to the ops_events table.
-  * All user sessions are deactivate by setting the active column to False.
-  * The ops_db_history table is updated with the changes made to the user account.
+  * A `UPDATE_USER` event record is added to the ops_events table.
+  * All user sessions are deactivate by setting the _active_ column to `False`.
+  * The **ops_db_history** table is updated with the changes made to the user account.
 
 ## Consequences
-The decision to utilize Container Apps Jobs for managing inactive user accounts presents several positive consequences, such as streamlining the process and improving monitoring capabilities.
-This integration will ensure consistent application of access controls with minimal manual intervention, while hourly scheduling will facilitate timely management of user accounts, reducing security risks.
-Additionally, implementing a notification system will allow OPS engineers to promptly respond to any process failures, helping to ensure system integrity.
-Leveraging the existing infrastructure minimizes the need for retraining and maximizes the use of current resources.
-
-Overall, while using Container Apps Jobs meets immediate operational needs, it’s important to consider its limitations and risks for long-term success.
-Issues like limited metrics, potential issues in deploying new monitoring alerts, and reliance on changing infrastructure could pose challenges.
+| **Category**    | **Details**                                                     | **Impact**                                     |
+|-----------------|-----------------------------------------------------------------|------------------------------------------------|
+| **Benefits**    | Easier to implement                                             | Increases efficiency                           |
+| **Benefits**    | Applies access controls consistently with minimal manual work   | Reduces mistakes and adds security             |
+| **Benefits**    | Hourly scheduling helps manage user accounts on time            | Reduces potential security risk                |
+| **Benefits**    | Notification aspect allows quick responses to process failures  | Improves reliability and response time         |
+| **Benefits**    | Uses existing resources                                         | Saves time and money, no upskilling/retraining |
+| **Limitations** | Limited metrics might lower effectiveness                       | May make decision-making harder                |
+| **Limitations** | Possible issues with setting up new monitoring alerts           | Could result in missing important events       |
+| **Limitations** | Dependence on changing infrastructure might create challenges   | Risks stability of operations                  |
