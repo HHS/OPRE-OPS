@@ -62,6 +62,7 @@ describe("CAN List", () => {
             .find(".can-portfolio-combobox__option")
             .first()
             .click();
+        // budget range is set by default
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
 
@@ -70,10 +71,12 @@ describe("CAN List", () => {
         cy.get("svg[id='filter-tag-activePeriod']").should("exist");
         cy.get("svg[id='filter-tag-transfer']").should("exist");
         cy.get("svg[id='filter-tag-portfolio']").should("exist");
+        cy.get("svg[id='filter-tag-budget']").should("exist");
 
         cy.get("span").contains("1 Year").should("exist");
         cy.get("span").contains("Direct").should("exist");
         cy.get("span").contains("Child Care (CC)").should("exist");
+        cy.get("span").contains("$500,000 to $10,000,000").should("exist");
 
         // No CANs found
         cy.get("tbody").should("not.exist");
@@ -81,7 +84,6 @@ describe("CAN List", () => {
         // reset
         cy.get("button").contains("Filter").click();
         cy.get("button").contains("Reset").click();
-        cy.get("button").contains("Apply").click();
 
         // check that the table is filtered correctly
         // table should have more than 5 rows
@@ -90,6 +92,7 @@ describe("CAN List", () => {
         cy.get("svg[id='filter-tag-activePeriod']").should("not.exist");
         cy.get("svg[id='filter-tag-transfer']").should("not.exist");
         cy.get("svg[id='filter-tag-portfolio']").should("not.exist");
+        cy.get("svg[id='filter-tag-budget']").should("not.exist");
 
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });
