@@ -87,7 +87,7 @@ const CANFYBudgetRangeSlider = ({ fyBudgetRange, legendClassname = "usa-label ma
                         displayType="text"
                         prefix={"$ "}
                     />
-                    <span> - </span>
+                    <span> to </span>
                     <CurrencyFormat
                         value={maxValue}
                         decimalScale={2}

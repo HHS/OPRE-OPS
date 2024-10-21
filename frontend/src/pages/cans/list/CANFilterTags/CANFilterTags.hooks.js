@@ -36,9 +36,19 @@ export const useTagsList = (filters, fyBudgetRange) => {
             if (filterKey === "budget") {
                 if (Array.isArray(filters.budget) && filters.budget.length === 2) {
                     const [min, max] = filters.budget;
+                    const formattedMin = new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        trailingZeroDisplay: "stripIfInteger"
+                    }).format(min);
+                    const formattedMax = new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        trailingZeroDisplay: "stripIfInteger"
+                    }).format(max);
                     setTagsList((prevState) => [
                         ...prevState.filter((t) => t.filter !== filterName),
-                        { tagText: `$${min} - $${max}`, filter: filterName }
+                        { tagText: `${formattedMin} to ${formattedMax}`, filter: filterName }
                     ]);
                 } else {
                     setTagsList((prevState) => prevState.filter((t) => t.filter !== filterName));
