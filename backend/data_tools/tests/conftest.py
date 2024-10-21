@@ -1,9 +1,11 @@
 import pytest
-from sqlalchemy import create_engine, text
+from data_tools.src.common.db import init_db
+from sqlalchemy import event, text
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.orm import Session
 
-from models import BaseModel
+from models import BaseModel, User
+from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 
 
 def is_responsive(db):
@@ -20,24 +22,44 @@ def db_service(docker_ip, docker_services):
     """Ensure that DB is up and responsive."""
 
     connection_string = "postgresql://postgres:local_password@localhost:54321/postgres"  # pragma: allowlist secret
-    engine = create_engine(connection_string, echo=True, future=True)
+    db_session, engine = init_db(connection_string)
     docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_responsive(engine))
-    return engine
+
+    BaseModel.metadata.create_all(engine)
+    return db_session, engine
+
+@pytest.fixture()
+def etl_user(db_service):
+    db_session, engine = db_service
+    etl_user = User(email="etl@example.com")
+    db_session.add(etl_user)
+    db_session.commit()
+
+    yield etl_user
 
 
 @pytest.fixture()
-def loaded_db(db_service) -> Session:
+def loaded_db(db_service, etl_user) -> Session:
     """Get SQLAlchemy Session."""
 
-    BaseModel.metadata.drop_all(db_service)
-    BaseModel.metadata.create_all(db_service)
+    db_session, engine = db_service
 
-    session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=db_service))
+    @event.listens_for(db_session, "before_commit")
+    def receive_before_commit(session: Session):
+        track_db_history_before(session, etl_user)
 
-    yield session
+    @event.listens_for(db_session, "after_flush")
+    def receive_after_flush(session: Session, flush_context):
+        track_db_history_after(session, etl_user)
+
+    @event.listens_for(engine, "handle_error")
+    def receive_error(exception_context):
+        track_db_history_catch_errors(exception_context)
+
+    yield db_session
 
     # cleanup
-    session.rollback()
+    db_session.rollback()
 
-    session.commit()
-    session.close()
+    db_session.commit()
+    db_session.close()
