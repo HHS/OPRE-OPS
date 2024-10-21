@@ -23,7 +23,7 @@ def test_post_user_unauthorized_different_user(client, loaded_db, test_non_admin
         json={"email": "new_user@example.com", "first_name": "New First Name"},
         headers={"Authorization": f"Bearer {str(access_token)}"},
     )
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 @pytest.mark.usefixtures("app_ctx")
