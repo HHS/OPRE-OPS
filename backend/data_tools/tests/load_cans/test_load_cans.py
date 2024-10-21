@@ -92,7 +92,7 @@ def test_create_models_no_can_nbr():
         NICK_NAME="HMRF-OPRE",
     )
 
-def test_create_models():
+def test_create_models(etl_user):
     portfolios = [
         Portfolio(
             abbreviation="HMRF",
@@ -123,7 +123,7 @@ def test_create_models():
         NICK_NAME="HMRF-OPRE",
     )
 
-    models = create_models(data, portfolios)
+    models = create_models(data, etl_user, portfolios)
 
     assert len(models) == 2
 
@@ -147,7 +147,7 @@ def test_create_models():
     assert funding_details_model.active_period == 1
     assert funding_details_model.obligate_by == 2024
 
-def test_persist_models(loaded_db):
+def test_persist_models(loaded_db, etl_user):
     division = Division(
         name="Child Care",
         abbreviation="CC",
@@ -207,7 +207,7 @@ def test_persist_models(loaded_db):
         NICK_NAME="HMRF-OPRE",
     )
 
-    models = create_models(data_1, portfolios) + create_models(data_2, portfolios)
+    models = create_models(data_1, etl_user, portfolios) + create_models(data_2, etl_user, portfolios)
 
     persist_models(models, loaded_db)
 
@@ -217,6 +217,7 @@ def test_persist_models(loaded_db):
     assert can_1.nick_name == "HMRF-OPRE"
     assert can_1.portfolio == loaded_db.execute(select(Portfolio).filter(Portfolio.abbreviation == "HMRF")).scalar()
     assert can_1.funding_details == loaded_db.execute(select(CANFundingDetails).filter(CANFundingDetails.fund_code == "AAXXXX20231DAD")).scalar()
+    assert can_1.created_by == etl_user.id
 
     # make sure the version records were created
     assert can_1.versions[0].number == "G99HRF2"
@@ -224,6 +225,7 @@ def test_persist_models(loaded_db):
     assert can_1.versions[0].nick_name == "HMRF-OPRE"
     assert can_1.versions[0].portfolio == loaded_db.execute(select(Portfolio).filter(Portfolio.abbreviation == "HMRF")).scalar().versions[0]
     assert can_1.versions[0].funding_details == loaded_db.execute(select(CANFundingDetails).filter(CANFundingDetails.fund_code == "AAXXXX20231DAD")).scalar().versions[0]
+    assert can_1.versions[0].created_by == etl_user.id
 
     # make sure the history records are created
     history_records = loaded_db.execute(select(OpsDBHistory).filter(OpsDBHistory.class_name == "CAN").order_by(OpsDBHistory.created_on.desc())).scalars().all()
@@ -232,6 +234,8 @@ def test_persist_models(loaded_db):
     assert history_records[0].row_key == "500"
     assert history_records[1].event_type == OpsDBHistoryType.NEW
     assert history_records[1].row_key == "501"
+    assert history_records[0].created_by == etl_user.id
+    assert history_records[1].created_by == etl_user.id
 
 
     # Cleanup

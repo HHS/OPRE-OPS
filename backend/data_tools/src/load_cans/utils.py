@@ -3,7 +3,7 @@ from typing import List
 
 from loguru import logger
 
-from models import CAN, BaseModel, CANFundingDetails, CANFundingSource, CANMethodOfTransfer, Portfolio
+from models import CAN, BaseModel, CANFundingDetails, CANFundingSource, CANMethodOfTransfer, Portfolio, User
 
 
 @dataclass
@@ -83,7 +83,7 @@ def validate_all(data: List[CANData]) -> bool:
     """
     return sum(1 for d in data if validate_data(d)) == len(data)
 
-def create_models(data: CANData, portfolio_ref_data: List[Portfolio]) -> List[BaseModel]:
+def create_models(data: CANData, etl_user: User, portfolio_ref_data: List[Portfolio]) -> List[BaseModel]:
     """
     Convert a CanData instance to a list of BaseModel instances.
 
@@ -109,6 +109,7 @@ def create_models(data: CANData, portfolio_ref_data: List[Portfolio]) -> List[Ba
             appropriation=data.APPROP_PREFIX + "-" + data.APPROP_YEAR[0:2] + "-" + data.APPROP_POSTFIX,
             method_of_transfer=CANMethodOfTransfer[data.METHOD_OF_TRANSFER],
             funding_source=CANFundingSource[data.FUNDING_SOURCE],
+            created_by=etl_user.id,
         )
 
         can = CAN(
@@ -116,6 +117,7 @@ def create_models(data: CANData, portfolio_ref_data: List[Portfolio]) -> List[Ba
             number=data.CAN_NBR,
             description=data.CAN_DESCRIPTION,
             nick_name=data.NICK_NAME,
+            created_by=etl_user.id,
         )
 
         can.funding_details = funding_details
