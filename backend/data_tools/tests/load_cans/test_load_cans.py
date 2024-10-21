@@ -1,10 +1,8 @@
 import csv
 
 import pytest
-import sqlalchemy.engine
 from data_tools.environment.dev import DevConfig
-from data_tools.environment.pytest import PytestConfig
-from data_tools.src.import_static_data.import_data import get_config, init_db
+from data_tools.src.import_static_data.import_data import get_config
 from data_tools.src.load_cans.utils import (
     CANData,
     create_can_data,
@@ -13,15 +11,9 @@ from data_tools.src.load_cans.utils import (
     validate_all,
     validate_data,
 )
-from sqlalchemy.sql import select
+from sqlalchemy.orm import configure_mappers
 
-from models import CAN, CANFundingDetails, CANFundingSource, CANMethodOfTransfer, Division, Portfolio
-
-
-def test_init_db(db_service):
-    engine, metadata_obj = init_db(PytestConfig(), db_service)
-    assert isinstance(engine, sqlalchemy.engine.Engine)
-    assert isinstance(metadata_obj, sqlalchemy.MetaData)
+from models import *  # noqa: F403, F401
 
 
 def test_get_config_default():
@@ -226,13 +218,23 @@ def test_persist_models(loaded_db):
     assert can_1.portfolio == loaded_db.execute(select(Portfolio).filter(Portfolio.abbreviation == "HMRF")).scalar()
     assert can_1.funding_details == loaded_db.execute(select(CANFundingDetails).filter(CANFundingDetails.fund_code == "AAXXXX20231DAD")).scalar()
 
+    # make sure the version records were created
+    assert can_1.versions[0].number == "G99HRF2"
+    assert can_1.versions[0].description == "Healthy Marriages Responsible Fatherhood - OPRE"
+    assert can_1.versions[0].nick_name == "HMRF-OPRE"
+    assert can_1.versions[0].portfolio == loaded_db.execute(select(Portfolio).filter(Portfolio.abbreviation == "HMRF")).scalar().versions[0]
+    assert can_1.versions[0].funding_details == loaded_db.execute(select(CANFundingDetails).filter(CANFundingDetails.fund_code == "AAXXXX20231DAD")).scalar().versions[0]
+
+    # make sure the history records are created
+    history_records = loaded_db.execute(select(OpsDBHistory).filter(OpsDBHistory.class_name == "CAN").order_by(OpsDBHistory.created_on.desc())).scalars().all()
+    assert len(history_records) == 2
+    assert history_records[0].event_type == OpsDBHistoryType.NEW
+    assert history_records[0].row_key == "500"
+    assert history_records[1].event_type == OpsDBHistoryType.NEW
+    assert history_records[1].row_key == "501"
+
+
     # Cleanup
     for model in models:
         loaded_db.delete(model)
         loaded_db.commit()
-
-    # TODO: Need to add cascade delete to models
-    # loaded_db.delete(division)
-    # for portfolio in portfolios:
-    #     loaded_db.delete(portfolio)
-    # loaded_db.commit()
