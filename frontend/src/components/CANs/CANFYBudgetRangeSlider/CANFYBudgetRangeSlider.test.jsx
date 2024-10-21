@@ -1,3 +1,8 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import CANFYBudgetRangeSlider from "./CANFYBudgetRangeSlider";
+
 // Mock ResizeObserver
 class ResizeObserver {
     observe() {}
@@ -6,10 +11,6 @@ class ResizeObserver {
 }
 
 window.ResizeObserver = ResizeObserver;
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
-import CANFYBudgetRangeSlider from "./CANFYBudgetRangeSlider";
 
 describe("CANFYBudgetRangeSlider", () => {
     it("should render with correct initial values", () => {
