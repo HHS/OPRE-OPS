@@ -1076,29 +1076,69 @@ paths:
                         "purpose": ""
                       }
                     ]
-  /api/v1/can-funding-summary/{can_id}:
+  /api/v1/can-funding-summary:
     get:
       tags:
         - CAN Funding Summary
-      operationId: getFundingTotalsByCanId
-      description: Get Funding Totals by CAN Id
+      operationId: getFundingTotals
+      description: Get Funding Totals
       parameters:
         - $ref: "#/components/parameters/simulatedError"
-        - name: fiscal_year
+        - name: can_ids
           in: query
-          schema:
-            type: string
-          example: "2023"
-        - in: path
-          name: can_id
-          description: CAN Id
+          description: Comma-separated list of CAN Ids (required)
           required: true
           schema:
-            type: integer
-            format: int32
-            minimum: 0
-            default: 0
-      responses:
+            type: array
+            items:
+              type: integer
+            example: [ 12345, 12346, 12347 ]
+        - name: fiscal_year
+          in: query
+          description: Fiscal year (optional)
+          schema:
+            type: string
+            example: "2023"
+        - name: active_period
+          in: query
+          description: List of active periods (optional)
+          schema:
+            type: array
+            items:
+              type: integer
+            example: [ 1, 5 ]
+        - name: transfer
+          in: query
+          description: List of CAN Method of Transfer (optional)
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - DIRECT
+                - COST_SHARE
+                - IAA
+                - IDDA
+            example: [ "DIRECT", "IAA" ]
+        - name: portfolio
+          in: query
+          description: List of portfolios (optional)
+          schema:
+            type: array
+            items:
+              type: string
+            example: [ "HS", "HMRF", "CC" ]
+        - name: fy_budget
+          in: query
+          description: List of two values representing the min and max fiscal year budget (optional)
+          schema:
+            type: array
+            items:
+              type: integer
+            minItems: 2
+            maxItems: 2
+            example: [ 50000, 100000 ]
+    responses:
         "200":
           description: OK
           content:
