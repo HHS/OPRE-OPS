@@ -87,6 +87,7 @@ const applyAdditionalFilters = (cans, filters) => {
             )
         );
     }
+
     if (filters.portfolio && filters.portfolio.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
             filters.portfolio?.some(
@@ -97,7 +98,13 @@ const applyAdditionalFilters = (cans, filters) => {
 
     if (filters.budget && filters.budget.length > 0) {
         filteredCANs = filteredCANs.filter((can) => {
+            // Include if funding_budgets is empty
+            if (can.funding_budgets.length === 0) return true;
+
             return can.funding_budgets.some((budget) => {
+                // Include if budget is null
+                if (budget.budget === null) return true;
+
                 return budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1];
             });
         });
