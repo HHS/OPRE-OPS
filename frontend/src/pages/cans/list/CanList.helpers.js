@@ -72,7 +72,6 @@ const sortCANs = (cans) => {
  */
 const applyAdditionalFilters = (cans, filters) => {
     let filteredCANs = cans;
-    console.log({ filters, cans });
 
     // Filter by active period
     if (filters.activePeriod && filters.activePeriod.length > 0) {
