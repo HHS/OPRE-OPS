@@ -73,13 +73,11 @@ describe("CAN List", () => {
 
         cy.get("span").contains("1 Year").should("exist");
         cy.get("span").contains("Direct").should("exist");
-        cy.get("span").contains("HMRF").should("exist");
+        cy.get("span").contains("Child Care (CC)").should("exist");
 
-        // check that the table is filtered correctly
-        // table should contain 6 rows
-
-        cy.get("tbody").find("tr").should("have.length", 3);
-
+        // No CANs found
+        cy.get("tbody").should("not.exist");
+        cy.get("p.text-center").contains("No CANs found").should("exist");
         // reset
         cy.get("button").contains("Filter").click();
         cy.get("button").contains("Reset").click();

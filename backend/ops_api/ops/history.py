@@ -1,50 +1,21 @@
 import json
 import logging
-from collections import namedtuple
-from datetime import date, datetime
-from decimal import Decimal
-from enum import Enum
-from types import NoneType
 
 from flask import current_app
 from flask_jwt_extended import current_user
-from sqlalchemy import inspect
 from sqlalchemy.cyextension.collections import IdentitySet
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.attributes import get_history
 
 from models import (
     Agreement,
     AgreementChangeRequest,
     AgreementOpsDbHistory,
-    BaseModel,
     BudgetLineItem,
     OpsDBHistory,
     OpsDBHistoryType,
     OpsEvent,
+    build_audit,
 )
-
-DbRecordAudit = namedtuple("DbRecordAudit", "row_key changes")
-
-
-def convert_for_jsonb(value):
-    if isinstance(value, (str, bool, int, float, NoneType)):
-        return value
-    if isinstance(value, Enum):
-        return value.name
-    if isinstance(value, Decimal):
-        return float(value)
-    if isinstance(value, datetime):
-        return value.isoformat()
-    if isinstance(value, date):
-        return value.isoformat()
-    if isinstance(value, BaseModel):
-        if callable(getattr(value, "to_slim_dict", None)):
-            return value.to_slim_dict()
-        return value.to_dict()
-    if isinstance(value, (list, tuple)):
-        return [convert_for_jsonb(item) for item in value]
-    return str(value)
 
 
 def find_relationship_by_fk(obj, col_key):
@@ -55,62 +26,6 @@ def find_relationship_by_fk(obj, col_key):
                 # rel_obj = getattr(obj, rel.key)
                 return rel
     return None
-
-
-def build_audit(obj, event_type: OpsDBHistoryType) -> DbRecordAudit:  # noqa: C901
-    row_key = "|".join([str(getattr(obj, pk.name)) for pk in inspect(obj.__table__).primary_key.columns.values()])
-
-    changes = {}
-
-    mapper = obj.__mapper__
-
-    # collect changes in column values
-    auditable_columns = list(filter(lambda c: c.key in obj.__dict__, mapper.columns))
-    for col in auditable_columns:
-        key = col.key
-        hist = get_history(obj, key)
-        if hist.has_changes():
-            # this assumes columns are primitives, not lists
-            old_val = convert_for_jsonb(hist.deleted[0]) if hist.deleted else None
-            new_val = convert_for_jsonb(hist.added[0]) if hist.added else None
-            # exclude Enums that didn't really change
-            if hist.deleted and isinstance(hist.deleted[0], Enum) and old_val == new_val:
-                continue
-            if event_type == OpsDBHistoryType.NEW:
-                if new_val:
-                    changes[key] = {
-                        "new": new_val,
-                    }
-            else:
-                changes[key] = {
-                    "new": new_val,
-                    "old": old_val,
-                }
-
-    # collect changes in relationships, such as agreement.team_members
-    # limit this to relationships that aren't being logged as their own Classes
-    # and only include them on the editable side
-    auditable_relationships = list(
-        filter(
-            lambda rel: rel.secondary is not None and not rel.viewonly,
-            mapper.relationships,
-        )
-    )
-
-    for relationship in auditable_relationships:
-        key = relationship.key
-        hist = get_history(obj, key)
-        if hist.has_changes():
-            related_class_name = (
-                relationship.argument if isinstance(relationship.argument, str) else relationship.argument.__name__
-            )
-            changes[key] = {
-                "collection_of": related_class_name,
-                "added": convert_for_jsonb(hist.added),
-            }
-            if event_type != OpsDBHistoryType.NEW:
-                changes[key]["deleted"] = convert_for_jsonb(hist.deleted)
-    return DbRecordAudit(row_key, changes)
 
 
 def track_db_history_before(session: Session):
