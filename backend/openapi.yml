@@ -1138,7 +1138,7 @@ paths:
             minItems: 2
             maxItems: 2
             example: [ 50000, 100000 ]
-    responses:
+      responses:
         "200":
           description: OK
           content:
