@@ -5,19 +5,12 @@ import time
 import click
 from data_tools.src.azure_utils.utils import get_csv
 from data_tools.src.common.utils import get_config, get_or_create_sys_user, init_db
-from data_tools.src.load_cans.utils import (
-    create_all_can_data,
-    create_all_models,
-    create_can_data,
-    create_models,
-    persist_models,
-    validate_all,
-)
+from data_tools.src.load_cans.utils import create_all_can_data, create_all_models, persist_models, validate_all
 from loguru import logger
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from models import Portfolio, User
+from models import Portfolio
 
 # Set the timezone to UTC
 os.environ["TZ"] = "UTC"
@@ -30,8 +23,8 @@ format = (
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "<level>{message}</level>"
 )
-logger.add(sys.stdout, format=format, level="DEBUG")
-logger.add(sys.stderr, format=format, level="DEBUG")
+logger.add(sys.stdout, format=format, level="INFO")
+logger.add(sys.stderr, format=format, level="INFO")
 
 
 @click.command()

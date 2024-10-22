@@ -1,6 +1,7 @@
 import pytest
 from data_tools.src.common.db import init_db
-from sqlalchemy import event, text
+from data_tools.src.common.utils import SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_OIDC_ID
+from sqlalchemy import event, select, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
@@ -31,9 +32,13 @@ def db_service(docker_ip, docker_services):
 @pytest.fixture()
 def sys_user(db_service):
     db_session, engine = db_service
-    user = User(email="sys@example.com")
-    db_session.add(user)
-    db_session.commit()
+
+    user = db_session.execute(select(User).where(User.oidc_id == SYSTEM_ADMIN_OIDC_ID)).scalar_one_or_none()
+
+    if not user:
+        user = User(oidc_id=SYSTEM_ADMIN_OIDC_ID, email=SYSTEM_ADMIN_EMAIL)
+        db_session.add(user)
+        db_session.commit()
 
     yield user
 

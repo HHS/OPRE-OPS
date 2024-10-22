@@ -1,15 +1,9 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from data_tools.src.disable_users.disable_users import (
-    create_system_admin,
-    disable_user,
-    get_ids_from_oidc_ids,
-    update_disabled_users_status,
-)
-from data_tools.src.disable_users.queries import SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_OIDC_ID
+from data_tools.src.disable_users.disable_users import disable_user, get_ids_from_oidc_ids, update_disabled_users_status
 
-from models import OpsDBHistoryType, OpsEventStatus, OpsEventType, UserStatus
+from models import OpsEventStatus, OpsEventType, User, UserStatus
 
 system_admin_id = 111
 
@@ -19,27 +13,6 @@ def mock_session():
     session = MagicMock()
     session.execute.return_value.fetchone.return_value = None
     return session
-
-def test_create_system_admin(mock_session):
-    create_system_admin(mock_session)
-
-    se_add = mock_session.add.call_args[0][0]
-    mock_session.execute.assert_called_once()
-    mock_session.add.assert_called_once()
-    mock_session.commit.assert_called_once()
-    assert se_add.email == SYSTEM_ADMIN_EMAIL
-    assert se_add.oidc_id == SYSTEM_ADMIN_OIDC_ID
-    assert se_add.first_name is None
-    assert se_add.last_name is None
-
-def test_return_existing_system_admin(mock_session):
-    mock_session.execute.return_value.fetchone.return_value = (system_admin_id,)
-
-    result = create_system_admin(mock_session)
-
-    assert result == system_admin_id
-    mock_session.add.assert_not_called()
-    mock_session.commit.assert_not_called()
 
 def test_deactivate_user(mock_session):
     user_id = 1
@@ -54,7 +27,7 @@ def test_deactivate_user(mock_session):
     disable_user(mock_session, user_id, system_admin_id)
 
     assert mock_session.merge.call_count == 3
-    assert mock_session.add.call_count == 2
+    assert mock_session.add.call_count == 1
 
     user_call = mock_session.merge.call_args_list[0]
     assert user_call[0][0].id == user_id
@@ -66,20 +39,15 @@ def test_deactivate_user(mock_session):
     assert user_session_call_1[0][0].is_active is False
     assert user_session_call_1[0][0].updated_by == system_admin_id
 
-    ops_db_history_call = mock_session.add.call_args_list[0]
-    assert ops_db_history_call[0][0].event_type == OpsDBHistoryType.UPDATED
-    assert ops_db_history_call[0][0].created_by == system_admin_id
-    assert ops_db_history_call[0][0].class_name == 'User'
-    assert ops_db_history_call[0][0].row_key == str(user_id)
-    assert ops_db_history_call[0][0].changes == db_history_changes
-
-    ops_events_call = mock_session.add.call_args_list[1]
+    ops_events_call = mock_session.add.call_args_list[0]
     assert ops_events_call[0][0].event_type == OpsEventType.UPDATE_USER
     assert ops_events_call[0][0].event_status == OpsEventStatus.SUCCESS
     assert ops_events_call[0][0].created_by == system_admin_id
 
 @patch("data_tools.src.disable_users.disable_users.logger")
-def test_no_inactive_users(mock_logger, mock_session):
+def test_no_inactive_users(mock_logger, mock_session, mocker):
+    mocker.patch("data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id))
+
     mock_session.execute.return_value.all.return_value = None
     update_disabled_users_status(mock_session)
 

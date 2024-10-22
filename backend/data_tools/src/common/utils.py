@@ -12,6 +12,8 @@ from sqlalchemy import Engine, select
 
 from models import BaseModel, User
 
+SYSTEM_ADMIN_OIDC_ID = "00000000-0000-1111-a111-000000000026"
+SYSTEM_ADMIN_EMAIL = "system.admin@email.com"
 
 def init_db(
     config: DataToolsConfig, db: Optional[Engine] = None

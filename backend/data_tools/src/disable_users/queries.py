@@ -1,5 +1,4 @@
-SYSTEM_ADMIN_OIDC_ID = "00000000-0000-1111-a111-000000000026"
-SYSTEM_ADMIN_EMAIL = "system.admin@email.com"
+from data_tools.src.common.utils import SYSTEM_ADMIN_OIDC_ID
 
 EXCLUDED_USER_OIDC_IDS = [
     "00000000-0000-1111-a111-000000000018",     # Admin Demo

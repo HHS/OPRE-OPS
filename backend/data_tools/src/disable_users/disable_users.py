@@ -1,13 +1,13 @@
-import logging
 import os
+import sys
+import time
 
+from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.disable_users.queries import (
     ALL_ACTIVE_USER_SESSIONS_QUERY,
     EXCLUDED_USER_OIDC_IDS,
     GET_USER_ID_BY_OIDC_QUERY,
     INACTIVE_USER_QUERY,
-    SYSTEM_ADMIN_EMAIL,
-    SYSTEM_ADMIN_OIDC_ID,
 )
 from data_tools.src.import_static_data.import_data import get_config, init_db
 from sqlalchemy import text
@@ -15,9 +15,19 @@ from sqlalchemy.orm import Mapper, Session
 
 from models import *  # noqa: F403, F401
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Set the timezone to UTC
+os.environ["TZ"] = "UTC"
+time.tzset()
 
+# logger configuration
+format = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+    "<level>{level: <8}</level> | "
+    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+    "<level>{message}</level>"
+)
+logger.add(sys.stdout, format=format, level="INFO")
+logger.add(sys.stderr, format=format, level="INFO")
 
 def get_ids_from_oidc_ids(se, oidc_ids: list):
     """Retrieve user IDs corresponding to a list of OIDC IDs."""
@@ -33,41 +43,10 @@ def get_ids_from_oidc_ids(se, oidc_ids: list):
 
     return ids
 
-
-def create_system_admin(se):
-    """Create system user if it doesn't exist."""
-    system_admin = se.execute(
-        text(GET_USER_ID_BY_OIDC_QUERY),
-        {"oidc_id": SYSTEM_ADMIN_OIDC_ID}
-    ).fetchone()
-
-    if system_admin is None:
-        sys_user = User(
-            email=SYSTEM_ADMIN_EMAIL,
-            oidc_id=SYSTEM_ADMIN_OIDC_ID,
-            status=UserStatus.LOCKED
-        )
-        se.add(sys_user)
-        se.commit()
-        return sys_user.id
-
-    return system_admin[0]
-
-
 def disable_user(se, user_id, system_admin_id):
     """Deactivate a single user and log the change."""
     updated_user = User(id=user_id, status=UserStatus.INACTIVE, updated_by=system_admin_id)
     se.merge(updated_user)
-
-    db_audit = build_audit(updated_user, OpsDBHistoryType.UPDATED)
-    ops_db_history = OpsDBHistory(
-        event_type=OpsDBHistoryType.UPDATED,
-        created_by=system_admin_id,
-        class_name=updated_user.__class__.__name__,
-        row_key=db_audit.row_key,
-        changes=db_audit.changes,
-    )
-    se.add(ops_db_history)
 
     ops_event = OpsEvent(
         event_type=OpsEventType.UPDATE_USER,
@@ -88,9 +67,10 @@ def disable_user(se, user_id, system_admin_id):
 
 def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
     """Update the status of disabled users in the database."""
+    logger.info("Checking for System User.")
+    system_admin = get_or_create_sys_user(conn.engine)
     with Session(conn) as se:
-        logger.info("Checking for System User.")
-        system_admin_id = create_system_admin(se)
+        system_admin_id = system_admin.id
 
         logger.info("Fetching inactive users.")
         results = se.execute(text(INACTIVE_USER_QUERY)).scalars().all()
