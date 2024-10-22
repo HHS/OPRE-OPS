@@ -83,7 +83,7 @@ def validate_all(data: List[CANData]) -> bool:
     """
     return sum(1 for d in data if validate_data(d)) == len(data)
 
-def create_models(data: CANData, etl_user: User, portfolio_ref_data: List[Portfolio]) -> List[BaseModel]:
+def create_models(data: CANData, sys_user: User, portfolio_ref_data: List[Portfolio]) -> List[BaseModel]:
     """
     Convert a CanData instance to a list of BaseModel instances.
 
@@ -109,7 +109,7 @@ def create_models(data: CANData, etl_user: User, portfolio_ref_data: List[Portfo
             appropriation=data.APPROP_PREFIX + "-" + data.APPROP_YEAR[0:2] + "-" + data.APPROP_POSTFIX,
             method_of_transfer=CANMethodOfTransfer[data.METHOD_OF_TRANSFER],
             funding_source=CANFundingSource[data.FUNDING_SOURCE],
-            created_by=etl_user.id,
+            created_by=sys_user.id,
         )
 
         can = CAN(
@@ -117,7 +117,7 @@ def create_models(data: CANData, etl_user: User, portfolio_ref_data: List[Portfo
             number=data.CAN_NBR,
             description=data.CAN_DESCRIPTION,
             nick_name=data.NICK_NAME,
-            created_by=etl_user.id,
+            created_by=sys_user.id,
         )
 
         can.funding_details = funding_details
@@ -130,7 +130,7 @@ def create_models(data: CANData, etl_user: User, portfolio_ref_data: List[Portfo
         raise e
     return models
 
-def create_all_models(data: List[CANData], portfolio_ref_data: List[Portfolio]) -> List[BaseModel]:
+def create_all_models(data: List[CANData], sys_user: User, portfolio_ref_data: List[Portfolio]) -> List[BaseModel]:
     """
     Convert a list of CanData instances to a list of BaseModel instances.
 
@@ -139,7 +139,7 @@ def create_all_models(data: List[CANData], portfolio_ref_data: List[Portfolio]) 
 
     :return: A list of BaseModel instances.
     """
-    return [m for d in data for m in create_models(d, portfolio_ref_data)]
+    return [m for d in data for m in create_models(d, sys_user, portfolio_ref_data)]
 
 def persist_models(models: List[BaseModel], session) -> None:
     """
@@ -158,3 +158,13 @@ def persist_models(models: List[BaseModel], session) -> None:
     session.commit()
     logger.info(f"Persisted {len(models)} models.")
     return None
+
+def create_all_can_data(data: List[dict]) -> List[CANData]:
+    """
+    Convert a list of dictionaries to a list of CanData instances.
+
+    :param data: The list of dictionaries to convert.
+
+    :return: A list of CanData instances.
+    """
+    return [create_can_data(d) for d in data]

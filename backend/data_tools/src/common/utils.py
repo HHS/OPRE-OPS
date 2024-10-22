@@ -7,9 +7,10 @@ from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.types import DataToolsConfig
-from sqlalchemy import Engine
+from nox import Session
+from sqlalchemy import Engine, select
 
-from models import BaseModel
+from models import BaseModel, User
 
 
 def init_db(
@@ -35,3 +36,23 @@ def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
         case _:
             config = DevConfig()
     return config
+
+def get_or_create_sys_user(db: Engine) -> User:
+    """
+    Get or create the system user.
+
+    Args:
+        db: The database engine.
+
+    Returns:
+        None
+    """
+    with Session(db) as session:
+        user = session.execute(select(User).where(User.email == "sys-user@example.com")).scalar_one()
+
+        if not user:
+            user = User(email="sys-user@example.com")
+            session.add(user)
+            session.commit()
+
+        return user
