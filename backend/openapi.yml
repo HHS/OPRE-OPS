@@ -1193,6 +1193,8 @@ paths:
                     type: string
                   expected_funding:
                     type: string
+                  new_funding:
+                    type: string
               examples:
                 "0":
                   value: |
@@ -1220,7 +1222,8 @@ paths:
                       "in_execution_funding": "2000000.00",
                       "obligated_funding": 0,
                       "planned_funding": 0,
-                      "total_funding": "10000000.00"
+                      "total_funding": "10000000.00",
+                      "new_funding": "2000000.00"
                     }
   /api/v1/users/:
     get:
