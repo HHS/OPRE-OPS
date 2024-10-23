@@ -1,14 +1,15 @@
 import os
 import sys
 import time
+from datetime import timedelta
 
-from data_tools.src.common.db import init_db_from_config
+from data_tools.src.common.db import init_db_from_config, setup_triggers
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.disable_users.queries import (
     ALL_ACTIVE_USER_SESSIONS_QUERY,
     EXCLUDED_USER_OIDC_IDS,
     GET_USER_ID_BY_OIDC_QUERY,
-    INACTIVE_USER_QUERY,
+    get_latest_user_session,
 )
 from data_tools.src.import_static_data.import_data import get_config, init_db
 from sqlalchemy import text
@@ -53,6 +54,7 @@ def disable_user(se, user_id, system_admin_id):
         event_type=OpsEventType.UPDATE_USER,
         event_status=OpsEventStatus.SUCCESS,
         created_by=system_admin_id,
+        event_details={"user_id": user_id, "message": "User deactivated via automated process."},
     )
     se.add(ops_event)
 
@@ -72,11 +74,18 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
     with Session(conn) as se:
         logger.info("Checking for System User.")
         system_admin = get_or_create_sys_user(se)
-
         system_admin_id = system_admin.id
 
+        setup_triggers(se, system_admin)
+
         logger.info("Fetching inactive users.")
-        results = se.execute(text(INACTIVE_USER_QUERY)).scalars().all()
+        results = []
+        all_users = se.execute(select(User)).scalars().all()
+        for user in all_users:
+            latest_session = get_latest_user_session(user_id=user.id, session=se)
+            if latest_session and latest_session.last_active_at < datetime.now() - timedelta(days=60):
+                results.append(user.id)
+
         excluded_ids = get_ids_from_oidc_ids(se, EXCLUDED_USER_OIDC_IDS)
         user_ids = [uid for uid in results if uid not in excluded_ids]
 
@@ -99,8 +108,6 @@ if __name__ == "__main__":
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
     db_engine, db_metadata_obj = init_db_from_config(script_config)
-
-    event.listen(Mapper, "after_configured", setup_schema(BaseModel))
 
     update_disabled_users_status(db_engine)
 

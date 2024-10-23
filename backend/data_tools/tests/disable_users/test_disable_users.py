@@ -47,8 +47,9 @@ def test_deactivate_user(mock_session):
 @patch("data_tools.src.disable_users.disable_users.logger")
 def test_no_inactive_users(mock_logger, mock_session, mocker):
     mocker.patch("data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id))
+    mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=[])
+    mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
 
-    mock_session.execute.return_value.all.return_value = None
     update_disabled_users_status(mock_session)
 
     mock_logger.info.assert_any_call("Checking for System User.")
