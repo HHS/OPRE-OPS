@@ -41,15 +41,26 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
     }, [fyBudgetRange, filters.budget]);
 
     const applyFilter = () => {
-        setFilters((prevState) => {
-            return {
-                ...prevState,
-                activePeriod: activePeriod,
-                transfer: transfer,
-                portfolio: portfolio,
-                budget: budget
-            };
-        });
+        if(budget === fyBudgetRange) {
+            setFilters((prevState) => {
+                return {
+                    ...prevState,
+                    activePeriod: activePeriod,
+                    transfer: transfer,
+                    portfolio: portfolio,
+                };
+            });
+        } else {
+            setFilters((prevState) => {
+                return {
+                    ...prevState,
+                    activePeriod: activePeriod,
+                    transfer: transfer,
+                    portfolio: portfolio,
+                    budget: budget
+                };
+            });
+        }
     };
     const resetFilter = () => {
         setFilters({
