@@ -88,7 +88,14 @@ def validate_all(data: List[CANData]) -> bool:
 
 def create_models(data: CANData, sys_user: User, session: Session) -> None:
     """
-    Convert a CanData instance to a BaseModel instance.
+    Create and persist the CAN and CANFundingDetails models.
+
+    The CANData does not contain a SYS_ID for the CANFundDetails model.
+    A check is made to see if the funding details already exist in the database by comparing the fields.
+    If the funding details do not exist, a new instance is created and persisted to the database.
+    If it does exist, the existing instance is associated with the CAN model.
+    This means that the funding details are not duplicated in the database but is also not updated if the data changes.
+    The CAN model is upserted, however.
 
     :param data: The CanData instance to convert.
     :param sys_user: The system user to use.
@@ -210,48 +217,3 @@ def transform(data: DictReader, portfolios: List[Portfolio], session: Session, s
 
     create_all_models(can_data, sys_user, session)
     logger.info(f"Created models.")
-
-
-def create_can_funding_details_model(data: CANData, sys_user: User, session: Session) -> BaseModel:
-    logger.debug(f"Creating model for {data}")
-
-    try:
-        fiscal_year = int(data.FUND[6:10])
-        fund_code = data.FUND
-        allowance = data.ALLOWANCE
-        sub_allowance = data.SUB_ALLOWANCE
-        allotment = data.ALLOTMENT_ORG
-        appropriation = "-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR[0:2] or "", data.APPROP_POSTFIX or ""])
-        method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
-        funding_source = CANFundingSource[data.FUNDING_SOURCE]
-
-        existing_funding_details = session.execute(select(CANFundingDetails).where(
-            and_(
-                CANFundingDetails.fiscal_year == fiscal_year,
-                CANFundingDetails.fund_code == fund_code,
-                CANFundingDetails.allowance == allowance,
-                CANFundingDetails.sub_allowance == sub_allowance,
-                CANFundingDetails.allotment == allotment,
-                CANFundingDetails.appropriation == appropriation,
-                CANFundingDetails.method_of_transfer == method_of_transfer,
-                CANFundingDetails.funding_source == funding_source,
-            ))).scalar_one_or_none()
-
-        if not existing_funding_details:
-            funding_details = CANFundingDetails(
-                fiscal_year=fiscal_year,
-                fund_code=fund_code,
-                allowance=allowance,
-                sub_allowance=sub_allowance,
-                allotment=allotment,
-                appropriation=appropriation,
-                method_of_transfer=method_of_transfer,
-                funding_source=funding_source,
-                created_by=sys_user.id,
-            )
-            return funding_details
-        else:
-            return existing_funding_details
-    except Exception as e:
-        logger.error(f"Error creating model for {data}")
-        raise e
