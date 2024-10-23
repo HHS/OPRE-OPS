@@ -1,7 +1,9 @@
+from csv import DictReader
 from dataclasses import dataclass, field
 from typing import List
 
 from loguru import logger
+from sqlalchemy.orm import Session
 
 from models import CAN, BaseModel, CANFundingDetails, CANFundingSource, CANMethodOfTransfer, Portfolio, User
 
@@ -88,6 +90,7 @@ def create_models(data: CANData, sys_user: User, portfolio_ref_data: List[Portfo
     Convert a CanData instance to a list of BaseModel instances.
 
     :param data: The CanData instance to convert.
+    :param sys_user: The system user to use.
     :param portfolio_ref_data: A list of Portfolio instances to use as reference data.
 
     :return: A list of BaseModel instances.
@@ -106,7 +109,7 @@ def create_models(data: CANData, sys_user: User, portfolio_ref_data: List[Portfo
             allowance=data.ALLOWANCE,
             sub_allowance=data.SUB_ALLOWANCE,
             allotment=data.ALLOTMENT_ORG,
-            appropriation=data.APPROP_PREFIX + "-" + data.APPROP_YEAR[0:2] + "-" + data.APPROP_POSTFIX,
+            appropriation="-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR[0:2] or "", data.APPROP_POSTFIX or ""]),
             method_of_transfer=CANMethodOfTransfer[data.METHOD_OF_TRANSFER],
             funding_source=CANFundingSource[data.FUNDING_SOURCE],
             created_by=sys_user.id,
@@ -168,3 +171,34 @@ def create_all_can_data(data: List[dict]) -> List[CANData]:
     :return: A list of CanData instances.
     """
     return [create_can_data(d) for d in data]
+
+
+def transform(data: DictReader, portfolios: List[Portfolio], session: Session, sys_user: User) -> None:
+    """
+    Transform the data from the CSV file and persist the models to the database.
+
+    :param data: The data from the CSV file.
+    :param portfolios: The portfolios to use as reference data.
+    :param session: The database session to use.
+    :param sys_user: The system user to use.
+
+    :return: None
+    """
+    if not data or not portfolios or not session or not sys_user:
+        logger.error("No data to process. Exiting.")
+        raise RuntimeError("No data to process.")
+
+    can_data = create_all_can_data(list(data))
+    logger.info(f"Created {len(can_data)} CAN data instances.")
+
+    if not validate_all(can_data):
+        logger.error("Validation failed. Exiting.")
+        raise RuntimeError("Validation failed.")
+
+    logger.info("Data validation passed.")
+
+    models = create_all_models(can_data, sys_user, portfolios)
+    logger.info(f"Created {len(models)} models.")
+
+    persist_models(models, session)
+    logger.info("Persisted models.")

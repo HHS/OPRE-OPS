@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID
 
 import data_tools.src.common.db as db_module
 import sqlalchemy
@@ -7,8 +8,8 @@ from data_tools.environment.dev import DevConfig
 from data_tools.environment.local import LocalConfig
 from data_tools.environment.pytest import PytestConfig
 from data_tools.environment.types import DataToolsConfig
-from nox import Session
 from sqlalchemy import Engine, select
+from sqlalchemy.orm import Session
 
 from models import BaseModel, User
 
@@ -39,22 +40,20 @@ def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
             config = DevConfig()
     return config
 
-def get_or_create_sys_user(db: Engine) -> User:
+def get_or_create_sys_user(session: Session) -> User:
     """
     Get or create the system user.
 
     Args:
-        db: The database engine.
-
+        session: SQLAlchemy session object
     Returns:
         None
     """
-    with Session(db) as session:
-        user = session.execute(select(User).where(User.email == "sys-user@example.com")).scalar_one()
+    user = session.execute(select(User).where(User.oidc_id == SYSTEM_ADMIN_OIDC_ID)).scalar_one_or_none()
 
-        if not user:
-            user = User(email="sys-user@example.com")
-            session.add(user)
-            session.commit()
+    if not user:
+        user = User(email=SYSTEM_ADMIN_EMAIL, oidc_id=UUID(SYSTEM_ADMIN_OIDC_ID))
+        session.add(user)
+        session.commit()
 
-        return user
+    return user

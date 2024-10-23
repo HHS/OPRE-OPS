@@ -5,7 +5,7 @@ class PytestConfig(DataToolsConfig):
     @property
     def db_connection_string(self) -> str:
         return (
-            "postgresql://ops:ops@unittest_db:5432/postgres"  # pragma: allowlist secret
+            "postgresql://postgres:local_password@localhost:54321/postgres"  # pragma: allowlist secret
         )
 
     @property

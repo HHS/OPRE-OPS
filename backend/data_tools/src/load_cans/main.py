@@ -4,11 +4,18 @@ import time
 
 import click
 from data_tools.src.azure_utils.utils import get_csv
+from data_tools.src.common.db import setup_triggers
 from data_tools.src.common.utils import get_config, get_or_create_sys_user, init_db
-from data_tools.src.load_cans.utils import create_all_can_data, create_all_models, persist_models, validate_all
+from data_tools.src.load_cans.utils import (
+    create_all_can_data,
+    create_all_models,
+    persist_models,
+    transform,
+    validate_all,
+)
 from loguru import logger
 from sqlalchemy import select, text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from models import Portfolio
 
@@ -30,18 +37,15 @@ logger.add(sys.stderr, format=format, level="INFO")
 @click.command()
 @click.option("--env", help="The environment to use.")
 @click.option("--input-csv", help="The path to the CSV input file.")
-@click.option("--output-csv", help="The path to the CSV output file.")
 def main(
     env: str,
     input_csv: str,
-    output_csv: str,
 ):
     """
     Main entrypoint for the script.
     """
     logger.debug(f"Environment: {env}")
     logger.debug(f"Input CSV: {input_csv}")
-    logger.debug(f"Output CSV: {output_csv}")
 
     logger.info("Starting the ETL process.")
 
@@ -60,29 +64,22 @@ def main(
 
     logger.info(f"Loaded CSV file from {input_csv}.")
 
-    sys_user = get_or_create_sys_user(db_engine)
-    logger.info(f"Retrieved system user {sys_user}")
+    Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=db_engine))
 
-    with Session(db_engine) as session:
+    with Session() as session:
+        sys_user = get_or_create_sys_user(session)
+        logger.info(f"Retrieved system user {sys_user}")
+
+        setup_triggers(session, sys_user)
+
         portfolios = list(session.execute(select(Portfolio)).scalars().all())
-
         logger.info(f"Retrieved {len(portfolios)} portfolios.")
 
-        can_data = create_all_can_data(list(csv_f))
-
-        logger.info(f"Created {len(can_data)} CAN data instances.")
-
-        if not validate_all(can_data):
-            logger.error("Validation failed. Exiting.")
+        try:
+            transform(csv_f, portfolios, session, sys_user)
+        except RuntimeError as re:
+            logger.error(f"Error transforming data: {re}")
             sys.exit(1)
-
-        logger.info("Data validation passed.")
-
-        models = create_all_models(can_data, sys_user, portfolios)
-
-        logger.info(f"Created {len(models)} models.")
-
-        persist_models(models, session)
 
     logger.info("Finished the ETL process.")
 

@@ -1,6 +1,6 @@
 import pytest
 from data_tools.src.common.db import init_db
-from data_tools.src.common.utils import SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_OIDC_ID
+from data_tools.src.common.utils import SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_OIDC_ID, get_or_create_sys_user
 from sqlalchemy import event, select, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -31,16 +31,9 @@ def db_service(docker_ip, docker_services):
 
 @pytest.fixture()
 def sys_user(db_service):
-    db_session, engine = db_service
+    db_session, _ = db_service
 
-    user = db_session.execute(select(User).where(User.oidc_id == SYSTEM_ADMIN_OIDC_ID)).scalar_one_or_none()
-
-    if not user:
-        user = User(oidc_id=SYSTEM_ADMIN_OIDC_ID, email=SYSTEM_ADMIN_EMAIL)
-        db_session.add(user)
-        db_session.commit()
-
-    yield user
+    yield get_or_create_sys_user(db_session)
 
 
 @pytest.fixture()
@@ -65,6 +58,9 @@ def loaded_db(db_service, sys_user) -> Session:
 
     # cleanup
     db_session.rollback()
+
+    # cleanup history records
+    db_session.execute(text("DELETE FROM ops_db_history"))
 
     db_session.commit()
     db_session.close()
