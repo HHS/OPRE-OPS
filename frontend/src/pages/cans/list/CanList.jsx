@@ -97,7 +97,7 @@ const CanList = () => {
                             fyBudgetRange={[minFYBudget, maxFYBudget]}
                         />
                     }
-                    SummaryCardsSection={<CANSummaryCards />}
+                    SummaryCardsSection={<CANSummaryCards fiscalYear={fiscalYear} />}
                 />
             </App>
         )
