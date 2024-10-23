@@ -1086,7 +1086,7 @@ paths:
         - $ref: "#/components/parameters/simulatedError"
         - name: can_ids
           in: query
-          description: Comma-separated list of CAN Ids (required)
+          description: List of CAN Ids (required)
           required: true
           schema:
             type: array
@@ -1109,7 +1109,7 @@ paths:
             example: [ 1, 5 ]
         - name: transfer
           in: query
-          description: List of CAN Method of Transfer (optional)
+          description: List of CAN Method of Transfers (optional)
           schema:
             type: array
             items:
@@ -1122,7 +1122,7 @@ paths:
             example: [ "DIRECT", "IAA" ]
         - name: portfolio
           in: query
-          description: List of portfolios (optional)
+          description: List of portfolio abbreviations (optional)
           schema:
             type: array
             items:
