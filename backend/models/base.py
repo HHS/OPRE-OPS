@@ -152,7 +152,7 @@ class BaseModel(Base):
                 else None
             )
         except marshmallow.exceptions.RegistryError:
-            logger.error("SafeUserSchema not found in marshmallow class registry")
+            logger.debug("SafeUserSchema not found in marshmallow class registry")
 
         return data
 

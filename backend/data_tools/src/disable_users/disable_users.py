@@ -2,6 +2,7 @@ import os
 import sys
 import time
 
+from data_tools.src.common.db import init_db_from_config
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.disable_users.queries import (
     ALL_ACTIVE_USER_SESSIONS_QUERY,
@@ -97,7 +98,7 @@ if __name__ == "__main__":
 
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
-    db_engine, db_metadata_obj = init_db(script_config)
+    db_engine, db_metadata_obj = init_db_from_config(script_config)
 
     event.listen(Mapper, "after_configured", setup_schema(BaseModel))
 

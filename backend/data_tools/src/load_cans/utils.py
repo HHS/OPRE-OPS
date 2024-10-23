@@ -216,4 +216,4 @@ def transform(data: DictReader, portfolios: List[Portfolio], session: Session, s
     logger.info("Data validation passed.")
 
     create_all_models(can_data, sys_user, session)
-    logger.info(f"Created models.")
+    logger.info(f"Finished loading models.")
