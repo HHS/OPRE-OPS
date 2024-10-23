@@ -30,24 +30,19 @@ def db_service(docker_ip, docker_services):
     return db_session, engine
 
 @pytest.fixture()
-def sys_user(db_service):
-    db_session, _ = db_service
-
-    yield get_or_create_sys_user(db_session)
-
-
-@pytest.fixture()
-def loaded_db(db_service, sys_user) -> Session:
+def loaded_db(db_service) -> Session:
     """Get SQLAlchemy Session."""
 
     db_session, engine = db_service
 
     @event.listens_for(db_session, "before_commit")
     def receive_before_commit(session: Session):
+        sys_user = get_or_create_sys_user(session)
         track_db_history_before(session, sys_user)
 
     @event.listens_for(db_session, "after_flush")
     def receive_after_flush(session: Session, flush_context):
+        sys_user = get_or_create_sys_user(session)
         track_db_history_after(session, sys_user)
 
     @event.listens_for(engine, "handle_error")
