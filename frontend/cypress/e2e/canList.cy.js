@@ -147,4 +147,10 @@ describe("CAN List", () => {
         cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();
         cy.get("button").should("have.class", "usa-current").contains("1");
     });
+
+    it("should display the can budget summary card", () => {
+        cy.get("#fiscal-year-select").select("2023");
+        cy.get("[data-cy='budget-summary-card']").should("exist")
+        cy.get("[data-cy='budget-summary-card']").contains("FY 2023 CANs Available Budget *")
+    });
 });
