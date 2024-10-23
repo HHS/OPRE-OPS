@@ -4,6 +4,7 @@ import CANPortfolioComboBox from "../../../../components/CANs/CANPortfolioComboB
 import CANTransferComboBox from "../../../../components/CANs/CANTransferComboBox";
 import FilterButton from "../../../../components/UI/FilterButton";
 import useCANFilterButton from "./CANFilterButton.hooks";
+import CANFYBudgetRangeSlider from "../../../../components/CANs/CANFYBudgetRangeSlider";
 
 /**
  * @typedef {import('./CANFilterTypes').FilterOption} FilterOption
@@ -14,11 +15,23 @@ import useCANFilterButton from "./CANFilterButton.hooks";
  * @param {import ('./CANFilterTypes').Filters} props.filters - The current filters.
  * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {FilterOption[]} props.portfolioOptions - The portfolio options.
+ * @param {[number, number]} props.fyBudgetRange - The fiscal year budget range.
+ * @param {boolean} props.disabled - Whether the button is disabled.
  * @returns {JSX.Element} - The CAN filter button.
  */
-export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
-    const { activePeriod, setActivePeriod, transfer, setTransfer, portfolio, setPortfolio, applyFilter, resetFilter } =
-        useCANFilterButton(filters, setFilters);
+export const CANFilterButton = ({ filters, setFilters, portfolioOptions, fyBudgetRange, disabled }) => {
+    const {
+        activePeriod,
+        setActivePeriod,
+        transfer,
+        setTransfer,
+        portfolio,
+        setPortfolio,
+        budget,
+        setBudget,
+        applyFilter,
+        resetFilter
+    } = useCANFilterButton(filters, setFilters, fyBudgetRange);
     const fieldStyles = "usa-fieldset margin-bottom-205";
     const legendStyles = "usa-legend font-sans-3xs margin-top-0 padding-bottom-1 text-base-dark";
 
@@ -56,6 +69,17 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
                 legendClassname={legendStyles}
                 overrideStyles={{ width: "22.7rem" }}
             />
+        </fieldset>,
+        <fieldset
+            key="field-4"
+            className={fieldStyles}
+        >
+            <CANFYBudgetRangeSlider
+                budget={budget}
+                setBudget={setBudget}
+                legendClassname={legendStyles}
+                fyBudgetRange={fyBudgetRange}
+            />
         </fieldset>
     ];
 
@@ -66,6 +90,7 @@ export const CANFilterButton = ({ filters, setFilters, portfolioOptions }) => {
             applyFilter={applyFilter}
             resetFilter={resetFilter}
             fieldsetList={fieldsetList}
+            disabled={disabled}
         />
     );
 };

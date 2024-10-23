@@ -9,9 +9,10 @@ import customStyles from "./FilterButton.module.css";
  * @param {Function} props.applyFilter - A function to call after clicking the Apply button.
  * @param {Function} props.resetFilter - A function to call after clicking the Reset button.
  * @param {Object []} props.fieldsetList - An array of fieldsets to display in the modal.
+ * @param {boolean} props.disabled - Whether the button is disabled.
  * @returns {JSX.Element} - The procurement shop select element.
  */
-export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
+export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled = false }) => {
     const [showModal, setShowModal] = React.useState(false);
 
     const handleApplyFilter = () => {
@@ -35,10 +36,11 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList }) => {
                     !showModal ? "usa-button--outline text-primary" : "bg-primary-darker"
                 } display-flex flex-align-center margin-right-0 ${customStyles.filterButton}`}
                 onClick={() => (showModal ? setShowModal(false) : setShowModal(true))}
+                disabled={disabled}
             >
                 <svg
-                    className="height-2 width-2 margin-right-05 hover: cursor-pointer"
-                    style={!showModal ? { fill: "#005EA2" } : { fill: "white" }}
+                    className={`height-2 width-2 margin-right-05 ${!disabled ? "cursor-pointer" : ""}`}
+                    style={disabled ? { fill: "grey" } : !showModal ? { fill: "#005EA2" } : { fill: "white" }}
                 >
                     <use xlinkHref={`${icons}#filter_list`}></use>
                 </svg>
