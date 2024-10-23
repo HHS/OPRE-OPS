@@ -15,7 +15,7 @@ async def check_auth_services() -> dict:
 
     resp = {"status_code": None, "alarm_level": 0}
     try:
-        authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["logingov"]
+        authlib_client_config = current_app.config["AUTHLIB_OAUTH_CLIENTS"]["hhsams"]
         server_metadata_url = authlib_client_config["server_metadata_url"]
         r = requests.get(server_metadata_url, timeout=10)
         resp["status_code"] = r.status_code
