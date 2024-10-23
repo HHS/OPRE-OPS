@@ -42,7 +42,5 @@ def get_or_create_sys_user(session: Session) -> User:
 
     if not user:
         user = User(email=SYSTEM_ADMIN_EMAIL, oidc_id=UUID(SYSTEM_ADMIN_OIDC_ID))
-        # session.add(user)
-        # session.commit()
 
     return user
