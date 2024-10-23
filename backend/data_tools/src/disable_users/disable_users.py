@@ -67,9 +67,11 @@ def disable_user(se, user_id, system_admin_id):
 
 def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
     """Update the status of disabled users in the database."""
-    logger.info("Checking for System User.")
-    system_admin = get_or_create_sys_user(conn.engine)
+
     with Session(conn) as se:
+        logger.info("Checking for System User.")
+        system_admin = get_or_create_sys_user(se)
+
         system_admin_id = system_admin.id
 
         logger.info("Fetching inactive users.")
