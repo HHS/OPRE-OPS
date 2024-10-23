@@ -10,8 +10,8 @@ import FiscalYear from "../../../components/UI/FiscalYear";
 import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
+import { sortAndFilterCANs, getPortfolioOptions, getSortedFYBudgets } from "./CanList.helpers";
 import CANFilterTags from "./CANFilterTags";
-import { getPortfolioOptions, sortAndFilterCANs } from "./CanList.helpers";
 
 /**
  * Page for the CAN List.
@@ -29,10 +29,17 @@ const CanList = () => {
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
-        portfolio: []
+        portfolio: [],
+        budget: []
     });
-    const sortedCANs = sortAndFilterCANs(canList, myCANsUrl, activeUser, filters) || [];
+    const filteredCANsByFiscalYear = React.useMemo(() => {
+        if (!fiscalYear || !canList) return [];
+        return canList.filter((can) => can.funding_details.fiscal_year === fiscalYear);
+    }, [canList, fiscalYear]);
+    const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters) || [];
     const portfolioOptions = getPortfolioOptions(canList);
+    const sortedFYBudgets = getSortedFYBudgets(filteredCANsByFiscalYear);
+    const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
 
     if (isLoading) {
         return (
@@ -44,7 +51,6 @@ const CanList = () => {
     if (isError) {
         return <ErrorPage />;
     }
-
     const CANFiscalYearSelect = () => {
         return (
             <FiscalYear
@@ -77,6 +83,8 @@ const CanList = () => {
                             filters={filters}
                             setFilters={setFilters}
                             portfolioOptions={portfolioOptions}
+                            fyBudgetRange={[minFYBudget, maxFYBudget]}
+                            disabled={filteredCANsByFiscalYear.length === 0}
                         />
                     }
                     FYSelect={<CANFiscalYearSelect />}
@@ -84,6 +92,7 @@ const CanList = () => {
                         <CANFilterTags
                             filters={filters}
                             setFilters={setFilters}
+                            fyBudgetRange={[minFYBudget, maxFYBudget]}
                         />
                     }
                 />

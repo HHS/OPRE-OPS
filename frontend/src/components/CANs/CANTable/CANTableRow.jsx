@@ -69,16 +69,20 @@ const CANTableRow = ({
             <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
             <td>{convertCodeForDisplay("methodOfTransfer", transfer)}</td>
-            <td>
-                <CurrencyFormat
-                    value={fyBudget}
-                    displayType={"text"}
-                    thousandSeparator={true}
-                    prefix={"$"}
-                    decimalScale={getDecimalScale(fyBudget)}
-                    fixedDecimalScale={true}
-                />
-            </td>
+            {fyBudget === 0 ? (
+                <td>TBD</td>
+            ) : (
+                <td>
+                    <CurrencyFormat
+                        value={fyBudget}
+                        displayType={"text"}
+                        thousandSeparator={true}
+                        prefix={"$"}
+                        decimalScale={getDecimalScale(fyBudget)}
+                        fixedDecimalScale={true}
+                    />
+                </td>
+            )}
             <td>
                 <CurrencyFormat
                     value={availableFunds}
