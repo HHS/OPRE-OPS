@@ -2,7 +2,8 @@ import logging
 import os
 
 import json5
-from data_tools.src.common.utils import get_config, init_db
+from data_tools.src.common.db import init_db
+from data_tools.src.common.utils import get_config
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
