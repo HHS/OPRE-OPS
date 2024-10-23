@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import List
 
 from loguru import logger
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from models import CAN, BaseModel, CANFundingDetails, CANFundingSource, CANMethodOfTransfer, Portfolio, User
@@ -85,82 +86,92 @@ def validate_all(data: List[CANData]) -> bool:
     """
     return sum(1 for d in data if validate_data(d)) == len(data)
 
-def create_models(data: CANData, sys_user: User, portfolio_ref_data: List[Portfolio]) -> List[BaseModel]:
+def create_models(data: CANData, sys_user: User, session: Session) -> None:
     """
-    Convert a CanData instance to a list of BaseModel instances.
+    Convert a CanData instance to a BaseModel instance.
 
     :param data: The CanData instance to convert.
     :param sys_user: The system user to use.
-    :param portfolio_ref_data: A list of Portfolio instances to use as reference data.
+    :param session: The database session to use.
 
     :return: A list of BaseModel instances.
     """
     logger.debug(f"Creating models for {data}")
 
-    models: List[BaseModel] = []
     try:
-        portfolio = next(p for p in portfolio_ref_data if p.abbreviation == data.PORTFOLIO)
+        portfolio = session.execute(select(Portfolio).where(Portfolio.abbreviation == data.PORTFOLIO)).scalar_one_or_none()
         if not portfolio:
             raise ValueError(f"Portfolio not found for {data.PORTFOLIO}")
 
-        funding_details = CANFundingDetails(
-            fiscal_year=int(data.FUND[6:10]),
-            fund_code=data.FUND,
-            allowance=data.ALLOWANCE,
-            sub_allowance=data.SUB_ALLOWANCE,
-            allotment=data.ALLOTMENT_ORG,
-            appropriation="-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR[0:2] or "", data.APPROP_POSTFIX or ""]),
-            method_of_transfer=CANMethodOfTransfer[data.METHOD_OF_TRANSFER],
-            funding_source=CANFundingSource[data.FUNDING_SOURCE],
-            created_by=sys_user.id,
-        )
-
         can = CAN(
-            id=data.SYS_CAN_ID,
+            id=data.SYS_CAN_ID if data.SYS_CAN_ID else None,
             number=data.CAN_NBR,
             description=data.CAN_DESCRIPTION,
             nick_name=data.NICK_NAME,
             created_by=sys_user.id,
         )
 
-        can.funding_details = funding_details
         can.portfolio = portfolio
 
-        models.append(can)
-        models.append(funding_details)
+        # get or create funding details
+        fiscal_year = int(data.FUND[6:10])
+        fund_code = data.FUND
+        allowance = data.ALLOWANCE
+        sub_allowance = data.SUB_ALLOWANCE
+        allotment = data.ALLOTMENT_ORG
+        appropriation = "-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR[0:2] or "", data.APPROP_POSTFIX or ""])
+        method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
+        funding_source = CANFundingSource[data.FUNDING_SOURCE]
+
+        existing_funding_details = session.execute(select(CANFundingDetails).where(
+            and_(
+                CANFundingDetails.fiscal_year == fiscal_year,
+                CANFundingDetails.fund_code == fund_code,
+                CANFundingDetails.allowance == allowance,
+                CANFundingDetails.sub_allowance == sub_allowance,
+                CANFundingDetails.allotment == allotment,
+                CANFundingDetails.appropriation == appropriation,
+                CANFundingDetails.method_of_transfer == method_of_transfer,
+                CANFundingDetails.funding_source == funding_source,
+            ))).scalar_one_or_none()
+
+        if not existing_funding_details:
+            funding_details = CANFundingDetails(
+                fiscal_year=fiscal_year,
+                fund_code=fund_code,
+                allowance=allowance,
+                sub_allowance=sub_allowance,
+                allotment=allotment,
+                appropriation=appropriation,
+                method_of_transfer=method_of_transfer,
+                funding_source=funding_source,
+                created_by=sys_user.id,
+            )
+            session.add(funding_details)
+            session.commit()
+            can.funding_details = funding_details
+        else:
+            can.funding_details = existing_funding_details
+
+        session.merge(can)
+        session.commit()
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e
-    return models
 
-def create_all_models(data: List[CANData], sys_user: User, portfolio_ref_data: List[Portfolio]) -> List[BaseModel]:
+def create_all_models(data: List[CANData], sys_user: User, session: Session) -> None:
     """
     Convert a list of CanData instances to a list of BaseModel instances.
 
     :param data: The list of CanData instances to convert.
-    :param portfolio_ref_data: A list of Portfolio instances to use as reference data.
+    :param sys_user: The system user to use.
+    :param session: The database session to use.
 
     :return: A list of BaseModel instances.
     """
-    return [m for d in data for m in create_models(d, sys_user, portfolio_ref_data)]
+    for d in data:
+        create_models(d, sys_user, session)
 
-def persist_models(models: List[BaseModel], session) -> None:
-    """
-    Persist a list of models to the database.
-
-    :param models: The list of models to persist.
-    :param session: The database session to use.
-    """
-    for model in models:
-        obj = session.get(type(model), model.id)
-
-        if obj:
-            session.merge(model)
-        else:
-            session.add(model)
-    session.commit()
-    logger.info(f"Persisted {len(models)} models.")
-    return None
 
 def create_all_can_data(data: List[dict]) -> List[CANData]:
     """
@@ -197,8 +208,50 @@ def transform(data: DictReader, portfolios: List[Portfolio], session: Session, s
 
     logger.info("Data validation passed.")
 
-    models = create_all_models(can_data, sys_user, portfolios)
-    logger.info(f"Created {len(models)} models.")
+    create_all_models(can_data, sys_user, session)
+    logger.info(f"Created models.")
 
-    persist_models(models, session)
-    logger.info("Persisted models.")
+
+def create_can_funding_details_model(data: CANData, sys_user: User, session: Session) -> BaseModel:
+    logger.debug(f"Creating model for {data}")
+
+    try:
+        fiscal_year = int(data.FUND[6:10])
+        fund_code = data.FUND
+        allowance = data.ALLOWANCE
+        sub_allowance = data.SUB_ALLOWANCE
+        allotment = data.ALLOTMENT_ORG
+        appropriation = "-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR[0:2] or "", data.APPROP_POSTFIX or ""])
+        method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
+        funding_source = CANFundingSource[data.FUNDING_SOURCE]
+
+        existing_funding_details = session.execute(select(CANFundingDetails).where(
+            and_(
+                CANFundingDetails.fiscal_year == fiscal_year,
+                CANFundingDetails.fund_code == fund_code,
+                CANFundingDetails.allowance == allowance,
+                CANFundingDetails.sub_allowance == sub_allowance,
+                CANFundingDetails.allotment == allotment,
+                CANFundingDetails.appropriation == appropriation,
+                CANFundingDetails.method_of_transfer == method_of_transfer,
+                CANFundingDetails.funding_source == funding_source,
+            ))).scalar_one_or_none()
+
+        if not existing_funding_details:
+            funding_details = CANFundingDetails(
+                fiscal_year=fiscal_year,
+                fund_code=fund_code,
+                allowance=allowance,
+                sub_allowance=sub_allowance,
+                allotment=allotment,
+                appropriation=appropriation,
+                method_of_transfer=method_of_transfer,
+                funding_source=funding_source,
+                created_by=sys_user.id,
+            )
+            return funding_details
+        else:
+            return existing_funding_details
+    except Exception as e:
+        logger.error(f"Error creating model for {data}")
+        raise e
