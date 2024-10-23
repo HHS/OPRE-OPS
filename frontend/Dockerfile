@@ -7,7 +7,6 @@ WORKDIR /home/app
 
 COPY --chown=app:app ./package.json ./bun.lockb /home/app/
 
-# RUN bun install --production --frozen-lockfile
 RUN bun install
 
 COPY --chown=app:app index.html /home/app/
