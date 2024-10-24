@@ -5,7 +5,6 @@ import BudgetSummaryCard from "./BudgetSummaryCard";
 describe("BudgetSummaryCard", () => {
     const defaultProps = {
         title: "Budget Summary",
-        remainingBudget: 5000,
         totalSpending: 15000,
         totalFunding: 20000
     };
@@ -21,7 +20,6 @@ describe("BudgetSummaryCard", () => {
     it("displays over budget warning when spending exceeds funding", () => {
         const overBudgetProps = {
             ...defaultProps,
-            remainingBudget: -5000,
             totalSpending: 25000,
             totalFunding: 20000
         };
@@ -44,7 +42,6 @@ describe("BudgetSummaryCard", () => {
     it("handles zero values correctly", () => {
         const zeroProps = {
             ...defaultProps,
-            remainingBudget: 0,
             totalSpending: 0,
             totalFunding: 0
         };

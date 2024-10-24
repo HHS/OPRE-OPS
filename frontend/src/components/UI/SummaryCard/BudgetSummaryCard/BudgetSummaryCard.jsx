@@ -1,7 +1,6 @@
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
-import { calculatePercent } from "../../../../helpers/utils";
 import CANFundingBar from "../../../CANs/CANFundingBar";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import RoundedBox from "../../RoundedBox";
@@ -10,31 +9,23 @@ import Tag from "../../Tag";
  * @component
  * @param {Object} props - Properties passed to component
  * @param {string} props.title - The title of the card.
- * @param {number} props.remainingBudget - The remaining budget.
  * @param {number} props.totalSpending - The total spending.
  * @param {number} props.totalFunding - The total funding.
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
-const BudgetSummaryCard = ({ title, remainingBudget, totalSpending, totalFunding }) => {
+const BudgetSummaryCard = ({ title, totalSpending, totalFunding }) => {
     const overBudget = totalSpending > totalFunding;
-    const canFundingBarData = [
+    const remainingBudget = overBudget ? 0 : totalFunding - totalSpending;
+    const graphData = [
         {
             id: 1,
-            label: "Total Spending",
             value: totalSpending,
-            color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-2)",
-            tagStyle: "darkTextWhiteBackground",
-            tagStyleActive: overBudget ? "lightTextRedBackground" : "lightTextGreenBackground",
-            percent: `${calculatePercent(totalSpending, totalFunding)}%`
+            color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-2)"
         },
         {
             id: 2,
-            label: `Remaining Budget`,
             value: remainingBudget,
-            color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-1)",
-            tagStyle: "darkTextWhiteBackground",
-            tagStyleActive: overBudget ? "lightTextRedBackground" : "darkTextGreyBackground",
-            percent: `${calculatePercent(remainingBudget, totalFunding)}%`
+            color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-1)"
         }
     ];
 
@@ -74,7 +65,7 @@ const BudgetSummaryCard = ({ title, remainingBudget, totalSpending, totalFunding
                 className="margin-top-2"
             >
                 <CANFundingBar
-                    data={canFundingBarData}
+                    data={graphData}
                     isStriped={true}
                     overBudget={overBudget}
                 />
