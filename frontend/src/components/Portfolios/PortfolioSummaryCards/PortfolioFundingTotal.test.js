@@ -6,7 +6,7 @@ import PortfolioFundingTotal from "./PortfolioFundingTotal";
 it("renders without crashing", () => {
     render(
         <Provider store={store}>
-            <PortfolioFundingTotal fiscalYear="2023" />
+            <PortfolioFundingTotal fiscalYear={2023} />
         </Provider>
     );
 });

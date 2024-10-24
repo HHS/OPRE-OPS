@@ -6,7 +6,7 @@ import { calculatePercent } from "../../../helpers/utils";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import RoundedBox from "../../UI/RoundedBox";
 import Tag from "../../UI/Tag";
-import CANFundingBar from "../CANFundingBar";
+import LineGraph from "../../UI/DataViz/LineGraph";
 
 /**
  * A component that displays funding information for a CAN
@@ -93,7 +93,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
                 id="currency-summary-card"
                 className="margin-top-2"
             >
-                <CANFundingBar
+                <LineGraph
                     data={canFundingBarData}
                     isStriped={true}
                     overBudget={overBudget}

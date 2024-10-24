@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./styles.module.css";
 import CurrencyFormat from "react-currency-format";
-import CANFundingBar from "../CANFundingBar/CANFundingBar";
+import LineGraph from "../../UI/DataViz/LineGraph";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import Tag from "../../UI/Tag/Tag";
@@ -103,7 +103,7 @@ const CANFundingYTD = ({
                 />
             </div>
             <div className={`margin-top-2 ${styles.barBox}`}>
-                <CANFundingBar
+                <LineGraph
                     setActiveId={setActiveId}
                     data={data}
                 />

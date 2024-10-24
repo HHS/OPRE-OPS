@@ -1,7 +1,7 @@
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
-import CANFundingBar from "../../../CANs/CANFundingBar";
+import LineGraph from "../../DataViz/LineGraph";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
@@ -64,7 +64,7 @@ const BudgetSummaryCard = ({ title, totalSpending, totalFunding }) => {
                 id="currency-summary-card"
                 className="margin-top-2"
             >
-                <CANFundingBar
+                <LineGraph
                     data={graphData}
                     isStriped={true}
                     overBudget={overBudget}

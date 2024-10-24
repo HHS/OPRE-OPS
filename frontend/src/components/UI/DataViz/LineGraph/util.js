@@ -1,3 +1,14 @@
+/**
+ * @typedef {Object} Data
+ * @property {number} expected The expected value
+ * @property {number} received The received value
+ */
+
+/**
+ *
+ * @param {Data} data
+ * @returns {number} The ratio of received to expected
+ */
 export const calculateRatio = (data) => {
     if (!("expected" in data) || !("received" in data)) {
         console.error("data is malformed.");

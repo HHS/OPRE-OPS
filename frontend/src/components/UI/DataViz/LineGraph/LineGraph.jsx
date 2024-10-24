@@ -11,7 +11,7 @@ import { calculateRatio } from "./util";
  */
 
 /**
- * @description A bar that displays the funding status of a CAN.
+ * @description A line graph that shows two bars side by side.
  * @component
  * @param {Object} props
  * @param {Data[]} props.data
@@ -20,19 +20,19 @@ import { calculateRatio } from "./util";
  * @param {boolean} [props.overBudget]
  * @returns {JSX.Element}
  */
-const CANFundingBar = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
+const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
     const [ratio, setRatio] = useState(1);
-    const received_funding = data[0].value;
-    const expected_funding = data[1].value;
+    const leftBar = data[0].value;
+    const rightBar = data[1].value;
 
     useEffect(() => {
-        const calculatedRatio = calculateRatio({ received: received_funding, expected: expected_funding });
+        const calculatedRatio = calculateRatio({ received: leftBar, expected: rightBar });
 
         // css/flex will throw a warning here if depending on the data calculatedRatio is NaN
         if (calculatedRatio !== undefined && !Number.isNaN(calculatedRatio)) {
             setRatio(calculatedRatio);
         }
-    }, [received_funding, expected_funding]);
+    }, [leftBar, rightBar]);
 
     return (
         <div className={styles.barBox}>
@@ -65,10 +65,10 @@ const CANFundingBar = ({ data = [], setActiveId = () => {}, isStriped = false, o
     );
 };
 
-CANFundingBar.propTypes = {
+LineGraph.propTypes = {
     data: PropTypes.array.isRequired,
     setActiveId: PropTypes.func,
     isStriped: PropTypes.bool,
     overBudget: PropTypes.bool
 };
-export default CANFundingBar;
+export default LineGraph;

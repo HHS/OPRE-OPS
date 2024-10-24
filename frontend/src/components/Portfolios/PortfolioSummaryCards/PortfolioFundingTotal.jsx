@@ -1,11 +1,11 @@
-import React from "react";
-import { useSelector } from "react-redux";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import CurrencyFormat from "react-currency-format";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard";
-import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
+import { useSelector } from "react-redux";
 import { calculatePercent } from "../../../helpers/utils";
+import LineGraph from "../../UI/DataViz/LineGraph";
+import CurrencySummaryCard from "../../UI/SummaryCard/CurrencySummaryCard";
 import Tag from "../../UI/Tag/Tag";
 
 const PortfolioFundingTotal = () => {
@@ -82,7 +82,7 @@ const PortfolioFundingTotal = () => {
                 id="currency-summary-card"
                 className="margin-top-2"
             >
-                <CANFundingBar
+                <LineGraph
                     setActiveId={setActiveId}
                     data={data}
                 />

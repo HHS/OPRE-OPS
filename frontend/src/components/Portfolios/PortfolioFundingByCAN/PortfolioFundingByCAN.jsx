@@ -5,10 +5,10 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faSquare } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 
-import { ResponsiveDonutWithInnerPercent } from "../../UI/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
+import { ResponsiveDonutWithInnerPercent } from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
 
 import constants from "../../../constants";
-import CustomLayerComponent from "../../UI/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
+import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 
 import cssClasses from "./styles.module.css";

@@ -3,16 +3,16 @@ import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { useGetCansQuery } from "../../../api/opsAPI";
 import App from "../../../App";
+import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import FiscalYear from "../../../components/UI/FiscalYear";
 import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
-import { sortAndFilterCANs, getPortfolioOptions, getSortedFYBudgets } from "./CanList.helpers";
 import CANFilterTags from "./CANFilterTags";
-import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
+import CANFiscalYearSelect from "./CANFiscalYearSelect";
+import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
 
 /**
  * Page for the CAN List.
@@ -52,14 +52,6 @@ const CanList = () => {
     if (isError) {
         return <ErrorPage />;
     }
-    const CANFiscalYearSelect = () => {
-        return (
-            <FiscalYear
-                fiscalYear={fiscalYear}
-                handleChangeFiscalYear={setSelectedFiscalYear}
-            />
-        );
-    };
 
     // TODO: remove flag once CANS are ready
     return (
@@ -89,7 +81,12 @@ const CanList = () => {
                             disabled={filteredCANsByFiscalYear.length === 0}
                         />
                     }
-                    FYSelect={<CANFiscalYearSelect />}
+                    FYSelect={
+                        <CANFiscalYearSelect
+                            fiscalYear={fiscalYear}
+                            setSelectedFiscalYear={setSelectedFiscalYear}
+                        />
+                    }
                     FilterTags={
                         <CANFilterTags
                             filters={filters}

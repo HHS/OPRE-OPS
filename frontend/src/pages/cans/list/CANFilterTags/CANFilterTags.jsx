@@ -1,13 +1,14 @@
 import _ from "lodash";
 import FilterTags from "../../../../components/UI/FilterTags";
 import FilterTagsWrapper from "../../../../components/UI/FilterTags/FilterTagsWrapper";
-import { useTagsList, removeFilter } from "./CANFilterTags.hooks";
+import { removeFilter, useTagsList } from "./CANFilterTags.hooks";
 
 /**
  * A filter tags component.
+ * @typedef {import('./CANFilterTags.hooks').Filters} Filters
  * @param {Object} props - The component props.
- * @param {import('./CANFilterTags.hooks').Filters} props.filters - The current filters.
- * @param {() => void} props.setFilters - A function to call to set the filters.
+ * @param {Filters} props.filters - The filters.
+ * @param {Function} props.setFilters - A function to call to set the filters.
  * @param {[number, number]} props.fyBudgetRange - The initial budget range.
  * @returns {JSX.Element|null} The filter tags component or null if no tags.
  */

@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import CurrencySummaryCard from "../../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencySummaryCard from "../../../UI/SummaryCard/CurrencySummaryCard";
 import CurrencyFormat from "react-currency-format";
 import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
 
