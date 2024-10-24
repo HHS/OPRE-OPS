@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import CurrencyFormat from "react-currency-format";
 import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
-import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
+import LineGraph from "../../UI/DataViz/LineGraph";
 import { calculatePercent } from "../../../helpers/utils";
 import Tag from "../../UI/Tag/Tag";
 import { getResearchFunding } from "./getResearchProjectsFunding.js";
@@ -97,7 +97,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
                 id="currency-summary-card"
                 className="margin-top-2"
             >
-                <CANFundingBar
+                <LineGraph
                     setActiveId={setActiveId}
                     data={data}
                 />

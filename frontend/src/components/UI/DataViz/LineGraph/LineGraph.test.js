@@ -1,8 +1,8 @@
-import store from "../../../store";
-import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
-import CANFundingBar from "./CANFundingBar";
+import { Provider } from "react-redux";
 import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
+import store from "../../../store";
+import LineGraph from "./LineGraph";
 
 const mockFn = TestApplicationContext.helpers().mockFn;
 
@@ -12,36 +12,28 @@ it("renders without crashing", () => {
     const data = [
         {
             id: 1,
-            label: "Available",
-            value: "10000",
-            color: "#C07B96",
-            percent: "10%"
+            value: 10_000,
+            color: "#C07B96"
         },
         {
             id: 2,
-            label: "Planned",
-            value: "12000",
-            color: "#336A90",
-            percent: "12%"
+            value: 12_000,
+            color: "#336A90"
         },
         {
             id: 3,
-            label: "Executing",
-            value: "8000",
-            color: "#E5A000",
-            percent: "8%"
+            value: 8_000,
+            color: "#E5A000"
         },
         {
             id: 4,
-            label: "Obligated",
-            value: "6000",
-            color: "#3A835B",
-            percent: "6%"
+            value: 6_000,
+            color: "#3A835B"
         }
     ];
     render(
         <Provider store={store}>
-            <CANFundingBar
+            <LineGraph
                 setActiveId={setActiveId}
                 data={data}
             />
