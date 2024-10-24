@@ -95,8 +95,8 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
         if agreement.created_by_user:
             oidc_ids.add(str(agreement.created_by_user.oidc_id))
         if agreement.created_by:
-            user = current_app.db_session.get(User, agreement.created_by)
-            oidc_ids.add(str(user.oidc_id))
+            agreement_creator = current_app.db_session.get(User, agreement.created_by)
+            oidc_ids.add(str(agreement_creator.oidc_id))
         if agreement.project_officer:
             oidc_ids.add(str(agreement.project_officer.oidc_id))
         oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
