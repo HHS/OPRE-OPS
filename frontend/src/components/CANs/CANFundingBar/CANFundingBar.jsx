@@ -2,11 +2,19 @@ import PropTypes from "prop-types";
 import styles from "./styles.module.scss";
 import { useEffect, useState } from "react";
 import { calculateRatio } from "./util";
+
 /**
- *
+ * @typedef {Object} Data
+ * @property {number} id
+ * @property {number} value
+ * @property {string} color
+ */
+
+/**
+ * @description A bar that displays the funding status of a CAN.
  * @component
  * @param {Object} props
- * @param {Object[]} props.data
+ * @param {Data[]} props.data
  * @param {Function} [props.setActiveId]
  * @param {boolean} [props.isStriped]
  * @param {boolean} [props.overBudget]
