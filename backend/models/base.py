@@ -6,11 +6,12 @@ from typing import Optional, cast
 
 import marshmallow
 import sqlalchemy
+from loguru import logger
 from marshmallow import fields
 from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Sequence, func
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column, object_session, registry
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Sequence, event, func
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, mapper, object_session, registry
 from typing_extensions import Any
 
 Base = declarative_base()
@@ -21,7 +22,8 @@ from marshmallow_sqlalchemy import ModelConversionError, SQLAlchemyAutoSchema
 
 def setup_schema(base: Base) -> callable:
     def setup_schema_fn():
-        for class_ in base.registry._class_registry.values():
+        classes = list(base.registry._class_registry.values())
+        for class_ in classes:
             if hasattr(class_, "__tablename__"):
                 if class_.__name__.endswith("Schema"):
                     raise ModelConversionError(
@@ -76,7 +78,6 @@ from sqlalchemy_continuum import make_versioned
 
 # init sqlalchemy_continuum
 make_versioned(user_cls=None)
-
 
 class BaseModel(Base):
     __versioned__ = {}
@@ -133,13 +134,25 @@ class BaseModel(Base):
         data = schema.dump(self)
         data["display_name"] = self.display_name
 
-        user_schema = marshmallow.class_registry.get_class("SafeUserSchema")()
-        data["created_by_user"] = (
-            user_schema.dump(self.created_by_user) if self.created_by_user else None
-        )
-        data["updated_by_user"] = (
-            user_schema.dump(self.updated_by_user) if self.updated_by_user else None
-        )
+        # SafeUserSchema is not always available in the marshmallow class registry
+        # It is primarily used in the Flask API as a kluge for responses that are not
+        # using custom marshmallow schemas.
+        try:
+            _safe_user_schema_class = marshmallow.class_registry.get_class("SafeUserSchema")
+
+            user_schema = _safe_user_schema_class()
+            data["created_by_user"] = (
+                user_schema.dump(self.created_by_user)
+                if self.created_by_user
+                else None
+            )
+            data["updated_by_user"] = (
+                user_schema.dump(self.updated_by_user)
+                if self.updated_by_user
+                else None
+            )
+        except marshmallow.exceptions.RegistryError:
+            logger.debug("SafeUserSchema not found in marshmallow class registry")
 
         return data
 

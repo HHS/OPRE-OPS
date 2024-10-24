@@ -2,7 +2,8 @@ import logging
 import os
 
 import json5
-from data_tools.src.common.utils import get_config, init_db
+from data_tools.src.common.db import init_db, init_db_from_config
+from data_tools.src.common.utils import get_config
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
 
-    db_engine, db_metadata_obj = init_db(script_config)
+    db_engine, db_metadata_obj = init_db_from_config(script_config)
 
     global_data = get_data_to_import()
 

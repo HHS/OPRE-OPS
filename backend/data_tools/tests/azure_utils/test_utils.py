@@ -32,7 +32,7 @@ def test_get_csv(mocker):
     assert data[2]["name"] == "DIV3"
 
     # Test with a local file
-    result = get_csv("test_csv/can.tsv")
+    result = get_csv("test_csv/can_invalid.tsv")
     assert result is not None
     data = list(result)
     assert len(data) == 17
