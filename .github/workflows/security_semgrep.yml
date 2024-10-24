@@ -9,10 +9,10 @@ jobs:
     name: Semgrep Analyze
     runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep@sha256:25b0692015c29b7b520517da6356c521aff9691fad0b56df69f66bfaf9f0d20c # 1.47.0
+      image: returntocorp/semgrep@sha256:dc23483743732ccad9cde1a5070d6fd46bae0f383af37cf5c206aa61aeaee95e # 1.47.0
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       # We've changed the behavior a little, instead of forcing a fail on `semgrep scan` step
       # we force the upload, and manage any results in the sencondary CodeQL Analysis of the
