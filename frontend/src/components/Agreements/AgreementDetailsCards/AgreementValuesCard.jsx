@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { ResponsiveBar } from "@nivo/bar";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencySummaryCard from "../../UI/SummaryCard/CurrencySummaryCard";
 import { fiscalYearFromDate } from "../../../helpers/utils";
 import constants from "../../../constants";
 const { barChartColors } = constants;

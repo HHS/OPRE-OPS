@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencySummaryCard from "../../UI/SummaryCard/CurrencySummaryCard";
 import Tag from "../../UI/Tag/Tag";
 
 const ProjectsAndAgreements = ({

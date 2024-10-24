@@ -1,4 +1,4 @@
-import store from "../../../store";
+import store from "../../../../store";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
 import CurrencySummaryCard from "./CurrencySummaryCard";
@@ -8,7 +8,7 @@ it("renders without crashing", () => {
         <Provider store={store}>
             <CurrencySummaryCard
                 headerText="blah blah"
-                amount="12345.78"
+                amount={12345.78}
             />
         </Provider>
     );

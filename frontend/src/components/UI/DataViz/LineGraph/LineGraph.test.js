@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { Provider } from "react-redux";
-import TestApplicationContext from "../../../applicationContext/TestApplicationContext";
-import store from "../../../store";
+import TestApplicationContext from "../../../../applicationContext/TestApplicationContext";
+import store from "../../../../store";
 import LineGraph from "./LineGraph";
 
 const mockFn = TestApplicationContext.helpers().mockFn;

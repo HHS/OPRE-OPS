@@ -1,15 +1,15 @@
 import PropTypes from "prop-types";
-import CurrencyWithSmallCents from "../CurrencyWithSmallCents/CurrencyWithSmallCents";
+import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import SummaryCard from "../SummaryCard";
 
 /**
- * Renders a summary card for a currency with a header text and an amount.
+ * @description Renders a summary card for a currency with a header text and an amount.
  * @param {Object} props - The component props.
  * @param {string} props.headerText - The header text to display on the card.
  * @param {number} props.amount - The amount of currency to display on the card.
- * @param {React.ReactNode} props.children - The children of the component.
+ * @param {React.ReactNode}[props.children] - The children of the component.
  * @param {Object} [props.rest] - The rest of the props to be spread on the root div element.
- * @returns {React.JSX.Element} - The CurrencySummaryCard component.
+ * @returns {JSX.Element} - The CurrencySummaryCard component.
  */
 const CurrencySummaryCard = ({ headerText, amount, children, ...rest }) => {
     return (

@@ -1,11 +1,11 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import CurrencyFormat from "react-currency-format";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
-import LineGraph from "../../UI/DataViz/LineGraph";
+import { useDispatch, useSelector } from "react-redux";
 import { calculatePercent } from "../../../helpers/utils";
+import LineGraph from "../../UI/DataViz/LineGraph";
+import CurrencySummaryCard from "../../UI/SummaryCard/CurrencySummaryCard";
 import Tag from "../../UI/Tag/Tag";
 import { getResearchFunding } from "./getResearchProjectsFunding.js";
 import { setResearchProjectFundingDetails } from "./ResearchProjectFundingSlice";
