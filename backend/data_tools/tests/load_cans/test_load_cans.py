@@ -196,7 +196,7 @@ def test_main(db_with_portfolios):
         main,
         [
             "--env",
-            "pytest",
+            "pytest_data_tools",
             "--input-csv",
             "test_csv/can_valid.tsv",
         ],
