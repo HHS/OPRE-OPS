@@ -62,6 +62,30 @@ describe("CAN List", () => {
             .find(".can-portfolio-combobox__option")
             .first()
             .click();
+        // move range slider via mouse event
+        cy.get(".sc-blHHSb").within(() => {
+            // Get the initial values
+            cy.get(".thumb.thumb-0").invoke("attr", "aria-valuenow").as("initialMin");
+            cy.get(".thumb.thumb-1").invoke("attr", "aria-valuenow").as("initialMax");
+
+            cy.get(".thumb.thumb-0").then(($el) => {
+                const width = $el.width();
+                const height = $el.height();
+                cy.wrap($el)
+                    .trigger("mousedown", { which: 1, pageX: 0, pageY: height / 2 })
+                    .trigger("mousemove", { which: 1, pageX: width * 0.2, pageY: height / 2 })
+                    .trigger("mouseup");
+            });
+
+            cy.get(".thumb.thumb-1").then(($el) => {
+                const width = $el.width();
+                const height = $el.height();
+                cy.wrap($el)
+                    .trigger("mousedown", { which: 1, pageX: width, pageY: height / 2 })
+                    .trigger("mousemove", { which: 1, pageX: width * 0.8, pageY: height / 2 })
+                    .trigger("mouseup");
+            });
+        });
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
 
@@ -70,28 +94,28 @@ describe("CAN List", () => {
         cy.get("svg[id='filter-tag-activePeriod']").should("exist");
         cy.get("svg[id='filter-tag-transfer']").should("exist");
         cy.get("svg[id='filter-tag-portfolio']").should("exist");
+        cy.get("svg[id='filter-tag-budget']").should("exist");
 
         cy.get("span").contains("1 Year").should("exist");
         cy.get("span").contains("Direct").should("exist");
-        cy.get("span").contains("HMRF").should("exist");
+        cy.get("span").contains("Child Care (CC)").should("exist");
+        cy.get("span").contains("$690,000 to $9,810,000").should("exist");
 
-        // check that the table is filtered correctly
-        // table should contain 6 rows
-
-        cy.get("tbody").find("tr").should("have.length", 3);
-
+        // No CANs found
+        cy.get("tbody").should("not.exist");
+        cy.get("p.text-center").contains("No CANs found").should("exist");
         // reset
         cy.get("button").contains("Filter").click();
         cy.get("button").contains("Reset").click();
-        cy.get("button").contains("Apply").click();
 
         // check that the table is filtered correctly
-        // table should have more than 5 rows
+        // table should have more than 3 rows
         /// check that the correct tags are displayed
         cy.get("div").contains("Filters Applied:").should("not.exist");
         cy.get("svg[id='filter-tag-activePeriod']").should("not.exist");
         cy.get("svg[id='filter-tag-transfer']").should("not.exist");
         cy.get("svg[id='filter-tag-portfolio']").should("not.exist");
+        cy.get("svg[id='filter-tag-budget']").should("not.exist");
 
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });

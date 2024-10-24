@@ -6,7 +6,7 @@ const constants = {
         const currentYear = currentDate.getFullYear();
         const currentFiscalYear = currentMonth >= 9 ? currentYear + 1 : currentYear;
         const years = [];
-        for (let i = currentFiscalYear - 5; i <= currentFiscalYear + 5; i++) {
+        for (let i = currentFiscalYear + 5; i >= currentFiscalYear - 5; i--) {
             years.push(i);
         }
         return years;

@@ -87,11 +87,29 @@ const applyAdditionalFilters = (cans, filters) => {
             )
         );
     }
+
     if (filters.portfolio && filters.portfolio.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
-            filters.portfolio?.some((portfolio) => portfolio.title.toUpperCase() === can.portfolio.abbreviation)
+            filters.portfolio?.some(
+                (portfolio) => portfolio.title == `${can.portfolio.name} (${can.portfolio.abbreviation})`
+            )
         );
     }
+
+    if (filters.budget && filters.budget.length > 0) {
+        filteredCANs = filteredCANs.filter((can) => {
+            // Include if funding_budgets is empty
+            if (can.funding_budgets.length === 0) return true;
+
+            return can.funding_budgets.some((budget) => {
+                // Include if budget is null
+                if (budget.budget === null) return true;
+
+                return budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1];
+            });
+        });
+    }
+
     // TODO: Add other filters here
     // Example:
     // if (filters.someOtherFilter && filters.someOtherFilter.length > 0) {
@@ -113,12 +131,29 @@ export const getPortfolioOptions = (cans) => {
         return [];
     }
     const portfolios = cans.reduce((acc, can) => {
-        acc.add(can.portfolio.abbreviation);
+        acc.add(`${can.portfolio.name} (${can.portfolio.abbreviation})`);
         return acc;
     }, new Set());
 
-    return Array.from(portfolios).map((portfolio, index) => ({
-        id: index,
-        title: portfolio
-    }));
+    return Array.from(portfolios)
+        .sort((a, b) => a.localeCompare(b))
+        .map((portfolio, index) => ({
+            id: index,
+            title: portfolio
+        }));
+};
+
+export const getSortedFYBudgets = (cans) => {
+    if (!cans || cans.length === 0) {
+        return [];
+    }
+
+    const funding_budgets = cans.reduce((acc, can) => {
+        acc.add(can.funding_budgets);
+        return acc;
+    }, new Set());
+
+    return Array.from(funding_budgets)
+        .flatMap((itemArray) => itemArray.map((item) => item.budget))
+        .sort((a, b) => a - b);
 };

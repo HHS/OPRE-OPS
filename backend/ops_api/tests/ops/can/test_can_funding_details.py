@@ -79,7 +79,7 @@ def test_basic_user_cannot_post_funding_details(basic_user_auth_client):
     input_data = {"fund_code": "AAXXXX20241DAD", "fiscal_year": 2024, "method_of_transfer": "DIRECT"}
     response = basic_user_auth_client.post("/api/v1/can-funding-details/", json=input_data)
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 def test_service_create_funding_details(loaded_db):
@@ -148,7 +148,7 @@ def test_basic_user_cannot_patch_funding_detailss(basic_user_auth_client):
     }
     response = basic_user_auth_client.patch("/api/v1/can-funding-details/517", json=update_data)
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 def test_service_patch_funding_details(loaded_db):
@@ -213,7 +213,7 @@ def test_basic_user_cannot_put_funding_details(basic_user_auth_client):
     update_data = {"method_of_transfer": "COST_SHARE", "fiscal_year": 2024, "fund_code": "AAXXXX20241DAD"}
     response = basic_user_auth_client.put("/api/v1/can-funding-details/517", json=update_data)
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -294,7 +294,7 @@ def test_can_delete_404(budget_team_auth_client):
 def test_basic_user_cannot_delete_cans(basic_user_auth_client):
     response = basic_user_auth_client.delete("/api/v1/can-funding-details/517")
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 def test_service_delete_can(loaded_db):
