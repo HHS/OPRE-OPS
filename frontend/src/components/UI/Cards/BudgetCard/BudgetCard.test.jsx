@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import BudgetSummaryCard from "./BudgetCard";
+import BudgetCard from "./BudgetCard";
 
 describe("BudgetSummaryCard", () => {
     const defaultProps = {
@@ -10,7 +10,7 @@ describe("BudgetSummaryCard", () => {
     };
 
     it("renders with all required props", () => {
-        render(<BudgetSummaryCard {...defaultProps} />);
+        render(<BudgetCard {...defaultProps} />);
 
         expect(screen.getByText("Budget Summary")).toBeInTheDocument();
         expect(screen.getByText("$ 5,000")).toBeInTheDocument();
@@ -24,13 +24,13 @@ describe("BudgetSummaryCard", () => {
             totalFunding: 20000
         };
 
-        render(<BudgetSummaryCard {...overBudgetProps} />);
+        render(<BudgetCard {...overBudgetProps} />);
 
         expect(screen.getByTitle("Over Budget")).toBeInTheDocument();
     });
 
     it("displays correct spending and funding amounts", () => {
-        render(<BudgetSummaryCard {...defaultProps} />);
+        render(<BudgetCard {...defaultProps} />);
 
         const spendingText = screen.getByText(/\$15,000/);
         const fundingText = screen.getByText(/\$20,000/);
@@ -46,7 +46,7 @@ describe("BudgetSummaryCard", () => {
             totalFunding: 0
         };
 
-        render(<BudgetSummaryCard {...zeroProps} />);
+        render(<BudgetCard {...zeroProps} />);
 
         expect(screen.queryAllByText("$0")).toHaveLength(2);
     });

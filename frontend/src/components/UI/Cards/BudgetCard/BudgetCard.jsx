@@ -5,15 +5,20 @@ import LineGraph from "../../DataViz/LineGraph";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
+
 /**
- * @component
- * @param {Object} props - Properties passed to component
- * @param {string} props.title - The title of the card.
- * @param {number} props.totalSpending - The total spending.
- * @param {number} props.totalFunding - The total funding.
+ * @typedef {Object} BudgetCardProps
+ * @property {string} title - The title of the card.
+ * @property {number} totalSpending - The total spending.
+ * @property {number} totalFunding - The total funding.
+ */
+
+/**
+ * @component BudgetCard
+ * @param {BudgetCardProps} props - Properties passed to component
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
-const BudgetSummaryCard = ({ title, totalSpending, totalFunding }) => {
+const BudgetCard = ({ title, totalSpending, totalFunding }) => {
     const overBudget = totalSpending > totalFunding;
     const remainingBudget = overBudget ? 0 : totalFunding - totalSpending;
     const graphData = [
@@ -93,4 +98,4 @@ const BudgetSummaryCard = ({ title, totalSpending, totalFunding }) => {
         </RoundedBox>
     );
 };
-export default BudgetSummaryCard;
+export default BudgetCard;
