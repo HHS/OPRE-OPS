@@ -11,11 +11,12 @@ import Card from "../Card";
  * @param {Object} [props.rest] - The rest of the props to be spread on the root div element.
  * @returns {JSX.Element} - The CurrencySummaryCard component.
  */
-const CurrencySummaryCard = ({ headerText, amount, children, ...rest }) => {
+const CurrencyCard = ({ headerText, amount, children, ...rest }) => {
     return (
         <Card
             title={headerText}
             dataCy="currency-summary-card"
+            style={{ padding: "20px 30px 30px 30px", height: "232px" }}
         >
             <div {...rest}>
                 {(amount || amount === 0) && (
@@ -31,10 +32,10 @@ const CurrencySummaryCard = ({ headerText, amount, children, ...rest }) => {
     );
 };
 
-CurrencySummaryCard.propTypes = {
+CurrencyCard.propTypes = {
     headerText: PropTypes.string.isRequired,
     amount: PropTypes.number.isRequired,
     children: PropTypes.node
 };
 
-export default CurrencySummaryCard;
+export default CurrencyCard;

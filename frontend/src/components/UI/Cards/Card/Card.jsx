@@ -2,8 +2,7 @@ import PropTypes from "prop-types";
 import RoundedBox from "../../RoundedBox";
 
 /**
- * SummaryCard component
- * @component
+ * @component - A card component that wraps children in a rounded box
  * @param {Object} props - Properties passed to component
  * @param {string} [props.title] - The title of the card
  * @param {string} [props.dataCy] - The data-cy attribute to add to the card
