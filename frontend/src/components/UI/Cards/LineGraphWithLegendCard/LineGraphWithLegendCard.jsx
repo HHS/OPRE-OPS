@@ -7,6 +7,7 @@ import LegendItem from "./LegendItem";
  * @typedef {Object} LineGraphWithLegendCardProps
  * @property {Data[]} data - Array of data objects
  * @property {number} bigNumber - The total budget number
+ * @property {string} heading - The heading text
  */
 
 /**
@@ -22,13 +23,13 @@ import LegendItem from "./LegendItem";
 /**
  * @component LineGraphWithLegendCard
  * @param {LineGraphWithLegendCardProps} props
- * @returns {JSX.Element }
+ * @returns {JSX.Element}
  */
-const LineGraphWithLegendCard = ({ data = [], bigNumber }) => {
+const LineGraphWithLegendCard = ({ data = [], bigNumber, heading }) => {
     const [activeId, setActiveId] = React.useState(0);
     return (
         <CurrencyCard
-            headerText="CANs Total Budget"
+            headerText={heading}
             amount={bigNumber}
         >
             <div

@@ -3,9 +3,13 @@ import BudgetCard from "../../UI/Cards/BudgetCard";
 import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
 
 /**
- * @component
- * @param {Object} props - Properties passed to component
- * @param {number} props.fiscalYear - The fiscal year.
+ * @typedef {Object} CANSummaryCardsProps
+ * @property {number} fiscalYear - The fiscal year.
+ */
+
+/**
+ * @component CANSummaryCards - Wraps the LineGraphWithLegend and BudgetCard components.
+ * @param {CANSummaryCardsProps} props
  * @returns {JSX.Element} - The CANSummaryCards component.
  */
 const CANSummaryCards = ({ fiscalYear }) => {
@@ -21,7 +25,7 @@ const CANSummaryCards = ({ fiscalYear }) => {
         },
         {
             id: 2,
-            label: "New Funding",
+            label: `FY ${fiscalYear} New Funding`,
             value: 900_000,
             color: "#534C9C",
             percent: `${calculatePercent(900_000, totalBudget)}%`,
@@ -31,6 +35,7 @@ const CANSummaryCards = ({ fiscalYear }) => {
     return (
         <div className="display-flex flex-justify">
             <LineGraphWithLegendCard
+                heading={`FY ${fiscalYear} CANs Total Budget`}
                 data={data}
                 bigNumber={totalBudget}
             />
