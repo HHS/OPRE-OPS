@@ -30,9 +30,15 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                         icon={faCircle}
                         className={`height-1 width-1 margin-right-05`}
                         style={{ color: color }}
+                        data-testid="legend-icon"
                     />
 
-                    <span className={isGraphActive ? "fake-bold" : ""}>{label}</span>
+                    <span
+                        className={isGraphActive ? "fake-bold" : ""}
+                        data-testid="label-container"
+                    >
+                        {label}
+                    </span>
                 </div>
             </div>
             <div className="grid-col-4">
@@ -41,7 +47,14 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$ "}
-                    renderText={(value) => <span className={isGraphActive ? "fake-bold" : ""}>{value}</span>}
+                    renderText={(value) => (
+                        <span
+                            className={isGraphActive ? "fake-bold" : ""}
+                            data-testid="value-container"
+                        >
+                            {value}
+                        </span>
+                    )}
                 />
             </div>
             <div className="grid-col-1">
@@ -51,6 +64,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     label={label}
                     active={isGraphActive}
                     tagStyleActive={tagStyleActive}
+                    dataTestId="legend-tag"
                 />
             </div>
         </div>
