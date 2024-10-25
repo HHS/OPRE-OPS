@@ -1118,13 +1118,4 @@ def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_
         "services_component_id": 1,
     }
     response = basic_user_auth_client.post("/api/v1/budget-line-items/", json=data)
-    assert response.status_code == 401
-    # assert response.json["line_description"] == "LI 1"
-    # assert response.json["amount"] == 100.12
-    # assert response.json["status"] == "DRAFT"
-    # assert response.json["services_component_id"] == 1
-
-    # cleanup
-    # bli = loaded_db.get(BudgetLineItem, response.json["id"])
-    # loaded_db.delete(bli)
-    # loaded_db.commit()
+    assert response.status_code == 403
