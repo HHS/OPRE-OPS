@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import { totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
-import SummaryCard from "../../UI/Cards";
+import Card from "../../UI/Cards/Card";
 
 const calculateTotalAmountWithFees = (budgetLines) => {
     return budgetLines.reduce((total, budgetLine) => {
@@ -26,7 +26,7 @@ const calculateTotalAmountWithFees = (budgetLines) => {
 const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
     const totalAmountWithFees = calculateTotalAmountWithFees(budgetLines);
     return (
-        <SummaryCard
+        <Card
             title={title}
             dataCy="bl-total-summary-card"
         >
@@ -35,7 +35,7 @@ const BudgetLineTotalSummaryCard = ({ title, budgetLines }) => {
                 dollarsClasses="font-sans-xl text-bold margin-bottom-0"
                 centsStyles={{ fontSize: "10px" }}
             />
-        </SummaryCard>
+        </Card>
     );
 };
 

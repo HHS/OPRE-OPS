@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import RoundedBox from "../RoundedBox";
+import RoundedBox from "../../RoundedBox";
 
 /**
  * SummaryCard component
@@ -10,7 +10,7 @@ import RoundedBox from "../RoundedBox";
  * @param {React.ReactNode} props.children - The children to render
  * @returns {JSX.Element} - The rendered component
  */
-const SummaryCard = ({ title, children, dataCy = "", ...rest }) => {
+const Card = ({ title, children, dataCy = "", ...rest }) => {
     return (
         <RoundedBox
             className={"display-inline-block"}
@@ -23,10 +23,10 @@ const SummaryCard = ({ title, children, dataCy = "", ...rest }) => {
         </RoundedBox>
     );
 };
-SummaryCard.propTypes = {
+Card.propTypes = {
     title: PropTypes.string,
     dataCy: PropTypes.string,
     children: PropTypes.node.isRequired
 };
 
-export default SummaryCard;
+export default Card;

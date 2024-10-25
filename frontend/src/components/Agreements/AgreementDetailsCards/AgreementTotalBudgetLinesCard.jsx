@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import StatusTagList from "../../UI/Tag/StatusTagList";
-import SummaryCard from "../../UI/Cards";
+import Card from "../../UI/Cards/Card";
 
 /**
  * A component that displays the total budget lines for an agreement.
@@ -15,7 +15,7 @@ const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus 
     const headerText = "Total Budget Lines";
 
     return (
-        <SummaryCard>
+        <Card>
             <article data-cy="agreement-total-budget-lines-card-article">
                 <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{headerText}</h3>
                 <div className="display-flex flex-justify width-fit-content">
@@ -33,7 +33,7 @@ const AgreementTotalBudgetLinesCard = ({ numberOfAgreements = 0, countsByStatus 
                     </div>
                 </div>
             </article>
-        </SummaryCard>
+        </Card>
     );
 };
 

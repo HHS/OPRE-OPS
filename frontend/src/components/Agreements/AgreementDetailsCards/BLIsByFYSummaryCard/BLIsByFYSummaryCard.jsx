@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import SummaryCard from "../../../UI/Cards";
+import Card from "../../../UI/Cards/Card";
 import styles from "./BLIsByFYSummaryCard.styles.module.scss";
 import { summaryCard } from "./BLIsFYSummaryCard.helpers";
 import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
@@ -18,7 +18,7 @@ const BLIsByFYSummaryCard = ({ budgetLineItems = [] }) => {
     const { chartData } = summaryCard(budgetLineItems);
 
     return (
-        <SummaryCard
+        <Card
             title="Budget Lines by Fiscal Year"
             dataCy="blis-by-fy-card"
         >
@@ -51,7 +51,7 @@ const BLIsByFYSummaryCard = ({ budgetLineItems = [] }) => {
                     </div>
                 ))}
             </div>
-        </SummaryCard>
+        </Card>
     );
 };
 

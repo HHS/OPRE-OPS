@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
-import SummaryCard from "../SummaryCard";
+import Card from "../Card";
 
 /**
  * @description Renders a summary card for a currency with a header text and an amount.
@@ -13,7 +13,7 @@ import SummaryCard from "../SummaryCard";
  */
 const CurrencySummaryCard = ({ headerText, amount, children, ...rest }) => {
     return (
-        <SummaryCard
+        <Card
             title={headerText}
             dataCy="currency-summary-card"
         >
@@ -27,7 +27,7 @@ const CurrencySummaryCard = ({ headerText, amount, children, ...rest }) => {
                 )}
             </div>
             {children}
-        </SummaryCard>
+        </Card>
     );
 };
 
