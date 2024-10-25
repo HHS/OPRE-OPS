@@ -22,17 +22,17 @@ import { calculateRatio } from "./util";
  */
 const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
     const [ratio, setRatio] = useState(1);
-    const leftBar = data[0].value;
-    const rightBar = data[1].value;
+    const { color: leftColor, id: leftId, value: leftValue } = data[0];
+    const { color: rightColor, id: rightId, value: rightValue } = data[1];
 
     useEffect(() => {
-        const calculatedRatio = calculateRatio({ received: leftBar, expected: rightBar });
+        const calculatedRatio = calculateRatio({ received: leftValue, expected: rightValue });
 
         // css/flex will throw a warning here if depending on the data calculatedRatio is NaN
         if (calculatedRatio !== undefined && !Number.isNaN(calculatedRatio)) {
             setRatio(calculatedRatio);
         }
-    }, [leftBar, rightBar]);
+    }, [leftValue, rightValue]);
 
     return (
         <div className={styles.barBox}>
@@ -40,7 +40,7 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
                 className={`${styles.leftBar} ${styles.dottedBar}`}
                 style={{
                     flex: ratio,
-                    backgroundColor: data[0].color,
+                    backgroundColor: leftColor,
                     backgroundImage:
                         isStriped && !overBudget
                             ? `repeating-linear-gradient(
@@ -52,13 +52,13 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
                 )`
                             : "none"
                 }}
-                onMouseEnter={() => setActiveId(data[0].id)}
+                onMouseEnter={() => setActiveId(leftId)}
                 onMouseLeave={() => setActiveId(0)}
             />
             <div
                 className={`${styles.rightBar} ${ratio === 0 ? styles.rightBarFull : ""}`}
-                style={{ backgroundColor: data[1].color }}
-                onMouseEnter={() => setActiveId(data[1].id)}
+                style={{ backgroundColor: rightColor }}
+                onMouseEnter={() => setActiveId(rightId)}
                 onMouseLeave={() => setActiveId(0)}
             />
         </div>

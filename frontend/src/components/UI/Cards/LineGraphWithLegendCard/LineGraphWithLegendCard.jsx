@@ -26,6 +26,7 @@ import LegendItem from "./LegendItem";
  * @returns {JSX.Element}
  */
 const LineGraphWithLegendCard = ({ data = [], bigNumber, heading }) => {
+    const reactId = React.useId();
     const [activeId, setActiveId] = React.useState(0);
     return (
         <CurrencyCard
@@ -33,7 +34,7 @@ const LineGraphWithLegendCard = ({ data = [], bigNumber, heading }) => {
             amount={bigNumber}
         >
             <div
-                id="currency-summary-card"
+                id={`line-graph-card-${reactId}`}
                 className="margin-top-2"
             >
                 <LineGraph
