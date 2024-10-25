@@ -71,6 +71,12 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
                 case "whiteOnPink":
                     activeClass += " bg-brand-data-viz-secondary-26 text-white fake-bold";
                     break;
+                case "darkTextOnLightBlue":
+                    activeClass += " bg-brand-feedback-info fake-bold";
+                    break;
+                case "lightTextOnDarkBlue":
+                    activeClass += " bg-brand-can-total-budget-2 text-white fake-bold";
+                    break;
                 default:
                     break;
             }

@@ -13,23 +13,26 @@ import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
  * @returns {JSX.Element} - The CANSummaryCards component.
  */
 const CANSummaryCards = ({ fiscalYear }) => {
-    const totalBudget = 1_000_000;
+    const totalSpending = 42_650_000;
+    const totalBudget = 56_000_000;
+    const newFunding = 41_000_000;
+    const carryForward = 15_000_000;
     const data = [
         {
             id: 1,
             label: "Previous FYs Carry-Forward",
-            value: 100_000,
-            color: "#A1D0BE",
-            percent: `${calculatePercent(100_000, totalBudget)}%`,
-            tagActiveStyle: "whiteOnTeal"
+            value: carryForward,
+            color: "var(--feedback-info)",
+            percent: `${calculatePercent(carryForward, totalBudget)}%`,
+            tagActiveStyle: "darkTextOnLightBlue"
         },
         {
             id: 2,
             label: `FY ${fiscalYear} New Funding`,
-            value: 900_000,
-            color: "#534C9C",
-            percent: `${calculatePercent(900_000, totalBudget)}%`,
-            tagActiveStyle: "whiteOnPurple"
+            value: newFunding,
+            color: "var(--can-total-budget-2)",
+            percent: `${calculatePercent(newFunding, totalBudget)}%`,
+            tagActiveStyle: "lightTextOnDarkBlue"
         }
     ];
     return (
@@ -41,8 +44,8 @@ const CANSummaryCards = ({ fiscalYear }) => {
             />
             <BudgetCard
                 title={`FY ${fiscalYear} CANs Available Budget *`}
-                totalSpending={1_500_000}
-                totalFunding={2_000_000}
+                totalSpending={totalSpending}
+                totalFunding={totalBudget}
             />
         </div>
     );
