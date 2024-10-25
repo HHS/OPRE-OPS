@@ -5,7 +5,7 @@ import CurrencyFormat from "react-currency-format";
 import { useDispatch, useSelector } from "react-redux";
 import { calculatePercent } from "../../../helpers/utils";
 import LineGraph from "../../UI/DataViz/LineGraph";
-import CurrencySummaryCard from "../../UI/SummaryCard/CurrencySummaryCard";
+import CurrencyCard from "../../UI/Cards/CurrencyCard";
 import Tag from "../../UI/Tag/Tag";
 import { getResearchFunding } from "./getResearchProjectsFunding.js";
 import { setResearchProjectFundingDetails } from "./ResearchProjectFundingSlice";
@@ -89,7 +89,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
     };
 
     return (
-        <CurrencySummaryCard
+        <CurrencyCard
             headerText={headerText}
             amount={totalFunding}
         >
@@ -114,7 +114,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
                     tagStyleActive={item.tagStyleActive}
                 />
             ))}
-        </CurrencySummaryCard>
+        </CurrencyCard>
     );
 };
 

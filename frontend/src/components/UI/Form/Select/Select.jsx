@@ -1,6 +1,6 @@
 import cx from "clsx";
 import PropTypes from "prop-types";
-import IsRequiredHelper from "../Form/IsRequiredHelper";
+import IsRequiredHelper from "../IsRequiredHelper";
 /**
  * A base-level UI select input for building select inputs.
  * @component

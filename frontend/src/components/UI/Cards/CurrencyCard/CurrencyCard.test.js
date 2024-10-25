@@ -1,7 +1,7 @@
 import store from "../../../../store";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
-import CurrencySummaryCard from "./CurrencySummaryCard";
+import CurrencySummaryCard from "./CurrencyCard";
 
 it("renders without crashing", () => {
     render(

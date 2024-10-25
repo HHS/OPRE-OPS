@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import BudgetSummaryCard from "./BudgetSummaryCard";
+import BudgetSummaryCard from "./BudgetCard";
 
 describe("BudgetSummaryCard", () => {
     const defaultProps = {

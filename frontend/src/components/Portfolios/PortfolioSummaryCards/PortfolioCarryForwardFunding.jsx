@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import CurrencySummaryCard from "../../UI/SummaryCard/CurrencySummaryCard";
+import CurrencyCard from "../../UI/Cards/CurrencyCard";
 
 const PortfolioCarryForwardFunding = () => {
     const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
@@ -7,7 +7,7 @@ const PortfolioCarryForwardFunding = () => {
     const carryForwardFunding = portfolioBudget.carry_forward_funding?.amount || 0;
 
     return (
-        <CurrencySummaryCard
+        <CurrencyCard
             headerText="Previous FYs Carry-Forward"
             amount={carryForwardFunding}
         />

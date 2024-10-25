@@ -1,4 +1,4 @@
-import BudgetSummaryCard from "../../UI/SummaryCard/BudgetSummaryCard";
+import BudgetCard from "../../UI/Cards/BudgetCard";
 
 /**
  * @component
@@ -10,7 +10,7 @@ const CANSummaryCards = ({ fiscalYear }) => {
     return (
         <div className="display-flex flex-justify">
             <p> Summary Cards Left</p>
-            <BudgetSummaryCard
+            <BudgetCard
                 title={`FY ${fiscalYear} CANs Available Budget *`}
                 totalSpending={1_500_000}
                 totalFunding={2_000_000}

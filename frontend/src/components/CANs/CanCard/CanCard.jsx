@@ -6,7 +6,7 @@ import CurrencyFormat from "react-currency-format";
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
-import { ResponsiveDonutWithInnerPercent } from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
+import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import Tag from "../../UI/Tag/Tag";
 import CANFundingYTD from "../CANFundingYTD/CANFundingYTD";
 import style from "./styles.module.css";

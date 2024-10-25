@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import StatusTagList from "../../UI/Tag/StatusTagList";
-import SummaryCard from "../../UI/SummaryCard";
+import SummaryCard from "../../UI/Cards";
 
 /**
  * A component that displays the total budget lines for an agreement.

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { ResponsiveDonutWithInnerPercent } from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent";
+import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
 import Tag from "../../UI/Tag/Tag";
 import RoundedBox from "../../UI/RoundedBox";

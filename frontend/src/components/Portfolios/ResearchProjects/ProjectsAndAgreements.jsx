@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
-import CurrencySummaryCard from "../../UI/SummaryCard/CurrencySummaryCard";
+import CurrencyCard from "../../UI/Cards/CurrencyCard";
 import Tag from "../../UI/Tag/Tag";
 
 const ProjectsAndAgreements = ({
@@ -17,7 +17,7 @@ const ProjectsAndAgreements = ({
     const numberOfAgreements = "7";
 
     return (
-        <CurrencySummaryCard>
+        <CurrencyCard>
             <div className="display-flex flex-justify">
                 {/* NOTE: left side */}
                 <article>
@@ -60,7 +60,7 @@ const ProjectsAndAgreements = ({
                     </div>
                 </article>
             </div>
-        </CurrencySummaryCard>
+        </CurrencyCard>
     );
 };
 

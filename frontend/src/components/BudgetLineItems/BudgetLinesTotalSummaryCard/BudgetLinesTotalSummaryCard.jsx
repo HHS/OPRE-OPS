@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWithSmallCents";
 import { totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
-import SummaryCard from "../../UI/SummaryCard";
+import SummaryCard from "../../UI/Cards";
 
 const calculateTotalAmountWithFees = (budgetLines) => {
     return budgetLines.reduce((total, budgetLine) => {

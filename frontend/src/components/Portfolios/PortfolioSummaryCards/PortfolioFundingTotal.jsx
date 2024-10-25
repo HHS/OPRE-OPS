@@ -5,7 +5,7 @@ import CurrencyFormat from "react-currency-format";
 import { useSelector } from "react-redux";
 import { calculatePercent } from "../../../helpers/utils";
 import LineGraph from "../../UI/DataViz/LineGraph";
-import CurrencySummaryCard from "../../UI/SummaryCard/CurrencySummaryCard";
+import CurrencyCard from "../../UI/Cards/CurrencyCard";
 import Tag from "../../UI/Tag/Tag";
 
 const PortfolioFundingTotal = () => {
@@ -74,7 +74,7 @@ const PortfolioFundingTotal = () => {
     };
 
     return (
-        <CurrencySummaryCard
+        <CurrencyCard
             headerText={headerText}
             amount={portfolioBudget.total_funding.amount}
         >
@@ -99,7 +99,7 @@ const PortfolioFundingTotal = () => {
                     tagStyleActive={item.tagActiveStyle}
                 />
             ))}
-        </CurrencySummaryCard>
+        </CurrencyCard>
     );
 };
 

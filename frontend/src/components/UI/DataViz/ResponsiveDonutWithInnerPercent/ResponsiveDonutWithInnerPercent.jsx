@@ -1,7 +1,7 @@
 import { ResponsivePie } from "@nivo/pie";
 import { useEffect } from "react";
 
-export const ResponsiveDonutWithInnerPercent = ({
+const ResponsiveDonutWithInnerPercent = ({
     data = [{ id: -1, label: "", value: "", color: "", percent: "" }],
     width = 150,
     height = 150,
@@ -54,3 +54,5 @@ export const ResponsiveDonutWithInnerPercent = ({
         />
     );
 };
+
+export default ResponsiveDonutWithInnerPercent;

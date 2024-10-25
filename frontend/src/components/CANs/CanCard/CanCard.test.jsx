@@ -7,8 +7,9 @@ import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummar
 vi.mock("../../../api/getCanFundingSummary");
 
 // Mock the ResponsiveDonutWithInnerPercent component
-vi.mock("../../UI/DataViz/ResponsiveDonutWithInnerPercent/ResponsiveDonutWithInnerPercent", () => ({
-    ResponsiveDonutWithInnerPercent: () => <div data-testid="mock-donut-chart" />
+vi.mock("../../UI/DataViz/ResponsiveDonutWithInnerPercent", () => ({
+    __esModule: true,
+    default: () => <div data-testid="mock-donut-chart" />
 }));
 
 describe("CanCard", () => {

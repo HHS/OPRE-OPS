@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
-import SummaryCard from "../../../UI/SummaryCard";
+import SummaryCard from "../../../UI/Cards";
 import styles from "./BLIsByFYSummaryCard.styles.module.scss";
 import { summaryCard } from "./BLIsFYSummaryCard.helpers";
 import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
