@@ -2,11 +2,17 @@ import PropTypes from "prop-types";
 import RoundedBox from "../../RoundedBox";
 
 /**
+ * @typedef {Object} CardProps
+ * @property {string} [title] - The title of the card.
+ * @property {string} [dataCy] - The data-cy attribute to add to the card.
+ * @property {Object} [style] - The style object to apply to the card.
+ * @property {Object} [rest] - Additional props to be passed to the card.
+ * @property {React.ReactNode} children - The children to render.
+ */
+
+/**
  * @component - A card component that wraps children in a rounded box
- * @param {Object} props - Properties passed to component
- * @param {string} [props.title] - The title of the card
- * @param {string} [props.dataCy] - The data-cy attribute to add to the card
- * @param {React.ReactNode} props.children - The children to render
+ * @param {CardProps} props - The props of the component
  * @returns {JSX.Element} - The rendered component
  */
 const Card = ({ title, children, dataCy = "", ...rest }) => {

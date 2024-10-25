@@ -32,6 +32,7 @@ const LineGraphWithLegendCard = ({ data = [], bigNumber, heading }) => {
         <CurrencyCard
             headerText={heading}
             amount={bigNumber}
+            dataCy="line-graph-with-legend-card"
         >
             <div
                 id={`line-graph-card-${reactId}`}
