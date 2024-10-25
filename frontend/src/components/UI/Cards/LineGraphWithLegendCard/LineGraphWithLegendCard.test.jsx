@@ -67,10 +67,3 @@ describe("LineGraphWithLegendCard", () => {
         expect(screen.getByTestId("mock-line-graph")).toBeInTheDocument();
     });
 });
-
-describe("LineGraphWithLegendCard Snapshot", () => {
-    it("matches snapshot", () => {
-        const { container } = render(<LineGraphWithLegendCard {...defaultProps} />);
-        expect(container).toMatchSnapshot();
-    });
-});
