@@ -1,10 +1,10 @@
 # Table of Contents for RA
 - [ra-02](ra-02.md)
-- [ra-03-1](ra-03-1.md)
 - [ra-03](ra-03.md)
-- [ra-05-11](ra-05-11.md)
+- [ra-03-1](ra-03-1.md)
+- [ra-05](ra-05.md)
 - [ra-05-2](ra-05-2.md)
 - [ra-05-5](ra-05-5.md)
-- [ra-05](ra-05.md)
+- [ra-05-11](ra-05-11.md)
 - [ra-07](ra-07.md)
 - [ra-09](ra-09.md)
