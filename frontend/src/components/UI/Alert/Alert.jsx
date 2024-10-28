@@ -1,13 +1,12 @@
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
-import { setIsActive, clearState } from "./alertSlice";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { clearState, setIsActive } from "./alertSlice";
 
 /**
- * A component that displays an alert and optionally navigates after a delay.
- * @component
+ * @component A component that displays an alert and optionally navigates after a delay.
  * @param {Object} props - The component props.
  * @param {React.ReactNode} [props.children] - The alert content.
  * @returns {JSX.Element | null} The JSX element to render.
@@ -49,8 +48,20 @@ const Alert = ({ children }) => {
         {
             success: "usa-alert--success",
             warning: "usa-alert--warning",
-            error: "usa-alert--error"
+            error: "usa-alert--error",
+            emergency: "usa-alert--emergency",
+            info: "usa-alert--info"
         }[type] || "";
+
+    const handleRole = () => {
+        if (type === "emergency" || type === "error") {
+            return "alert";
+        }
+        if (type === "success") {
+            return "status";
+        }
+        return "";
+    };
 
     return isAlertVisible ? (
         <>
@@ -69,12 +80,12 @@ const Alert = ({ children }) => {
             )}
             <div
                 className={`grid-container usa-alert ${typeClass} margin-top-0 position-fixed pin-x z-top`}
-                role="status"
+                role={handleRole()}
                 data-cy="alert"
             >
                 <div
-                    className="usa-alert__body display-flex flex-justify"
-                    style={{ flexDirection: "row" }}
+                    className="usa-alert__body"
+                    style={{ flexDirection: "row", justifyContent: "space-between" }}
                 >
                     <div>
                         <h1 className="usa-alert__heading">{heading}</h1>

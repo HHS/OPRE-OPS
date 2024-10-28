@@ -1,17 +1,20 @@
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
- * A simple alert component.
- * @param {Object} props - The props object.
- * @param {React.ReactNode} [props.children] - The child elements to render inside the alert. - optional
- * @param {string} props.heading - The heading text for the alert.
- * @param {string} props.message - The message text for the alert.
- * @param {string} props.type - The type of alert to display.
- * @param {boolean} [props.isClosable] - Whether the alert is closable. - optional
- * @param {boolean} [props.isAlertVisible] - Whether the alert is visible.
- * @param {Function} [props.setIsAlertVisible] - The function to set the alert visibility.
+    @typedef {Object} SimpleAlertProps
+    @property {React.ReactNode} [children] - The child elements to render inside the alert. - optional
+    @property {string} heading - The heading text for the alert.
+    @property {string} message - The message text for the alert.
+    @property {"success" | "warning" | "error" | "emergency" | "info"} type - The type of alert to display.
+    @property {boolean} [isClosable] - Whether the alert is closable. - optional
+    @property {boolean} [isAlertVisible] - Whether the alert is visible.
+    @property {Function} [setIsAlertVisible] - The function to set the alert visibility.
+*/
+
+/**
+ * @component - A simple alert component.
+ * @param {SimpleAlertProps} props - The props for the component.
  * @returns {JSX.Element | null} - The rendered alert component.
  */
 const SimpleAlert = ({
@@ -26,6 +29,9 @@ const SimpleAlert = ({
     let classNames = "usa-alert margin-left-neg-4 margin-right-neg-4";
 
     switch (type) {
+        case "info":
+            classNames += " usa-alert--info";
+            break;
         case "success":
             classNames += " usa-alert--success";
             break;
@@ -35,18 +41,31 @@ const SimpleAlert = ({
         case "error":
             classNames += " usa-alert--error";
             break;
+        case "emergency":
+            classNames += " usa-alert--emergency";
+            break;
         default:
     }
+
+    const handleRole = () => {
+        if (type === "emergency" || type === "error") {
+            return "alert";
+        }
+        if (type === "success") {
+            return "status";
+        }
+        return "";
+    };
 
     return isAlertVisible ? (
         <div
             className={classNames}
-            role="status"
+            role={handleRole()}
             data-cy="alert"
         >
             <div
-                className="usa-alert__body display-flex flex-justify"
-                style={{ flexDirection: "row" }}
+                className="usa-alert__body"
+                style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>
@@ -68,16 +87,6 @@ const SimpleAlert = ({
             </div>
         </div>
     ) : null;
-};
-
-SimpleAlert.propTypes = {
-    children: PropTypes.node,
-    heading: PropTypes.string.isRequired,
-    message: PropTypes.string.isRequired,
-    type: PropTypes.oneOf(["success", "warning", "error"]).isRequired,
-    isClosable: PropTypes.bool,
-    isAlertVisible: PropTypes.bool,
-    setIsAlertVisible: PropTypes.func
 };
 
 export default SimpleAlert;
