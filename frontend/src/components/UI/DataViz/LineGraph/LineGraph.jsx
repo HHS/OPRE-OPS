@@ -11,7 +11,7 @@ import { calculateRatio } from "./util";
  */
 
 /**
- * @description A bar that displays the funding status of a CAN.
+ * @description A line graph that shows two bars side by side.
  * @component
  * @param {Object} props
  * @param {Data[]} props.data
@@ -20,19 +20,19 @@ import { calculateRatio } from "./util";
  * @param {boolean} [props.overBudget]
  * @returns {JSX.Element}
  */
-const CANFundingBar = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
+const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
     const [ratio, setRatio] = useState(1);
-    const received_funding = data[0].value;
-    const expected_funding = data[1].value;
+    const { color: leftColor, id: leftId, value: leftValue } = data[0];
+    const { color: rightColor, id: rightId, value: rightValue } = data[1];
 
     useEffect(() => {
-        const calculatedRatio = calculateRatio({ received: received_funding, expected: expected_funding });
+        const calculatedRatio = calculateRatio({ received: leftValue, expected: rightValue });
 
         // css/flex will throw a warning here if depending on the data calculatedRatio is NaN
         if (calculatedRatio !== undefined && !Number.isNaN(calculatedRatio)) {
             setRatio(calculatedRatio);
         }
-    }, [received_funding, expected_funding]);
+    }, [leftValue, rightValue]);
 
     return (
         <div className={styles.barBox}>
@@ -40,7 +40,7 @@ const CANFundingBar = ({ data = [], setActiveId = () => {}, isStriped = false, o
                 className={`${styles.leftBar} ${styles.dottedBar}`}
                 style={{
                     flex: ratio,
-                    backgroundColor: data[0].color,
+                    backgroundColor: leftColor,
                     backgroundImage:
                         isStriped && !overBudget
                             ? `repeating-linear-gradient(
@@ -52,23 +52,23 @@ const CANFundingBar = ({ data = [], setActiveId = () => {}, isStriped = false, o
                 )`
                             : "none"
                 }}
-                onMouseEnter={() => setActiveId(data[0].id)}
+                onMouseEnter={() => setActiveId(leftId)}
                 onMouseLeave={() => setActiveId(0)}
             />
             <div
                 className={`${styles.rightBar} ${ratio === 0 ? styles.rightBarFull : ""}`}
-                style={{ backgroundColor: data[1].color }}
-                onMouseEnter={() => setActiveId(data[1].id)}
+                style={{ backgroundColor: rightColor }}
+                onMouseEnter={() => setActiveId(rightId)}
                 onMouseLeave={() => setActiveId(0)}
             />
         </div>
     );
 };
 
-CANFundingBar.propTypes = {
+LineGraph.propTypes = {
     data: PropTypes.array.isRequired,
     setActiveId: PropTypes.func,
     isStriped: PropTypes.bool,
     overBudget: PropTypes.bool
 };
-export default CANFundingBar;
+export default LineGraph;

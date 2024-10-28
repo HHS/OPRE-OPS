@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import DocumentCard from "../../UI/DocumentCard/DocumentCard";
+import DocumentCard from "../../UI/Cards/DocumentCard";
 
 /**
  * Renders the list of documents for an agreement.

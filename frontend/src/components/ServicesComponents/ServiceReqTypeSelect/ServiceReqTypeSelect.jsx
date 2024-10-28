@@ -1,4 +1,4 @@
-import Select from "../../UI/Select";
+import Select from "../../UI/Form/Select";
 import PropTypes from "prop-types";
 import { SERVICE_REQ_TYPES_OPTIONS } from "../ServicesComponents.constants";
 
