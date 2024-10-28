@@ -13,7 +13,7 @@ desert = "==2022.9.22"
 flask = "==3.0.3"
 flask-cors = "==5.0.0"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.6.0"}
-gunicorn = "==22.0.0"
+gunicorn = "==23.0.0"
 loguru = "==0.7.2"
 markupsafe = "==3.0.1"
 marshmallow-dataclass = "==8.7.1"
