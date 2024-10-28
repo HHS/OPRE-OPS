@@ -1,13 +1,15 @@
-import logging
 import os
+import sys
+import time
+from datetime import timedelta
 
+from data_tools.src.common.db import init_db_from_config, setup_triggers
+from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.disable_users.queries import (
     ALL_ACTIVE_USER_SESSIONS_QUERY,
     EXCLUDED_USER_OIDC_IDS,
     GET_USER_ID_BY_OIDC_QUERY,
-    INACTIVE_USER_QUERY,
-    SYSTEM_ADMIN_EMAIL,
-    SYSTEM_ADMIN_OIDC_ID,
+    get_latest_user_session,
 )
 from data_tools.src.import_static_data.import_data import get_config, init_db
 from sqlalchemy import text
@@ -15,9 +17,19 @@ from sqlalchemy.orm import Mapper, Session
 
 from models import *  # noqa: F403, F401
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Set the timezone to UTC
+os.environ["TZ"] = "UTC"
+time.tzset()
 
+# logger configuration
+format = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+    "<level>{level: <8}</level> | "
+    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+    "<level>{message}</level>"
+)
+logger.add(sys.stdout, format=format, level="INFO")
+logger.add(sys.stderr, format=format, level="INFO")
 
 def get_ids_from_oidc_ids(se, oidc_ids: list):
     """Retrieve user IDs corresponding to a list of OIDC IDs."""
@@ -33,46 +45,16 @@ def get_ids_from_oidc_ids(se, oidc_ids: list):
 
     return ids
 
-
-def create_system_admin(se):
-    """Create system user if it doesn't exist."""
-    system_admin = se.execute(
-        text(GET_USER_ID_BY_OIDC_QUERY),
-        {"oidc_id": SYSTEM_ADMIN_OIDC_ID}
-    ).fetchone()
-
-    if system_admin is None:
-        sys_user = User(
-            email=SYSTEM_ADMIN_EMAIL,
-            oidc_id=SYSTEM_ADMIN_OIDC_ID,
-            status=UserStatus.LOCKED
-        )
-        se.add(sys_user)
-        se.commit()
-        return sys_user.id
-
-    return system_admin[0]
-
-
 def disable_user(se, user_id, system_admin_id):
     """Deactivate a single user and log the change."""
     updated_user = User(id=user_id, status=UserStatus.INACTIVE, updated_by=system_admin_id)
     se.merge(updated_user)
 
-    db_audit = build_audit(updated_user, OpsDBHistoryType.UPDATED)
-    ops_db_history = OpsDBHistory(
-        event_type=OpsDBHistoryType.UPDATED,
-        created_by=system_admin_id,
-        class_name=updated_user.__class__.__name__,
-        row_key=db_audit.row_key,
-        changes=db_audit.changes,
-    )
-    se.add(ops_db_history)
-
     ops_event = OpsEvent(
         event_type=OpsEventType.UPDATE_USER,
         event_status=OpsEventStatus.SUCCESS,
         created_by=system_admin_id,
+        event_details={"user_id": user_id, "message": "User deactivated via automated process."},
     )
     se.add(ops_event)
 
@@ -88,12 +70,22 @@ def disable_user(se, user_id, system_admin_id):
 
 def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
     """Update the status of disabled users in the database."""
+
     with Session(conn) as se:
         logger.info("Checking for System User.")
-        system_admin_id = create_system_admin(se)
+        system_admin = get_or_create_sys_user(se)
+        system_admin_id = system_admin.id
+
+        setup_triggers(se, system_admin)
 
         logger.info("Fetching inactive users.")
-        results = se.execute(text(INACTIVE_USER_QUERY)).scalars().all()
+        results = []
+        all_users = se.execute(select(User)).scalars().all()
+        for user in all_users:
+            latest_session = get_latest_user_session(user_id=user.id, session=se)
+            if latest_session and latest_session.last_active_at < datetime.now() - timedelta(days=60):
+                results.append(user.id)
+
         excluded_ids = get_ids_from_oidc_ids(se, EXCLUDED_USER_OIDC_IDS)
         user_ids = [uid for uid in results if uid not in excluded_ids]
 
@@ -115,9 +107,7 @@ if __name__ == "__main__":
 
     script_env = os.getenv("ENV")
     script_config = get_config(script_env)
-    db_engine, db_metadata_obj = init_db(script_config)
-
-    event.listen(Mapper, "after_configured", setup_schema(BaseModel))
+    db_engine, db_metadata_obj = init_db_from_config(script_config)
 
     update_disabled_users_status(db_engine)
 
