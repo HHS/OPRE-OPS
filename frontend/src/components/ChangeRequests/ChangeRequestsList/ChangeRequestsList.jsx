@@ -6,8 +6,7 @@ import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
 
 /**
- * Change Requests List component.
- * @component
+ * @component Change Requests List component.
  * @typedef {import("../ChangeRequestsTypes").ChangeRequest} ChangeRequest
  * @param {Object} props
  * @param {Function} props.handleReviewChangeRequest - Function to handle review of change requests

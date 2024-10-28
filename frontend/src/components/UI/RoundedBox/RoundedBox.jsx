@@ -1,20 +1,16 @@
-import PropTypes from "prop-types";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { faSquare } from "@fortawesome/free-solid-svg-icons";
 import cssClasses from "./styles.module.css";
 
-library.add(faSquare);
-
 /**
- * RoundedBox component.
+ * @component RoundedBox
  * @param {Object} props - Component props.
  * @param {React.ReactNode} props.children - Child elements.
  * @param {string} [props.className] - Additional CSS classes.
  * @param {string} [props.dataCy] - Data attribute for Cypress tests.
- * @returns {React.JSX.Element} Rendered component.
+ * @param {Object} [props.rest] - Additional props to be passed
+ * @returns {JSX.Element} Rendered component.
  */
 const RoundedBox = ({ children, className, dataCy, ...rest }) => {
-    const cardContainer = `bg-brand-base-light-variant border-base-light font-family-sans display-flex ${cssClasses.container} ${className}`;
+    const cardContainer = `bg-brand-base-light-variant border-base-light font-family-sans display-flex ${cssClasses.container} ${className ? className : ""}`;
 
     return (
         <div
@@ -25,11 +21,6 @@ const RoundedBox = ({ children, className, dataCy, ...rest }) => {
             {children}
         </div>
     );
-};
-RoundedBox.propTypes = {
-    children: PropTypes.node.isRequired,
-    className: PropTypes.string,
-    dataCy: PropTypes.string
 };
 
 export default RoundedBox;

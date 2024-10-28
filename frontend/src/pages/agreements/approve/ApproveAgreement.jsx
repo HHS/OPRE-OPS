@@ -21,38 +21,38 @@ import useApproveAgreement from "./ApproveAgreement.hooks";
 
 const ApproveAgreement = () => {
     const {
+        afterApproval,
         agreement,
-        projectOfficerName,
-        servicesComponents,
+        approvedBudgetLinesPreview,
+        changeRequestTitle,
+        changeRequestsInReviewForUser,
+        checkBoxText,
+        confirmation,
+        errorAgreement,
         groupedBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
-        changeRequestsInReview,
-        notes,
-        setNotes,
-        confirmation,
-        setConfirmation,
-        showModal,
-        setShowModal,
-        modalProps,
-        checkBoxText,
-        handleCancel,
         handleApproveChangeRequests,
-        title,
-        changeRequestTitle,
-        afterApproval,
-        setAfterApproval,
-        requestorNoters,
-        urlChangeToStatus,
-        statusForTitle,
-        statusChangeTo,
-        errorAgreement,
-        isLoadingAgreement,
-        approvedBudgetLinesPreview,
-        is2849Ready,
+        handleCancel,
         hasPermissionToViewPage,
-        isApproverAndAgreementInReview
+        is2849Ready,
+        isApproverAndAgreementInReview,
+        isLoadingAgreement,
+        modalProps,
+        notes,
+        projectOfficerName,
+        requestorNoters,
+        servicesComponents,
+        setAfterApproval,
+        setConfirmation,
+        setNotes,
+        setShowModal,
+        showModal,
+        statusChangeTo,
+        statusForTitle,
+        title,
+        urlChangeToStatus
     } = useApproveAgreement();
-  
+
     if (!hasPermissionToViewPage && is2849Ready) {
         return <ErrorPage />;
     }
@@ -88,7 +88,7 @@ const ApproveAgreement = () => {
 
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
-                changeRequests={changeRequestsInReview}
+                changeRequests={changeRequestsInReviewForUser}
                 statusChangeTo={urlChangeToStatus}
             />
             <AgreementMetaAccordion

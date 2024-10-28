@@ -1,6 +1,10 @@
 import { KEY_NAMES } from "../components/ChangeRequests/ChangeRequests.constants";
 import { renderField } from "./utils";
 /**
+ * @typedef {import('../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+ */
+
+/**
  * @typedef {Object} RenderedChangeValues
  * @property {string} oldValue - The old value
  * @property {string} newValue - The new value
@@ -47,8 +51,7 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
 }
 /**
  * Get change requests in review from budget lines.
- * @param {Object[]} budgetLines - The budget lines.
- *
+ * @param {BudgetLine[]} budgetLines - The budget lines.
  * @returns {Object[]} The change requests in review.
  */
 export function getInReviewChangeRequests(budgetLines) {
