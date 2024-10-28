@@ -62,6 +62,7 @@ const SimpleAlert = ({
             className={classNames}
             role={handleRole()}
             data-cy="alert"
+            data-testid="alert"
         >
             <div
                 className="usa-alert__body"
