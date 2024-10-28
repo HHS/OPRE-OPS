@@ -24,6 +24,7 @@ import { useSelector } from "react-redux";
  * @typedef {import('../../../components/ChangeRequests/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
  * @typedef {import('../../../components/CANs/CANTypes').CAN} CAN
+ * @typedef {import('../../../components/CANs/CANTypes').SimpleCAN} SimpleCAN
  * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
  */
 
@@ -231,11 +232,12 @@ const useApproveAgreement = () => {
     ]);
 
     /**
+     * @description This function is used to apply the pending changes to the budget lines
      * @param {BudgetLine[]} originalBudgetLines - The original budget lines
-     * @param {CAN[]} cans - The CAN data retrieved from the RTL Query
+     * @param {SimpleCAN[]} cans - The CAN data retrieved from the RTL Query
      * @returns {BudgetLine[]} The updated budget lines
      */
-    function createUpdatedBudgetLines(originalBudgetLines, cans) {
+    function applyPendingChangesToBudgetLines(originalBudgetLines, cans) {
         if (!Array.isArray(originalBudgetLines)) {
             console.error("Expected an array, received:", originalBudgetLines);
             return [];
@@ -274,7 +276,7 @@ const useApproveAgreement = () => {
     let groupedUpdatedBudgetLinesByServicesComponent = [];
 
     if (isSuccessAgreement && cans) {
-        approvedBudgetLinesPreview = createUpdatedBudgetLines(agreement?.budget_line_items, cans);
+        approvedBudgetLinesPreview = applyPendingChangesToBudgetLines(agreement?.budget_line_items, cans);
         groupedUpdatedBudgetLinesByServicesComponent = approvedBudgetLinesPreview
             ? groupByServicesComponent(approvedBudgetLinesPreview)
             : [];
