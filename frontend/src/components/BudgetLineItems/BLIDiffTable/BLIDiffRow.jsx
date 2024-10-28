@@ -23,10 +23,13 @@ import TableTag from "../../UI/TableTag";
 import { addDiffClass, doesDateNeededChangeFY, getChangeRequestTypes } from "./BLIDiffRow.helpers";
 
 /**
- * BLIRow component that represents a single row in the Budget Lines table.
- * @component
+ * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+ */
+
+/**
+ * @component BLIRow component that represents a single row in the Budget Lines table.
  * @param {Object} props - The props for the BLIRow component.
- * @param {Object} props.budgetLine - The budget line object.
+ * @param {BudgetLine} props.budgetLine - The budget line object.
  * @param {string} props.changeType - The type of change request.
  * @param {string} [props.statusChangeTo=""] - The status change to.
  *
@@ -35,8 +38,8 @@ import { addDiffClass, doesDateNeededChangeFY, getChangeRequestTypes } from "./B
 const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
@@ -74,13 +77,13 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine?.date_needed)}
+                {formatDateNeeded(budgetLine?.date_needed || "")}
             </td>
             <td
                 className={`${addDiffClass(doesDateNeededChangeFY(budgetLine))} borderExpandedStyles`}
                 style={bgExpandedStyles}
             >
-                {fiscalYearFromDate(budgetLine?.date_needed)}
+                {fiscalYearFromDate(budgetLine?.date_needed || "")}
             </td>
             <td
                 className={`${addDiffClass(changeRequestTypes.includes(KEY_NAMES.CAN))} ${borderExpandedStyles}`}
@@ -97,7 +100,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLine?.amount)}
+                    decimalScale={getDecimalScale(budgetLine?.amount || 0))}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
