@@ -19,7 +19,7 @@ import {
  * @component
  * @returns {JSX.Element} - The component JSX.
  */
-export const BudgetLineItemList = () => {
+const BudgetLineItemList = () => {
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
@@ -81,3 +81,5 @@ export const BudgetLineItemList = () => {
         </App>
     );
 };
+
+export default BudgetLineItemList;
