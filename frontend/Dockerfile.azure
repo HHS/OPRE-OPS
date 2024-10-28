@@ -1,6 +1,6 @@
 # ---- Build Stage ----
 # alpine
-FROM oven/bun@sha256:bc86a6784c7b2987b28b73bd80eef1cabc438e4ca8950a8b1e8af1c31958c8d8 as build
+FROM oven/bun@sha256:39c20dc298fdeaf5d1052ae9a31f19e46d4b13e329920e9754ea231a285ce65d as build
 RUN apt-get update && apt-get -y install unzip=6.0-26+deb11u1 --no-install-recommends && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home/bun/app
@@ -9,10 +9,15 @@ WORKDIR /home/bun/app
 COPY package.json bun.lockb ./
 
 # Install dependencies
-RUN bun install --frozen-lockfile
+RUN bun install --production --frozen-lockfile
 
 # Copy the rest of the application files
-COPY . .
+COPY index.html .
+COPY src src
+COPY vite-env vite-env
+COPY public public
+COPY vite.config.mjs .
+COPY eslint.config.js .
 
 # Build the application
 ARG MODE

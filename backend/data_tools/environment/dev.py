@@ -1,4 +1,4 @@
-from data_tools.environment.common import DataToolsConfig
+from data_tools.environment.types import DataToolsConfig
 
 
 class DevConfig(DataToolsConfig):
@@ -9,9 +9,25 @@ class DevConfig(DataToolsConfig):
         )
 
     @property
-    def opre_excel_connection_string(self) -> str:
-        return ""
-
-    @property
     def verbosity(self) -> bool:
         return True
+
+    @property
+    def is_remote(self) -> bool:
+        return False
+
+    @property
+    def file_system_path(self) -> str:
+        return "."
+
+    @property
+    def vault_url(self) -> str | None:
+        return None
+
+    @property
+    def vault_file_storage_key(self) -> str | None:
+        return None
+
+    @property
+    def file_storage_auth_method(self) -> str | None:
+        return None

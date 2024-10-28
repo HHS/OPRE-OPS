@@ -1081,3 +1081,23 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
     session.commit()
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_budget_line_items_valid_user_change_request(auth_client, test_bli):
+    data = {
+        "status": "DRAFT",
+    }
+    response = auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
+    assert response.status_code == 200
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_patch_budget_line_items_invalid_user_change_request(basic_user_auth_client, test_bli):
+    data = {
+        "status": "PLANNED",
+    }
+    response = basic_user_auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
+    assert response.status_code == 403

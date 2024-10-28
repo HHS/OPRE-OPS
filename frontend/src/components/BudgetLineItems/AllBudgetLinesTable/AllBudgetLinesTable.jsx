@@ -12,8 +12,9 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 /**
  * TableRow component that represents a single row in the budget lines table.
  * @component
+ * @typedef {import("../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The props for the TableRow component.
- * @param {Object[]} props.budgetLines - The budget line data for the row.
+ * @param {BudgetLine[]} props.budgetLines - The budget line data for the row.
  * @returns {JSX.Element} The TableRow component.
  */
 const AllBudgetLinesTable = ({ budgetLines }) => {

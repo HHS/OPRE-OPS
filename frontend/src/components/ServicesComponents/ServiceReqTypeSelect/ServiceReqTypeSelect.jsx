@@ -15,7 +15,7 @@ import { SERVICE_REQ_TYPES_OPTIONS } from "../ServicesComponents.constants";
 function ServiceReqTypeSelect({ value, onChange, ...rest }) {
     return (
         <Select
-            name="serviceReqType"
+            name="service_requirement_type"
             label="Service Requirement Type"
             onChange={onChange}
             value={value}

@@ -6,13 +6,14 @@ import { useEffect } from "react";
 import styles from "./CANBudgetSummary.module.css";
 import constants from "../../../constants";
 import { getPendingFunds } from "./util";
-import FiscalYear from "../../UI/FiscalYear/FiscalYear";
+import FiscalYear from "../../UI/FiscalYear";
 
 const CANBudgetSummary = () => {
     const dispatch = useDispatch();
     const canFiscalYear = useSelector((state) => state.canDetail.canFiscalYearObj);
     const pendingFunds = useSelector((state) => state.canDetail.pendingFunds);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
+    const fiscalYear = Number(selectedFiscalYear.value);
     const urlPathParams = useParams();
     const canFiscalYearId = parseInt(urlPathParams.id);
 
@@ -54,7 +55,7 @@ const CANBudgetSummary = () => {
             <h2>Budget summary</h2>
 
             <FiscalYear
-                fiscalYear={selectedFiscalYear}
+                fiscalYear={fiscalYear}
                 handleChangeFiscalYear={setSelectedFiscalYear}
             />
 
@@ -67,7 +68,7 @@ const CANBudgetSummary = () => {
                 </thead>
                 <tbody>
                     <tr>
-                        <th scope="row">Total FY {selectedFiscalYear.value || constants.notFilledInText} Funding</th>
+                        <th scope="row">Total FY {fiscalYear || constants.notFilledInText} Funding</th>
                         {totalFiscalYearFundingTableData}
                     </tr>
                     <tr>
