@@ -90,6 +90,7 @@ const useApproveAgreement = () => {
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
     /**
      * @typeof {CHANGE_REQUEST_SLUG_TYPES.BUDGET | CHANGE_REQUEST_SLUG_TYPES.STATUS}
      */
@@ -140,14 +141,17 @@ const useApproveAgreement = () => {
     const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
         ? groupByServicesComponent(agreement.budget_line_items)
         : [];
-    const budgetLinesInReview = agreement?.budget_line_items?.filter((bli) => bli.in_review) || [];
+    const budgetLinesInReview =
+        agreement?.budget_line_items?.filter(
+            (bli) => bli.in_review && bli.can?.portfolio.division_id === userDivisionId
+        ) || [];
     /**
      * @type {ChangeRequest[]} changeRequestsInReview
      */
     const changeRequestsInReview = agreement?.budget_line_items
-        ? getInReviewChangeRequests(agreement.budget_line_items)
+        ? getInReviewChangeRequests(agreement.budget_line_items, userDivisionId)
         : [];
-
+    console.log({ changeRequestsInReview });
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
@@ -170,10 +174,8 @@ const useApproveAgreement = () => {
             .map((note) => `• ${note}`)
             .join("\n");
     }
+    // NOTE: 3 types of change requests: budget change, status change to planned, status change to executing
     const budgetChangeRequests = changeRequestsInReview.filter((changeRequest) => changeRequest.has_budget_change);
-    const budgetChangeBudgetLines = budgetLinesInReview.filter((bli) =>
-        bli.change_requests_in_review.filter((cr) => cr.has_budget_change)
-    );
     const statusChangeRequestsToPlanned = changeRequestsInReview.filter(
         (changeRequest) =>
             changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.PLANNED
@@ -183,6 +185,9 @@ const useApproveAgreement = () => {
             changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.EXECUTING
     );
 
+    const budgetChangeBudgetLines = budgetLinesInReview.filter((bli) =>
+        bli.change_requests_in_review.filter((cr) => cr.has_budget_change)
+    );
     const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines, null, true);
     const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
     const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
@@ -191,7 +196,7 @@ const useApproveAgreement = () => {
     const is2849Ready = false; // feature flag for 2849 readiness
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
-    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
+    // const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
 
     const managingDivisionIds = agreement?.budget_line_items
         ? agreement.budget_line_items.flatMap(

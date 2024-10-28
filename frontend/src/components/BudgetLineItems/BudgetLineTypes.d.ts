@@ -1,11 +1,11 @@
-import { SimpleCAN } from "../CANs/CANTypes";
+import { CAN } from "../CANs/CANTypes";
 import { ChangeRequest } from "../ChangeRequests/ChangeRequestsTypes";
 import { SafeUser } from "../Users/UserTypes";
 
 export type BudgetLine = {
     agreement_id: number;
     amount?: number;
-    can?: SimpleCAN;
+    can?: CAN;
     can_id?: number;
     change_requests_in_review?: ChangeRequest[];
     comments?: string;

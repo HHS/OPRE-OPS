@@ -2,6 +2,7 @@ import { KEY_NAMES } from "../components/ChangeRequests/ChangeRequests.constants
 import { renderField } from "./utils";
 /**
  * @typedef {import('../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+ * @typedef {import('../components/ChangeRequests/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  */
 
 /**
@@ -52,12 +53,15 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
 /**
  * Get change requests in review from budget lines.
  * @param {BudgetLine[]} budgetLines - The budget lines.
- * @returns {Object[]} The change requests in review.
+ * @param {number}[ userDivisionId] - The user division ID.
+ * @returns {ChangeRequest[]} The change requests in review.
  */
-export function getInReviewChangeRequests(budgetLines) {
+
+export function getInReviewChangeRequests(budgetLines, userDivisionId) {
     return budgetLines
-        .filter((budgetLine) => budgetLine.in_review)
-        .flatMap((budgetLine) =>
-            Array.isArray(budgetLine.change_requests_in_review) ? budgetLine.change_requests_in_review : []
-        );
+        .filter(
+            (budgetLine) =>
+                budgetLine.in_review && (!userDivisionId || budgetLine.can?.portfolio.division_id === userDivisionId)
+        )
+        .flatMap((budgetLine) => budgetLine.change_requests_in_review || []);
 }

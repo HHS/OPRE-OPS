@@ -100,7 +100,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLine?.amount || 0))}
+                    decimalScale={getDecimalScale(budgetLine?.amount || 0)}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
