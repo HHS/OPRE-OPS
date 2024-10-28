@@ -57,7 +57,7 @@
         "vite-plugin-svgr": "4.2.0"
     },
     "overrides": {
-        "rollup": "4.24.1"
+        "rollup": "4.24.2"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "6.6.2",
