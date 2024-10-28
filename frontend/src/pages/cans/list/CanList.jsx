@@ -12,6 +12,7 @@ import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
 import { sortAndFilterCANs, getPortfolioOptions, getSortedFYBudgets } from "./CanList.helpers";
 import CANFilterTags from "./CANFilterTags";
+import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 
 /**
  * Page for the CAN List.
@@ -59,6 +60,7 @@ const CanList = () => {
             />
         );
     };
+
     // TODO: remove flag once CANS are ready
     return (
         import.meta.env.DEV && (
@@ -95,6 +97,7 @@ const CanList = () => {
                             fyBudgetRange={[minFYBudget, maxFYBudget]}
                         />
                     }
+                    SummaryCardsSection={<CANSummaryCards fiscalYear={fiscalYear} />}
                 />
             </App>
         )
