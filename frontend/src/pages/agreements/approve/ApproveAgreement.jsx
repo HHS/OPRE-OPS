@@ -24,6 +24,7 @@ const ApproveAgreement = () => {
         afterApproval,
         agreement,
         approvedBudgetLinesPreview,
+        budgetLinesInReview,
         changeRequestTitle,
         changeRequestsInReviewForUser,
         checkBoxText,
@@ -128,7 +129,7 @@ const ApproveAgreement = () => {
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
-                selectedBudgetLines={agreement.budget_line_items}
+                selectedBudgetLines={budgetLinesInReview}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}
