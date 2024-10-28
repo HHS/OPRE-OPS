@@ -44,7 +44,10 @@ const SimpleAlert = ({
             role="status"
             data-cy="alert"
         >
-            <div className="usa-alert__body display-flex flex-justify">
+            <div
+                className="usa-alert__body display-flex flex-justify"
+                style={{ flexDirection: "row" }}
+            >
                 <div>
                     <h1 className="usa-alert__heading">{heading}</h1>
                     <p className="usa-alert__text">{message}</p>
