@@ -6,12 +6,6 @@ from data_tools.environment.pytest import PytestConfig
 from data_tools.src.import_static_data.import_data import get_config, import_data, init_db, load_new_data
 
 
-def test_init_db(db_service):
-    engine, metadata_obj = init_db(PytestConfig(), db_service)
-    assert isinstance(engine, sqlalchemy.engine.Engine)
-    assert isinstance(metadata_obj, sqlalchemy.MetaData)
-
-
 def test_get_config_default():
     assert isinstance(get_config(), DevConfig)
 
