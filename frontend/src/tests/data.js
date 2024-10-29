@@ -606,7 +606,12 @@ export const budgetLineWithBudgetChangeRequest = {
         id: 512,
         portfolio_id: 3,
         nick_name: "",
-        number: "G99XXX8"
+        number: "G99XXX8",
+        portfolio: {
+            division_id: 1,
+            id: 1,
+            name: "Test Portfolio"
+        }
     },
     can_id: 512,
     change_requests_in_review: [
@@ -744,7 +749,12 @@ export const budgetLineWithStatusChangeRequestToPlanned = {
         id: 504,
         portfolio_id: 2,
         nick_name: "HS",
-        number: "G994426"
+        number: "G994426",
+        portfolio: {
+            division_id: 1,
+            id: 1,
+            name: "Test Portfolio"
+        }
     },
     can_id: 504,
     change_requests_in_review: [
@@ -830,7 +840,12 @@ export const budgetLineWithStatusChangeRequestToExecuting = {
         id: 502,
         portfolio_id: 8,
         nick_name: "SSRD",
-        number: "G99PHS9"
+        number: "G99PHS9",
+        portfolio: {
+            division_id: 1,
+            id: 1,
+            name: "Test Portfolio"
+        }
     },
     can_id: 502,
     change_requests_in_review: [

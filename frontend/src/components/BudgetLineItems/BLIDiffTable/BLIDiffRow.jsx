@@ -42,7 +42,8 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
-    const isActionable = budgetLine.can?.portfolio.division_id === userDivisionId;
+    const canDivisionId = budgetLine?.can?.portfolio?.division_id;
+    const isActionable = canDivisionId ? canDivisionId === userDivisionId : false;
     const title = "This budget line has pending edits with a different Division:";
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, title);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
