@@ -58,16 +58,16 @@ def test_valid_agreement_reason(loaded_db, context): ...
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Agreement Reason - NEW_REQ does not have an Incumbent",
+    "Valid Agreement Reason - NEW_REQ does not have a Vendor",
 )
-def test_valid_agreement_reason_no_incumbent(loaded_db, context): ...
+def test_valid_agreement_reason_no_vendor(loaded_db, context): ...
 
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Agreement Reason - RECOMPETE and LOGICAL_FOLLOW_ON requires an Incumbent",
+    "Valid Agreement Reason - RECOMPETE and LOGICAL_FOLLOW_ON requires a Vendor",
 )
-def test_valid_agreement_reason_incumbent_required(loaded_db, context): ...
+def test_valid_agreement_reason_vendor_required(loaded_db, context): ...
 
 
 @scenario(
@@ -277,8 +277,8 @@ def agreement_null_agreement_reason(loaded_db, context, test_user, test_project)
     context["agreement"] = contract_agreement
 
 
-@given("I have an Agreement with an AgreementReason = NEW_REQ and an Incumbent")
-def agreement_reason_with_incumbent(loaded_db, context, test_user, test_vendor, test_project):
+@given("I have an Agreement with an AgreementReason = NEW_REQ and an Vendor")
+def agreement_reason_with_vendor(loaded_db, context, test_user, test_vendor, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
@@ -288,7 +288,7 @@ def agreement_reason_with_incumbent(loaded_db, context, test_user, test_vendor, 
         product_service_code_id=2,
         description="Using Innovative Data...",
         agreement_reason=AgreementReason.NEW_REQ,
-        incumbent_id=test_vendor.id,
+        vendor_id=test_vendor.id,
         project_officer_id=test_user.id,
         awarding_entity_id=1,
     )
@@ -300,9 +300,9 @@ def agreement_reason_with_incumbent(loaded_db, context, test_user, test_vendor, 
 
 
 @given(
-    "I have an Agreement with an AgreementReason = RECOMPETE or LOGICAL_FOLLOW_ON and has a NULL or empty string Incumbent"
+    "I have an Agreement with an AgreementReason = RECOMPETE or LOGICAL_FOLLOW_ON and has a NULL or empty string Vendor"
 )
-def agreement_reason_with_incumbent_required(loaded_db, context, test_user, test_project):
+def agreement_reason_with_vendor_required(loaded_db, context, test_user, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
@@ -843,33 +843,33 @@ def error_message_valid_agreement_reason(context, setup_and_teardown):
 
 
 @then(
-    "I should get an error message that the BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
+    "I should get an error message that the BLI's Agreement cannot have a Vendor if it has an Agreement Reason of NEW_REQ"
 )
-def error_message_valid_agreement_reason_with_incumbent(context, setup_and_teardown):
+def error_message_valid_agreement_reason_with_Vendor(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
-        "_schema": ["BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"]
+        "_schema": ["BLI's Agreement cannot have a Vendor if it has an Agreement Reason of NEW_REQ"]
     }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
-        "_schema": ["BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"]
+        "_schema": ["BLI's Agreement cannot have a Vendor if it has an Agreement Reason of NEW_REQ"]
     }
 
 
 @then(
-    "I should get an error message that the BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+    "I should get an error message that the BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
 )
-def error_message_valid_agreement_reason_with_incumbent_required(context, setup_and_teardown):
+def error_message_valid_agreement_reason_with_vendor_required(context, setup_and_teardown):
     assert context["response_put"].status_code == 400
     assert context["response_put"].json == {
         "_schema": [
-            "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+            "BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
         ]
     }
     assert context["response_patch"].status_code == 400
     assert context["response_patch"].json == {
         "_schema": [
-            "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+            "BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
         ]
     }
 

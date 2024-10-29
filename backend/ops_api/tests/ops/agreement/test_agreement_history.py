@@ -18,7 +18,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
         "name": "Agreement144",
         "description": "Description",
         "product_service_code_id": 1,
-        "incumbent": "Vendor A",
+        "vendor": "Vendor A",
         "project_officer_id": 500,
         "team_members": [
             {
@@ -123,7 +123,7 @@ def test_agreement_history_log_items(auth_client, app, test_can, utc_today):
         "name": "TEST: Agreement history with change requests",
         "description": "Description",
         "product_service_code_id": 1,
-        "incumbent": "Vendor A",
+        "vendor": "Vendor A",
         "project_officer_id": 520,
         "team_members": [
             {

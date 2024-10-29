@@ -125,22 +125,20 @@ class RequestBodySchema(Schema):
                 raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
 
     @validates_schema
-    def validate_agreement_reason_must_not_have_incumbent(self, data, **kwargs):
+    def validate_agreement_reason_must_not_have_vendor(self, data, **kwargs):
         if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if (
                 bli
                 and bli.agreement_id
-                and isinstance(bli.agreement, ContractAgreement)  # only contracts have incumbents
+                and isinstance(bli.agreement, ContractAgreement)  # only contracts have vendors
                 and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
-                and bli.agreement.incumbent_id
+                and bli.agreement.vendor_id
             ):
-                raise ValidationError(
-                    "BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ"
-                )
+                raise ValidationError("BLI's Agreement cannot have an Vendor if it has an Agreement Reason of NEW_REQ")
 
     @validates_schema
-    def validate_agreement_reason_must_have_incumbent(self, data, **kwargs):
+    def validate_agreement_reason_must_have_vendor(self, data, **kwargs):
         if self.status_is_changing_beyond_draft(data):
             bli = self.get_current_budget_line_item()
             if (
@@ -150,10 +148,10 @@ class RequestBodySchema(Schema):
                     bli.agreement.agreement_reason == AgreementReason.RECOMPETE
                     or bli.agreement.agreement_reason == AgreementReason.LOGICAL_FOLLOW_ON
                 )
-                and not bli.agreement.incumbent_id
+                and not bli.agreement.vendor_id
             ):
                 raise ValidationError(
-                    "BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+                    "BLI's Agreement must have an Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
                 )
 
     @validates_schema

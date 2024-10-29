@@ -55,23 +55,23 @@ Feature: Validate "Draft" Budget Lines
 
     Then I should get an error message that the BLI's Agreement must have a valid Agreement Reason
 
-  Scenario: Valid Agreement Reason - NEW_REQ does not have an Incumbent
+  Scenario: Valid Agreement Reason - NEW_REQ does not have a Vendor
     Given I am logged in as an OPS user
-    And I have an Agreement with an AgreementReason = NEW_REQ and an Incumbent
+    And I have an Agreement with an AgreementReason = NEW_REQ and a Vendor
 
     When I have a BLI in DRAFT status
     And I submit a BLI to move to IN_REVIEW status
 
-    Then I should get an error message that the BLI's Agreement cannot have an Incumbent if it has an Agreement Reason of NEW_REQ
+    Then I should get an error message that the BLI's Agreement cannot have a Vendor if it has an Agreement Reason of NEW_REQ
 
-  Scenario: Valid Agreement Reason - RECOMPETE and LOGICAL_FOLLOW_ON requires an Incumbent
+  Scenario: Valid Agreement Reason - RECOMPETE and LOGICAL_FOLLOW_ON requires a Vendor
     Given I am logged in as an OPS user
-    And I have an Agreement with an AgreementReason = RECOMPETE or LOGICAL_FOLLOW_ON and has a NULL or empty string Incumbent
+    And I have an Agreement with an AgreementReason = RECOMPETE or LOGICAL_FOLLOW_ON and has a NULL or empty string Vendor
 
     When I have a BLI in DRAFT status
     And I submit a BLI to move to IN_REVIEW status
 
-    Then I should get an error message that the BLI's Agreement must have an Incumbent if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON
+    Then I should get an error message that the BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON
 
   Scenario: Valid Project Officer
     Given I am logged in as an OPS user

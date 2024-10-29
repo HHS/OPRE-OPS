@@ -35,7 +35,7 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert response.json[0]["project"]["id"] == test_project.id
     assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
     assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
-    assert response.json[0]["incumbent"] == "Vendor 1"
+    assert response.json[0]["vendor"] == "Vendor 1"
     assert "budget_line_items" in response.json[0]
     assert "can_id" in response.json[0]["budget_line_items"][0]
     assert "can" in response.json[0]["budget_line_items"][0]
@@ -88,7 +88,6 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert response.json["support_contacts"] == agreement.support_contacts
     assert len(response.json["team_members"]) == len(agreement.team_members)
     assert response.json["vendor_id"] == agreement.vendor_id
-    assert response.json["incumbent_id"] == agreement.incumbent_id
     assert response.json["vendor"] == agreement.vendor.name
 
 
@@ -248,7 +247,6 @@ def test_contract(loaded_db, test_vendor, test_admin_user, test_project):
         project_id=test_project.id,
         created_by=test_admin_user.id,
         vendor_id=test_vendor.id,
-        incumbent_id=test_vendor.id,
     )
 
     loaded_db.add(contract_agreement)
@@ -538,7 +536,6 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
             "name": "FRANK TEST",
             "description": "test description",
             "product_service_code_id": 1,
-            "incumbent": None,
             "project_officer_id": 500,
             "team_members": [
                 {
@@ -552,6 +549,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
             "awarding_entity_id": 2,
             "contract_type": "FIRM_FIXED_PRICE",
             "service_requirement_type": "SEVERABLE",
+            "vendor": None,
         },
     )
     assert response.status_code == 201
@@ -562,7 +560,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_user, test_project):
+def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user, test_project):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
@@ -571,7 +569,7 @@ def test_agreements_post_contract_with_incumbent(auth_client, loaded_db, test_us
             "name": "REED TEST CONTRACT",
             "description": "test description",
             "product_service_code_id": 1,
-            "incumbent": "Vendor 1",
+            "vendor": "Vendor 1",
             "project_officer_id": test_user.id,
             "team_members": [
                 {
@@ -608,8 +606,6 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
             "delivered_status": False,
             "description": "Test Description",
             "display_name": "Test Contract",
-            "incumbent": None,
-            "incumbent_id": None,
             "name": "Test Edit Title",
             "notes": "Test Notes test edit notes",
             "po_number": None,
@@ -683,7 +679,7 @@ def test_agreements_patch_contract_by_id(auth_client, loaded_db, test_contract):
 def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db, test_contract):
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
-        json={"vendor": "Vendor 2", "incumbent": "Vendor 2"},
+        json={"vendor": "Vendor 2"},
     )
     assert response.status_code == 200
 
@@ -703,15 +699,13 @@ def test_agreements_patch_contract_update_existing_vendor(auth_client, loaded_db
     assert data["created_by"] is test_contract.created_by
     assert data["vendor_id"] == 101
     assert data["vendor"] == "Vendor 2"
-    assert data["incumbent_id"] == 101
-    assert data["incumbent"] == "Vendor 2"
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, test_contract):
     response = auth_client.patch(
         url_for("api.agreements-item", id=test_contract.id),
-        json={"vendor": "Random Test Vendor", "incumbent": "Random Test Vendor"},
+        json={"vendor": "Random Test Vendor"},
     )
     assert response.status_code == 200
 
@@ -730,5 +724,3 @@ def test_agreements_patch_contract_update_new_vendor(auth_client, loaded_db, tes
     assert data["created_by"] is test_contract.created_by
     assert data["vendor_id"] == 103
     assert data["vendor"] == "Random Test Vendor"
-    assert data["incumbent_id"] == 103
-    assert data["incumbent"] == "Random Test Vendor"
