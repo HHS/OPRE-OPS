@@ -121,9 +121,7 @@ const BLIReviewRow = ({
                 {formatDateNeeded(budgetLine?.date_needed || "")}
             </td>
             <td
-                className={`${
-                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed || "")), isReviewMode)
-                } ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed || ""), isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {fiscalYearFromDate(budgetLine?.date_needed || "")}
@@ -135,11 +133,11 @@ const BLIReviewRow = ({
                 {budgetLine?.can?.number}
             </td>
             <td
-                className={`${addErrorClassIfNotFound(budgetLine?.amount || 0, isReviewMode)} ${borderExpandedStyles}`}
+                className={`${addErrorClassIfNotFound(budgetLine?.amount, isReviewMode)} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 <CurrencyFormat
-                    value={budgetLine?.amount || 0}
+                    value={budgetLine?.amount}
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
