@@ -258,7 +258,7 @@ def agreement_null_procurement_shop(loaded_db, context, test_user, test_project)
 
 
 @given("I have an Agreement with a NULL Agreement Reason")
-def agreement_null_agreement_reason(loaded_db, context, test_user, test_project):
+def agreement_null_agreement_reason(loaded_db, context, test_user, test_project, test_vendor):
     contract_agreement = ContractAgreement(
         name="CTXX12399",
         contract_number="CT0002",
@@ -267,6 +267,7 @@ def agreement_null_agreement_reason(loaded_db, context, test_user, test_project)
         project_id=test_project.id,
         product_service_code_id=2,
         description="Using Innovative Data...",
+        vendor_id=test_vendor.id,
         project_officer_id=test_user.id,
         awarding_entity_id=1,
     )
@@ -277,7 +278,7 @@ def agreement_null_agreement_reason(loaded_db, context, test_user, test_project)
     context["agreement"] = contract_agreement
 
 
-@given("I have an Agreement with an AgreementReason = NEW_REQ and an Vendor")
+@given("I have an Agreement with an AgreementReason = NEW_REQ and a Vendor")
 def agreement_reason_with_vendor(loaded_db, context, test_user, test_vendor, test_project):
     contract_agreement = ContractAgreement(
         name="CTXX12399",

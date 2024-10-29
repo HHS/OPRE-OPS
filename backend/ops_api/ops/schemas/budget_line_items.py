@@ -135,7 +135,7 @@ class RequestBodySchema(Schema):
                 and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
                 and bli.agreement.vendor_id
             ):
-                raise ValidationError("BLI's Agreement cannot have an Vendor if it has an Agreement Reason of NEW_REQ")
+                raise ValidationError("BLI's Agreement cannot have a Vendor if it has an Agreement Reason of NEW_REQ")
 
     @validates_schema
     def validate_agreement_reason_must_have_vendor(self, data, **kwargs):
@@ -151,7 +151,7 @@ class RequestBodySchema(Schema):
                 and not bli.agreement.vendor_id
             ):
                 raise ValidationError(
-                    "BLI's Agreement must have an Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+                    "BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
                 )
 
     @validates_schema
