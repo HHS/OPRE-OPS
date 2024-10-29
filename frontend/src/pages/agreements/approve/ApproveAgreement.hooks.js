@@ -143,6 +143,7 @@ const useApproveAgreement = () => {
         : [];
     const budgetLinesInReview =
         agreement?.budget_line_items?.filter(
+            /** @param {BudgetLine} bli */
             (bli) => bli.in_review && bli.can?.portfolio.division_id === userDivisionId
         ) || [];
     /**
@@ -185,8 +186,9 @@ const useApproveAgreement = () => {
             changeRequest.has_status_change && changeRequest.requested_change_data.status === BLI_STATUS.EXECUTING
     );
 
-    const budgetChangeBudgetLines = budgetLinesInReview.filter((bli) =>
-        bli.change_requests_in_review.filter((cr) => cr.has_budget_change)
+    const budgetChangeBudgetLines = budgetLinesInReview.filter(
+        /** @param {BudgetLine} bli */
+        (bli) => bli.change_requests_in_review?.filter((cr) => cr.has_budget_change)
     );
     const budgetChangeMessages = useChangeRequestsForBudgetLines(budgetChangeBudgetLines, null, true);
     const budgetLinesToPlannedMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.PLANNED);
@@ -196,16 +198,20 @@ const useApproveAgreement = () => {
     const is2849Ready = false; // feature flag for 2849 readiness
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
-    // const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
 
     const managingDivisionIds = agreement?.budget_line_items
         ? agreement.budget_line_items.flatMap(
+              /** @param {BudgetLine} bli */
               (bli) => bli.change_requests_in_review?.map((cr) => cr.managing_division_id) ?? []
           )
         : [];
 
     const doesAgreementBelongToDivisionDirector = managingDivisionIds.includes(userDivisionId) ?? false;
-    const agreementHasBLIsUnderReview = agreement?.budget_line_items?.some((bli) => bli.in_review) ?? false;
+    const agreementHasBLIsUnderReview =
+        agreement?.budget_line_items?.some(
+            /** @param {BudgetLine} bli */
+            (bli) => bli.in_review
+        ) ?? false;
     const hasPermissionToViewPage =
         userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
     // NOTE: This test is good enough for now until 2849 is ready
