@@ -1,6 +1,6 @@
 /**
  * Returns a CSS class name indicating whether the given budget line item's date is in the future or not.
- * @param {Date} item - The budget line item's date.
+ * @param {string} item - The budget line item's date.
  * @param {boolean} isReviewMode - Whether the table is in review mode or not.
  * @returns {string} - The CSS class name to apply to the table item.
  */
