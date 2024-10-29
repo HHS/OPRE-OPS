@@ -152,7 +152,6 @@ const useApproveAgreement = () => {
     const changeRequestsInReview = agreement?.budget_line_items
         ? getInReviewChangeRequests(agreement.budget_line_items, userDivisionId)
         : [];
-    console.log({ changeRequestsInReview });
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
     let statusForTitle = "";
