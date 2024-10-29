@@ -1119,4 +1119,3 @@ def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_
     }
     response = basic_user_auth_client.post("/api/v1/budget-line-items/", json=data)
     assert response.status_code == 403
-
