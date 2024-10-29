@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import CanComboBox from "../../CANs/CanComboBox";
 import TextArea from "../../UI/Form/TextArea/TextArea";
-import CurrencyInput from "../../UI/CurrencyInput";
+import CurrencyInput from "../../UI/Form/CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
 import DatePicker from "../../UI/USWDS/DatePicker";
 import suite from "./suite";

@@ -1,19 +1,23 @@
 import PropTypes from "prop-types";
 
 /**
- * Tag component.
- * @component
- * @param {Object} props - Properties passed to component
- * @param {string} [props.tagStyle] -  The style of the tag.
- * @param {string} [props.tagStyleActive] -  The style of the tag when active.
- * @param {string} [props.text] -  The text to display in the tag.
- * @param {boolean} [props.active] -  Whether the tag is active or not.
- * @param {string} [props.label ] -   The label of the tag.
- * @param {string} [props.className] -  Additional CSS classes.
- * @param {React.ReactNode} [props.children] -  Child elements.
+ * @typedef {Object} TagProps
+ * @property {string} [tagStyle] - The style of the tag.
+ * @property {string} [tagStyleActive] - The style of the tag when active.
+ * @property {string} [text] - The text to display in the tag.
+ * @property {boolean} [active] - Whether the tag is active or not.
+ * @property {string} [label] - The label of the tag.
+ * @property {string} [className] - Additional CSS classes.
+ * @property {Object} [rest] - Additional props.
+ * @property {React.ReactNode} [children] - Child elements.
+ */
+
+/**
+ * @component Tag component.
+ * @param {TagProps} props - The props.
  * @returns {JSX.Element} - The tag element.
  */
-const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children }) => {
+const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children, ...rest }) => {
     let tagClasses = "font-12px height-205 radius-md",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
@@ -71,6 +75,12 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
                 case "whiteOnPink":
                     activeClass += " bg-brand-data-viz-secondary-26 text-white fake-bold";
                     break;
+                case "darkTextOnLightBlue":
+                    activeClass += " bg-brand-feedback-info fake-bold";
+                    break;
+                case "lightTextOnDarkBlue":
+                    activeClass += " bg-brand-can-total-budget-2 text-white fake-bold";
+                    break;
                 default:
                     break;
             }
@@ -104,6 +114,7 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
                 width: "fit-content", // Ensures the tag's width adapts to its content
                 padding: ".25em .5em" // Adds some space inside the tag for better readability
             }}
+            data-testid={rest.dataTestId}
         >
             {text ? text : children}
         </span>

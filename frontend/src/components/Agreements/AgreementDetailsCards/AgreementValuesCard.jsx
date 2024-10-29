@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { ResponsiveBar } from "@nivo/bar";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencyCard from "../../UI/Cards/CurrencyCard";
 import { fiscalYearFromDate } from "../../../helpers/utils";
 import constants from "../../../constants";
 const { barChartColors } = constants;
@@ -44,7 +44,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
         .sort((a, b) => b.FY - a.FY);
 
     return (
-        <CurrencySummaryCard
+        <CurrencyCard
             headerText={headerText}
             amount={totalValue}
         >
@@ -81,7 +81,7 @@ const AgreementTotalBudgetLinesCard = ({ budgetLineItems }) => {
             ) : (
                 <p>No budget lines in the next 3 FYs</p>
             )}
-        </CurrencySummaryCard>
+        </CurrencyCard>
     );
 };
 

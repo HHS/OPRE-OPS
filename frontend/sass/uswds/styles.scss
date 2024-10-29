@@ -63,6 +63,7 @@ html {
     --data-viz-bl-by-status-4: #8b4687;
     --data-viz-budget-graph-1: #3a835b;
     --data-viz-budget-graph-2: #a6deb5;
+    --can-total-budget-2: #1f468e;
 }
 
 $themeColors: (
@@ -119,7 +120,8 @@ $themeColors: (
     "data-viz-bl-by-status-3": var(--data-viz-bl-by-status-3),
     "data-viz-bl-by-status-4": var(--data-viz-bl-by-status-4),
     "data-viz-budget-graph-1": var(--data-viz-budget-graph-1),
-    "data-viz-budget-graph-2": var(--data-viz-budget-graph-2)
+    "data-viz-budget-graph-2": var(--data-viz-budget-graph-2),
+    "can-total-budget-2": var(--can-total-budget-2)
 );
 
 @each $name, $color in $themeColors {

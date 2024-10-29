@@ -1,11 +1,11 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import CurrencyFormat from "react-currency-format";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
-import CANFundingBar from "../../CANs/CANFundingBar/CANFundingBar";
+import { useDispatch, useSelector } from "react-redux";
 import { calculatePercent } from "../../../helpers/utils";
+import LineGraph from "../../UI/DataViz/LineGraph";
+import CurrencyCard from "../../UI/Cards/CurrencyCard";
 import Tag from "../../UI/Tag/Tag";
 import { getResearchFunding } from "./getResearchProjectsFunding.js";
 import { setResearchProjectFundingDetails } from "./ResearchProjectFundingSlice";
@@ -89,7 +89,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
     };
 
     return (
-        <CurrencySummaryCard
+        <CurrencyCard
             headerText={headerText}
             amount={totalFunding}
         >
@@ -97,7 +97,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
                 id="currency-summary-card"
                 className="margin-top-2"
             >
-                <CANFundingBar
+                <LineGraph
                     setActiveId={setActiveId}
                     data={data}
                 />
@@ -114,7 +114,7 @@ const ResearchBudgetVsSpending = ({ portfolioId = 0 }) => {
                     tagStyleActive={item.tagStyleActive}
                 />
             ))}
-        </CurrencySummaryCard>
+        </CurrencyCard>
     );
 };
 

@@ -1,8 +1,6 @@
-import { createContext, useReducer } from "react";
-import { editAgreementReducer, initialState, defaultState } from "./AgreementEditorContext.hooks";
-
-export const AgreementEditorContext = createContext(null);
-export const EditAgreementDispatchContext = createContext(null);
+import { useReducer } from "react";
+import { defaultState, editAgreementReducer, initialState } from "./AgreementEditorContext.hooks";
+import { AgreementEditorContext, EditAgreementDispatchContext } from "./contexts";
 
 let modifiedInitialState = { ...initialState };
 

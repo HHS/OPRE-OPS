@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import Select from "../../UI/Select";
+import Select from "../../UI/Form/Select";
 
 /**
  * ServicesComponentSelect is a functional component that renders a Select component.

@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import CurrencySummaryCard from "../../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencyCard from "../../../UI/Cards/CurrencyCard";
 import CurrencyFormat from "react-currency-format";
 import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
 
@@ -15,7 +15,7 @@ import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
  */
 const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD", procurementShopFee = 0 }) => {
     return (
-        <CurrencySummaryCard
+        <CurrencyCard
             headerText="Agreement Total"
             amount={total}
             className="margin-top-neg-105"
@@ -56,7 +56,7 @@ const AgreementTotalCard = ({ total, subtotal, fees, procurementShopAbbr = "TBD"
                     </div>
                 </div>
             </div>
-        </CurrencySummaryCard>
+        </CurrencyCard>
     );
 };
 

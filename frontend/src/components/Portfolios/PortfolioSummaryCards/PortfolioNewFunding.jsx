@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import CurrencySummaryCard from "../../UI/CurrencySummaryCard/CurrencySummaryCard";
+import CurrencyCard from "../../UI/Cards/CurrencyCard";
 
 const PortfolioNewFunding = () => {
     const portfolioBudget = useSelector((state) => state.portfolioBudgetSummary.portfolioBudget);
@@ -10,7 +10,7 @@ const PortfolioNewFunding = () => {
     const headerText = `FY ${fiscalYear.value} New Funding`;
 
     return (
-        <CurrencySummaryCard
+        <CurrencyCard
             headerText={headerText}
             amount={newFunding}
         />
