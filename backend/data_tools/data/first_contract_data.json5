@@ -53,7 +53,6 @@
       awarding_entity_id: 1,
       created_by: 503,
       contract_number: "XXXX000000001",
-      incumbent_id: 100,
       vendor_id: 100,
       delivered_status: false,
       contract_type: "LABOR_HOUR",

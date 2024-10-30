@@ -78,7 +78,7 @@ export const AgreementEditForm = ({
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
-    const setAgreementIncumbent = useUpdateAgreement("incumbent");
+    const setAgreementVendor = useUpdateAgreement("vendor");
     const setAgreementNotes = useUpdateAgreement("notes");
     const setContractType = useUpdateAgreement("contract_type");
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
@@ -102,7 +102,7 @@ export const AgreementEditForm = ({
     } = useEditAgreement();
     const {
         notes: agreementNotes,
-        incumbent: agreementIncumbent,
+        vendor: agreementVendor,
         agreement_type: agreementType,
         name: agreementTitle,
         description: agreementDescription,
@@ -137,7 +137,7 @@ export const AgreementEditForm = ({
 
     let res = suite.get();
 
-    const incumbentDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
+    const vendorDisabled = agreementReason === "NEW_REQ" || agreementReason === null || agreementReason === "0";
     const shouldDisableBtn =
         !agreementTitle ||
         !agreementType ||
@@ -424,7 +424,7 @@ export const AgreementEditForm = ({
                     className={cn("agreement_reason")}
                     selectedAgreementReason={agreementReason}
                     onChange={(name, value) => {
-                        setAgreementIncumbent(null);
+                        setAgreementVendor(null);
                         setAgreementReason(value);
                         if (isReviewMode) {
                             runValidate(name, value);
@@ -432,17 +432,17 @@ export const AgreementEditForm = ({
                     }}
                 />
                 <fieldset
-                    className={`usa-fieldset margin-left-4 ${incumbentDisabled && "text-disabled"}`}
-                    disabled={incumbentDisabled}
+                    className={`usa-fieldset margin-left-4 ${vendorDisabled && "text-disabled"}`}
+                    disabled={vendorDisabled}
                 >
                     <Input
-                        name="incumbent"
-                        label="Incumbent"
-                        messages={res.getErrors("incumbent")}
-                        className={`margin-top-0 cn("incumbent")`}
-                        value={agreementIncumbent || ""}
+                        name="vendor"
+                        label="Vendor"
+                        messages={res.getErrors("vendor")}
+                        className={`margin-top-0 cn("vendor")`}
+                        value={agreementVendor || ""}
                         onChange={(name, value) => {
-                            setAgreementIncumbent(value);
+                            setAgreementVendor(value);
                             if (isReviewMode) {
                                 runValidate(name, value);
                             }

@@ -166,7 +166,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, tes
     assert len(result.changes["team_members"]["added"]) == 2
     assert "deleted" not in result.changes["team_members"]
     assert "support_contacts" not in result.changes
-    assert "incumbent_id" not in result.changes
+    assert "vendor_id" not in result.changes
 
     # PATCH: edit agreement
     patch_data = {
@@ -212,7 +212,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, tes
     assert len(result.changes["team_members"]["added"]) == 2
     assert len(result.changes["team_members"]["deleted"]) == 1
     assert "support_contacts" not in result.changes
-    assert "incumbent_id" not in result.changes
+    assert "vendor_id" not in result.changes
 
     # DELETE: delete agreement
     resp = auth_client.delete(f"/api/v1/agreements/{agreement_id}")

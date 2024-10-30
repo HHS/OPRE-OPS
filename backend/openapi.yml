@@ -3262,9 +3262,6 @@ components:
         agreement_reason:
           type: string
           example: NEW_REQ
-        incumbent:
-          type: string
-          example: Previous Vendor
         vendor:
           type: string
           example: Current Vendor
