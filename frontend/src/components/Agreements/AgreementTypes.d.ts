@@ -9,7 +9,6 @@ export type Agreement = {
     description: string;
     product_service_code_id: number;
     agreement_reason: string;
-    incumbent: string;
     vendor: string;
     display_name: string;
     project: Project;
