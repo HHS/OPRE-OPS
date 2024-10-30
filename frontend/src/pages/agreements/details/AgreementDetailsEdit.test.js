@@ -89,7 +89,7 @@ describe("AgreementDetailsEdit", () => {
             name: "National Institute of Health"
         },
         agreement_reason: "RECOMPETE",
-        incumbent: "Test Incumbent",
+        vendor: "Test Vendor",
         project_officer_id: 1,
         team_members: [
             {
@@ -137,7 +137,7 @@ describe("AgreementDetailsEdit", () => {
         expect(screen.getByText("Agreement Title")).toBeInTheDocument();
         expect(screen.getByText("Description")).toBeInTheDocument();
         expect(screen.getByText("Test Description")).toBeInTheDocument();
-        expect(screen.getByText("Incumbent")).toBeInTheDocument();
+        expect(screen.getByText("Vendor")).toBeInTheDocument();
         expect(screen.getByText("Team Members Added")).toBeInTheDocument();
         expect(screen.getByText("Amy Madigan")).toBeInTheDocument();
         expect(screen.getByText("Ivelisse Martinez-Beck")).toBeInTheDocument();

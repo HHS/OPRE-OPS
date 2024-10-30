@@ -126,13 +126,13 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                                 />
                             </dd>
                         </dl>
-                        {agreement?.incumbent && (
+                        {agreement?.vendor && (
                             <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
-                                <dt className="margin-0 text-base-dark margin-top-3">Incumbent</dt>
+                                <dt className="margin-0 text-base-dark margin-top-3">Vendor</dt>
                                 <dd className="margin-0 margin-top-1">
                                     <Tag
                                         tagStyle="primaryDarkTextLightBackground"
-                                        text={agreement?.incumbent}
+                                        text={agreement?.vendor}
                                     />
                                 </dd>
                             </dl>

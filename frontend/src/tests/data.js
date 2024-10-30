@@ -164,8 +164,6 @@ export const agreement = {
     description: "Test description",
     display_name: "Contract #1: African American Child and Family Research Center",
     id: 1,
-    incumbent: "Vendor 1",
-    incumbent_id: 500,
     name: "Contract #1: African American Child and Family Research Center",
     notes: "",
     procurement_shop: {
@@ -222,7 +220,7 @@ export const agreement = {
     updated_by: null,
     updated_on: "2024-05-27T19:20:43.774009Z",
     vendor: "Vendor 1",
-    vendor_id: 1
+    vendor_id: 500
 };
 
 export const document = {
