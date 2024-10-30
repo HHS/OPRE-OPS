@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import Select from "../../UI/Select";
+import Select from "../../UI/Form/Select";
 import { useGetServicesComponentsListQuery } from "../../../api/opsAPI";
 /**
  * A select component for all services.

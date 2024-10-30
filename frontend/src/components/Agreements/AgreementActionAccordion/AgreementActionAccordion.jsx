@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import RadioButtonTile from "../../UI/RadioButtonTile";
+import RadioButtonTile from "../../UI/Form/RadioButtonTile";
 import Accordion from "../../UI/Accordion";
 import { actionOptions } from "../../../pages/agreements/review/ReviewAgreement.constants";
 
