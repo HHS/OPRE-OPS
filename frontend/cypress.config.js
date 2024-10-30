@@ -11,6 +11,7 @@ export default defineConfig({
             "cypress/e2e/agreementDetailsEdit.cy.js",
             "cypress/e2e/agreementList.cy.js",
             "cypress/e2e/approveChangeRequestsAtAgreementLevel.cy.js",
+            "cypress/e2e/approveCrossDivisionCRs.cy.js",
             "cypress/e2e/auth.cy.js",
             "cypress/e2e/budgetChangeRequest.cy.js",
             "cypress/e2e/canDetail.cy.js",
