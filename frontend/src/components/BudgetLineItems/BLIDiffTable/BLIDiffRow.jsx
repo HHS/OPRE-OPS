@@ -42,8 +42,9 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
+    const isBudgetLineInReview = budgetLine?.in_review;
     const canDivisionId = budgetLine?.can?.portfolio?.division_id;
-    const isActionable = canDivisionId ? canDivisionId === userDivisionId : false;
+    const isActionable = canDivisionId === userDivisionId || !isBudgetLineInReview;
     const title = "This budget line has pending edits with a different Division:";
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, title);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
@@ -51,7 +52,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
     const changeRequestStatus = statusChangeTo === "EXECUTING" ? BLI_STATUS.EXECUTING : BLI_STATUS.PLANNED;
-    const isBLIInReview = budgetLine?.in_review || false;
+    const isBLIInReview = budgetLine?.in_review;
     const isBudgetChange = changeType === CHANGE_REQUEST_TYPES.BUDGET;
     const isStatusChange = changeType === CHANGE_REQUEST_TYPES.STATUS;
     const changeRequestTypes = getChangeRequestTypes(
@@ -81,7 +82,9 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                     BLILabel(budgetLine)
                 ) : (
                     <Tooltip
-                        label={lockedMessage}
+                        label={
+                            lockedMessage ? lockedMessage : "This budget line is not inlcuded in this Change Request"
+                        }
                         position="right"
                     >
                         <span>{BLILabel(budgetLine)}</span>

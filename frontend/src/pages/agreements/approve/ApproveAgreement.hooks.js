@@ -256,14 +256,20 @@ const useApproveAgreement = () => {
         return originalBudgetLines.map((budgetLine) => {
             let updatedBudgetLine = { ...budgetLine };
 
+            // Check if budget line belongs to approver's division
+            if (budgetLine.can?.portfolio.division_id !== userDivisionId) {
+                return budgetLine; // Return original budget line unchanged if not in approver's division
+            }
+
             if (budgetLine.change_requests_in_review && budgetLine.change_requests_in_review.length > 0) {
                 budgetLine.change_requests_in_review.forEach((changeRequest) => {
-                    // Only apply changes based on the changeRequestType
+                    // Only apply changes based on the changeRequestType and if they belong to the approver's division
                     if (
-                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && changeRequest.has_budget_change) ||
-                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
-                            changeRequest.has_status_change &&
-                            changeRequest.requested_change_data.status === statusChangeTo)
+                        changeRequest.managing_division_id === userDivisionId &&
+                        ((changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && changeRequest.has_budget_change) ||
+                            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+                                changeRequest.has_status_change &&
+                                changeRequest.requested_change_data.status === statusChangeTo))
                     ) {
                         Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
 
