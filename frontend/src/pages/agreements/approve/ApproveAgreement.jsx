@@ -35,8 +35,6 @@ const ApproveAgreement = () => {
         handleApproveChangeRequests,
         handleCancel,
         hasPermissionToViewPage,
-        is2849Ready,
-        isApproverAndAgreementInReview,
         isLoadingAgreement,
         modalProps,
         notes,
@@ -54,10 +52,7 @@ const ApproveAgreement = () => {
         urlChangeToStatus
     } = useApproveAgreement();
 
-    if (!hasPermissionToViewPage && is2849Ready) {
-        return <ErrorPage />;
-    }
-    if (!isApproverAndAgreementInReview) {
+    if (!hasPermissionToViewPage) {
         return <ErrorPage />;
     }
     if (isLoadingAgreement) {

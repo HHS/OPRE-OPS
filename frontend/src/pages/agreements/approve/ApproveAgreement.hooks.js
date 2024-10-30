@@ -49,8 +49,6 @@ import { useSelector } from "react-redux";
  * @property {(action: 'APPROVE' | 'REJECT') => void} handleApproveChangeRequests - Function to handle approval of change requests} handleApproveChangeRequests - The function to handle the approval of change requests
  * @property {() => void} handleCancel - Function to handle cancellation of the approval process
  * @property { boolean} hasPermissionToViewPage - The permission to view the page
- * @property {boolean} is2849Ready - The readiness of the feature 2849
- * @property {boolean} isApproverAndAgreementInReview - The approver and agreement in review
  * @property {boolean} isLoadingAgreement - The loading state for the agreement
  * @property {Object} modalProps - The modal properties
  * @property {string} notes - The notes for the approval
@@ -194,7 +192,6 @@ const useApproveAgreement = () => {
     const budgetLinesToExecutingMessages = useChangeRequestsForBudgetLines(budgetLinesInReview, BLI_STATUS.EXECUTING);
 
     // NOTE: Permission checks
-    const is2849Ready = false; // feature flag for 2849 readiness
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
 
@@ -213,8 +210,6 @@ const useApproveAgreement = () => {
         ) ?? false;
     const hasPermissionToViewPage =
         userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
-    // NOTE: This test is good enough for now until 2849 is ready
-    const isApproverAndAgreementInReview = userIsDivisionDirector && agreementHasBLIsUnderReview;
 
     const changeRequestsInReviewForUser = changeRequestsInReview.filter(
         (changeRequest) => changeRequest.managing_division_id === userDivisionId
@@ -479,8 +474,6 @@ const useApproveAgreement = () => {
         handleApproveChangeRequests,
         handleCancel,
         hasPermissionToViewPage,
-        is2849Ready,
-        isApproverAndAgreementInReview,
         isLoadingAgreement,
         modalProps,
         notes,
