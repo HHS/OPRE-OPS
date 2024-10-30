@@ -4,18 +4,20 @@ import enum
 from datetime import datetime
 from typing import Optional, cast
 
-import marshmallow
 import sqlalchemy
 from loguru import logger
-from marshmallow import fields
-from marshmallow.exceptions import MarshmallowError
 from marshmallow_enum import EnumField
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Sequence, event, func
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column, mapper, object_session, registry
+from sqlalchemy import Column, ForeignKey, Integer, Sequence, event, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, mapper, object_session
 from typing_extensions import Any
 
-Base = declarative_base()
-reg = registry(metadata=Base.metadata)
+import marshmallow
+from marshmallow import fields
+from marshmallow.exceptions import MarshmallowError
+
+
+class Base(DeclarativeBase):
+    pass
 
 from marshmallow_sqlalchemy import ModelConversionError, SQLAlchemyAutoSchema
 
@@ -41,9 +43,13 @@ def setup_schema(base: Base) -> callable:
 
                 schema_class_name = f"{class_.__name__}Schema"
 
-                schema_class = type(
-                    schema_class_name, (SQLAlchemyAutoSchema,), {"Meta": Meta}
-                )
+                if schema_class_name == "ResearchProjectSchema":
+                    from models.marshmallow import ResearchProjectSchema
+                    schema_class = ResearchProjectSchema
+                else:
+                    schema_class = type(
+                        schema_class_name, (SQLAlchemyAutoSchema,), {"Meta": Meta}
+                    )
 
                 for column in class_.__mapper__.columns:
                     # handle enums
@@ -73,6 +79,9 @@ def setup_schema(base: Base) -> callable:
 
     return setup_schema_fn
 
+@event.listens_for(mapper, "after_configured")
+def setup_schema_trigger():
+    setup_schema(Base)()
 
 from sqlalchemy_continuum import make_versioned
 
