@@ -77,6 +77,3 @@ jobs:
       - name: Lint frontend
         working-directory: ./frontend
         run: bun lint
-
-  lint-commit-messages:
-    uses: ./.github/workflows/commitlint.yml
