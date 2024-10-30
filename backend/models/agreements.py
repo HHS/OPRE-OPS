@@ -182,10 +182,6 @@ class ContractAgreement(Agreement):
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
     contract_number: Mapped[Optional[str]] = mapped_column(String)
-    incumbent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("vendor.id"))
-    incumbent: Mapped[Optional["Vendor"]] = relationship(
-        "Vendor", foreign_keys=[incumbent_id]
-    )
     vendor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("vendor.id"))
     vendor: Mapped[Optional["Vendor"]] = relationship(
         "Vendor", foreign_keys=[vendor_id]

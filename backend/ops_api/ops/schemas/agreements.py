@@ -12,17 +12,12 @@ class Vendor(Schema):
     name = fields.String(required=True)
 
 
-class Incumbent(Schema):
-    name = fields.String(required=True)
-
-
 class AgreementData(Schema):
     name = fields.String(required=True)
     agreement_type = fields.Enum(AgreementType, required=True)
     description = fields.String(allow_none=True)
     product_service_code_id = fields.Integer(allow_none=True)
     agreement_reason = fields.Enum(AgreementReason, allow_none=True)
-    incumbent = fields.String(allow_none=True)
     project_officer_id = fields.Integer(allow_none=True)
     team_members = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)
     project_id = fields.Integer(allow_none=True)
@@ -33,7 +28,6 @@ class AgreementData(Schema):
 
 class ContractAgreementData(AgreementData):
     contract_number = fields.String(allow_none=True)
-    incumbent = fields.String(allow_none=True)
     vendor = fields.String(allow_none=True)
     delivered_status = fields.Bool(default=False)
     contract_type = fields.Enum(ContractType, allow_none=True)
@@ -72,8 +66,6 @@ class AgreementResponse(AgreementData):
 
 class ContractAgreementResponse(AgreementResponse):
     contract_number = fields.String(allow_none=True)
-    incumbent = fields.Pluck("Incumbent", "name")
-    incumbent_id = fields.Integer(allow_none=True)
     vendor_id = fields.Integer(allow_none=True)
     vendor = fields.Pluck("Vendor", "name")
     delivered_status = fields.Bool(default=False)

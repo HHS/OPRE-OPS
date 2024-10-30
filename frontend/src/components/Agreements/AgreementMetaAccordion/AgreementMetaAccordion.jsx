@@ -86,7 +86,7 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                             "Reason for creating the agreement",
                             convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
                         )}
-                        {agreement?.incumbent && renderTerm("incumbent", "Incumbent", agreement?.incumbent)}
+                        {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
                         {renderTerm("project-officer", "Project Officer", projectOfficerName)}
                     </dl>
 

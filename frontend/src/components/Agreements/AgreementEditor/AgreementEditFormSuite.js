@@ -22,12 +22,12 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.agreement_reason).isNotBlank();
         enforce(data.agreement_reason).notEquals("0");
     });
-    test("incumbent", "This is required information", () => {
+    test("vendor", "This is required information", () => {
         if (
             (data.agreement_reason && data.agreement_reason === "RECOMPETE") ||
             data.agreement_reason === "LOGICAL_FOLLOW_ON"
         ) {
-            enforce(data.incumbent).isNotBlank();
+            enforce(data.vendor).isNotBlank();
         }
     });
     test("project_officer", "This is required information", () => {

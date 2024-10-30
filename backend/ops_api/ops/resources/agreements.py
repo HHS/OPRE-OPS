@@ -243,7 +243,6 @@ class AgreementListAPI(BaseListAPI):
             # TODO: add_vendor is here temporarily until we have vendor management
             # implemented in the frontend, i.e. the vendor is a drop-down instead
             # of a text field
-            add_update_vendor(data, "incumbent")
             add_update_vendor(data, "vendor")
 
         new_agreement = agreement_cls(**data)
@@ -356,10 +355,6 @@ def update_data(agreement: Agreement, data: dict[str, Any]) -> None:
             case "vendor":
                 if isinstance(data[item], str):
                     add_update_vendor(data, "vendor", agreement)
-                    changed = True
-            case "incumbent":
-                if isinstance(data[item], str):
-                    add_update_vendor(data, "incumbent", agreement)
                     changed = True
             case _:
                 if getattr(agreement, item) != data[item]:

@@ -27,7 +27,7 @@ const suite = create((fieldName) => {
     test("reason", "This is required information", () => {
         enforce(fieldName.agreement_reason).isNotBlank();
     });
-    // incumbent is not required
+    // vendor is not required
     test("project-officer", "This is required information", () => {
         enforce(fieldName.project_officer_id).isNotBlank();
     });

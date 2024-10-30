@@ -69,7 +69,6 @@ const agreementHistoryData = [
             delivered_status: false,
             description: "blah blah blah",
             id: 11,
-            incumbent: null,
             name: "Demo Contract Title Edited",
             notes: "",
             number: "",
@@ -223,7 +222,6 @@ const agreementHistoryData = [
             delivered_status: false,
             description: "blah blah blah",
             id: 11,
-            incumbent: null,
             name: "Demo Contract Title Edited",
             notes: "",
             number: "",
@@ -338,7 +336,6 @@ const agreementHistoryData = [
             delivered_status: false,
             description: "yadda yadda yadda",
             id: 11,
-            incumbent: null,
             name: "Demo Contract Title",
             notes: "",
             number: "",
@@ -384,7 +381,7 @@ describe("AgreementDetails", () => {
             name: "National Institute of Health"
         },
         agreement_reason: "RECOMPETE",
-        incumbent: "Test Incumbent",
+        vendor: "Test Vendor",
         project_officer_id: 500,
         team_members: [
             {
@@ -452,8 +449,8 @@ describe("AgreementDetails", () => {
         expect(screen.getByText("NIH - Fee Rate: 0.5%")).toBeInTheDocument();
         expect(screen.getByText("Agreement Reason")).toBeInTheDocument();
         expect(screen.getByText("Recompete")).toBeInTheDocument();
-        expect(screen.getByText("Incumbent")).toBeInTheDocument();
-        expect(screen.getByText("Test Incumbent")).toBeInTheDocument();
+        expect(screen.getByText("Vendor")).toBeInTheDocument();
+        expect(screen.getByText("Test Vendor")).toBeInTheDocument();
         expect(screen.getByText("Project Officer")).toBeInTheDocument();
         expect(screen.getByText("Chris Fortunato")).toBeInTheDocument();
         expect(screen.getByText("Team Members")).toBeInTheDocument();

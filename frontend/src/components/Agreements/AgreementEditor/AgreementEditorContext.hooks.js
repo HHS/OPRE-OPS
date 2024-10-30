@@ -10,7 +10,7 @@ export const defaultState = {
         name: "",
         description: "",
         product_service_code_id: null,
-        incumbent: null,
+        vendor: null,
         project_officer_id: null,
         team_members: [],
         notes: "",
