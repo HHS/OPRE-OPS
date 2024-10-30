@@ -101,7 +101,7 @@ const ApproveAgreement = () => {
             <AgreementBLIAccordion
                 title="Review Budget Lines"
                 instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
-                budgetLineItems={agreement?.budget_line_items}
+                budgetLineItems={budgetLinesInReview}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}

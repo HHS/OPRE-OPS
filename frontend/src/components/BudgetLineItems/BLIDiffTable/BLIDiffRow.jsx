@@ -78,18 +78,7 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 scope="row"
                 style={bgExpandedStyles}
             >
-                {isActionable ? (
-                    BLILabel(budgetLine)
-                ) : (
-                    <Tooltip
-                        label={
-                            lockedMessage ? lockedMessage : "This budget line is not inlcuded in this Change Request"
-                        }
-                        position="right"
-                    >
-                        <span>{BLILabel(budgetLine)}</span>
-                    </Tooltip>
-                )}
+                {BLILabel(budgetLine)}
             </th>
             <td
                 className={`${addDiffClass(
@@ -157,10 +146,24 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
                 className={`${isActionable ? addDiffClass(changeRequestTypes.includes(KEY_NAMES.STATUS)) : ""} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                <TableTag
-                    status={budgetLine?.status}
-                    inReview={!isActionable ? budgetLine?.in_review : false}
-                />
+                {isActionable ? (
+                    <TableTag
+                        status={budgetLine?.status}
+                        inReview={!isActionable ? budgetLine?.in_review : false}
+                    />
+                ) : (
+                    <Tooltip
+                        label={
+                            lockedMessage ? lockedMessage : "This budget line is not inlcuded in this Change Request"
+                        }
+                        position="left"
+                    >
+                        <TableTag
+                            status={budgetLine?.status}
+                            inReview={!isActionable ? budgetLine?.in_review : false}
+                        />
+                    </Tooltip>
+                )}
             </td>
         </>
     );
@@ -211,7 +214,6 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
             isExpanded={isExpanded}
             setIsExpanded={setIsExpanded}
             setIsRowActive={setIsRowActive}
-            className={!isActionable ? "text-gray-50" : ""}
         />
     );
 };
