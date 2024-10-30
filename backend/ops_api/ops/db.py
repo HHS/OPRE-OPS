@@ -4,8 +4,8 @@ from itertools import chain
 
 from flask import current_app
 from flask_jwt_extended import current_user
-from sqlalchemy import Engine, create_engine, event
-from sqlalchemy.orm import Session, mapper, scoped_session, sessionmaker
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 from models import *  # noqa: F403, F401
 
@@ -18,9 +18,6 @@ def init_db(
 
     # hack to allow SQLAlchemy v1 style .query access to all models
     BaseModel.query = db_session.query_property()  # noqa: F405
-
-    # add the marshmallow schemas to all the models
-    event.listen(mapper, "after_configured", setup_schema(BaseModel))  # noqa: F405
 
     return db_session, engine
 
