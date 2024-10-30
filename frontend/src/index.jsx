@@ -31,6 +31,7 @@ import VersionPage from "./pages/version/VersionPage";
 
 //  USWDS
 import "./uswds/css/styles.css";
+import Can from "./pages/cans/detail/Can";
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
 
@@ -240,7 +241,7 @@ const router = createBrowserRouter(
                         />
                         <Route
                             path="/cans/:id/*"
-                            element={<CanDetail />}
+                            element={<Can />}
                             handle={{
                                 crumb: () => (
                                     <Link

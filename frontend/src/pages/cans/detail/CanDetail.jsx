@@ -1,11 +1,10 @@
 import { useSelector, useDispatch } from "react-redux";
 import { getCan } from "./getCan";
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
 import CANBudgetSummary from "../../../components/CANs/CANBudgetSummary/CANBudgetSummary.jsx";
 import constants from "../../../constants";
-import App from "../../../App";
 import { setCan } from "./canDetailSlice";
+import { useParams } from "react-router-dom";
 
 const CanDetail = () => {
     const dispatch = useDispatch();
@@ -23,7 +22,7 @@ const CanDetail = () => {
     }, [dispatch, canId]);
 
     return (
-        <App breadCrumbName={`${can.description}`}>
+        <article>
             <h1>
                 {can?.number} ({can?.nick_name})
             </h1>
@@ -47,7 +46,7 @@ const CanDetail = () => {
                     <CANBudgetSummary />
                 </div>
             </div>
-        </App>
+        </article>
     );
 };
 
