@@ -51,6 +51,23 @@ def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
     return division
 
 
+def check_user_association(agreement, user) -> bool:
+    oidc_ids = set()
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.created_by:
+        agreement_creator = current_app.db_session.get(User, agreement.created_by)
+        oidc_ids.add(str(agreement_creator.oidc_id))
+    if agreement.project_officer:
+        oidc_ids.add(str(agreement.project_officer.oidc_id))
+
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
+
+    return ret
+
+
 class BudgetLineItemsItemAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
@@ -92,19 +109,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             else:
                 raise ExtraCheckError({})
 
-        oidc_ids = set()
-        if agreement.created_by_user:
-            oidc_ids.add(str(agreement.created_by_user.oidc_id))
-        if agreement.created_by:
-            agreement_creator = current_app.db_session.get(User, agreement.created_by)
-            oidc_ids.add(str(agreement_creator.oidc_id))
-        if agreement.project_officer:
-            oidc_ids.add(str(agreement.project_officer.oidc_id))
-        oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-        ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
-
-        return ret
+        return check_user_association(agreement, user)
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -304,20 +309,7 @@ class BudgetLineItemsListAPI(BaseListAPI):
         agreement_stmt = select(Agreement).where(Agreement.id == agreement_id)
         agreement = current_app.db_session.scalar(agreement_stmt)
 
-        oidc_ids = set()
-        if agreement.created_by_user:
-            oidc_ids.add(str(agreement.created_by_user.oidc_id))
-        if agreement.created_by:
-            agreement_creator = current_app.db_session.get(User, agreement.created_by)
-            oidc_ids.add(str(agreement_creator.oidc_id))
-        if agreement.project_officer:
-            oidc_ids.add(str(agreement.project_officer.oidc_id))
-
-        oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-        ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
-
-        return ret
+        return check_user_association(agreement, user)
 
     @staticmethod
     def _get_query(
