@@ -1,5 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import styles from "../../Agreements/DetailsTabs/DetailsTabs.module.scss";
+import Tabs from "../../UI/Tabs";
 
 /**
  * @typedef {Object} CanDetailTabsProps
@@ -12,60 +11,22 @@ import styles from "../../Agreements/DetailsTabs/DetailsTabs.module.scss";
  * @returns {JSX.Element} The rendered JSX element.
  */
 const CanDetailTabs = ({ canId }) => {
-    const location = useLocation();
-    const navigate = useNavigate();
-
-    const selected = `font-sans-2xs text-bold ${styles.listItemSelected} margin-right-2 cursor-pointer`;
-    const notSelected = `font-sans-2xs text-bold ${styles.listItemNotSelected} margin-right-2 cursor-pointer`;
-
     const paths = [
         {
-            name: "",
-            label: "CAN Details"
+            label: "CAN Details",
+            pathName: `/cans/${canId}`
         },
         {
-            name: "/spending",
-            label: "CAN Spending"
+            label: "CAN Spending",
+            pathName: `/cans/${canId}/spending`
         },
         {
-            name: "/funding",
-            label: "CAN Funding"
+            label: "CAN Funding",
+            pathName: `/cans/${canId}/funding`
         }
     ];
 
-    const handleClick = (e) => {
-        const pathName = e.currentTarget.getAttribute("data-value");
-        navigate(pathName);
-    };
-
-    const links = paths.map((path) => {
-        const pathName = `/cans/${canId}${path.name}`;
-        const tabSelected = location.pathname == pathName;
-
-        return (
-            <button
-                data-value={pathName}
-                className={tabSelected ? selected : notSelected}
-                key={pathName}
-                onClick={handleClick}
-                data-cy={`details-tab-${path.label}`}
-            >
-                {path.label}
-            </button>
-        );
-    });
-
-    return (
-        <>
-            <nav
-                className={`margin-bottom-4 ${styles.tabsList}`}
-                aria-label={"Agreement Tab Sections"}
-                role={"navigation"}
-            >
-                {links}
-            </nav>
-        </>
-    );
+    return <Tabs paths={paths} />;
 };
 
 export default CanDetailTabs;
