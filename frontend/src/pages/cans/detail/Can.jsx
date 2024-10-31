@@ -4,6 +4,8 @@ import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import { useGetCanByIdQuery } from "../../../api/opsAPI";
 import PageHeader from "../../../components/UI/PageHeader";
+import CanSpending from "./CanSpending";
+import CanFunding from "./CanFunding";
 
 /**
     @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
@@ -38,6 +40,14 @@ const Can = () => {
                 <Route
                     path=""
                     element={<CanDetail can={can} />}
+                />
+                <Route
+                    path="spending"
+                    element={<CanSpending />}
+                />
+                <Route
+                    path="funding"
+                    element={<CanFunding />}
                 />
             </Routes>
         </App>
