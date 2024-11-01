@@ -18,7 +18,7 @@ const Card = ({ title, children, dataCy = "", ...rest }) => {
     return (
         <RoundedBox
             className={"display-inline-block"}
-            dataCy={dataCy ?? dataCy}
+            dataCy={dataCy}
             style={{ padding: "20px 30px 30px 30px" }}
             {...rest} // this is real trust 🧡
         >
