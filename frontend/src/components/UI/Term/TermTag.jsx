@@ -15,7 +15,10 @@ import Tag from "../Tag";
  */
 const TermTag = ({ term, description = "TBD", ...rest }) => {
     return (
-        <dl className={`font-12px ${rest.className}`}>
+        <dl
+            className={`font-12px ${rest.className}`}
+            data-testid="term-container"
+        >
             <dt className="margin-0 text-base-dark margin-top-3">{term}</dt>
             <dd className="margin-0 margin-top-1">
                 <Tag
