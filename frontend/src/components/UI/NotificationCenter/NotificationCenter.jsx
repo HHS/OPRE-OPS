@@ -13,7 +13,6 @@ import { getAccessToken } from "../../Auth/auth";
 /**
  * @typedef {Object} NotificationCenterProps
  * @property {User} user - The user object.
- * @returns  {JSX.Element}
  */
 
 /**
