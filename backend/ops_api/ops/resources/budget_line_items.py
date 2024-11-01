@@ -10,6 +10,7 @@ from typing_extensions import Any
 
 from models import (
     CAN,
+    Agreement,
     BaseModel,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
@@ -48,6 +49,23 @@ def get_division_for_budget_line_item(bli_id: int) -> Optional[Division]:
         .one_or_none()
     )
     return division
+
+
+def check_user_association(agreement, user) -> bool:
+    oidc_ids = set()
+    if agreement.created_by_user:
+        oidc_ids.add(str(agreement.created_by_user.oidc_id))
+    if agreement.created_by:
+        agreement_creator = current_app.db_session.get(User, agreement.created_by)
+        oidc_ids.add(str(agreement_creator.oidc_id))
+    if agreement.project_officer:
+        oidc_ids.add(str(agreement.project_officer.oidc_id))
+
+    oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
+
+    ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
+
+    return ret
 
 
 class BudgetLineItemsItemAPI(BaseItemAPI):
@@ -91,19 +109,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             else:
                 raise ExtraCheckError({})
 
-        oidc_ids = set()
-        if agreement.created_by_user:
-            oidc_ids.add(str(agreement.created_by_user.oidc_id))
-        if agreement.created_by:
-            agreement_creator = current_app.db_session.get(User, agreement.created_by)
-            oidc_ids.add(str(agreement_creator.oidc_id))
-        if agreement.project_officer:
-            oidc_ids.add(str(agreement.project_officer.oidc_id))
-        oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
-
-        ret = str(user.oidc_id) in oidc_ids or "BUDGET_TEAM" in [role.name for role in user.roles]
-
-        return ret
+        return check_user_association(agreement, user)
 
     def _get_item_with_try(self, id: int) -> Response:
         try:
@@ -288,6 +294,23 @@ class BudgetLineItemsListAPI(BaseListAPI):
         self._response_schema = BudgetLineItemResponseSchema()
         self._response_schema_collection = BudgetLineItemResponseSchema(many=True)
 
+    def associated_with_agreement(self, agreement_id, permission_type: PermissionType) -> bool:
+        """
+        In order to create a budget line, the user must be authenticated and meet one of these conditions:
+            -  The user is the agreement creator.
+            -  The user is the project officer of the agreement.
+            -  The user is a team member on the agreement.
+        """
+        verify_jwt_in_request()
+        user = get_current_user()
+        if not user:
+            return False
+
+        agreement_stmt = select(Agreement).where(Agreement.id == agreement_id)
+        agreement = current_app.db_session.scalar(agreement_stmt)
+
+        return check_user_association(agreement, user)
+
     @staticmethod
     def _get_query(
         can_id: Optional[int] = None,
@@ -329,11 +352,18 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
     @is_authorized(PermissionType.POST, Permission.BUDGET_LINE_ITEM)
     def post(self) -> Response:
+
         message_prefix = f"POST to {ENDPOINT_STRING}"
         with OpsEventHandler(OpsEventType.CREATE_BLI) as meta:
             self._post_schema.context["method"] = "POST"
 
             data = self._post_schema.dump(self._post_schema.load(request.json))
+
+            agreement_id = data["agreement_id"]
+
+            if not self.associated_with_agreement(agreement_id, PermissionType.POST):
+                return make_response_with_headers({}, 403)
+
             data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
             data = convert_date_strings_to_dates(data)
 

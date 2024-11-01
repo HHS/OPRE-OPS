@@ -130,7 +130,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-table").should("exist");
                 // table should contains a table item  with text PLANNED and css class table-item-diff
                 cy.get(".table-item-diff").contains("Planned");
-                cy.get('[data-cy="button-toggle-After Approval"]').click();
+                cy.get('[data-cy="button-toggle-After Approval"]').first().click();
                 cy.get(".table-item-diff").contains("Draft");
                 // click on checkbox with id approve-confirmation
                 cy.get(".usa-checkbox__label").click();
@@ -275,7 +275,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-table").should("exist");
                 // table should contains a table item  with text PLANNED and css class table-item-diff
                 cy.get(".table-item-diff").contains("Executing");
-                cy.get('[data-cy="button-toggle-After Approval"]').click();
+                cy.get('[data-cy="button-toggle-After Approval"]').first().click();
                 cy.get(".table-item-diff").contains("Planned");
                 // click on checkbox with id approve-confirmation
                 cy.get(".usa-checkbox__label").click();
@@ -432,7 +432,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".table-item-diff").contains("$2,000,000.00");
                 cy.get(".table-item-diff").contains("G99PHS9");
                 cy.get(".table-item-diff").contains("9/15/2025");
-                cy.get('[data-cy="button-toggle-After Approval"]').click();
+                cy.get('[data-cy="button-toggle-After Approval"]').first().click();
                 cy.get(".table-item-diff").contains("1,000,000.00");
                 cy.get(".table-item-diff").contains("G994426");
                 cy.get(".table-item-diff").contains("1/1/2025");

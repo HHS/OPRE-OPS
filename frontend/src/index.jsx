@@ -12,9 +12,10 @@ import ApproveAgreement from "./pages/agreements/approve";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Agreement from "./pages/agreements/details/Agreement";
 import EditAgreement from "./pages/agreements/EditAgreement";
-import { AgreementsList } from "./pages/agreements/list/AgreementsList";
+import AgreementsList from "./pages/agreements/list/AgreementsList";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
-import { BudgetLineItemList } from "./pages/budgetLines/list/BudgetLineItemList";
+import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
+import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
 import ErrorPage from "./pages/ErrorPage";
 import Home from "./pages/Home";
@@ -30,7 +31,6 @@ import VersionPage from "./pages/version/VersionPage";
 
 //  USWDS
 import "./uswds/css/styles.css";
-import Can from "./pages/cans/detail/Can";
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
 
