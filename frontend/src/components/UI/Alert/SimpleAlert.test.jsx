@@ -37,7 +37,7 @@ describe("SimpleAlert", () => {
                 type="warning"
             />
         );
-        const alert = screen.getByRole("status");
+        const alert = screen.getByTestId("alert");
         expect(alert).toHaveClass("usa-alert--warning");
     });
     it("should render with error type", () => {
@@ -48,7 +48,7 @@ describe("SimpleAlert", () => {
                 type="error"
             />
         );
-        const alert = screen.getByRole("status");
+        const alert = screen.getByRole("alert");
         expect(alert).toHaveClass("usa-alert--error");
     });
     it("should be closable", async () => {

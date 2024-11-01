@@ -1,6 +1,6 @@
 .container {
-    height: 13.75rem;
-    width: 29.125rem;
+    min-height: 14.5rem; /* 232px */
+    width: 29.125rem; /* 466px */
     border-radius: 0.5rem;
     border-width: 1px;
     border-style: solid;

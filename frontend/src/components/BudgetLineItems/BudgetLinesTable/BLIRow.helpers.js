@@ -1,6 +1,6 @@
 /**
  * Returns a CSS class name indicating whether the given budget line item's date is in the future or not.
- * @param {Date} item - The budget line item's date.
+ * @param {string} item - The budget line item's date.
  * @param {boolean} isReviewMode - Whether the table is in review mode or not.
  * @returns {string} - The CSS class name to apply to the table item.
  */
@@ -17,7 +17,7 @@ export const futureDateErrorClass = (item, isReviewMode) => {
 
 /**
  * Adds an error class to a table item if it is not found and the component is in review mode.
- * @param {Object} item - The item to check for existence.
+ * @param {any} item - The item to check for existence.
  * @param {boolean} isReviewMode - A flag indicating whether the component is in review mode.
  * @returns {string} - The CSS class to apply to the table item.
  */
