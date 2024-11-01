@@ -15,9 +15,12 @@ import cx from "clsx";
  * @param {TermProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered input component.
  */
-const Term = ({ name, label = name, pending = false, messages = [], value = "TDB", className }) => {
+const Term = ({ name, label = name, pending = false, messages = [], value = "TBD", className }) => {
     return (
-        <div className={cx("usa-form-group", pending && "pending", className)}>
+        <div
+            className={cx("usa-form-group", pending && "pending", className)}
+            data-testid="term-container"
+        >
             <dt className="margin-0 text-base-dark margin-top-3">{label}</dt>
             <dd className="text-semibold margin-0 margin-top-05">
                 {value}
