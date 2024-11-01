@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import RoundedBox from "../../RoundedBox";
 
 /**
@@ -27,11 +26,6 @@ const Card = ({ title, children, dataCy = "", ...rest }) => {
             {children}
         </RoundedBox>
     );
-};
-Card.propTypes = {
-    title: PropTypes.string,
-    dataCy: PropTypes.string,
-    children: PropTypes.node.isRequired
 };
 
 export default Card;
