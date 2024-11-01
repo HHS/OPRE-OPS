@@ -16,7 +16,7 @@ export type CAN = {
     nick_name?: string;
     number: string;
     obligate_by?: number;
-    portfolio?: Portfolio;
+    portfolio: Portfolio;
     portfolio_id: number;
     projects?: Project[];
     created_on?: any;

@@ -1,7 +1,8 @@
-import DebugCode from "../../../components/DebugCode";
+import { useGetDivisionQuery } from "../../../api/opsAPI";
 import Tag from "../../../components/UI/Tag";
 import Term from "../../../components/UI/Term";
 import TermTag from "../../../components/UI/Term/TermTag";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 /**
     @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
@@ -18,6 +19,10 @@ import TermTag from "../../../components/UI/Term/TermTag";
  * @returns  {JSX.Element} - The component JSX.
  */
 const CanDetail = ({ can }) => {
+    const canDivisionId = can.portfolio.division_id;
+    const { data: division, isSuccess } = useGetDivisionQuery(canDivisionId);
+    const divisionDirectorFullName = useGetUserFullNameFromId(isSuccess ? division.division_director_id : null);
+
     return (
         <article>
             <h2>CAN Details</h2>
@@ -71,11 +76,10 @@ const CanDetail = ({ can }) => {
                     </dl>
                     <TermTag
                         term="Division Director"
-                        description="Coming Soon"
+                        description={divisionDirectorFullName}
                     />
                 </div>
             </div>
-            <DebugCode data={can} />
         </article>
     );
 };
