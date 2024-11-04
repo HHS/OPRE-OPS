@@ -574,12 +574,14 @@
       first_name: "Amare",
       last_name: "Beza",
       email: "amare.beza@acf.hhs.gov",
+      roles: [{"tablename":  "role", "id": 2}],
       status: "ACTIVE"
     },
     { // 528
       first_name: "Sheila",
       last_name: "Celentano",
       email: "sheila.celentano@acf.hhs.gov",
+      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 5}], {"tablename":  "role", "id": 6}]],
       status: "ACTIVE"
     }
   ],
