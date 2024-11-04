@@ -23,7 +23,7 @@
         "crypto-random-string": "5.0.0",
         "eslint": "9.13.0",
         "eslint-config-prettier": "9.1.0",
-        "eslint-plugin-cypress": "4.0.0",
+        "eslint-plugin-cypress": "4.1.0",
         "eslint-plugin-import": "2.31.0",
         "eslint-plugin-jest": "28.8.3",
         "eslint-plugin-jsx-a11y": "6.10.2",
@@ -46,7 +46,7 @@
         "react-router-dom": "6.27.0",
         "react-select": "5.8.2",
         "react-slider": "2.0.6",
-        "sass": "1.80.5",
+        "sass": "1.80.6",
         "sass-loader": "16.0.3",
         "styled-components": "6.1.13",
         "vest": "5.4.3",
@@ -57,7 +57,7 @@
         "vite-plugin-svgr": "4.2.0"
     },
     "overrides": {
-        "rollup": "4.24.3"
+        "rollup": "4.24.4"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "6.6.3",
