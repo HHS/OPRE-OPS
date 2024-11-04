@@ -1,6 +1,0 @@
-erDiagram
-    WorkflowTemplate ||..|| WorkflowStepTemplate : has steps
-    WorkflowTemplate ||..o| WorkflowInstance : has instances
-    WorkflowStepTemplate ||..|| WorkflowStepInstance : has instances
-    WorkflowStepInstance ||--o| WorkflowStepDependency : has dependencies
-    WorkflowStepTemplate ||--o| StepApprovers : has approvers
