@@ -9,6 +9,7 @@ import Tag from "../Tag";
 */
 
 /**
+ * This component needs to wrapped in a <dl> element.
  * @component - Renders a term with a tag.
  * @param {TermTagProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered component.

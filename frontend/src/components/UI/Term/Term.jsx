@@ -11,6 +11,7 @@ import cx from "clsx";
 */
 
 /**
+ * This component needs to wrapped in a <dl> element.
  * @component - Renders a term with a label and value.
  * @param {TermProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered input component.
