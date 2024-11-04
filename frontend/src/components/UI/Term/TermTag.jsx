@@ -15,7 +15,7 @@ import Tag from "../Tag";
  */
 const TermTag = ({ term, description = "TBD", ...rest }) => {
     return (
-        <dl
+        <div
             className={`font-12px ${rest.className}`}
             data-testid="term-container"
         >
@@ -26,7 +26,7 @@ const TermTag = ({ term, description = "TBD", ...rest }) => {
                     text={description}
                 />
             </dd>
-        </dl>
+        </div>
     );
 };
 

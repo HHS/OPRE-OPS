@@ -32,10 +32,12 @@ const CanDetail = ({ can }) => {
                     className="grid-col"
                     data-cy="details-left-col"
                 >
-                    <Term
-                        name="Description"
-                        value={can?.description || "TBD"}
-                    />
+                    <dl>
+                        <Term
+                            name="Description"
+                            value={can?.description || "TBD"}
+                        />
+                    </dl>
                     <section data-cy="history">
                         <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
                         <p>Not yet implemented</p>
@@ -46,18 +48,20 @@ const CanDetail = ({ can }) => {
                     className="grid-col"
                     data-cy="details-right-col"
                 >
-                    <TermTag
-                        term="CAN"
-                        description={can.number}
-                    />
-                    <TermTag
-                        term="Nickname"
-                        description={can.nick_name}
-                    />
-                    <TermTag
-                        term="Portfolio"
-                        description={can.portfolio?.name}
-                    />
+                    <dl>
+                        <TermTag
+                            term="CAN"
+                            description={can.number}
+                        />
+                        <TermTag
+                            term="Nickname"
+                            description={can.nick_name}
+                        />
+                        <TermTag
+                            term="Portfolio"
+                            description={can.portfolio?.name}
+                        />
+                    </dl>
                     <dl>
                         <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
                         {can.portfolio?.team_leaders &&
@@ -73,11 +77,11 @@ const CanDetail = ({ can }) => {
                                     />
                                 </dd>
                             ))}
+                        <TermTag
+                            term="Division Director"
+                            description={divisionDirectorFullName}
+                        />
                     </dl>
-                    <TermTag
-                        term="Division Director"
-                        description={divisionDirectorFullName}
-                    />
                 </div>
             </div>
         </article>
