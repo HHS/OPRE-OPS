@@ -63,7 +63,7 @@ const CanDetail = ({ can }) => {
                         />
                     </dl>
                     <dl>
-                        <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Leaders</dt>
                         {can.portfolio?.team_leaders &&
                             can.portfolio?.team_leaders.length > 0 &&
                             can.portfolio.team_leaders.map((teamLeader) => (
