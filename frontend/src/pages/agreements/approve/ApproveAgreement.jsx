@@ -21,42 +21,38 @@ import useApproveAgreement from "./ApproveAgreement.hooks";
 
 const ApproveAgreement = () => {
     const {
+        afterApproval,
         agreement,
-        projectOfficerName,
-        servicesComponents,
+        approvedBudgetLinesPreview,
+        budgetLinesInReview,
+        changeRequestTitle,
+        changeRequestsInReviewForUser,
+        checkBoxText,
+        confirmation,
+        errorAgreement,
         groupedBudgetLinesByServicesComponent,
         groupedUpdatedBudgetLinesByServicesComponent,
-        changeRequestsInReview,
-        notes,
-        setNotes,
-        confirmation,
-        setConfirmation,
-        showModal,
-        setShowModal,
-        modalProps,
-        checkBoxText,
-        handleCancel,
         handleApproveChangeRequests,
-        title,
-        changeRequestTitle,
-        afterApproval,
-        setAfterApproval,
-        requestorNoters,
-        urlChangeToStatus,
-        statusForTitle,
-        statusChangeTo,
-        errorAgreement,
-        isLoadingAgreement,
-        approvedBudgetLinesPreview,
-        is2849Ready,
+        handleCancel,
         hasPermissionToViewPage,
-        isApproverAndAgreementInReview
+        isLoadingAgreement,
+        modalProps,
+        notes,
+        projectOfficerName,
+        requestorNoters,
+        servicesComponents,
+        setAfterApproval,
+        setConfirmation,
+        setNotes,
+        setShowModal,
+        showModal,
+        statusChangeTo,
+        statusForTitle,
+        title,
+        urlChangeToStatus
     } = useApproveAgreement();
-  
-    if (!hasPermissionToViewPage && is2849Ready) {
-        return <ErrorPage />;
-    }
-    if (!isApproverAndAgreementInReview) {
+
+    if (!hasPermissionToViewPage) {
         return <ErrorPage />;
     }
     if (isLoadingAgreement) {
@@ -88,7 +84,7 @@ const ApproveAgreement = () => {
 
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
-                changeRequests={changeRequestsInReview}
+                changeRequests={changeRequestsInReviewForUser}
                 statusChangeTo={urlChangeToStatus}
             />
             <AgreementMetaAccordion
@@ -100,7 +96,7 @@ const ApproveAgreement = () => {
             <AgreementBLIAccordion
                 title="Review Budget Lines"
                 instructions="This is a list of all budget lines within this agreement.  Changes are displayed with a blue underline. Use the toggle to see how your approval would change the budget lines."
-                budgetLineItems={agreement?.budget_line_items}
+                budgetLineItems={budgetLinesInReview}
                 agreement={agreement}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
@@ -128,7 +124,7 @@ const ApproveAgreement = () => {
             </AgreementBLIAccordion>
             <AgreementCANReviewAccordion
                 instructions="The budget lines showing In Review Status have allocated funds from the CANs displayed below."
-                selectedBudgetLines={agreement.budget_line_items}
+                selectedBudgetLines={budgetLinesInReview}
                 afterApproval={afterApproval}
                 setAfterApproval={setAfterApproval}
                 action={urlChangeToStatus}

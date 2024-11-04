@@ -1,32 +1,31 @@
 import App from "../../../App";
 import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } from "../../../api/opsAPI";
-import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
-import BLIFilterButton from "./BLIFilterButton";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
+import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
-import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 import {
+    addCanAndAgreementNameToBudgetLines,
     filterBudgetLineItems,
     handleFilterByUrl,
-    addCanAndAgreementNameToBudgetLines,
     uniqueBudgetLinesFiscalYears
 } from "./BudgetLineItems.helpers";
+import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
 
 /**
- * Page for the Budget Line Item List.
- * @component
+ * @component Page for the Budget Line Item List.
  * @returns {JSX.Element} - The component JSX.
  */
-export const BudgetLineItemList = () => {
+const BudgetLineItemList = () => {
     const {
         data: budgetLineItems,
         error: budgetLineItemsError,
         isLoading: budgetLineItemsIsLoading
-    } = useGetBudgetLineItemsQuery();
-    const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery();
-    const { data: agreements, error: agreementsError, isLoading: agreementsAreError } = useGetAgreementsQuery();
+    } = useGetBudgetLineItemsQuery({});
+    const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery({});
+    const { data: agreements, error: agreementsError, isLoading: agreementsAreError } = useGetAgreementsQuery({});
     const { myBudgetLineItemsUrl, activeUser, filters, setFilters } = useBudgetLinesList();
 
     if (budgetLineItemsIsLoading || cansIsLoading || agreementsAreError) {
@@ -81,3 +80,5 @@ export const BudgetLineItemList = () => {
         </App>
     );
 };
+
+export default BudgetLineItemList;

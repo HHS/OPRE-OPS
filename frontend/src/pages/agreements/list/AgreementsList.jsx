@@ -15,11 +15,13 @@ import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
 
 /**
- * Page for the Agreements List.
- * @component
+ * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
+ */
+/**
+ * @component Page for the Agreements List.
  * @returns {JSX.Element} - The component JSX.
  */
-export const AgreementsList = () => {
+const AgreementsList = () => {
     const [searchParams] = useSearchParams();
     const [filters, setFilters] = useState({
         upcomingNeedByDate: "all-time",
@@ -62,111 +64,139 @@ export const AgreementsList = () => {
     }
 
     // FILTERS
+    /** @param{Agreement[]} agreements */
     let filteredAgreements = _.cloneDeep(agreements);
 
     switch (filters.upcomingNeedByDate) {
         case "next-30-days":
-            filteredAgreements = filteredAgreements.filter((agreement) => {
-                return agreement.budget_line_items.some((bli) => {
-                    return (
-                        bli.date_needed &&
-                        new Date(bli.date_needed) <= new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000)
-                    );
-                });
-            });
+            filteredAgreements = filteredAgreements.filter(
+                /** @param{Agreement} agreement */
+                (agreement) => {
+                    return agreement.budget_line_items.some((bli) => {
+                        return (
+                            bli.date_needed &&
+                            new Date(bli.date_needed) <= new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000)
+                        );
+                    });
+                }
+            );
             break;
         case "current-fy":
-            filteredAgreements = filteredAgreements.filter((agreement) => {
-                return agreement.budget_line_items.some((bli) => {
-                    const currentFY = Number(getCurrentFiscalYear(new Date()));
-                    const bliFY = new Date(bli.date_needed).getFullYear();
-                    return bli.date_needed && bliFY === currentFY;
-                });
-            });
+            filteredAgreements = filteredAgreements.filter(
+                /** @param{Agreement} agreement */
+                (agreement) => {
+                    return agreement.budget_line_items.some((bli) => {
+                        const currentFY = Number(getCurrentFiscalYear(new Date()));
+                        const bliFY = new Date(bli.date_needed).getFullYear();
+                        return bli.date_needed && bliFY === currentFY;
+                    });
+                }
+            );
             break;
         case "next-6-months":
-            filteredAgreements = filteredAgreements.filter((agreement) => {
-                const now = new Date();
-                const sixMonthsFromNow = new Date(now.setMonth(now.getMonth() + 6));
-                return agreement.budget_line_items.some((bli) => {
-                    return bli.date_needed && new Date(bli.date_needed) <= sixMonthsFromNow;
-                });
-            });
+            filteredAgreements = filteredAgreements.filter(
+                /** @param{Agreement} agreement */
+                (agreement) => {
+                    const now = new Date();
+                    const sixMonthsFromNow = new Date(now.setMonth(now.getMonth() + 6));
+                    return agreement.budget_line_items.some((bli) => {
+                        return bli.date_needed && new Date(bli.date_needed) <= sixMonthsFromNow;
+                    });
+                }
+            );
             break;
         case "all-time":
             break;
     }
 
     // filter by projects
-    filteredAgreements = filteredAgreements.filter((agreement) => {
-        return (
-            filters.projects.length === 0 ||
-            filters.projects.some((project) => {
-                return project.id === agreement.project_id;
-            })
-        );
-    });
+    filteredAgreements = filteredAgreements.filter(
+        /** @param{Agreement} agreement */
+        (agreement) => {
+            return (
+                filters.projects.length === 0 ||
+                filters.projects.some((project) => {
+                    return project.id === agreement.project_id;
+                })
+            );
+        }
+    );
 
     // filter by project officers
-    filteredAgreements = filteredAgreements.filter((agreement) => {
-        return (
-            filters.projectOfficers.length === 0 ||
-            filters.projectOfficers.some((po) => {
-                return po.id === agreement.project_officer_id;
-            })
-        );
-    });
+    filteredAgreements = filteredAgreements.filter(
+        /** @param{Agreement} agreement */
+        (agreement) => {
+            return (
+                filters.projectOfficers.length === 0 ||
+                filters.projectOfficers.some((po) => {
+                    return po.id === agreement.project_officer_id;
+                })
+            );
+        }
+    );
 
     // filter by types
-    filteredAgreements = filteredAgreements.filter((agreement) => {
-        return (
-            filters.types.length === 0 ||
-            filters.types.some((agreementType) => {
-                return agreementType === agreement.agreement_type;
-            })
-        );
-    });
+    filteredAgreements = filteredAgreements.filter(
+        /** @param{Agreement} agreement */
+        (agreement) => {
+            return (
+                filters.types.length === 0 ||
+                filters.types.some((agreementType) => {
+                    return agreementType === agreement.agreement_type;
+                })
+            );
+        }
+    );
 
     // filter by procurement shops
-    filteredAgreements = filteredAgreements.filter((agreement) => {
-        return (
-            filters.procurementShops.length === 0 ||
-            filters.procurementShops.some((procurementShop) => {
-                return procurementShop.id === agreement.awarding_entity_id;
-            })
-        );
-    });
+    filteredAgreements = filteredAgreements.filter(
+        /** @param{Agreement} agreement */
+        (agreement) => {
+            return (
+                filters.procurementShops.length === 0 ||
+                filters.procurementShops.some((procurementShop) => {
+                    return procurementShop.id === agreement.awarding_entity_id;
+                })
+            );
+        }
+    );
 
     // filter by budget line status
-    filteredAgreements = filteredAgreements.filter((agreement) => {
-        return (
-            (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
-            (filters.budgetLineStatus.draft === true &&
-                agreement.budget_line_items.some((bli) => {
-                    return draftBudgetLineStatuses.includes(bli.status);
-                })) ||
-            (filters.budgetLineStatus.planned === true &&
-                agreement.budget_line_items.some((bli) => {
-                    return bli.status === BLI_STATUS.PLANNED;
-                })) ||
-            (filters.budgetLineStatus.executing === true &&
-                agreement.budget_line_items.some((bli) => {
-                    return bli.status === BLI_STATUS.EXECUTING;
-                })) ||
-            (filters.budgetLineStatus.obligated === true &&
-                agreement.budget_line_items.some((bli) => {
-                    return bli.status === BLI_STATUS.OBLIGATED;
-                }))
-        );
-    });
+    filteredAgreements = filteredAgreements.filter(
+        /** @param{Agreement} agreement */
+        (agreement) => {
+            return (
+                (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
+                (filters.budgetLineStatus.draft === true &&
+                    agreement.budget_line_items.some((bli) => {
+                        return draftBudgetLineStatuses.includes(bli.status);
+                    })) ||
+                (filters.budgetLineStatus.planned === true &&
+                    agreement.budget_line_items.some((bli) => {
+                        return bli.status === BLI_STATUS.PLANNED;
+                    })) ||
+                (filters.budgetLineStatus.executing === true &&
+                    agreement.budget_line_items.some((bli) => {
+                        return bli.status === BLI_STATUS.EXECUTING;
+                    })) ||
+                (filters.budgetLineStatus.obligated === true &&
+                    agreement.budget_line_items.some((bli) => {
+                        return bli.status === BLI_STATUS.OBLIGATED;
+                    }))
+            );
+        }
+    );
 
     let sortedAgreements = [];
     if (myAgreementsUrl) {
-        const myAgreements = filteredAgreements.filter((agreement) => {
-            return agreement.team_members?.some((teamMember) => {
-                return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
-            });
-        });
+        const myAgreements = filteredAgreements.filter(
+            /** @param{Agreement} agreement */
+            (agreement) => {
+                return agreement.team_members?.some((teamMember) => {
+                    return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
+                });
+            }
+        );
         sortedAgreements = sortAgreements(myAgreements);
     } else {
         // all-agreements
@@ -226,3 +256,5 @@ export const AgreementsList = () => {
         </App>
     );
 };
+
+export default AgreementsList;

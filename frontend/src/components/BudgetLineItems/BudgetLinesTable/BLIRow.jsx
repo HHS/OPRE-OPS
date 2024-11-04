@@ -31,18 +31,24 @@ import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
+/**
+ * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+ */
 
 /**
- * BLIRow component that represents a single row in the Budget Lines table.
- * @component
- * @param {Object} props - The props for the BLIRow component.
- * @param {Object} props.budgetLine - The budget line object.
- * @param {boolean} [props.isReviewMode] - Whether the user is in review mode.
- * @param {Function} [props.handleSetBudgetLineForEditing] - The function to set the budget line for editing.
- * @param {Function} [props.handleDeleteBudgetLine] - The function to delete the budget line.
- * @param {Function} [props.handleDuplicateBudgetLine] - The function to duplicate the budget line.
- * @param {boolean} [props.readOnly] - Whether the user is in read only mode.
- * @param {boolean} [props.isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
+ * @typedef {Object} BLIRowProps
+ * @property {BudgetLine} budgetLine - The budget line object.
+ * @property {boolean} [isReviewMode] - Whether the user is in review mode.
+ * @property {Function} [handleSetBudgetLineForEditing] - The function to set the budget line for editing.
+ * @property {Function} [handleDeleteBudgetLine] - The function to delete the budget line.
+ * @property {Function} [handleDuplicateBudgetLine] - The function to duplicate the budget line.
+ * @property {boolean} [readOnly] - Whether the user is in read only mode.
+ * @property {boolean} [isBLIInCurrentWorkflow] - Whether the budget line item is in the current workflow.
+ */
+
+/**
+ * @component BLIRow component that represents a single row in the Budget Lines table.
+ * @param {BLIRowProps} props - The props for the BLIRow component.
  * @returns {JSX.Element} The BLIRow component.
  **/
 const BLIRow = ({
@@ -57,8 +63,8 @@ const BLIRow = ({
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
     const loggedInUserFullName = useGetLoggedInUserFullName();
-    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
+    const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
+    const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount || 0, feeTotal);
     const isBudgetLineEditableFromStatus = isBudgetLineEditableByStatus(budgetLine);
     const isUserBudgetLineCreator = useIsBudgetLineCreator(budgetLine);
     const canUserEditAgreement = useIsUserAllowedToEditAgreement(budgetLine?.agreement_id);
@@ -103,23 +109,23 @@ const BLIRow = ({
             </th>
             <td
                 className={`${futureDateErrorClass(
-                    formatDateNeeded(budgetLine?.date_needed),
+                    formatDateNeeded(budgetLine?.date_needed || ""),
                     isReviewMode
                 )} ${addErrorClassIfNotFound(
-                    formatDateNeeded(budgetLine?.date_needed),
+                    formatDateNeeded(budgetLine?.date_needed || ""),
                     isReviewMode
                 )} ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {formatDateNeeded(budgetLine?.date_needed)}
+                {formatDateNeeded(budgetLine?.date_needed || "")}
             </td>
             <td
                 className={`${
-                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed)), isReviewMode)
+                    (addErrorClassIfNotFound(fiscalYearFromDate(budgetLine?.date_needed || "")), isReviewMode)
                 } ${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {fiscalYearFromDate(budgetLine?.date_needed)}
+                {fiscalYearFromDate(budgetLine?.date_needed || "")}
             </td>
             <td
                 className={`${addErrorClassIfNotFound(budgetLine?.can?.number, isReviewMode)} ${borderExpandedStyles}`}
@@ -136,7 +142,7 @@ const BLIRow = ({
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={getDecimalScale(budgetLine?.amount)}
+                    decimalScale={getDecimalScale(budgetLine?.amount || 0)}
                     fixedDecimalScale={true}
                     renderText={(value) => value}
                 />
