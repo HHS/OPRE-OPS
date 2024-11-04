@@ -581,7 +581,7 @@
       first_name: "Sheila",
       last_name: "Celentano",
       email: "sheila.celentano@acf.hhs.gov",
-      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 5}], {"tablename":  "role", "id": 6}]],
+      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 5}, {"tablename":  "role", "id": 6}],
       status: "ACTIVE"
     }
   ],
