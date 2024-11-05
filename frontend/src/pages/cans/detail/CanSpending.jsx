@@ -1,11 +1,12 @@
 import DebugCode from "../../../components/DebugCode";
 /**
     @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+    @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
 */
 
 /**
  * @typedef {Object} CanSpendingProps
- * @property {CAN} can
+ * @property {BudgetLine[]} budgetLines
  */
 
 /**
@@ -13,12 +14,12 @@ import DebugCode from "../../../components/DebugCode";
  * @param {CanSpendingProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CanSpending = ({ can }) => {
+const CanSpending = ({ budgetLines }) => {
     return (
-        <div>
+        <article>
             <h2>Can Spending</h2>
-            <DebugCode data={can} />
-        </div>
+            <DebugCode data={budgetLines} />
+        </article>
     );
 };
 
