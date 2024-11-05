@@ -5,8 +5,22 @@ import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
 import { getAccessToken } from "../../Auth/auth";
-import PropTypes from "prop-types";
 
+/**
+ * @typedef {import("../../Users/UserTypes").User} User
+ */
+
+/**
+ * @typedef {Object} NotificationCenterProps
+ * @property {User} user - The user object.
+ */
+
+/**
+ *
+ * @component NotificationCenter
+ * @param {NotificationCenterProps} props - The props of the component.
+ * @returns {JSX.Element}
+ */
 const NotificationCenter = ({ user }) => {
     const [showModal, setShowModal] = React.useState(false);
     const access_token = getAccessToken();
@@ -118,10 +132,6 @@ const NotificationCenter = ({ user }) => {
             </Modal>
         </>
     );
-};
-
-NotificationCenter.propTypes = {
-    user: PropTypes.object.isRequired
 };
 
 export default NotificationCenter;
