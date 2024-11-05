@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import Card from "../Card";
 
@@ -36,12 +35,6 @@ const CurrencyCard = ({ headerText, amount, children, ...rest }) => {
             {children}
         </Card>
     );
-};
-
-CurrencyCard.propTypes = {
-    headerText: PropTypes.string.isRequired,
-    amount: PropTypes.number.isRequired,
-    children: PropTypes.node
 };
 
 export default CurrencyCard;

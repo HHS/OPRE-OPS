@@ -6,7 +6,7 @@ import cryptoRandomString from "crypto-random-string";
 import { getAccessToken, getAuthorizationCode } from "./auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { User } from "../UI/Header/User";
+import User from "../UI/Header/User";
 import { apiLogin, apiLogout } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
 import { setActiveUser } from "./auth";

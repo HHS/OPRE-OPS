@@ -15,7 +15,7 @@ const RoundedBox = ({ children, className, dataCy, ...rest }) => {
     return (
         <div
             className={cardContainer}
-            data-cy={dataCy ?? dataCy}
+            data-cy={dataCy}
             {...rest}
         >
             {children}

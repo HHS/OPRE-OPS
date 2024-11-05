@@ -15,7 +15,7 @@ import EditAgreement from "./pages/agreements/EditAgreement";
 import AgreementsList from "./pages/agreements/list/AgreementsList";
 import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
-import CanDetail from "./pages/cans/detail/CanDetail";
+import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
 import ErrorPage from "./pages/ErrorPage";
 import Home from "./pages/Home";
@@ -240,7 +240,7 @@ const router = createBrowserRouter(
                         />
                         <Route
                             path="/cans/:id/*"
-                            element={<CanDetail />}
+                            element={<Can />}
                             handle={{
                                 crumb: () => (
                                     <Link
