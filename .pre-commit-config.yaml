@@ -54,13 +54,13 @@ repos:
         # For running trufflehog locally, use the following:
         # entry: bash -c 'trufflehog git file://. --since-commit HEAD --only-verified --fail'
         # For running trufflehog in docker, use the following entry instead:
-        entry: bash -c 'docker run --rm -v "$(pwd):/workdir" -i --rm trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail'
+        entry: bash -c 'podman run --rm -v "$(pwd):/workdir" -i --rm trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail'
         language: system
         stages: ["pre-commit", "pre-push"]
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.18.0
     hooks:
       - id: commitlint
-        stages: [ commit-msg ]
-        additional_dependencies: [ "@commitlint/config-conventional" ]
+        stages: [commit-msg]
+        additional_dependencies: ["@commitlint/config-conventional"]
         language_version: 22.8.0

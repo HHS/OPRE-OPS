@@ -20,20 +20,21 @@ const Can = () => {
     const { data: can, isLoading } = useGetCanByIdQuery(canId);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
-
     if (isLoading) {
         return <div> Loading Can... </div>;
     }
     if (!can) {
         return <div>Can not found</div>;
     }
-
+    const { number, description, nick_name: nickname, portfolio } = can;
+    const { division_id: divisionId, team_leaders: teamLeaders, name: portfolioName } = portfolio;
+    const noData = "TBD";
     const subTitle = `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}`;
 
     return (
         <App breadCrumbName={can.display_name}>
             <PageHeader
-                title={can.display_name || "TBD"}
+                title={can.display_name || noData}
                 subTitle={subTitle}
             />
 
@@ -47,11 +48,20 @@ const Can = () => {
             <Routes>
                 <Route
                     path=""
-                    element={<CanDetail can={can} />}
+                    element={
+                        <CanDetail
+                            divisionId={divisionId}
+                            description={description || noData}
+                            nickname={nickname || noData}
+                            number={number}
+                            portfolioName={portfolioName || noData}
+                            teamLeaders={teamLeaders || []}
+                        />
+                    }
                 />
                 <Route
                     path="spending"
-                    element={<CanSpending />}
+                    element={<CanSpending can={can} />}
                 />
                 <Route
                     path="funding"
