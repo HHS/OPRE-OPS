@@ -24,7 +24,9 @@ const CANBudgetLineTable = ({ budgetLines }) => {
             {budgetLines.map((budgetLine) => (
                 <CANBudgetLineTableRow
                     key={budgetLine.id}
-                    budgetLine={budgetLine}
+                    blId={budgetLine.id}
+                    agreementName="TBD"
+                    fiscalYear={budgetLine.fiscal_year}
                 />
             ))}
         </Table>
