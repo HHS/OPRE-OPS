@@ -19,24 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  data-import:
-    build:
-      context: ./backend/
-      dockerfile: Dockerfile.data-tools
-    container_name: ops-data-import
-    environment:
-      - ENV=local
-      - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
-    command: /bin/sh -c "./data_tools/scripts/import_test_data.sh"
-    volumes:
-      # See below for an explanation of this volume. The same reasoning applies,
-      # but in this case it's so we can run new migrations immediately without
-      # having to rebuild the migration container.
-      - ./backend/ops_api:/home/app/ops_api
-    depends_on:
-      db:
-        condition: service_healthy
-
   disable-users:
     build:
       context: ./backend/
@@ -52,11 +34,26 @@ services:
       data-import:
         condition: service_completed_successfully
 
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    environment:
+      - REACT_APP_BACKEND_DOMAIN=http://localhost:8080
+      - VITE_BACKEND_DOMAIN=http://localhost:8080
+    container_name: ops-frontend-demo
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/home/app/src
+
   backend:
     build:
       context: ./backend/
       dockerfile: Dockerfile.ops-api
-    container_name: ops-backend
+    container_name: ops-backend-demo
     ports:
       - "8080:8080"
     command: /bin/sh -c " . .venv/bin/activate && python -m flask run --debug --host=0.0.0.0 --port=8080"
@@ -77,17 +74,17 @@ services:
       timeout: 10s
       retries: 10
 
-  frontend:
+  data-import:
     build:
-      context: ./frontend/
-      dockerfile: Dockerfile
-    container_name: ops-frontend
+      context: ./backend/
+      dockerfile: Dockerfile.data-tools
+    container_name: ops-data-demo
     environment:
-      - REACT_APP_BACKEND_DOMAIN=http://localhost:8080
-      - VITE_BACKEND_DOMAIN=http://localhost:8080
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
+      - ENV=local
+      - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
+    command: /bin/sh -c "./data_tools/scripts/import_test_data.sh && ./data_tools/scripts/demo_data.sh"
     volumes:
-      - ./frontend/src:/home/app/src
+      - ./backend/ops_api:/home/app/ops_api
+    depends_on:
+      db:
+        condition: service_healthy
