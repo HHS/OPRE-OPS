@@ -1,5 +1,4 @@
 from marshmallow import Schema, fields
-
 from models import CANFundingSource, CANMethodOfTransfer, PortfolioStatus
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.projects import ProjectSchema
@@ -42,12 +41,25 @@ class PortfolioUrlCANSchema(Schema):
     updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
 
 
+class DivisionSchema(Schema):
+    id = fields.Integer(required=True)
+    name = fields.String(allow_none=True)
+    abbreviation = fields.String(required=True)
+    division_director_id = fields.Integer(required=True)
+    deputy_division_director_id = fields.Integer(required=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+
+
 class PortfolioCANSchema(Schema):
     id = fields.Integer(required=True)
     name = fields.String(allow_none=True)
     abbreviation = fields.String(required=True)
     status = fields.Enum(PortfolioStatus)
     division_id = fields.Integer(required=True)
+    division = fields.Nested(DivisionSchema(), default=[])
     urls = fields.List(fields.Nested(PortfolioUrlCANSchema()), default=[])
     team_leaders = fields.List(fields.Nested(SafeUserSchema()), default=[])
     created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
