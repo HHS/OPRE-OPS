@@ -9,9 +9,11 @@ import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
 import CanDetail from "./CanDetail";
 import CanFunding from "./CanFunding";
 import CanSpending from "./CanSpending";
+import React from "react";
 /**
-    @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
-*/
+ *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+ *  @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
+ */
 
 const Can = () => {
     const urlPathParams = useParams();
@@ -20,13 +22,23 @@ const Can = () => {
     const { data: can, isLoading } = useGetCanByIdQuery(canId);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
+
+    const filteredCANByFiscalYear = React.useMemo(() => {
+        if (!fiscalYear || !can) return {};
+        return can.funding_details?.fiscal_year === fiscalYear ? can : {};
+    }, [can, fiscalYear]);
+
     if (isLoading) {
         return <div> Loading Can... </div>;
     }
     if (!can) {
         return <div>Can not found</div>;
     }
-    const { number, description, nick_name: nickname, portfolio, budget_line_items: budgetLines } = can;
+
+    const { number, description, nick_name: nickname, portfolio } = can;
+
+    /** @type {{budget_line_items?: BudgetLine[]}} */
+    const { budget_line_items: budgetLines } = filteredCANByFiscalYear;
     const { division_id: divisionId, team_leaders: teamLeaders, name: portfolioName } = portfolio;
     const noData = "TBD";
     const subTitle = `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}`;
@@ -51,17 +63,17 @@ const Can = () => {
                     element={
                         <CanDetail
                             divisionId={divisionId}
-                            description={description || noData}
+                            description={description ?? noData}
                             nickname={nickname || noData}
                             number={number}
-                            portfolioName={portfolioName || noData}
-                            teamLeaders={teamLeaders || []}
+                            portfolioName={portfolioName ?? noData}
+                            teamLeaders={teamLeaders ?? []}
                         />
                     }
                 />
                 <Route
                     path="spending"
-                    element={<CanSpending budgetLines={budgetLines || []} />}
+                    element={<CanSpending budgetLines={budgetLines ?? []} />}
                 />
                 <Route
                     path="funding"
