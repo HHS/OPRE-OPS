@@ -10,7 +10,7 @@ export const DOCUMENT_TYPES = [
 
 export const VALID_EXTENSIONS = ["pdf", "doc", "docx", "xls", "xlsx"];
 
-export const DOCUMENT_CONTAINER_NAME = "documents";
+export const DOCUMENT_CONTAINER_NAME = "docs";
 
 export const ALLOWED_FAKE_HOSTS = "FakeDocumentRepository";
-export const ALLOWED_HOSTS = "blob.core.windows.net";
+export const ALLOWED_HOSTS = "ops.opre.acf.gov";

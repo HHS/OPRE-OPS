@@ -1,5 +1,4 @@
 from flask import Config
-from flask_jwt_extended import current_user
 
 from ops_api.ops.document.azure_document_repository import AzureDocumentRepository
 from ops_api.ops.document.document_repository import DocumentRepository
@@ -16,11 +15,7 @@ class DocumentGateway:
         # Validate and register providers with the factory
         self.register_providers()
 
-        # Select provider based on the current user
-        if current_user.id >= 500:  # Users with id 5xx are test users
-            self.provider = DocumentProviders.fake.name
-        else:
-            self.provider = DocumentProviders.azure.name
+        self.provider = DocumentProviders.azure.name
 
     def register_providers(self) -> None:
         """
