@@ -37,6 +37,7 @@ import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.ho
  * @property {string} creationDate
  * @property {string} procShopCode - TODO
  * @property {number} procShopFeePercentage
+ * @property {string} notes
  */
 
 /**
@@ -58,7 +59,8 @@ const CANBudgetLineTableRow = ({
     creatorId,
     creationDate,
     procShopCode,
-    procShopFeePercentage
+    procShopFeePercentage,
+    notes
 }) => {
     const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
@@ -160,7 +162,7 @@ const CANBudgetLineTableRow = ({
                         className="margin-0"
                         style={{ maxWidth: "25rem" }}
                     >
-                        No Notes added
+                        {notes}
                     </dd>
                 </dl>
                 <div

@@ -40,6 +40,7 @@ const CANBudgetLineTable = ({ budgetLines }) => {
                     creationDate={budgetLine.created_on}
                     procShopCode="TBD"
                     procShopFeePercentage={budgetLine.proc_shop_fee_percentage}
+                    notes={budgetLine.comments || "No Notes added"}
                 />
             ))}
         </Table>
