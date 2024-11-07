@@ -15,6 +15,7 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
@@ -22,6 +23,7 @@ import TableTag from "../../UI/TableTag";
 
 /**
  * @typedef {Object} CANBudgetLineTableRowProps
+ * @property {BudgetLine} budgetLine
  * @property {number} blId
  * @property {string} agreementName - TODO
  * @property {string} obligateDate
@@ -43,6 +45,7 @@ import TableTag from "../../UI/TableTag";
  * @returns  {JSX.Element} - The component JSX.
  */
 const CANBudgetLineTableRow = ({
+    budgetLine,
     blId,
     agreementName,
     obligateDate,
@@ -57,6 +60,7 @@ const CANBudgetLineTableRow = ({
     procShopCode,
     procShopFeePercentage
 }) => {
+    const lockedMessage = useChangeRequestsForTooltip(budgetLine);
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
@@ -118,6 +122,7 @@ const CANBudgetLineTableRow = ({
                 <TableTag
                     status={status}
                     inReview={inReview}
+                    lockedMessage={lockedMessage}
                 />
             </td>
         </>
