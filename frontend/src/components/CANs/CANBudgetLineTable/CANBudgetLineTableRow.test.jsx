@@ -67,6 +67,7 @@ describe("CANBudgetLineTableRow", () => {
                     creationDate={mockBudgetLine.created_on}
                     procShopCode="TBD"
                     procShopFeePercentage={mockBudgetLine.proc_shop_fee_percentage}
+                    notes={mockBudgetLine.comments}
                 />
             </Provider>
         );
@@ -75,7 +76,7 @@ describe("CANBudgetLineTableRow", () => {
         await userEvent.click(screen.getByTestId("expand-row"));
 
         expect(screen.getByText("Created By")).toBeInTheDocument();
-        expect(screen.getByText("No Notes added")).toBeInTheDocument();
+        expect(screen.getByText("comment one")).toBeInTheDocument();
         expect(screen.getByText("Procurement Shop")).toBeInTheDocument();
         expect(screen.getByText("$1,000.00")).toBeInTheDocument(); // amount
         expect(screen.getByText("$50.00")).toBeInTheDocument(); // fee
