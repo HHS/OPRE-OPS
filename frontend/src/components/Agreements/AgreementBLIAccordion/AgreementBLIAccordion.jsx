@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import {
     BLI_STATUS,
     budgetLinesTotal,
@@ -12,21 +11,28 @@ import ToggleButton from "../../UI/ToggleButton";
 import AgreementTotalCard from "../AgreementDetailsCards/AgreementTotalCard";
 import BLIsByFYSummaryCard from "../AgreementDetailsCards/BLIsByFYSummaryCard";
 import { getProcurementShopSubTotal } from "../AgreementsTable/AgreementsTable.helpers";
+/**
+    @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
+    @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
+*/
 
 /**
- * Renders an accordion component for reviewing budget line items.
- * @component
- * @param {Object} props - The component props.
- * @param {string} props.title - The title of the accordion.
- * @param {string} props.instructions - The instructions for the accordion.
- * @param {Object[]} props.budgetLineItems - The budget line items.
- * @param {React.ReactNode} props.children - The children to render.
- * @param {Object} props.agreement - The agreement object.
- * @param {boolean} props.afterApproval - Flag indicating whether to show remaining budget after approval.
- * @param {Function} props.setAfterApproval - Function to set the afterApproval flag.
- * @param {string} props.action - The action to perform.
- * @param {boolean} [props.isApprovePage=false] - Flag indicating if the page is the approve page.
- * @param {Object[]} [props.updatedBudgetLines=[]] - The updated budget lines.
+@typedef AgreementBLIAccordionProps
+@property {string} title - The title of the accordion.
+@property {string} instructions - The instructions for the accordion.
+@property {BudgetLine[]} budgetLineItems - The budget line items.
+@property {React.ReactNode} children - The children to render.
+@property {Agreement} agreement - The agreement object.
+@property {boolean} afterApproval - Flag indicating whether to show remaining budget after approval.
+@property {Function} setAfterApproval - Function to set the afterApproval flag.
+@property {string} action - The action to perform.
+@property {boolean} [isApprovePage=false] - Flag indicating if the page is the approve page.
+@property {BudgetLine[]} [updatedBudgetLines=[]] - The updated budget lines.
+*/
+
+/**
+ * @component - an accordion component for reviewing budget line items
+ * @param {AgreementBLIAccordionProps} props - The props for the component.
  * @returns {JSX.Element} The AgreementBLIAccordion component.
  */
 function AgreementBLIAccordion({
@@ -92,18 +98,5 @@ function AgreementBLIAccordion({
         </Accordion>
     );
 }
-
-AgreementBLIAccordion.propTypes = {
-    title: PropTypes.string.isRequired,
-    instructions: PropTypes.string.isRequired,
-    budgetLineItems: PropTypes.arrayOf(PropTypes.object),
-    children: PropTypes.node,
-    agreement: PropTypes.object,
-    afterApproval: PropTypes.bool,
-    setAfterApproval: PropTypes.func,
-    action: PropTypes.string,
-    isApprovePage: PropTypes.bool,
-    updatedBudgetLines: PropTypes.arrayOf(PropTypes.object)
-};
 
 export default AgreementBLIAccordion;

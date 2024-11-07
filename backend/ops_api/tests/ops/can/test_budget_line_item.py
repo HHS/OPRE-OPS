@@ -1101,3 +1101,21 @@ def test_patch_budget_line_items_invalid_user_change_request(basic_user_auth_cli
     }
     response = basic_user_auth_client.patch(f"/api/v1/budget-line-items/{test_bli.id}", json=data)
     assert response.status_code == 403
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_invalid_post_budget_line_items(loaded_db, basic_user_auth_client, test_can):
+    data = {
+        "line_description": "LI 1",
+        "comments": "blah blah",
+        "agreement_id": 1,
+        "can_id": test_can.id,
+        "amount": 100.12,
+        "status": "DRAFT",
+        "date_needed": "2043-01-01",
+        "proc_shop_fee_percentage": 1.23,
+        "services_component_id": 1,
+    }
+    response = basic_user_auth_client.post("/api/v1/budget-line-items/", json=data)
+    assert response.status_code == 403
