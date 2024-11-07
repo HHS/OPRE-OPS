@@ -1,18 +1,22 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { changeBgColorIfExpanded, removeBorderBottomIfExpanded } from "./TableRowExpandable.helpers";
 
 /**
- * TableRowExpandable component that represents a single expandable row in a table.
- * @component
- * @param {Object} props - The props for the TableRowExpandable component.
- * @param {React.ReactNode} props.tableRowData - The data for the row.
- * @param {React.ReactNode} props.expandedData - The expanded data for the row.
- * @param {boolean} props.isExpanded - Whether the row is expanded.
- * @param {Function} props.setIsExpanded - The setter function for isExpanded.
- * @param {Function} props.setIsRowActive - The setter function for isRowActive.
+    @typedef {Object} TableRowExpandableProps
+    @property {React.ReactNode} tableRowData - The data for the row.
+    @property {React.ReactNode} expandedData - The expanded data for the row.
+    @property {boolean} isExpanded - Whether the row is expanded.
+    @property {Function} setIsExpanded - The setter function for isExpanded.
+    @property {Function} setIsRowActive - The setter function for isRowActive.
+    @property {string} [className] - The class names for the component
+    @property {Object} [rest] - Additional props
+*/
+
+/**
+ * @component TableRowExpandable component that represents an expandable row in a table.
+ * @param {TableRowExpandableProps} props - The props for the TableRowExpandable component.
  * @returns {JSX.Element} The TableRowExpandable component.
  */
 const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpanded, setIsRowActive, ...rest }) => {
@@ -55,11 +59,4 @@ const TableRowExpandable = ({ tableRowData, expandedData, isExpanded, setIsExpan
     );
 };
 
-TableRowExpandable.propTypes = {
-    tableRowData: PropTypes.node.isRequired,
-    expandedData: PropTypes.node.isRequired,
-    isExpanded: PropTypes.bool.isRequired,
-    setIsExpanded: PropTypes.func.isRequired,
-    setIsRowActive: PropTypes.func.isRequired
-};
 export default TableRowExpandable;

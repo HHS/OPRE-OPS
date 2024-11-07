@@ -8,6 +8,7 @@ import PropTypes from "prop-types";
  * @property {boolean} [active] - Whether the tag is active or not.
  * @property {string} [label] - The label of the tag.
  * @property {string} [className] - Additional CSS classes.
+ * @property {number} [dataTestId] - The data test id.
  * @property {Object} [rest] - Additional props.
  * @property {React.ReactNode} [children] - Child elements.
  */

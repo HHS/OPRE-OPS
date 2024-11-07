@@ -35,7 +35,10 @@ const CanList = () => {
     });
     const filteredCANsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear || !canList) return [];
-        return canList.filter((can) => can.funding_details.fiscal_year === fiscalYear);
+        return canList.filter(
+            /** @param {CAN} can */
+            (can) => can.funding_details?.fiscal_year === fiscalYear
+        );
     }, [canList, fiscalYear]);
     const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters) || [];
     const portfolioOptions = getPortfolioOptions(canList);

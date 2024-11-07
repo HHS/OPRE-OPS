@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import RoundedBox from "../../RoundedBox";
 
 /**
@@ -19,7 +18,8 @@ const Card = ({ title, children, dataCy = "", ...rest }) => {
     return (
         <RoundedBox
             className={"display-inline-block"}
-            dataCy={dataCy ?? dataCy}
+            dataCy={dataCy}
+            data-testid={dataCy}
             style={{ padding: "20px 30px 30px 30px" }}
             {...rest} // this is real trust 🧡
         >
@@ -27,11 +27,6 @@ const Card = ({ title, children, dataCy = "", ...rest }) => {
             {children}
         </RoundedBox>
     );
-};
-Card.propTypes = {
-    title: PropTypes.string,
-    dataCy: PropTypes.string,
-    children: PropTypes.node.isRequired
 };
 
 export default Card;

@@ -220,12 +220,12 @@ export const opsApi = createApi({
             providesTags: ["Notifications"]
         }),
         getNotificationsByUserIdAndAgreementId: builder.query({
-            query: ({ user_oidc_id, agreement_id}) => {
-                if(!user_oidc_id || !agreement_id){
+            query: ({ user_oidc_id, agreement_id }) => {
+                if (!user_oidc_id || !agreement_id) {
                     return { skip: true };
                 }
                 return {
-                    url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`,
+                    url: `/notifications/?agreement_id=${agreement_id}&oidc_id=${user_oidc_id}&is_read=False`
                 };
             },
             providesTags: ["Notifications"]
@@ -311,6 +311,10 @@ export const opsApi = createApi({
             query: () => `/divisions/`,
             providesTags: ["Divisions"]
         }),
+        getDivision: builder.query({
+            query: (division_id) => `/divisions/${division_id}`,
+            providesTags: ["Divisions"]
+        }),
         addDocument: builder.mutation({
             query: (data) => {
                 return {
@@ -323,7 +327,7 @@ export const opsApi = createApi({
             invalidatesTags: ["Documents"]
         }),
         getDocumentsByAgreementId: builder.query({
-            query: (agreement_id) => `/documents/${agreement_id}/`,
+            query: (agreement_id) => `/documents/${agreement_id}`,
             providesTags: ["Documents"]
         }),
         updateDocumentStatus: builder.mutation({
@@ -383,7 +387,8 @@ export const {
     useGetChangeRequestsListQuery,
     useReviewChangeRequestMutation,
     useGetDivisionsQuery,
+    useGetDivisionQuery,
     useAddDocumentMutation,
     useGetDocumentsByAgreementIdQuery,
-    useUpdateDocumentStatusMutation,
+    useUpdateDocumentStatusMutation
 } = opsApi;

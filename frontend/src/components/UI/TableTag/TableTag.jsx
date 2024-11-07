@@ -18,7 +18,10 @@ const TableTag = ({ status, inReview = false, lockedMessage }) => {
 
     if (inReview && lockedMessage) {
         return (
-            <Tooltip label={lockedMessage}>
+            <Tooltip
+                label={lockedMessage}
+                position="left"
+            >
                 <Tag
                     className="bg-brand-data-viz-primary-9 text-white"
                     text="In Review"

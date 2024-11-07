@@ -71,15 +71,16 @@ export const useChangeRequestsForBudgetLines = (budgetLines, targetStatus, isBud
 /**
  * Custom hook that returns the change requests for a budget line.
  * @param {BudgetLine} budgetLine - The budget line.
+ * @param {string} [title] - The title of message
  * @returns {string} The change requests messages.
  */
-export const useChangeRequestsForTooltip = (budgetLine) => {
+export const useChangeRequestsForTooltip = (budgetLine, title) => {
     const { data: cans, isSuccess: cansSuccess } = useGetCansQuery({});
     const { change_requests_in_review: changeRequests, in_review: isBLIInReview } = budgetLine || {};
     if (!cansSuccess) {
         return "";
     }
-    return getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview);
+    return getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview, title);
 };
 
 /**
@@ -89,9 +90,10 @@ export const useChangeRequestsForTooltip = (budgetLine) => {
  * @param {CAN[]} cans - The cans.
  * @param {boolean} cansSuccess - Whether the cans were successfully fetched.
  * @param {boolean} isBLIInReview - Whether the budget line is in review.
+ * @param {string} [title] - The title of message
  * @returns {string} The change requests messages.
  */
-export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview) {
+export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, cansSuccess, isBLIInReview, title) {
     /**
      * @type {string[]}
      */
@@ -113,7 +115,7 @@ export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, ca
                 let matchingCan = cans.find((can) => can.id === changeRequest.requested_change_data.can_id);
                 let canName = matchingCan?.display_name || "TBD";
 
-                changeRequestsMessages.push(`CAN: ${budgetLine.can.display_name} to ${canName}`);
+                changeRequestsMessages.push(`CAN: ${budgetLine.can?.display_name} to ${canName}`);
             }
             if (changeRequest?.requested_change_data?.status) {
                 changeRequestsMessages.push(
@@ -128,7 +130,7 @@ export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, ca
     let lockedMessage = "";
 
     if (isBLIInReview) {
-        lockedMessage = "This budget line has pending edits:";
+        lockedMessage = `${title ? title : "This budget line has pending edits:"}`;
         changeRequestsMessages.forEach((message) => {
             lockedMessage += `\n \u2022 ${message}`;
         });
@@ -155,7 +157,7 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
 
     if (changeRequestsFromBudgetLines?.length > 0) {
         changeRequestsFromBudgetLines.forEach((budgetLine) => {
-            budgetLine.change_requests_in_review.forEach(
+            budgetLine.change_requests_in_review?.forEach(
                 /** @param {ChangeRequest} changeRequest*/
                 (changeRequest) => {
                     let bliId = `BL ${budgetLine.id}`;
@@ -173,7 +175,7 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
                         let matchingCan = cans?.find((can) => can.id === changeRequest.requested_change_data.can_id);
                         let canName = matchingCan?.display_name || "TBD";
 
-                        changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
+                        changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can?.display_name} to ${canName}`);
                     }
                     if (changeRequest?.requested_change_data?.status) {
                         changeRequestsMessages.add(
@@ -230,7 +232,7 @@ function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatu
                 if (changeRequest?.requested_change_data?.can_id) {
                     let matchingCan = cans?.find((can) => can.id === changeRequest.requested_change_data.can_id);
                     let canName = matchingCan?.display_name || "TBD";
-                    changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can.display_name} to ${canName}`);
+                    changeRequestsMessages.add(`${bliId} CAN: ${budgetLine.can?.display_name} to ${canName}`);
                 }
             }
             if (!isBudgetChange) {

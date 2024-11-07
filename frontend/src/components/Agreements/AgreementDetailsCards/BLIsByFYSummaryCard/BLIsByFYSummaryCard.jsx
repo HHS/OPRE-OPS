@@ -1,17 +1,16 @@
 import React from "react";
-import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
+import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
 import Card from "../../../UI/Cards/Card";
 import styles from "./BLIsByFYSummaryCard.styles.module.scss";
 import { summaryCard } from "./BLIsFYSummaryCard.helpers";
-import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
 
 /**
- * A component that displays the total budget lines for an agreement.
- *
+ * @component Budget Lines Line Graph by Fiscal Year Card
+ * @typedef {import("../../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The component props.
- * @param {Array<any>} props.budgetLineItems - The budget line items for the agreement.
- * @returns {React.JSX.Element} - The agreement total budget lines card component JSX.
+ * @param {BudgetLine[]} props.budgetLineItems - The budget line items for the agreement.
+ * @returns {JSX.Element} - The agreement total budget lines card component JSX.
  */
 const BLIsByFYSummaryCard = ({ budgetLineItems = [] }) => {
     const id = React.useId();
@@ -53,10 +52,6 @@ const BLIsByFYSummaryCard = ({ budgetLineItems = [] }) => {
             </div>
         </Card>
     );
-};
-
-BLIsByFYSummaryCard.propTypes = {
-    budgetLineItems: PropTypes.array.isRequired
 };
 
 export default BLIsByFYSummaryCard;

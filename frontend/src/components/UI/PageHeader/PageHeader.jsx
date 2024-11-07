@@ -1,10 +1,12 @@
-import PropTypes from "prop-types";
 /**
- * Renders a page header with a title and optional subtitle.
- * @component
- * @param {Object} props - The component props.
- * @param {string} props.title - The title to display.
- * @param {string} [props.subTitle] - The optional subtitle to display.
+    @typedef {Object} PageHeaderProps
+    @property {string} title
+    @property {string} [subTitle]
+*/
+
+/**
+ * @component - Renders a page header with a title and optional subtitle.
+ * @param {PageHeaderProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered component.
  */
 const PageHeader = ({ title, subTitle }) => {
@@ -16,8 +18,4 @@ const PageHeader = ({ title, subTitle }) => {
     );
 };
 
-PageHeader.propTypes = {
-    title: PropTypes.string.isRequired,
-    subTitle: PropTypes.string
-};
 export default PageHeader;
