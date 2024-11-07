@@ -34,6 +34,11 @@ const CANBudgetLineTable = ({ budgetLines }) => {
                     fee={budgetLine.proc_shop_fee_percentage}
                     percentOfCAN={3}
                     status={budgetLine.status}
+                    inReview={budgetLine.in_review}
+                    creatorId={budgetLine.created_by}
+                    creationDate={budgetLine.created_on}
+                    procShopCode="TBD"
+                    procShopFeePercentage={budgetLine.proc_shop_fee_percentage}
                 />
             ))}
         </Table>
