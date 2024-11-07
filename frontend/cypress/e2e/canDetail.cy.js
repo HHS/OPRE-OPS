@@ -22,14 +22,14 @@ describe("CAN detail page", () => {
     it("shows the CAN Spending page", () => {
         cy.visit("/cans/504/spending");
         cy.get("#fiscal-year-select").select("2021");
-        cy.get("h1").should("contain", "G99PHS9"); // heading
+        cy.get("h1").should("contain", "G994426"); // heading
         cy.get("p").should("contain", "HS - 5 Years"); // sub-heading
         // should contain the budget line table
         cy.get("table").should("exist");
         // table should have more than 1 row
         cy.get("tbody").children().should("have.length.greaterThan", 1);
         // switch to a different fiscal year
-        cy.get("#fiscal-year-select").select("2021");
+        cy.get("#fiscal-year-select").select("2022");
         // table should not exist
         cy.get("tbody").should("not.exist");
         cy.get("p").should("contain", "No budget lines have been added to this CAN.");
