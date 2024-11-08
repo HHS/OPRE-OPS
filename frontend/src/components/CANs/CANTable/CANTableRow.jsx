@@ -33,7 +33,11 @@ const CANTableRow = ({
     portfolio,
     transfer
 }) => {
-    const { data: fundingSummary, isError, isLoading } = useGetCanFundingSummaryQuery(canId);
+    const {
+        data: fundingSummary,
+        isError,
+        isLoading
+    } = useGetCanFundingSummaryQuery({ id: canId, fiscalYear: fiscalYear });
     const availableFunds = fundingSummary?.available_funding ?? 0;
 
     if (isLoading)

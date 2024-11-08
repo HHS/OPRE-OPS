@@ -204,7 +204,7 @@ export const opsApi = createApi({
             providesTags: ["Cans"]
         }),
         getCanFundingSummary: builder.query({
-            query: ({ id }) => `/can-funding-summary/${id}`,
+            query: ({ id, fiscalYear }) => `/can-funding-summary/${id}?fiscal_year=${fiscalYear}`,
             providesTags: ["CanFunding"]
         }),
         // getCanFundingSummary: builder.query({
