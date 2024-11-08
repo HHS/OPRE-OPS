@@ -74,7 +74,14 @@ def generate_account_sas_url(account_name, account_key, expiry_hours=1):
         )
 
         # Construct the SAS URL
-        sas_url = f"https://{account_name}.blob.core.windows.net/?{sas_token}"
+        DEFAULT_DEV_OPS_URL = "https://dev.ops.opre.acf.gov"
+        OPS_URL = (
+            DEFAULT_DEV_OPS_URL
+            if "localhost" in current_app.config.get("OPS_FRONTEND_URL")
+            else current_app.config.get("OPS_FRONTEND_URL")
+        )
+        # https://dev.ops.opre.acf.gov/?{sas_token} in dev
+        sas_url = f"{OPS_URL}/?{sas_token}"
         return sas_url
 
     except SasUrlGenerationError as e:
