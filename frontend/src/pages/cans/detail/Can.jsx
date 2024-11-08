@@ -73,7 +73,13 @@ const Can = () => {
                 />
                 <Route
                     path="spending"
-                    element={<CanSpending budgetLines={budgetLines ?? []} />}
+                    element={
+                        <CanSpending
+                            budgetLines={budgetLines ?? []}
+                            fiscalYear={fiscalYear}
+                            canId={canId}
+                        />
+                    }
                 />
                 <Route
                     path="funding"
