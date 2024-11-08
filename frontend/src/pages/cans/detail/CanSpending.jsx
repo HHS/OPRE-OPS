@@ -1,6 +1,7 @@
-import CANBudgetLineTable from "../../../components/CANs/CANBudgetLineTable";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import CANBudgetLineTable from "../../../components/CANs/CANBudgetLineTable";
 import DebugCode from "../../../components/DebugCode";
+import BigBudgetCard from "../../../components/UI/Cards/BudgetCard/BigBudgetCard";
 
 /**
     @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
@@ -20,17 +21,23 @@ import DebugCode from "../../../components/DebugCode";
  * @returns  {JSX.Element} - The component JSX.
  */
 const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
-    // const { data: CANFunding } = useGetCanFundingSummaryQuery({
-    //     id: canId,
-    //     fiscalYear: fiscalYear
-    // });
-    const { data: CANFunding } = useGetCanFundingSummaryQuery({ id: canId, fiscalYear: fiscalYear });
+    const { data: CANFunding, isLoading } = useGetCanFundingSummaryQuery({ id: canId, fiscalYear: fiscalYear });
+
+    if (isLoading) return <div>Loading...</div>;
+    if (!CANFunding) return <div>No data</div>;
+
+    const { total_funding: totalFunding, planned_funding, obligated_funding, in_execution_funding } = CANFunding;
+    const totalSpending = planned_funding + obligated_funding + in_execution_funding;
 
     return (
         <article>
             <h2>CAN Spending Summary</h2>
             <p>The summary below shows the CANs total budget and spending across all budget lines</p>
-            {/* Note: Cards go here */}
+            <BigBudgetCard
+                title={`FY ${fiscalYear} Available CAN Budget *`}
+                totalSpending={totalSpending}
+                totalFunding={totalFunding}
+            />
             <h2>CAN Budget Lines</h2>
             <p>This is a list of all budget lines allocating funding from this CAN for the selected fiscal year.</p>
             <CANBudgetLineTable budgetLines={budgetLines} />
