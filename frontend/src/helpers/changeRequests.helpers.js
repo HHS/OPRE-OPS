@@ -53,15 +53,18 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
 /**
  * Get change requests in review from budget lines.
  * @param {BudgetLine[]} budgetLines - The budget lines.
- * @param {number}[ userDivisionId] - The user division ID.
+ * @param {number}[ userId] - The user division ID.
  * @returns {ChangeRequest[]} The change requests in review.
  */
 
-export function getInReviewChangeRequests(budgetLines, userDivisionId) {
+
+// budgetLine.can.portfolio.division.division_director_id
+// budgetLine.can.portfolio.division.deputy_division_director_id
+export function getInReviewChangeRequests(budgetLines, userId) {
     return budgetLines
         .filter(
             (budgetLine) =>
-                budgetLine.in_review && (!userDivisionId || budgetLine.can?.portfolio.division_id === userDivisionId)
+                budgetLine.in_review && (!userId || budgetLine.can?.portfolio?.division?.division_director_id === userId || budgetLine.can?.portfolio?.division?.deputy_division_director_id === userId)
         )
         .flatMap((budgetLine) => budgetLine.change_requests_in_review || []);
 }

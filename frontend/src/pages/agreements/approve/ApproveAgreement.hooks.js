@@ -40,7 +40,7 @@ import { useSelector } from "react-redux";
     term: string;
 }[]} changeInCans - The CANs data
  * @property {string} changeRequestTitle - The title of the change request
- * @property {ChangeRequest[]} changeRequestsInReviewForUser - The change requests in review for the user
+ * @property {ChangeRequest[]} changeRequestsInReview - The change requests in review for the user
  * @property {string} checkBoxText - The text for the checkbox
  * @property {boolean} confirmation - The confirmation state
  * @property {import("@reduxjs/toolkit/query").FetchBaseQueryError | import("@reduxjs/toolkit").SerializedError | undefined} errorAgreement - The error state for the agreement
@@ -88,7 +88,8 @@ const useApproveAgreement = () => {
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
+    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? -1;
+    const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     /**
      * @typeof {CHANGE_REQUEST_SLUG_TYPES.BUDGET | CHANGE_REQUEST_SLUG_TYPES.STATUS}
      */
@@ -139,7 +140,7 @@ const useApproveAgreement = () => {
     const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
         ? groupByServicesComponent(agreement.budget_line_items)
         : [];
-    const budgetLinesInReview =
+const budgetLinesInReview =
         agreement?.budget_line_items?.filter(
             /** @param {BudgetLine} bli */
             (bli) => bli.in_review && bli.can?.portfolio.division_id === userDivisionId
@@ -148,7 +149,7 @@ const useApproveAgreement = () => {
      * @type {ChangeRequest[]} changeRequestsInReview
      */
     const changeRequestsInReview = agreement?.budget_line_items
-        ? getInReviewChangeRequests(agreement.budget_line_items, userDivisionId)
+        ? getInReviewChangeRequests(agreement.budget_line_items, userId)
         : [];
     const changeInCans = getTotalByCans(budgetLinesInReview);
 
@@ -211,9 +212,7 @@ const useApproveAgreement = () => {
     const hasPermissionToViewPage =
         userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
 
-    const changeRequestsInReviewForUser = changeRequestsInReview.filter(
-        (changeRequest) => changeRequest.managing_division_id === userDivisionId
-    );
+    // const changeRequestsInReviewForUser = changeRequestsInReview;
 
     const relevantMessages = React.useMemo(() => {
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
@@ -465,7 +464,7 @@ const useApproveAgreement = () => {
         budgetLinesInReview,
         changeInCans,
         changeRequestTitle,
-        changeRequestsInReviewForUser,
+        changeRequestsInReview,
         checkBoxText,
         confirmation,
         errorAgreement,

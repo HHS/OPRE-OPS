@@ -4,10 +4,10 @@ from datetime import date
 
 from _decimal import Decimal
 from flask import current_app
-from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow_enum import EnumField
 
-from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ServicesComponent
+from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
+from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
 
@@ -123,19 +123,6 @@ class RequestBodySchema(Schema):
             bli = self.get_current_budget_line_item()
             if bli and bli.agreement_id and not bli.agreement.agreement_reason:
                 raise ValidationError("BLI's Agreement must have an AgreementReason when status is not DRAFT")
-
-    @validates_schema
-    def validate_agreement_reason_must_not_have_vendor(self, data, **kwargs):
-        if self.status_is_changing_beyond_draft(data):
-            bli = self.get_current_budget_line_item()
-            if (
-                bli
-                and bli.agreement_id
-                and isinstance(bli.agreement, ContractAgreement)  # only contracts have vendors
-                and bli.agreement.agreement_reason == AgreementReason.NEW_REQ
-                and bli.agreement.vendor_id
-            ):
-                raise ValidationError("BLI's Agreement cannot have a Vendor if it has an Agreement Reason of NEW_REQ")
 
     @validates_schema
     def validate_agreement_reason_must_have_vendor(self, data, **kwargs):
