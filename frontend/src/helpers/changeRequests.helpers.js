@@ -57,9 +57,6 @@ export function renderChangeValues(keyName, changeTo, oldCan = "", newCan = "") 
  * @returns {ChangeRequest[]} The change requests in review.
  */
 
-
-// budgetLine.can.portfolio.division.division_director_id
-// budgetLine.can.portfolio.division.deputy_division_director_id
 export function getInReviewChangeRequests(budgetLines, userId) {
     return budgetLines
         .filter(

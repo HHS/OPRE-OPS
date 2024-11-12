@@ -140,10 +140,10 @@ const useApproveAgreement = () => {
     const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
         ? groupByServicesComponent(agreement.budget_line_items)
         : [];
-const budgetLinesInReview =
+    const budgetLinesInReview =
         agreement?.budget_line_items?.filter(
             /** @param {BudgetLine} bli */
-            (bli) => bli.in_review && bli.can?.portfolio.division_id === userDivisionId
+            (bli) => bli.in_review && (bli.can?.portfolio?.division?.division_director_id === userId || bli.can?.portfolio?.division?.deputy_division_director_id === userId)
         ) || [];
     /**
      * @type {ChangeRequest[]} changeRequestsInReview

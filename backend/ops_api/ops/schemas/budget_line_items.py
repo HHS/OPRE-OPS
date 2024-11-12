@@ -236,8 +236,21 @@ class BLITeamMembersSchema(Schema):
     email = fields.Str(default=None, allow_none=True)
 
 
+class DivisionSchema(Schema):
+    id = fields.Integer(required=True)
+    name = fields.String(allow_none=True)
+    abbreviation = fields.String(required=True)
+    division_director_id = fields.Integer(required=True)
+    deputy_division_director_id = fields.Integer(required=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+
+
 class PortfolioBLISchema(Schema):
     division_id = fields.Int(required=True)
+    division = fields.Nested(DivisionSchema(), default=[])
 
 
 class BudgetLineItemCANSchema(Schema):
