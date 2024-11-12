@@ -5,12 +5,17 @@ import TermTag from "../../../components/UI/Term/TermTag";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 /**
-    @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+    @typedef {import("../../../components/Users/UserTypes").SafeUser} SafeUser
 */
 
 /**
  * @typedef {Object} CanDetailProps
- * @property {CAN} can
+ * @property {string} description
+ * @property {string} number
+ * @property {string} nickname
+ * @property {string} portfolioName
+ * @property {SafeUser[]} teamLeaders
+ * @property {number} divisionId
  */
 
 /**
@@ -18,9 +23,8 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
  * @param {CanDetailProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CanDetail = ({ can }) => {
-    const canDivisionId = can.portfolio.division_id;
-    const { data: division, isSuccess } = useGetDivisionQuery(canDivisionId);
+const CanDetail = ({ description, number, nickname, portfolioName, teamLeaders, divisionId }) => {
+    const { data: division, isSuccess } = useGetDivisionQuery(divisionId);
     const divisionDirectorFullName = useGetUserFullNameFromId(isSuccess ? division.division_director_id : null);
 
     return (
@@ -35,7 +39,7 @@ const CanDetail = ({ can }) => {
                     <dl>
                         <Term
                             name="Description"
-                            value={can?.description || "TBD"}
+                            value={description}
                         />
                     </dl>
                     <section data-cy="history">
@@ -51,22 +55,22 @@ const CanDetail = ({ can }) => {
                     <dl>
                         <TermTag
                             term="CAN"
-                            description={can.number}
+                            description={number}
                         />
                         <TermTag
                             term="Nickname"
-                            description={can.nick_name}
+                            description={nickname}
                         />
                         <TermTag
                             term="Portfolio"
-                            description={can.portfolio?.name}
+                            description={portfolioName}
                         />
                     </dl>
                     <dl>
-                        <dt className="margin-0 text-base-dark margin-top-3">Team Leaders</dt>
-                        {can.portfolio?.team_leaders &&
-                            can.portfolio?.team_leaders.length > 0 &&
-                            can.portfolio.team_leaders.map((teamLeader) => (
+                        <dt className="margin-0 text-base-dark margin-top-3">Team Leader</dt>
+                        {teamLeaders &&
+                            teamLeaders.length > 0 &&
+                            teamLeaders.map((teamLeader) => (
                                 <dd
                                     key={teamLeader.id}
                                     className="margin-0 margin-top-1 margin-bottom-2"

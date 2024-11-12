@@ -58,7 +58,7 @@ describe("processUploading", () => {
     });
 
     it("should upload to Azure Blob Storage", async () => {
-        const sasUrl = "https://mock.blob.core.windows.net";
+        const sasUrl = "https://mock.ops.opre.acf.gov";
 
         await processUploading(sasUrl, uuid, file, agreementId, mockUploadDocumentToBlob, mockUploadDocumentToBlob);
 
@@ -77,7 +77,7 @@ describe("processUploading", () => {
     });
 
     it("should handle errors gracefully", async () => {
-        const sasUrl = "https://mock.blob.core.windows.net";
+        const sasUrl = "https://mock.ops.opre.acf.gov";
 
         mockUploadDocumentToBlob.mockRejectedValue(new Error("Upload failed"));
 

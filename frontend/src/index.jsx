@@ -247,7 +247,7 @@ const router = createBrowserRouter(
                                         to="/cans"
                                         className="text-primary"
                                     >
-                                        Cans
+                                        CANs
                                     </Link>
                                 )
                             }}

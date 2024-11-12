@@ -12,16 +12,10 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
       - id: check-merge-conflict
-
   - repo: https://github.com/hadolint/hadolint
     rev: v2.10.0
     hooks:
       - id: hadolint
-  # We're running black, but doing it via nox session instead - see below
-  # - repo: https://github.com/psf/black
-  #   rev: 22.6.0
-  #   hooks:
-  #   -   id: black
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.10.1
     hooks:
@@ -46,21 +40,16 @@ repos:
           - css
           - html
         pass_filenames: false
-  - repo: local
-    hooks:
       - id: trufflehog
         name: TruffleHog
         description: Detect secrets in your data.
-        # For running trufflehog locally, use the following:
-        # entry: bash -c 'trufflehog git file://. --since-commit HEAD --only-verified --fail'
-        # For running trufflehog in docker, use the following entry instead:
-        entry: bash -c 'docker run --rm -v "$(pwd):/workdir" -i --rm trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail'
+        entry: bash -c 'if command -v podman >/dev/null 2>&1; then podman run --rm -v "$(pwd):/workdir" -i trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail; elif command -v docker >/dev/null 2>&1; then docker run --rm -v "$(pwd):/workdir" -i trufflesecurity/trufflehog:latest git file:///workdir --since-commit HEAD --only-verified --fail; else echo "Neither docker nor podman found. Please install one of them." && exit 1; fi'
         language: system
         stages: ["pre-commit", "pre-push"]
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.18.0
     hooks:
       - id: commitlint
-        stages: [ commit-msg ]
-        additional_dependencies: [ "@commitlint/config-conventional" ]
+        stages: [commit-msg]
+        additional_dependencies: ["@commitlint/config-conventional"]
         language_version: 22.8.0
