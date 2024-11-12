@@ -23,9 +23,10 @@ const Can = () => {
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
 
-    const filteredCANByFiscalYear = React.useMemo(() => {
+    const budgetLineItemsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear || !can) return {};
-        return can.funding_details?.fiscal_year === fiscalYear ? can : {};
+
+        return can.budget_line_items?.filter((bli) => bli.fiscal_year === fiscalYear) ?? [];
     }, [can, fiscalYear]);
 
     if (isLoading) {
@@ -36,9 +37,6 @@ const Can = () => {
     }
 
     const { number, description, nick_name: nickname, portfolio } = can;
-
-    /** @type {{budget_line_items?: BudgetLine[]}} */
-    const { budget_line_items: budgetLines } = filteredCANByFiscalYear;
     const { division_id: divisionId, team_leaders: teamLeaders, name: portfolioName } = portfolio;
     const noData = "TBD";
     const subTitle = `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}`;
@@ -75,7 +73,7 @@ const Can = () => {
                     path="spending"
                     element={
                         <CanSpending
-                            budgetLines={budgetLines ?? []}
+                            budgetLines={budgetLineItemsByFiscalYear ?? []}
                             fiscalYear={fiscalYear}
                             canId={canId}
                         />

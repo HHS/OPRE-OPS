@@ -27,7 +27,7 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
     if (!CANFunding) return <div>No data</div>;
 
     const { total_funding: totalFunding, planned_funding, obligated_funding, in_execution_funding } = CANFunding;
-    const totalSpending = planned_funding + obligated_funding + in_execution_funding;
+    const totalSpending = Number(planned_funding) + Number(obligated_funding) + Number(in_execution_funding);
 
     return (
         <article>
