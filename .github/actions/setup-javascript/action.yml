@@ -6,7 +6,7 @@ runs:
     - name: Set up Bun
       uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2.0.1
       with:
-        bun-version: 1.0.11
+        bun-version: latest
     - name: Install bun dependencies
       shell: bash
       working-directory: ./frontend
