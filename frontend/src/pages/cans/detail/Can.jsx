@@ -31,10 +31,10 @@ const Can = () => {
     }, [can, fiscalYear]);
 
     if (isLoading) {
-        return <div> Loading Can... </div>;
+        return <div> Loading CAN... </div>;
     }
     if (!can) {
-        return <div>Can not found</div>;
+        return <div>CAN not found</div>;
     }
 
     const { number, description, nick_name: nickname, portfolio } = can;
