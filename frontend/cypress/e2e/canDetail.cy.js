@@ -21,7 +21,7 @@ describe("CAN detail page", () => {
     });
     it("shows the CAN Spending page", () => {
         cy.visit("/cans/504/spending");
-        cy.get("#fiscal-year-select").select("2021");
+        cy.get("#fiscal-year-select").select("2043");
         cy.get("h1").should("contain", "G994426"); // heading
         cy.get("p").should("contain", "HS - 5 Years"); // sub-heading
         // should contain the budget line table
