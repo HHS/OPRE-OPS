@@ -31,14 +31,14 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
 
     const { total_funding: totalFunding, planned_funding, obligated_funding, in_execution_funding } = CANFunding;
     const totalSpending = Number(planned_funding) + Number(obligated_funding) + Number(in_execution_funding);
-    const DRAFT_FUNDING = 0; // replace with actual data
+    const DRAFT_FUNDING = 1_000_000; // replace with actual data
 
-    const data = [
+    const graphData = [
         {
             id: 1,
-            label: "DRAFT",
+            label: "Draft",
             value: Math.round(DRAFT_FUNDING) || 0,
-            color: "var(--data-viz-primary-5)",
+            color: "var(--neutral-lighter)",
             percent: `${calculatePercent(DRAFT_FUNDING, totalFunding)}%`
         },
         {
@@ -77,8 +77,8 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
                 {/* TODO: Create  component for ProjectsAgreementsAndBLIs */}
                 <ProjectsAndAgreements />
                 <DonutGraphWithLegendCard
-                    data={data}
-                    fiscalYear={fiscalYear}
+                    data={graphData}
+                    title={`FY ${fiscalYear} Budget Lines by Status`}
                     totalFunding={totalFunding}
                 />
             </div>
