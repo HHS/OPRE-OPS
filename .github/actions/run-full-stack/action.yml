@@ -9,5 +9,5 @@ runs:
       run: |
         set -x
         export JWT_PRIVATE_KEY="${{ env.JWT_PRIVATE_KEY }}"
-        docker compose -f docker-compose.yml down -v
-        docker compose -f docker-compose.yml up db data-import backend frontend-static --build -d
+        docker compose -f docker-compose.static.yml down -v
+        docker compose -f docker-compose.static.yml up --build -d

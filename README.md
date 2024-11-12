@@ -87,19 +87,13 @@ docker compose up --build
 To run the application using the production server configuration...
 
 ```shell
-docker compose up db data-import backend frontend-static --build
+docker compose -f docker-compose.static.yml up --build
 ````
-
-To run the application using the minimal initial data set...
-
-```shell
-  docker compose --profile data-initial up --build
-```
 
 To run the application using the demo data set...
 
 ```shell
-  docker compose --profile data-demo up --build
+docker compose -f docker-compose.demo.yml up --build
 ```
 
 

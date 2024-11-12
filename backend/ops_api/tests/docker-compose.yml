@@ -1,7 +1,6 @@
 services:
   unittest_db:
     image: "postgres:16"
-    platform: linux/amd64
     container_name: unit-test-db
     command: -c 'max_connections=400'
     security_opt:
@@ -24,7 +23,6 @@ services:
     build:
       context: ../../../backend
       dockerfile: Dockerfile.data-tools
-    platform: linux/amd64
     container_name: pytest-data-import
     environment:
       - ENV=pytest
