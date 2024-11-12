@@ -1,23 +1,20 @@
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
-import CurrencyCard from "../../UI/Cards/CurrencyCard";
+import RoundedBox from "../../UI/RoundedBox";
 import Tag from "../../UI/Tag/Tag";
 
-const ProjectsAndAgreements = ({
-    numberOfProjects = 0,
-    numOfResearchProjects = 0,
-    numOfAdminAndSupportProjects = 0
-}) => {
+const ProjectsAndAgreements = ({ numOfResearchProjects = 3, numOfAdminAndSupportProjects = 2 }) => {
     const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const projectHeading = `FY ${fiscalYear.value} Projects`;
     const agreementHeading = `FY ${fiscalYear.value} Agreements`;
-    const plannedAgreements = "3";
-    const executingAgreements = "2";
-    const obligatedAgreements = "2";
-    const numberOfAgreements = "7";
+    const plannedAgreements = 3;
+    const executingAgreements = 2;
+    const obligatedAgreements = 2;
+    const numberOfProjects = numOfResearchProjects + numOfAdminAndSupportProjects;
+    const numberOfAgreements = plannedAgreements + executingAgreements + obligatedAgreements;
 
     return (
-        <CurrencyCard>
+        <RoundedBox className=" padding-y-205 padding-x-4 display-inline-block">
             <div className="display-flex flex-justify">
                 {/* NOTE: left side */}
                 <article>
@@ -60,7 +57,7 @@ const ProjectsAndAgreements = ({
                     </div>
                 </article>
             </div>
-        </CurrencyCard>
+        </RoundedBox>
     );
 };
 
