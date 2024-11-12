@@ -1,7 +1,10 @@
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import CANBudgetLineTable from "../../../components/CANs/CANBudgetLineTable";
 import DebugCode from "../../../components/DebugCode";
+import ProjectsAndAgreements from "../../../components/Portfolios/ResearchProjects/ProjectsAndAgreements";
 import BigBudgetCard from "../../../components/UI/Cards/BudgetCard/BigBudgetCard";
+import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
+import { calculatePercent } from "../../../helpers/utils";
 
 /**
     @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
@@ -28,6 +31,38 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
 
     const { total_funding: totalFunding, planned_funding, obligated_funding, in_execution_funding } = CANFunding;
     const totalSpending = Number(planned_funding) + Number(obligated_funding) + Number(in_execution_funding);
+    const DRAFT_FUNDING = 0; // replace with actual data
+
+    const data = [
+        {
+            id: 1,
+            label: "DRAFT",
+            value: Math.round(DRAFT_FUNDING) || 0,
+            color: "var(--data-viz-primary-5)",
+            percent: `${calculatePercent(DRAFT_FUNDING, totalFunding)}%`
+        },
+        {
+            id: 2,
+            label: "Planned",
+            value: Math.round(planned_funding) || 0,
+            color: "var(--data-viz-bl-by-status-2)",
+            percent: `${calculatePercent(planned_funding, totalFunding)}%`
+        },
+        {
+            id: 3,
+            label: "Executing",
+            value: Math.round(in_execution_funding) || 0,
+            color: "var(--data-viz-bl-by-status-3)",
+            percent: `${calculatePercent(in_execution_funding, totalFunding)}%`
+        },
+        {
+            id: 4,
+            label: "Obligated",
+            value: Math.round(obligated_funding) || 0,
+            color: "var(--data-viz-bl-by-status-4)",
+            percent: `${calculatePercent(obligated_funding, totalFunding)}%`
+        }
+    ];
 
     return (
         <article>
@@ -38,6 +73,15 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
                 totalSpending={totalSpending}
                 totalFunding={totalFunding}
             />
+            <div className="display-flex flex-justify margin-top-2">
+                {/* TODO: Create  component for ProjectsAgreementsAndBLIs */}
+                <ProjectsAndAgreements />
+                <DonutGraphWithLegendCard
+                    data={data}
+                    fiscalYear={fiscalYear}
+                    totalFunding={totalFunding}
+                />
+            </div>
             <h2>CAN Budget Lines</h2>
             <p>This is a list of all budget lines allocating funding from this CAN for the selected fiscal year.</p>
             <CANBudgetLineTable budgetLines={budgetLines} />
