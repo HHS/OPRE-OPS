@@ -1,15 +1,16 @@
+import React from "react";
 import { useSelector } from "react-redux";
 import { Route, Routes, useParams } from "react-router-dom";
 import { useGetCanByIdQuery } from "../../../api/opsAPI";
 import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import PageHeader from "../../../components/UI/PageHeader";
+import { NO_DATA } from "../../../constants";
 import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
 import CanDetail from "./CanDetail";
 import CanFunding from "./CanFunding";
 import CanSpending from "./CanSpending";
-import React from "react";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
  *  @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
@@ -24,7 +25,7 @@ const Can = () => {
     const fiscalYear = Number(selectedFiscalYear.value);
 
     const budgetLineItemsByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !can) return {};
+        if (!fiscalYear || !can) return [];
 
         return can.budget_line_items?.filter((bli) => bli.fiscal_year === fiscalYear) ?? [];
     }, [can, fiscalYear]);
@@ -38,13 +39,13 @@ const Can = () => {
 
     const { number, description, nick_name: nickname, portfolio } = can;
     const { division_id: divisionId, team_leaders: teamLeaders, name: portfolioName } = portfolio;
-    const noData = "TBD";
+
     const subTitle = `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}`;
 
     return (
         <App breadCrumbName={can.display_name}>
             <PageHeader
-                title={can.display_name || noData}
+                title={can.display_name || NO_DATA}
                 subTitle={subTitle}
             />
 
@@ -61,10 +62,10 @@ const Can = () => {
                     element={
                         <CanDetail
                             divisionId={divisionId}
-                            description={description ?? noData}
-                            nickname={nickname || noData}
+                            description={description ?? NO_DATA}
+                            nickname={nickname || NO_DATA}
                             number={number}
-                            portfolioName={portfolioName ?? noData}
+                            portfolioName={portfolioName ?? NO_DATA}
                             teamLeaders={teamLeaders ?? []}
                         />
                     }
@@ -73,7 +74,7 @@ const Can = () => {
                     path="spending"
                     element={
                         <CanSpending
-                            budgetLines={budgetLineItemsByFiscalYear ?? []}
+                            budgetLines={budgetLineItemsByFiscalYear}
                             fiscalYear={fiscalYear}
                             canId={canId}
                         />

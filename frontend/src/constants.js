@@ -27,4 +27,6 @@ const constants = {
     ]
 };
 
+export const NO_DATA = "TBD";
+
 export default constants;
