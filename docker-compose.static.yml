@@ -77,17 +77,15 @@ services:
       timeout: 10s
       retries: 10
 
-  frontend:
+  frontend-static:
     build:
       context: ./frontend/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.azure
+      args:
+        VITE_BACKEND_DOMAIN: http://localhost:8080
+        MODE: dev  # set this to production to create a production build
     container_name: ops-frontend
-    environment:
-      - REACT_APP_BACKEND_DOMAIN=http://localhost:8080
-      - VITE_BACKEND_DOMAIN=http://localhost:8080
     ports:
       - "3000:3000"
     depends_on:
       - backend
-    volumes:
-      - ./frontend/src:/home/app/src
