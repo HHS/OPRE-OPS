@@ -1,9 +1,20 @@
+import { BLI_STATUS } from "../../../../helpers/budgetLines.helpers";
+import { convertCodeForDisplay } from "../../../../helpers/utils";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
 
 /**
+ * @typedef ItemCount
+ * @property {string} type
+ * @property {number} count
+ */
+
+/**
  * @typedef {Object} ProjectAgreementBLICardProps
  * @property {number} fiscalYear
+ * @property {ItemCount[]} [projects]
+ * @property {ItemCount[]} [agreements]
+ * @property {ItemCount[]} [budgetLines]
  */
 
 /**
@@ -11,57 +22,97 @@ import Tag from "../../Tag";
  * @param {ProjectAgreementBLICardProps} props
  * @returns {JSX.Element} - The Project Agreement BLI Card.
  */
-const ProjectAgreementBLICard = ({ fiscalYear }) => {
-    const numOfResearchProjects = 3;
-    const numOfAdminAndSupportProjects = 2;
+const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines }) => {
     const projectHeading = `FY ${fiscalYear} Projects`;
-    const agreementHeading = `FY ${fiscalYear} Agreements`;
-    const plannedAgreements = 3;
-    const executingAgreements = 2;
-    const obligatedAgreements = 2;
-    const numberOfProjects = numOfResearchProjects + numOfAdminAndSupportProjects;
-    const numberOfAgreements = plannedAgreements + executingAgreements + obligatedAgreements;
+    const budgetLinesHeading = `FY ${fiscalYear} Budget Lines`;
+    const agreementsHeading = `FY ${fiscalYear} Agreements`;
+
+    /**  @param {ItemCount[]} items */
+    const calculateTotalCount = (items) => {
+        return items && items.length > 0 ? items.reduce((acc, item) => acc + item.count, 0) : 0;
+    };
+
+    const totalProjectCount = calculateTotalCount(projects);
+    const totalBudgetLinesCount = calculateTotalCount(budgetLines);
+    const totalAgreementsCount = calculateTotalCount(agreements);
+
+    /** @param {"DRAFT" | "PLANNED" | "IN_EXECUTING" | "OBLIGATED"} type */
+    const tagStylesByType = (type) => {
+        switch (type) {
+            case BLI_STATUS.DRAFT:
+                return "bg-brand-data-viz-bl-by-status-1";
+            case BLI_STATUS.PLANNED:
+                return "bg-brand-data-viz-bl-by-status-2 text-white margin-top-1";
+            case BLI_STATUS.EXECUTING:
+                return "bg-brand-data-viz-bl-by-status-3 margin-top-1";
+            case BLI_STATUS.OBLIGATED:
+                return "bg-brand-data-viz-bl-by-status-4 text-white margin-top-1";
+            default:
+                return "";
+        }
+    };
 
     return (
         <RoundedBox className=" padding-y-205 padding-x-4 display-inline-block">
             <div className="display-flex flex-justify">
-                {/* NOTE: left side */}
                 <article>
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{projectHeading}</h3>
                     <div className="display-flex flex-justify">
-                        <span className="font-sans-xl text-bold line-height-sans-1">{numberOfProjects}</span>
+                        <span className="font-sans-xl text-bold line-height-sans-1">{totalProjectCount}</span>
                         <div className="display-flex flex-column margin-left-2 grid-gap">
-                            <Tag
-                                className="bg-brand-primary-light text-brand-primary-dark"
-                                text={`${numOfResearchProjects} Research`}
-                            />
-                            <Tag
-                                className="bg-brand-primary-light text-brand-primary-dark margin-top-1"
-                                text={`${numOfAdminAndSupportProjects} Admin & Support`}
-                            />
+                            {projects &&
+                                projects.length > 0 &&
+                                projects.map(({ type, count }, index) => (
+                                    <Tag
+                                        key={type}
+                                        className={`bg-brand-primary-light text-brand-primary-dark ${
+                                            index > 0 ? "margin-top-1" : ""
+                                        }`}
+                                        text={`${count} ${convertCodeForDisplay("project", type)}`}
+                                    />
+                                ))}
                         </div>
                     </div>
                 </article>
-                {/* NOTE: right side */}
+
                 <article>
                     <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
-                        {agreementHeading}
+                        {agreementsHeading}
                     </h3>
                     <div className="display-flex flex-justify">
-                        <span className="font-sans-xl text-bold line-height-sans-1">{numberOfAgreements}</span>
+                        <span className="font-sans-xl text-bold line-height-sans-1">{totalAgreementsCount}</span>
                         <div className="display-flex flex-column margin-left-2 grid-gap">
-                            <Tag
-                                className="bg-brand-primary text-white"
-                                text={`${plannedAgreements} Planned`}
-                            />
-                            <Tag
-                                className="bg-brand-feedback-warning margin-top-1"
-                                text={`${executingAgreements} Executing`}
-                            />
-                            <Tag
-                                className="bg-brand-data-viz-primary-6 text-white margin-top-1"
-                                text={`${obligatedAgreements} Obligated`}
-                            />
+                            {agreements &&
+                                agreements.length > 0 &&
+                                agreements.map(({ type, count }, index) => (
+                                    <Tag
+                                        key={type}
+                                        className={`bg-brand-primary-light text-brand-primary-dark ${
+                                            index > 0 ? "margin-top-1" : ""
+                                        }`}
+                                        text={`${count} ${convertCodeForDisplay("agreementType", type)}`}
+                                    />
+                                ))}
+                        </div>
+                    </div>
+                </article>
+
+                <article>
+                    <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
+                        {budgetLinesHeading}
+                    </h3>
+                    <div className="display-flex flex-justify">
+                        <span className="font-sans-xl text-bold line-height-sans-1">{totalBudgetLinesCount}</span>
+                        <div className="display-flex flex-column margin-left-2 grid-gap">
+                            {budgetLines &&
+                                budgetLines.length > 0 &&
+                                budgetLines.map(({ type, count }, index) => (
+                                    <Tag
+                                        key={type}
+                                        className={`${tagStylesByType(type)} ${index > 0 ? "margin-top-1" : ""}`}
+                                        text={`${count} ${convertCodeForDisplay("budgetLineStatus", type)}`}
+                                    />
+                                ))}
                         </div>
                     </div>
                 </article>

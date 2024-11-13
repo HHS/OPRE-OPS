@@ -1,10 +1,15 @@
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import CANBudgetLineTable from "../../../components/CANs/CANBudgetLineTable";
-import DebugCode from "../../../components/DebugCode";
 import BigBudgetCard from "../../../components/UI/Cards/BudgetCard/BigBudgetCard";
 import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
 import ProjectAgreementBLICard from "../../../components/UI/Cards/ProjectAgreementBLICard";
 import { calculatePercent } from "../../../helpers/utils";
+
+/**
+ * @typedef ItemCount
+ * @property {string} type
+ * @property {number} count
+ */
 
 /**
     @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
@@ -16,6 +21,9 @@ import { calculatePercent } from "../../../helpers/utils";
  * @property {BudgetLine[]} budgetLines
  * @property {number} fiscalYear
  * @property {number} canId
+ * @property {ItemCount[]} [projects]
+ * @property {ItemCount[]} [budgetLineTypesCount]
+ * @property {ItemCount[]} [agreements]
  */
 
 /**
@@ -23,7 +31,7 @@ import { calculatePercent } from "../../../helpers/utils";
  * @param {CanSpendingProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
+const CanSpending = ({ budgetLines, fiscalYear, canId, projects, budgetLineTypesCount, agreements }) => {
     const { data: CANFunding, isLoading } = useGetCanFundingSummaryQuery({ id: canId, fiscalYear: fiscalYear });
 
     if (isLoading) return <div>Loading...</div>;
@@ -74,8 +82,12 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
                 totalFunding={totalFunding}
             />
             <div className="display-flex flex-justify margin-top-2">
-                {/* TODO: Create  component for ProjectsAgreementsAndBLIs */}
-                <ProjectAgreementBLICard fiscalYear={fiscalYear} />
+                <ProjectAgreementBLICard
+                    fiscalYear={fiscalYear}
+                    projects={projects}
+                    budgetLines={budgetLineTypesCount}
+                    agreements={agreements}
+                />
                 <DonutGraphWithLegendCard
                     data={graphData}
                     title={`FY ${fiscalYear} Budget Lines by Status`}
@@ -88,7 +100,6 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
                 budgetLines={budgetLines}
                 totalFunding={totalFunding}
             />
-            <DebugCode data={CANFunding} />
         </article>
     );
 };

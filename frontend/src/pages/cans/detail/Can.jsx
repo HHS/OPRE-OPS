@@ -16,6 +16,21 @@ import CanSpending from "./CanSpending";
  *  @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
 
+const getTypesCounts = (items, keyToCount) => {
+    if (!items || items.length === 0) return [];
+
+    return Object.entries(
+        items.reduce((acc, item) => {
+            const type = item[keyToCount];
+            if (!acc[type]) {
+                acc[type] = 0;
+            }
+            acc[type]++;
+            return acc;
+        }, {})
+    ).map(([type, count]) => ({ type, count }));
+};
+
 const Can = () => {
     const urlPathParams = useParams();
     const canId = parseInt(urlPathParams.id || "-1");
@@ -37,10 +52,20 @@ const Can = () => {
         return <div>CAN not found</div>;
     }
 
-    const { number, description, nick_name: nickname, portfolio } = can;
+    const { number, description, nick_name: nickname, portfolio, projects } = can;
     const { division_id: divisionId, team_leaders: teamLeaders, name: portfolioName } = portfolio;
 
     const subTitle = `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}`;
+
+    const projectTypesCount = getTypesCounts(projects, "project_type");
+    const budgetLineTypesCount = getTypesCounts(budgetLineItemsByFiscalYear, "status");
+    const testAgreements = [
+        { type: "CONTRACT", count: 8 },
+        { type: "GRANT", count: 2 }
+        // { type: "DIRECT_ALLOCATION", count: 1 },
+        // { type: "IAA", count: 1 }
+        // { type: "MISCELLANEOUS", count: 1 }
+    ];
 
     return (
         <App breadCrumbName={can.display_name}>
@@ -77,6 +102,9 @@ const Can = () => {
                             budgetLines={budgetLineItemsByFiscalYear}
                             fiscalYear={fiscalYear}
                             canId={canId}
+                            projects={projectTypesCount}
+                            budgetLineTypesCount={budgetLineTypesCount}
+                            agreements={testAgreements}
                         />
                     }
                 />
