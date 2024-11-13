@@ -38,6 +38,7 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
         <>
             <RoundedBox
                 className={`padding-y-205 padding-x-4 display-inline-block width-full`}
+                id="big-budget-summary-card"
                 dataCy={`big-budget-summary-card`}
                 style={{ minHeight: "10.125rem" }}
             >

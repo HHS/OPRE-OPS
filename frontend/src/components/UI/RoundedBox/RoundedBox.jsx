@@ -5,6 +5,7 @@ import cssClasses from "./styles.module.css";
  * @param {Object} props - Component props.
  * @param {React.ReactNode} props.children - Child elements.
  * @param {string} [props.className] - Additional CSS classes.
+ * @param {string} [props.id] - Element ID.
  * @param {string} [props.dataCy] - Data attribute for Cypress tests.
  * @param {Object} [props.rest] - Additional props to be passed
  * @returns {JSX.Element} Rendered component.
