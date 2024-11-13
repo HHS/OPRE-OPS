@@ -1,8 +1,8 @@
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
-import LineGraph from "../../DataViz/LineGraph";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
+import LineGraph from "../../DataViz/LineGraph";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
 
@@ -81,7 +81,7 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                         <div>
                             Spending {""}
                             <CurrencyFormat
-                                value={totalSpending || 0}
+                                value={totalSpending ?? 0}
                                 displayType={"text"}
                                 thousandSeparator={true}
                                 prefix={"$"}
@@ -89,7 +89,7 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                             />{" "}
                             of{" "}
                             <CurrencyFormat
-                                value={totalFunding || 0}
+                                value={totalFunding ?? 0}
                                 displayType={"text"}
                                 thousandSeparator={true}
                                 prefix={"$"}
