@@ -30,7 +30,7 @@ import styles from "./styles.module.css";
 const DonutGraphWithLegendCard = ({ data, title, totalFunding }) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
-    const reactId = React.useId();
+    const id = crypto.randomUUID();
 
     return (
         <RoundedBox className="padding-y-205 padding-x-4 display-inline-block">
@@ -56,7 +56,7 @@ const DonutGraphWithLegendCard = ({ data, title, totalFunding }) => {
                     ))}
                 </div>
                 <div
-                    id={`donutGraphWithLegendCard-${reactId}`}
+                    id={`donutGraphWithLegendCard-${id}`}
                     className="width-card height-card margin-top-neg-1 margin-left-2"
                     aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                     role="img"
@@ -69,7 +69,7 @@ const DonutGraphWithLegendCard = ({ data, title, totalFunding }) => {
                         setPercent={setPercent}
                         setHoverId={setHoverId}
                         CustomLayerComponent={CustomLayerComponent(percent)}
-                        container_id={`donutGraphWithLegendCard-${reactId}`}
+                        container_id={`donutGraphWithLegendCard-${id}`}
                     />
                 </div>
             </div>
