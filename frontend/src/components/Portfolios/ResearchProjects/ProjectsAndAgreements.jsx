@@ -14,7 +14,7 @@ const ProjectsAndAgreements = ({ numOfResearchProjects = 3, numOfAdminAndSupport
     const numberOfAgreements = plannedAgreements + executingAgreements + obligatedAgreements;
 
     return (
-        <RoundedBox className=" padding-y-205 padding-x-4 display-inline-block">
+        <RoundedBox className="padding-y-205 padding-x-4 display-inline-block">
             <div className="display-flex flex-justify">
                 {/* NOTE: left side */}
                 <article>
