@@ -2,6 +2,7 @@ import { formatDateNeeded } from "../../../helpers/utils";
 import Table from "../../UI/Table";
 import { TABLE_HEADERS } from "./CABBudgetLineTable.constants";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
+import { calculatePercent } from "../../../helpers/utils";
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
@@ -9,6 +10,7 @@ import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 /**
  * @typedef {Object} CANBudgetLineTableProps
  * @property {BudgetLine[]} budgetLines
+ * @property {number} totalFunding
  */
 
 /**
@@ -16,7 +18,7 @@ import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
  * @param {CANBudgetLineTableProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANBudgetLineTable = ({ budgetLines }) => {
+const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
     if (budgetLines.length === 0) {
         return <p className="text-center">No budget lines have been added to this CAN.</p>;
     }
@@ -31,9 +33,9 @@ const CANBudgetLineTable = ({ budgetLines }) => {
                     agreementName="TBD"
                     obligateDate={formatDateNeeded(budgetLine.date_needed || "")}
                     fiscalYear={budgetLine.fiscal_year || "TBD"}
-                    amount={budgetLine.amount || 0}
+                    amount={budgetLine.amount ?? 0}
                     fee={budgetLine.proc_shop_fee_percentage}
-                    percentOfCAN={3}
+                    percentOfCAN={calculatePercent(budgetLine.amount ?? 0, totalFunding)}
                     status={budgetLine.status}
                     inReview={budgetLine.in_review}
                     creatorId={budgetLine.created_by}

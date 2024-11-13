@@ -84,7 +84,10 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
             </div>
             <h2>CAN Budget Lines</h2>
             <p>This is a list of all budget lines allocating funding from this CAN for the selected fiscal year.</p>
-            <CANBudgetLineTable budgetLines={budgetLines} />
+            <CANBudgetLineTable
+                budgetLines={budgetLines}
+                totalFunding={totalFunding}
+            />
             <DebugCode data={CANFunding} />
         </article>
     );
