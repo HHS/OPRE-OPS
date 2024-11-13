@@ -1,9 +1,9 @@
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import CANBudgetLineTable from "../../../components/CANs/CANBudgetLineTable";
 import DebugCode from "../../../components/DebugCode";
-import ProjectsAndAgreements from "../../../components/Portfolios/ResearchProjects/ProjectsAndAgreements";
 import BigBudgetCard from "../../../components/UI/Cards/BudgetCard/BigBudgetCard";
 import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
+import ProjectAgreementBLICard from "../../../components/UI/Cards/ProjectAgreementBLICard";
 import { calculatePercent } from "../../../helpers/utils";
 
 /**
@@ -75,7 +75,7 @@ const CanSpending = ({ budgetLines, fiscalYear, canId }) => {
             />
             <div className="display-flex flex-justify margin-top-2">
                 {/* TODO: Create  component for ProjectsAgreementsAndBLIs */}
-                <ProjectsAndAgreements />
+                <ProjectAgreementBLICard fiscalYear={fiscalYear} />
                 <DonutGraphWithLegendCard
                     data={graphData}
                     title={`FY ${fiscalYear} Budget Lines by Status`}
