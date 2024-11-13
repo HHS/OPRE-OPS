@@ -6,7 +6,14 @@ from data_tools.environment.dev import DevConfig
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.import_static_data.import_data import get_config
 from data_tools.src.load_cans.main import main
-from data_tools.src.load_cans.utils import CANData, create_can_data, create_models, validate_all, validate_data
+from data_tools.src.load_cans.utils import (
+    CANData,
+    create_can_data,
+    create_models,
+    validate_all,
+    validate_data,
+    validate_fund_code,
+)
 from sqlalchemy import and_, text
 
 from models import *  # noqa: F403, F401
@@ -370,3 +377,156 @@ def test_create_models_upsert(db_with_portfolios):
     db_with_portfolios.execute(text("DELETE FROM can_funding_details_version"))
     db_with_portfolios.execute(text("DELETE FROM ops_db_history"))
     db_with_portfolios.execute(text("DELETE FROM ops_db_history_version"))
+
+def test_validate_fund_code():
+    data = CANData(
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20231DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+    )
+    validate_fund_code(data)
+
+def test_validate_fund_code_length():
+    data = CANData(
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20231DADDDDDDD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+    )
+    with pytest.raises(ValueError) as e_info:
+        validate_fund_code(data)
+    assert e_info.value.args[0] == "Invalid fund code length AAXXXX20231DADDDDDDD"
+
+def test_validate_fund_code_fy():
+    data = CANData(
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20FY1DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+    )
+    with pytest.raises(ValueError) as e_info:
+        validate_fund_code(data)
+    assert e_info.value.args[0] == "invalid literal for int() with base 10: '20FY'"
+
+def test_validate_fund_code_length_of_appropriation():
+    data = CANData(
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20233DAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+    )
+    with pytest.raises(ValueError) as e_info:
+        validate_fund_code(data)
+    assert e_info.value.args[0] == "Invalid length of appropriation 3"
+
+
+def test_validate_fund_code_direct_or_reimbursable():
+    data = CANData(
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20231OAD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+    )
+    with pytest.raises(ValueError) as e_info:
+        validate_fund_code(data)
+    assert e_info.value.args[0] == "Invalid direct or reimbursable O"
+
+def test_validate_fund_code_category():
+    data = CANData(
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20231DDD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+    )
+    with pytest.raises(ValueError) as e_info:
+        validate_fund_code(data)
+    assert e_info.value.args[0] == "Invalid category D"
+
+def test_validate_fund_code_discretionary_or_mandatory():
+    data = CANData(
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20231DAR",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+    )
+    with pytest.raises(ValueError) as e_info:
+        validate_fund_code(data)
+    assert e_info.value.args[0] == "Invalid discretionary or mandatory R"
