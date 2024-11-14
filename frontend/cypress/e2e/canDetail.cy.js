@@ -44,6 +44,7 @@ describe("CAN detail page", () => {
     it("pagination on the bli table works as expected", () => {
         cy.visit("/cans/504/spending");
         cy.get("#fiscal-year-select").select("2043");
+        cy.wait(1000);
         cy.get("ul").should("have.class", "usa-pagination__list");
         cy.get("li").should("have.class", "usa-pagination__item").contains("1");
         cy.get("button").should("have.class", "usa-current").contains("1");
