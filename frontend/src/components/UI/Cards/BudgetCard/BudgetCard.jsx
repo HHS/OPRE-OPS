@@ -36,7 +36,6 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
 
     return (
         <RoundedBox
-            className="display-inline-block"
             dataCy={`budget-summary-card`}
             style={{ height: "14.5rem" }}
         >

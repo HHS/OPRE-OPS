@@ -52,7 +52,7 @@ const Can = () => {
         return <div>CAN not found</div>;
     }
 
-    const { number, description, nick_name: nickname, portfolio, projects } = can;
+    const { number, description, nick_name: nickname, portfolio, projects, funding_details: fundingDetails } = can;
     const { division_id: divisionId, team_leaders: teamLeaders, name: portfolioName } = portfolio;
 
     const subTitle = `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}`;
@@ -110,7 +110,12 @@ const Can = () => {
                 />
                 <Route
                     path="funding"
-                    element={<CanFunding />}
+                    element={
+                        <CanFunding
+                            funding={fundingDetails}
+                            fiscalYear={fiscalYear}
+                        />
+                    }
                 />
             </Routes>
         </App>
