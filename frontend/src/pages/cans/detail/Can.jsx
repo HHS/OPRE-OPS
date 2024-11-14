@@ -33,7 +33,7 @@ const getTypesCounts = (items, keyToCount) => {
 
 const Can = () => {
     const urlPathParams = useParams();
-    const canId = parseInt(urlPathParams.id || "-1");
+    const canId = parseInt(urlPathParams.id ?? "-1");
     /** @type {{data?: CAN | undefined, isLoading: boolean}} */
     const { data: can, isLoading } = useGetCanByIdQuery(canId);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
@@ -70,7 +70,7 @@ const Can = () => {
     return (
         <App breadCrumbName={can.display_name}>
             <PageHeader
-                title={can.display_name || NO_DATA}
+                title={can.display_name ?? NO_DATA}
                 subTitle={subTitle}
             />
 
@@ -88,7 +88,7 @@ const Can = () => {
                         <CanDetail
                             divisionId={divisionId}
                             description={description ?? NO_DATA}
-                            nickname={nickname || NO_DATA}
+                            nickname={nickname ?? NO_DATA}
                             number={number}
                             portfolioName={portfolioName ?? NO_DATA}
                             teamLeaders={teamLeaders ?? []}
