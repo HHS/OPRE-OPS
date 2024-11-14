@@ -28,6 +28,7 @@ jobs:
       - name: Install semantic-release
         run: npm install -g semantic-release
       - name: Release
+        working-directory: ./frontend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
