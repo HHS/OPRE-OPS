@@ -122,10 +122,10 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
 
         try:
             validate_fund_code(data)
+            can.funding_details = get_or_create_funding_details(data, sys_user, session)
         except ValueError as e:
             logger.info(f"Skipping creating funding details for {data} due to invalid fund code. {e}")
 
-        can.funding_details = get_or_create_funding_details(data, sys_user, session)
         session.merge(can)
         session.commit()
     except Exception as e:
@@ -148,7 +148,10 @@ def get_or_create_funding_details(data: CANData, sys_user: User, session: Sessio
     allowance = data.ALLOWANCE
     sub_allowance = data.SUB_ALLOWANCE
     allotment = data.ALLOTMENT_ORG
-    appropriation = "-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR[0:2] or "", data.APPROP_POSTFIX or ""])
+
+    appropriation_year = data.APPROP_YEAR[0:2] if data.APPROP_YEAR else ""
+    appropriation = "-".join([data.APPROP_PREFIX or "", appropriation_year, data.APPROP_POSTFIX or ""])
+
     method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
     funding_source = CANFundingSource[data.FUNDING_SOURCE]
     existing_funding_details = session.execute(select(CANFundingDetails).where(
@@ -188,6 +191,8 @@ def validate_fund_code(data: CANData) -> None:
     :return: None
     :raises ValueError: If the fund code is invalid.
     """
+    if not data.FUND:
+        raise ValueError("Fund code is required.")
     if len(data.FUND) != 14:
         raise ValueError(f"Invalid fund code length {data.FUND}")
     int(data.FUND[6:10])

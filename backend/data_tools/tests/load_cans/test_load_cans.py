@@ -302,7 +302,7 @@ def test_create_models_upsert(db_with_portfolios):
         SYS_CAN_ID=500,
         CAN_NBR="G99HRF3",
         CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
-        FUND="AAXXXX20231DAE",
+        FUND="AAXXXX20231DAM",
         ALLOWANCE="0000000001",
         ALLOTMENT_ORG="YZC6S1JUGUN",
         SUB_ALLOWANCE="9KRZ2ND",
@@ -364,7 +364,7 @@ def test_create_models_upsert(db_with_portfolios):
     assert can_1.portfolio == db_with_portfolios.execute(
         select(Portfolio).where(Portfolio.abbreviation == "HMRF")).scalar_one_or_none()
     assert can_1.funding_details.id == db_with_portfolios.execute(
-        select(CANFundingDetails).where(CANFundingDetails.fund_code == "AAXXXX20231DAE")).scalar_one_or_none().id
+        select(CANFundingDetails).where(CANFundingDetails.fund_code == "AAXXXX20231DAM")).scalar_one_or_none().id
     assert can_1.created_by == sys_user.id
 
     assert len(db_with_portfolios.execute(select(CAN)).scalars().all()) == 1
@@ -530,3 +530,44 @@ def test_validate_fund_code_discretionary_or_mandatory():
     with pytest.raises(ValueError) as e_info:
         validate_fund_code(data)
     assert e_info.value.args[0] == "Invalid discretionary or mandatory R"
+
+def test_create_models_invalid_fund_code(db_with_portfolios):
+    data = CANData(
+        SYS_CAN_ID=500,
+        CAN_NBR="G99HRF2",
+        CAN_DESCRIPTION="Healthy Marriages Responsible Fatherhood - OPRE",
+        FUND="AAXXXX20231DADDDDDD",
+        ALLOWANCE="0000000001",
+        ALLOTMENT_ORG="YZC6S1JUGUN",
+        SUB_ALLOWANCE="9KRZ2ND",
+        CURRENT_FY_FUNDING_YTD=880000.0,
+        APPROP_PREFIX="XX",
+        APPROP_POSTFIX="XXXX",
+        APPROP_YEAR="23",
+        PORTFOLIO="HMRF",
+        FUNDING_SOURCE="OPRE",
+        METHOD_OF_TRANSFER="DIRECT",
+        NICK_NAME="HMRF-OPRE",
+    )
+
+    sys_user = User(
+        email="system.admin@localhost",
+    )
+    create_models(data, sys_user, db_with_portfolios)
+
+    can_model = db_with_portfolios.get(CAN, 500)
+
+    assert can_model.id == 500
+    assert can_model.number == "G99HRF2"
+    assert can_model.description == "Healthy Marriages Responsible Fatherhood - OPRE"
+    assert can_model.nick_name == "HMRF-OPRE"
+    assert can_model.portfolio == db_with_portfolios.execute(select(Portfolio).where(Portfolio.abbreviation == "HMRF")).scalar_one_or_none()
+    assert can_model.funding_details is None
+
+    # Cleanup
+    db_with_portfolios.execute(text("DELETE FROM can"))
+    db_with_portfolios.execute(text("DELETE FROM can_funding_details"))
+    db_with_portfolios.execute(text("DELETE FROM can_version"))
+    db_with_portfolios.execute(text("DELETE FROM can_funding_details_version"))
+    db_with_portfolios.execute(text("DELETE FROM ops_db_history"))
+    db_with_portfolios.execute(text("DELETE FROM ops_db_history_version"))
