@@ -28,7 +28,7 @@ const AgreementCANReviewAccordion = ({
     action,
     isApprovePage = false
 }) => {
-    const { data: portfolios, error, isLoading } = useGetPortfoliosQuery();
+    const { data: portfolios, error, isLoading } = useGetPortfoliosQuery({});
     if (isLoading) {
         return <div>Loading...</div>;
     }

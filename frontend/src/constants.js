@@ -5,11 +5,13 @@ const constants = {
         const currentMonth = currentDate.getMonth();
         const currentYear = currentDate.getFullYear();
         const currentFiscalYear = currentMonth >= 9 ? currentYear + 1 : currentYear;
-        const years = [];
+        const years = [2044, 2043];
         for (let i = currentFiscalYear + 5; i >= currentFiscalYear - 5; i--) {
-            years.push(i);
+            if (!years.includes(i)) {
+                years.push(i);
+            }
         }
-        return years;
+        return years.sort((a, b) => b - a);
     })(),
     barChartColors: [
         { color: "var(--feedback-success-dark)" },
@@ -24,5 +26,7 @@ const constants = {
         { color: "var(--data-viz-bl-by-fy-5)" }
     ]
 };
+
+export const NO_DATA = "TBD";
 
 export default constants;

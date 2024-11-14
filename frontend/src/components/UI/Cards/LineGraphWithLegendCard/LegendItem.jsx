@@ -24,7 +24,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
 
     return (
         <div className="grid-row margin-top-2 font-12px">
-            <div className="grid-col-7">
+            <div className="grid-col-5">
                 <div className="display-flex flex-align-center">
                     <FontAwesomeIcon
                         icon={faCircle}
@@ -41,12 +41,12 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     </span>
                 </div>
             </div>
-            <div className="grid-col-4">
+            <div className="grid-col-5">
                 <CurrencyFormat
                     value={value}
                     displayType={"text"}
                     thousandSeparator={true}
-                    prefix={"$ "}
+                    prefix={"$"}
                     renderText={(value) => (
                         <span
                             className={isGraphActive ? "fake-bold" : ""}
@@ -57,7 +57,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     )}
                 />
             </div>
-            <div className="grid-col-1">
+            <div className="grid-col-2">
                 <Tag
                     tagStyle="darkTextWhiteBackground"
                     text={percent}
