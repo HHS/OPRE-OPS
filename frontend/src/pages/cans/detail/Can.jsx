@@ -61,10 +61,10 @@ const Can = () => {
     const budgetLineTypesCount = getTypesCounts(budgetLineItemsByFiscalYear, "status");
     const testAgreements = [
         { type: "CONTRACT", count: 8 },
-        { type: "GRANT", count: 2 }
-        // { type: "DIRECT_ALLOCATION", count: 1 },
-        // { type: "IAA", count: 1 }
-        // { type: "MISCELLANEOUS", count: 1 }
+        { type: "GRANT", count: 2 },
+        { type: "DIRECT_ALLOCATION", count: 1 },
+        { type: "IAA", count: 1 },
+        { type: "MISCELLANEOUS", count: 1 }
     ];
 
     return (

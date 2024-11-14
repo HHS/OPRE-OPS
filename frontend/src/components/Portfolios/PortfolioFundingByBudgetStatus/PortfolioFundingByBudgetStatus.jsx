@@ -82,7 +82,7 @@ const PortfolioFundingByBudgetStatus = () => {
     };
 
     return (
-        <RoundedBox className=" padding-y-205 padding-x-4 display-inline-block">
+        <RoundedBox className="display-inline-block">
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">
                 FY {fiscalYear.value} Budget Status
             </h3>

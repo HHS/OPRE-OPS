@@ -61,7 +61,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
 
     return (
         <RoundedBox
-            className={"padding-y-205 padding-x-4 display-inline-block"}
+            className={"display-inline-block"}
             dataCy={`can-funding-summary-card-${canId}`}
             style={{ height: "14.5rem" }}
         >

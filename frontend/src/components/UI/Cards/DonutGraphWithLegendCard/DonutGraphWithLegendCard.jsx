@@ -34,17 +34,12 @@ const DonutGraphWithLegendCard = ({ data, title, totalFunding }) => {
 
     return (
         <RoundedBox
-            className="padding-y-205 padding-x-4 display-inline-block"
+            className="display-inline-block"
             id="donut-graph-with-legend-card"
         >
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{title}</h3>
-
             <div className="display-flex flex-justify">
-                <div
-                    className={
-                        totalFunding > 0 ? `${styles.widthLegend} maxw-card-lg font-12px` : "width-card-lg font-12px"
-                    }
-                >
+                <div className={totalFunding > 0 ? `${styles.widthLegend} font-12px` : "width-card-lg font-12px"}>
                     {data.map((item) => (
                         <LegendItem
                             key={item.id}
@@ -60,7 +55,7 @@ const DonutGraphWithLegendCard = ({ data, title, totalFunding }) => {
                 </div>
                 <div
                     id={`donutGraphWithLegendCard-${id}`}
-                    className="width-card height-card margin-top-neg-1 margin-left-2"
+                    className="width-card height-card margin-top-neg-05"
                     aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
                     role="img"
                 >
