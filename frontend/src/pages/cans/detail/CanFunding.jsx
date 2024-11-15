@@ -3,7 +3,6 @@ import DebugCode from "../../../components/DebugCode";
 
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
- *  @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
 
 /**
