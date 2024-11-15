@@ -53,6 +53,7 @@ export default function useCan() {
         description: can?.description,
         nickname: can?.nick_name,
         fundingDetails: can?.funding_details ?? {},
+        fundingBudgets: can?.funding_budgets ?? [],
         divisionId: can?.portfolio?.division_id ?? -1,
         teamLeaders: can?.portfolio?.team_leaders ?? [],
         portfolioName: can?.portfolio?.name,

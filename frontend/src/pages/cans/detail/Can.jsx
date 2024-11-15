@@ -25,6 +25,7 @@ const Can = () => {
         description,
         nickname,
         fundingDetails,
+        fundingBudgets,
         divisionId,
         teamLeaders,
         portfolioName,
@@ -97,6 +98,7 @@ const Can = () => {
                     element={
                         <CanFunding
                             funding={fundingDetails}
+                            fundingBudgets={fundingBudgets}
                             fiscalYear={fiscalYear}
                             expectedFunding={expectedFunding}
                             receivedFunding={receivedFunding}
