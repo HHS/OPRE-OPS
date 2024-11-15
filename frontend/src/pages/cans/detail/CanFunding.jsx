@@ -1,5 +1,6 @@
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
 import DebugCode from "../../../components/DebugCode";
+import BudgetCard from "../../../components/UI/Cards/BudgetCard";
 
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
@@ -9,6 +10,8 @@ import DebugCode from "../../../components/DebugCode";
  * @typedef {Object} CanFundingProps
  * @property {FundingDetails} [funding]
  * @property {number} fiscalYear
+ * @property {number} expectedFunding
+ * @property {number} receivedFunding
  */
 
 /**
@@ -16,7 +19,7 @@ import DebugCode from "../../../components/DebugCode";
  * @param {CanFundingProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CanFunding = ({ funding, fiscalYear }) => {
+const CanFunding = ({ funding, fiscalYear, expectedFunding, receivedFunding }) => {
     if (!funding) {
         return <div>No funding information available for this CAN.</div>;
     }
@@ -28,9 +31,16 @@ const CanFunding = ({ funding, fiscalYear }) => {
                 funding={funding}
                 fiscalYear={fiscalYear}
             />
+            <div className="display-flex flex-justify margin-top-4">
+                <BudgetCard
+                    title={`FY ${fiscalYear} Funding Recieved YTD`}
+                    totalSpending={expectedFunding}
+                    totalFunding={receivedFunding}
+                />
+            </div>
             <DebugCode
-                title="can.funding_details"
-                data={funding}
+                title="can.funding"
+                data={{ expectedFunding, receivedFunding }}
             />
         </div>
     );

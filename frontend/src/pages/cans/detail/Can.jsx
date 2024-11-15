@@ -35,7 +35,9 @@ const Can = () => {
         subTitle,
         projectTypesCount,
         budgetLineTypesCount,
-        testAgreements
+        testAgreements,
+        expectedFunding,
+        receivedFunding
     } = useCan();
 
     if (isLoading || CANFundingLoading) {
@@ -96,6 +98,8 @@ const Can = () => {
                         <CanFunding
                             funding={fundingDetails}
                             fiscalYear={fiscalYear}
+                            expectedFunding={expectedFunding}
+                            receivedFunding={receivedFunding}
                         />
                     }
                 />
