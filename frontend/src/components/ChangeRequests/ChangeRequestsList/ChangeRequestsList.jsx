@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import * as React from "react";
-import { useSelector } from "react-redux";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
@@ -13,7 +12,6 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
  * @returns {JSX.Element} - The rendered component
  */
 function ChangeRequestsList({ handleReviewChangeRequest }) {
-    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? -1;
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
@@ -27,16 +25,9 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
         return <h1>Oops, an error occurred</h1>;
     }
 
-    const changeRequestsForUser = Array.isArray(changeRequests)
-        ? changeRequests.filter(
-              /** @param {ChangeRequest} changeRequest */
-              (changeRequest) => changeRequest.managing_division_id === userDivisionId
-          )
-        : [];
-
-    return changeRequestsForUser.length > 0 ? (
+    return changeRequests.length > 0 ? (
         <>
-            {changeRequestsForUser.map(
+            {changeRequests.map(
                 /** @param {ChangeRequest} changeRequest */
                 (changeRequest) => (
                     <React.Fragment key={changeRequest.id}>

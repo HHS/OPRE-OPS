@@ -20,7 +20,7 @@ export type Portfolio = {
     status?: string;
     cans?: CAN[];
     division_id: number;
-    division?: Division;
+    division: Division;
     urls?: URL[];
     team_leaders?: SafeUser[];
     created_by?: any;

@@ -61,7 +61,7 @@ export function getInReviewChangeRequests(budgetLines, userId) {
     return budgetLines
         .filter(
             (budgetLine) =>
-                budgetLine.in_review && (!userId || budgetLine.can?.portfolio?.division?.division_director_id === userId || budgetLine.can?.portfolio?.division?.deputy_division_director_id === userId)
+                budgetLine.in_review && (!userId || budgetLine.can?.portfolio?.division.division_director_id === userId || budgetLine.can?.portfolio?.division.deputy_division_director_id === userId)
         )
         .flatMap((budgetLine) => budgetLine.change_requests_in_review || []);
 }

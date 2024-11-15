@@ -3545,11 +3545,35 @@ components:
           type: integer
         appropriation_date:
           type: integer
+    Division:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        abbreviation:
+          type: string
+        division_director_id:
+          type: integer
+        deputy_division_director_id:
+          type: integer
+        created_by:
+          $ref: "#/components/parameters/created_by"
+        updated_by:
+          $ref: "#/components/parameters/updated_by"
+        created_on:
+          $ref: "#/components/parameters/created_on"
+        updated_on:
+          $ref: "#/components/parameters/updated_on"
     PortfolioBLISchema:
       type: object
       properties:
         division_id:
           type: integer
+        division:
+          type: object
+          $ref: "#/components/schemas/Division"
     BudgetLineItemRequest:
       type: object
       properties:
@@ -4066,6 +4090,12 @@ components:
               "abbreviation": "DFCD",
               "id": 1,
               "name": "Division of Child and Family Development"
+              "division_director_id": "522"
+              "deputy_division_director_id": "520"
+              "created_on": "2024-11-14 20:20:55.176355"
+              "updated_on": "2024-11-14 20:20:55.176355"
+              "created_by": 1,
+              "updated_by": 1
           },
           "division_id": 1,
           "id": 1,
