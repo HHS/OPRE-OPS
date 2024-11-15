@@ -66,6 +66,7 @@ export type FundingBudget = {
 };
 
 export type FundingDetails = {
+    active_period?: number;
     allotment?: string;
     allowance?: string;
     appropriation?: string;
@@ -73,9 +74,10 @@ export type FundingDetails = {
     fiscal_year: number;
     fund_code: string;
     funding_partner?: string;
-    funding_source?: string;
+    funding_source?: "OPRE" | "ACF" | "HHS";
     id: number;
     method_of_transfer?: keyof typeof CAN_TRANSFER;
+    obligate_by?: number;
     sub_allowance?: string;
     created_by?: any;
     created_by_user?: any;

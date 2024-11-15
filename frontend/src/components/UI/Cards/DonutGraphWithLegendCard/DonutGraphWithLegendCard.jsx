@@ -33,10 +33,7 @@ const DonutGraphWithLegendCard = ({ data, title, totalFunding }) => {
     const id = crypto.randomUUID();
 
     return (
-        <RoundedBox
-            className="display-inline-block"
-            id="donut-graph-with-legend-card"
-        >
+        <RoundedBox id="donut-graph-with-legend-card">
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{title}</h3>
             <div className="display-flex flex-justify">
                 <div className={totalFunding > 0 ? `${styles.widthLegend} font-12px` : "width-card-lg font-12px"}>
