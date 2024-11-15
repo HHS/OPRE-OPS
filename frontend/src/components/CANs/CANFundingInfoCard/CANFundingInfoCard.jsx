@@ -1,7 +1,6 @@
 import { NO_DATA } from "../../../constants";
 import Card from "../../UI/Cards/Card";
 import TermTag from "../../UI/Term/TermTag";
-import { formatObligateBy } from "../CANTable/CANTable.helpers";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
  */
@@ -65,7 +64,7 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                     <dl>
                         <TermTag
                             term="Obligate By"
-                            description={formatObligateBy(funding.obligate_by) ?? NO_DATA}
+                            description={funding.obligate_by?.toString() ?? NO_DATA}
                         />
                         <TermTag
                             term="Allotment"
@@ -78,7 +77,7 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                         {/* TODO: ask where this comes from */}
                         <TermTag
                             term="Funding Received*"
-                            description="Coming Soon"
+                            description={NO_DATA}
                         />
                         <TermTag
                             term="Funding Source"
@@ -103,7 +102,7 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                         {/* TODO: ask where this comes from */}
                         <TermTag
                             term="Funding Type*"
-                            description="Coming Soon"
+                            description={NO_DATA}
                         />
                         <TermTag
                             term="Method of Transfer"
