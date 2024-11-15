@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
  * @component
  * @param {Object} props - The properties passed to the component.
  * @param {string} [props.title="DEBUG CODE"] - The title of the debug section.
- * @param {Object | []} props.data - The data to be displayed in the debug section.
+ * @param {Object | any[]} props.data - The data to be displayed in the debug section.
  *
  * @returns {JSX.Element | null | boolean } The rendered JSX element, or null if not in development mode.
  *

@@ -123,10 +123,7 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
     };
 
     return (
-        <RoundedBox
-            className="padding-y-205 padding-x-4 display-inline-block"
-            dataCy="bli-status-summary-card"
-        >
+        <RoundedBox dataCy="bli-status-summary-card">
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">Budget Lines By Status</h3>
 
             <div className="display-flex flex-justify">

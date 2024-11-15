@@ -84,6 +84,7 @@ export const draftBudgetLineStatuses = ["DRAFT"];
  * @property {Object.<string, string>} serviceRequirementType - Display text for service requirement types.
  * @property {Object.<string, string>} changeToTypes - Display text for change to types.
  * @property {Object.<string, string>} methodOfTransfer - Display text for change to statuses.
+ * @property {Object.<string, string>} project - Display text for project types.
  *
  */
 
@@ -187,12 +188,16 @@ export const codesToDisplayText = {
         COST_SHARE: "MOU",
         IAA: "IAA",
         IDDA: "IDDA"
+    },
+    project: {
+        ADMINISTRATIVE_AND_SUPPORT: "Admin & Support",
+        RESEARCH: "Research"
     }
 };
 
 /**
  * Converts a code value into a display text value based on a predefined mapping.
- * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer")} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
+ * @param {("agreementType" | "agreementReason" | "budgetLineStatus" | "validation" | "classNameLabels" | "baseClassNameLabels"| "agreementPropertyLabels" | "budgetLineItemPropertyLabels" | "changeToTypes" | "methodOfTransfer" | 'project')} listName - The name of the list to retrieve the mapping from the codesToDisplayText object. This parameter is required.
  * @param {string} code - The code value to convert. This parameter is required.
  * @returns {string} The display text value for the code, or the original code value if no mapping is found.
  * @throws {Error} If either the listName or code parameter is not provided.
