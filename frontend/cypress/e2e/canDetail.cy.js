@@ -89,5 +89,13 @@ describe("CAN detail page", () => {
             .and("contain", "Available")
             .and("contain", "FY 2024 Funding Received YTD")
             .and("contain", "Spending $4,000,000.00 of $6,000,000.00");
+        cy.get("[data-cy=can-budget-fy-card]")
+            .should("exist")
+            .and("contain", "CAN Budget by FY")
+            .and("contain", "FY 2024")
+            .and("contain", "FY 2023")
+            .and("contain", "FY 2022")
+            .and("contain", "FY 2021")
+            .and("contain", "$10,000,000.00");
     });
 });
