@@ -36,7 +36,7 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
 
     return (
         <RoundedBox
-            dataCy={`budget-summary-card`}
+            dataCy="budget-card"
             style={{ height: "14.5rem" }}
         >
             <h3
