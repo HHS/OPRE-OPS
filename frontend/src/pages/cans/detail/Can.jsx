@@ -26,6 +26,7 @@ const Can = () => {
         nickname,
         fundingDetails,
         fundingBudgets,
+        fundingReceivedByFiscalYear,
         divisionId,
         teamLeaders,
         portfolioName,
@@ -102,6 +103,7 @@ const Can = () => {
                             fiscalYear={fiscalYear}
                             expectedFunding={expectedFunding}
                             receivedFunding={receivedFunding}
+                            fundingReceived={fundingReceivedByFiscalYear}
                         />
                     }
                 />

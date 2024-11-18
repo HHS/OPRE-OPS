@@ -27,6 +27,12 @@ export default function useCan() {
         return can?.budget_line_items?.filter((bli) => bli.fiscal_year === fiscalYear) ?? [];
     }, [can, fiscalYear]);
 
+    const fundingReceivedByFiscalYear = React.useMemo(() => {
+        if (!fiscalYear || !can) return [];
+
+        return can?.funding_received?.filter((fr) => fr.fiscal_year === fiscalYear) ?? [];
+    }, [can, fiscalYear]);
+
     const projectTypesCount = React.useMemo(() => (can ? getTypesCounts(can.projects, "project_type") : []), [can]);
 
     const budgetLineTypesCount = React.useMemo(
@@ -54,6 +60,7 @@ export default function useCan() {
         nickname: can?.nick_name,
         fundingDetails: can?.funding_details ?? {},
         fundingBudgets: can?.funding_budgets ?? [],
+        fundingReceivedByFiscalYear: fundingReceivedByFiscalYear,
         divisionId: can?.portfolio?.division_id ?? -1,
         teamLeaders: can?.portfolio?.team_leaders ?? [],
         portfolioName: can?.portfolio?.name,
