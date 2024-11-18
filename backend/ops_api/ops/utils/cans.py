@@ -64,11 +64,9 @@ def get_new_funding_by_fiscal_year(can: CAN, fiscal_year: Optional[int] = None) 
     # check to see if the CAN has an active period of 1
     if can.active_period == 1:
         return sum([c.budget for c in can.funding_budgets if c.fiscal_year == fiscal_year]) or 0
-    elif can.active_period == 5:
+    else:
         # Check to see if the CAN is in it first year
         return get_new_funding_by_funding_details(can)
-    else:
-        pass
 
 
 def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
