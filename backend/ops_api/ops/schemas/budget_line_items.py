@@ -4,9 +4,9 @@ from datetime import date
 
 from _decimal import Decimal
 from flask import current_app
-from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow_enum import EnumField
 
+from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
@@ -291,3 +291,6 @@ class BudgetLineItemResponseSchema(Schema):
     change_requests_in_review = fields.Nested(
         GenericChangeRequestResponseSchema(), many=True, default=None, allow_none=True
     )
+    agreement_name = fields.String(allow_none=True)
+    agreement_type = fields.String(allow_none=True)
+    awarding_entity_id = fields.Integer(allow_none=True)
