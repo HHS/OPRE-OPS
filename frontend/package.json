@@ -46,7 +46,7 @@
     "react-router-dom": "6.28.0",
     "react-select": "5.8.3",
     "react-slider": "2.0.6",
-    "sass": "1.80.7",
+    "sass": "1.81.0",
     "sass-loader": "16.0.3",
     "styled-components": "6.1.13",
     "vest": "5.4.4",
