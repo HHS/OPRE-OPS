@@ -2,7 +2,7 @@ import constants from "../../../constants";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").FundingBudget} FundingBudget
  */
-const { blisByFYChartColors } = constants;
+const { budgetsByFYChartColors } = constants;
 
 /** @param {FundingBudget} fundingBudget */
 const calculateBudgetTotal = (fundingBudget) => {
@@ -46,7 +46,7 @@ export const summaryCard = (fundingBudgets) => {
             FY: fyVal.fiscalYear,
             total: fyVal.total,
             ratio: fyVal.total / maxFyTotal,
-            color: blisByFYChartColors[index].color
+            color: budgetsByFYChartColors[index].color
         };
     });
     return {
