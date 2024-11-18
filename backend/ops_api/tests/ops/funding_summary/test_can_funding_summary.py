@@ -8,10 +8,10 @@ from flask.testing import FlaskClient
 from models.cans import CAN
 from ops_api.ops.utils.cans import (
     aggregate_funding_summaries,
-    filter_cans,
-    filter_cans_by_attribute,
-    filter_cans_by_fiscal_year_budget,
+    filter_by_attribute,
+    filter_by_fiscal_year_budget,
     get_can_funding_summary,
+    get_filtered_cans,
     get_nested_attribute,
 )
 from ops_api.tests.utils import remove_keys
@@ -110,12 +110,13 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
         ],
         "carry_forward_funding": 0,
         "expected_funding": Decimal("260000.0"),
+        "in_draft_funding": 0,
         "in_execution_funding": Decimal("2000000.00"),
+        "new_funding": Decimal("1140000.0"),
         "obligated_funding": 0,
         "planned_funding": 0,
         "received_funding": Decimal("880000.0"),
         "total_funding": Decimal("1140000.0"),
-        "new_funding": Decimal("-860000.00") - 0,
     }
 
 
@@ -202,6 +203,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
             }
         ],
         "carry_forward_funding": 0,
+        "in_draft_funding": Decimal("0.0"),
         "expected_funding": Decimal("260000.0"),
         "in_execution_funding": 0,
         "obligated_funding": 0,
@@ -242,7 +244,7 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
 
     assert available_funding == "3340000.00"
     assert carry_forward_funding == "10000000.0"
-    assert response.json["new_funding"] == "13340000.00"
+    assert response.json["new_funding"] == "1340000.0"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -303,7 +305,7 @@ def test_filter_cans_by_attribute():
         MagicMock(active_period=1, funding_details=MagicMock(method_of_transfer="DIRECT")),
     ]
 
-    filtered_cans = filter_cans_by_attribute(cans, "funding_details.method_of_transfer", ["DIRECT"])
+    filtered_cans = filter_by_attribute(cans, "funding_details.method_of_transfer", ["DIRECT"])
 
     assert len(filtered_cans) == 2
 
@@ -316,7 +318,7 @@ def test_filter_cans_by_fiscal_year_budget():
     ]
 
     fiscal_year_budget = [1000000, 2000000]
-    filtered_cans = filter_cans_by_fiscal_year_budget(cans, fiscal_year_budget)
+    filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget)
 
     assert len(filtered_cans) == 2
 
@@ -328,7 +330,7 @@ def test_filter_cans_by_fiscal_year_budget_no_match():
     ]
 
     fiscal_year_budget = [1000000, 2000000]
-    filtered_cans = filter_cans_by_fiscal_year_budget(cans, fiscal_year_budget)
+    filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget)
 
     assert len(filtered_cans) == 0
 
@@ -365,7 +367,7 @@ def test_filter_cans(active_period, transfer, portfolio, fy_budget, expected_cou
         ),
     ]
 
-    filtered_cans = filter_cans(
+    filtered_cans = get_filtered_cans(
         cans, active_period=active_period, transfer=transfer, portfolio=portfolio, fy_budget=fy_budget
     )
 
@@ -391,6 +393,7 @@ def test_aggregate_funding_summaries():
             "carry_forward_funding": 20000,
             "received_funding": 75000,
             "expected_funding": 125000 - 75000,
+            "in_draft_funding": 0,
             "in_execution_funding": 50000,
             "obligated_funding": 30000,
             "planned_funding": 120000,
@@ -414,6 +417,7 @@ def test_aggregate_funding_summaries():
             "carry_forward_funding": 30000,
             "received_funding": 100000,
             "expected_funding": 180000 - 100000,
+            "in_draft_funding": 0,
             "in_execution_funding": 80000,
             "obligated_funding": 50000,
             "planned_funding": 160000,
@@ -445,6 +449,7 @@ def test_aggregate_funding_summaries():
         ],
         "carry_forward_funding": Decimal("50000.0"),
         "expected_funding": Decimal("130000.0"),
+        "in_draft_funding": Decimal("0.0"),
         "in_execution_funding": Decimal("130000.0"),
         "new_funding": Decimal("300000.0"),
         "obligated_funding": Decimal("80000.0"),

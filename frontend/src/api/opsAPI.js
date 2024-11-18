@@ -204,7 +204,7 @@ export const opsApi = createApi({
             providesTags: ["Cans"]
         }),
         getCanFundingSummary: builder.query({
-            query: (id) => `/can-funding-summary/${id}`,
+            query: (id) => `/can-funding-summary?can_ids=${id}`,
             providesTags: ["CanFunding"]
         }),
         getNotificationsByUserId: builder.query({

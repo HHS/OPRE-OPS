@@ -1080,13 +1080,13 @@ paths:
     get:
       tags:
         - CAN Funding Summary
-      operationId: getFundingTotals
-      description: Get Funding Totals
+      operationId: getFundingSummary
+      description: Get Funding Summary
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - name: can_ids
           in: query
-          description: List of CAN Ids (required)
+          description: List of CAN Ids (required), Use an integer of 0 to get funding summary for all CANs.
           required: true
           schema:
             type: array
@@ -1190,6 +1190,8 @@ paths:
                         example: ""
                   expected_funding:
                     type: string
+                  in_draft_funding:
+                    type: string
                   in_execution_funding:
                     type: string
                   new_funding:
@@ -1227,6 +1229,7 @@ paths:
                         "expiration_date": "09/01/2023",
                       }],
                       "expected_funding": "4000000.00",
+                      "in_draft_funding": "500000.00",
                       "in_execution_funding": "2000000.00",
                       "new_funding": "2000000.00",
                       "obligated_funding": 0,
