@@ -1,5 +1,5 @@
 import { SafeUser } from "../Users/UserTypes";
-import { Project } from "../Projects/ProjectTypes";
+import { ResearchProject } from "../Projects/ProjectTypes";
 import { BudgetLine } from "../BudgetLineItems/BudgetLineTypes";
 
 export type Agreement = {
@@ -16,7 +16,7 @@ export type Agreement = {
     procurement_tracker_id?: number;
     product_service_code?: ProductServiceCode;
     product_service_code_id?: number;
-    project?: Project;
+    project?: ResearchProject;
     project_id?: number;
     project_officer_id?: number;
     team_members?: SafeUser[];

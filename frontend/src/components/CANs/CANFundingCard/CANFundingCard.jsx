@@ -7,20 +7,21 @@ import CurrencyWithSmallCents from "../../UI/CurrencyWithSmallCents/CurrencyWith
 import RoundedBox from "../../UI/RoundedBox";
 import Tag from "../../UI/Tag";
 import LineGraph from "../../UI/DataViz/LineGraph";
-
 /**
- * A component that displays funding information for a CAN
- * @component
- * @param {Object} props - The props object.
- * @param {Object} props.can - The CAN object.
- * @param {number} props.pendingAmount - The pending amount.
- * @param {boolean} props.afterApproval - A flag indicating whether the funding is after approval.
+ * @typedef {Object} CANFundingCardProps
+ * @property {import("../../../components/CANs/CANTypes").CAN} can - The CAN object.
+ * @property {number} pendingAmount - The pending amount.
+ * @property {boolean} afterApproval - A flag indicating whether the funding is after approval.
+ */
+/**
+ * @component - displays funding information for a CAN in a card format
+ * @param {CANFundingCardProps} props - The component props.
  * @returns {JSX.Element} - The CANFundingCard component.
  */
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can?.id;
-    const { data, error, isLoading } = useGetCanFundingSummaryQuery(canId);
+    const { data, error, isLoading } = useGetCanFundingSummaryQuery({ id: canId });
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -60,7 +61,6 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
 
     return (
         <RoundedBox
-            className={"padding-y-205 padding-x-4 display-inline-block"}
             dataCy={`can-funding-summary-card-${canId}`}
             style={{ height: "14.5rem" }}
         >

@@ -18,15 +18,17 @@ jobs:
       id-token: write # to enable use of OIDC for npm provenance
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
-
-      # Install and cache NPM dependencies
-      - uses: ./.github/actions/setup-javascript
-
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
+        with:
+          node-version: "lts/*"
+      - name: Install semantic-release
+        run: npm install -g semantic-release
       - name: Release
+        working-directory: ./frontend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: frontend
-        run: bun run semantic-release
+        run: npx semantic-release

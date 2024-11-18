@@ -24,7 +24,7 @@ import { useSelector } from "react-redux";
  * @typedef {import('../../../components/ChangeRequests/ChangeRequestsTypes').ChangeRequest} ChangeRequest
  * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
  * @typedef {import('../../../components/CANs/CANTypes').CAN} CAN
- * @typedef {import('../../../components/CANs/CANTypes').SimpleCAN} SimpleCAN
+ * @typedef {import('../../../components/CANs/CANTypes').BasicCAN} BasicCAN
  * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
  */
 
@@ -239,7 +239,7 @@ const useApproveAgreement = () => {
     /**
      * @description This function is used to apply the pending changes to the budget lines
      * @param {BudgetLine[]} originalBudgetLines - The original budget lines
-     * @param {SimpleCAN[]} cans - The CAN data retrieved from the RTL Query
+     * @param {BasicCAN[]} cans - The CAN data retrieved from the RTL Query
      * @returns {BudgetLine[]} The updated budget lines
      */
     function applyPendingChangesToBudgetLines(originalBudgetLines, cans) {
