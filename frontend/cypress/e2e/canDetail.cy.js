@@ -83,7 +83,7 @@ describe("CAN detail page", () => {
             .and("contain", "IDDA")
             .and("contain", "09/30/25")
             .and("contain", "2021");
-        cy.get("[data-cy=budget-summary-card]")
+        cy.get("[data-cy=budget-received-card]")
             .should("exist")
             .and("contain", "FY 2024 Funding Received YTD")
             .and("contain", "$ 6,000,000.00")

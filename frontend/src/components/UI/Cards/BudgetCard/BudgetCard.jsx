@@ -20,7 +20,7 @@ import Tag from "../../Tag";
  */
 const BudgetCard = ({ title, totalSpending, totalFunding }) => {
     const overBudget = totalSpending > totalFunding;
-    let remainingBudget = totalFunding - totalSpending;
+    const remainingBudget = totalFunding - totalSpending;
 
     const graphData = [
         {
