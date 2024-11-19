@@ -1,6 +1,5 @@
-import PropTypes from "prop-types";
-import styles from "./styles.module.scss";
 import { useEffect, useState } from "react";
+import styles from "./styles.module.scss";
 import { calculateRatio } from "./util";
 
 /**
@@ -11,16 +10,20 @@ import { calculateRatio } from "./util";
  */
 
 /**
- * @description A line graph that shows two bars side by side.
- * @component
- * @param {Object} props
- * @param {Data[]} props.data
- * @param {Function} [props.setActiveId]
- * @param {boolean} [props.isStriped]
- * @param {boolean} [props.overBudget]
+ * @typedef {Object} LineGraphProps
+ * @property {Data[]} data
+ * @property {Function} [props.setActiveId]
+ * @property {boolean} [props.isStriped]
+ * @property {boolean} [props.overBudget]
+ * @property {boolean} [props.isReverse]
+ */
+
+/**
+ * @component  - line graph that shows two bars side by side.
+ * @param {LineGraphProps} props
  * @returns {JSX.Element}
  */
-const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
+const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false, isReverse = false }) => {
     const [ratio, setRatio] = useState(1);
     const { color: leftColor, id: leftId, value: leftValue } = data[0];
     const { color: rightColor, id: rightId, value: rightValue } = data[1];
@@ -57,7 +60,19 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
             />
             <div
                 className={`${styles.rightBar} ${ratio === 0 ? styles.rightBarFull : ""}`}
-                style={{ backgroundColor: rightColor }}
+                style={{
+                    backgroundColor: rightColor,
+                    backgroundImage:
+                        isReverse && isStriped
+                            ? `repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 5px,
+                  var(--data-viz-budget-graph-1) 5px,
+                  var(--data-viz-budget-graph-1) 6px
+              )`
+                            : "none"
+                }}
                 onMouseEnter={() => setActiveId(rightId)}
                 onMouseLeave={() => setActiveId(0)}
             />
@@ -65,10 +80,4 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
     );
 };
 
-LineGraph.propTypes = {
-    data: PropTypes.array.isRequired,
-    setActiveId: PropTypes.func,
-    isStriped: PropTypes.bool,
-    overBudget: PropTypes.bool
-};
 export default LineGraph;

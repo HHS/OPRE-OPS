@@ -2,7 +2,7 @@ import CurrencyFormat from "react-currency-format";
 import CANBudgetByFYCard from "../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard";
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
 import Accordion from "../../../components/UI/Accordion";
-import BudgetCard from "../../../components/UI/Cards/BudgetCard";
+import ReceivedFundingCard from "../../../components/UI/Cards/BudgetCard/ReceivedFundingCard";
 import Table from "../../../components/UI/Table";
 import { calculatePercent } from "../../../helpers/utils";
 
@@ -34,7 +34,7 @@ const CanFunding = ({ funding, fundingBudgets, fiscalYear, totalFunding, receive
 
     return (
         <div>
-            <h2>Can Funding</h2>
+            <h2>CAN Funding</h2>
             <p>The summary below shows the funding for this CAN for the select fiscal year.</p>
             <CANFundingInfoCard
                 funding={funding}
@@ -45,12 +45,10 @@ const CanFunding = ({ funding, fundingBudgets, fiscalYear, totalFunding, receive
                 className="margin-bottom-4"
             >
                 <div className="display-flex flex-justify margin-top-4">
-                    <BudgetCard
+                    <ReceivedFundingCard
                         title={`FY ${fiscalYear} Funding Received YTD`}
-                        totalSpending={receivedFunding}
+                        totalReceived={receivedFunding}
                         totalFunding={totalFunding}
-                        tagText="Received"
-                        helperText="Received"
                     />
                     <CANBudgetByFYCard fundingBudgets={fundingBudgets} />
                 </div>
@@ -65,13 +63,13 @@ const CanFunding = ({ funding, fundingBudgets, fiscalYear, totalFunding, receive
                 </div>
             </section>
             <Accordion
-                heading="Funding Receieved YTD"
+                heading="Funding Received YTD"
                 level={2}
             >
                 {fundingReceived.length === 0 ? (
                     <p className="text-center">No funding received data available for this CAN.</p>
                 ) : (
-                    <Table tableHeadings={["Funding ID", "FY", "Funding Receieved", "% of Total FY Budget"]}>
+                    <Table tableHeadings={["Funding ID", "FY", "Funding Received", "% of Total FY Budget"]}>
                         {fundingReceived.map((row) => {
                             return (
                                 <tr key={row.id}>
