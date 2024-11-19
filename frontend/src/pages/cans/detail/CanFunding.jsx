@@ -65,7 +65,7 @@ const CanFunding = ({ funding, fundingBudgets, fiscalYear, expectedFunding, rece
                 </div>
             </section>
             <Accordion
-                heading="Funding Receieved TYD"
+                heading="Funding Receieved YTD"
                 level={2}
             >
                 {fundingReceived.length === 0 ? (
