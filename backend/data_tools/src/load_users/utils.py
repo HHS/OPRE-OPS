@@ -1,12 +1,12 @@
 from csv import DictReader
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import Division, Role, User, UserStatus
+from models import Division, OpsEvent, OpsEventStatus, OpsEventType, Role, User, UserStatus
 
 
 @dataclass
@@ -14,11 +14,11 @@ class UserData:
     """
     Dataclass to represent a User data row.
     """
-    SYS_USER_ID: int
     EMAIL: str
-    DIVISION: str
-    STATUS: str
-    ROLES: list[str]
+    SYS_USER_ID: Optional[int] = None
+    DIVISION: Optional[str] = None
+    STATUS: Optional[str] = None
+    ROLES: Optional[list[str]] = None
 
     def __post_init__(self):
         if not self.EMAIL:
@@ -28,7 +28,7 @@ class UserData:
         self.EMAIL = str(self.EMAIL)
         self.DIVISION = str(self.DIVISION)
         self.STATUS = str(self.STATUS)
-        self.ROLES = [str(r) for r in self.ROLES.split(",")]
+        self.ROLES = [str(r).strip() for r in self.ROLES.split(",")] if self.ROLES else []
 
 
 def create_user_data(data: dict) -> UserData:
@@ -85,9 +85,19 @@ def create_models(data: UserData, sys_user: User, session: Session, roles: List[
         )
 
         user.roles = [r for r in roles if r.name in data.ROLES]
-        user.division = next((d for d in divisions if d.abbreviation == data.DIVISION), None)
+        division = next((d for d in divisions if d.abbreviation == data.DIVISION), None)
+        user.division = division.id if division else None
 
         session.merge(user)
+        session.commit()
+
+        ops_event = OpsEvent(
+            event_type=OpsEventType.CREATE_USER,
+            event_status=OpsEventStatus.SUCCESS,
+            created_by=sys_user.id,
+            event_details={"user_id": user.id, "message": f"Upserted user {user.email}"},
+        )
+        session.add(ops_event)
         session.commit()
     except Exception as e:
         logger.error(f"Error creating models for {data}")
