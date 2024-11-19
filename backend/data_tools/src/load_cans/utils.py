@@ -1,12 +1,12 @@
 from csv import DictReader
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 from loguru import logger
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from models import CAN, BaseModel, CANFundingDetails, CANFundingSource, CANMethodOfTransfer, Portfolio, User
+from models import CAN, CANFundingDetails, CANFundingSource, CANMethodOfTransfer, Portfolio, User
 
 
 @dataclass
@@ -120,51 +120,95 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
 
         can.portfolio = portfolio
 
-        # get or create funding details
-        fiscal_year = int(data.FUND[6:10])
-        fund_code = data.FUND
-        allowance = data.ALLOWANCE
-        sub_allowance = data.SUB_ALLOWANCE
-        allotment = data.ALLOTMENT_ORG
-        appropriation = "-".join([data.APPROP_PREFIX or "", data.APPROP_YEAR[0:2] or "", data.APPROP_POSTFIX or ""])
-        method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
-        funding_source = CANFundingSource[data.FUNDING_SOURCE]
-
-        existing_funding_details = session.execute(select(CANFundingDetails).where(
-            and_(
-                CANFundingDetails.fiscal_year == fiscal_year,
-                CANFundingDetails.fund_code == fund_code,
-                CANFundingDetails.allowance == allowance,
-                CANFundingDetails.sub_allowance == sub_allowance,
-                CANFundingDetails.allotment == allotment,
-                CANFundingDetails.appropriation == appropriation,
-                CANFundingDetails.method_of_transfer == method_of_transfer,
-                CANFundingDetails.funding_source == funding_source,
-            ))).scalar_one_or_none()
-
-        if not existing_funding_details:
-            funding_details = CANFundingDetails(
-                fiscal_year=fiscal_year,
-                fund_code=fund_code,
-                allowance=allowance,
-                sub_allowance=sub_allowance,
-                allotment=allotment,
-                appropriation=appropriation,
-                method_of_transfer=method_of_transfer,
-                funding_source=funding_source,
-                created_by=sys_user.id,
-            )
-            session.add(funding_details)
-            session.commit()
-            can.funding_details = funding_details
-        else:
-            can.funding_details = existing_funding_details
+        try:
+            validate_fund_code(data)
+            can.funding_details = get_or_create_funding_details(data, sys_user, session)
+        except ValueError as e:
+            logger.info(f"Skipping creating funding details for {data} due to invalid fund code. {e}")
 
         session.merge(can)
         session.commit()
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e
+
+
+def get_or_create_funding_details(data: CANData, sys_user: User, session: Session) -> CANFundingDetails:
+    """
+    Get or create a CANFundingDetails instance.
+
+    :param data: The CANData instance to use.
+    :param sys_user: The system user to use.
+    :param session: The database session to use.
+
+    :return: A CANFundingDetails instance.
+    """
+    fiscal_year = int(data.FUND[6:10])
+    fund_code = data.FUND
+    allowance = data.ALLOWANCE
+    sub_allowance = data.SUB_ALLOWANCE
+    allotment = data.ALLOTMENT_ORG
+
+    appropriation_year = data.APPROP_YEAR[0:2] if data.APPROP_YEAR else ""
+    appropriation = "-".join([data.APPROP_PREFIX or "", appropriation_year, data.APPROP_POSTFIX or ""])
+
+    method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
+    funding_source = CANFundingSource[data.FUNDING_SOURCE]
+    existing_funding_details = session.execute(select(CANFundingDetails).where(
+        and_(
+            CANFundingDetails.fiscal_year == fiscal_year,
+            CANFundingDetails.fund_code == fund_code,
+            CANFundingDetails.allowance == allowance,
+            CANFundingDetails.sub_allowance == sub_allowance,
+            CANFundingDetails.allotment == allotment,
+            CANFundingDetails.appropriation == appropriation,
+            CANFundingDetails.method_of_transfer == method_of_transfer,
+            CANFundingDetails.funding_source == funding_source,
+        ))).scalar_one_or_none()
+    if not existing_funding_details:
+        funding_details = CANFundingDetails(
+            fiscal_year=fiscal_year,
+            fund_code=fund_code,
+            allowance=allowance,
+            sub_allowance=sub_allowance,
+            allotment=allotment,
+            appropriation=appropriation,
+            method_of_transfer=method_of_transfer,
+            funding_source=funding_source,
+            created_by=sys_user.id,
+        )
+        return funding_details
+    else:
+        return existing_funding_details
+
+
+def validate_fund_code(data: CANData) -> None:
+    """
+    Validate the fund code in a CANData instance.
+
+    :param data: The CANData instance to validate.
+
+    :return: None
+    :raises ValueError: If the fund code is invalid.
+    """
+    if not data.FUND:
+        raise ValueError("Fund code is required.")
+    if len(data.FUND) != 14:
+        raise ValueError(f"Invalid fund code length {data.FUND}")
+    int(data.FUND[6:10])
+    length_of_appropriation = data.FUND[10]
+    if length_of_appropriation not in ["0", "1", "5"]:
+        raise ValueError(f"Invalid length of appropriation {length_of_appropriation}")
+    direct_or_reimbursable = data.FUND[11]
+    if direct_or_reimbursable not in ["D", "R"]:
+        raise ValueError(f"Invalid direct or reimbursable {direct_or_reimbursable}")
+    category = data.FUND[12]
+    if category not in ["A", "B", "C"]:
+        raise ValueError(f"Invalid category {category}")
+    discretionary_or_mandatory = data.FUND[13]
+    if discretionary_or_mandatory not in ["D", "M"]:
+        raise ValueError(f"Invalid discretionary or mandatory {discretionary_or_mandatory}")
+
 
 def create_all_models(data: List[CANData], sys_user: User, session: Session) -> None:
     """
