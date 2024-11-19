@@ -71,4 +71,31 @@ describe("CAN detail page", () => {
         cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();
         cy.get("button").should("have.class", "usa-current").contains("1");
     });
+    it("shows the CAN Funding page", () => {
+        cy.visit("/cans/504/funding");
+        cy.get("#fiscal-year-select").select("2024");
+        cy.get("h1").should("contain", "G994426"); // heading
+        cy.get("p").should("contain", "HS - 5 Years"); // sub-heading
+        cy.get("[data-cy=can-funding-info-card]")
+            .should("exist")
+            .and("contain", "EEXXXX20215DAD")
+            .and("contain", "5 Years")
+            .and("contain", "IDDA")
+            .and("contain", "09/30/25")
+            .and("contain", "2021");
+        cy.get("[data-cy=budget-summary-card]")
+            .should("exist")
+            .and("contain", "$ 2,000,000.00")
+            .and("contain", "Available")
+            .and("contain", "FY 2024 Funding Received YTD")
+            .and("contain", "Spending $4,000,000.00 of $6,000,000.00");
+        cy.get("[data-cy=can-budget-fy-card]")
+            .should("exist")
+            .and("contain", "CAN Budget by FY")
+            .and("contain", "FY 2024")
+            .and("contain", "FY 2023")
+            .and("contain", "FY 2022")
+            .and("contain", "FY 2021")
+            .and("contain", "$10,000,000.00");
+    });
 });

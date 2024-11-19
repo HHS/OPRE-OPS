@@ -34,7 +34,7 @@ export const formatObligateBy = (obligateBy) => {
  */
 export function findFundingBudgetFYByFiscalYear(can, fiscalYear) {
     if (!can || !fiscalYear) return 0;
-    const matchingBudget = can.funding_budgets.find((budget) => budget.fiscal_year === fiscalYear);
+    const matchingBudget = can.funding_budgets?.find((budget) => budget.fiscal_year === fiscalYear);
 
     return matchingBudget ? matchingBudget.fiscal_year : 0;
 }
@@ -46,7 +46,7 @@ export function findFundingBudgetFYByFiscalYear(can, fiscalYear) {
  */
 export function findFundingBudgetBudgetByFiscalYear(can, fiscalYear) {
     if (!can || !fiscalYear) return 0;
-    const matchingBudget = can.funding_budgets.find((budget) => budget.fiscal_year === fiscalYear);
+    const matchingBudget = can.funding_budgets?.find((budget) => budget.fiscal_year === fiscalYear);
 
     return matchingBudget ? matchingBudget.budget : 0;
 }

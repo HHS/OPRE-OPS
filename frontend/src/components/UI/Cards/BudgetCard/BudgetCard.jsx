@@ -36,7 +36,7 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
 
     return (
         <RoundedBox
-            dataCy={`budget-summary-card`}
+            dataCy="budget-summary-card"
             style={{ height: "14.5rem" }}
         >
             <h3
@@ -78,19 +78,22 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
                 <div>
                     Spending {""}
                     <CurrencyFormat
-                        value={totalSpending || 0}
+                        value={totalSpending ?? 0}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
-                        renderText={(totalSpending) => <span>{totalSpending}</span>}
+                        decimalScale={2}
+                        fixedDecimalScale
                     />{" "}
                     of{" "}
                     <CurrencyFormat
-                        value={totalFunding || 0}
+                        value={totalFunding ?? 0}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
                         renderText={(totalFunding) => <span>{totalFunding}</span>}
+                        decimalScale={2}
+                        fixedDecimalScale
                     />
                 </div>
             </div>
