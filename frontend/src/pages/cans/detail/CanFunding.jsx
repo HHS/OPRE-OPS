@@ -17,7 +17,7 @@ import { calculatePercent } from "../../../helpers/utils";
  * @property {FundingDetails} [funding]
  * @property {FundingBudget[]} fundingBudgets
  * @property {number} fiscalYear
- * @property {number} expectedFunding
+ * @property {number} totalFunding
  * @property {number} receivedFunding
  * @property {FundingReceived[]} fundingReceived data for table
  */
@@ -27,7 +27,7 @@ import { calculatePercent } from "../../../helpers/utils";
  * @param {CanFundingProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CanFunding = ({ funding, fundingBudgets, fiscalYear, expectedFunding, receivedFunding, fundingReceived }) => {
+const CanFunding = ({ funding, fundingBudgets, fiscalYear, totalFunding, receivedFunding, fundingReceived }) => {
     if (!funding) {
         return <div>No funding information available for this CAN.</div>;
     }
@@ -47,8 +47,8 @@ const CanFunding = ({ funding, fundingBudgets, fiscalYear, expectedFunding, rece
                 <div className="display-flex flex-justify margin-top-4">
                     <BudgetCard
                         title={`FY ${fiscalYear} Funding Received YTD`}
-                        totalSpending={expectedFunding}
-                        totalFunding={receivedFunding}
+                        totalSpending={receivedFunding}
+                        totalFunding={totalFunding}
                         tagText="Received"
                         helperText="Received"
                     />
@@ -87,7 +87,7 @@ const CanFunding = ({ funding, fundingBudgets, fiscalYear, expectedFunding, rece
                                             fixedDecimalScale
                                         />
                                     </td>
-                                    <td>{calculatePercent(row.funding ?? 0, receivedFunding)}%</td>
+                                    <td>{calculatePercent(row.funding ?? 0, totalFunding)}%</td>
                                 </tr>
                             );
                         })}

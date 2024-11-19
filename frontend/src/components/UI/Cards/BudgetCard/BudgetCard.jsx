@@ -21,7 +21,7 @@ import Tag from "../../Tag";
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
 const BudgetCard = ({ title, totalSpending, totalFunding, tagText = "Available", helperText = "Spending" }) => {
-    const overBudget = totalSpending > totalFunding;
+    const overBudget = totalSpending > totalFunding && tagText !== "Received";
     let remainingBudget = totalFunding - totalSpending;
     if (tagText === "Received") {
         remainingBudget = totalSpending;
