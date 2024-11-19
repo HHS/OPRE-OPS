@@ -97,5 +97,15 @@ describe("CAN detail page", () => {
             .and("contain", "FY 2022")
             .and("contain", "FY 2021")
             .and("contain", "$10,000,000.00");
+        // table should exist and have one row
+        cy.get("table").should("exist");
+        cy.get("tbody").children().should("have.length", 1);
+        // table should contain 509, 2024, $6,000,000.00, 100%
+        cy.get("tbody")
+            .children()
+            .should("contain", "509")
+            .and("contain", "2024")
+            .and("contain", "$6,000,000.00")
+            .and("contain", "100%");
     });
 });
