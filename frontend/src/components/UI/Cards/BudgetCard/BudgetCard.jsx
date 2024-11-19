@@ -11,6 +11,8 @@ import Tag from "../../Tag";
  * @property {string} title - The title of the card.
  * @property {number} totalSpending - The total spending.
  * @property {number} totalFunding - The total funding.
+ * @property {string} [tagText] - The text for the tag.
+ * @property {string} [helperText] - The helper text.
  */
 
 /**
@@ -18,9 +20,12 @@ import Tag from "../../Tag";
  * @param {BudgetCardProps} props - Properties passed to component
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
-const BudgetCard = ({ title, totalSpending, totalFunding }) => {
+const BudgetCard = ({ title, totalSpending, totalFunding, tagText = "Available", helperText = "Spending" }) => {
     const overBudget = totalSpending > totalFunding;
-    const remainingBudget = totalFunding - totalSpending;
+    let remainingBudget = totalFunding - totalSpending;
+    if (tagText === "Received") {
+        remainingBudget = totalSpending;
+    }
     const graphData = [
         {
             id: 1,
@@ -61,7 +66,7 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
                         Over Budget
                     </Tag>
                 ) : (
-                    <Tag tagStyle={"budgetAvailable"}>Available</Tag>
+                    <Tag tagStyle={"budgetAvailable"}>{tagText}</Tag>
                 )}
             </div>
             <div
@@ -76,7 +81,7 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
             </div>
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
-                    Spending {""}
+                    {`${helperText} `}
                     <CurrencyFormat
                         value={totalSpending ?? 0}
                         displayType={"text"}

@@ -49,6 +49,8 @@ const CanFunding = ({ funding, fundingBudgets, fiscalYear, expectedFunding, rece
                         title={`FY ${fiscalYear} Funding Received YTD`}
                         totalSpending={expectedFunding}
                         totalFunding={receivedFunding}
+                        tagText="Received"
+                        helperText="Received"
                     />
                     <CANBudgetByFYCard fundingBudgets={fundingBudgets} />
                 </div>
