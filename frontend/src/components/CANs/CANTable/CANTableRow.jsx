@@ -13,7 +13,7 @@ import { displayActivePeriod } from "./CANTableRow.helpers";
  * @param {Object} props
  * @param {number} props.activePeriod - Active Period in years
  * @param {number} props.canId - CAN ID
- * @param {number} props.fiscalYear - Fiscal Year
+ * @param {number|"TBD"} props.fiscalYear - Fiscal Year
  * @param {number} props.fyBudget - Fiscal Year Budget
  * @param {string} props.name - CAN name
  * @param {string} props.nickname - CAN nickname
@@ -33,7 +33,11 @@ const CANTableRow = ({
     portfolio,
     transfer
 }) => {
-    const { data: fundingSummary, isError, isLoading } = useGetCanFundingSummaryQuery(canId);
+    const {
+        data: fundingSummary,
+        isError,
+        isLoading
+    } = useGetCanFundingSummaryQuery({ id: canId, fiscalYear: fiscalYear });
     const availableFunds = fundingSummary?.available_funding ?? 0;
 
     if (isLoading)

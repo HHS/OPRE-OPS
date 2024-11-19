@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
+import { NO_DATA } from "../../../constants";
 import PaginationNav from "../../UI/PaginationNav";
 import { findFundingBudgetBudgetByFiscalYear, formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
@@ -22,7 +23,7 @@ const CANTable = ({ cans, fiscalYear }) => {
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
 
-    if (cansPerPage.length === 0) {
+    if (cans.length === 0) {
         return <p className="text-center">No CANs found</p>;
     }
 
@@ -35,13 +36,13 @@ const CANTable = ({ cans, fiscalYear }) => {
                         <CANTableRow
                             key={can.id}
                             canId={can.id}
-                            name={can.display_name ?? "TBD"}
-                            nickname={can.nick_name ?? "TBD"}
+                            name={can.display_name ?? NO_DATA}
+                            nickname={can.nick_name ?? NO_DATA}
                             portfolio={can.portfolio.abbreviation}
-                            fiscalYear={can.funding_details.fiscal_year}
+                            fiscalYear={can.funding_details?.fiscal_year ?? NO_DATA}
                             activePeriod={can.active_period ?? 0}
                             obligateBy={formatObligateBy(can.obligate_by)}
-                            transfer={can.funding_details.method_of_transfer ?? "TBD"}
+                            transfer={can.funding_details?.method_of_transfer ?? NO_DATA}
                             fyBudget={findFundingBudgetBudgetByFiscalYear(can, fiscalYear)}
                         />
                     ))}

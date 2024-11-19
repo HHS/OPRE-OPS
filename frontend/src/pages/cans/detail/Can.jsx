@@ -1,52 +1,59 @@
-import { useSelector } from "react-redux";
-import { Route, Routes, useParams } from "react-router-dom";
-import { useGetCanByIdQuery } from "../../../api/opsAPI";
+import { Route, Routes } from "react-router-dom";
 import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import PageHeader from "../../../components/UI/PageHeader";
+import { NO_DATA } from "../../../constants";
 import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
+import useCan from "./Can.hooks";
 import CanDetail from "./CanDetail";
 import CanFunding from "./CanFunding";
 import CanSpending from "./CanSpending";
-import React from "react";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
- *  @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
 
 const Can = () => {
-    const urlPathParams = useParams();
-    const canId = parseInt(urlPathParams.id || "-1");
-    /** @type {{data?: CAN | undefined, isLoading: boolean}} */
-    const { data: can, isLoading } = useGetCanByIdQuery(canId);
-    const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
-    const fiscalYear = Number(selectedFiscalYear.value);
+    const {
+        can,
+        isLoading,
+        canId,
+        fiscalYear,
+        CANFundingLoading,
+        budgetLineItemsByFiscalYear,
+        number,
+        description,
+        nickname,
+        fundingDetails,
+        fundingBudgets,
+        fundingReceivedByFiscalYear,
+        divisionId,
+        teamLeaders,
+        portfolioName,
+        totalFunding,
+        plannedFunding,
+        obligatedFunding,
+        inExecutionFunding,
+        subTitle,
+        projectTypesCount,
+        budgetLineTypesCount,
+        testAgreements,
+        expectedFunding,
+        receivedFunding
+    } = useCan();
 
-    const filteredCANByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !can) return {};
-        return can.funding_details?.fiscal_year === fiscalYear ? can : {};
-    }, [can, fiscalYear]);
-
-    if (isLoading) {
-        return <div> Loading Can... </div>;
+    if (isLoading || CANFundingLoading) {
+        return <p>Loading CAN...</p>;
     }
+
     if (!can) {
-        return <div>Can not found</div>;
+        return <p>Error: CAN not found</p>;
     }
-
-    const { number, description, nick_name: nickname, portfolio } = can;
-
-    /** @type {{budget_line_items?: BudgetLine[]}} */
-    const { budget_line_items: budgetLines } = filteredCANByFiscalYear;
-    const { division_id: divisionId, team_leaders: teamLeaders, name: portfolioName } = portfolio;
-    const noData = "TBD";
-    const subTitle = `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}`;
 
     return (
         <App breadCrumbName={can.display_name}>
             <PageHeader
-                title={can.display_name || noData}
+                title={can.display_name ?? NO_DATA}
                 subTitle={subTitle}
             />
 
@@ -63,21 +70,42 @@ const Can = () => {
                     element={
                         <CanDetail
                             divisionId={divisionId}
-                            description={description ?? noData}
-                            nickname={nickname || noData}
+                            description={description ?? NO_DATA}
+                            nickname={nickname ?? NO_DATA}
                             number={number}
-                            portfolioName={portfolioName ?? noData}
+                            portfolioName={portfolioName ?? NO_DATA}
                             teamLeaders={teamLeaders ?? []}
                         />
                     }
                 />
                 <Route
                     path="spending"
-                    element={<CanSpending budgetLines={budgetLines ?? []} />}
+                    element={
+                        <CanSpending
+                            budgetLines={budgetLineItemsByFiscalYear}
+                            fiscalYear={fiscalYear}
+                            projectTypesCount={projectTypesCount}
+                            budgetLineTypesCount={budgetLineTypesCount}
+                            agreementTypesCount={testAgreements}
+                            inExecutionFunding={inExecutionFunding}
+                            obligatedFunding={obligatedFunding}
+                            plannedFunding={plannedFunding}
+                            totalFunding={totalFunding}
+                        />
+                    }
                 />
                 <Route
                     path="funding"
-                    element={<CanFunding />}
+                    element={
+                        <CanFunding
+                            funding={fundingDetails}
+                            fundingBudgets={fundingBudgets}
+                            fiscalYear={fiscalYear}
+                            expectedFunding={expectedFunding}
+                            receivedFunding={receivedFunding}
+                            fundingReceived={fundingReceivedByFiscalYear}
+                        />
+                    }
                 />
             </Routes>
         </App>

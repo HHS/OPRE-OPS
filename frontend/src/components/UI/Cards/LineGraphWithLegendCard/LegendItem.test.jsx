@@ -7,7 +7,7 @@ describe("LegendItem", () => {
         activeId: 1,
         id: 1,
         label: "Test Label",
-        value: 1000,
+        value: 1_000,
         color: "#000000",
         percent: "10%",
         tagStyleActive: "darkTextOnLightBlue"
@@ -17,7 +17,7 @@ describe("LegendItem", () => {
         render(<LegendItem {...defaultProps} />);
 
         expect(screen.getByText("Test Label")).toBeInTheDocument();
-        expect(screen.getByText("$ 1,000")).toBeInTheDocument();
+        expect(screen.getByText("$1,000")).toBeInTheDocument();
         expect(screen.getByText("10%")).toBeInTheDocument();
     });
 
@@ -62,7 +62,7 @@ describe("LegendItem", () => {
             />
         );
 
-        expect(screen.getByText("$ 1,234,567")).toBeInTheDocument();
+        expect(screen.getByText("$1,234,567")).toBeInTheDocument();
     });
 
     it("renders Tag component with correct props", () => {
