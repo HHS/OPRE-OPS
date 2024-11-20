@@ -204,8 +204,17 @@ export const opsApi = createApi({
             providesTags: ["Cans"]
         }),
         getCanFundingSummary: builder.query({
-            query: ({ id, fiscalYear }) =>
-                `/can-funding-summary?can_ids=${id}${fiscalYear ? `&fiscal_year=${fiscalYear}` : ""}`,
+            query: () =>
+            //     `/can-funding-summary?can_ids=${ids}
+            //     ${fiscalYear ? `&fiscal_year=${fiscalYear}` : ""}
+            //     ${activePeriod ? `&active_period=${activePeriod}` : ""}
+            //     ${transfer ? `&transfer=${transfer}` : ""}
+            //     ${portfolio ? `&portfolio=${portfolio}` : ""}
+            //     ${fyBudgets ? `&fy_budget=${fyBudgets[0]}` : ""}
+            //     ${fyBudgets ? `&fy_budget=${fyBudgets[1]}` : ""}
+            // `,
+                `/can-funding-summary?can_ids=0&fiscal_year=2025`,
+
             providesTags: ["CanFunding"]
         }),
         getNotificationsByUserId: builder.query({

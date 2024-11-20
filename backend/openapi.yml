@@ -711,7 +711,7 @@ paths:
       summary: Get a list of all the CAN funding budgets
       parameters:
         - $ref: "#/components/parameters/simulatedError"
-      description: Get CANFundingBudgetss
+      description: Get CANFundingBudgets
       responses:
         "200":
           description: OK

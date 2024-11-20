@@ -26,6 +26,17 @@ class CANFundingSummaryItemAPI(BaseItemAPI):
         if not can_ids:
             return make_response_with_headers({"error": "'can_ids' parameter is required"}, 400)
 
+        if can_ids == ["0"]:
+            cans = self._get_all_items()
+            cans_with_filters = get_filtered_cans(cans, active_period, transfer, portfolio, fy_budget)
+            can_funding_summaries = [
+                get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None) for can in cans_with_filters
+            ]
+
+            aggregated_summary = aggregate_funding_summaries(can_funding_summaries)
+
+            return make_response_with_headers(aggregated_summary)
+
         # Handle case when a single 'can_id' is provided with no additional filters
         if len(can_ids) == 1 and not (active_period or transfer or portfolio or fy_budget):
             return self._handle_single_can_no_filters(can_ids[0], fiscal_year)

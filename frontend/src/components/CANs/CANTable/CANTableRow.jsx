@@ -37,7 +37,7 @@ const CANTableRow = ({
         data: fundingSummary,
         isError,
         isLoading
-    } = useGetCanFundingSummaryQuery({ id: canId, fiscalYear: fiscalYear });
+    } = useGetCanFundingSummaryQuery({ ids: canId, fiscalYear: fiscalYear });
     const availableFunds = fundingSummary?.available_funding ?? 0;
 
     if (isLoading)
