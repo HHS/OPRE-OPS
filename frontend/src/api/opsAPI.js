@@ -204,17 +204,36 @@ export const opsApi = createApi({
             providesTags: ["Cans"]
         }),
         getCanFundingSummary: builder.query({
-            query: () =>
-            //     `/can-funding-summary?can_ids=${ids}
-            //     ${fiscalYear ? `&fiscal_year=${fiscalYear}` : ""}
-            //     ${activePeriod ? `&active_period=${activePeriod}` : ""}
-            //     ${transfer ? `&transfer=${transfer}` : ""}
-            //     ${portfolio ? `&portfolio=${portfolio}` : ""}
-            //     ${fyBudgets ? `&fy_budget=${fyBudgets[0]}` : ""}
-            //     ${fyBudgets ? `&fy_budget=${fyBudgets[1]}` : ""}
-            // `,
-                `/can-funding-summary?can_ids=0&fiscal_year=2025`,
+            query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
+                const queryParams = [];
 
+                if (ids && ids.length > 0) {
+                    ids.forEach(id => queryParams.push(`can_ids=${id}`));
+                }
+
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+
+                if (activePeriod && activePeriod.length > 0) {
+                    activePeriod.forEach(period => queryParams.push(`active_period=${period}`));
+                }
+
+                if (transfer && transfer.length > 0) {
+                    transfer.forEach(t => queryParams.push(`transfer=${t}`));
+                }
+
+                if (portfolio && portfolio.length > 0) {
+                    portfolio.forEach(p => queryParams.push(`portfolio=${p}`));
+                }
+
+                if (fyBudgets && fyBudgets.length === 2) {
+                    queryParams.push(`fy_budget=${fyBudgets[0]}`);
+                    queryParams.push(`fy_budget=${fyBudgets[1]}`);
+                }
+
+                return `/can-funding-summary?${queryParams.join("&")}`;
+            },
             providesTags: ["CanFunding"]
         }),
         getNotificationsByUserId: builder.query({

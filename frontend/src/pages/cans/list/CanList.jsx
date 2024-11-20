@@ -28,8 +28,9 @@ const CanList = () => {
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
     const { data: canList, isError, isLoading } = useGetCansQuery({});
+
     const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
-        ids: 0,
+        ids: [0],
         fiscalYear: 2025
     });
     const [filters, setFilters] = React.useState({
