@@ -1,6 +1,6 @@
 import CurrencyFormat from "react-currency-format";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
-import LineGraph from "../../DataViz/LineGraph";
+import ReverseLineGraph from "../../DataViz/LineGraph/ReverseLineGraph";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
 
@@ -57,11 +57,7 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
                 id="currency-summary-card"
                 className="margin-top-2"
             >
-                <LineGraph
-                    data={graphData}
-                    isStriped
-                    isReverse
-                />
+                <ReverseLineGraph data={graphData} />
             </div>
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
