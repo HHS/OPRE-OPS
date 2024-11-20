@@ -15,7 +15,6 @@ import { calculateRatio } from "./util";
  * @property {Function} [props.setActiveId]
  * @property {boolean} [props.isStriped]
  * @property {boolean} [props.overBudget]
- * @property {boolean} [props.isReverse]
  */
 
 /**
@@ -23,7 +22,7 @@ import { calculateRatio } from "./util";
  * @param {LineGraphProps} props
  * @returns {JSX.Element}
  */
-const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false, isReverse = false }) => {
+const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
     const [ratio, setRatio] = useState(1);
     const { color: leftColor, id: leftId, value: leftValue } = data[0];
     const { color: rightColor, id: rightId, value: rightValue } = data[1];
@@ -62,16 +61,15 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
                 className={`${styles.rightBar} ${ratio === 0 ? styles.rightBarFull : ""}`}
                 style={{
                     backgroundColor: rightColor,
-                    backgroundImage:
-                        isReverse && isStriped
-                            ? `repeating-linear-gradient(
+                    backgroundImage: isStriped
+                        ? `repeating-linear-gradient(
                   45deg,
                   transparent,
                   transparent 5px,
                   var(--data-viz-budget-graph-1) 5px,
                   var(--data-viz-budget-graph-1) 6px
               )`
-                            : "none"
+                        : "none"
                 }}
                 onMouseEnter={() => setActiveId(rightId)}
                 onMouseLeave={() => setActiveId(0)}
