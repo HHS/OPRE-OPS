@@ -67,7 +67,7 @@ class NoPermsAuthClient(FlaskClient):
 
 class BasicUserAuthClient(FlaskClient):
     """
-    A standard user with User group permissions. Does not have admin permissions.
+    A standard user with User group permissions. Does not have SYSTEM_OWNER permissions.
     """
 
     def open(self, *args, **kwargs):
@@ -99,7 +99,7 @@ class BasicUserAuthClient(FlaskClient):
 
 class BudgetTeamAuthClient(FlaskClient):
     """
-    A budget team user with relevant role permissions. Does not have admin permissions.
+    A budget team user with relevant role permissions. Does not have SYSTEM_OWNER permissions.
     """
 
     def open(self, *args, **kwargs):

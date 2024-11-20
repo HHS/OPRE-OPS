@@ -37,8 +37,8 @@
     }
   ],
   role: [
-    { // 1 Admin
-      name: "admin",
+    { // 1 SYSTEM_OWNER
+      name: "SYSTEM_OWNER",
       permissions: [
         "GET_AGREEMENT",
         "PUT_AGREEMENT",
@@ -50,7 +50,6 @@
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
         "POST_BUDGET_LINE_ITEM",
-        // Delete permissions are only for local, not for prod. Users should not have delete BLI permissions in prod.
         "DELETE_BUDGET_LINE_ITEM",
 
         "GET_SERVICES_COMPONENT",
@@ -70,18 +69,25 @@
         "DELETE_CAN",
 
         "GET_DIVISION",
+        "PUT_DIVISION",
+        "PATCH_DIVISION",
+        "POST_DIVISION",
+        "DELETE_DIVISION",
 
         "GET_NOTIFICATION",
         "PUT_NOTIFICATION",
         "PATCH_NOTIFICATION",
 
         "GET_PORTFOLIO",
+        "PUT_PORTFOLIO",
+        "PATCH_PORTFOLIO",
+        "POST_PORTFOLIO",
+        "DELETE_PORTFOLIO",
 
         "GET_RESEARCH_PROJECT",
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",
-
         "PUT_USER",
         "PATCH_USER",
 

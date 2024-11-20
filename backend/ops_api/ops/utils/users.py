@@ -9,7 +9,7 @@ def is_admin(user: User, session: Session = None) -> bool:
     if not session:
         session = current_app.db_session
 
-    admin_role = session.execute(select(Role).where(Role.name == "admin")).scalar_one()
+    admin_role = session.execute(select(Role).where(Role.name == "SYSTEM_OWNER")).scalar_one()
     return admin_role in user.roles
 
 
