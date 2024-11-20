@@ -3519,6 +3519,14 @@ components:
           description: optional notes added to a Change Request when a PATCH is made that creates a CR
           type: string
           writeOnly: true
+        agreement_name:
+          type: string
+          example: "Contract #2: African American Child and Family Research Center"
+        agreement_type:
+          type: string
+          example: "CONTRACT"
+        awarding_entity_id:
+          type: integer
     BudgetLineItemCAN:
       type: object
       properties:
