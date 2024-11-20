@@ -48,6 +48,6 @@ describe("BudgetSummaryCard", () => {
 
         render(<BudgetCard {...zeroProps} />);
 
-        expect(screen.queryAllByText("$0")).toHaveLength(2);
+        expect(screen.queryAllByText("$0.00")).toHaveLength(2);
     });
 });

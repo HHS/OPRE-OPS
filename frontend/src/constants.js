@@ -24,6 +24,13 @@ const constants = {
         { color: "var(--data-viz-bl-by-fy-3)" },
         { color: "var(--data-viz-bl-by-fy-4)" },
         { color: "var(--data-viz-bl-by-fy-5)" }
+    ],
+    budgetsByFYChartColors: [
+        { color: "var(--can-budget-by-fy-graph-1)" },
+        { color: "var(--can-budget-by-fy-graph-2)" },
+        { color: "var(--can-budget-by-fy-graph-3)" },
+        { color: "var(--can-budget-by-fy-graph-4)" },
+        { color: "var(--can-budget-by-fy-graph-5)" }
     ]
 };
 
