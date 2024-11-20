@@ -266,6 +266,12 @@ class BudgetLineItemCANSchema(Schema):
     appropriation_date = fields.Int(required=True)
 
 
+class SimpleAgreementSchema(Schema):
+    agreement_type = fields.String(allow_none=True)
+    name = fields.String(allow_none=True)
+    awarding_entity_id = fields.Integer(allow_none=True)
+
+
 class BudgetLineItemResponseSchema(Schema):
     class Meta:
         unknown = EXCLUDE  # Exclude unknown fields
@@ -291,6 +297,4 @@ class BudgetLineItemResponseSchema(Schema):
     change_requests_in_review = fields.Nested(
         GenericChangeRequestResponseSchema(), many=True, default=None, allow_none=True
     )
-    agreement_name = fields.String(allow_none=True)
-    agreement_type = fields.String(allow_none=True)
-    awarding_entity_id = fields.Integer(allow_none=True)
+    agreement = fields.Nested(SimpleAgreementSchema(), required=True)

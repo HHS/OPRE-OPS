@@ -217,7 +217,11 @@ paths:
       description: Get CANs
       responses:
         "200":
-          description: OK
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAN"
     post:
       tags:
         - CANs
@@ -3519,14 +3523,21 @@ components:
           description: optional notes added to a Change Request when a PATCH is made that creates a CR
           type: string
           writeOnly: true
-        agreement_name:
-          type: string
-          example: "Contract #2: African American Child and Family Research Center"
+        agreement:
+          type: object
+          $ref: "#/components/schemas/SimpleAgreementSchema"
+    SimpleAgreementSchema:
+      type: object
+      properties:
         agreement_type:
           type: string
-          example: "CONTRACT"
+          example: 'AgreementType.DIRECT_ALLOCATION'
+        name:
+          type: string
+          example: 'DIRECT ALLOCATION #2: African American Child and Family Research Center'
         awarding_entity_id:
           type: integer
+          example: 3
     BudgetLineItemCAN:
       type: object
       properties:
