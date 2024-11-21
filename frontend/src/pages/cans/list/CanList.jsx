@@ -36,13 +36,14 @@ const CanList = () => {
     const { data: canList, isError, isLoading } = useGetCansQuery({});
 
     const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
-    const transferTitles = filters.transfer.map((t) => t.title.toLowerCase());
+    const transferTitles = filters.transfer.map((t) => t.title.toUpperCase());
 
     const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
         ids: [0],
         fiscalYear: fiscalYear,
         activePeriod: activePeriodIds,
         transfer: transferTitles,
+        portfolio: filters.portfolio.map((p) => p.title)
     });
     console.log({ filters });
     const filteredCANsByFiscalYear = React.useMemo(() => {

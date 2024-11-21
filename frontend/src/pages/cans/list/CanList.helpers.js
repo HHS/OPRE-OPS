@@ -90,6 +90,7 @@ const applyAdditionalFilters = (cans, filters) => {
 
     if (filters.portfolio && filters.portfolio.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
+            // TODO: add abbreviation to the portfolio object
             filters.portfolio?.some(
                 (portfolio) => portfolio.title == `${can.portfolio.name} (${can.portfolio.abbreviation})`
             )
