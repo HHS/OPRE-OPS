@@ -21,7 +21,7 @@ import LineGraph from "../../UI/DataViz/LineGraph";
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can?.id;
-    const { data, error, isLoading } = useGetCanFundingSummaryQuery({ id: canId });
+    const { data, error, isLoading } = useGetCanFundingSummaryQuery({ ids: [canId] });
 
     if (isLoading) {
         return <div>Loading...</div>;

@@ -5,7 +5,7 @@ export const getPortfolioCansFundingDetails = async (item) => {
         const api_version = ApplicationContext.get().helpers().backEndConfig.apiVersion;
         const responseData = await ApplicationContext.get()
             .helpers()
-            .callBackend(`/api/${api_version}/can-funding-summary?can_id=${item.id}?fiscal_year=${item.fiscalYear}`, "get");
+            .callBackend(`/api/${api_version}/can-funding-summary?can_ids=${item.id}?fiscal_year=${item.fiscalYear}`, "get");
         return responseData;
     }
     return {};

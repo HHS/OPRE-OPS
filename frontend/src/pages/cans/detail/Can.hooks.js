@@ -17,7 +17,7 @@ export default function useCan() {
     /** @type {{data?: CAN | undefined, isLoading: boolean}} */
     const { data: can, isLoading } = useGetCanByIdQuery(canId);
     const { data: CANFunding, isLoading: CANFundingLoading } = useGetCanFundingSummaryQuery({
-        id: canId,
+        ids: [canId],
         fiscalYear: fiscalYear
     });
 
