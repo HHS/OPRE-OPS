@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, validate
-from ops_api.ops.schemas.cans import CANSchema
+from ops_api.ops.schemas.cans import BasicCANSchema
 
 
 class FiscalYearBudgetSchema(Schema):
@@ -19,20 +19,20 @@ class GetCANFundingSummaryRequestSchema(Schema):
 
 
 class CANSFundingSourceSchema(Schema):
-    can = fields.Nested(CANSchema())
-    carry_forward_label = fields.String(allow_none=False)
-    expiration_date = fields.String(allow_none=False)
+    can = fields.Nested(BasicCANSchema())
+    carry_forward_label = fields.String(allow_none=True)
+    expiration_date = fields.String(allow_none=True)
 
 
-class CANFundingSummaryResponseSchema(Schema):
-    available_funding = fields.String(allow_none=False)
-    cans = fields.Nested(CANSFundingSourceSchema())
-    carry_forward_funding = fields.String(allow_none=False)
-    received_funding = fields.String(allow_none=False)
-    expected_funding = fields.String(allow_none=False)
-    in_draft_funding = fields.String(allow_none=False)
-    in_execution_funding = fields.String(allow_none=False)
-    obligated_funding = fields.String(allow_none=False)
-    planned_funding = fields.String(allow_none=False)
-    total_funding = fields.String(allow_none=False)
-    new_funding = fields.String(allow_none=False)
+class GetCANFundingSummaryResponseSchema(Schema):
+    available_funding = fields.String(allow_none=True)
+    cans = fields.List(fields.Nested(CANSFundingSourceSchema), default=[])
+    carry_forward_funding = fields.String(allow_none=True)
+    received_funding = fields.String(allow_none=True)
+    expected_funding = fields.String(allow_none=True)
+    in_draft_funding = fields.String(allow_none=True)
+    in_execution_funding = fields.String(allow_none=True)
+    obligated_funding = fields.String(allow_none=True)
+    planned_funding = fields.String(allow_none=True)
+    total_funding = fields.String(allow_none=True)
+    new_funding = fields.String(allow_none=True)

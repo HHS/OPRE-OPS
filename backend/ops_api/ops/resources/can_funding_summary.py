@@ -1,10 +1,11 @@
 from flask import Response, request
 
+from marshmallow import ValidationError
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI
-from ops_api.ops.schemas.can_funding_summary import CANFundingSummaryResponseSchema
+from ops_api.ops.schemas.can_funding_summary import GetCANFundingSummaryResponseSchema
 from ops_api.ops.utils.cans import aggregate_funding_summaries, get_can_funding_summary, get_filtered_cans
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -43,7 +44,7 @@ class CANFundingSummaryListAPI(BaseItemAPI):
     def _handle_single_can_no_filters(self, can_id: str, fiscal_year: str = None) -> Response:
         can = self._get_item(can_id)
         can_funding_summary = get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None)
-        return self._make_response(can_funding_summary)
+        return self._create_can_funding_budget_response(can_funding_summary)
 
     def _apply_filters_and_return(
         self,
@@ -54,14 +55,20 @@ class CANFundingSummaryListAPI(BaseItemAPI):
         portfolio: list = None,
         fy_budget: list = None,
     ) -> Response:
-        cans_with_filters = get_filtered_cans(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
+        cans_with_filters = get_filtered_cans(
+            cans, int(fiscal_year) if fiscal_year else None, active_period, transfer, portfolio, fy_budget
+        )
         can_funding_summaries = [
             get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None) for can in cans_with_filters
         ]
         aggregated_summary = aggregate_funding_summaries(can_funding_summaries)
-        return self._make_response(aggregated_summary)
+        return self._create_can_funding_budget_response(aggregated_summary)
 
     @staticmethod
-    def _make_response(result) -> Response:
-        schema = CANFundingSummaryResponseSchema(many=False)
-        return make_response_with_headers(schema.dump(result))
+    def _create_can_funding_budget_response(result) -> Response:
+        try:
+            schema = GetCANFundingSummaryResponseSchema(many=False)
+            result = schema.dump(result)
+            return make_response_with_headers(result)
+        except ValidationError as e:
+            return make_response_with_headers({"Validation Error": str(e)}, 500)

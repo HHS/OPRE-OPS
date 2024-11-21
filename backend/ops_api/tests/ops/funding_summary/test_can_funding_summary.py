@@ -29,6 +29,17 @@ class DummyNestedObject:
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
+def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: FlaskClient) -> None:
+    query_params = f"can_ids={0}&fiscal_year=2023"
+
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 11
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
     auth_client: FlaskClient, test_cans: list[Type[CAN]]
 ) -> None:
@@ -484,7 +495,7 @@ def test_aggregate_funding_summaries():
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
-def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
+def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     query_params = f"can_ids={0}"
 
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
