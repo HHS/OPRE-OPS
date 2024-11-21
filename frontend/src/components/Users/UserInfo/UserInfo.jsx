@@ -127,7 +127,13 @@ const UserInfo = ({ user, isEditable }) => {
                         <div className="grid-row">
                             <div className="grid-col-4">Role(s):</div>
                             <div className="grid-col-8">
-                                {!isEditable && <span>{selectedRoles?.map((role) => role.name).join(", ")}</span>}
+                                {!isEditable && (
+                                    <span>
+                                        {selectedRoles
+                                            ?.map((role) => constants.roles.find((r) => r.name === role.name)?.label)
+                                            .join(", ")}
+                                    </span>
+                                )}
                                 {isEditable && (
                                     <div data-testid="roles-combobox">
                                         <ComboBox
