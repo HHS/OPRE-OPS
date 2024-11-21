@@ -28,10 +28,12 @@ const CanList = () => {
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
     const { data: canList, isError, isLoading } = useGetCansQuery({});
+
     const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
-        ids: 0,
+        ids: [0],
         fiscalYear: 2025
     });
+
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
@@ -51,6 +53,7 @@ const CanList = () => {
     const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
 
     if (isLoading || fundingSummaryisLoading) {
+        console.log({ fundingSummaryData })
         return (
             <App>
                 <h1>Loading...</h1>
