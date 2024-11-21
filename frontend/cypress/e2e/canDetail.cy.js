@@ -83,12 +83,12 @@ describe("CAN detail page", () => {
             .and("contain", "IDDA")
             .and("contain", "09/30/25")
             .and("contain", "2021");
-        cy.get("[data-cy=budget-summary-card]")
+        cy.get("[data-cy=budget-received-card]")
             .should("exist")
-            .and("contain", "$ 2,000,000.00")
-            .and("contain", "Available")
             .and("contain", "FY 2024 Funding Received YTD")
-            .and("contain", "Spending $4,000,000.00 of $6,000,000.00");
+            .and("contain", "$ 6,000,000.00")
+            .and("contain", "Received")
+            .and("contain", "Received $6,000,000.00 of $10,000,000.00");
         cy.get("[data-cy=can-budget-fy-card]")
             .should("exist")
             .and("contain", "CAN Budget by FY")
@@ -97,5 +97,15 @@ describe("CAN detail page", () => {
             .and("contain", "FY 2022")
             .and("contain", "FY 2021")
             .and("contain", "$10,000,000.00");
+        // table should exist and have one row
+        cy.get("table").should("exist");
+        cy.get("tbody").children().should("have.length", 1);
+        // table should contain 509, 2024, $6,000,000.00, 100%
+        cy.get("tbody")
+            .children()
+            .should("contain", "509")
+            .and("contain", "2024")
+            .and("contain", "$6,000,000.00")
+            .and("contain", "60%");
     });
 });

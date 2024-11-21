@@ -33,7 +33,10 @@ export default function useCan() {
         return can?.funding_received?.filter((fr) => fr.fiscal_year === fiscalYear) ?? [];
     }, [can, fiscalYear]);
 
-    const projectTypesCount = React.useMemo(() => (can ? getTypesCounts(can.projects, "project_type") : []), [can]);
+    const projectTypesCount = React.useMemo(
+        () => (can ? getTypesCounts(can.projects ?? [], "project_type") : []),
+        [can]
+    );
 
     const budgetLineTypesCount = React.useMemo(
         () => getTypesCounts(budgetLineItemsByFiscalYear, "status"),
