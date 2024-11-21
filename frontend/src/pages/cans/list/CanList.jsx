@@ -36,7 +36,7 @@ const CanList = () => {
     const { data: canList, isError, isLoading } = useGetCansQuery({});
 
     const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
-    const transferTitles = filters.transfer.map((t) => t.title);
+    const transferTitles = filters.transfer.map((t) => t.title.toLowerCase());
 
     const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
         ids: [0],

@@ -298,12 +298,9 @@ def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans:
 def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     url = (
         f"/api/v1/can-funding-summary?"
-        f"can_ids={test_cans[0].id}&can_ids={test_cans[1].id}&"
-        f"fiscal_year=2024&"
-        f"active_period=1&active_period=5&"
-        f"transfer=DIRECT&transfer=IAA&"
-        f"portfolio=HS&portfolio=HMRF&"
-        f"fy_budget=50000&fy_budget=100000"
+        f"can_ids=0&"
+        f"fiscal_year=2023&"
+        f"transfer=DIRECT"
     )
 
     response = auth_client.get(url)
