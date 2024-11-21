@@ -8,7 +8,7 @@ from ops_api.ops.utils.cans import aggregate_funding_summaries, get_can_funding_
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-class CANFundingSummaryItemAPI(BaseItemAPI):
+class CANFundingSummaryListAPI(BaseItemAPI):
     def __init__(self, model: BaseModel):
         super().__init__(model)
 

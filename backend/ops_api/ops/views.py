@@ -44,10 +44,10 @@ from ops_api.ops.resources.agreements import (
 )
 from ops_api.ops.resources.azure import SasToken
 from ops_api.ops.resources.budget_line_items import BudgetLineItemsItemAPI, BudgetLineItemsListAPI
-from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI, CANFundingReceivedListAPI
 from ops_api.ops.resources.can_funding_budget import CANFundingBudgetItemAPI, CANFundingBudgetListAPI
 from ops_api.ops.resources.can_funding_details import CANFundingDetailsItemAPI, CANFundingDetailsListAPI
-from ops_api.ops.resources.can_funding_summary import CANFundingSummaryItemAPI
+from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI, CANFundingReceivedListAPI
+from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
 from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
@@ -147,7 +147,7 @@ USERS_ITEM_API_VIEW_FUNC = UsersItemAPI.as_view("users-item", User)
 USERS_LIST_API_VIEW_FUNC = UsersListAPI.as_view("users-group", User)
 
 # FUNDING SUMMARY ENDPOINTS
-CAN_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = CANFundingSummaryItemAPI.as_view("can-funding-summary-item", CAN)
+CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC = CANFundingSummaryListAPI.as_view("can-funding-summary-list", CAN)
 PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC = PortfolioFundingSummaryItemAPI.as_view(
     "portfolio-funding-summary-item", Portfolio
 )
