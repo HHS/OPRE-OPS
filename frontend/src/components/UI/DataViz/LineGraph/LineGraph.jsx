@@ -46,30 +46,32 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
                     backgroundImage:
                         isStriped && !overBudget
                             ? `repeating-linear-gradient(
-                    45deg,
-                    transparent,
-                    transparent 5px,
-                    var(--data-viz-budget-graph-1) 5px,
-                    var(--data-viz-budget-graph-1) 6px
-                )`
+                        45deg,
+                        transparent,
+                        transparent 5px,
+                        var(--data-viz-budget-graph-1) 5px,
+                var(--data-viz-budget-graph-1) 6px
+            )`
                             : "none"
                 }}
                 onMouseEnter={() => setActiveId(leftId)}
                 onMouseLeave={() => setActiveId(0)}
             />
+
             <div
                 className={`${styles.rightBar} ${ratio === 0 ? styles.rightBarFull : ""}`}
                 style={{
                     backgroundColor: rightColor,
-                    backgroundImage: isStriped
-                        ? `repeating-linear-gradient(
+                    backgroundImage:
+                        isStriped && !overBudget
+                            ? `repeating-linear-gradient(
                   45deg,
                   transparent,
                   transparent 5px,
                   var(--data-viz-budget-graph-1) 5px,
                   var(--data-viz-budget-graph-1) 6px
               )`
-                        : "none"
+                            : "none"
                 }}
                 onMouseEnter={() => setActiveId(rightId)}
                 onMouseLeave={() => setActiveId(0)}
