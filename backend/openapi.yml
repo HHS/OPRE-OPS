@@ -4401,7 +4401,7 @@ components:
         {
           can_id: 500,
           fiscal_year: 2024,
-          funding: 123456,
+          budget: 123456,
           notes: "A new test Funding Funding"
         }
 
