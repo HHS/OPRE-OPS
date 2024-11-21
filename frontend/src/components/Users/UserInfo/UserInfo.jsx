@@ -7,6 +7,7 @@ import PropTypes from "prop-types";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import { useDispatch } from "react-redux";
 import { setIsActive } from "../../UI/Alert/alertSlice.js";
+import constants from "../../../constants.js";
 
 /**
  * Renders the user information.
@@ -73,7 +74,7 @@ const UserInfo = ({ user, isEditable }) => {
 
     const handleRolesChange = (roles) => {
         setSelectedRoles(roles);
-        const roleNames = roles?.map((role) => role.name);
+        const roleNames = roles?.map((role) => constants.roles.find((r) => r.name === role.name)?.name);
         updateUser({ id: user.id, data: { roles: roleNames || [] } });
     };
 
@@ -135,7 +136,9 @@ const UserInfo = ({ user, isEditable }) => {
                                             selectedData={selectedRoles}
                                             setSelectedData={handleRolesChange}
                                             defaultString="-- Select Roles --"
-                                            optionText={(role) => role.name}
+                                            optionText={(role) =>
+                                                constants.roles.find((r) => r.name === role.name)?.label
+                                            }
                                             isMulti={true}
                                         />
                                     </div>
