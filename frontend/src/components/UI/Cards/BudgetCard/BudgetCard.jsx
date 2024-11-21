@@ -8,6 +8,7 @@ import Tag from "../../Tag";
 
 /**
  * @typedef {Object} BudgetCardProps
+ * @property {number} cardId - The card id.
  * @property {string} title - The title of the card.
  * @property {number} totalSpending - The total spending.
  * @property {number} totalFunding - The total funding.
@@ -18,7 +19,7 @@ import Tag from "../../Tag";
  * @param {BudgetCardProps} props - Properties passed to component
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
-const BudgetCard = ({ title, totalSpending, totalFunding }) => {
+const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
     const overBudget = totalSpending > totalFunding;
     const remainingBudget = totalFunding - totalSpending;
 
@@ -37,7 +38,7 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
 
     return (
         <RoundedBox
-            dataCy="budget-summary-card"
+            dataCy={`budget-summary-card-${cardId}`}
             style={{ height: "14.5rem" }}
         >
             <h3

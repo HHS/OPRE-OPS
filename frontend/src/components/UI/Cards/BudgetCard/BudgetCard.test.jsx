@@ -4,6 +4,7 @@ import BudgetCard from "./BudgetCard";
 
 describe("BudgetSummaryCard", () => {
     const defaultProps = {
+        cardId: 2025,
         title: "Budget Summary",
         totalSpending: 15000,
         totalFunding: 20000

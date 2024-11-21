@@ -31,6 +31,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
 
     return (
         <BudgetCard
+            cardId={canId}
             title={`${title} \n CAN Available Budget`}
             totalSpending={totalSpending}
             totalFunding={totalFunding}
