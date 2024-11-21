@@ -29,6 +29,24 @@ class DummyNestedObject:
 
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
+def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
+    url = (
+        f"/api/v1/can-funding-summary?"
+        f"can_ids=0&"
+        f"fiscal_year=2023&"
+        f"transfer=DIRECT"
+    )
+
+    response = auth_client.get(url)
+
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 0
+    assert "new_funding" in response.json
+    assert response.json["obligated_funding"] == "0.0"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: FlaskClient) -> None:
     query_params = f"can_ids={0}&fiscal_year=2023"
 
@@ -291,24 +309,6 @@ def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans:
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
     assert response.json["cans"][0]["can"]["active_period"] == 1
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
-    url = (
-        f"/api/v1/can-funding-summary?"
-        f"can_ids=0&"
-        f"fiscal_year=2023&"
-        f"transfer=DIRECT"
-    )
-
-    response = auth_client.get(url)
-
-    assert response.status_code == 200
-    assert len(response.json["cans"]) == 0
-    assert "new_funding" in response.json
-    assert response.json["obligated_funding"] == "0.0"
 
 
 def test_get_nested_attribute_existing_attribute():

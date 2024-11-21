@@ -1,8 +1,7 @@
 from decimal import Decimal
 from typing import List, Optional, TypedDict
 
-from models import CAN, BudgetLineItemStatus
-
+from models import CAN, BudgetLineItemStatus, CANMethodOfTransfer
 
 class CanObject(TypedDict):
     can: dict
@@ -175,7 +174,8 @@ def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None,
     if active_period:
         cans = filter_by_attribute(cans, "active_period", active_period)
     if transfer:
-        cans = filter_by_attribute(cans, "funding_details.method_of_transfer", transfer)
+        mapped_transfer = [CANMethodOfTransfer[transfer] for transfer in transfer]
+        cans = filter_by_attribute(cans, "funding_details.method_of_transfer", mapped_transfer)
     if portfolio:
         cans = filter_by_attribute(cans, "portfolios.abbr", portfolio)
     if fy_budget:
