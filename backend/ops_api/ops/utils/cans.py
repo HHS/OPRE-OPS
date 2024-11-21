@@ -177,7 +177,7 @@ def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None,
         mapped_transfer = [CANMethodOfTransfer[transfer] for transfer in transfer]
         cans = filter_by_attribute(cans, "funding_details.method_of_transfer", mapped_transfer)
     if portfolio:
-        cans = filter_by_attribute(cans, "portfolios.abbr", portfolio)
+        cans = filter_by_attribute(cans, "portfolio.abbreviation", portfolio)
     if fy_budget:
         cans = filter_by_fiscal_year_budget(cans, fy_budget)
     return cans

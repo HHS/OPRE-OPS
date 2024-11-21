@@ -132,19 +132,26 @@ export const getPortfolioOptions = (cans) => {
         return [];
     }
     const portfolios = cans.reduce((acc, can) => {
-        const {name, abbreviation} = can.portfolio
-        acc.add({name, abbreviation})
-        // acc.add(`${can.portfolio.name} (${can.portfolio.abbreviation})`);
+        const { name, abbreviation } = can.portfolio;
+        const uniqueKey = `${name}_${abbreviation}`;
+        acc.add(uniqueKey)
         return acc;
     }, new Set());
 
     return Array.from(portfolios)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((portfolio, index) => ({
-            id: index,
-            title: `${portfolio.name} (${portfolio.abbreviation})`,
-            abbr: portfolio.abbreviation
-        }));
+        .sort((a,b) => {
+            const [nameA, abbrA] = a.split("_");
+            const [nameB, abbrB] = b.split("_");
+            return nameA.localeCompare(nameB);
+        })
+        .map((uniqueKey, index) => {
+            const [name, abbr] = uniqueKey.split("_");
+            return {
+                id: index,
+                title: `${name} (${abbr})`,
+                abbr: abbr
+            }
+        })
 };
 
 export const getSortedFYBudgets = (cans) => {
