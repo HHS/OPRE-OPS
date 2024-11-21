@@ -130,10 +130,10 @@ const CANFundingReceivedTable = ({ fundingReceived, totalFunding }) => {
             {fundingReceived.map((row) => {
                 return (
                     <TableRowExpandable
-                        key={row.can_id}
+                        key={row.id}
                         tableRowData={
                             <TableRowData
-                                rowId={row.can_id}
+                                rowId={row.id}
                                 fiscalYear={row.fiscal_year}
                                 funding={row.funding}
                                 totalFunding={totalFunding}
