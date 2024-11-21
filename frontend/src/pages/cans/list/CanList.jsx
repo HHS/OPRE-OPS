@@ -27,19 +27,22 @@ const CanList = () => {
     const activeUser = useSelector((state) => state.auth.activeUser);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
-    const { data: canList, isError, isLoading } = useGetCansQuery({});
-
-    const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
-        ids: [0],
-        fiscalYear: fiscalYear
-    });
-
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
         portfolio: [],
         budget: []
     });
+    const { data: canList, isError, isLoading } = useGetCansQuery({});
+
+    const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
+
+    const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
+        ids: [0],
+        fiscalYear: fiscalYear,
+        activePeriod: activePeriodIds
+    });
+    // console.log({ filters });
     const filteredCANsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear || !canList) return [];
         return canList.filter(
@@ -104,15 +107,17 @@ const CanList = () => {
                             fyBudgetRange={[minFYBudget, maxFYBudget]}
                         />
                     }
-                    SummaryCardsSection={<CANSummaryCards
-                        fiscalYear={fiscalYear}
-                        totalBudget={fundingSummaryData?.total_funding}
-                        newFunding={fundingSummaryData?.new_funding}
-                        carryForward={fundingSummaryData?.carry_forward_funding}
-                        plannedFunding={fundingSummaryData?.planned_funding}
-                        obligatedFunding={fundingSummaryData?.obligated_funding}
-                        inExecutionFunding={fundingSummaryData?.in_execution_funding}
-                    />}
+                    SummaryCardsSection={
+                        <CANSummaryCards
+                            fiscalYear={fiscalYear}
+                            totalBudget={fundingSummaryData?.total_funding}
+                            newFunding={fundingSummaryData?.new_funding}
+                            carryForward={fundingSummaryData?.carry_forward_funding}
+                            plannedFunding={fundingSummaryData?.planned_funding}
+                            obligatedFunding={fundingSummaryData?.obligated_funding}
+                            inExecutionFunding={fundingSummaryData?.in_execution_funding}
+                        />
+                    }
                 />
                 <DebugCode
                     data={fundingSummaryData}
