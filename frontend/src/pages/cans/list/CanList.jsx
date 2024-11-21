@@ -31,7 +31,7 @@ const CanList = () => {
 
     const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
         ids: [0],
-        fiscalYear: 2025
+        fiscalYear: fiscalYear
     });
 
     const [filters, setFilters] = React.useState({

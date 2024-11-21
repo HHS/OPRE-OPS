@@ -4,6 +4,7 @@ from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.schemas.can_funding_summary import CANFundingSummaryResponseSchema
 from ops_api.ops.utils.cans import aggregate_funding_summaries, get_can_funding_summary, get_filtered_cans
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -42,10 +43,10 @@ class CANFundingSummaryListAPI(BaseItemAPI):
     def _handle_single_can_no_filters(self, can_id: str, fiscal_year: str = None) -> Response:
         can = self._get_item(can_id)
         can_funding_summary = get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None)
-        return make_response_with_headers(can_funding_summary)
+        return self._make_response(can_funding_summary)
 
-    @staticmethod
     def _apply_filters_and_return(
+        self,
         cans: list,
         fiscal_year: str = None,
         active_period: list = None,
@@ -58,4 +59,9 @@ class CANFundingSummaryListAPI(BaseItemAPI):
             get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None) for can in cans_with_filters
         ]
         aggregated_summary = aggregate_funding_summaries(can_funding_summaries)
-        return make_response_with_headers(aggregated_summary)
+        return self._make_response(aggregated_summary)
+
+    @staticmethod
+    def _make_response(result) -> Response:
+        schema = CANFundingSummaryResponseSchema(many=False)
+        return make_response_with_headers(schema.dump(result))
