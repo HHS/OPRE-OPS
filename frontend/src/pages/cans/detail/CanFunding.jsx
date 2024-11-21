@@ -1,10 +1,8 @@
-import CurrencyFormat from "react-currency-format";
 import CANBudgetByFYCard from "../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard";
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
+import CANFundingReceivedTable from "../../../components/CANs/CANFundingReceivedTable";
 import Accordion from "../../../components/UI/Accordion";
 import ReceivedFundingCard from "../../../components/UI/Cards/BudgetCard/ReceivedFundingCard";
-import Table from "../../../components/UI/Table";
-import { calculatePercent } from "../../../helpers/utils";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
@@ -69,27 +67,10 @@ const CanFunding = ({ funding, fundingBudgets, fiscalYear, totalFunding, receive
                 {fundingReceived.length === 0 ? (
                     <p className="text-center">No funding received data available for this CAN.</p>
                 ) : (
-                    <Table tableHeadings={["Funding ID", "FY", "Funding Received", "% of Total FY Budget"]}>
-                        {fundingReceived.map((row) => {
-                            return (
-                                <tr key={row.id}>
-                                    <td>{row.id}</td>
-                                    <td>{row.fiscal_year}</td>
-                                    <td>
-                                        <CurrencyFormat
-                                            value={row.funding ?? 0}
-                                            displayType={"text"}
-                                            thousandSeparator={true}
-                                            prefix={"$"}
-                                            decimalScale={2}
-                                            fixedDecimalScale
-                                        />
-                                    </td>
-                                    <td>{calculatePercent(row.funding ?? 0, totalFunding)}%</td>
-                                </tr>
-                            );
-                        })}
-                    </Table>
+                    <CANFundingReceivedTable
+                        fundingReceived={fundingReceived}
+                        totalFunding={totalFunding}
+                    />
                 )}
             </Accordion>
         </div>
