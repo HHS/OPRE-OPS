@@ -3,7 +3,7 @@
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit("/agreements/create");
 });
 

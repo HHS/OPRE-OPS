@@ -21,7 +21,7 @@ const minAgreement = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
 });
 
 afterEach(() => {
@@ -89,7 +89,7 @@ describe("create agreement and test validations", () => {
             cy.get(".usa-error-message").should("exist");
             cy.get("#agreement_reason").select("NEW_REQ");
             cy.get("#project-officer-combobox-input").type("Chris Fortunato{enter}");
-            cy.get("#team-member-combobox-input").type("Admin Demo{enter}");
+            cy.get("#team-member-combobox-input").type("System Owner{enter}");
             cy.get("#agreementNotes").type("This is a note.");
             cy.get("[data-cy='continue-btn']").click();
             //  Add Services Component

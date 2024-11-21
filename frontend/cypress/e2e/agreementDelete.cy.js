@@ -82,7 +82,7 @@ const testAgreement = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit("/agreements/");
 });
 
@@ -138,7 +138,7 @@ const addAgreement = (agreement) => {
 it("should allow to delete an agreement if user created it", () => {
     addAgreement(testAgreement);
     cy.visit("/agreements/");
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
+
     cy.wait(2000);
     deleteAgreementByName(testAgreement.name);
 });
@@ -146,7 +146,7 @@ it("should allow to delete an agreement if user created it", () => {
 it("should allow to delete an agreement if user is project officer", () => {
     addAgreement(testAgreement);
     cy.visit("/agreements/");
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
+
     cy.wait(2000);
     deleteAgreementByName(testAgreement.name);
 });

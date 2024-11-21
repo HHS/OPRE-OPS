@@ -36,7 +36,7 @@ const testBli = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
 });
 
 afterEach(() => {
@@ -95,7 +95,7 @@ it("BLI Status Change", () => {
             cy.get('[data-cy="send-to-approval-btn"]').should("not.be.disabled");
             cy.get('[data-cy="review-card"]').within(() => {
                 cy.contains(bliId);
-                cy.contains("Admin Demo");
+                cy.contains("System Owner");
                 cy.contains("Status");
                 cy.contains("Draft");
                 cy.contains("Planned");
@@ -127,7 +127,7 @@ it("BLI Status Change", () => {
             cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
                 .should(
                     "have.text",
-                    `Admin Demo requested a status change on BL ${bliId} from Draft to Planned and it's currently In Review for approval.`
+                    `System Owner requested a status change on BL ${bliId} from Draft to Planned and it's currently In Review for approval.`
                 )
                 .then(() => {
                     cy.request({

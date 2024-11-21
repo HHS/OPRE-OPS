@@ -7,7 +7,7 @@ beforeEach(() => {
 
 it("Notification Center appears when you click the bell icon and has 1 item in list", () => {
     cy.visit("/");
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit("/");
 
     cy.get("use").should("have.attr", "xlink:href").and("contain", "notifications_active");

@@ -11,7 +11,7 @@ const minAgreement = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit(`/`);
 });
 
