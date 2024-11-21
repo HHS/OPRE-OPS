@@ -132,15 +132,18 @@ export const getPortfolioOptions = (cans) => {
         return [];
     }
     const portfolios = cans.reduce((acc, can) => {
-        acc.add(`${can.portfolio.name} (${can.portfolio.abbreviation})`);
+        const {name, abbreviation} = can.portfolio
+        acc.add({name, abbreviation})
+        // acc.add(`${can.portfolio.name} (${can.portfolio.abbreviation})`);
         return acc;
     }, new Set());
 
     return Array.from(portfolios)
-        .sort((a, b) => a.localeCompare(b))
+        .sort((a, b) => a.name.localeCompare(b.name))
         .map((portfolio, index) => ({
             id: index,
-            title: portfolio
+            title: `${portfolio.name} (${portfolio.abbreviation})`,
+            abbr: portfolio.abbreviation
         }));
 };
 

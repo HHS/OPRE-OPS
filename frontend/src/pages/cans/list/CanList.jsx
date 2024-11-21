@@ -43,7 +43,7 @@ const CanList = () => {
         fiscalYear: fiscalYear,
         activePeriod: activePeriodIds,
         transfer: transferTitles,
-        portfolio: filters.portfolio.map((p) => p.title)
+        portfolio: filters.portfolio.map((p) => p.abbr)
     });
     console.log({ filters });
     const filteredCANsByFiscalYear = React.useMemo(() => {
