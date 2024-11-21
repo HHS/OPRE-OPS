@@ -226,7 +226,7 @@ def test_division_director(loaded_db) -> User | None:
 
 @pytest.fixture()
 def test_non_admin_user(loaded_db) -> User | None:
-    """Get a test SYSTEM_OWNER user - also the user associated with the auth_client.
+    """Get a basic test user
 
     N.B. This user has an non-SYSTEM_OWNER role whose status is ACTIVE.
     """

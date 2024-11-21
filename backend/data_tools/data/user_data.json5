@@ -513,10 +513,10 @@
       status: "ACTIVE"
     },
     { // 520 User is used in E2E tests
-      first_name: "Admin",
-      last_name: "Demo",
+      first_name: "System",
+      last_name: "Owner",
       division: 3,
-      email: "admin.demo@email.com",
+      email: "system.owner@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000018",
       roles: [{"tablename":  "role", "id": 1}],
       status: "ACTIVE"
