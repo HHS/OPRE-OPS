@@ -36,13 +36,15 @@ const CanList = () => {
     const { data: canList, isError, isLoading } = useGetCansQuery({});
 
     const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
+    const transferTitles = filters.transfer.map((t) => t.title);
 
     const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
         ids: [0],
         fiscalYear: fiscalYear,
-        activePeriod: activePeriodIds
+        activePeriod: activePeriodIds,
+        transfer: transferTitles,
     });
-    // console.log({ filters });
+    console.log({ filters });
     const filteredCANsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear || !canList) return [];
         return canList.filter(
