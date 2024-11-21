@@ -1,21 +1,5 @@
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields
 from ops_api.ops.schemas.cans import BasicCANSchema
-
-
-class FiscalYearBudgetSchema(Schema):
-    min_fy_budget = fields.Integer(allow_none=True)
-    max_fy_budget = fields.Integer(allow_none=True)
-
-
-class GetCANFundingSummaryRequestSchema(Schema):
-    can_ids = fields.List(fields.Integer(), required=False)
-    fiscal_year = fields.String(allow_none=True)
-    active_period = fields.List(fields.Integer(), allow_none=True)
-    transfer = fields.List(
-        fields.String(validate=validate.OneOf(["DIRECT", "COST_SHARE", "IAA", "IDDA"])), allow_none=True
-    )
-    portfolio = fields.List(fields.String(), allow_none=True)
-    fy_budget = fields.List(fields.Integer(), min_items=2, max_items=2, allow_none=True)
 
 
 class CANSFundingSourceSchema(Schema):

@@ -12,11 +12,11 @@ import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
  * @param {CANSummaryCardsProps} props
  * @returns {JSX.Element} - The CANSummaryCards component.
  */
-const CANSummaryCards = ({ fiscalYear }) => {
-    const totalSpending = 42_650_000;
-    const totalBudget = 56_000_000;
-    const newFunding = 41_000_000;
-    const carryForward = 15_000_000;
+const CANSummaryCards = ({ fiscalYear, totalSpending, totalBudget, newFunding, carryForward }) => {
+    // const totalSpending = 42_650_000;
+    // const totalBudget = 56_000_000;
+    // const newFunding = 41_000_000;
+    // const carryForward = 15_000_000;
     const data = [
         {
             id: 1,

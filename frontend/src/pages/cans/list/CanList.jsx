@@ -105,7 +105,13 @@ const CanList = () => {
                             fyBudgetRange={[minFYBudget, maxFYBudget]}
                         />
                     }
-                    SummaryCardsSection={<CANSummaryCards fiscalYear={fiscalYear} />}
+                    SummaryCardsSection={<CANSummaryCards
+                        fiscalYear={fiscalYear}
+                        totalBudget={fundingSummaryData?.total_funding}
+                        totalSpending={fundingSummaryData?.obligated_funding}
+                        newFunding={fundingSummaryData?.new_funding}
+                        carryForward={fundingSummaryData?.carry_forward_funding}
+                    />}
                 />
                 <DebugCode
                     data={fundingSummaryData}
