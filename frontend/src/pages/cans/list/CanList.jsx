@@ -37,13 +37,15 @@ const CanList = () => {
 
     const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
     const transferTitles = filters.transfer.map((t) => t.title.toUpperCase());
+    const portfolioAbbreviations = filters.portfolio.map((p) => p.abbr);
 
-    const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
+    const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({
         ids: [0],
         fiscalYear: fiscalYear,
         activePeriod: activePeriodIds,
         transfer: transferTitles,
-        portfolio: filters.portfolio.map((p) => p.abbr)
+        portfolio: portfolioAbbreviations,
+        fyBudgets: filters.budget
     });
     console.log({ filters });
     const filteredCANsByFiscalYear = React.useMemo(() => {
@@ -58,7 +60,7 @@ const CanList = () => {
     const sortedFYBudgets = getSortedFYBudgets(filteredCANsByFiscalYear);
     const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
 
-    if (isLoading || fundingSummaryisLoading) {
+    if (isLoading || fundingSummaryIsLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
