@@ -158,17 +158,20 @@ def filter_by_fiscal_year_budget(cans: list[CAN], fiscal_year_budget: list[int])
     ]
 
 
-def get_filtered_cans(cans, active_period=None, transfer=None, portfolio=None, fy_budget=None):
+def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None, portfolio=None, fy_budget=None):
     """
     Filters the given list of 'cans' based on the provided attributes.
 
     :param cans: List of cans to be filtered
+    :param fiscal_year: Value to filter by fiscal year
     :param active_period: Value to filter by 'active_period' attribute
     :param transfer: Value to filter by 'funding_details.method_of_transfer' attribute
     :param portfolio: Value to filter by 'portfolios.abbr' attribute
     :param fy_budget: Value to filter by fiscal year budget
     :return: Filtered list of cans
     """
+    if fiscal_year:
+        cans = filter_by_attribute(cans, "funding_details.fiscal_year", [fiscal_year])
     if active_period:
         cans = filter_by_attribute(cans, "active_period", active_period)
     if transfer:

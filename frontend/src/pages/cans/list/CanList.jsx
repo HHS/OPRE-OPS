@@ -33,6 +33,7 @@ const CanList = () => {
         ids: [0],
         fiscalYear: 2025
     });
+
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
@@ -52,6 +53,7 @@ const CanList = () => {
     const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
 
     if (isLoading || fundingSummaryisLoading) {
+        console.log({ fundingSummaryData })
         return (
             <App>
                 <h1>Loading...</h1>

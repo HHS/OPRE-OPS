@@ -28,6 +28,29 @@ class DummyNestedObject:
 
 
 @pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
+    auth_client: FlaskClient, test_cans: list[Type[CAN]]
+) -> None:
+    query_params = f"can_ids={0}&fiscal_year=2025"
+
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 0
+    assert response.json["available_funding"] == "0.0"
+    assert response.json["carry_forward_funding"] == "0.0"
+    assert response.json["expected_funding"] == "0.0"
+    assert response.json["in_draft_funding"] == "0.0"
+    assert response.json["in_execution_funding"] == "0.0"
+    assert response.json["new_funding"] == "0.0"
+    assert response.json["obligated_funding"] == "0.0"
+    assert response.json["planned_funding"] == "0.0"
+    assert response.json["received_funding"] == "0.0"
+    assert response.json["total_funding"] == "0.0"
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
     result = get_can_funding_summary(test_can)
 
@@ -463,19 +486,6 @@ def test_aggregate_funding_summaries():
 @pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     query_params = f"can_ids={0}"
-
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
-
-    assert response.status_code == 200
-    assert len(response.json["cans"]) == 17
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_can_get_can_funding_summary_all_cans_with_out_of_bound_fiscal_year(
-    auth_client: FlaskClient, test_cans: list[Type[CAN]]
-) -> None:
-    query_params = f"can_ids={0}&fiscal_year=2100"
 
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
 

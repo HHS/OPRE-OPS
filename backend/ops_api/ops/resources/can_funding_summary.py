@@ -53,7 +53,7 @@ class CANFundingSummaryItemAPI(BaseItemAPI):
         portfolio: list = None,
         fy_budget: list = None,
     ) -> Response:
-        cans_with_filters = get_filtered_cans(cans, active_period, transfer, portfolio, fy_budget)
+        cans_with_filters = get_filtered_cans(cans, fiscal_year, active_period, transfer, portfolio, fy_budget)
         can_funding_summaries = [
             get_can_funding_summary(can, int(fiscal_year) if fiscal_year else None) for can in cans_with_filters
         ]
