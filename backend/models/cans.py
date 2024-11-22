@@ -110,6 +110,25 @@ class CAN(BaseModel):
         return self.funding_details.active_period
 
     @property
+    def funding_method(self):
+        if self.funding_details is None:
+            return None
+        return self.funding_details.funding_method
+
+    @property
+    def funding_release_method(self):
+        if self.funding_details is None:
+            return None
+        return self.funding_details.funding_method
+
+    @property
+    def funding_type(self):
+        if self.funding_details is None:
+            return None
+        return self.funding_details.funding_type
+
+
+    @property
     def obligate_by(self):
         if self.funding_details is None:
             return None
@@ -175,6 +194,30 @@ class CANFundingDetails(BaseModel):
         if len(self.fund_code) != 14:
             return None
         return int(self.fund_code[10:11])
+
+    @property
+    def funding_method(self) -> Optional[str]:
+        """The way the funds are transferred by"""
+        if len(self.fund_code) == 14:
+            method = self.fund_code[11].upper()
+            return {"D": "Direct", "M": "Reimbursable"}.get(method)
+        return None
+
+    @property
+    def funding_received(self) -> Optional[str]:
+        """When the funds are received"""
+        if len(self.fund_code) == 14:
+            method = self.fund_code[12].upper()
+            return {"A": "Quarterly", "B": "FY Start"}.get(method)
+        return None
+
+    @property
+    def funding_type(self) -> Optional[str]:
+        """The type of funding"""
+        if len(self.fund_code) == 14:
+            funding_type = self.fund_code[13].upper()
+            return {"D": "Discretionary", "M": "Mandatory"}.get(funding_type)
+        return None
 
     @property
     def obligate_by(self) -> Optional[int]:
