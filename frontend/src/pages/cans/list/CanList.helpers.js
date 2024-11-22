@@ -18,7 +18,7 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
         return [];
     }
 
-    const { roles, id: userId, division: userDivisionId } = activeUser;
+    const { roles, id: userId} = activeUser;
     // NOTE: Role-based filtering
     let filteredCANs = cans.filter((can) => {
         // Always include CAN if the user is not filtering by "my-CANs"
@@ -29,7 +29,7 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
 
         // Filter based on specific roles division directors and budget team
         if (roles.includes(USER_ROLES.DIVISION_DIRECTOR || USER_ROLES.BUDGET_TEAM)) {
-            return can.portfolio.division_id === userDivisionId;
+            return can.portfolio.division.division_director_id === userId || can.portfolio.division.division_director_id === userId;
         }
         // Filter based on team members
         // TODO: add project officers per #2884

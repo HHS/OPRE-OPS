@@ -20,28 +20,40 @@ describe("sortAndFilterCANs", () => {
         {
             id: 1,
             obligate_by: "2023-12-31",
-            portfolio: { division_id: 1 },
+            portfolio: { division: {
+                division_director_id: 1,
+                deputy_division_director_id: 1,
+            } },
             budget_line_items: [{ team_members: [{ id: 1 }] }],
             active_period: 1
         },
         {
             id: 2,
             obligate_by: "2023-11-30",
-            portfolio: { division_id: 2 },
+            portfolio: { division: {
+                division_director_id: 2,
+                deputy_division_director_id: 2,
+            } },
             budget_line_items: [],
             active_period: 2
         },
         {
             id: 3,
             obligate_by: "2023-10-31",
-            portfolio: { division_id: 1 },
+            portfolio: { division: {
+                division_director_id: 1,
+                deputy_division_director_id: 1,
+            } },
             budget_line_items: [{ team_members: [{ id: 2 }] }],
             active_period: 1
         },
         {
             id: 4,
             obligate_by: null,
-            portfolio: { division_id: 1 },
+            portfolio: { division: {
+                division_director_id: 1,
+                deputy_division_director_id: 1,
+            } },
             budget_line_items: [],
             active_period: 3
         }
@@ -85,7 +97,7 @@ describe("sortAndFilterCANs", () => {
         const divisionDirector = { ...mockUser, roles: [USER_ROLES.DIVISION_DIRECTOR] };
         const result = sortAndFilterCANs(mockCANs, true, divisionDirector, mockFilters);
         expect(result.length).toBe(3);
-        expect(result.every((can) => can.portfolio.division_id === 1)).toBe(true);
+        expect(result.every((can) => can.portfolio.division.division_director_id === 1 || can.portfolio.division.deputy_division_director_id === 1 )).toBe(true);
     });
 
     it("should filter CANs by active period", () => {

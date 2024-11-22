@@ -27,17 +27,10 @@ export const useChangeRequestsForAgreement = (agreementId) => {
  * @returns {number} The total number of change requests.
  */
 export const useChangeRequestTotal = () => {
-    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? -1;
-    const { data: changeRequests } = useGetChangeRequestsListQuery({});
+    const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
+    const { data: changeRequests } = useGetChangeRequestsListQuery({userId});
 
-    const changeRequestsForUser = Array.isArray(changeRequests)
-        ? changeRequests?.filter(
-              /** @param {ChangeRequest} changeRequest */
-              (changeRequest) => changeRequest.managing_division_id === userDivisionId
-          )
-        : [];
-
-    return changeRequestsForUser?.length || 0;
+    return changeRequests?.length || 0;
 };
 
 /**

@@ -41,10 +41,11 @@ import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.ho
 const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const budgetLineCreatorName = useGetUserFullNameFromId(budgetLine?.created_by);
-    const userDivisionId = useSelector((state) => state.auth?.activeUser?.division) ?? null;
+    const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     const isBudgetLineInReview = budgetLine?.in_review;
-    const canDivisionId = budgetLine?.can?.portfolio?.division_id;
-    const isActionable = canDivisionId === userDivisionId || !isBudgetLineInReview;
+    const canDivisionDirectorId = budgetLine?.can?.portfolio?.division.division_director_id;
+    const canDeputyDivisionDirectorId = budgetLine?.can?.portfolio?.division.deputy_division_director_id;
+    const isActionable = (canDivisionDirectorId === userId || canDeputyDivisionDirectorId  === userId) || !isBudgetLineInReview;
     const title = "This budget line has pending edits with a different Division:";
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, title);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);

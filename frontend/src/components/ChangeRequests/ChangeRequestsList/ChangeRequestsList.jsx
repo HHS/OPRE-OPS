@@ -3,6 +3,7 @@ import * as React from "react";
 import { useGetChangeRequestsListQuery } from "../../../api/opsAPI";
 import BudgetChangeReviewCard from "../BudgetChangeReviewCard";
 import StatusChangeReviewCard from "../StatusChangeReviewCard";
+import { useSelector } from "react-redux";
 
 /**
  * @component Change Requests List component.
@@ -12,11 +13,12 @@ import StatusChangeReviewCard from "../StatusChangeReviewCard";
  * @returns {JSX.Element} - The rendered component
  */
 function ChangeRequestsList({ handleReviewChangeRequest }) {
+    const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
     const {
         data: changeRequests,
         isLoading: loadingChangeRequests,
         isError: errorChangeRequests
-    } = useGetChangeRequestsListQuery({ refetchOnMountOrArgChange: true });
+    } = useGetChangeRequestsListQuery( { refetchOnMountOrArgChange: true, userId });
 
     if (loadingChangeRequests) {
         return <h1>Loading...</h1>;
@@ -24,7 +26,6 @@ function ChangeRequestsList({ handleReviewChangeRequest }) {
     if (errorChangeRequests) {
         return <h1>Oops, an error occurred</h1>;
     }
-
     return changeRequests.length > 0 ? (
         <>
             {changeRequests.map(
