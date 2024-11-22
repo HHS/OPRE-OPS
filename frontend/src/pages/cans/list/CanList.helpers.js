@@ -83,14 +83,13 @@ const applyAdditionalFilters = (cans, filters) => {
     if (filters.transfer && filters.transfer.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
             filters.transfer?.some(
-                (transfer) => transfer.title.toUpperCase() === can.funding_details.method_of_transfer
+                (transfer) => transfer.title.toUpperCase() === can.funding_details?.method_of_transfer
             )
         );
     }
 
     if (filters.portfolio && filters.portfolio.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
-            // TODO: add abbreviation to the portfolio object
             filters.portfolio?.some(
                 (portfolio) => portfolio.title == `${can.portfolio.name} (${can.portfolio.abbreviation})`
             )
@@ -99,15 +98,14 @@ const applyAdditionalFilters = (cans, filters) => {
 
     if (filters.budget && filters.budget.length > 0) {
         filteredCANs = filteredCANs.filter((can) => {
-            // Include if funding_budgets is empty
-            if (can.funding_budgets.length === 0) return true;
+            // Skip CANs with no funding budgets or only null budgets
+            const validBudgets = can.funding_budgets?.filter((b) => b.budget !== null);
+            if (validBudgets?.length === 0) return false;
 
-            return can.funding_budgets.some((budget) => {
-                // Include if budget is null
-                if (budget.budget === null) return true;
-
-                return budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1];
-            });
+            // Check if any valid budget falls within range
+            return validBudgets?.some(
+                (budget) => budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1]
+            );
         });
     }
 

@@ -13,7 +13,6 @@ import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
 import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
-import DebugCode from "../../../components/DebugCode";
 
 /**
  * Page for the CAN List.
@@ -47,7 +46,7 @@ const CanList = () => {
         portfolio: portfolioAbbreviations,
         fyBudgets: filters.budget
     });
-    console.log({ filters });
+
     const filteredCANsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear || !canList) return [];
         return canList.filter(
@@ -123,10 +122,6 @@ const CanList = () => {
                             inExecutionFunding={fundingSummaryData?.in_execution_funding}
                         />
                     }
-                />
-                <DebugCode
-                    data={fundingSummaryData}
-                    title="Funding Summary Data"
                 />
             </App>
         )
