@@ -1,71 +1,53 @@
-import React from "react";
-import { useSelector } from "react-redux";
-import { Route, Routes, useParams } from "react-router-dom";
-import { useGetCanByIdQuery } from "../../../api/opsAPI";
+import { Route, Routes } from "react-router-dom";
 import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import PageHeader from "../../../components/UI/PageHeader";
 import { NO_DATA } from "../../../constants";
 import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
+import useCan from "./Can.hooks";
 import CanDetail from "./CanDetail";
 import CanFunding from "./CanFunding";
 import CanSpending from "./CanSpending";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
- *  @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
 
-const getTypesCounts = (items, keyToCount) => {
-    if (!items || items.length === 0) return [];
-
-    return Object.entries(
-        items.reduce((acc, item) => {
-            const type = item[keyToCount];
-            if (!acc[type]) {
-                acc[type] = 0;
-            }
-            acc[type]++;
-            return acc;
-        }, {})
-    ).map(([type, count]) => ({ type, count }));
-};
-
 const Can = () => {
-    const urlPathParams = useParams();
-    const canId = parseInt(urlPathParams.id ?? "-1");
-    /** @type {{data?: CAN | undefined, isLoading: boolean}} */
-    const { data: can, isLoading } = useGetCanByIdQuery(canId);
-    const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
-    const fiscalYear = Number(selectedFiscalYear.value);
+    const {
+        can,
+        isLoading,
+        canId,
+        fiscalYear,
+        CANFundingLoading,
+        budgetLineItemsByFiscalYear,
+        number,
+        description,
+        nickname,
+        fundingDetails,
+        fundingBudgets,
+        fundingReceivedByFiscalYear,
+        divisionId,
+        teamLeaders,
+        portfolioName,
+        totalFunding,
+        plannedFunding,
+        obligatedFunding,
+        inExecutionFunding,
+        subTitle,
+        projectTypesCount,
+        budgetLineTypesCount,
+        testAgreements,
+        receivedFunding
+    } = useCan();
 
-    const budgetLineItemsByFiscalYear = React.useMemo(() => {
-        if (!fiscalYear || !can) return [];
-
-        return can.budget_line_items?.filter((bli) => bli.fiscal_year === fiscalYear) ?? [];
-    }, [can, fiscalYear]);
-
-    if (isLoading) {
-        return <div> Loading CAN... </div>;
+    if (isLoading || CANFundingLoading) {
+        return <p>Loading CAN...</p>;
     }
+
     if (!can) {
-        return <div>CAN not found</div>;
+        return <p>Error: CAN not found</p>;
     }
-
-    const { number, description, nick_name: nickname, portfolio, projects, funding_details: fundingDetails } = can;
-    const { division_id: divisionId, team_leaders: teamLeaders, name: portfolioName } = portfolio;
-
-    const subTitle = `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}`;
-
-    const projectTypesCount = getTypesCounts(projects, "project_type");
-    const budgetLineTypesCount = getTypesCounts(budgetLineItemsByFiscalYear, "status");
-    const testAgreements = [
-        { type: "CONTRACT", count: 8 },
-        { type: "GRANT", count: 2 },
-        { type: "DIRECT_ALLOCATION", count: 1 },
-        { type: "IAA", count: 1 },
-        { type: "MISCELLANEOUS", count: 1 }
-    ];
 
     return (
         <App breadCrumbName={can.display_name}>
@@ -101,10 +83,13 @@ const Can = () => {
                         <CanSpending
                             budgetLines={budgetLineItemsByFiscalYear}
                             fiscalYear={fiscalYear}
-                            canId={canId}
-                            projects={projectTypesCount}
+                            projectTypesCount={projectTypesCount}
                             budgetLineTypesCount={budgetLineTypesCount}
-                            agreements={testAgreements}
+                            agreementTypesCount={testAgreements}
+                            inExecutionFunding={inExecutionFunding}
+                            obligatedFunding={obligatedFunding}
+                            plannedFunding={plannedFunding}
+                            totalFunding={totalFunding}
                         />
                     }
                 />
@@ -113,7 +98,11 @@ const Can = () => {
                     element={
                         <CanFunding
                             funding={fundingDetails}
+                            fundingBudgets={fundingBudgets}
                             fiscalYear={fiscalYear}
+                            receivedFunding={receivedFunding}
+                            totalFunding={totalFunding}
+                            fundingReceived={fundingReceivedByFiscalYear}
                         />
                     }
                 />

@@ -1,4 +1,3 @@
-import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import CANBudgetLineTable from "../../../components/CANs/CANBudgetLineTable";
 import BigBudgetCard from "../../../components/UI/Cards/BudgetCard/BigBudgetCard";
 import DonutGraphWithLegendCard from "../../../components/UI/Cards/DonutGraphWithLegendCard";
@@ -20,10 +19,13 @@ import { calculatePercent } from "../../../helpers/utils";
  * @typedef {Object} CanSpendingProps
  * @property {BudgetLine[]} budgetLines
  * @property {number} fiscalYear
- * @property {number} canId
- * @property {ItemCount[]} [projects]
+ * @property {ItemCount[]} [projectTypesCount]
  * @property {ItemCount[]} [budgetLineTypesCount]
- * @property {ItemCount[]} [agreements]
+ * @property {ItemCount[]} [agreementTypesCount]
+ * @property {number} plannedFunding
+ * @property {number} inExecutionFunding
+ * @property {number} obligatedFunding
+ * @property {number} totalFunding
  */
 
 /**
@@ -31,14 +33,18 @@ import { calculatePercent } from "../../../helpers/utils";
  * @param {CanSpendingProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CanSpending = ({ budgetLines, fiscalYear, canId, projects, budgetLineTypesCount, agreements }) => {
-    const { data: CANFunding, isLoading } = useGetCanFundingSummaryQuery({ id: canId, fiscalYear: fiscalYear });
-
-    if (isLoading) return <div>Loading...</div>;
-    if (!CANFunding) return <div>No data</div>;
-
-    const { total_funding: totalFunding, planned_funding, obligated_funding, in_execution_funding } = CANFunding;
-    const totalSpending = Number(planned_funding) + Number(obligated_funding) + Number(in_execution_funding);
+const CanSpending = ({
+    budgetLines,
+    fiscalYear,
+    projectTypesCount,
+    budgetLineTypesCount,
+    agreementTypesCount,
+    plannedFunding,
+    inExecutionFunding,
+    obligatedFunding,
+    totalFunding
+}) => {
+    const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
     const DRAFT_FUNDING = 1_000_000; // replace with actual data
 
     const graphData = [
@@ -52,23 +58,23 @@ const CanSpending = ({ budgetLines, fiscalYear, canId, projects, budgetLineTypes
         {
             id: 2,
             label: "Planned",
-            value: Math.round(planned_funding) || 0,
+            value: Math.round(plannedFunding) || 0,
             color: "var(--data-viz-bl-by-status-2)",
-            percent: `${calculatePercent(planned_funding, totalFunding)}%`
+            percent: `${calculatePercent(plannedFunding, totalFunding)}%`
         },
         {
             id: 3,
             label: "Executing",
-            value: Math.round(in_execution_funding) || 0,
+            value: Math.round(inExecutionFunding) || 0,
             color: "var(--data-viz-bl-by-status-3)",
-            percent: `${calculatePercent(in_execution_funding, totalFunding)}%`
+            percent: `${calculatePercent(inExecutionFunding, totalFunding)}%`
         },
         {
             id: 4,
             label: "Obligated",
-            value: Math.round(obligated_funding) || 0,
+            value: Math.round(obligatedFunding) || 0,
             color: "var(--data-viz-bl-by-status-4)",
-            percent: `${calculatePercent(obligated_funding, totalFunding)}%`
+            percent: `${calculatePercent(obligatedFunding, totalFunding)}%`
         }
     ];
 
@@ -84,9 +90,9 @@ const CanSpending = ({ budgetLines, fiscalYear, canId, projects, budgetLineTypes
             <div className="display-flex flex-justify margin-top-2">
                 <ProjectAgreementBLICard
                     fiscalYear={fiscalYear}
-                    projects={projects}
+                    projects={projectTypesCount}
                     budgetLines={budgetLineTypesCount}
-                    agreements={agreements}
+                    agreements={agreementTypesCount}
                 />
                 <DonutGraphWithLegendCard
                     data={graphData}
