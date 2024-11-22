@@ -90,6 +90,7 @@ const applyAdditionalFilters = (cans, filters) => {
 
     if (filters.portfolio && filters.portfolio.length > 0) {
         filteredCANs = filteredCANs.filter((can) =>
+            // TODO: add abbreviation to the portfolio object
             filters.portfolio?.some(
                 (portfolio) => portfolio.title == `${can.portfolio.name} (${can.portfolio.abbreviation})`
             )
@@ -131,16 +132,26 @@ export const getPortfolioOptions = (cans) => {
         return [];
     }
     const portfolios = cans.reduce((acc, can) => {
-        acc.add(`${can.portfolio.name} (${can.portfolio.abbreviation})`);
+        const { name, abbreviation } = can.portfolio;
+        const uniqueKey = `${name}_${abbreviation}`;
+        acc.add(uniqueKey);
         return acc;
     }, new Set());
 
     return Array.from(portfolios)
-        .sort((a, b) => a.localeCompare(b))
-        .map((portfolio, index) => ({
-            id: index,
-            title: portfolio
-        }));
+        .sort((a, b) => {
+            const [nameA] = a.split("_");
+            const [nameB] = b.split("_");
+            return nameA.localeCompare(nameB);
+        })
+        .map((uniqueKey, index) => {
+            const [name, abbr] = uniqueKey.split("_");
+            return {
+                id: index,
+                title: `${name} (${abbr})`,
+                abbr: abbr
+            };
+        });
 };
 
 export const getSortedFYBudgets = (cans) => {
