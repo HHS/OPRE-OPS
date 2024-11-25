@@ -13,7 +13,6 @@ import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
 import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
-import DebugCode from "../../../components/DebugCode";
 
 /**
  * Page for the CAN List.
@@ -27,19 +26,27 @@ const CanList = () => {
     const activeUser = useSelector((state) => state.auth.activeUser);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
-    const { data: canList, isError, isLoading } = useGetCansQuery({});
-
-    const { data: fundingSummaryData, isLoading: fundingSummaryisLoading } = useGetCanFundingSummaryQuery({
-        ids: [0],
-        fiscalYear: fiscalYear
-    });
-
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],
         portfolio: [],
         budget: []
     });
+    const { data: canList, isError, isLoading } = useGetCansQuery({});
+
+    const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
+    const transferTitles = filters.transfer.map((t) => t.title.toUpperCase());
+    const portfolioAbbreviations = filters.portfolio.map((p) => p.abbr);
+
+    const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({
+        ids: [0],
+        fiscalYear: fiscalYear,
+        activePeriod: activePeriodIds,
+        transfer: transferTitles,
+        portfolio: portfolioAbbreviations,
+        fyBudgets: filters.budget
+    });
+
     const filteredCANsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear || !canList) return [];
         return canList.filter(
@@ -52,7 +59,7 @@ const CanList = () => {
     const sortedFYBudgets = getSortedFYBudgets(filteredCANsByFiscalYear);
     const [minFYBudget, maxFYBudget] = [sortedFYBudgets[0], sortedFYBudgets[sortedFYBudgets.length - 1]];
 
-    if (isLoading || fundingSummaryisLoading) {
+    if (isLoading || fundingSummaryIsLoading) {
         return (
             <App>
                 <h1>Loading...</h1>
@@ -104,19 +111,17 @@ const CanList = () => {
                             fyBudgetRange={[minFYBudget, maxFYBudget]}
                         />
                     }
-                    SummaryCardsSection={<CANSummaryCards
-                        fiscalYear={fiscalYear}
-                        totalBudget={fundingSummaryData?.total_funding}
-                        newFunding={fundingSummaryData?.new_funding}
-                        carryForward={fundingSummaryData?.carry_forward_funding}
-                        plannedFunding={fundingSummaryData?.planned_funding}
-                        obligatedFunding={fundingSummaryData?.obligated_funding}
-                        inExecutionFunding={fundingSummaryData?.in_execution_funding}
-                    />}
-                />
-                <DebugCode
-                    data={fundingSummaryData}
-                    title="Funding Summary Data"
+                    SummaryCardsSection={
+                        <CANSummaryCards
+                            fiscalYear={fiscalYear}
+                            totalBudget={fundingSummaryData?.total_funding}
+                            newFunding={fundingSummaryData?.new_funding}
+                            carryForward={fundingSummaryData?.carry_forward_funding}
+                            plannedFunding={fundingSummaryData?.planned_funding}
+                            obligatedFunding={fundingSummaryData?.obligated_funding}
+                            inExecutionFunding={fundingSummaryData?.in_execution_funding}
+                        />
+                    }
                 />
             </App>
         )
