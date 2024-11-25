@@ -32,7 +32,7 @@ Cypress.Commands.add("FakeAuth", (user) => {
                 cy.contains("System Owner").click();
                 break;
             case "basic":
-                cy.contains("Basic User").click();
+                cy.contains("User Demo").click();
                 break;
             case "division-director":
                 cy.contains("Division Director").click();

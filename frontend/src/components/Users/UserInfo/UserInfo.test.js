@@ -126,7 +126,7 @@ describe("UserInfo", () => {
         const rolesInput = rolesComboBox.querySelector("input");
         fireEvent.keyDown(rolesInput, { key: "ArrowDown", code: 40 });
         expect(await screen.findByText("System Owner")).toBeInTheDocument();
-        expect(await screen.findByText("User")).toBeInTheDocument();
+        expect(await screen.findByText("Viewer/Editor")).toBeInTheDocument();
         expect(await screen.findByText("Unassigned")).toBeInTheDocument();
         expect(await screen.findByText("Division Director")).toBeInTheDocument();
         expect(await screen.findByText("User Admin")).toBeInTheDocument();
@@ -231,12 +231,12 @@ describe("UserInfo", () => {
 
         await browserUser.click(rolesInput);
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        await browserUser.click(getByText("User"));
+        await browserUser.click(getByText("Viewer/Editor"));
 
         // check that the 2 roles are selected
         screen.debug();
         expect(rolesComboBox).toHaveTextContent("System Owner");
-        expect(rolesComboBox).toHaveTextContent("User");
+        expect(rolesComboBox).toHaveTextContent("Viewer/Editor");
     });
 
     test("update status", async () => {
