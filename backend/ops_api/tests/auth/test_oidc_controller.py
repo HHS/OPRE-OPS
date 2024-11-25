@@ -38,17 +38,17 @@ def test_auth_post_fails_creates_event(client, loaded_db, mocker):
     assert res.status_code == 400
 
 
-def test_auth_post_succeeds_creates_event(client, loaded_db, mocker, test_user):
+def test_auth_post_succeeds_creates_event(client, loaded_db, mocker, test_non_admin_user):
     # setup mocks
     mock_cm = mocker.patch("ops_api.ops.utils.events.Session")
     mock_session = mocker.MagicMock()
     mock_cm.return_value.__enter__.return_value = mock_session
 
     m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
-    m2.return_value = ("blah", "blah", test_user)
+    m2.return_value = ("blah", "blah", test_non_admin_user)
 
     # test
-    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert res.status_code == 200
 
     event = mock_session.add.call_args[0][0]
@@ -61,12 +61,12 @@ def test_auth_post_succeeds_creates_event(client, loaded_db, mocker, test_user):
     loaded_db.commit()
 
 
-def test_login_succeeds_with_active_status(client, loaded_db, mocker, test_user):
+def test_login_succeeds_with_active_status(client, loaded_db, mocker, test_non_admin_user):
     # setup mocks
     m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
-    m2.return_value = ("blah", "blah", test_user)
+    m2.return_value = ("blah", "blah", test_non_admin_user)
 
-    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert res.status_code == 200
 
     # cleanup
@@ -79,7 +79,7 @@ def test_login_fails_with_inactive_status(client, loaded_db, mocker):
     m1.return_value = User(status=UserStatus.INACTIVE)
 
     # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process
-    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert res.status_code == 401
 
 
@@ -87,8 +87,8 @@ def test_login_fails_with_locked_status(client, loaded_db, mocker):
     m1 = mocker.patch("ops_api.ops.auth.decorators.get_user_from_userinfo")
     m1.return_value = User(status=UserStatus.LOCKED)
 
-    # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process
-    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    # the JSON {"provider": "fakeauth", "code": "basic_user"} here is used as a stub to avoid the actual auth process
+    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert res.status_code == 401
 
 
@@ -96,6 +96,6 @@ def test_login_fails_with_null_status(client, loaded_db, mocker):
     m1 = mocker.patch("ops_api.ops.auth.decorators.get_user_from_userinfo")
     m1.return_value = User(status=None)
 
-    # the JSON {"provider": "fakeauth", "code": "admin_user"} here is used as a stub to avoid the actual auth process
-    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    # the JSON {"provider": "fakeauth", "code": "basic_user"} here is used as a stub to avoid the actual auth process
+    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert res.status_code == 401

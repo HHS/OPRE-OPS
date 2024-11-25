@@ -8,18 +8,18 @@ from ops_api.ops.utils.events import OpsEventHandler
 
 
 class DocumentService:
-    def __init__(self, document_gateway: DocumentGateway, current_user_id=None, is_admin=False) -> None:
+    def __init__(self, document_gateway: DocumentGateway, current_user_id=None, is_system_owner=False) -> None:
         self.gateway = document_gateway
         self.repository = self.gateway.create_repository()
         self.current_user_id = current_user_id if current_user_id else current_user.id
-        self.is_admin_user = is_admin or ("admin" in current_user.roles if current_user else False)
+        self.is_system_owner = is_system_owner or ("SYSTEM_OWNER" in current_user.roles if current_user else False)
 
     def can_access_docs(self, agreement_id):
         """
         Check if the current user can access documents for a specific agreement.
         """
         is_agreement_user = is_user_linked_to_agreement(self.current_user_id, agreement_id)
-        return is_agreement_user or self.is_admin_user
+        return is_agreement_user or self.is_system_owner
 
     def get_documents_by_agreement_id(self, agreement_id):
         """

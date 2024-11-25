@@ -9,7 +9,7 @@ from models.users import User
 
 @pytest.fixture()
 def db_with_active_user_session(loaded_db, test_user):
-    user = loaded_db.execute(select(User).where(User.email == "admin.demo@email.com")).scalars().one_or_none()
+    user = loaded_db.execute(select(User).where(User.email == "user.demo@email.com")).scalars().one_or_none()
     active_user_session_1 = UserSession(
         user_id=user.id,
         is_active=True,
@@ -63,7 +63,7 @@ def db_with_active_user_session(loaded_db, test_user):
 
 @pytest.fixture()
 def db_with_inactive_user_session(loaded_db, test_user):
-    user = loaded_db.execute(select(User).where(User.email == "admin.demo@email.com")).scalars().one_or_none()
+    user = loaded_db.execute(select(User).where(User.email == "user.demo@email.com")).scalars().one_or_none()
     active_user_session_1 = UserSession(
         user_id=user.id,
         is_active=False,
@@ -118,10 +118,10 @@ def db_with_inactive_user_session(loaded_db, test_user):
 def test_login_with_no_active_session(client, loaded_db, mocker):
     # setup mocks
     m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
-    user = loaded_db.execute(select(User).where(User.email == "admin.demo@email.com")).scalars().one_or_none()
+    user = loaded_db.execute(select(User).where(User.email == "user.demo@email.com")).scalars().one_or_none()
     m2.return_value = ("blah", "blah", user)
 
-    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert res.status_code == 200
 
     stmt = select(UserSession).where(UserSession.user_id == user.id)
@@ -145,13 +145,13 @@ def test_login_with_active_session(client, db_with_active_user_session, mocker):
     m1.return_value = False
     m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
     user = (
-        db_with_active_user_session.execute(select(User).where(User.email == "admin.demo@email.com"))
+        db_with_active_user_session.execute(select(User).where(User.email == "user.demo@email.com"))
         .scalars()
         .one_or_none()
     )  # noqa
     m2.return_value = ("blah", "blah", user)
 
-    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert res.status_code == 200
 
     stmt = select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.created_on.desc())
@@ -172,13 +172,13 @@ def test_login_with_inactive_session(client, db_with_inactive_user_session, mock
     # setup mocks
     m2 = mocker.patch("ops_api.ops.auth.service._get_token_and_user_data_from_internal_auth")
     user = (
-        db_with_inactive_user_session.execute(select(User).where(User.email == "admin.demo@email.com"))
+        db_with_inactive_user_session.execute(select(User).where(User.email == "user.demo@email.com"))
         .scalars()
         .one_or_none()
     )  # noqa
     m2.return_value = ("blah", "blah", user)
 
-    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "admin_user"})
+    res = client.post("/auth/login/", json={"provider": "fakeauth", "code": "basic_user"})
     assert res.status_code == 200
 
     stmt = select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.created_on.desc())
