@@ -8,7 +8,7 @@ def test_get_roles(auth_client):
     assert response.status_code == 200
 
     assert {"id": 1, "name": "SYSTEM_OWNER"} in response.json
-    assert {"id": 2, "name": "user"} in response.json
+    assert {"id": 2, "name": "VIEWER_EDITOR"} in response.json
     assert {"id": 3, "name": "unassigned"} in response.json
     assert {"id": 4, "name": "division-director"} in response.json
     assert {"id": 5, "name": "USER_ADMIN"} in response.json

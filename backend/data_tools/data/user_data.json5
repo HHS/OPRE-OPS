@@ -111,8 +111,8 @@
         "PATCH_UPLOAD_DOCUMENT",
       ],
     },
-    { // 2 User
-      name: "user",
+    { // 2 Viewer/Editor
+      name: "VIEWER_EDITOR",
       permissions: [
         "GET_AGREEMENT",
         "PUT_AGREEMENT",
@@ -120,19 +120,10 @@
         "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
-        "PUT_BUDGET_LINE_ITEM",
-        "PATCH_BUDGET_LINE_ITEM",
-        "POST_BUDGET_LINE_ITEM",
 
         "GET_SERVICES_COMPONENT",
-        "PUT_SERVICES_COMPONENT",
-        "PATCH_SERVICES_COMPONENT",
-        "POST_SERVICES_COMPONENT",
 
         "GET_BLI_PACKAGE",
-        "PUT_BLI_PACKAGE",
-        "PATCH_BLI_PACKAGE",
-        "POST_BLI_PACKAGE",
 
         "GET_CAN",
 
@@ -150,6 +141,7 @@
         "GET_USER",
         "PUT_USER",
         "PATCH_USER",
+
         "GET_HISTORY",
 
         "GET_WORKFLOW",
