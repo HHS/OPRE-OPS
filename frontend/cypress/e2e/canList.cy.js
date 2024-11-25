@@ -150,8 +150,8 @@ describe("CAN List", () => {
 
     it("should display the summary cards", () => {
         cy.get("#fiscal-year-select").select("2023");
-        cy.get("[data-cy='budget-summary-card']").should("exist");
-        cy.get("[data-cy='budget-summary-card']").contains("FY 2023 CANs Available Budget *");
+        cy.get("[data-cy='budget-summary-card-2023']").should("exist");
+        cy.get("[data-cy='budget-summary-card-2023']").contains("FY 2023 CANs Available Budget *");
         cy.get("[data-cy='line-graph-with-legend-card']").should("exist");
         cy.get("[data-cy='line-graph-with-legend-card']").contains("FY 2023 CANs Total Budget");
     });

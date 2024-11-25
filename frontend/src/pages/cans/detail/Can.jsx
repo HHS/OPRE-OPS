@@ -38,7 +38,6 @@ const Can = () => {
         projectTypesCount,
         budgetLineTypesCount,
         testAgreements,
-        expectedFunding,
         receivedFunding
     } = useCan();
 
@@ -101,8 +100,8 @@ const Can = () => {
                             funding={fundingDetails}
                             fundingBudgets={fundingBudgets}
                             fiscalYear={fiscalYear}
-                            expectedFunding={expectedFunding}
                             receivedFunding={receivedFunding}
+                            totalFunding={totalFunding}
                             fundingReceived={fundingReceivedByFiscalYear}
                         />
                     }

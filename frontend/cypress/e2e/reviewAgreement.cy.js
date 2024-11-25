@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe("agreement change accordion", () => {
-    it("handles interactions", () => {
+    it("handles interactions on agreement 1", () => {
         cy.visit("/agreements/review/1").wait(1000);
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
@@ -32,7 +32,7 @@ describe("agreement change accordion", () => {
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.checked");
             });
-        cy.get('[data-cy="can-funding-summary-card-504"]').within(() => {
+        cy.get('[data-cy="budget-summary-card-504"]').within(() => {
             cy.contains("$5,000,000");
             cy.contains("$ 35,000,000");
             cy.contains("$40,000,000");
@@ -52,7 +52,7 @@ describe("agreement change accordion", () => {
             });
         });
     });
-    it("handles interactions", () => {
+    it("handles interactions on agreement 9", () => {
         cy.visit("/agreements/review/9").wait(1000);
         cy.get("h2").contains("Select Budget Lines").as("acc-btn");
         cy.get(".usa-table").should("exist");
@@ -65,20 +65,20 @@ describe("agreement change accordion", () => {
         cy.get('input[id="Change Planned Budget Lines to Executing Status"]').check({ force: true });
         cy.get('[data-cy="check-all"]').each(($el) => {
             cy.wrap($el).check({ force: true });
-            cy.wait(1);
+            cy.wait(1000);
         });
         cy.get('[type="checkbox"]')
             .should("have.length", 3)
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.checked");
             });
-        cy.get('[data-cy="can-funding-summary-card-502"]').within(() => {
+        cy.get('[data-cy="budget-summary-card-502"]').within(() => {
             cy.contains("$10,403,500");
             cy.contains("$ 13,596,500");
             cy.contains("$24,000,000");
             cy.contains("G99PHS9-5Y");
         });
-        cy.get('[data-cy="can-funding-summary-card-512"]').within(() => {
+        cy.get('[data-cy="budget-summary-card-512"]').within(() => {
             cy.contains("$602,000");
             cy.contains("$ 1,678,000");
             cy.contains("$2,280,000");
@@ -209,7 +209,7 @@ describe("agreement review CANS accordion", () => {
         cy.visit("/agreements/review/1").wait(1000);
         // pre-change
         cy.get("h2").contains("Review CANs").should("exist");
-        cy.get('[data-cy="can-funding-summary-card"]').should("not.exist");
+        cy.get('[data-cy="budget-funding-summary-card"]').should("not.exist");
         // select all BLIs to show CANS cards
         cy.get("h2").contains("Choose a Status Change").as("acc-btn").should("exist");
         cy.get('input[id="Change Draft Budget Lines to Planned Status"]').should("exist").should("not.be.disabled");
@@ -226,8 +226,8 @@ describe("agreement review CANS accordion", () => {
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.checked");
             });
-        cy.get('[data-cy="can-funding-summary-card-504"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-504"]').contains("$40,000,000");
+        cy.get('[data-cy="budget-summary-card-504"]').should("exist");
+        cy.get('[data-cy="budget-summary-card-504"]').contains("$40,000,000");
     });
 
     it("should handle after approval toggle", () => {
@@ -251,10 +251,10 @@ describe("agreement review CANS accordion", () => {
             .each((checkbox) => {
                 cy.wrap(checkbox).should("be.checked");
             });
-        cy.get('[data-cy="can-funding-summary-card-504"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-504"]').contains("5,000,000");
+        cy.get('[data-cy="budget-summary-card-504"]').should("exist");
+        cy.get('[data-cy="budget-summary-card-504"]').contains("5,000,000");
         cy.get('[data-cy="button-toggle-After Approval"]').first().click({ force: true });
-        cy.get('[data-cy="can-funding-summary-card-504"]').contains("3,000,000");
+        cy.get('[data-cy="budget-summary-card-504"]').contains("3,000,000");
     });
 
     it("should handle over budget CANs", () => {
@@ -272,10 +272,10 @@ describe("agreement review CANS accordion", () => {
             cy.wait(1);
         });
         cy.get('[type="checkbox"]').should("have.length", 17);
-        cy.get('[data-cy="can-funding-summary-card-507"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-508"]').should("exist");
-        cy.get('[data-cy="can-funding-summary-card-507"]').contains("Over Budget");
-        cy.get('[data-cy="can-funding-summary-card-508"]').contains("Over Budget");
+        cy.get('[data-cy="budget-summary-card-507"]').should("exist");
+        cy.get('[data-cy="budget-summary-card-508"]').should("exist");
+        cy.get('[data-cy="budget-summary-card-507"]').contains("Over Budget");
+        cy.get('[data-cy="budget-summary-card-508"]').contains("Over Budget");
     });
 });
 
