@@ -18,7 +18,7 @@
     "@reduxjs/toolkit": "2.3.0",
     "@uswds/uswds": "3.10.0",
     "@vitejs/plugin-react": "4.3.3",
-    "axios": "1.7.7",
+    "axios": "1.7.8",
     "clsx": "2.1.1",
     "crypto-random-string": "5.0.0",
     "eslint": "9.15.0",
