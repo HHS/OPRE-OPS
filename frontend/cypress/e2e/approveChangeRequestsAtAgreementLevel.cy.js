@@ -35,7 +35,8 @@ const testBli = {
 };
 
 beforeEach(() => {
-    testLogin("division-director");
+    // testLogin("division-director");
+    testLogin("budget-team");
 });
 
 afterEach(() => {
@@ -106,6 +107,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
+                // log out and log in as division director
+                cy.contains("Sign-out").click();
+                cy.visit("/").wait(1000);
+                testLogin("division-director");
+
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
@@ -157,7 +163,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
                     .should(
                         "have.text",
-                        `Dave Director approved the status change on BL ${bliId} from Draft to Planned as requested by Dave Director.`
+                        `Dave Director approved the status change on BL ${bliId} from Draft to Planned as requested by Budget Team.`
                     )
                     // TODO: add more tests
                     .then(() => {
@@ -173,6 +179,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         });
                     })
                     .then(() => {
+                        // const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+
                         cy.request({
                             method: "DELETE",
                             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
@@ -187,7 +195,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
             });
     });
     it("review Status Change PLANNED to EXECUTING", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
+        // log out and log in as budget team
+        cy.contains("Sign-out").click();
+        cy.visit("/").wait(1000);
+        testLogin("budget-team");
 
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
@@ -252,6 +263,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
+                // log out and log in as division director
+                cy.contains("Sign-out").click();
+                cy.visit("/").wait(1000);
+                testLogin("division-director");
+
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Status Change");
@@ -302,7 +318,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
                     .should(
                         "have.text",
-                        `Dave Director approved the status change on BL ${bliId} from Planned to Executing as requested by Dave Director.`
+                        `Dave Director approved the status change on BL ${bliId} from Planned to Executing as requested by Budget Team.`
                     )
                     // TODO: add more tests
                     .then(() => {
@@ -333,7 +349,10 @@ describe("Approve Change Requests at the Agreement Level", () => {
             });
     });
     it("review Budget Change change", () => {
-        expect(localStorage.getItem("access_token")).to.exist;
+        // log out and log in as budget-team
+        cy.contains("Sign-out").click();
+        cy.visit("/").wait(1000);
+        testLogin("budget-team");
 
         // create test agreement
         const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
@@ -400,6 +419,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
+                // log out and log in as division director
+                cy.contains("Sign-out").click();
+                cy.visit("/").wait(1000);
+                testLogin("division-director");
+
                 cy.visit("/agreements?filter=change-requests").wait(1000);
                 // see if there are any review cards
                 cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
@@ -462,18 +486,18 @@ describe("Approve Change Requests at the Agreement Level", () => {
 
                 checkHistoryItem(
                     /Budget Change to Amount Approved/,
-                    `Dave Director approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Dave Director.`
+                    `Dave Director approved the budget change on BL ${bliId} from $1,000,000.00 to $2,000,000.00 as requested by Budget Team.`
                 )
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to CAN Approved/,
-                            `Dave Director approved the budget change on BL ${bliId} from G994426 to G99PHS9 as requested by Dave Director.`
+                            `Dave Director approved the budget change on BL ${bliId} from G994426 to G99PHS9 as requested by Budget Team.`
                         );
                     })
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Obligate Date/,
-                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Dave Director.`
+                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Budget Team.`
                         );
                     })
                     .then(() => {
