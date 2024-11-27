@@ -99,7 +99,7 @@ def test_service_create_funding_details(loaded_db):
     assert funding_details.fiscal_year == 2024
     assert funding_details.active_period == 1
     assert funding_details.funding_method == "Direct"
-    assert funding_details.funding_frequency == "Quarterly"
+    assert funding_details.funding_received == "Quarterly"
     assert funding_details.funding_type == "Discretionary"
     assert funding_details == new_budget
 
