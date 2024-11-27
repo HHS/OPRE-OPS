@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from flask.testing import FlaskClient
 
-from models.cans import CAN
+from models.cans import CAN, CANMethodOfTransfer
 from ops_api.ops.utils.cans import (
     aggregate_funding_summaries,
     filter_by_attribute,
@@ -25,19 +25,6 @@ class DummyObject:
 class DummyNestedObject:
     def __init__(self):
         self.value = "test_value"
-
-
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
-def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
-    url = "/api/v1/can-funding-summary?" "can_ids=0&" "fiscal_year=2023&" "transfer=DIRECT"
-
-    response = auth_client.get(url)
-
-    assert response.status_code == 200
-    assert len(response.json["cans"]) == 0
-    assert "new_funding" in response.json
-    assert response.json["obligated_funding"] == "0.0"
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -306,6 +293,41 @@ def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans:
     assert response.json["cans"][0]["can"]["active_period"] == 1
 
 
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -> None:
+    url = "/api/v1/can-funding-summary?" "can_ids=0&" "fiscal_year=2023&" "transfer=DIRECT"
+
+    response = auth_client.get(url)
+
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 6
+    assert response.json["expected_funding"] == "4520000.0"
+    assert response.json["received_funding"] == "8760000.0"
+    assert response.json["total_funding"] == "13280000.0"
+
+
+@pytest.mark.usefixtures("app_ctx")
+@pytest.mark.usefixtures("loaded_db")
+def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
+    url = (
+        f"/api/v1/can-funding-summary?"
+        f"can_ids={test_cans[0].id}&can_ids={test_cans[1].id}&"
+        f"fiscal_year=2024&"
+        f"active_period=1&active_period=5&"
+        f"transfer=DIRECT&transfer=IAA&"
+        f"portfolio=HS&portfolio=HMRF&"
+        f"fy_budget=50000&fy_budget=100000"
+    )
+
+    response = auth_client.get(url)
+
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 0
+    assert "new_funding" in response.json
+    assert response.json["obligated_funding"] == "0.0"
+
+
 def test_get_nested_attribute_existing_attribute():
     obj = DummyObject()
     result = get_nested_attribute(obj, "nested.value")
@@ -375,20 +397,20 @@ def test_filter_cans(active_period, transfer, portfolio, fy_budget, expected_cou
     cans = [
         MagicMock(
             active_period=1,
-            funding_details=MagicMock(method_of_transfer="DIRECT"),
-            portfolios=[MagicMock(abbr="HS")],
+            funding_details=MagicMock(method_of_transfer=CANMethodOfTransfer.DIRECT),
+            portfolio=[MagicMock(abbreviation="HS")],
             funding_budgets=[MagicMock(budget=150000)],
         ),
         MagicMock(
             active_period=2,
-            funding_details=MagicMock(method_of_transfer="IAA"),
-            portfolios=[MagicMock(abbr="HS")],
+            funding_details=MagicMock(method_of_transfer=CANMethodOfTransfer.IAA),
+            portfolio=[MagicMock(abbreviation="HS")],
             funding_budgets=[MagicMock(budget=50000)],
         ),
         MagicMock(
             active_period=1,
-            funding_details=MagicMock(method_of_transfer="IAA"),
-            portfolios=[MagicMock(abbr="HMRF")],
+            funding_details=MagicMock(method_of_transfer=CANMethodOfTransfer.IAA),
+            portfolio=[MagicMock(abbreviation="HMRF")],
             funding_budgets=[MagicMock(budget=200000)],
         ),
     ]
@@ -486,11 +508,7 @@ def test_aggregate_funding_summaries():
 
 
 @pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
-    query_params = f"can_ids={0}"
-
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
-
+    response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
     assert len(response.json["cans"]) == 17
