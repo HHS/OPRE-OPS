@@ -41,19 +41,19 @@ const CanSpending = ({
     agreementTypesCount,
     plannedFunding,
     inExecutionFunding,
+    inDraftFunding,
     obligatedFunding,
     totalFunding
 }) => {
     const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
-    const DRAFT_FUNDING = 1_000_000; // replace with actual data
 
     const graphData = [
         {
             id: 1,
             label: "Draft",
-            value: Math.round(DRAFT_FUNDING) || 0,
+            value: Math.round(inDraftFunding) || 0,
             color: "var(--neutral-lighter)",
-            percent: `${calculatePercent(DRAFT_FUNDING, totalFunding)}%`
+            percent: `${calculatePercent(inDraftFunding, totalFunding)}%`
         },
         {
             id: 2,
