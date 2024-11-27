@@ -27,8 +27,6 @@ class DummyNestedObject:
         self.value = "test_value"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: FlaskClient) -> None:
     query_params = f"can_ids={0}&fiscal_year=2023"
 
@@ -38,8 +36,6 @@ def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: Fla
     assert len(response.json["cans"]) == 11
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
     auth_client: FlaskClient, test_cans: list[Type[CAN]]
 ) -> None:
@@ -248,8 +244,6 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
     }
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary(auth_client: FlaskClient, test_can: CAN) -> None:
     query_params = f"can_ids={test_can.id}"
 
@@ -263,8 +257,6 @@ def test_can_get_can_funding_summary(auth_client: FlaskClient, test_can: CAN) ->
     assert "carry_forward_label" in response.json["cans"][0]
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     url = f"/api/v1/can-funding-summary?can_ids={test_cans[0].id}&can_ids={test_cans[1].id}"
 
@@ -281,8 +273,6 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert response.json["new_funding"] == "1340000.0"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     url = f"/api/v1/can-funding-summary?" f"can_ids={test_cans[0].id}&can_ids={test_cans[1].id}&" f"active_period=1"
 
@@ -293,8 +283,6 @@ def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans:
     assert response.json["cans"][0]["can"]["active_period"] == 1
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -> None:
     url = "/api/v1/can-funding-summary?" "can_ids=0&" "fiscal_year=2023&" "transfer=DIRECT"
 
@@ -307,8 +295,6 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
     assert response.json["total_funding"] == "13280000.0"
 
 
-@pytest.mark.usefixtures("app_ctx")
-@pytest.mark.usefixtures("loaded_db")
 def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
     url = (
         f"/api/v1/can-funding-summary?"
@@ -507,7 +493,6 @@ def test_aggregate_funding_summaries():
     }
 
 
-@pytest.mark.usefixtures("app_ctx")
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
