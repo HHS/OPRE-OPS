@@ -6,10 +6,12 @@ info:
 servers:
   - url: https://localhost:8080
     description: Localhost
-  - url: https://ops-backend.app.cloud.gov
+  - url: https://dev.ops.opre.acf.gov/api/v1/
     description: Development Server (Live)
-  - url: https://ops-api-staging.app.cloud.gov
+  - url: https://stg.ops.opre.acf.gov/api/v1/
     description: Staging Server (Live)
+  - url: https://ops.opre.acf.gov/api/v1/
+    description: Production Server (Live)
 
 tags:
   - name: Agreements
