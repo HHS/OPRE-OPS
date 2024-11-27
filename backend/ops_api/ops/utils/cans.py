@@ -29,6 +29,9 @@ class CanFundingSummary(TypedDict):
 def get_funding_by_budget_line_item_status(
     can: CAN, status: BudgetLineItemStatus, fiscal_year: Optional[int] = None
 ) -> float:
+    """
+    Return the funding amount for the given CAN based on the BudgetLineItem status and fiscal year.
+    """
     if fiscal_year:
         return (
             sum(
@@ -41,6 +44,9 @@ def get_funding_by_budget_line_item_status(
 
 
 def get_new_funding_by_funding_details(can: CAN) -> Optional[float]:
+    """
+    Return New Funding for the given CAN based on the FundingDetails object.
+    """
     # Get the fiscal year on the can's FundingDetails object
     fiscal_year = can.funding_details.fiscal_year
 
@@ -61,6 +67,9 @@ def get_new_funding_by_funding_details(can: CAN) -> Optional[float]:
 
 
 def get_new_funding_by_fiscal_year(can: CAN, fiscal_year: Optional[int] = None) -> Optional[float]:
+    """
+    Return New Funding for the given CAN for the given fiscal year.
+    """
     # check to see if the CAN has an active period of 1
     if can.active_period == 1:
         return sum([c.budget for c in can.funding_budgets if c.fiscal_year == fiscal_year]) or 0
@@ -70,6 +79,9 @@ def get_new_funding_by_fiscal_year(can: CAN, fiscal_year: Optional[int] = None) 
 
 
 def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
+    """
+    Return a CanFundingSummary dictionary funding summary for the given CAN.
+    """
     if fiscal_year:
         received_funding = sum([c.funding for c in can.funding_received if c.fiscal_year == fiscal_year]) or 0
 
@@ -132,6 +144,9 @@ def get_nested_attribute(obj, attribute_path):
     """
     Given an object and a string representing a dot-separated attribute path,
     returns the value of the attribute dynamically. If any attribute is None, return None.
+    :param obj: The object to get the attribute from
+    :param attribute_path: The dot-separated attribute path
+    :return: The value of the attribute, or None if any attribute is None or the attribute does not exist
     """
     attributes = attribute_path.split(".")
     for attr in attributes:
@@ -151,6 +166,9 @@ def filter_by_attribute(cans: list[CAN], attribute_search: str, attribute_list) 
 
 
 def filter_by_fiscal_year_budget(cans: list[CAN], fiscal_year_budget: list[int]) -> list[CAN]:
+    """
+    Filters the list of cans based on the fiscal year budget's minimum and maximum values.
+    """
     return [
         can
         for can in cans
@@ -160,15 +178,7 @@ def filter_by_fiscal_year_budget(cans: list[CAN], fiscal_year_budget: list[int])
 
 def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None, portfolio=None, fy_budget=None):
     """
-    Filters the given list of 'cans' based on the provided attributes.
-
-    :param cans: List of cans to be filtered
-    :param fiscal_year: Value to filter by fiscal year
-    :param active_period: Value to filter by 'active_period' attribute
-    :param transfer: Value to filter by 'funding_details.method_of_transfer' attribute
-    :param portfolio: Value to filter by 'portfolios.abbr' attribute
-    :param fy_budget: Value to filter by fiscal year budget
-    :return: Filtered list of cans
+    Returns a filtered list of CANs for the given list of CANs based on the provided attributes.
     """
     if fiscal_year:
         cans = filter_by_attribute(cans, "funding_details.fiscal_year", [fiscal_year])
@@ -185,6 +195,11 @@ def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None,
 
 
 def aggregate_funding_summaries(funding_summaries: List[dict]) -> dict:
+    """
+    Aggregates the funding summaries for multiple cans into a single total funding summary.
+    :param funding_summaries: List of funding summaries to aggregate
+    :return: A single total funding summary
+    """
     totals = {
         "available_funding": "0.0",
         "cans": [],
