@@ -26,8 +26,8 @@ class UsersItemAPI(BaseItemAPI):
         :return: The user
 
         Business Rules:
-        - If the user is an admin, they can get the full details of any user
-        - If the user is not an admin, they can get the full details of their own user or a safe version of another user
+        - If the user is a SYSTEM_OWNER, they can get the full details of any user
+        - If the user is not a SYSTEM_OWNER, they can get the full details of their own user or a safe version of another user
         """
         with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
             user: User = users_service.get_user(current_app.db_session, id=id)
@@ -113,8 +113,8 @@ class UsersListAPI(BaseListAPI):
         :return: All users
 
         Business Rules:
-        - If the user is an admin, they can get the full details of all users
-        - If the user is not an admin, they can get the safe version of other users
+        - If the user is a SYSTEM_OWNER, they can get the full details of all users
+        - If the user is not a SYSTEM_OWNER, they can get the safe version of other users
         """
         with OpsEventHandler(OpsEventType.GET_USER_DETAILS) as meta:
             schema = QueryParameters()

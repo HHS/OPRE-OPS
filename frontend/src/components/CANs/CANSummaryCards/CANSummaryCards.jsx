@@ -54,6 +54,7 @@ const CANSummaryCards = ({
                 bigNumber={totalBudget}
             />
             <BudgetCard
+                cardId={fiscalYear}
                 title={`FY ${fiscalYear} CANs Available Budget *`}
                 totalSpending={totalSpending}
                 totalFunding={totalBudget}

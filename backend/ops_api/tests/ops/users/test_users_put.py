@@ -125,7 +125,7 @@ def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user):
             "last_name": "New Last Name",
             "division": 1,
             "status": UserStatus.ACTIVE.name,
-            "roles": ["admin"],
+            "roles": ["SYSTEM_OWNER"],
         },
     )
     assert response.status_code == 200
@@ -138,7 +138,7 @@ def test_put_user_max_params(auth_client, new_user, loaded_db, test_admin_user):
     assert response_data["last_name"] == "New Last Name", "should be updated"
     assert response_data["division"] == 1, "should be updated"
     assert response_data["status"] == UserStatus.ACTIVE.name, "should be updated"
-    assert response_data["roles"] == ["admin"], "should be updated"
+    assert response_data["roles"] == ["SYSTEM_OWNER"], "should be updated"
 
     # Check that the attributes auto-set by the DB are correct
     assert response_data["created_by"] == new_user.created_by
@@ -209,7 +209,7 @@ def test_put_user_changing_status_deactivates_user_session(auth_client, new_user
             "last_name": "New Last Name",
             "division": 1,
             "status": UserStatus.INACTIVE.name,
-            "roles": ["admin"],
+            "roles": ["SYSTEM_OWNER"],
         },
     )
     assert response.status_code == 200

@@ -14,7 +14,7 @@ describe("opsAuthApi", () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByText("admin")).toBeInTheDocument();
+            expect(screen.getByText("SYSTEM_OWNER")).toBeInTheDocument();
         });
     });
 });

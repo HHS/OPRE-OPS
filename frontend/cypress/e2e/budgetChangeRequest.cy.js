@@ -35,7 +35,7 @@ const testBli = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
 });
 
 afterEach(() => {
@@ -118,18 +118,18 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="agreement-history-list"]').should("exist");
                 checkHistoryItem(
                     /Budget Change to CAN In Review/,
-                    `Admin Demo requested a budget change on BL ${bliId} from G994426 to G99MVT3 and it's currently In Review for approval.`
+                    `System Owner requested a budget change on BL ${bliId} from G994426 to G99MVT3 and it's currently In Review for approval.`
                 )
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Amount In Review/,
-                            `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
+                            `System Owner requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
                         );
                     })
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Obligate Date In Review/,
-                            `Admin Demo requested a budget change on BL ${bliId} from 1/1/2025 to 1/1/2048 and it's currently In Review for approval.`
+                            `System Owner requested a budget change on BL ${bliId} from 1/1/2025 to 1/1/2048 and it's currently In Review for approval.`
                         );
                     })
                     .then(() => {
@@ -231,7 +231,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="agreement-history-list"]').should("exist");
                 checkHistoryItem(
                     /Budget Change to Amount In Review/,
-                    `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
+                    `System Owner requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
                 )
                     .then(() => {
                         cy.request({
@@ -329,7 +329,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="agreement-history-list"]').should("exist");
                 checkHistoryItem(
                     /Budget Change to Amount In Review/,
-                    `Admin Demo requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
+                    `System Owner requested a budget change on BL ${bliId} from $1,000,000.00 to $2,222,222.00 and it's currently In Review for approval.`
                 )
                     .then(() => {
                         cy.request({

@@ -71,7 +71,7 @@ def no_perms_auth_client(app: Flask) -> FlaskClient:  # type: ignore [type-arg]
 
 @pytest.fixture()
 def basic_user_auth_client(app: Flask) -> FlaskClient:
-    """Get a user with just the basic user permissions and not admin perms."""
+    """Get a user with just the basic user permissions and not SYSTEM_OWNER perms."""
     app.testing = True
     app.test_client_class = BasicUserAuthClient
     return app.test_client()
@@ -79,7 +79,7 @@ def basic_user_auth_client(app: Flask) -> FlaskClient:
 
 @pytest.fixture()
 def budget_team_auth_client(app: Flask) -> FlaskClient:
-    """Get a user with just the budget team permissions and not admin perms."""
+    """Get a user with just the budget team permissions and not SYSTEM_OWNER perms."""
     app.testing = True
     app.test_client_class = BudgetTeamAuthClient
     return app.test_client()
@@ -202,34 +202,34 @@ def app_ctx(app: Flask) -> Generator[None, None, None]:
 def test_user(loaded_db) -> User | None:
     """Get a test user.
 
-    N.B. This user has an ADMIN role whose status is INACTIVE.
+    N.B. This user has an SYSTEM_OWNER role whose status is INACTIVE.
     """
     return loaded_db.get(User, 500)
 
 
 @pytest.fixture()
 def test_admin_user(loaded_db) -> User | None:
-    """Get a test admin user - also the user associated with the auth_client.
+    """Get a test SYSTEM_OWNER user - also the user associated with the auth_client.
 
-    N.B. This user has an ADMIN role whose status is ACTIVE.
+    N.B. This user has a SYSTEM_OWNER role whose status is ACTIVE.
     """
     return loaded_db.get(User, 503)
 
 
 @pytest.fixture()
 def test_division_director(loaded_db) -> User | None:
-    """Get a test admin user - also the user associated with the auth_client.
+    """Get a test SYSTEM_OWNER user - also the user associated with the auth_client.
 
-    N.B. This user has an ADMIN role whose status is ACTIVE.
+    N.B. This user has a SYSTEM_OWNER role whose status is ACTIVE.
     """
     return loaded_db.get(User, 522)
 
 
 @pytest.fixture()
 def test_non_admin_user(loaded_db) -> User | None:
-    """Get a test admin user - also the user associated with the auth_client.
+    """Get a basic test user
 
-    N.B. This user has an non-ADMIN role whose status is ACTIVE.
+    N.B. This user has an non-SYSTEM_OWNER role whose status is ACTIVE.
     """
     return loaded_db.get(User, 521)
 

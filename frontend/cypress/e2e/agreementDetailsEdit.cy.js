@@ -23,7 +23,7 @@ const testAgreement = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit(`/`);
 });
 
@@ -67,7 +67,7 @@ it("edit an agreement", () => {
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should("exist");
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Agreement created by Admin Demo."
+            "Agreement created by System Owner."
         );
         cy.get("#edit").click();
         cy.get("#edit").should("not.exist");
@@ -105,7 +105,7 @@ it("edit an agreement", () => {
         ).should("have.text", "Agreement Title Edited");
         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Agreement Title changed from Test Contract to Test Edit Title by Admin Demo."
+            "Agreement Title changed from Test Contract to Test Edit Title by System Owner."
         );
         cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > .flex-justify > .text-bold').should(
             "have.text",
@@ -113,14 +113,14 @@ it("edit an agreement", () => {
         );
         cy.get('[data-cy="agreement-history-list"] > :nth-child(2) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Agreement Notes changed by Admin Demo."
+            "Agreement Notes changed by System Owner."
         );
         cy.get(
             '[data-cy="agreement-history-list"] > :nth-child(3) > .flex-justify > [data-cy="log-item-title"]'
         ).should("have.text", "Agreement Description Edited");
         cy.get('[data-cy="agreement-history-list"] > :nth-child(3) > [data-cy="log-item-children"]').should(
             "have.text",
-            "Agreement Description changed by Admin Demo."
+            "Agreement Description changed by System Owner."
         );
 
         cy.request({

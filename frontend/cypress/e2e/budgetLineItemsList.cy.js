@@ -9,7 +9,7 @@ const PLANNED_BLI_TOTAL = "15,371,500.00";
 const OBLIGATED_BLI_TOTAL = "3,016,048.00";
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit("/budget-lines");
 });
 

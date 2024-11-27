@@ -38,7 +38,7 @@ const testBli = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("division-director");
     cy.visit(`/`);
 });
 

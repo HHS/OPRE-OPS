@@ -17,25 +17,24 @@ import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
  */
 const LineBar = ({ title, ratio, color, total }) => {
     return (
-        <div className="display-flex margin-y-105 font-12px">
-            <span>{title}</span>
-            <div
-                className="margin-x-1"
-                style={{ flex: ratio }}
-            >
+        <div className={styles.container}>
+            <span className={styles.title}>{title}</span>
+            <div className={styles.barContainer}>
                 <div
                     className={styles.bar}
-                    style={{ backgroundColor: color }}
+                    style={{ backgroundColor: color, width: `${ratio * 100}%` }}
                 />
             </div>
-            <CurrencyFormat
-                value={total}
-                displayType="text"
-                thousandSeparator=","
-                prefix="$"
-                decimalScale={getDecimalScale(total)}
-                fixedDecimalScale={true}
-            />
+            <div className={styles.amount}>
+                <CurrencyFormat
+                    value={total}
+                    displayType="text"
+                    thousandSeparator=","
+                    prefix="$"
+                    decimalScale={getDecimalScale(total)}
+                    fixedDecimalScale={true}
+                />
+            </div>
         </div>
     );
 };

@@ -20,7 +20,9 @@ class TestDocumentService(BaseDocumentTestCase):
         self.mock_gateway.create_repository.return_value = self.mock_repository
 
         # Initialize DocumentService with mocked dependencies
-        self.document_service = DocumentService(self.mock_gateway, current_user_id=self.mock_user.id, is_admin=True)
+        self.document_service = DocumentService(
+            self.mock_gateway, current_user_id=self.mock_user.id, is_system_owner=True
+        )
 
         # Mock request document data
         self.mock_doc_data = {

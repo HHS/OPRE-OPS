@@ -24,7 +24,7 @@ const testAgreement = {
 };
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit(`/`);
 });
 

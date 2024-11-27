@@ -1,13 +1,14 @@
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
-import LineGraph from "../../DataViz/LineGraph";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
+import LineGraph from "../../DataViz/LineGraph";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
 
 /**
  * @typedef {Object} BudgetCardProps
+ * @property {number} cardId - The card id.
  * @property {string} title - The title of the card.
  * @property {number} totalSpending - The total spending.
  * @property {number} totalFunding - The total funding.
@@ -18,9 +19,10 @@ import Tag from "../../Tag";
  * @param {BudgetCardProps} props - Properties passed to component
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
-const BudgetCard = ({ title, totalSpending, totalFunding }) => {
+const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
     const overBudget = totalSpending > totalFunding;
     const remainingBudget = totalFunding - totalSpending;
+
     const graphData = [
         {
             id: 1,
@@ -36,7 +38,7 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
 
     return (
         <RoundedBox
-            dataCy="budget-summary-card"
+            dataCy={`budget-summary-card-${cardId}`}
             style={{ height: "14.5rem" }}
         >
             <h3
@@ -76,7 +78,7 @@ const BudgetCard = ({ title, totalSpending, totalFunding }) => {
             </div>
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
-                    Spending {""}
+                    Spending{" "}
                     <CurrencyFormat
                         value={totalSpending ?? 0}
                         displayType={"text"}
