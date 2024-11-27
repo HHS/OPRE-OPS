@@ -184,37 +184,31 @@ def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None,
     return cans
 
 
-def aggregate_funding_summaries(funding_summaries: List[CanFundingSummary]) -> dict:
+def aggregate_funding_summaries(funding_summaries: List[dict]) -> dict:
     totals = {
-        "available_funding": Decimal("0.0"),
-        "carry_forward_funding": Decimal("0.0"),
+        "available_funding": "0.0",
         "cans": [],
-        "expected_funding": Decimal("0.0"),
-        "in_draft_funding": Decimal("0.0"),
-        "in_execution_funding": Decimal("0.0"),
-        "new_funding": Decimal("0.0"),
-        "obligated_funding": Decimal("0.0"),
-        "planned_funding": Decimal("0.0"),
-        "received_funding": Decimal("0.0"),
-        "total_funding": Decimal("0.0"),
+        "carry_forward_funding": "0.0",
+        "expected_funding": "0.0",
+        "in_draft_funding": "0.0",
+        "in_execution_funding": "0.0",
+        "new_funding": "0.0",
+        "obligated_funding": "0.0",
+        "planned_funding": "0.0",
+        "received_funding": "0.0",
+        "total_funding": "0.0",
     }
 
     for summary in funding_summaries:
         for key in totals:
             if key != "cans":
-                totals[key] += (
-                    Decimal(summary.get(key, "0.0"))
-                    if isinstance(summary.get(key), (int, float, Decimal))
-                    else Decimal("0.0")
-                )
+                current_value = summary.get(key, None)
+                if current_value is None:
+                    current_value = "0.0"
+                if isinstance(current_value, (int, float, Decimal)):
+                    current_value = str(Decimal(current_value))
+                totals[key] = str(Decimal(totals[key]) + Decimal(current_value))
 
-        for can in summary["cans"]:
-            totals["cans"].append(
-                {
-                    "can": can["can"],
-                    "carry_forward_label": can["carry_forward_label"],
-                    "expiration_date": can["expiration_date"],
-                }
-            )
+        totals["cans"].append(summary.get("cans", [])[0])
 
     return totals

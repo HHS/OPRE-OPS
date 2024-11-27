@@ -1,6 +1,5 @@
 from flask import Response, request
 
-from marshmallow import ValidationError
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -70,5 +69,5 @@ class CANFundingSummaryListAPI(BaseItemAPI):
             schema = GetCANFundingSummaryResponseSchema(many=False)
             result = schema.dump(result)
             return make_response_with_headers(result)
-        except ValidationError as e:
-            return make_response_with_headers({"Validation Error": str(e)}, 500)
+        except Exception as e:
+            return make_response_with_headers({"error": "An unexpected error occurred", "details": str(e)}, 500)

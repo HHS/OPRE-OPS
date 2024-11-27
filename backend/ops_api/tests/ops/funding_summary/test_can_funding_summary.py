@@ -477,7 +477,7 @@ def test_aggregate_funding_summaries():
     result = aggregate_funding_summaries(funding_sums)
 
     assert result == {
-        "available_funding": Decimal("250000.0"),
+        "available_funding": "250000.0",
         "cans": [
             {
                 "can": {"amount": 50000, "description": "Grant for educational projects", "id": 1, "obligate_by": 2025},
@@ -495,15 +495,15 @@ def test_aggregate_funding_summaries():
                 "expiration_date": "10/01/2026",
             },
         ],
-        "carry_forward_funding": Decimal("50000.0"),
-        "expected_funding": Decimal("130000.0"),
-        "in_draft_funding": Decimal("0.0"),
-        "in_execution_funding": Decimal("130000.0"),
-        "new_funding": Decimal("300000.0"),
-        "obligated_funding": Decimal("80000.0"),
-        "planned_funding": Decimal("280000.0"),
-        "received_funding": Decimal("175000.0"),
-        "total_funding": Decimal("305000.0"),
+        "carry_forward_funding": "50000.0",
+        "expected_funding": "130000.0",
+        "in_draft_funding": "0.0",
+        "in_execution_funding": "130000.0",
+        "new_funding": "300000.0",
+        "obligated_funding": "80000.0",
+        "planned_funding": "280000.0",
+        "received_funding": "175000.0",
+        "total_funding": "305000.0",
     }
 
 
