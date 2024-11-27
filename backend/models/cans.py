@@ -116,10 +116,10 @@ class CAN(BaseModel):
         return self.funding_details.funding_method
 
     @property
-    def funding_release_method(self):
+    def funding_frequency(self):
         if self.funding_details is None:
             return None
-        return self.funding_details.funding_method
+        return self.funding_details.funding_received
 
     @property
     def funding_type(self):
