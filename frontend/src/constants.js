@@ -36,7 +36,7 @@ const constants = {
         { name: "SYSTEM_OWNER", label: "System Owner" },
         { name: "VIEWER_EDITOR", label: "Viewer/Editor" },
         { name: "unassigned", label: "Unassigned" },
-        { name: "division-director", label: "Division Director" },
+        { name: "REVIEWER_APPROVER", label: "Reviewer/Approver" },
         { name: "USER_ADMIN", label: "User Admin" },
         { name: "BUDGET_TEAM", label: "Budget Team" }
     ]
