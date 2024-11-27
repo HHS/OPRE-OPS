@@ -2,6 +2,15 @@ from marshmallow import Schema, fields
 from ops_api.ops.schemas.cans import BasicCANSchema
 
 
+class GetCANFundingSummaryRequestSchema(Schema):
+    can_ids = fields.List(fields.String(), required=True)
+    fiscal_year = fields.String(allow_none=True)
+    active_period = fields.List(fields.Integer(), allow_none=True)
+    transfer = fields.List(fields.String(), allow_none=True)
+    portfolio = fields.List(fields.String(), allow_none=True)
+    fy_budget = fields.List(fields.Integer(), allow_none=True)
+
+
 class CANSFundingSourceSchema(Schema):
     can = fields.Nested(BasicCANSchema(), default=[], allow_none=False)
     carry_forward_label = fields.String(allow_none=True)
