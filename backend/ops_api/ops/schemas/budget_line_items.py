@@ -4,9 +4,9 @@ from datetime import date
 
 from _decimal import Decimal
 from flask import current_app
-from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from marshmallow_enum import EnumField
 
+from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
 from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
@@ -261,6 +261,9 @@ class BudgetLineItemCANSchema(Schema):
     description = fields.Str(required=True)
     nick_name = fields.Str(required=True)
     active_period = fields.Int(required=True)
+    funding_method = fields.String(allow_none=True)
+    funding_frequency = fields.String(allow_none=True)
+    funding_type = fields.String(allow_none=True)
     portfolio_id = fields.Int(required=True)
     expiration_date = fields.Int(required=True)
     appropriation_date = fields.Int(required=True)
