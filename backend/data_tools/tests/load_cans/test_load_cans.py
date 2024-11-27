@@ -188,7 +188,7 @@ def test_create_models(db_with_portfolios):
     assert can_funding_details.funding_source == CANFundingSource.OPRE
     assert can_funding_details.active_period == 1
     assert can_funding_details.funding_method == "Direct"
-    assert can_funding_details.funding_frequency == "Quarterly"
+    assert can_funding_details.funding_received == "Quarterly"
     assert can_funding_details.funding_type == "Discretionary"
     assert can_funding_details.obligate_by == 2024
 
