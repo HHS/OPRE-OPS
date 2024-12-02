@@ -6,10 +6,12 @@ info:
 servers:
   - url: https://localhost:8080
     description: Localhost
-  - url: https://ops-backend.app.cloud.gov
+  - url: https://dev.ops.opre.acf.gov/api/v1/
     description: Development Server (Live)
-  - url: https://ops-api-staging.app.cloud.gov
+  - url: https://stg.ops.opre.acf.gov/api/v1/
     description: Staging Server (Live)
+  - url: https://ops.opre.acf.gov/api/v1/
+    description: Production Server (Live)
 
 tags:
   - name: Agreements
@@ -217,7 +219,11 @@ paths:
       description: Get CANs
       responses:
         "200":
-          description: OK
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAN"
     post:
       tags:
         - CANs
@@ -3519,6 +3525,21 @@ components:
           description: optional notes added to a Change Request when a PATCH is made that creates a CR
           type: string
           writeOnly: true
+        agreement:
+          type: object
+          $ref: "#/components/schemas/SimpleAgreementSchema"
+    SimpleAgreementSchema:
+      type: object
+      properties:
+        agreement_type:
+          type: string
+          example: 'AgreementType.DIRECT_ALLOCATION'
+        name:
+          type: string
+          example: 'DIRECT ALLOCATION #2: African American Child and Family Research Center'
+        awarding_entity_id:
+          type: integer
+          example: 3
     BudgetLineItemCAN:
       type: object
       properties:
