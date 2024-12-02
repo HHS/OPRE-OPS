@@ -4,6 +4,7 @@ import BudgetCard from "./BudgetCard";
 
 describe("BudgetSummaryCard", () => {
     const defaultProps = {
+        cardId: 2025,
         title: "Budget Summary",
         totalSpending: 15000,
         totalFunding: 20000
@@ -48,6 +49,6 @@ describe("BudgetSummaryCard", () => {
 
         render(<BudgetCard {...zeroProps} />);
 
-        expect(screen.queryAllByText("$0")).toHaveLength(2);
+        expect(screen.queryAllByText("$0.00")).toHaveLength(2);
     });
 });

@@ -1,17 +1,16 @@
-import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
-import LineGraph from "../../DataViz/LineGraph";
+import ReverseLineGraph from "../../DataViz/LineGraph/ReverseLineGraph";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
 
 /**
  * @typedef {Object} BudgetCardProps
- * @property {number} cardId - The card id.
  * @property {string} title - The title of the card.
- * @property {number} totalSpending - The total spending.
+ * @property {number} totalReceived - The total received.
  * @property {number} totalFunding - The total funding.
+ * @property {string} [tagText] - The text for the tag.
+ * @property {string} [helperText] - The helper text.
  */
 
 /**
@@ -19,26 +18,23 @@ import Tag from "../../Tag";
  * @param {BudgetCardProps} props - Properties passed to component
  * @returns {JSX.Element} - The BudgetSummaryCard component.
  */
-const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
-    const overBudget = totalSpending > totalFunding;
-    const remainingBudget = totalFunding - totalSpending;
-
+const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
     const graphData = [
         {
             id: 1,
-            value: totalSpending,
-            color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-2)"
+            value: totalReceived,
+            color: "var(--data-viz-budget-graph-1)"
         },
         {
             id: 2,
-            value: remainingBudget,
-            color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-1)"
+            value: totalFunding,
+            color: "var(--data-viz-budget-graph-2)"
         }
     ];
 
     return (
         <RoundedBox
-            dataCy={`budget-summary-card-${cardId}`}
+            dataCy="budget-received-card"
             style={{ height: "14.5rem" }}
         >
             <h3
@@ -50,37 +46,24 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
 
             <div className="font-32px margin-0 display-flex flex-justify flex-align-end">
                 <CurrencyWithSmallCents
-                    amount={remainingBudget}
+                    amount={totalReceived}
                     dollarsClasses="font-sans-xl text-bold margin-bottom-0"
                     centsStyles={{ fontSize: "10px" }}
                 />
-                {overBudget ? (
-                    <Tag tagStyle={"lightTextRedBackground"}>
-                        <FontAwesomeIcon
-                            icon={faTriangleExclamation}
-                            title="Over Budget"
-                        />{" "}
-                        Over Budget
-                    </Tag>
-                ) : (
-                    <Tag tagStyle={"budgetAvailable"}>Available</Tag>
-                )}
+
+                <Tag tagStyle={"budgetAvailable"}>Received</Tag>
             </div>
             <div
                 id="currency-summary-card"
                 className="margin-top-2"
             >
-                <LineGraph
-                    data={graphData}
-                    isStriped={true}
-                    overBudget={overBudget}
-                />
+                <ReverseLineGraph data={graphData} />
             </div>
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
-                    Spending{" "}
+                    Received{" "}
                     <CurrencyFormat
-                        value={totalSpending ?? 0}
+                        value={totalReceived ?? 0}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
@@ -102,4 +85,4 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
         </RoundedBox>
     );
 };
-export default BudgetCard;
+export default ReceivedFundingCard;

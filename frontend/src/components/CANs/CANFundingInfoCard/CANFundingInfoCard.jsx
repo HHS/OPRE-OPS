@@ -1,6 +1,7 @@
 import { NO_DATA } from "../../../constants";
 import Card from "../../UI/Cards/Card";
 import TermTag from "../../UI/Term/TermTag";
+import { formatObligateBy } from "../CANTable/CANTable.helpers";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
  */
@@ -22,7 +23,10 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
     }
 
     return (
-        <Card className="width-full">
+        <Card
+            className="width-full"
+            dataCy="can-funding-info-card"
+        >
             <h3
                 className="margin-0 margin-bottom-2 font-12px text-base-dark text-normal"
                 style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
@@ -64,7 +68,7 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                     <dl>
                         <TermTag
                             term="Obligate By"
-                            description={funding.obligate_by?.toString() ?? NO_DATA}
+                            description={formatObligateBy(funding.obligate_by) ?? NO_DATA}
                         />
                         <TermTag
                             term="Allotment"
@@ -77,8 +81,9 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                         {/* TODO: ask where this comes from */}
                         <TermTag
                             term="Funding Received*"
-                            description={NO_DATA}
+                            description="Coming Soon"
                         />
+                        {/* TODO: ask where this comes from */}
                         <TermTag
                             term="Funding Source"
                             description={funding.funding_source ?? NO_DATA}
@@ -88,8 +93,8 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                 <div className="grid-col">
                     <dl>
                         <TermTag
-                            term="Funding Method"
-                            description={funding.method_of_transfer}
+                            term="Funding Method*"
+                            description="Coming Soon"
                         />
                         <TermTag
                             term="Partner"
@@ -102,7 +107,7 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                         {/* TODO: ask where this comes from */}
                         <TermTag
                             term="Funding Type*"
-                            description={NO_DATA}
+                            description="Coming Soon"
                         />
                         <TermTag
                             term="Method of Transfer"
