@@ -53,27 +53,23 @@ class is_authorized:
         permission_type: PermissionType,
         permission: Permission,
         extra_check: Optional[Callable[..., bool]] = None,
-        groups: Optional[list[str]] = None,
     ) -> None:
         """Checks for if the user is authorized to use this endpoint. The order of authorizations is as follows:
-        Role -> Group -> Extra.
+        Role -> Extra.
 
         If the user has the correct role permission, then the user is authorized.
-        Else if the user has the correct group the user is authorized.
         Else if the user passes the extra validation check that is defined, the user is authorized.
         Else the user is not authorized.
 
         Args:
             permission_type: The permission "verb" (GET, PUT, PATCH, etc)
             permission: The permission "noun" (USER, AGREEMENT, BUDGET_LINE_ITEM, etc)
-            group: If given, the list of groups authorized to use this endpoint.
             extra_check: If given, a function that accepts the same parameters as the decorated function/method, and
                 returns a boolean value, which does additional custom checking to see if the user is authorized.
         """
         self.permission_type = permission_type
         self.permission = permission
         self.extra_check = extra_check
-        self.groups = groups
 
     def __call__(self, func: Callable) -> Callable:
         @wraps(func)

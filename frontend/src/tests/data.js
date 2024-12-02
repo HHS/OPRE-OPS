@@ -512,7 +512,7 @@ export const roles = [
     },
     {
         id: 2,
-        name: "user"
+        name: "VIEWER_EDITOR"
     },
     {
         id: 3,
