@@ -5,6 +5,12 @@ import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
 /**
  * @typedef {Object} CANSummaryCardsProps
  * @property {number} fiscalYear - The fiscal year.
+ * @property {number} totalBudget - The total budget.
+ * @property {number} newFunding - The new funding.
+ * @property {number} carryForward - The carry forward.
+ * @property {number} plannedFunding - The planned funding.
+ * @property {number} obligatedFunding - The obligated funding.
+ * @property {number} inExecutionFunding - The in execution funding
  */
 
 /**
@@ -12,11 +18,16 @@ import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
  * @param {CANSummaryCardsProps} props
  * @returns {JSX.Element} - The CANSummaryCards component.
  */
-const CANSummaryCards = ({ fiscalYear }) => {
-    const totalSpending = 42_650_000;
-    const totalBudget = 56_000_000;
-    const newFunding = 41_000_000;
-    const carryForward = 15_000_000;
+const CANSummaryCards = ({
+    fiscalYear,
+    totalBudget,
+    newFunding,
+    carryForward,
+    plannedFunding,
+    obligatedFunding,
+    inExecutionFunding
+}) => {
+    const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
     const data = [
         {
             id: 1,

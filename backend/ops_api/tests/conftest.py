@@ -3,6 +3,7 @@
 import subprocess
 from collections.abc import Generator
 from datetime import datetime, timezone
+from typing import Type
 
 import pytest
 from flask import Flask
@@ -249,6 +250,12 @@ def test_project(loaded_db) -> Project | None:
 def test_can(loaded_db) -> CAN | None:
     """Get a test CAN."""
     return loaded_db.get(CAN, 500)
+
+
+@pytest.fixture()
+def test_cans(loaded_db) -> list[Type[CAN] | None]:
+    """Get two test CANs."""
+    return [loaded_db.get(CAN, 500), loaded_db.get(CAN, 501)]
 
 
 @pytest.fixture()
