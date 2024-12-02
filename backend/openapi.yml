@@ -2695,6 +2695,12 @@ components:
       properties:
         active_period:
           type: integer
+        funding_method:
+          type: string
+        funding_frequency:
+          type: string
+        funding_type:
+          type: string
         display_name:
           type: string
         nick_name:
@@ -2733,6 +2739,12 @@ components:
       properties:
         active_period:
           type: integer
+        funding_method:
+          type: string
+        funding_frequency:
+          type: string
+        funding_type:
+          type: string
         budget_line_items:
           type: array
           items:
@@ -3562,6 +3574,12 @@ components:
           type: string
         active_period:
           type: integer
+        funding_method:
+          type: string
+        funding_frequency:
+          type: string
+        funding_type:
+          type: string
         expiration_date:
           type: integer
         appropriation_date:
