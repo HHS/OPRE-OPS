@@ -31,6 +31,14 @@ const constants = {
         { color: "var(--can-budget-by-fy-graph-3)" },
         { color: "var(--can-budget-by-fy-graph-4)" },
         { color: "var(--can-budget-by-fy-graph-5)" }
+    ],
+    roles: [
+        { name: "SYSTEM_OWNER", label: "System Owner" },
+        { name: "VIEWER_EDITOR", label: "Viewer/Editor" },
+        { name: "unassigned", label: "Unassigned" },
+        { name: "division-director", label: "Division Director" },
+        { name: "USER_ADMIN", label: "User Admin" },
+        { name: "BUDGET_TEAM", label: "Budget Team" }
     ]
 };
 

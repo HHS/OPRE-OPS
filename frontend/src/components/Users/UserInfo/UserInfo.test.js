@@ -15,7 +15,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["admin"]
+            roles: ["SYSTEM_OWNER"]
         };
         const { container } = renderWithProviders(
             <App
@@ -32,7 +32,7 @@ describe("UserInfo", () => {
         expect(await screen.findByText("test.user@exampl.com")).toBeInTheDocument(); // User Email
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
         expect(await screen.findByText("ACTIVE")).toBeInTheDocument(); // Status
-        expect(await screen.findByText("admin")).toBeInTheDocument(); // Roles
+        expect(await screen.findByText("System Owner")).toBeInTheDocument(); // Roles
     });
 
     test("renders correctly (editable)", async () => {
@@ -41,7 +41,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["admin"]
+            roles: ["SYSTEM_OWNER"]
         };
         const { container } = renderWithProviders(
             <App
@@ -58,7 +58,7 @@ describe("UserInfo", () => {
         expect(await screen.findByText("test.user@exampl.com")).toBeInTheDocument(); // User Email
         expect(await screen.findByText("Child Care")).toBeInTheDocument(); // Division
         expect(await screen.findByText("ACTIVE")).toBeInTheDocument(); // Status
-        expect(await screen.findByText("admin")).toBeInTheDocument(); // Roles
+        expect(await screen.findByText("System Owner")).toBeInTheDocument(); // Roles
     });
 
     test("renders correctly - division", async () => {
@@ -67,7 +67,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["admin"]
+            roles: ["SYSTEM_OWNER"]
         };
         const { container } = renderWithProviders(
             <App
@@ -104,7 +104,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["admin"]
+            roles: ["SYSTEM_OWNER"]
         };
         const { container } = renderWithProviders(
             <App
@@ -125,12 +125,12 @@ describe("UserInfo", () => {
         // eslint-disable-next-line testing-library/no-node-access
         const rolesInput = rolesComboBox.querySelector("input");
         fireEvent.keyDown(rolesInput, { key: "ArrowDown", code: 40 });
-        expect(await screen.findByText("admin")).toBeInTheDocument();
-        expect(await screen.findByText("user")).toBeInTheDocument();
-        expect(await screen.findByText("unassigned")).toBeInTheDocument();
-        expect(await screen.findByText("division-director")).toBeInTheDocument();
-        expect(await screen.findByText("USER_ADMIN")).toBeInTheDocument();
-        expect(await screen.findByText("BUDGET_TEAM")).toBeInTheDocument();
+        expect(await screen.findByText("System Owner")).toBeInTheDocument();
+        expect(await screen.findByText("Viewer/Editor")).toBeInTheDocument();
+        expect(await screen.findByText("Unassigned")).toBeInTheDocument();
+        expect(await screen.findByText("Division Director")).toBeInTheDocument();
+        expect(await screen.findByText("User Admin")).toBeInTheDocument();
+        expect(await screen.findByText("Budget Team")).toBeInTheDocument();
     });
 
     test("renders correctly - status", async () => {
@@ -139,7 +139,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["admin"]
+            roles: ["SYSTEM_OWNER"]
         };
         const { container } = renderWithProviders(
             <App
@@ -173,7 +173,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["admin"]
+            roles: ["SYSTEM_OWNER"]
         };
         const { getByText, container } = renderWithProviders(
             <App
@@ -209,7 +209,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["admin"]
+            roles: ["SYSTEM_OWNER"]
         };
         const { getByText, container } = renderWithProviders(
             <App
@@ -231,11 +231,12 @@ describe("UserInfo", () => {
 
         await browserUser.click(rolesInput);
         // eslint-disable-next-line testing-library/prefer-screen-queries
-        await browserUser.click(getByText("user"));
+        await browserUser.click(getByText("Viewer/Editor"));
 
         // check that the 2 roles are selected
-        expect(rolesComboBox).toHaveTextContent("admin");
-        expect(rolesComboBox).toHaveTextContent("user");
+        screen.debug();
+        expect(rolesComboBox).toHaveTextContent("System Owner");
+        expect(rolesComboBox).toHaveTextContent("Viewer/Editor");
     });
 
     test("update status", async () => {
@@ -246,7 +247,7 @@ describe("UserInfo", () => {
             email: "test.user@exampl.com",
             division: 1,
             status: "ACTIVE",
-            roles: ["admin"]
+            roles: ["SYSTEM_OWNER"]
         };
         const { getByText, container } = renderWithProviders(
             <App

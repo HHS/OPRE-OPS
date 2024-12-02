@@ -28,11 +28,11 @@ Cypress.Commands.add("FakeAuth", (user) => {
         cy.contains("Sign in with FakeAuth").click();
 
         switch (user) {
-            case "admin":
-                cy.contains("Admin User").click();
+            case "system-owner":
+                cy.contains("System Owner").click();
                 break;
             case "basic":
-                cy.contains("Basic User").click();
+                cy.contains("User Demo").click();
                 break;
             case "division-director":
                 cy.contains("Division Director").click();

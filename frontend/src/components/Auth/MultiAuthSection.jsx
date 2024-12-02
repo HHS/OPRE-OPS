@@ -149,9 +149,9 @@ const MultiAuthSection = () => {
                             <p>
                                 <button
                                     className="usa-button  usa-button--outline width-full"
-                                    onClick={() => handleFakeAuthLogin("admin_user")}
+                                    onClick={() => handleFakeAuthLogin("system_owner")}
                                 >
-                                    Admin User
+                                    System Owner
                                 </button>
                             </p>
                             <p>
@@ -175,7 +175,7 @@ const MultiAuthSection = () => {
                                     className="usa-button  usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("basic_user")}
                                 >
-                                    Basic User
+                                    User Demo
                                 </button>
                             </p>
                             <p>

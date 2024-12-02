@@ -19,6 +19,9 @@ class CreateUpdateCANRequestSchema(Schema):
 
 class BasicCANSchema(Schema):
     active_period = fields.Integer(allow_none=True)
+    funding_method = fields.String(allow_none=True)
+    funding_frequency = fields.String(allow_none=True)
+    funding_type = fields.String(allow_none=True)
     display_name = fields.String(allow_none=True)
     nick_name = fields.String(allow_none=True)
     number = fields.String(required=True)
@@ -114,6 +117,9 @@ class CreateUpdateFundingDetailsSchema(Schema):
 
 class FundingDetailsSchema(Schema):
     active_period = fields.Integer(allow_none=True)
+    funding_method = fields.String(allow_none=True)
+    funding_frequency = fields.String(allow_none=True)
+    funding_type = fields.String(allow_none=True)
     allotment = fields.String(allow_none=True)
     allowance = fields.String(allow_none=True)
     display_name = fields.String(allow_none=True)

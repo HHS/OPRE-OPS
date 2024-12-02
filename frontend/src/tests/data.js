@@ -508,11 +508,11 @@ export const canAppropriationDetails = [
 export const roles = [
     {
         id: 1,
-        name: "admin"
+        name: "SYSTEM_OWNER"
     },
     {
         id: 2,
-        name: "user"
+        name: "VIEWER_EDITOR"
     },
     {
         id: 3,

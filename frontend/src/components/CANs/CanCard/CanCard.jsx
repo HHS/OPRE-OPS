@@ -26,6 +26,7 @@ const CanCard = ({ can, fiscalYear }) => {
 
     /* State */
     const [canFundingData, setCanFundingDataLocal] = useState({});
+    const [canLocalData, setCanLocalData] = useState({});
     const [percent, setPercent] = useState("");
     const [hoverId, setHoverId] = useState("");
 
@@ -63,12 +64,14 @@ const CanCard = ({ can, fiscalYear }) => {
         const getCanTotalFundingandSetState = async () => {
             const results = await getPortfolioCansFundingDetails({ id: can.id, fiscalYear: fiscalYear });
             setCanFundingDataLocal(results);
+            setCanLocalData(results.cans[0]);
         };
 
         getCanTotalFundingandSetState().catch(console.error);
 
         return () => {
             setCanFundingDataLocal({});
+            setCanLocalData({});
         };
     }, [can.id, fiscalYear]);
 
@@ -127,7 +130,7 @@ const CanCard = ({ can, fiscalYear }) => {
                 </div>
                 <div className="margin-y-3">
                     <dt className="margin-0 text-base-dark">Expiration</dt>
-                    <dd className="text-semibold margin-0">{canFundingData?.expiration_date || "---"}</dd>
+                    <dd className="text-semibold margin-0">{canLocalData?.expiration_date || "---"}</dd>
                 </div>
             </dl>
             <div className={`grid-row  padding-y-205 padding-left-205 padding-right-05 ${style.rightContainer}`}>
@@ -140,7 +143,7 @@ const CanCard = ({ can, fiscalYear }) => {
                         received_funding={canFundingData?.received_funding}
                         expected_funding={canFundingData?.expected_funding}
                         carry_forward_funding={canFundingData?.carry_forward_funding}
-                        carry_forward_label={canFundingData?.carry_forward_label}
+                        carry_forward_label={canLocalData?.carry_forward_label}
                     />
                 </div>
                 {/* NOTE: RIGHT SIDE */}

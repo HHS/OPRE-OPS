@@ -12,7 +12,7 @@ from ops_api.ops.auth.utils import get_latest_user_session
 
 @pytest.fixture()
 def db_with_active_user_session(loaded_db, test_user):
-    user = loaded_db.execute(select(User).where(User.email == "admin.demo@email.com")).scalars().one_or_none()
+    user = loaded_db.execute(select(User).where(User.email == "user.demo@email.com")).scalars().one_or_none()
     active_user_session_1 = UserSession(
         user_id=user.id,
         is_active=True,
@@ -109,7 +109,7 @@ def test_refresh_token_active_session(app, client, db_with_active_user_session, 
     m1.return_value = False
 
     user = (
-        db_with_active_user_session.execute(select(User).where(User.email == "admin.demo@email.com"))  # noqa
+        db_with_active_user_session.execute(select(User).where(User.email == "user.demo@email.com"))  # noqa
         .scalars()
         .one_or_none()
     )
@@ -136,7 +136,7 @@ def test_refresh_token_active_session_expired(app, client, db_with_active_user_s
     m1.return_value = True
 
     user = (
-        db_with_active_user_session.execute(select(User).where(User.email == "admin.demo@email.com"))  # noqa
+        db_with_active_user_session.execute(select(User).where(User.email == "user.demo@email.com"))  # noqa
         .scalars()
         .one_or_none()
     )

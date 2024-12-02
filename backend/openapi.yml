@@ -6,10 +6,12 @@ info:
 servers:
   - url: https://localhost:8080
     description: Localhost
-  - url: https://ops-backend.app.cloud.gov
+  - url: https://dev.ops.opre.acf.gov/api/v1/
     description: Development Server (Live)
-  - url: https://ops-api-staging.app.cloud.gov
+  - url: https://stg.ops.opre.acf.gov/api/v1/
     description: Staging Server (Live)
+  - url: https://ops.opre.acf.gov/api/v1/
+    description: Production Server (Live)
 
 tags:
   - name: Agreements
@@ -217,7 +219,11 @@ paths:
       description: Get CANs
       responses:
         "200":
-          description: OK
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CAN"
     post:
       tags:
         - CANs
@@ -711,7 +717,7 @@ paths:
       summary: Get a list of all the CAN funding budgets
       parameters:
         - $ref: "#/components/parameters/simulatedError"
-      description: Get CANFundingBudgetss
+      description: Get CANFundingBudgets
       responses:
         "200":
           description: OK
@@ -1080,13 +1086,13 @@ paths:
     get:
       tags:
         - CAN Funding Summary
-      operationId: getFundingTotals
-      description: Get Funding Totals
+      operationId: getFundingSummary
+      description: Get Funding Summary
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - name: can_ids
           in: query
-          description: List of CAN Ids (required)
+          description: List of CAN Ids (required), Use an integer of 0 to get funding summary for all CANs.
           required: true
           schema:
             type: array
@@ -1146,84 +1152,96 @@ paths:
               schema:
                 type: object
                 properties:
-                  can:
-                    type: object
-                    properties:
-                      appropriation_term:
-                        type: integer
-                      authorizer_id:
-                        type: integer
-                      arrangement_type_id:
-                        type: integer
-                      number:
-                        type: string
-                      purpose:
-                        type: string
-                      managing_portfolio_id:
-                        type: integer
-                      nickname:
-                        type: string
-                      appropriation_date:
-                        type: string
-                      description:
-                        type: string
-                      id:
-                        type: integer
-                      expiration_date:
-                        type: string
-                      managing_project_id:
-                        type: integer
-                  received_funding:
-                    type: string
-                  planned_funding:
-                    type: integer
-                  obligated_funding:
-                    type: integer
                   available_funding:
-                    type: string
-                  total_funding:
-                    type: string
-                  expiration_date:
-                    type: string
-                  in_execution_funding:
                     type: string
                   carry_forward_funding:
                     type: integer
-                  carry_forward_label:
-                    type: string
+                  can:
+                    type: object
+                    properties:
+                      can:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            appropriation_term:
+                              type: integer
+                            authorizer_id:
+                              type: integer
+                            arrangement_type_id:
+                              type: integer
+                            number:
+                              type: string
+                            purpose:
+                              type: string
+                            managing_portfolio_id:
+                              type: integer
+                            nickname:
+                              type: string
+                            appropriation_date:
+                              type: string
+                            description:
+                              type: string
+                            id:
+                              type: integer
+                            expiration_date:
+                              type: string
+                            managing_project_id:
+                              type: integer
+                      carry_forward_label:
+                        type: string
+                        example: ""
+                      expiration_date:
+                        type: string
+                        example: ""
                   expected_funding:
                     type: string
+                  in_draft_funding:
+                    type: string
+                  in_execution_funding:
+                    type: string
                   new_funding:
+                    type: string
+                  obligated_funding:
+                    type: integer
+                  planned_funding:
+                    type: integer
+                  received_funding:
+                    type: string
+                  total_funding:
                     type: string
               examples:
                 "0":
                   value: |
                     {
                       "available_funding": "8000000.00",
-                      "can": {
-                        "appropriation_date": "01/10/2022",
-                        "appropriation_term": 1,
-                        "arrangement_type_id": 4,
-                        "authorizer_id": 26,
-                        "description": "Child Development Research Fellowship Grant Program",
-                        "expiration_date": "01/09/2023",
-                        "id": 4,
-                        "managing_portfolio_id": 1,
-                        "managing_project_id": 1,
-                        "nickname": "ASPE SRCD-IDDA",
-                        "number": "G990136",
-                        "purpose": ""
-                      },
                       "carry_forward_funding": 0,
-                      "carry_forward_label": "Carry-Forward",
-                      "received_funding": "6000000.00",
+                      "cans": [{
+                        "can":{
+                          "appropriation_date": "01/10/2022",
+                          "appropriation_term": 1,
+                          "arrangement_type_id": 4,
+                          "authorizer_id": 26,
+                          "description": "Child Development Research Fellowship Grant Program",
+                          "expiration_date": "01/09/2023",
+                          "id": 4,
+                          "managing_portfolio_id": 1,
+                          "managing_project_id": 1,
+                          "nickname": "ASPE SRCD-IDDA",
+                          "number": "G990136",
+                          "purpose": ""
+                        },
+                        "carry_forward_label": "Carry-Forward",
+                        "expiration_date": "09/01/2023",
+                      }],
                       "expected_funding": "4000000.00",
-                      "expiration_date": "09/01/2023",
+                      "in_draft_funding": "500000.00",
                       "in_execution_funding": "2000000.00",
+                      "new_funding": "2000000.00",
                       "obligated_funding": 0,
                       "planned_funding": 0,
-                      "total_funding": "10000000.00",
-                      "new_funding": "2000000.00"
+                      "received_funding": "6000000.00",
+                      "total_funding": "10000000.00"
                     }
   /api/v1/users/:
     get:
@@ -2689,6 +2707,12 @@ components:
       properties:
         active_period:
           type: integer
+        funding_method:
+          type: string
+        funding_frequency:
+          type: string
+        funding_type:
+          type: string
         display_name:
           type: string
         nick_name:
@@ -2727,6 +2751,12 @@ components:
       properties:
         active_period:
           type: integer
+        funding_method:
+          type: string
+        funding_frequency:
+          type: string
+        funding_type:
+          type: string
         budget_line_items:
           type: array
           items:
@@ -3519,6 +3549,21 @@ components:
           description: optional notes added to a Change Request when a PATCH is made that creates a CR
           type: string
           writeOnly: true
+        agreement:
+          type: object
+          $ref: "#/components/schemas/SimpleAgreementSchema"
+    SimpleAgreementSchema:
+      type: object
+      properties:
+        agreement_type:
+          type: string
+          example: 'AgreementType.DIRECT_ALLOCATION'
+        name:
+          type: string
+          example: 'DIRECT ALLOCATION #2: African American Child and Family Research Center'
+        awarding_entity_id:
+          type: integer
+          example: 3
     BudgetLineItemCAN:
       type: object
       properties:
@@ -3541,6 +3586,12 @@ components:
           type: string
         active_period:
           type: integer
+        funding_method:
+          type: string
+        funding_frequency:
+          type: string
+        funding_type:
+          type: string
         expiration_date:
           type: integer
         appropriation_date:

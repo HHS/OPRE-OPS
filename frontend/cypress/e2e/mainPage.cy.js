@@ -2,7 +2,7 @@
 import { testLogin } from "./utils";
 
 beforeEach(() => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit("/");
 });
 

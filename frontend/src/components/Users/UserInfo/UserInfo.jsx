@@ -7,6 +7,7 @@ import PropTypes from "prop-types";
 import useAlert from "../../../hooks/use-alert.hooks.js";
 import { useDispatch } from "react-redux";
 import { setIsActive } from "../../UI/Alert/alertSlice.js";
+import constants from "../../../constants.js";
 
 /**
  * Renders the user information.
@@ -73,7 +74,7 @@ const UserInfo = ({ user, isEditable }) => {
 
     const handleRolesChange = (roles) => {
         setSelectedRoles(roles);
-        const roleNames = roles?.map((role) => role.name);
+        const roleNames = roles?.map((role) => constants.roles.find((r) => r.name === role.name)?.name);
         updateUser({ id: user.id, data: { roles: roleNames || [] } });
     };
 
@@ -126,7 +127,13 @@ const UserInfo = ({ user, isEditable }) => {
                         <div className="grid-row">
                             <div className="grid-col-4">Role(s):</div>
                             <div className="grid-col-8">
-                                {!isEditable && <span>{selectedRoles?.map((role) => role.name).join(", ")}</span>}
+                                {!isEditable && (
+                                    <span>
+                                        {selectedRoles
+                                            ?.map((role) => constants.roles.find((r) => r.name === role.name)?.label)
+                                            .join(", ")}
+                                    </span>
+                                )}
                                 {isEditable && (
                                     <div data-testid="roles-combobox">
                                         <ComboBox
@@ -135,7 +142,9 @@ const UserInfo = ({ user, isEditable }) => {
                                             selectedData={selectedRoles}
                                             setSelectedData={handleRolesChange}
                                             defaultString="-- Select Roles --"
-                                            optionText={(role) => role.name}
+                                            optionText={(role) =>
+                                                constants.roles.find((r) => r.name === role.name)?.label
+                                            }
                                             isMulti={true}
                                         />
                                     </div>

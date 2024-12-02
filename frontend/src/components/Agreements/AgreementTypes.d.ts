@@ -43,3 +43,9 @@ type ProcurementShop = {
     id: number;
     name: string;
 };
+
+type SimpleAgreement = {
+    agreement_type: string;
+    awarding_entity_id?: number;
+    name: string;
+};

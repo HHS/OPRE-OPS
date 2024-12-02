@@ -13,13 +13,13 @@ it("redirect to /login when ther is no jwt", () => {
 });
 
 it("access_token is present within localstorage after login", () => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.getLocalStorage("access_token").should("exist");
 });
 
 it("clicking logout removes the jwt and displays redirects to /login", () => {
     cy.visit("/");
-    testLogin("admin");
+    testLogin("system-owner");
     cy.contains("Sign-out").click();
     cy.window().its("localStorage").invoke("getItem", "access_token").should("not.exist");
     cy.window()
@@ -37,7 +37,7 @@ it("isLoggedIn state is false when there is no jwt", () => {
 
 it("isLoggedIn state is true when there is a jwt", () => {
     cy.visit("/");
-    testLogin("admin");
+    testLogin("system-owner");
     cy.window()
         .then((win) => win.store.getState().auth)
         .should("deep.include", { isLoggedIn: true });
@@ -45,6 +45,6 @@ it("isLoggedIn state is true when there is a jwt", () => {
 
 it("Sign Out button visible when user is Authenticated", () => {
     cy.visit("/");
-    testLogin("admin");
+    testLogin("system-owner");
     cy.contains("Sign-out");
 });

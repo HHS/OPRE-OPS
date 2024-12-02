@@ -13,10 +13,10 @@ class FakeAuthProvider(AuthenticationProvider):
         self.config = config
 
         self.fakeUsers = {
-            "admin_user": {
-                "given_name": "Admin",
-                "family_name": "Demo",
-                "email": "admin.demo@email.com",
+            "system_owner": {
+                "given_name": "System",
+                "family_name": "Owner",
+                "email": "system.owner@email.com",
                 "sub": "00000000-0000-1111-a111-000000000018",
             },
             "budget_team": {

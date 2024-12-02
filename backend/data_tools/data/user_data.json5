@@ -37,8 +37,8 @@
     }
   ],
   role: [
-    { // 1 Admin
-      name: "admin",
+    { // 1 SYSTEM_OWNER
+      name: "SYSTEM_OWNER",
       permissions: [
         "GET_AGREEMENT",
         "PUT_AGREEMENT",
@@ -50,7 +50,6 @@
         "PUT_BUDGET_LINE_ITEM",
         "PATCH_BUDGET_LINE_ITEM",
         "POST_BUDGET_LINE_ITEM",
-        // Delete permissions are only for local, not for prod. Users should not have delete BLI permissions in prod.
         "DELETE_BUDGET_LINE_ITEM",
 
         "GET_SERVICES_COMPONENT",
@@ -70,18 +69,25 @@
         "DELETE_CAN",
 
         "GET_DIVISION",
+        "PUT_DIVISION",
+        "PATCH_DIVISION",
+        "POST_DIVISION",
+        "DELETE_DIVISION",
 
         "GET_NOTIFICATION",
         "PUT_NOTIFICATION",
         "PATCH_NOTIFICATION",
 
         "GET_PORTFOLIO",
+        "PUT_PORTFOLIO",
+        "PATCH_PORTFOLIO",
+        "POST_PORTFOLIO",
+        "DELETE_PORTFOLIO",
 
         "GET_RESEARCH_PROJECT",
         "POST_RESEARCH_PROJECT",
 
         "GET_USER",
-
         "PUT_USER",
         "PATCH_USER",
 
@@ -105,8 +111,8 @@
         "PATCH_UPLOAD_DOCUMENT",
       ],
     },
-    { // 2 User
-      name: "user",
+    { // 2 Viewer/Editor
+      name: "VIEWER_EDITOR",
       permissions: [
         "GET_AGREEMENT",
         "PUT_AGREEMENT",
@@ -114,19 +120,10 @@
         "POST_AGREEMENT",
 
         "GET_BUDGET_LINE_ITEM",
-        "PUT_BUDGET_LINE_ITEM",
-        "PATCH_BUDGET_LINE_ITEM",
-        "POST_BUDGET_LINE_ITEM",
 
         "GET_SERVICES_COMPONENT",
-        "PUT_SERVICES_COMPONENT",
-        "PATCH_SERVICES_COMPONENT",
-        "POST_SERVICES_COMPONENT",
 
         "GET_BLI_PACKAGE",
-        "PUT_BLI_PACKAGE",
-        "PATCH_BLI_PACKAGE",
-        "POST_BLI_PACKAGE",
 
         "GET_CAN",
 
@@ -144,6 +141,7 @@
         "GET_USER",
         "PUT_USER",
         "PATCH_USER",
+
         "GET_HISTORY",
 
         "GET_WORKFLOW",
@@ -159,15 +157,7 @@
         "PATCH_UPLOAD_DOCUMENT"
       ],
     },
-    { // 3 Unassigned (new user)
-      name: "unassigned",
-      permissions: [
-        "GET_USER",
-        "PUT_USER",
-        "PATCH_USER",
-      ],
-    },
-    { // 4 Division Director
+    { // 3 Division Director
       name: "division-director",
       permissions: [
         "GET_AGREEMENT",
@@ -231,13 +221,13 @@
         "PATCH_UPLOAD_DOCUMENT"
       ]
     },
-    { // 5 User Admin
+    { // 4 User Admin
       name: "USER_ADMIN",
       permissions: [
         "POST_USER",
       ],
     },
-    { // 6 Budget Team Member
+    { // 5 Budget Team Member
       name: "BUDGET_TEAM",
       permissions: [
         "GET_AGREEMENT",
@@ -303,23 +293,6 @@
       ]
     }
   ],
-  group: [
-    { // 1
-      name: "Budget Team",
-    },
-    { // 2
-      name: "Admins",
-    },
-    { // 3
-      name: "Division Directors",
-    },
-    { // 4
-      name: "COR Users",
-    },
-    { // 5
-      name: "Users",
-    }
-  ],
   ops_user: [
     { // 500
       first_name: "Chris",
@@ -354,8 +327,7 @@
       division: 2,
       email: "Amelia.Popham@example.com",
       oidc_id: "00000000-0000-1111-a111-000000000004",
-      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 5}],
-      groups: [{"tablename":  "group", "id": 1}],
+      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 4}],
       status: "ACTIVE"
     },
     { // 504
@@ -433,7 +405,6 @@
       //oidc_id: "e5711101-bc3e-41e5-a6a2-000000000000",
       oidc_id: "e5711101-bc3e-41e5-a6a2-051874b307ca",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
     { // 513
@@ -443,7 +414,6 @@
       email: "jdeangelis@flexion.us",
       oidc_id: "838861c4-8bee-427d-8b49-0892875483ba",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
     { // 514
@@ -453,7 +423,6 @@
       email: "fpigeon@flexion.us",
       oidc_id: "3e4c46ae-0ff9-4dd7-8671-b9801460a052",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
     { // 515
@@ -463,7 +432,6 @@
       email: "chill@flexion.us",
       oidc_id: "c8102694-a707-418d-9698-1d33db337b86",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}],
       status: "INACTIVE"
     },
     { // 516
@@ -473,7 +441,6 @@
       email: "stekell+sandbox@flexion.us",
       oidc_id: "7716138a-dec6-4976-9f31-e30fade3254d",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
     { // 517
@@ -483,7 +450,6 @@
       email: "jnalley+logingovsandbox@flexion.us",
       oidc_id: "48f7db91-1861-4d4b-813c-a6221cb61b60",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
     { // 518
@@ -493,7 +459,6 @@
       email: "acurvelodasilva@flexion.us",
       oidc_id: "6e672c19-15bc-4901-8cee-b57cd8c6d0c1",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
     { // 519
@@ -503,14 +468,13 @@
       email: "kschulke@flexion.us",
       oidc_id: "b5f7598b-e5e6-4b11-8321-b3acabc780f7",
       roles: [{"tablename":  "role", "id": 1}],
-      groups: [{"tablename":  "group", "id": 2}],
       status: "ACTIVE"
     },
     { // 520 User is used in E2E tests
-      first_name: "Admin",
-      last_name: "Demo",
+      first_name: "System",
+      last_name: "Owner",
       division: 3,
-      email: "admin.demo@email.com",
+      email: "system.owner@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000018",
       roles: [{"tablename":  "role", "id": 1}],
       status: "ACTIVE"
@@ -530,8 +494,7 @@
       division: 1,
       email: "dave.director@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000020",
-      roles: [{"tablename":  "role", "id": 4}],
-      groups: [{"tablename":  "group", "id": 3}],
+      roles: [{"tablename":  "role", "id": 3}],
       status: "ACTIVE"
     },
     { // 523
@@ -540,7 +503,7 @@
       division: 1,
       email: "budget.team@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000021",
-      roles: [{"tablename":  "role", "id": 5}, {"tablename":  "role", "id": 6}],
+      roles: [{"tablename":  "role", "id": 4}, {"tablename":  "role", "id": 5}],
       groups: [],
       status: "ACTIVE"
     },
@@ -558,7 +521,7 @@
       last_name: "Derrek",
       division: 6,
       email: "director.derrek@email.com",
-      roles: [{"tablename":  "role", "id": 4}],
+      roles: [{"tablename":  "role", "id": 3}],
       oidc_id: "00000000-0000-1111-a111-000000000022",
       groups: [],
       status: "ACTIVE"
@@ -581,7 +544,7 @@
       first_name: "Sheila",
       last_name: "Celentano",
       email: "sheila.celentano@acf.hhs.gov",
-      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 5}, {"tablename":  "role", "id": 6}],
+      roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 4}, {"tablename":  "role", "id": 5}],
       status: "ACTIVE"
     }
   ],

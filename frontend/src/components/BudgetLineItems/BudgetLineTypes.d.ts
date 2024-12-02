@@ -1,9 +1,11 @@
 import { CAN } from "../CANs/CANTypes";
 import { ChangeRequest } from "../ChangeRequests/ChangeRequestsTypes";
 import { SafeUser } from "../Users/UserTypes";
+import { SimpleAgreement } from "../Agreements/AgreementTypes";
 
 export type BudgetLine = {
     agreement_id: number;
+    agreement: SimpleAgreement[];
     amount?: number;
     can?: CAN;
     can_id?: number;

@@ -2,7 +2,7 @@
 import { testLogin } from "./utils";
 
 before(() => {
-    testLogin("admin");
+    testLogin("system-owner");
     cy.visit("/research-projects/1000");
 });
 

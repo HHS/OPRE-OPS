@@ -7,5 +7,6 @@ export type Filters = {
     activePeriod?: FilterOption[];
     transfer?: FilterOption[];
     portfolio?: FilterOption[];
+    budget?: [number, number];
     // Add other filter types here
 };
