@@ -34,6 +34,7 @@ const Can = () => {
         plannedFunding,
         obligatedFunding,
         inExecutionFunding,
+        inDraftFunding,
         subTitle,
         projectTypesCount,
         budgetLineTypesCount,
@@ -87,6 +88,7 @@ const Can = () => {
                             budgetLineTypesCount={budgetLineTypesCount}
                             agreementTypesCount={testAgreements}
                             inExecutionFunding={inExecutionFunding}
+                            inDraftFunding={inDraftFunding}
                             obligatedFunding={obligatedFunding}
                             plannedFunding={plannedFunding}
                             totalFunding={totalFunding}
