@@ -35,7 +35,6 @@ const testBli = {
 };
 
 beforeEach(() => {
-    // testLogin("division-director");
     testLogin("budget-team");
 });
 
@@ -179,8 +178,6 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         });
                     })
                     .then(() => {
-                        // const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
-
                         cy.request({
                             method: "DELETE",
                             url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
