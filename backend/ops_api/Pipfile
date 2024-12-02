@@ -30,7 +30,7 @@ sqlalchemy-continuum = "==1.4.2"
 black = {extras = ["d"], version = "==24.10.0"}
 flake8 = "==7.1.1"
 flake8-black = "==0.3.6"
-ipython = "==8.29.0"
+ipython = "==8.30.0"
 isort = "==5.13.2"
 nox = "==2024.10.9"
 numpy = "==2.1.3"
