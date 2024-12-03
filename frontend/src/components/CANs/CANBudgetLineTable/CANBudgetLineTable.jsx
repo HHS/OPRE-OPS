@@ -26,6 +26,8 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
     let visibleBudgetLines = [...budgetLines];
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+    console.log({budgetLines})
+
     if (budgetLines.length === 0) {
         return <p className="text-center">No budget lines have been added to this CAN.</p>;
     }
@@ -38,7 +40,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
                         key={budgetLine.id}
                         budgetLine={budgetLine}
                         blId={budgetLine.id}
-                        agreementName="TBD"
+                        agreementName={budgetLine.agreement.name ?? "TBD"}
                         obligateDate={formatDateNeeded(budgetLine.date_needed || "")}
                         fiscalYear={budgetLine.fiscal_year || "TBD"}
                         amount={budgetLine.amount ?? 0}
@@ -48,7 +50,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
                         inReview={budgetLine.in_review}
                         creatorId={budgetLine.created_by}
                         creationDate={budgetLine.created_on}
-                        procShopCode="TBD"
+                        procShopCode={budgetLine.agreement.awarding_entity_id}
                         procShopFeePercentage={budgetLine.proc_shop_fee_percentage}
                         notes={budgetLine.comments || "No Notes added"}
                     />

@@ -43,13 +43,17 @@ export default function useCan() {
         [budgetLineItemsByFiscalYear]
     );
 
-    const testAgreements = [
-        { type: "CONTRACT", count: 8 },
-        { type: "GRANT", count: 2 },
-        { type: "DIRECT_ALLOCATION", count: 1 },
-        { type: "IAA", count: 1 },
-        { type: "MISCELLANEOUS", count: 1 }
-    ];
+
+    const budgetLineAgreements = can?.budget_line_items?.map(
+        (item) => item.agreement
+    ) ?? [];
+
+
+    const agreementTypesCount = React.useMemo(
+        () => getTypesCounts(budgetLineAgreements, "agreement_type"),
+        [fiscalYear, can]
+    );
+
 
     return {
         can: can ?? null,
@@ -77,6 +81,6 @@ export default function useCan() {
         subTitle: can ? `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}` : "",
         projectTypesCount,
         budgetLineTypesCount,
-        testAgreements
+        agreementTypesCount
     };
 }

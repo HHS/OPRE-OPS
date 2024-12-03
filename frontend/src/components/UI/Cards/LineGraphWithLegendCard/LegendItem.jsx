@@ -23,8 +23,8 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
     const isGraphActive = activeId === id;
 
     return (
-        <div className="grid-row margin-top-2 font-12px">
-            <div className="grid-col-5">
+        <div className="display-flex flex-justify margin-top-2 font-12px">
+            <div>
                 <div className="display-flex flex-align-center">
                     <FontAwesomeIcon
                         icon={faCircle}
@@ -41,12 +41,13 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     </span>
                 </div>
             </div>
-            <div className="grid-col-5">
+            <div >
                 <CurrencyFormat
                     value={value}
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
+                    decimalScale={2}
                     renderText={(value) => (
                         <span
                             className={isGraphActive ? "fake-bold" : ""}
@@ -55,16 +56,17 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                             {value}
                         </span>
                     )}
+                    fixedDecimalScale
                 />
-            </div>
-            <div className="grid-col-2">
                 <Tag
+                    className="margin-left-1"
                     tagStyle="darkTextWhiteBackground"
                     text={percent}
                     label={label}
                     active={isGraphActive}
                     tagStyleActive={tagStyleActive}
                     dataTestId="legend-tag"
+                    isLegend={true}
                 />
             </div>
         </div>
