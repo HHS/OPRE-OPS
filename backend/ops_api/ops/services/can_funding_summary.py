@@ -72,5 +72,10 @@ class CANFundingSummaryService:
             "fy_budget": request.args.getlist("fy_budget", type=int),
         }
 
+        # Remove duplicates for all keys except fiscal_year and fy_budget
+        for key in query_params:
+            if key not in ["fiscal_year", "fy_budget"]:
+                query_params[key] = list(set(query_params[key]))
+
         schema = GetCANFundingSummaryRequestSchema()
         return schema.load(query_params)

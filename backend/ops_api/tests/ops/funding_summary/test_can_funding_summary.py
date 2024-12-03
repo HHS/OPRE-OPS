@@ -27,6 +27,53 @@ class DummyNestedObject:
         self.value = "test_value"
 
 
+def test_can_get_can_funding_summary_filter_fy_budget_400(auth_client: FlaskClient):
+    query_params = f"can_ids={0}&fy_budget=0"
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    assert response.status_code == 400
+    assert response.json["Error"] == "'fy_budget' must be two integers for min and max budget values."
+
+
+def test_can_get_can_funding_summary_fy_budget(auth_client: FlaskClient):
+    query_params = f"can_ids={0}&fy_budget=0&fy_budget=1000000"
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 5
+
+
+def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient):
+    query_params = f"can_ids={0}&fiscal_year=2023&transfer=MOU&transfer=MOU"
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 0
+
+
+def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClient):
+    query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE"
+
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 0
+    assert response.json["expected_funding"] == "0.0"
+    assert response.json["received_funding"] == "0.0"
+    assert response.json["total_funding"] == "0.0"
+
+
+def test_can_get_can_funding_summary_invalid_transfer(auth_client: FlaskClient):
+    query_params = f"can_ids={0}&fiscal_year=2023&transfer=INVALID"
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    assert response.status_code == 400
+    assert response.json["Error"] == "Invalid 'transfer' parameter."
+
+
+def test_can_get_can_funding_summary_mou_transfer(auth_client: FlaskClient):
+    query_params = f"can_ids={0}&fiscal_year=2023&transfer=MOU"
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 0
+
+
 def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: FlaskClient) -> None:
     query_params = f"can_ids={0}&fiscal_year=2023"
 
@@ -334,12 +381,12 @@ def test_get_nested_attribute_non_existing_top_level():
 
 def test_filter_cans_by_attribute():
     cans = [
-        MagicMock(active_period=1, funding_details=MagicMock(method_of_transfer="DIRECT")),
-        MagicMock(active_period=2, funding_details=MagicMock(method_of_transfer="IAA")),
-        MagicMock(active_period=1, funding_details=MagicMock(method_of_transfer="DIRECT")),
+        MagicMock(active_period=1, funding_details=MagicMock(method_of_transfer=CANMethodOfTransfer.DIRECT)),
+        MagicMock(active_period=2, funding_details=MagicMock(method_of_transfer=CANMethodOfTransfer.IAA)),
+        MagicMock(active_period=1, funding_details=MagicMock(method_of_transfer=CANMethodOfTransfer.DIRECT)),
     ]
 
-    filtered_cans = filter_by_attribute(cans, "funding_details.method_of_transfer", ["DIRECT"])
+    filtered_cans = filter_by_attribute(cans, "funding_details.method_of_transfer", [CANMethodOfTransfer.DIRECT])
 
     assert len(filtered_cans) == 2
 
@@ -374,9 +421,9 @@ def test_filter_cans_by_fiscal_year_budget_no_match():
     [
         (None, None, None, None, 3),
         ([1], None, None, None, 2),
-        (None, ["DIRECT"], None, None, 1),
+        (None, [CANMethodOfTransfer.DIRECT], None, None, 1),
         (None, None, None, [100000, 200000], 2),
-        ([1], ["IAA"], ["HS"], [100000, 200000], 0),
+        ([1], [CANMethodOfTransfer.IAA], ["HS"], [100000, 200000], 0),
     ],
 )
 def test_filter_cans(active_period, transfer, portfolio, fy_budget, expected_count):
