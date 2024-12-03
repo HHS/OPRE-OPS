@@ -33,7 +33,7 @@ flake8-bandit = "==4.1.1"
 pytest = "==8.3.4"
 pytest-cov = "==6.0.0"
 pytest-mock = "==3.14.0"
-ipython = "==8.29.0"
+ipython = "==8.30.0"
 pytest-docker = {extras = ["docker-compose-v2"], version = "==3.1.1"}
 black = {extras = ["d"], version = "==24.10.0"}
 
