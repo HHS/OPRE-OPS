@@ -40,12 +40,11 @@ class CANFundingSummaryListAPI(BaseItemAPI):
 
         # Ensure transfer can map to CANMethodOfTransfer enum
         if transfer:
-            if "MOU" in transfer:
-                # FE maps COST_SHARE to MOU. Convert it back to COST_SHARE
-                transfer[transfer.index("MOU")] = "COST_SHARE"
-            transfer = [CANMethodOfTransfer[t] for t in transfer]
-            if not transfer:
-                return make_response_with_headers({"Error": "Invalid 'transfer' parameter."}, 400)
+            is_transfer_valid, transfer = self.service.get_mapped_transfer_value(transfer)
+            valid_transfer_methods = list(CANMethodOfTransfer.__members__.keys())
+            if not is_transfer_valid:
+                error_message = f"Invalid 'transfer' value. Must be one of: {', '.join(valid_transfer_methods)}."
+                return make_response_with_headers({"Error": error_message}, 400)
 
         # When 'can_ids' is 0 (all CANS)
         if can_ids == ["0"]:

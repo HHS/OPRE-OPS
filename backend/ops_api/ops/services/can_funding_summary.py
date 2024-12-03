@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from flask import Response
 
+from models import CANMethodOfTransfer
 from ops_api.ops.schemas.can_funding_summary import (
     GetCANFundingSummaryRequestSchema,
     GetCANFundingSummaryResponseSchema,
@@ -79,3 +80,15 @@ class CANFundingSummaryService:
 
         schema = GetCANFundingSummaryRequestSchema()
         return schema.load(query_params)
+
+    @staticmethod
+    def get_mapped_transfer_value(transfer: list[str]) -> tuple[bool, Optional[List[CANMethodOfTransfer]]]:
+        if "MOU" in transfer:
+            transfer[transfer.index("MOU")] = "COST_SHARE"
+        try:
+            transfer = [CANMethodOfTransfer[t] for t in transfer]
+        except KeyError:
+            return False, None
+        if not transfer:
+            return False, None
+        return True, transfer
