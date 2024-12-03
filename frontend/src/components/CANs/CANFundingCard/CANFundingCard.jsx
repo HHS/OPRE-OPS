@@ -14,7 +14,7 @@ import BudgetCard from "../../UI/Cards/BudgetCard";
 const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
     const adjustAmount = afterApproval ? pendingAmount : 0;
     const canId = can?.id;
-    const { data, error, isLoading } = useGetCanFundingSummaryQuery({ id: canId });
+    const { data, error, isLoading } = useGetCanFundingSummaryQuery({ ids: [canId] });
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -23,7 +23,7 @@ const CANFundingCard = ({ can, pendingAmount, afterApproval }) => {
         return <div>An error occurred loading CAN funding data</div>;
     }
 
-    const title = `${data.can.number}-${data.can.active_period}Y`;
+    const title = `${data?.cans?.[0]?.can?.number}-${data?.cans?.[0]?.can?.active_period}Y`;
     const totalFunding = Number(data.total_funding);
     const availableFunding = Number(data.available_funding);
     const totalAccountedFor = totalFunding - availableFunding; // same as adding planned, obligated, in_execution

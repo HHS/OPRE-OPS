@@ -173,8 +173,8 @@ describe("Portfolio filtering and options", () => {
     it("should return unique portfolio options", () => {
         const portfolioOptions = getPortfolioOptions(mockCANsWithPortfolios);
         expect(portfolioOptions).toEqual([
-            { id: 0, title: "Portfolio A (ABC)" },
-            { id: 1, title: "Portfolio X (XYZ)" }
+            { abbr: "ABC", id: 0, title: "Portfolio A (ABC)" },
+            { abbr: "XYZ", id: 1, title: "Portfolio X (XYZ)" }
         ]);
     });
 
