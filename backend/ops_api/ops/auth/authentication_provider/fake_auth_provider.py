@@ -37,6 +37,12 @@ class FakeAuthProvider(AuthenticationProvider):
                 "email": "user.demo@email.com",
                 "sub": "00000000-0000-1111-a111-000000000019",
             },
+            "procurement_team": {
+                "given_name": "Procurement",
+                "family_name": "Team",
+                "email": "procurement.team@email.com",
+                "sub": "00000000-0000-1111-a111-000000000027",
+            },
         }
 
     def authenticate(self, auth_code):
