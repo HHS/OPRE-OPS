@@ -35,7 +35,10 @@ const CanList = () => {
     const { data: canList, isError, isLoading } = useGetCansQuery({});
 
     const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
-    const transferTitles = filters.transfer.map((t) => t.title.toUpperCase());
+    const transferTitles = filters.transfer.map((t) => {
+        const title = t.title.toUpperCase();
+        return title === "MOU" ? "COST_SHARE" : title;
+    });
     const portfolioAbbreviations = filters.portfolio.map((p) => p.abbr);
 
     const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({

@@ -127,8 +127,7 @@ describe("UserInfo", () => {
         fireEvent.keyDown(rolesInput, { key: "ArrowDown", code: 40 });
         expect(await screen.findByText("System Owner")).toBeInTheDocument();
         expect(await screen.findByText("Viewer/Editor")).toBeInTheDocument();
-        expect(await screen.findByText("Unassigned")).toBeInTheDocument();
-        expect(await screen.findByText("Division Director")).toBeInTheDocument();
+        expect(await screen.findByText("Reviewer/Approver")).toBeInTheDocument();
         expect(await screen.findByText("User Admin")).toBeInTheDocument();
         expect(await screen.findByText("Budget Team")).toBeInTheDocument();
     });
