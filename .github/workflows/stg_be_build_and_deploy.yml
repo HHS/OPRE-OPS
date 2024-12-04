@@ -69,15 +69,7 @@ jobs:
             # Update job to this image
             az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
             # Start the data-tools job
-            az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
-
-      # - name: Deploy Container App
-      #   uses: azure/container-apps-deploy-action@5f5f4c56ca90376e3cfbd76ba8fe8533c784e655 # v2
-      #   with:
-      #     # azureCredentials: ${{ secrets.AZURE_CREDS }}
-      #     containerAppName: opre-ops-${{ env.ENVIRONMENT }}-data-tools
-      #     resourceGroup: opre-ops-services-${{ env.ENVIRONMENT }}-app
-      #     imageToDeploy: ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+            az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --args "/bin/ash, -c, ./data_tools/scripts/upgrade_schema.sh"
 
   deploy-backend:
     needs: build-backend
