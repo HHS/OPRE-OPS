@@ -193,7 +193,7 @@ const useApproveAgreement = () => {
 
     // NOTE: Permission checks
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
-    const userIsDivisionDirector = userRoles.includes("division-director") ?? false;
+    const userIsDivisionDirector = userRoles.includes("REVIEWER_APPROVER") ?? false;
 
     const managingDivisionIds = agreement?.budget_line_items
         ? agreement.budget_line_items.flatMap(
