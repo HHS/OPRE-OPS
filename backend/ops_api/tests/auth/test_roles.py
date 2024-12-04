@@ -9,7 +9,7 @@ def test_get_roles(auth_client):
 
     assert {"id": 1, "name": "SYSTEM_OWNER"} in response.json
     assert {"id": 2, "name": "VIEWER_EDITOR"} in response.json
-    assert {"id": 3, "name": "division-director"} in response.json
+    assert {"id": 3, "name": "REVIEWER_APPROVER"} in response.json
     assert {"id": 4, "name": "USER_ADMIN"} in response.json
     assert {"id": 5, "name": "BUDGET_TEAM"} in response.json
 

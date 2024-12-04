@@ -284,7 +284,7 @@ def test_agreement_history_log_items(auth_client, app, test_can, utc_today):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreement_history_log_items_with_change_requests(
-    division_director_auth_client, loaded_db, test_can, test_project, utc_today
+    budget_team_auth_client, division_director_auth_client, loaded_db, test_can, test_project, utc_today
 ):
     # create agreement (using API)
     data = {
@@ -306,7 +306,7 @@ def test_agreement_history_log_items_with_change_requests(
         ],
         "notes": "New Agreement for purpose X",
     }
-    resp = division_director_auth_client.post("/api/v1/agreements/", json=data)
+    resp = budget_team_auth_client.post("/api/v1/agreements/", json=data)
     assert resp.status_code == 201
     assert "id" in resp.json
     agreement_id = resp.json["id"]
@@ -328,7 +328,7 @@ def test_agreement_history_log_items_with_change_requests(
 
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 333.33, "can_id": 502, "date_needed": "2032-03-03"}
-    response = division_director_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli.id), json=data)
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -336,7 +336,7 @@ def test_agreement_history_log_items_with_change_requests(
     assert len(change_requests_in_review) == 3
 
     # verify agreement history added (+3 change requests created)
-    resp = division_director_auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
+    resp = budget_team_auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     hist_json = resp.json
     hist_count = len(hist_json)
@@ -351,7 +351,7 @@ def test_agreement_history_log_items_with_change_requests(
         log_item = hist_json[i]["log_items"][0]
         assert log_item["event_class_name"] == "BudgetLineItemChangeRequest"
         assert log_item["target_class_name"] == "BudgetLineItem"
-        assert log_item["created_by_user_full_name"] == "Dave Director"
+        assert log_item["created_by_user_full_name"] == "Budget Team"
         assert log_item["event_type"] == "IN_REVIEW"
         assert log_item["scope"] == "PROPERTY"
         assert log_item["created_on"] is not None
@@ -372,7 +372,7 @@ def test_agreement_history_log_items_with_change_requests(
         assert response.status_code == 200
 
     # verify agreement history added for 3 reviews and 3 approved updates
-    resp = division_director_auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
+    resp = budget_team_auth_client.get(f"/api/v1/agreement-history/{agreement_id}?limit=100")
     assert resp.status_code == 200
     hist_json = resp.json
     hist_count = len(hist_json)
@@ -389,7 +389,7 @@ def test_agreement_history_log_items_with_change_requests(
             assert log_item["event_type"] == "APPROVED"
             assert log_item["target_class_name"] == "BudgetLineItem"
             assert log_item["updated_by_change_request"] is False
-            assert log_item["changes_requested_by_user_full_name"] == "Dave Director"
+            assert log_item["changes_requested_by_user_full_name"] == "Budget Team"
         # log item for the BLI update
         elif log_item["event_class_name"] == "BudgetLineItem":
             assert log_item["event_type"] == "UPDATED"
