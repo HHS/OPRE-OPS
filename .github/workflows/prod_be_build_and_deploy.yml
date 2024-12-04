@@ -64,7 +64,7 @@ jobs:
             # Update job to this image
             az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
             # Start the data-tools job
-            az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --args "/bin/ash, -c, ./data_tools/scripts/upgrade_schema.sh"
+            az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
 
   deploy-backend:
     needs: build-backend
