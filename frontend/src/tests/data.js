@@ -516,18 +516,14 @@ export const roles = [
     },
     {
         id: 3,
-        name: "unassigned"
+        name: "REVIEWER_APPROVER"
     },
     {
         id: 4,
-        name: "division-director"
-    },
-    {
-        id: 5,
         name: "USER_ADMIN"
     },
     {
-        id: 6,
+        id: 5,
         name: "BUDGET_TEAM"
     }
 ];

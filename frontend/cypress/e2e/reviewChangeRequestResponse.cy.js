@@ -38,7 +38,7 @@ const testBli = {
 };
 
 beforeEach(() => {
-    testLogin("division-director");
+    testLogin("budget-team");
     cy.visit(`/`);
 });
 
@@ -110,26 +110,39 @@ describe("Approve Change Requests at the Agreement Level", () => {
             })
             // automate approval of change request
             .then(({ agreementId, changeRequestId, bliId }) => {
-                cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/change-request-reviews/",
-                    body: {
-                        change_request_id: changeRequestId,
-                        action: "APPROVE",
-                        reviewer_notes: "approved looks good"
-                    },
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(200);
-                    expect(response.body.id).to.exist;
-                    // const bliId = response.body.id;
-                    return { agreementId, bliId };
-                });
-            })
+                // log out and log in as division director
+                cy.contains("Sign-out")
+                    .click()
+                    .then(() => {
+                        localStorage.clear();
+                        expect(localStorage.getItem("access_token")).to.not.exist;
+                        testLogin("division-director");
+                    })
+                    .then(() => {
+                        expect(localStorage.getItem("access_token")).to.exist;
 
+                        const divisionDirectorBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+
+                        cy.request({
+                            method: "POST",
+                            url: "http://localhost:8080/api/v1/change-request-reviews/",
+                            body: {
+                                change_request_id: changeRequestId,
+                                action: "APPROVE",
+                                reviewer_notes: "approved looks good"
+                            },
+                            headers: {
+                                Authorization: divisionDirectorBearerToken,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                            expect(response.body.id).to.exist;
+                            // const bliId = response.body.id;
+                            return { agreementId, bliId };
+                        });
+                    });
+            })
             // test interactions
             .then(({ agreementId, bliId }) => {
                 cy.visit(`/agreements/${agreementId}`);
@@ -225,24 +238,37 @@ describe("Approve Change Requests at the Agreement Level", () => {
             })
             // automate rejection of change request
             .then(({ agreementId, changeRequestId, bliId }) => {
-                cy.request({
-                    method: "POST",
-                    url: "http://localhost:8080/api/v1/change-request-reviews/",
-                    body: {
-                        change_request_id: changeRequestId,
-                        action: "REJECT"
-                        // reviewer_notes:null
-                    },
-                    headers: {
-                        Authorization: bearer_token,
-                        Accept: "application/json"
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(200);
-                    expect(response.body.id).to.exist;
-                    // const bliId = response.body.id;
-                    return { agreementId, bliId };
-                });
+                cy.contains("Sign-out")
+                    .click()
+                    .then(() => {
+                        localStorage.clear();
+                        expect(localStorage.getItem("access_token")).to.not.exist;
+                        testLogin("division-director");
+                    })
+                    .then(() => {
+                        expect(localStorage.getItem("access_token")).to.exist;
+
+                        const divisionDirectorBearerToken = `Bearer ${window.localStorage.getItem("access_token")}`;
+
+                        cy.request({
+                            method: "POST",
+                            url: "http://localhost:8080/api/v1/change-request-reviews/",
+                            body: {
+                                change_request_id: changeRequestId,
+                                action: "REJECT"
+                                // reviewer_notes:null
+                            },
+                            headers: {
+                                Authorization: divisionDirectorBearerToken,
+                                Accept: "application/json"
+                            }
+                        }).then((response) => {
+                            expect(response.status).to.eq(200);
+                            expect(response.body.id).to.exist;
+                            // const bliId = response.body.id;
+                            return { agreementId, bliId };
+                        });
+                    });
             })
 
             // test interactions

@@ -1,5 +1,6 @@
 from flask import Response, request
 
+from models import CANMethodOfTransfer
 from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
@@ -19,7 +20,7 @@ class CANFundingSummaryListAPI(BaseItemAPI):
         try:
             data = self.service.get_can_funding_summary_request_data(request)
         except Exception as e:
-            return make_response_with_headers({"Error": f"Unable to parse request {str(e)}"}, 400)
+            return make_response_with_headers({"Error": {str(e)}}, 400)
 
         can_ids = data["can_ids"]
         fiscal_year = data["fiscal_year"]
@@ -31,6 +32,19 @@ class CANFundingSummaryListAPI(BaseItemAPI):
         # Ensure required 'can_ids' parameter is provided
         if not can_ids:
             return make_response_with_headers({"Error": "'can_ids' parameter is required"}, 400)
+
+        if fy_budget and len(fy_budget) != 2:
+            return make_response_with_headers(
+                {"Error": "'fy_budget' must be two integers for min and max budget values."}, 400
+            )
+
+        # Ensure transfer can map to CANMethodOfTransfer enum
+        if transfer:
+            is_transfer_valid, transfer = self.service.get_mapped_transfer_value(transfer)
+            valid_transfer_methods = list(CANMethodOfTransfer.__members__.keys())
+            if not is_transfer_valid:
+                error_message = f"Invalid 'transfer' value. Must be one of: {', '.join(valid_transfer_methods)}."
+                return make_response_with_headers({"Error": error_message}, 400)
 
         # When 'can_ids' is 0 (all CANS)
         if can_ids == ["0"]:
