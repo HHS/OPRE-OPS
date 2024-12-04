@@ -3564,6 +3564,9 @@ components:
         awarding_entity_id:
           type: integer
           example: 3
+      required:
+        - agreement_type
+        - name
     BudgetLineItemCAN:
       type: object
       properties:
