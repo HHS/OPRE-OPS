@@ -130,9 +130,6 @@ describe("UserInfo", () => {
         expect(await screen.findByText("Reviewer/Approver")).toBeInTheDocument();
         expect(await screen.findByText("User Admin")).toBeInTheDocument();
         expect(await screen.findByText("Budget Team")).toBeInTheDocument();
-
-        screen.debug();
-
         expect(await screen.findByText("Procurement Team")).toBeInTheDocument();
     });
 
@@ -237,7 +234,6 @@ describe("UserInfo", () => {
         await browserUser.click(getByText("Viewer/Editor"));
 
         // check that the 2 roles are selected
-        screen.debug();
         expect(rolesComboBox).toHaveTextContent("System Owner");
         expect(rolesComboBox).toHaveTextContent("Viewer/Editor");
     });
