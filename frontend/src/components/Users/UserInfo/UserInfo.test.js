@@ -234,7 +234,6 @@ describe("UserInfo", () => {
         await browserUser.click(getByText("Viewer/Editor"));
 
         // check that the 2 roles are selected
-        screen.debug();
         expect(rolesComboBox).toHaveTextContent("System Owner");
         expect(rolesComboBox).toHaveTextContent("Viewer/Editor");
     });

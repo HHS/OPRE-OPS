@@ -1,5 +1,3 @@
-import PropTypes from "prop-types";
-
 /**
  * @typedef {Object} TagProps
  * @property {string} [tagStyle] - The style of the tag.
@@ -19,7 +17,17 @@ import PropTypes from "prop-types";
  * @param {TagProps} props - The props.
  * @returns {JSX.Element} - The tag element.
  */
-const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children, isLegend = false, ...rest }) => {
+const Tag = ({
+    tagStyle,
+    tagStyleActive,
+    text,
+    active = false,
+    label,
+    className,
+    children,
+    isLegend = false,
+    ...rest
+}) => {
     let tagClasses = "font-12px height-205 radius-md",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
@@ -115,13 +123,14 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
      */
     const handleLegendStyles = (isLegend) => {
         if (isLegend) {
-            return {width: "40px", padding: ".25em .5em", display: "inline-block",textAlign: "center"}
+            return { width: "40px", padding: ".25em .5em", display: "inline-block", textAlign: "center" };
         } else {
             return {
-            width: "fit-content", // Ensures the tag's width adapts to its content
-            padding: ".25em .5em" // Adds some space inside the tag for better readability}
+                width: "fit-content", // Ensures the tag's width adapts to its content
+                padding: ".25em .5em" // Adds some space inside the tag for better readability}
+            };
         }
-    }}
+    };
 
     return (
         <span
@@ -132,16 +141,6 @@ const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className,
             {text ? text : children}
         </span>
     );
-};
-
-Tag.propTypes = {
-    tagStyle: PropTypes.string,
-    text: PropTypes.string,
-    active: PropTypes.bool,
-    label: PropTypes.string,
-    className: PropTypes.string,
-    children: PropTypes.node,
-    tagStyleActive: PropTypes.string
 };
 
 export default Tag;

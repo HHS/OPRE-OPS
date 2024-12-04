@@ -17,7 +17,7 @@ describe("LegendItem", () => {
         render(<LegendItem {...defaultProps} />);
 
         expect(screen.getByText("Test Label")).toBeInTheDocument();
-        expect(screen.getByText("$1,000")).toBeInTheDocument();
+        expect(screen.getByText("$1,000.00")).toBeInTheDocument();
         expect(screen.getByText("10%")).toBeInTheDocument();
     });
 
@@ -62,7 +62,7 @@ describe("LegendItem", () => {
             />
         );
 
-        expect(screen.getByText("$1,234,567")).toBeInTheDocument();
+        expect(screen.getByText("$1,234,567.00")).toBeInTheDocument();
     });
 
     it("renders Tag component with correct props", () => {

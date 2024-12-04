@@ -16,7 +16,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
-import { useGetAbbreviationForProcurementShopId, useGetNameForProcurementShopId } from "../../../hooks/lookup.hooks";
+import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
 
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
@@ -36,7 +36,7 @@ import { useGetAbbreviationForProcurementShopId, useGetNameForProcurementShopId 
  * @property {boolean} inReview
  * @property {number} creatorId
  * @property {string} creationDate
- * @property {number} procShopId 
+ * @property {number} procShopId
  * @property {number} procShopFeePercentage
  * @property {string} notes
  */
@@ -72,7 +72,7 @@ const CANBudgetLineTableRow = ({
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
     const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
-    
+
     const TableRowData = (
         <>
             <th
