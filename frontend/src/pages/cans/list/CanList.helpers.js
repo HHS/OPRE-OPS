@@ -28,8 +28,8 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
         if (roles.some((role) => [USER_ROLES.ADMIN].includes(role))) return true;
 
         // Filter based on specific roles division directors and budget team
-        if (roles.includes(USER_ROLES.DIVISION_DIRECTOR || USER_ROLES.BUDGET_TEAM)) {
-            return can.portfolio.division.division_director_id === userId || can.portfolio.division.division_director_id === userId;
+        if (roles.includes(USER_ROLES.DIVISION_DIRECTOR) || roles.includes(USER_ROLES.BUDGET_TEAM)) {
+            return can.portfolio.division.division_director_id === userId || can.portfolio.division.deputy_division_director_id === userId;
         }
         // Filter based on team members
         // TODO: add project officers per #2884

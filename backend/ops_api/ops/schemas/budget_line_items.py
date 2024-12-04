@@ -7,7 +7,7 @@ from flask import current_app
 from marshmallow_enum import EnumField
 
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validates_schema
-from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ServicesComponent
+from models import AgreementReason, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
 from ops_api.ops.schemas.change_requests import GenericChangeRequestResponseSchema
 
 
