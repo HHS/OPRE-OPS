@@ -50,7 +50,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
                         inReview={budgetLine.in_review}
                         creatorId={budgetLine.created_by}
                         creationDate={budgetLine.created_on}
-                        procShopCode={budgetLine.agreement.awarding_entity_id}
+                        procShopId={budgetLine.agreement.awarding_entity_id}
                         procShopFeePercentage={budgetLine.proc_shop_fee_percentage}
                         notes={budgetLine.comments || "No Notes added"}
                     />
