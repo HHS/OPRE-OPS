@@ -62,8 +62,9 @@ jobs:
           azcliversion: latest
           inlineScript: |
             # Update job to this image
-            az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
-            # Start the data-tools job
+            az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+            az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-down-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+            # Start the DB schema update job
             az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
 
   deploy-backend:
