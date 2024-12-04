@@ -118,7 +118,7 @@ class CreateUpdateFundingDetailsSchema(Schema):
 class FundingDetailsSchema(Schema):
     active_period = fields.Integer(allow_none=True)
     funding_method = fields.String(allow_none=True)
-    funding_frequency = fields.String(allow_none=True)
+    funding_received = fields.String(allow_none=True)
     funding_type = fields.String(allow_none=True)
     allotment = fields.String(allow_none=True)
     allowance = fields.String(allow_none=True)
