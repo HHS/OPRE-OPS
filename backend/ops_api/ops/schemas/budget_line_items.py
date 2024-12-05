@@ -270,8 +270,8 @@ class BudgetLineItemCANSchema(Schema):
 
 
 class SimpleAgreementSchema(Schema):
-    agreement_type = fields.String(allow_none=True)
-    name = fields.String(allow_none=True)
+    agreement_type = fields.String(allow_none=False)
+    name = fields.String(allow_none=False)
     awarding_entity_id = fields.Integer(allow_none=True)
 
 

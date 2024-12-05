@@ -2,8 +2,11 @@ name: Staging Frontend Build and Deploy
 
 on:
   workflow_dispatch:
-  schedule: 
-    - cron: '0 0 * * *'
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'frontend/**'
 
 env:
   WORKING_DIR: "frontend"
