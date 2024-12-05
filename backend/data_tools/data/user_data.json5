@@ -560,14 +560,16 @@
       oidc_id: "00000000-0000-1111-a111-000000000026",
       status: "LOCKED"
     },
-    { // 527
+    {
+      id: 287,
       first_name: "Amare",
       last_name: "Beza",
       email: "amare.beza@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 2}],
       status: "ACTIVE"
     },
-    { // 528
+    {
+      id: 68,
       first_name: "Sheila",
       last_name: "Celentano",
       email: "sheila.celentano@acf.hhs.gov",
