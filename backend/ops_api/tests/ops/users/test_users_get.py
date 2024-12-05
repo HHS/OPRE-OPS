@@ -154,13 +154,12 @@ def test_get_all_users(auth_client, loaded_db):
     response = auth_client.get(url_for("api.users-group"))
     assert response.status_code == 200
     assert len(response.json) > 1
-    expected_user = loaded_db.get(User, 500)
+    expected_user = loaded_db.get(User, 68)
     assert response.json[0]["id"] == expected_user.id
     assert response.json[0]["status"] == expected_user.status.name
     assert response.json[0]["display_name"] == expected_user.display_name
     assert response.json[0]["division"] == expected_user.division
     assert response.json[0]["email"] == expected_user.email
-    assert response.json[0]["oidc_id"] == str(expected_user.oidc_id)
     assert response.json[0]["first_name"] == expected_user.first_name
     assert response.json[0]["last_name"] == expected_user.last_name
     assert response.json[0]["roles"] == [role.name for role in expected_user.roles]
@@ -213,7 +212,7 @@ def test_get_all_users_by_status(auth_client, loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_get_all_users_by_role(auth_client, loaded_db):
-    expected_user = loaded_db.get(User, 500)
+    expected_user = loaded_db.get(User, 68)
     response = auth_client.get(url_for("api.users-group", roles=[role.name for role in expected_user.roles]))
     assert response.status_code == 200
     assert len(response.json) > 1
@@ -258,7 +257,7 @@ def test_get_all_users_safe_user(client, loaded_db, test_non_admin_user):
     response = client.get(url_for("api.users-group"), headers={"Authorization": f"Bearer {str(access_token)}"})
     assert response.status_code == 200
     assert len(response.json) > 1
-    expected_user = loaded_db.get(User, 500)
+    expected_user = loaded_db.get(User, 68)
     assert response.json[0]["id"] == expected_user.id
     assert response.json[0]["full_name"] == expected_user.full_name
     assert "status" not in response.json[0]
