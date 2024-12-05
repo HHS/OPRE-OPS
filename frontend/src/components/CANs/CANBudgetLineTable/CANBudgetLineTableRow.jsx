@@ -16,6 +16,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
 import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
+import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
 
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
@@ -25,17 +26,17 @@ import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.ho
  * @typedef {Object} CANBudgetLineTableRowProps
  * @property {BudgetLine} budgetLine
  * @property {number} blId
- * @property {string} agreementName - TODO
+ * @property {string} agreementName
  * @property {string} obligateDate
  * @property {number | string } fiscalYear
  * @property {number} amount
  * @property {number} fee
- * @property {number} percentOfCAN - TODO
+ * @property {number} percentOfCAN
  * @property {string} status
  * @property {boolean} inReview
  * @property {number} creatorId
  * @property {string} creationDate
- * @property {string} procShopCode - TODO
+ * @property {number} procShopId
  * @property {number} procShopFeePercentage
  * @property {string} notes
  */
@@ -58,7 +59,7 @@ const CANBudgetLineTableRow = ({
     inReview,
     creatorId,
     creationDate,
-    procShopCode,
+    procShopId,
     procShopFeePercentage,
     notes
 }) => {
@@ -70,6 +71,7 @@ const CANBudgetLineTableRow = ({
     const feeTotal = totalBudgetLineFeeAmount(amount, fee);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
     const displayCreatedDate = formatDateToMonthDayYear(creationDate);
+    const procShopName = useGetAbbreviationForProcurementShopId(procShopId);
 
     const TableRowData = (
         <>
@@ -175,7 +177,7 @@ const CANBudgetLineTableRow = ({
                             className="margin-0"
                             style={{ maxWidth: "25rem" }}
                         >
-                            {`${procShopCode}-Fee Rate: ${procShopFeePercentage * 100}%`}
+                            {`${procShopName}-Fee Rate: ${procShopFeePercentage * 100}%`}
                         </dd>
                     </dl>
                     <div className="font-12px display-flex margin-top-1">

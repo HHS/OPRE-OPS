@@ -34,10 +34,11 @@ const Can = () => {
         plannedFunding,
         obligatedFunding,
         inExecutionFunding,
+        inDraftFunding,
         subTitle,
         projectTypesCount,
         budgetLineTypesCount,
-        testAgreements,
+        agreementTypesCount,
         receivedFunding
     } = useCan();
 
@@ -85,8 +86,9 @@ const Can = () => {
                             fiscalYear={fiscalYear}
                             projectTypesCount={projectTypesCount}
                             budgetLineTypesCount={budgetLineTypesCount}
-                            agreementTypesCount={testAgreements}
+                            agreementTypesCount={agreementTypesCount}
                             inExecutionFunding={inExecutionFunding}
+                            inDraftFunding={inDraftFunding}
                             obligatedFunding={obligatedFunding}
                             plannedFunding={plannedFunding}
                             totalFunding={totalFunding}

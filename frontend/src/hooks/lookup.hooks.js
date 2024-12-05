@@ -52,6 +52,26 @@ export const useGetNameForProcurementShopId = (id) => {
 };
 
 /**
+ * This hook returns the abbreviation of a Procurement Shop given the id.
+ * @param {number} id - The id of the Procurement Shop.
+ * @returns {string} - The abbreviation of the Procurement Shop.
+ */
+export const useGetAbbreviationForProcurementShopId = (id) => {
+    const [displayName, setDisplayName] = React.useState("unknown");
+
+    const { data, isSuccess } = useGetProcurementShopsQuery();
+
+    React.useEffect(() => {
+        if (isSuccess) {
+            const item = data.find((element) => element.id === id);
+            if (item) setDisplayName(`${item.abbr}`);
+        }
+    }, [id, data, isSuccess]);
+
+    return displayName;
+};
+
+/**
  * This hook returns the display name of a Research Project given the id.
  * @param {number} id - The id of the Research Project.
  * @returns {string} - The display name of the Research Project.

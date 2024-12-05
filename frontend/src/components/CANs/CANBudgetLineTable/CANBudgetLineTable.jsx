@@ -38,7 +38,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
                         key={budgetLine.id}
                         budgetLine={budgetLine}
                         blId={budgetLine.id}
-                        agreementName="TBD"
+                        agreementName={budgetLine.agreement.name ?? "TBD"}
                         obligateDate={formatDateNeeded(budgetLine.date_needed || "")}
                         fiscalYear={budgetLine.fiscal_year || "TBD"}
                         amount={budgetLine.amount ?? 0}
@@ -48,7 +48,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
                         inReview={budgetLine.in_review}
                         creatorId={budgetLine.created_by}
                         creationDate={budgetLine.created_on}
-                        procShopCode="TBD"
+                        procShopId={budgetLine.agreement.awarding_entity_id ?? -1}
                         procShopFeePercentage={budgetLine.proc_shop_fee_percentage}
                         notes={budgetLine.comments || "No Notes added"}
                     />
