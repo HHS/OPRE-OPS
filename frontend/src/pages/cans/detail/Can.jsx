@@ -30,6 +30,7 @@ const Can = () => {
         divisionId,
         teamLeaders,
         portfolioName,
+        portfolioId,
         totalFunding,
         plannedFunding,
         obligatedFunding,
@@ -39,7 +40,8 @@ const Can = () => {
         projectTypesCount,
         budgetLineTypesCount,
         agreementTypesCount,
-        receivedFunding
+        receivedFunding,
+        isBudgetTeam
     } = useCan();
 
     if (isLoading || CANFundingLoading) {
@@ -69,12 +71,16 @@ const Can = () => {
                     path=""
                     element={
                         <CanDetail
+                            canId={canId}
                             divisionId={divisionId}
                             description={description ?? NO_DATA}
                             nickname={nickname ?? NO_DATA}
                             number={number}
                             portfolioName={portfolioName ?? NO_DATA}
+                            portfolioId={portfolioId}
                             teamLeaders={teamLeaders ?? []}
+                            fiscalYear={fiscalYear}
+                            isBudgetTeamMember={isBudgetTeam}
                         />
                     }
                 />

@@ -203,12 +203,21 @@ export const opsApi = createApi({
             query: (id) => `/cans/${id}`,
             providesTags: ["Cans"]
         }),
+        updateCan: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/cans/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: ["Cans"]
+        }),
         getCanFundingSummary: builder.query({
             query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
                 const queryParams = [];
 
                 if (ids && ids.length > 0) {
-                    ids.forEach(id => queryParams.push(`can_ids=${id}`));
+                    ids.forEach((id) => queryParams.push(`can_ids=${id}`));
                 }
 
                 if (fiscalYear) {
@@ -216,15 +225,15 @@ export const opsApi = createApi({
                 }
 
                 if (activePeriod && activePeriod.length > 0) {
-                    activePeriod.forEach(period => queryParams.push(`active_period=${period}`));
+                    activePeriod.forEach((period) => queryParams.push(`active_period=${period}`));
                 }
 
                 if (transfer && transfer.length > 0) {
-                    transfer.forEach(t => queryParams.push(`transfer=${t}`));
+                    transfer.forEach((t) => queryParams.push(`transfer=${t}`));
                 }
 
                 if (portfolio && portfolio.length > 0) {
-                    portfolio.forEach(p => queryParams.push(`portfolio=${p}`));
+                    portfolio.forEach((p) => queryParams.push(`portfolio=${p}`));
                 }
 
                 if (fyBudgets && fyBudgets.length === 2) {
@@ -401,6 +410,7 @@ export const {
     useUpdateUserMutation,
     useGetCansQuery,
     useGetCanByIdQuery,
+    useUpdateCanMutation,
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,
