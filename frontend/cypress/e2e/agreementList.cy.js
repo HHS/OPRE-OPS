@@ -115,7 +115,7 @@ it("the filter button works as expected", () => {
     // check that the correct tags are displayed
     cy.get("div").contains("Upcoming Need By Date: Current FY").should("exist");
     cy.get("div").contains("Project: Human Services Interoperability Support").should("exist");
-    cy.get("div").contains("Project Officer: Chris Fortunato").should("exist");
+    cy.get("div").contains("Project Officer: Sheila Celentano").should("exist");
     cy.get("div").contains("Type: Contract").should("exist");
     cy.get("div").contains("Procurement Shop: Product Service Center").should("exist");
     cy.get("div").contains("Budget Line Status: Draft").should("exist");
