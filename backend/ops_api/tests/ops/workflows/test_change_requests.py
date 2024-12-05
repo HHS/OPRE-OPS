@@ -87,7 +87,7 @@ def test_budget_line_item_change_request(app, test_bli):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_patch_with_budgets_change_requests(
-    division_director_auth_client, app, loaded_db, test_division_director, test_can
+    budget_team_auth_client, division_director_auth_client, app, loaded_db, test_division_director, test_can
 ):
     session = app.db_session
     agreement_id = 1
@@ -118,7 +118,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
 
     #  submit PATCH BLI which triggers a budget change requests
     data = {"amount": 222.22, "can_id": 501, "date_needed": "2032-02-02"}
-    response = division_director_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 202
     resp_json = response.json
     assert "change_requests_in_review" in resp_json
@@ -320,7 +320,7 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
 
 @pytest.mark.usefixtures("app_ctx")
 def test_budget_line_item_patch_with_status_change_requests(
-    division_director_auth_client, app, loaded_db, test_division_director
+    budget_team_auth_client, division_director_auth_client, app, loaded_db, test_division_director
 ):
     session = app.db_session
     agreement_id = 1
@@ -352,7 +352,7 @@ def test_budget_line_item_patch_with_status_change_requests(
 
     #  submit PATCH BLI which is rejected due to missing required fields
     data = {"status": "PLANNED", "requestor_notes": "Notes from the requestor"}
-    response = division_director_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
     assert response.status_code == 400
     assert "_schema" in response.json
     assert len(response.json["_schema"]) == 3
@@ -372,7 +372,7 @@ def test_budget_line_item_patch_with_status_change_requests(
     prev_hist_count = hist_count
 
     #  submit PATCH BLI which triggers a change request for status change
-    response = division_director_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
+    response = budget_team_auth_client.patch(url_for("api.budget-line-items-item", id=bli_id), json=data)
 
     assert response.status_code == 202
     resp_json = response.json

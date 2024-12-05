@@ -95,15 +95,15 @@ describe("sortAndFilterCANs", () => {
         expect(result[result.length - 1].id).toBe(4);
     });
 
-    it("should allow admin to see all CANs when myCANsUrl is true", () => {
-        const adminUser = { ...mockUser, roles: [USER_ROLES.ADMIN] };
-        const result = sortAndFilterCANs(mockCANs, true, adminUser, mockFilters);
+    it("should allow system owner to see all CANs when myCANsUrl is true", () => {
+        const systemOwner = { ...mockUser, roles: [USER_ROLES.SYSTEM_OWNER] };
+        const result = sortAndFilterCANs(mockCANs, true, systemOwner, mockFilters);
         expect(result.length).toBe(4);
     });
 
-    it("should filter CANs by division for division directors and budget team", () => {
-        const divisionDirector = { ...mockUser, roles: [USER_ROLES.DIVISION_DIRECTOR] };
-        const result = sortAndFilterCANs(mockCANs, true, divisionDirector, mockFilters);
+    it("should filter CANs by division for reviewer/approvers and budget team", () => {
+        const reviewerApprover = { ...mockUser, roles: [USER_ROLES.REVIEWER_APPROVER] };
+        const result = sortAndFilterCANs(mockCANs, true, reviewerApprover, mockFilters);
         expect(result.length).toBe(3);
         expect(result.every((can) => can.portfolio.division_id === 1 )).toBe(true);
     });

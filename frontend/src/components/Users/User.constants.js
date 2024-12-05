@@ -5,18 +5,16 @@
  * @enum {string}
  * @property {string} USER_ADMIN - Represents a user admin role.
  * @property {string} BUDGET_TEAM - Represents a budget team role.
- * @property {string} ADMIN - Represents an admin role.
- * @property {string} DIVISION_DIRECTOR - Represents a division director role.
- * @property {string} USER - Represents a user role.
- * @property {string} UNASSIGNED - Represents an unassigned role.
+ * @property {string} SYSTEM_OWNER - Represents a System Owner role.
+ * @property {string} REVIEWER_APPROVER - Represents a Reviewer/Approver role.
+ * @property {string} VIEWER_EDITOR - Represents a basic user role.
  */
 export const USER_ROLES = {
     USER_ADMIN: "USER_ADMIN",
     BUDGET_TEAM: "BUDGET_TEAM",
-    ADMIN: "admin",
-    DIVISION_DIRECTOR: "division-director",
-    USER: "user",
-    UNASSIGNED: "unassigned"
+    SYSTEM_OWNER: "SYSTEM_OWNER",
+    REVIEWER_APPROVER: "REVIEWER_APPROVER",
+    VIEWER_EDITOR: "VIEWER_EDITOR"
 };
 
 /**

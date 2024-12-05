@@ -25,10 +25,10 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
         if (!myCANsUrl) return true;
 
         // Check if user has any role that allows access to all CANs
-        if (roles.some((role) => [USER_ROLES.ADMIN].includes(role))) return true;
+        if (roles.some((role) => [USER_ROLES.SYSTEM_OWNER].includes(role))) return true;
 
         // Filter based on specific roles division directors and budget team
-        if (roles.includes(USER_ROLES.DIVISION_DIRECTOR || USER_ROLES.BUDGET_TEAM)) {
+        if (roles.includes(USER_ROLES.REVIEWER_APPROVER || USER_ROLES.BUDGET_TEAM)) {
             return can.portfolio.division_id === userDivisionId;
         }
         // Filter based on team members
