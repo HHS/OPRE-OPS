@@ -2,6 +2,11 @@ name: Staging Backend Build and Deploy
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
 
 env:
   WORKING_DIR: "backend"
