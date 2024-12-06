@@ -51,9 +51,9 @@ describe("ChangeRequestList", () => {
     });
     it("renders with change requests", async () => {
         const mockChangeRequests = [
-            { ...changeRequests[0], managing_division_id: 1 },
-            { ...changeRequests[1], managing_division_id: 1 },
-            { ...changeRequests[2], managing_division_id: 2 } // This should be filtered out
+            { ...changeRequests[0]},
+            { ...changeRequests[1]},
+            { ...changeRequests[2]}
         ];
 
         useGetChangeRequestsListQuery.mockReturnValue({ data: mockChangeRequests });
@@ -72,6 +72,6 @@ describe("ChangeRequestList", () => {
         );
 
         const headings = await screen.findAllByText(/budget change/i);
-        expect(headings).toHaveLength(2);
+        expect(headings).toHaveLength(3);
     });
 });

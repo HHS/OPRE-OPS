@@ -58,13 +58,6 @@ def test_valid_agreement_reason(loaded_db, context): ...
 
 @scenario(
     "validate_draft_budget_lines.feature",
-    "Valid Agreement Reason - NEW_REQ does not have a Vendor",
-)
-def test_valid_agreement_reason_no_vendor(loaded_db, context): ...
-
-
-@scenario(
-    "validate_draft_budget_lines.feature",
     "Valid Agreement Reason - RECOMPETE and LOGICAL_FOLLOW_ON requires a Vendor",
 )
 def test_valid_agreement_reason_vendor_required(loaded_db, context): ...

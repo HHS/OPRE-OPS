@@ -322,7 +322,9 @@ export const opsApi = createApi({
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getChangeRequestsList: builder.query({
-            query: () => `/change-requests/`,
+            query: ({userId}) => ({
+                url: `/change-requests/${userId ? `?userId=${userId}` : ""}`,
+            }),
             providesTags: ["ChangeRequests"]
         }),
         reviewChangeRequest: builder.mutation({
