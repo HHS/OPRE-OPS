@@ -8,7 +8,12 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
     const [nickName, setNickName] = React.useState(canNickname);
     const [description, setDescription] = React.useState(canDescription);
     const [showModal, setShowModal] = React.useState(false);
-    const [modalProps, setModalProps] = React.useState({});
+    const [modalProps, setModalProps] = React.useState({
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {}
+    });
     const [updateCan] = useUpdateCanMutation();
     const { setAlert } = useAlert();
 
@@ -57,6 +62,13 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
     const cleanUp = () => {
         setNickName("");
         setDescription("");
+        setShowModal(false);
+        setModalProps({
+            heading: "",
+            actionButtonText: "",
+            secondaryButtonText: "",
+            handleConfirm: () => {}
+        });
         toggleEditMode();
     };
 
