@@ -14,7 +14,7 @@ it("should loads", () => {
     cy.get("h1").should("have.text", "Temporary Upload Document Page");
 });
 
-it.skip("should create a document database record and upload to in memory storage", () => {
+it("should create a document database record and upload to in memory storage", () => {
     // Entering an Agreement ID in the Upload Document section
     cy.get("#agreement-id-upload").type("1");
     // Selecting a file

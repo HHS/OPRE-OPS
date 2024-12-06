@@ -44,11 +44,24 @@ class PortfolioUrlCANSchema(Schema):
     updated_by_user = fields.Nested(SafeUserSchema(), allow_none=True)
 
 
+class DivisionSchema(Schema):
+    id = fields.Integer(required=True)
+    name = fields.String(allow_none=True)
+    abbreviation = fields.String(required=True)
+    division_director_id = fields.Integer(required=True)
+    deputy_division_director_id = fields.Integer(required=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+
+
 class PortfolioCANSchema(Schema):
     id = fields.Integer(required=True)
     name = fields.String(allow_none=True)
     abbreviation = fields.String(required=True)
     status = fields.Enum(PortfolioStatus)
+    division = fields.Nested(DivisionSchema(), default=[])
     division_id = fields.Integer(required=True)
     urls = fields.List(fields.Nested(PortfolioUrlCANSchema()), default=[])
     team_leaders = fields.List(fields.Nested(SafeUserSchema()), default=[])
@@ -118,7 +131,7 @@ class CreateUpdateFundingDetailsSchema(Schema):
 class FundingDetailsSchema(Schema):
     active_period = fields.Integer(allow_none=True)
     funding_method = fields.String(allow_none=True)
-    funding_frequency = fields.String(allow_none=True)
+    funding_received = fields.String(allow_none=True)
     funding_type = fields.String(allow_none=True)
     allotment = fields.String(allow_none=True)
     allowance = fields.String(allow_none=True)

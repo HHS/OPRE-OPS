@@ -261,11 +261,6 @@ def test_change_request_list(auth_client, app, test_user, test_admin_user, test_
     session.add(change_request1)
     session.commit()
 
-    # verify no change request in the list to review for this user
-    response = auth_client.get(url_for("api.change-request-list"))
-    assert response.status_code == 200
-    assert len(response.json) == 0
-
     # change division#1 director and division#2 deputy directory to this test user
     division1: Division = session.get(Division, 1)
     division1.division_director_id = test_admin_user.id

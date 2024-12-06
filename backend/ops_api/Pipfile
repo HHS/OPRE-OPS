@@ -14,7 +14,7 @@ flask = "==3.1.0"
 flask-cors = "==5.0.0"
 flask-jwt-extended = {extras = ["asymmetric_crypto"], version = "==4.7.1"}
 gunicorn = "==23.0.0"
-loguru = "==0.7.2"
+loguru = "==0.7.3"
 markupsafe = "==3.0.2"
 marshmallow-dataclass = "==8.7.1"
 marshmallow-enum = "==1.5.1"

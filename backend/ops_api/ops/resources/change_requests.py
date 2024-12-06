@@ -71,21 +71,20 @@ def review_change_request(
 
 # TODO: add more query options, for now this just returns CRs in review for
 #  the current user as a division director or deputy division director
-def find_change_requests(limit: int = 10, offset: int = 0):
-
-    current_user_id = getattr(current_user, "id", None)
+def find_change_requests(user_id, limit: int = 10, offset: int = 0):
 
     stmt = (
         select(ChangeRequest)
         .join(Division, ChangeRequest.managing_division_id == Division.id)
         .where(ChangeRequest.status == ChangeRequestStatus.IN_REVIEW)
-        .where(
+    )
+    if user_id:
+        stmt = stmt.where(
             or_(
-                Division.division_director_id == current_user_id,
-                Division.deputy_division_director_id == current_user_id,
+                Division.division_director_id == user_id,
+                Division.deputy_division_director_id == user_id,
             )
         )
-    )
     stmt = stmt.limit(limit)
     if offset:
         stmt = stmt.offset(int(offset))
@@ -111,7 +110,8 @@ class ChangeRequestListAPI(BaseListAPI):
     def get(self) -> Response:
         limit = request.args.get("limit", 10, type=int)
         offset = request.args.get("offset", 0, type=int)
-        results = find_change_requests(limit=limit, offset=offset)
+        user_id = request.args.get("userId")
+        results = find_change_requests(user_id, limit=limit, offset=offset)
         change_requests = [row[0] for row in results] if results else None
         if change_requests:
             response = make_response_with_headers(self._response_schema_collection.dump(change_requests))

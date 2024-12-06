@@ -613,7 +613,15 @@ export const budgetLineWithBudgetChangeRequest = {
         portfolio: {
             division_id: 1,
             id: 1,
-            name: "Test Portfolio"
+            name: "Test Portfolio",
+            division: {
+                abbreviation: "test",
+                deputy_division_director_id: 1,
+                display_name: "test",
+                division_director_id: 1,
+                id: 1,
+                name: "test"
+            }
         }
     },
     can_id: 512,
@@ -756,7 +764,15 @@ export const budgetLineWithStatusChangeRequestToPlanned = {
         portfolio: {
             division_id: 1,
             id: 1,
-            name: "Test Portfolio"
+            name: "Test Portfolio",
+            division: {
+                abbreviation: "test",
+                deputy_division_director_id: 1,
+                display_name: "test",
+                division_director_id: 1,
+                id: 1,
+                name: "test"
+            }
         }
     },
     can_id: 504,
@@ -847,7 +863,15 @@ export const budgetLineWithStatusChangeRequestToExecuting = {
         portfolio: {
             division_id: 1,
             id: 1,
-            name: "Test Portfolio"
+            name: "Test Portfolio",
+            division: {
+                abbreviation: "test",
+                deputy_division_director_id: 1,
+                display_name: "test",
+                division_director_id: 1,
+                id: 1,
+                name: "test"
+            }
         }
     },
     can_id: 502,

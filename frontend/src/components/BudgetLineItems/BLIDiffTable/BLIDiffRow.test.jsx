@@ -29,7 +29,7 @@ vi.mock("react-redux", async () => {
             const mockState = {
                 auth: {
                     activeUser: {
-                        division: 1
+                        id: 1
                     }
                 }
             };

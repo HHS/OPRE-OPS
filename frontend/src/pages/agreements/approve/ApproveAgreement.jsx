@@ -26,7 +26,7 @@ const ApproveAgreement = () => {
         approvedBudgetLinesPreview,
         budgetLinesInReview,
         changeRequestTitle,
-        changeRequestsInReviewForUser,
+        changeRequestsInReview,
         checkBoxText,
         confirmation,
         errorAgreement,
@@ -84,7 +84,7 @@ const ApproveAgreement = () => {
 
             <ReviewChangeRequestAccordion
                 changeType={changeRequestTitle}
-                changeRequests={changeRequestsInReviewForUser}
+                changeRequests={changeRequestsInReview}
                 statusChangeTo={urlChangeToStatus}
             />
             <AgreementMetaAccordion

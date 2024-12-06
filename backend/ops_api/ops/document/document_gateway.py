@@ -1,4 +1,4 @@
-from flask import Config
+from flask import Config, current_app
 
 from ops_api.ops.document.azure_document_repository import AzureDocumentRepository
 from ops_api.ops.document.document_repository import DocumentRepository
@@ -15,7 +15,10 @@ class DocumentGateway:
         # Validate and register providers with the factory
         self.register_providers()
 
-        self.provider = DocumentProviders.azure.name
+        if "localhost" in current_app.config.get("OPS_FRONTEND_URL"):
+            self.provider = DocumentProviders.fake.name
+        else:
+            self.provider = DocumentProviders.azure.name
 
     def register_providers(self) -> None:
         """
