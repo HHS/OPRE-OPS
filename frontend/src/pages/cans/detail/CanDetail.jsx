@@ -15,7 +15,7 @@ import React from "react";
  * @typedef {Object} CanDetailProps
  * @property {number} canId
  * @property {string} description
- * @property {string} number
+ * @property {string} canNumber
  * @property {string} nickname
  * @property {string} portfolioName
  * @property {number} portfolioId
@@ -33,7 +33,7 @@ import React from "react";
 const CanDetail = ({
     canId,
     description,
-    number,
+    canNumber,
     nickname,
     portfolioName,
     portfolioId,
@@ -46,6 +46,10 @@ const CanDetail = ({
     const divisionDirectorFullName = useGetUserFullNameFromId(isSuccess ? division.division_director_id : null);
     const [isEditMode, setIsEditMode] = React.useState(false);
 
+    const toggleEditMode = () => {
+        setIsEditMode(!isEditMode);
+    };
+
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear);
 
@@ -57,9 +61,7 @@ const CanDetail = ({
                     <button
                         id="edit"
                         className="hover:text-underline cursor-pointer"
-                        onClick={() => {
-                            setIsEditMode(!isEditMode);
-                        }}
+                        onClick={toggleEditMode}
                     >
                         <FontAwesomeIcon
                             icon={faPen}
@@ -75,13 +77,16 @@ const CanDetail = ({
             {isEditMode ? (
                 <CANDetailForm
                     canId={canId}
-                    number={number}
+                    canNumber={canNumber}
                     portfolioId={portfolioId}
+                    canNickname={nickname}
+                    canDescription={description}
+                    toggleEditMode={toggleEditMode}
                 />
             ) : (
                 <CANDetailView
                     description={description}
-                    number={number}
+                    number={canNumber}
                     nickname={nickname}
                     portfolioName={portfolioName}
                     teamLeaders={teamLeaders}

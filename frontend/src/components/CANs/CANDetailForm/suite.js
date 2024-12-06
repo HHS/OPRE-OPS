@@ -6,7 +6,6 @@ const suite = create((data = {}, fieldName) => {
     test("can_nick_name", "This is required information", () => {
         enforce(data.can_nick_name).isNotBlank();
     });
-
 });
 
 export default suite;

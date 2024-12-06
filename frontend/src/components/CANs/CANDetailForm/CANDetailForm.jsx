@@ -1,13 +1,28 @@
 import React from "react";
+import classnames from "vest/classnames";
+import { useUpdateCanMutation } from "../../../api/opsAPI";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea";
-import { useUpdateCanMutation } from "../../../api/opsAPI";
 import suite from "./suite.js";
-import classnames from "vest/classnames";
 
-const CANDetailForm = ({ canId, number, portfolioId }) => {
-    const [nickName, setNickName] = React.useState("");
-    const [description, setDescription] = React.useState("");
+/**
+ * @typedef {Object} CANDetailFormProps
+ * @property {number} canId - CAN ID
+ * @property {string} canNumber - CAN number
+ * @property {string} canNickname - CAN nick name
+ * @property {string} canDescription - CAN description
+ * @property {number} portfolioId - Portfolio ID
+ * @property {Function} toggleEditMode - Function to toggle edit mode
+ */
+
+/**
+ * @component - The CAN Details form
+ * @param {CANDetailFormProps} props
+ * @returns {JSX.Element}
+ */
+const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode }) => {
+    const [nickName, setNickName] = React.useState(canNickname);
+    const [description, setDescription] = React.useState(canDescription);
     const [updateCan] = useUpdateCanMutation();
 
     let res = suite.get();
@@ -26,7 +41,7 @@ const CANDetailForm = ({ canId, number, portfolioId }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const payload = {
-            number: number,
+            number: canNumber,
             portfolio_id: portfolioId,
             nick_name: nickName,
             description: description
@@ -43,6 +58,7 @@ const CANDetailForm = ({ canId, number, portfolioId }) => {
     const cleanUp = () => {
         setNickName("");
         setDescription("");
+        toggleEditMode();
     };
 
     const runValidate = (name, value) => {
@@ -55,7 +71,11 @@ const CANDetailForm = ({ canId, number, portfolioId }) => {
     };
 
     return (
-        <form>
+        <form
+            onSubmit={(e) => {
+                handleSubmit(e);
+            }}
+        >
             <Input
                 name="can_nick_name"
                 label="CAN Nickname"
@@ -88,9 +108,6 @@ const CANDetailForm = ({ canId, number, portfolioId }) => {
                 <button
                     id="save-changes"
                     className="usa-button"
-                    onClick={(e) => {
-                        handleSubmit(e);
-                    }}
                     disabled={nickName.length == 0 || res.hasErrors()}
                     data-cy="save-btn"
                 >
