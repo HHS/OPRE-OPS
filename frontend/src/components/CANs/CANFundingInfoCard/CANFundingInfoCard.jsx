@@ -78,12 +78,10 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                 </div>
                 <div className="grid-col">
                     <dl>
-                        {/* TODO: ask where this comes from */}
                         <TermTag
-                            term="Funding Received*"
-                            description="Coming Soon"
+                            term="Funding Received"
+                            description={funding.funding_received ?? NO_DATA}
                         />
-                        {/* TODO: ask where this comes from */}
                         <TermTag
                             term="Funding Source"
                             description={funding.funding_source ?? NO_DATA}
@@ -93,8 +91,8 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                 <div className="grid-col">
                     <dl>
                         <TermTag
-                            term="Funding Method*"
-                            description="Coming Soon"
+                            term="Funding Method"
+                            description={funding.funding_method ?? NO_DATA}
                         />
                         <TermTag
                             term="Partner"
@@ -104,10 +102,9 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                 </div>
                 <div className="grid-col">
                     <dl>
-                        {/* TODO: ask where this comes from */}
                         <TermTag
-                            term="Funding Type*"
-                            description="Coming Soon"
+                            term="Funding Type"
+                            description={funding.funding_type ?? NO_DATA}
                         />
                         <TermTag
                             term="Method of Transfer"
