@@ -1,5 +1,10 @@
 export const budgetLine = {
     agreement_id: 1,
+    agreement: {
+      name: "Contract #1: African American Child and Family Research Center",
+      agreement_type: "AgreementType.CONTRACT",
+      awarding_entity_id: 1
+    },
     amount: 1_000_000,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
@@ -525,6 +530,10 @@ export const roles = [
     {
         id: 5,
         name: "BUDGET_TEAM"
+    },
+    {
+        id: 6,
+        name: "PROCUREMENT_TEAM"
     }
 ];
 

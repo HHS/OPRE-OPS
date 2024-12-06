@@ -281,6 +281,46 @@
         "GET_UPLOAD_DOCUMENT",
         "POST_UPLOAD_DOCUMENT"
       ]
+    },
+    { // 6 Procurement Team Member
+      name: "PROCUREMENT_TEAM",
+      permissions: [
+        "GET_AGREEMENT",
+
+        "GET_BUDGET_LINE_ITEM",
+
+        "GET_SERVICES_COMPONENT",
+
+        "GET_BLI_PACKAGE",
+
+        "GET_CAN",
+
+        "GET_DIVISION",
+
+        "GET_NOTIFICATION",
+        "PUT_NOTIFICATION",
+        "PATCH_NOTIFICATION",
+
+        "GET_PORTFOLIO",
+
+        "GET_RESEARCH_PROJECT",
+
+        "GET_USER",
+        "PUT_USER",
+        "PATCH_USER",
+
+        "GET_HISTORY",
+
+        "GET_WORKFLOW",
+
+        "GET_CHANGE_REQUEST",
+
+        "GET_CHANGE_REQUEST_REVIEW",
+
+        "GET_UPLOAD_DOCUMENT",
+        "POST_UPLOAD_DOCUMENT",
+        "PATCH_UPLOAD_DOCUMENT"
+      ],
     }
   ],
   ops_user: [
@@ -494,7 +534,6 @@
       email: "budget.team@email.com",
       oidc_id: "00000000-0000-1111-a111-000000000021",
       roles: [{"tablename":  "role", "id": 4}, {"tablename":  "role", "id": 5}],
-      groups: [],
       status: "ACTIVE"
     },
     { // 524
@@ -503,7 +542,6 @@
       division: 1,
       email: "john.mcdill@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 2}],
-      groups: [],
       status: "ACTIVE"
     },
     { // 525
@@ -513,7 +551,6 @@
       email: "director.derrek@email.com",
       roles: [{"tablename":  "role", "id": 3}],
       oidc_id: "00000000-0000-1111-a111-000000000022",
-      groups: [],
       status: "ACTIVE"
     },
     { // 526
@@ -523,18 +560,29 @@
       oidc_id: "00000000-0000-1111-a111-000000000026",
       status: "LOCKED"
     },
-    { // 527
+    {
+      id: 287,
       first_name: "Amare",
       last_name: "Beza",
       email: "amare.beza@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 2}],
       status: "ACTIVE"
     },
-    { // 528
+    {
+      id: 68,
       first_name: "Sheila",
       last_name: "Celentano",
       email: "sheila.celentano@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 4}, {"tablename":  "role", "id": 5}],
+      status: "ACTIVE"
+    },
+    { // 529
+      first_name: "Procurement",
+      last_name: "Team",
+      division: 1,
+      email: "procurement.team@email.com",
+      oidc_id: "00000000-0000-1111-a111-000000000027",
+      roles: [{"tablename":  "role", "id": 6}],
       status: "ACTIVE"
     }
   ],

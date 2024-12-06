@@ -37,7 +37,8 @@ const constants = {
         { name: "VIEWER_EDITOR", label: "Viewer/Editor" },
         { name: "REVIEWER_APPROVER", label: "Reviewer/Approver" },
         { name: "USER_ADMIN", label: "User Admin" },
-        { name: "BUDGET_TEAM", label: "Budget Team" }
+        { name: "BUDGET_TEAM", label: "Budget Team" },
+        { name: "PROCUREMENT_TEAM", label: "Procurement Team" }
     ]
 };
 

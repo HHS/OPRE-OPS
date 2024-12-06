@@ -90,7 +90,7 @@ const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines
                                         className={`bg-brand-primary-light text-brand-primary-dark ${
                                             index > 0 ? "margin-top-1" : ""
                                         }`}
-                                        text={`${count} ${convertCodeForDisplay("agreementType", type)}`}
+                                        text={`${count} ${convertCodeForDisplay("agreement", type)}`}
                                     />
                                 ))}
                         </div>

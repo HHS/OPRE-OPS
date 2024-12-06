@@ -2,6 +2,11 @@ name: Staging Backend Build and Deploy
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
 
 env:
   WORKING_DIR: "backend"
@@ -62,9 +67,11 @@ jobs:
           azcliversion: latest
           inlineScript: |
             # Update job to this image
+            az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
+            az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-down-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
             az containerapp job update -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --image ghcr.io/hhs/opre-ops/ops-data-tools:${{ github.sha }}
-            # Start the data-tools job
-            az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-data-tools -g opre-ops-${{ env.ENVIRONMENT }}-app-rg --args "/bin/ash, -c, ./data_tools/scripts/upgrade_schema.sh"
+            # Start the DB schema update job
+            az containerapp job start -n opre-ops-${{ env.ENVIRONMENT }}-app-up-schema -g opre-ops-${{ env.ENVIRONMENT }}-app-rg
 
   deploy-backend:
     needs: build-backend

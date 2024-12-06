@@ -192,6 +192,13 @@ export const codesToDisplayText = {
     project: {
         ADMINISTRATIVE_AND_SUPPORT: "Admin & Support",
         RESEARCH: "Research"
+    },
+    agreement: {
+        "AgreementType.CONTRACT": "Contract",
+        "AgreementType.GRANT": "Grant",
+        "AgreementType.DIRECT_ALLOCATION": "Direct Allocation",
+        "AgreementType.IAA": "IAA",
+        "AgreementType.MISCELLANEOUS": "Misc"
     }
 };
 
