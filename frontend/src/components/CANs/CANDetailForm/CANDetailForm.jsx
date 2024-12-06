@@ -1,9 +1,6 @@
-import React from "react";
-import classnames from "vest/classnames";
-import { useUpdateCanMutation } from "../../../api/opsAPI";
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea";
-import suite from "./suite.js";
+import useCanDetailForm from "./CANDetailForm.hooks";
 
 /**
  * @typedef {Object} CANDetailFormProps
@@ -21,54 +18,8 @@ import suite from "./suite.js";
  * @returns {JSX.Element}
  */
 const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode }) => {
-    const [nickName, setNickName] = React.useState(canNickname);
-    const [description, setDescription] = React.useState(canDescription);
-    const [updateCan] = useUpdateCanMutation();
-
-    let res = suite.get();
-
-    const cn = classnames(suite.get(), {
-        invalid: "usa-form-group--error",
-        valid: "success",
-        warning: "warning"
-    });
-
-    const handleCancel = (e) => {
-        e.preventDefault();
-        cleanUp();
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const payload = {
-            number: canNumber,
-            portfolio_id: portfolioId,
-            nick_name: nickName,
-            description: description
-        };
-
-        updateCan({
-            id: canId,
-            data: payload
-        });
-
-        cleanUp();
-    };
-
-    const cleanUp = () => {
-        setNickName("");
-        setDescription("");
-        toggleEditMode();
-    };
-
-    const runValidate = (name, value) => {
-        suite(
-            {
-                ...{ [name]: value }
-            },
-            name
-        );
-    };
+    const { nickName, setNickName, description, setDescription, handleCancel, handleSubmit, runValidate, res, cn } =
+        useCanDetailForm(canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode);
 
     return (
         <form
