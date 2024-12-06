@@ -11,8 +11,9 @@ export default function useCan() {
      *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
      */
 
-    const userRoles = useSelector((state) => state.auth.activeUser.roles);
-    const isBudgetTeam = userRoles?.includes(USER_ROLES.BUDGET_TEAM);
+    const activeUser = useSelector((state) => state.auth.activeUser);
+    const userRoles = activeUser?.roles ?? [];
+    const isBudgetTeam = userRoles.includes(USER_ROLES.BUDGET_TEAM);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
     const urlPathParams = useParams();
