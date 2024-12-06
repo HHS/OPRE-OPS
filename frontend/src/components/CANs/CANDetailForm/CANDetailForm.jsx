@@ -1,5 +1,6 @@
 import Input from "../../UI/Form/Input";
 import TextArea from "../../UI/Form/TextArea";
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import useCanDetailForm from "./CANDetailForm.hooks";
 
 /**
@@ -18,8 +19,20 @@ import useCanDetailForm from "./CANDetailForm.hooks";
  * @returns {JSX.Element}
  */
 const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode }) => {
-    const { nickName, setNickName, description, setDescription, handleCancel, handleSubmit, runValidate, res, cn } =
-        useCanDetailForm(canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode);
+    const {
+        nickName,
+        setNickName,
+        description,
+        setDescription,
+        handleCancel,
+        handleSubmit,
+        runValidate,
+        res,
+        cn,
+        showModal,
+        setShowModal,
+        modalProps
+    } = useCanDetailForm(canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode);
 
     return (
         <form
@@ -27,6 +40,15 @@ const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfoli
                 handleSubmit(e);
             }}
         >
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <Input
                 name="can_nick_name"
                 label="CAN Nickname"

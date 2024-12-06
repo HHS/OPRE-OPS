@@ -1,12 +1,16 @@
 import React from "react";
-import { useUpdateCanMutation } from "../../../api/opsAPI";
-import suite from "./suite.js";
 import classnames from "vest/classnames";
+import { useUpdateCanMutation } from "../../../api/opsAPI";
+import useAlert from "../../../hooks/use-alert.hooks";
+import suite from "./suite.js";
 
 export default function useCanDetailForm(canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode) {
     const [nickName, setNickName] = React.useState(canNickname);
     const [description, setDescription] = React.useState(canDescription);
+    const [showModal, setShowModal] = React.useState(false);
+    const [modalProps, setModalProps] = React.useState({});
     const [updateCan] = useUpdateCanMutation();
+    const { setAlert } = useAlert();
 
     let res = suite.get();
 
@@ -18,7 +22,13 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
 
     const handleCancel = (e) => {
         e.preventDefault();
-        cleanUp();
+        setShowModal(true);
+        setModalProps({
+            heading: "Are you sure you want to cancel editing? Your changes will not be saved.",
+            actionButtonText: "Cancel Edits",
+            secondaryButtonText: "Continue Editing",
+            handleConfirm: () => cleanUp()
+        });
     };
 
     const handleSubmit = (e) => {
@@ -29,6 +39,12 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
             nick_name: nickName,
             description: description
         };
+
+        setAlert({
+            type: "success",
+            heading: "CAN Updated",
+            message: `The CAN ${canNumber} has been successfully updated.`
+        });
 
         updateCan({
             id: canId,
@@ -61,6 +77,9 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
         handleSubmit,
         runValidate,
         res,
-        cn
+        cn,
+        setShowModal,
+        showModal,
+        modalProps
     };
 }
