@@ -26,7 +26,7 @@ COPY vite-env/env.${MODE}.local .env
 RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=${MODE} bun run build --mode ${MODE}
 
 # ---- Release Stage ----
-FROM alpine:3.20 as release
+FROM alpine:3.21 as release
 
 # hadolint ignore=DL3018
 RUN apk update && apk add --no-cache nginx && rm -rf /var/cache/apk/*
