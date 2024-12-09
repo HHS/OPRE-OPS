@@ -1,11 +1,12 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useGetDivisionQuery } from "../../../api/opsAPI";
-import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
-import CANDetailView from "../../../components/CANs/CANDetailView";
-import CANDetailForm from "../../../components/CANs/CANDetailForm";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import { useGetDivisionQuery } from "../../../api/opsAPI";
+import CANDetailForm from "../../../components/CANs/CANDetailForm";
+import CANDetailView from "../../../components/CANs/CANDetailView";
+import { NO_DATA } from "../../../constants.js";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
+import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 
 /**
     @typedef {import("../../../components/Users/UserTypes").SafeUser} SafeUser
@@ -52,6 +53,7 @@ const CanDetail = ({
 
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear);
+    const divisionName = division?.display_name ?? NO_DATA;
 
     return (
         <article>
@@ -91,6 +93,7 @@ const CanDetail = ({
                     portfolioName={portfolioName}
                     teamLeaders={teamLeaders}
                     divisionDirectorFullName={divisionDirectorFullName}
+                    divisionName={divisionName}
                 />
             )}
         </article>

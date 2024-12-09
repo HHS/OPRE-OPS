@@ -9,6 +9,7 @@ import Tag from "../../UI/Tag";
  * @property {string} portfolioName
  * @property {import("../../Users/UserTypes").SafeUser[]} teamLeaders
  * @property {string} divisionDirectorFullName
+ * @property {string} divisionName
  */
 /**
  * This component needs to wrapped in a <dl> element.
@@ -16,7 +17,7 @@ import Tag from "../../UI/Tag";
  * @param {CANDetailViewProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered component.
  */
-const CANDetailView = ({ description, number, nickname, portfolioName, teamLeaders, divisionDirectorFullName, }) => {
+const CANDetailView = ({ description, number, nickname, portfolioName, teamLeaders, divisionDirectorFullName, divisionName}) => {
     return (
         <div className="grid-row font-12px">
             {/* // NOTE: Left Column */}
@@ -52,6 +53,10 @@ const CANDetailView = ({ description, number, nickname, portfolioName, teamLeade
                     <TermTag
                         term="Portfolio"
                         description={portfolioName}
+                    />
+                    <TermTag
+                        term="Division"
+                        description={divisionName}
                     />
                 </dl>
                 <dl>

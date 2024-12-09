@@ -78,7 +78,7 @@ export default function useCan() {
         inDraftFunding: CANFunding?.in_draft_funding,
         expectedFunding: CANFunding?.expected_funding,
         receivedFunding: CANFunding?.received_funding,
-        subTitle: can ? `${can.nick_name} - ${can.active_period} ${can.active_period > 1 ? "Years" : "Year"}` : "",
+        subTitle: can?.nick_name ?? "",
         projectTypesCount,
         budgetLineTypesCount,
         agreementTypesCount,
