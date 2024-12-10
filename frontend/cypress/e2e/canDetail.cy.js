@@ -2,7 +2,7 @@
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
-    testLogin("system-owner");
+    testLogin("budget-team");
 });
 
 afterEach(() => {
@@ -11,13 +11,25 @@ afterEach(() => {
 });
 
 describe("CAN detail page", () => {
-    it("shows relevant CAN data", () => {
+    it("shows the CAN details page", () => {
         cy.visit("/cans/502/");
         cy.get("h1").should("contain", "G99PHS9"); // heading
-        cy.get("p").should("contain", "SSRD - 5 Years"); // sub-heading
+        cy.get("p").should("contain", "SSRD"); // sub-heading
         cy.get("span").should("contain", "Nicole Deterding"); // team member
         cy.get("span").should("contain", "Director Derrek"); // division director
         cy.get("span").should("contain", "Program Support"); // portfolio
+        cy.get("span").should("contain", "Division of Data and Improvement"); // division
+    });
+    it.only("CAN Edit form", () => {
+        cy.visit("/cans/502/");
+        cy.get("#fiscal-year-select").select("2024");
+        cy.get("#edit").should("not.exist");
+        cy.get("#fiscal-year-select").select("2025"); //TODO: change to current fiscal year
+        cy.get("#edit").should("exist");
+        cy.get("#edit").click();
+        cy.get("h2").should("contain", "Edit CAN Details");
+        cy.get("#can_nick_name", "input").should("contain", "SSRD");
+        cy.get("#can_nick_name").type("Test Can Nickname");
     });
     it("shows the CAN Spending page", () => {
         cy.visit("/cans/504/spending");
