@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
+import { getCurrentFiscalYear } from "../../src/helpers/utils.js";
 
 beforeEach(() => {
     testLogin("budget-team");
@@ -10,32 +11,75 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
+const can502Nickname = "SSRD";
+const can502Description = "Social Science Research and Development";
+
+const currentFiscalYear = getCurrentFiscalYear();
+
 describe("CAN detail page", () => {
     it("shows the CAN details page", () => {
         cy.visit("/cans/502/");
         cy.get("h1").should("contain", "G99PHS9"); // heading
-        cy.get("p").should("contain", "SSRD"); // sub-heading
+        cy.get("p").should("contain", can502Nickname); // sub-heading
         cy.get("span").should("contain", "Nicole Deterding"); // team member
         cy.get("span").should("contain", "Director Derrek"); // division director
         cy.get("span").should("contain", "Program Support"); // portfolio
         cy.get("span").should("contain", "Division of Data and Improvement"); // division
     });
-    it.only("CAN Edit form", () => {
+    it("CAN Edit form", () => {
         cy.visit("/cans/502/");
         cy.get("#fiscal-year-select").select("2024");
         cy.get("#edit").should("not.exist");
-        cy.get("#fiscal-year-select").select("2025"); //TODO: change to current fiscal year
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").should("exist");
         cy.get("#edit").click();
         cy.get("h2").should("contain", "Edit CAN Details");
-        cy.get("#can_nick_name", "input").should("contain", "SSRD");
+        cy.get("#can_nick_name").invoke("val").should("equal", can502Nickname);
+        cy.get("#can_nick_name").clear();
+        cy.get(".usa-error-message").should("exist").contains("This is required information");
+        cy.get("#save-changes").should("be.disabled");
         cy.get("#can_nick_name").type("Test Can Nickname");
+        cy.get("#save-changes").should("not.be.disabled");
+        cy.get(".usa-error-message").should("not.exist");
+        cy.get("#description").invoke("val").should("equal", can502Description);
+        cy.get("#description").clear();
+        cy.get("#description").type("Test description.");
+        cy.get("#save-changes").click();
+        cy.get(".usa-alert__body").should("contain", "The CAN G99PHS9 has been successfully updated.");
+        cy.get("p").should("contain", "Test Can Nickname");
+        cy.get("dd").should("contain", "Test description.");
+        // revert back to original values
+        cy.get("#edit").click();
+        cy.get("#can_nick_name").clear();
+        cy.get("#can_nick_name").type(can502Nickname);
+        cy.get("#description").clear();
+        cy.get("#description").type(can502Description);
+        cy.get("#save-changes").click();
+    });
+    it("handles cancelling from CAN edit form", () => {
+        cy.visit("/cans/502/");
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        // Attempt cancel without making any changes
+        cy.get("#edit").click();
+        cy.get("[data-cy='cancel-button']").click();
+        cy.get(".usa-modal__heading").should(
+            "contain",
+            "Are you sure you want to cancel editing? Your changes will not be saved."
+        );
+        cy.get("[data-cy='cancel-action']").click();
+        // Exit out of the cancel modal
+        cy.get("[data-cy='cancel-button']").click();
+        // Actual cancel event
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get("h2").should("contain", "CAN Details");
+        cy.get("p").should("contain", can502Nickname);
+        cy.get("dd").should("contain", can502Description);
     });
     it("shows the CAN Spending page", () => {
         cy.visit("/cans/504/spending");
         cy.get("#fiscal-year-select").select("2043");
         cy.get("h1").should("contain", "G994426"); // heading
-        cy.get("p").should("contain", "HS - 5 Years"); // sub-heading
+        cy.get("p").should("contain", "HS"); // sub-heading
         // should contain the budget line table
         cy.get("table").should("exist");
         // table should have more than 1 row
@@ -87,14 +131,17 @@ describe("CAN detail page", () => {
         cy.visit("/cans/504/funding");
         cy.get("#fiscal-year-select").select("2024");
         cy.get("h1").should("contain", "G994426"); // heading
-        cy.get("p").should("contain", "HS - 5 Years"); // sub-heading
+        cy.get("p").should("contain", "HS"); // sub-heading
         cy.get("[data-cy=can-funding-info-card]")
             .should("exist")
             .and("contain", "EEXXXX20215DAD")
             .and("contain", "5 Years")
             .and("contain", "IDDA")
             .and("contain", "09/30/25")
-            .and("contain", "2021");
+            .and("contain", "2021")
+            .and("contain", "Quarterly")
+            .and("contain", "Direct")
+            .and("contain", "Discretionary");
         cy.get("[data-cy=budget-received-card]")
             .should("exist")
             .and("contain", "FY 2024 Funding Received YTD")

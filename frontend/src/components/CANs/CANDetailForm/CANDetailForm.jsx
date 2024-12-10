@@ -63,7 +63,7 @@ const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfoli
             />
             <TextArea
                 maxLength={1000}
-                name="Description"
+                name="description"
                 label="Description"
                 value={description}
                 onChange={(name, value) => {
