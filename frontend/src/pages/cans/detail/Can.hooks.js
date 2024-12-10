@@ -47,7 +47,7 @@ export default function useCan() {
         [budgetLineItemsByFiscalYear]
     );
 
-    const budgetLineAgreements = can?.budget_line_items?.map((item) => item.agreement) ?? [];
+    const budgetLineAgreements = budgetLineItemsByFiscalYear?.map((item) => item.agreement) ?? [];
 
     const agreementTypesCount = React.useMemo(
         () => getTypesCounts(budgetLineAgreements, "agreement_type"),
