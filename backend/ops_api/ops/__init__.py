@@ -16,6 +16,8 @@ from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.home_page.views import home
+from ops_api.ops.messagebus.cans import can_history_trigger
+from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
@@ -83,6 +85,9 @@ def create_app() -> Flask:
     db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"))
     app.db_session = db_session
     app.engine = engine
+
+    app.message_bus = MessageBus()
+    app.message_bus.subscribe("can_history_signal", can_history_trigger)
 
     @app.teardown_appcontext
     def shutdown_session(exception=None):
