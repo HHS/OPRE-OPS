@@ -27,7 +27,7 @@ class MessageBus:
         for event in self.published_events:
             ops_signal = signal(event.event_type.name)
             ops_signal.send(event, session=current_app.db_session)
-            logger.info(f"Handling event {event}")
+            logger.debug(f"Handling event {event}")
 
     def subscribe(self, event_type: OpsEventType, callback: callable):
         """
