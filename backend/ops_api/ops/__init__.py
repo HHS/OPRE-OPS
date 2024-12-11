@@ -86,9 +86,6 @@ def create_app() -> Flask:
     app.db_session = db_session
     app.engine = engine
 
-    app.message_bus = MessageBus()
-    app.message_bus.subscribe("can_history_signal", can_history_trigger)
-
     @app.teardown_appcontext
     def shutdown_session(exception=None):
         app.db_session.remove()
@@ -167,3 +164,7 @@ def before_request_function(app: Flask, request: request):
         if not is_unit_test() and not is_fake_user(app, current_user):
             current_app.logger.info(f"Checking user session for {current_user.oidc_id}")
             check_user_session_function(current_user)
+
+    # initialize MessageBus
+    request.message_bus = MessageBus()
+    request.message_bus.subscribe("can_history_signal", can_history_trigger)

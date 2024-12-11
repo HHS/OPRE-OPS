@@ -63,5 +63,5 @@ class OpsEventHandler:
         if not current_app.db_session.is_active:
             current_app.logger.error("Session is not active. It has likely been rolled back.")
 
-        if current_app.message_bus:
-            current_app.message_bus.publish(self.event_type.name, event)
+        if request.message_bus:
+            request.message_bus.publish(self.event_type.name, event)
