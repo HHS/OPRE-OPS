@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 it("loads", () => {
-    cy.get("h1").contains("This is the OPRE OPS system prototype");
+    cy.get("h1").contains("Welcome to OPS");
 });
 
 it("clicking on /cans nav takes you to CAN page", () => {
