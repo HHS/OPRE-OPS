@@ -47,10 +47,21 @@ export default function useCan() {
         [budgetLineItemsByFiscalYear]
     );
 
-    const budgetLineAgreements = budgetLineItemsByFiscalYear?.map((item) => item.agreement) ?? [];
+    const budgetLinesAgreements = budgetLineItemsByFiscalYear?.map((item) => item.agreement) ?? [];
+
+    /**
+     * @type {import("../../../components/Agreements/AgreementTypes").SimpleAgreement[]} - Array of unique budget line agreements
+     */
+    const uniqueBudgetLineAgreements =
+        budgetLinesAgreements?.reduce((acc, item) => {
+            if (!acc.some((existingItem) => existingItem.name === item.name)) {
+                acc.push(item);
+            }
+            return acc;
+        }, []) ?? [];
 
     const agreementTypesCount = React.useMemo(
-        () => getTypesCounts(budgetLineAgreements, "agreement_type"),
+        () => getTypesCounts(uniqueBudgetLineAgreements, "agreement_type"),
         [fiscalYear, can]
     );
 

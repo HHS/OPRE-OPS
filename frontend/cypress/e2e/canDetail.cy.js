@@ -34,11 +34,11 @@ describe("CAN detail page", () => {
         cy.get("#edit").should("exist");
         cy.get("#edit").click();
         cy.get("h2").should("contain", "Edit CAN Details");
-        cy.get("#can_nick_name").invoke("val").should("equal", can502Nickname);
-        cy.get("#can_nick_name").clear();
+        cy.get("#can-nickName").invoke("val").should("equal", can502Nickname);
+        cy.get("#can-nickName").clear();
         cy.get(".usa-error-message").should("exist").contains("This is required information");
         cy.get("#save-changes").should("be.disabled");
-        cy.get("#can_nick_name").type("Test Can Nickname");
+        cy.get("#can-nickName").type("Test Can Nickname");
         cy.get("#save-changes").should("not.be.disabled");
         cy.get(".usa-error-message").should("not.exist");
         cy.get("#description").invoke("val").should("equal", can502Description);
@@ -50,8 +50,8 @@ describe("CAN detail page", () => {
         cy.get("dd").should("contain", "Test description.");
         // revert back to original values
         cy.get("#edit").click();
-        cy.get("#can_nick_name").clear();
-        cy.get("#can_nick_name").type(can502Nickname);
+        cy.get("#can-nickName").clear();
+        cy.get("#can-nickName").type(can502Nickname);
         cy.get("#description").clear();
         cy.get("#description").type(can502Description);
         cy.get("#save-changes").click();
