@@ -22,7 +22,7 @@ it("clicking on /cans nav takes you to CAN page", () => {
 });
 
 it("clicking on /portfolio nav while unauthenticated, should keep you at home page.", () => {
-    cy.get("h1").contains("This is the OPRE OPS system prototype");
+    cy.get("h1").contains("Welcome to OPS");
     cy.url().should("include", "/");
 });
 
