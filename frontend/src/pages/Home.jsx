@@ -5,10 +5,16 @@ const Home = () => {
     return (
         <App>
             <div className="display-flex flex-justify-center">
-                <RoundedBox className="margin-top-4 text-center">
-                    <h1>This is the OPRE OPS system prototype</h1>
-                    <p>⚠️Tread with caution</p>
-                </RoundedBox>
+                {!import.meta.env.PROD ? (
+                    <RoundedBox className="margin-top-4 text-center">
+                        <h1>This is a non-production OPS environment</h1>
+                        <p>⚠️This environment is not authorized for certain production datasets. Additionally, this environment may be updated regularly.</p>
+                    </RoundedBox>
+                ) : (
+                    <RoundedBox className="margin-top-4 text-center">
+                        <h1>Welcome to OPS!</h1>
+                    </RoundedBox>
+                )}
             </div>
         </App>
     );
