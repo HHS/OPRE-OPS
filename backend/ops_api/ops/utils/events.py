@@ -3,6 +3,7 @@ from typing import Optional, Type
 
 from flask import current_app, request
 from flask_jwt_extended import current_user
+from loguru import logger
 from sqlalchemy.orm import Session
 from werkzeug.exceptions import UnsupportedMediaType
 
@@ -58,7 +59,11 @@ class OpsEventHandler:
             current_app.logger.info(f"EVENT: {event.to_dict()}")
 
         if isinstance(exc_val, Exception):
-            current_app.logger.error(f"EVENT ({exc_type}): {exc_val}")
+            logger.error(f"EVENT ({exc_type}): {exc_val}")
 
         if not current_app.db_session.is_active:
-            current_app.logger.error("Session is not active. It has likely been rolled back.")
+            logger.error("Session is not active. It has likely been rolled back.")
+
+        if hasattr(request, "message_bus"):
+            logger.info(f"Publishing event {self.event_type.name}")
+            request.message_bus.publish(self.event_type.name, event)
