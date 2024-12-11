@@ -9,6 +9,7 @@ import useCan from "./Can.hooks";
 import CanDetail from "./CanDetail";
 import CanFunding from "./CanFunding";
 import CanSpending from "./CanSpending";
+import React from "react";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
  */
@@ -41,8 +42,15 @@ const Can = () => {
         budgetLineTypesCount,
         agreementTypesCount,
         receivedFunding,
-        isBudgetTeam
+        isBudgetTeam,
+        carryForwardFunding
     } = useCan();
+
+    const [isEditMode, setIsEditMode] = React.useState(false);
+
+    const toggleEditMode = () => {
+        setIsEditMode(!isEditMode);
+    };
 
     if (isLoading || CANFundingLoading) {
         return <p>Loading CAN...</p>;
@@ -61,10 +69,12 @@ const Can = () => {
 
             <section className="display-flex flex-justify margin-top-3">
                 <CanDetailTabs canId={canId} />
-                <CANFiscalYearSelect
-                    fiscalYear={fiscalYear}
-                    setSelectedFiscalYear={setSelectedFiscalYear}
-                />
+                {!isEditMode && (
+                    <CANFiscalYearSelect
+                        fiscalYear={fiscalYear}
+                        setSelectedFiscalYear={setSelectedFiscalYear}
+                    />
+                )}
             </section>
             <Routes>
                 <Route
@@ -81,6 +91,8 @@ const Can = () => {
                             teamLeaders={teamLeaders ?? []}
                             fiscalYear={fiscalYear}
                             isBudgetTeamMember={isBudgetTeam}
+                            isEditMode={isEditMode}
+                            toggleEditMode={toggleEditMode}
                         />
                     }
                 />
@@ -111,6 +123,10 @@ const Can = () => {
                             receivedFunding={receivedFunding}
                             totalFunding={totalFunding}
                             fundingReceived={fundingReceivedByFiscalYear}
+                            isBudgetTeamMember={isBudgetTeam}
+                            isEditMode={isEditMode}
+                            toggleEditMode={toggleEditMode}
+                            carryForwardFunding={carryForwardFunding}
                         />
                     }
                 />
