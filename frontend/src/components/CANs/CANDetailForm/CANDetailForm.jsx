@@ -50,16 +50,16 @@ const CANDetailForm = ({ canId, canNumber, canNickname, canDescription, portfoli
                 />
             )}
             <Input
-                name="can_nick_name"
+                name="can-nickName"
                 label="CAN Nickname"
                 onChange={(name, value) => {
-                    runValidate("can_nick_name", value);
+                    runValidate("can-nickName", value);
                     setNickName(value);
                 }}
                 value={nickName}
                 isRequired
-                messages={res.getErrors("can_nick_name")}
-                className={cn("can_nick_name")}
+                messages={res.getErrors("can-nickName")}
+                className={cn("can-nickName")}
             />
             <TextArea
                 maxLength={1000}
