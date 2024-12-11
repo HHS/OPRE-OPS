@@ -310,7 +310,7 @@ def register_api(api_bp: Blueprint) -> None:
         view_func=CHANGE_REQUEST_REVIEW_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/documents/<int:agreement_id>/",
+        "/documents/<int:agreement_id>",
         view_func=DOCUMENT_API_FUNC,
     )
     api_bp.add_url_rule(
