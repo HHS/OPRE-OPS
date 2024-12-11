@@ -20,6 +20,7 @@ export default function useCan() {
     const canId = parseInt(urlPathParams.id ?? "-1");
     /** @type {{data?: CAN | undefined, isLoading: boolean}} */
     const { data: can, isLoading } = useGetCanByIdQuery(canId);
+    /** TODO: add types for CANFunding*/
     const { data: CANFunding, isLoading: CANFundingLoading } = useGetCanFundingSummaryQuery({
         ids: [canId],
         fiscalYear: fiscalYear
@@ -65,6 +66,8 @@ export default function useCan() {
         [fiscalYear, can]
     );
 
+    console.log({ CANFunding });
+
     return {
         can: can ?? null,
         isLoading,
@@ -89,6 +92,7 @@ export default function useCan() {
         inDraftFunding: CANFunding?.in_draft_funding,
         expectedFunding: CANFunding?.expected_funding,
         receivedFunding: CANFunding?.received_funding,
+        carryForwardFunding: CANFunding?.carry_forward_funding,
         subTitle: can?.nick_name ?? "",
         projectTypesCount,
         budgetLineTypesCount,
