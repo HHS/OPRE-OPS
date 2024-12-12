@@ -19,6 +19,7 @@ class MessageBus:
     """
 
     published_events: List[OpsEvent] = []
+    known_callbacks = []
 
     def handle(self):
         """
@@ -28,6 +29,7 @@ class MessageBus:
             ops_signal = signal(event.event_type.name)
             ops_signal.send(event, session=current_app.db_session)
             logger.debug(f"Handling event {event}")
+        self.published_events.clear()
 
     def subscribe(self, event_type: OpsEventType, callback: callable):
         """
@@ -51,3 +53,13 @@ class MessageBus:
         """
         logger.debug(f"Publishing event {event_type} with details {event}")
         self.published_events.append(event)
+
+    def cleanup(self):
+        """
+        Clean up all subscriptions and published events.
+        """
+        for callback in self.known_callbacks:
+            ops_signal = signal(callback)
+            ops_signal.disconnect(callback)
+        self.published_events.clear()
+        self.known_callbacks.clear()

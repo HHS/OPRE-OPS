@@ -95,6 +95,7 @@ def create_app() -> Flask:  # noqa: C901
     def teardown_request(exception=None):
         if hasattr(request, "message_bus"):
             request.message_bus.handle()
+            request.message_bus.cleanup()
 
     @event.listens_for(db_session, "before_commit")
     def receive_before_commit(session: Session):
