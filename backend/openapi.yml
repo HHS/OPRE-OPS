@@ -877,6 +877,42 @@ paths:
           description: Unauthorized
         "404":
           description: Unable to find specified CANFundingBudget
+  /api/v1/can-history:
+    get:
+      tags:
+        - CAN History
+      operationId: getAllCANHistory
+      summary: Get a list all CAN history objects
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: can_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: 0
+        - name: limit
+          in: query
+          schema:
+              type: integer
+              default: 10
+          example: 10
+      description: Get CANHistory
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CANHistoryList"
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "403":
+            description: Forbidden
   /api/v1/portfolios:
     get:
       tags:
@@ -2811,6 +2847,52 @@ components:
         - id
         - portfolio_id
         - number
+    CANHistoryList:
+      description: A list of CAN objects with their history
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/CANHistoryItem"
+    CANHistoryItem:
+        description: A single CAN object with its history
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 2
+          can_id:
+            type: integer
+            example: 3
+          history_title:
+            type: string
+            example: "Nickname Edited"
+          history_message:
+            type: string
+            example: "Omkar Kuber edited the nickname from 'CAN 1' to 'CAN 2'"
+          timestamp:
+            type: string
+            format: date-time
+            example: "2021-01-01T00:00:00Z"
+          history_type:
+            type: string
+            enum:
+              - CAN_DATA_IMPORT
+              - CAN_NICKNAME_EDITED
+              - CAN_DESCRIPTION_EDITED
+              - CAN_FUNDING_CREATED
+              - CAN_RECEIVED_CREATED
+              - CAN_FUNDING_EDITED
+              - CAN_RECEIVED_EDITED
+              - CAN_FUNDING_DELETED
+              - CAN_RECEIVED_DELETED
+              - CAN_PORTFOLIO_CREATED
+              - CAN_PORTFOLIO_DELETED
+              - CAN_PORTFOLIO_EDITED
+              - CAN_DIVISION_CREATED
+              - CAN_DIVISION_DELETED
+              - CAN_DIVISION_EDITED
+              - CAN_CARRY_FORWARD_CALCULATED
+            example: "CAN_NICKNAME_EDITED"
     FundingReceived:
       description: Funding Received Object
       type: object
