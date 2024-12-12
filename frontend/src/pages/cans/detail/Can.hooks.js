@@ -9,6 +9,7 @@ import { NO_DATA } from "../../../constants";
 export default function useCan() {
     /**
      *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+     * *  @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
      */
 
     const activeUser = useSelector((state) => state.auth.activeUser);
@@ -20,7 +21,7 @@ export default function useCan() {
     const canId = parseInt(urlPathParams.id ?? "-1");
     /** @type {{data?: CAN | undefined, isLoading: boolean}} */
     const { data: can, isLoading } = useGetCanByIdQuery(canId);
-    /** TODO: add types for CANFunding*/
+    /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
     const { data: CANFunding, isLoading: CANFundingLoading } = useGetCanFundingSummaryQuery({
         ids: [canId],
         fiscalYear: fiscalYear
@@ -65,8 +66,6 @@ export default function useCan() {
         () => getTypesCounts(uniqueBudgetLineAgreements, "agreement_type"),
         [fiscalYear, can]
     );
-
-    console.log({ CANFunding });
 
     return {
         can: can ?? null,

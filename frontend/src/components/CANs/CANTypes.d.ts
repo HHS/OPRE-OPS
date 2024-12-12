@@ -35,6 +35,7 @@ export type BasicCAN = {
     nick_name?: string;
     number: string;
     portfolio_id: number;
+    projects: Project[];
 };
 
 export type URL = {
@@ -104,4 +105,24 @@ export type FundingReceived = {
     updated_by?: any;
     updated_by_user?: any;
     updated_on?: any;
+};
+
+export type FundingSummary = {
+    available_funding: string;
+    cans: FundingSummaryCAN[];
+    carry_forward_funding: string;
+    expected_funding: string;
+    in_draft_funding: string;
+    in_execution_funding: string;
+    new_funding: string;
+    obligated_funding: string;
+    planned_funding: string;
+    received_funding: string;
+    total_funding: string;
+};
+
+export type FundingSummaryCAN = {
+    can: BasicCAN;
+    carry_forward_label: string;
+    expiration_date: string;
 };

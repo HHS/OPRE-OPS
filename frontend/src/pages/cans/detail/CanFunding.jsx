@@ -1,12 +1,16 @@
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import CurrencyFormat from "react-currency-format";
 import CANBudgetByFYCard from "../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard";
 import CANBudgetForm from "../../../components/CANs/CANBudgetForm";
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
 import CANFundingReceivedTable from "../../../components/CANs/CANFundingReceivedTable";
 import Accordion from "../../../components/UI/Accordion";
 import ReceivedFundingCard from "../../../components/UI/Cards/BudgetCard/ReceivedFundingCard";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
+import CurrencyCard from "../../../components/UI/Cards/CurrencyCard";
+import ConfirmationModal from "../../../components/UI/Modals/index.js";
+import RoundedBox from "../../../components/UI/RoundedBox";
+import useCanFunding from "./CanFunding.hooks.js";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
@@ -25,6 +29,7 @@ import { getCurrentFiscalYear } from "../../../helpers/utils";
  * @property {boolean} isBudgetTeamMember
  * @property {boolean} isEditMode
  * @property {() => void} toggleEditMode
+ * @property {string} carryForwardFunding
  */
 
 /**
@@ -44,15 +49,31 @@ const CanFunding = ({
     toggleEditMode,
     carryForwardFunding
 }) => {
-    const currentFiscalYear = getCurrentFiscalYear();
-    const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear);
-
+    const {
+        budgetAmount,
+        handleAddBudget,
+        handleCancel,
+        modalProps,
+        setBudgetAmount,
+        setShowModal,
+        showButton,
+        showModal,
+        submittedAmount
+    } = useCanFunding(fiscalYear, isBudgetTeamMember, toggleEditMode);
     if (!funding) {
         return <div>No funding information available for this CAN.</div>;
     }
-
     return (
         <div>
+            {showModal && (
+                <ConfirmationModal
+                    heading={modalProps.heading}
+                    setShowModal={setShowModal}
+                    actionButtonText={modalProps.actionButtonText}
+                    secondaryButtonText={modalProps.secondaryButtonText}
+                    handleConfirm={modalProps.handleConfirm}
+                />
+            )}
             <div className="display-flex flex-justify">
                 <h2>{!isEditMode ? "CAN Funding" : `Review FY ${fiscalYear} Funding Information`}</h2>
                 {showButton && (
@@ -108,7 +129,31 @@ const CanFunding = ({
                 <section id="can-budget-form-section">
                     <h2>{`Add FY ${fiscalYear} CAN Budget`}</h2>
                     <p>{`Enter the FY ${fiscalYear} CAN Budget that teams will utilize for planning. For Multi-Year CANs, the Previous FYs Carry-Forward will display for you to review and enter as-is or edit, if needed.`}</p>
-                    <CANBudgetForm carryForwardAmount={carryForwardFunding} />
+                    <div className="display-flex flex-justify">
+                        <div>
+                            <RoundedBox style={{ minHeight: "69px" }}>
+                                <p>Previous FYs Carry Forward</p>
+                                <CurrencyFormat
+                                    value={carryForwardFunding}
+                                    displayType="text"
+                                    thousandSeparator={true}
+                                    decimalScale={2}
+                                    fixedDecimalScale={true}
+                                    prefix="$ "
+                                />
+                            </RoundedBox>
+                            <CANBudgetForm
+                                budgetAmount={budgetAmount}
+                                fiscalYear={fiscalYear}
+                                handleAddBudget={handleAddBudget}
+                                setBudgetAmount={setBudgetAmount}
+                            />
+                        </div>
+                        <CurrencyCard
+                            amount={submittedAmount}
+                            headerText={`FY ${fiscalYear} CAN Budget`}
+                        />
+                    </div>
                 </section>
             )}
             <Accordion
@@ -124,6 +169,25 @@ const CanFunding = ({
                     />
                 )}
             </Accordion>
+            {isEditMode && (
+                <div className="grid-row flex-justify-end margin-top-8">
+                    <button
+                        className="usa-button usa-button--unstyled margin-right-2"
+                        data-cy="cancel-button"
+                        onClick={(e) => handleCancel(e)}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        id="save-changes"
+                        className="usa-button"
+                        disabled={false}
+                        data-cy="save-btn"
+                    >
+                        Save Changes
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
