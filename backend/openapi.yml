@@ -1057,7 +1057,6 @@ paths:
                         "appropriation_date": "01/10/2023",
                         "appropriation_term": 1,
                         "arrangement_type_id": 3,
-                        "authorizer_id": 26,
                         "description": "Incoming Interagency Agreements",
                         "expiration_date": "01/09/2024",
                         "id": 2,
@@ -1071,7 +1070,6 @@ paths:
                         "appropriation_date": "01/10/2022",
                         "appropriation_term": 1,
                         "arrangement_type_id": 4,
-                        "authorizer_id": 26,
                         "description": "Child Development Research Fellowship Grant Program",
                         "expiration_date": "01/09/2023",
                         "id": 4,
@@ -1166,8 +1164,6 @@ paths:
                           properties:
                             appropriation_term:
                               type: integer
-                            authorizer_id:
-                              type: integer
                             arrangement_type_id:
                               type: integer
                             number:
@@ -1221,7 +1217,6 @@ paths:
                           "appropriation_date": "01/10/2022",
                           "appropriation_term": 1,
                           "arrangement_type_id": 4,
-                          "authorizer_id": 26,
                           "description": "Child Development Research Fellowship Grant Program",
                           "expiration_date": "01/09/2023",
                           "id": 4,
@@ -4089,7 +4084,6 @@ components:
         - appropriation_date: "2023-09-01T00:00:00.000000Z"
         - appropriation_term: 1
         - arrangement_type_id: 2
-        - authorizer_id: 23
         - description: Healthy Marriages Responsible Fatherhood - OFA
         - expiration_date: "2023-09-01T00:00:00.000000Z"
         - id: 10
@@ -4106,7 +4100,6 @@ components:
                   "appropriation_date": "2023-09-01T00:00:00.000000Z",
                   "appropriation_term": 1,
                   "arrangement_type_id": 3,
-                  "authorizer_id": 26,
                   "description": "Incoming Interagency Agreements",
                   "expiration_date": "2023-09-01T00:00:00.000000Z",
                   "id": 2,
@@ -4124,7 +4117,6 @@ components:
                   "appropriation_date": "2023-09-01T00:00:00.000000Z",
                   "appropriation_term": 1,
                   "arrangement_type_id": 4,
-                  "authorizer_id": 26,
                   "description": "Child Development Research Fellowship Grant Program",
                   "expiration_date": "2023-09-01T00:00:00.000000Z",
                   "id": 4,
