@@ -2859,18 +2859,27 @@ components:
         properties:
           id:
             type: integer
+            description: The unique identifier for the history record.
             example: 2
           can_id:
             type: integer
+            description: FK to the CAN object that the history record is associated with.
             example: 3
+          ops_event_id:
+            type: integer
+            description: FK to the OPS event that triggered the history record.
+            example: 4
           history_title:
             type: string
+            description: The title of the history event in Markdown format.
             example: "Nickname Edited"
           history_message:
             type: string
+            description: The message that describes the history event in Markdown format.
             example: "Omkar Kuber edited the nickname from 'CAN 1' to 'CAN 2'"
           timestamp:
             type: string
+            description: The timestamp of when the history event was created (different than created_on).
             format: date-time
             example: "2023-09-01T00:00:00.000000Z"
           history_type:
