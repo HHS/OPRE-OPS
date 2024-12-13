@@ -1,3 +1,4 @@
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
@@ -9,7 +10,6 @@ import useCan from "./Can.hooks";
 import CanDetail from "./CanDetail";
 import CanFunding from "./CanFunding";
 import CanSpending from "./CanSpending";
-import React from "react";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
  */
@@ -24,6 +24,7 @@ const Can = () => {
         budgetLineItemsByFiscalYear,
         canNumber,
         description,
+        expectedFunding,
         nickname,
         fundingDetails,
         fundingBudgets,
@@ -117,6 +118,9 @@ const Can = () => {
                     path="funding"
                     element={
                         <CanFunding
+                            canId={canId}
+                            canNumber={canNumber}
+                            expectedFunding={expectedFunding}
                             funding={fundingDetails}
                             fundingBudgets={fundingBudgets}
                             fiscalYear={fiscalYear}

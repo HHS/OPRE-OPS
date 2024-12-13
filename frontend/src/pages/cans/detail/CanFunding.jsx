@@ -20,11 +20,14 @@ import useCanFunding from "./CanFunding.hooks.js";
 
 /**
  * @typedef {Object} CanFundingProps
+ * @property {number} canId
+ * @property {string} canNumber
+ * @property {string} expectedFunding
  * @property {FundingDetails} [funding]
  * @property {FundingBudget[]} fundingBudgets
  * @property {number} fiscalYear
- * @property {number} totalFunding
- * @property {number} receivedFunding
+ * @property {string} totalFunding
+ * @property {string} receivedFunding
  * @property {FundingReceived[]} fundingReceived data for table
  * @property {boolean} isBudgetTeamMember
  * @property {boolean} isEditMode
@@ -38,6 +41,9 @@ import useCanFunding from "./CanFunding.hooks.js";
  * @returns  {JSX.Element} - The component JSX.
  */
 const CanFunding = ({
+    canId,
+    canNumber,
+    expectedFunding,
     funding,
     fundingBudgets,
     fiscalYear,
@@ -53,16 +59,18 @@ const CanFunding = ({
         budgetAmount,
         handleAddBudget,
         handleCancel,
+        handleSubmit,
         modalProps,
         setBudgetAmount,
         setShowModal,
         showButton,
         showModal,
         submittedAmount
-    } = useCanFunding(fiscalYear, isBudgetTeamMember, toggleEditMode);
+    } = useCanFunding(canId, canNumber, expectedFunding, fiscalYear, isBudgetTeamMember, toggleEditMode);
     if (!funding) {
         return <div>No funding information available for this CAN.</div>;
     }
+
     return (
         <div>
             {showModal && (
@@ -174,7 +182,7 @@ const CanFunding = ({
                     <button
                         className="usa-button usa-button--unstyled margin-right-2"
                         data-cy="cancel-button"
-                        onClick={(e) => handleCancel(e)}
+                        onClick={handleCancel}
                     >
                         Cancel
                     </button>
@@ -183,6 +191,7 @@ const CanFunding = ({
                         className="usa-button"
                         disabled={false}
                         data-cy="save-btn"
+                        onClick={(e) => handleSubmit(e)}
                     >
                         Save Changes
                     </button>
