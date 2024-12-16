@@ -106,6 +106,7 @@ export default function useCanFunding(
             secondaryButtonText: "",
             handleConfirm: () => {}
         });
+        suite.reset();
     };
 
     const runValidate = (name, value) => {

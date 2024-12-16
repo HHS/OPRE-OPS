@@ -78,6 +78,7 @@ export default function useCanDetailForm(canId, canNumber, canNickname, canDescr
             handleConfirm: () => {}
         });
         toggleEditMode();
+        suite.reset();
     };
 
     const runValidate = (name, value) => {
