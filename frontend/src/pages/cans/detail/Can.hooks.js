@@ -12,6 +12,11 @@ export default function useCan() {
      *  @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
      */
 
+    // check CAN Funding for current fiscal year
+    // send to CanFunding hook
+    // if its present PATCH otherwise POST
+
+    const [isEditMode, setIsEditMode] = React.useState(false);
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles.includes(USER_ROLES.BUDGET_TEAM);
@@ -71,8 +76,15 @@ export default function useCan() {
         [fiscalYear, can]
     );
 
+    const toggleEditMode = () => {
+        setIsEditMode(!isEditMode);
+    };
+
+    const currentFiscalYearFundingId = can?.funding_budgets?.find((funding) => funding.fiscal_year === fiscalYear)?.id;
+
     return {
         can: can ?? null,
+        currentFiscalYearFundingId,
         isLoading,
         canId,
         fiscalYear,
@@ -93,13 +105,15 @@ export default function useCan() {
         obligatedFunding: CANFunding?.obligated_funding ?? "0",
         inExecutionFunding: CANFunding?.in_execution_funding ?? "0",
         inDraftFunding: CANFunding?.in_draft_funding ?? "0",
-        expectedFunding: CANFunding?.expected_funding ?? "0",
         receivedFunding: CANFunding?.received_funding ?? "0",
         carryForwardFunding: CANFunding?.carry_forward_funding ?? "0",
         subTitle: can?.nick_name ?? "",
         projectTypesCount,
         budgetLineTypesCount,
         agreementTypesCount,
-        isBudgetTeam
+        isBudgetTeam,
+        toggleEditMode,
+        isEditMode,
+        setIsEditMode
     };
 }

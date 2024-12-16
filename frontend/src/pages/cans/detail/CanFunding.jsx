@@ -22,7 +22,7 @@ import useCanFunding from "./CanFunding.hooks.js";
  * @typedef {Object} CanFundingProps
  * @property {number} canId
  * @property {string} canNumber
- * @property {string} expectedFunding
+ * @property {number} [currentFiscalYearFundingId]
  * @property {FundingDetails} [funding]
  * @property {FundingBudget[]} fundingBudgets
  * @property {number} fiscalYear
@@ -43,7 +43,7 @@ import useCanFunding from "./CanFunding.hooks.js";
 const CanFunding = ({
     canId,
     canNumber,
-    expectedFunding,
+    currentFiscalYearFundingId,
     funding,
     fundingBudgets,
     fiscalYear,
@@ -66,7 +66,17 @@ const CanFunding = ({
         showButton,
         showModal,
         submittedAmount
-    } = useCanFunding(canId, canNumber, expectedFunding, fiscalYear, isBudgetTeamMember, toggleEditMode);
+    } = useCanFunding(
+        canId,
+        canNumber,
+        currentFiscalYearFundingId,
+        totalFunding,
+        fiscalYear,
+        isBudgetTeamMember,
+        isEditMode,
+        toggleEditMode
+    );
+
     if (!funding) {
         return <div>No funding information available for this CAN.</div>;
     }

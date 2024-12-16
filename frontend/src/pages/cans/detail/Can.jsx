@@ -1,4 +1,3 @@
-import React from "react";
 import { Route, Routes } from "react-router-dom";
 import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
@@ -17,6 +16,7 @@ import CanSpending from "./CanSpending";
 const Can = () => {
     const {
         can,
+        currentFiscalYearFundingId,
         isLoading,
         canId,
         fiscalYear,
@@ -24,7 +24,6 @@ const Can = () => {
         budgetLineItemsByFiscalYear,
         canNumber,
         description,
-        expectedFunding,
         nickname,
         fundingDetails,
         fundingBudgets,
@@ -44,14 +43,10 @@ const Can = () => {
         agreementTypesCount,
         receivedFunding,
         isBudgetTeam,
-        carryForwardFunding
+        carryForwardFunding,
+        isEditMode,
+        toggleEditMode
     } = useCan();
-
-    const [isEditMode, setIsEditMode] = React.useState(false);
-
-    const toggleEditMode = () => {
-        setIsEditMode(!isEditMode);
-    };
 
     if (isLoading || CANFundingLoading) {
         return <p>Loading CAN...</p>;
@@ -120,7 +115,7 @@ const Can = () => {
                         <CanFunding
                             canId={canId}
                             canNumber={canNumber}
-                            expectedFunding={expectedFunding}
+                            currentFiscalYearFundingId={currentFiscalYearFundingId}
                             funding={fundingDetails}
                             fundingBudgets={fundingBudgets}
                             fiscalYear={fiscalYear}

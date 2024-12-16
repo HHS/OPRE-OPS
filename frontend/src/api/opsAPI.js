@@ -221,6 +221,15 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Cans"]
         }),
+        updateCanFundingBudget: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/can-funding-budgets/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: ["Cans"]
+        }),
         getCanFundingSummary: builder.query({
             query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
                 const queryParams = [];
@@ -252,7 +261,7 @@ export const opsApi = createApi({
 
                 return `/can-funding-summary?${queryParams.join("&")}`;
             },
-            providesTags: ["CanFunding"]
+            providesTags: ["CanFunding", "Cans"]
         }),
         getNotificationsByUserId: builder.query({
             query: ({ id, auth_header }) => {
@@ -423,6 +432,7 @@ export const {
     useGetCanByIdQuery,
     useUpdateCanMutation,
     useAddCanFundingBudgetsMutation,
+    useUpdateCanFundingBudgetMutation,
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,
