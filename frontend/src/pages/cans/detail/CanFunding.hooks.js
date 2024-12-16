@@ -3,26 +3,28 @@ import { useAddCanFundingBudgetsMutation, useUpdateCanFundingBudgetMutation } fr
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
 import suite from "../../../components/CANs/CANBudgetForm/suite.js";
+import classnames from "vest/classnames";
 
 /**
+ * @description - Custom hook for the CAN Funding component.
  * @param {number} canId
  * @param {string} canNumber
- * @param {number} [currentFiscalYearFundingId] - The id of the current fiscal year funding. optional
  * @param {string} totalFunding
  * @param {number} fiscalYear
  * @param {boolean} isBudgetTeamMember
  * @param {boolean} isEditMode
  * @param {() => void} toggleEditMode
+ * @param {number} [currentFiscalYearFundingId] - The id of the current fiscal year funding. optional
  */
 export default function useCanFunding(
     canId,
     canNumber,
-    currentFiscalYearFundingId,
     totalFunding,
     fiscalYear,
     isBudgetTeamMember,
     isEditMode,
-    toggleEditMode
+    toggleEditMode,
+    currentFiscalYearFundingId
 ) {
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
@@ -43,6 +45,14 @@ export default function useCanFunding(
     React.useEffect(() => {
         setSubmittedAmount(totalFunding);
     }, [totalFunding]);
+    // Validation
+    let res = suite.get();
+
+    const cn = classnames(suite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning"
+    });
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -114,6 +124,8 @@ export default function useCanFunding(
         handleSubmit,
         modalProps,
         runValidate,
+        res,
+        cn,
         setBudgetAmount,
         setShowModal,
         showButton,

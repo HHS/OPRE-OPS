@@ -3,7 +3,15 @@ import classnames from "vest/classnames";
 import { useUpdateCanMutation } from "../../../api/opsAPI";
 import useAlert from "../../../hooks/use-alert.hooks";
 import suite from "./suite.js";
-
+/**
+ * @description - Custom hook for the CAN Detail Form.
+ * @param {number} canId
+ * @param {string} canNumber
+ * @param {string} canNickname
+ * @param {string} canDescription
+ * @param {number} portfolioId
+ * @param {() => void} toggleEditMode
+ */
 export default function useCanDetailForm(canId, canNumber, canNickname, canDescription, portfolioId, toggleEditMode) {
     const [nickName, setNickName] = React.useState(canNickname);
     const [description, setDescription] = React.useState(canDescription);

@@ -2,10 +2,13 @@ import CurrencyInput from "../../UI/Form/CurrencyInput";
 
 /**
  * @typedef {Object} CANBudgetFormProps
+ * @property {string} budgetAmount
+ * @property {(arg: string) => string} cn
+ * @property {Object} res
  * @property {number} fiscalYear
- * @property {number} budgetAmount
- * @property {() => void} setBudgetAmount
- * @property {() => void} handleAddBudget
+ * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleAddBudget
+ * @property {(name: string, value: string) => void} runValidate
+ * @property { React.Dispatch<React.SetStateAction<string>>} setBudgetAmount
  */
 
 /**
@@ -13,20 +16,24 @@ import CurrencyInput from "../../UI/Form/CurrencyInput";
  * @param {CANBudgetFormProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANBudgetForm = ({ budgetAmount, fiscalYear, handleAddBudget, setBudgetAmount }) => {
+const CANBudgetForm = ({ budgetAmount, cn, res, fiscalYear, handleAddBudget, runValidate, setBudgetAmount }) => {
     return (
         <form
             onSubmit={(e) => {
                 handleAddBudget(e);
-                setBudgetAmount(0);
+                setBudgetAmount("0");
             }}
         >
             <CurrencyInput
                 name="budget-amount"
                 label={`FY ${fiscalYear} CAN Budget`}
-                onChange={() => {}}
+                onChange={(name, value) => {
+                    runValidate("budget-amount", value);
+                }}
                 setEnteredAmount={setBudgetAmount}
                 value={budgetAmount || ""}
+                messages={res.getErrors("budget-amount")}
+                className={cn("budget-amount")}
             />
             <button
                 id="save-changes"

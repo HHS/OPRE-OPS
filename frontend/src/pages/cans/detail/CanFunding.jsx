@@ -61,6 +61,9 @@ const CanFunding = ({
         handleCancel,
         handleSubmit,
         modalProps,
+        runValidate,
+        cn,
+        res,
         setBudgetAmount,
         setShowModal,
         showButton,
@@ -69,12 +72,12 @@ const CanFunding = ({
     } = useCanFunding(
         canId,
         canNumber,
-        currentFiscalYearFundingId,
         totalFunding,
         fiscalYear,
         isBudgetTeamMember,
         isEditMode,
-        toggleEditMode
+        toggleEditMode,
+        currentFiscalYearFundingId
     );
 
     if (!funding) {
@@ -162,8 +165,11 @@ const CanFunding = ({
                             </RoundedBox>
                             <CANBudgetForm
                                 budgetAmount={budgetAmount}
+                                cn={cn}
+                                res={res}
                                 fiscalYear={fiscalYear}
                                 handleAddBudget={handleAddBudget}
+                                runValidate={runValidate}
                                 setBudgetAmount={setBudgetAmount}
                             />
                         </div>
