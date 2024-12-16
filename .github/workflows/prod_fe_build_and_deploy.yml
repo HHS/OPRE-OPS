@@ -2,7 +2,7 @@ name: Production Frontend Build and Deploy
 
 on:
   workflow_dispatch:
-  
+
 env:
   WORKING_DIR: "frontend"
   DOCKER_FILE: "Dockerfile.azure"
@@ -45,4 +45,4 @@ jobs:
         with:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
-            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ github.sha }}
+            imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}
