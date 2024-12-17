@@ -30,6 +30,7 @@ export default function useCanFunding(
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
     const [budgetAmount, setBudgetAmount] = React.useState("");
     const [submittedAmount, setSubmittedAmount] = React.useState("");
+    const [isBudgetFormSubmitted, setIsBudgetFormSubmitted] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -83,6 +84,7 @@ export default function useCanFunding(
     const handleAddBudget = (e) => {
         e.preventDefault();
         setSubmittedAmount(budgetAmount);
+        setIsBudgetFormSubmitted(true);
     };
 
     const handleCancel = () => {
@@ -98,6 +100,7 @@ export default function useCanFunding(
     const cleanUp = () => {
         setBudgetAmount("");
         setSubmittedAmount(totalFunding);
+        setIsBudgetFormSubmitted(false);
         setShowModal(false);
         toggleEditMode();
         setModalProps({
@@ -131,6 +134,7 @@ export default function useCanFunding(
         setShowModal,
         showButton,
         showModal,
-        submittedAmount
+        submittedAmount,
+        isBudgetFormSubmitted
     };
 }

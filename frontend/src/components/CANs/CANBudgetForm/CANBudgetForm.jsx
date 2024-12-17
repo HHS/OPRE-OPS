@@ -21,7 +21,7 @@ const CANBudgetForm = ({ budgetAmount, cn, res, fiscalYear, handleAddBudget, run
         <form
             onSubmit={(e) => {
                 handleAddBudget(e);
-                setBudgetAmount("0");
+                setBudgetAmount("");
             }}
         >
             <CurrencyInput
@@ -36,10 +36,10 @@ const CANBudgetForm = ({ budgetAmount, cn, res, fiscalYear, handleAddBudget, run
                 className={cn("budget-amount")}
             />
             <button
-                id="save-changes"
+                id="add-fy-budget"
                 className="usa-button usa-button--outline margin-top-4"
                 disabled={!budgetAmount}
-                data-cy="save-btn"
+                data-cy="add-fy-budget"
             >
                 + Add FY Budget
             </button>

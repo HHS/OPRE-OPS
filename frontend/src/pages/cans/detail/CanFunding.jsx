@@ -68,7 +68,8 @@ const CanFunding = ({
         setShowModal,
         showButton,
         showModal,
-        submittedAmount
+        submittedAmount,
+        isBudgetFormSubmitted
     } = useCanFunding(
         canId,
         canNumber,
@@ -152,7 +153,10 @@ const CanFunding = ({
                     <p>{`Enter the FY ${fiscalYear} CAN Budget that teams will utilize for planning. For Multi-Year CANs, the Previous FYs Carry-Forward will display for you to review and enter as-is or edit, if needed.`}</p>
                     <div className="display-flex flex-justify">
                         <div>
-                            <RoundedBox style={{ minHeight: "69px" }}>
+                            <RoundedBox
+                                style={{ minHeight: "69px" }}
+                                id="carry-forward-card"
+                            >
                                 <p>Previous FYs Carry Forward</p>
                                 <CurrencyFormat
                                     value={carryForwardFunding}
@@ -175,6 +179,7 @@ const CanFunding = ({
                         </div>
                         <CurrencyCard
                             amount={submittedAmount}
+                            dataCy="can-budget-fy-card"
                             headerText={`FY ${fiscalYear} CAN Budget`}
                         />
                     </div>
@@ -205,7 +210,7 @@ const CanFunding = ({
                     <button
                         id="save-changes"
                         className="usa-button"
-                        disabled={false}
+                        disabled={!isBudgetFormSubmitted}
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
                     >
