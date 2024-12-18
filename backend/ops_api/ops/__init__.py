@@ -10,12 +10,15 @@ from loguru import logger
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
+from models import OpsEventType
 from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 from ops_api.ops.auth.decorators import check_user_session_function
 from ops_api.ops.auth.extension_config import jwtMgr
 from ops_api.ops.db import handle_create_update_by_attrs, init_db
 from ops_api.ops.error_handlers import register_error_handlers
 from ops_api.ops.home_page.views import home
+from ops_api.ops.services.can_messages import can_history_trigger
+from ops_api.ops.services.message_bus import MessageBus
 from ops_api.ops.urls import register_api
 from ops_api.ops.utils.core import is_fake_user, is_unit_test
 
@@ -24,7 +27,7 @@ os.environ["TZ"] = "UTC"
 time.tzset()
 
 
-def create_app() -> Flask:
+def create_app() -> Flask:  # noqa: C901
     from ops_api.ops.utils.core import is_unit_test
 
     log_level = "INFO" if not is_unit_test() else "DEBUG"
@@ -87,6 +90,12 @@ def create_app() -> Flask:
     @app.teardown_appcontext
     def shutdown_session(exception=None):
         app.db_session.remove()
+
+    @app.teardown_request
+    def teardown_request(exception=None):
+        if hasattr(request, "message_bus"):
+            request.message_bus.handle()
+            request.message_bus.cleanup()
 
     @event.listens_for(db_session, "before_commit")
     def receive_before_commit(session: Session):
@@ -162,3 +171,6 @@ def before_request_function(app: Flask, request: request):
         if not is_unit_test() and not is_fake_user(app, current_user):
             current_app.logger.info(f"Checking user session for {current_user.oidc_id}")
             check_user_session_function(current_user)
+
+    request.message_bus = MessageBus()
+    request.message_bus.subscribe(OpsEventType.CREATE_NEW_CAN, can_history_trigger)
