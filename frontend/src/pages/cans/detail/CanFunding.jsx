@@ -148,16 +148,23 @@ const CanFunding = ({
                     </div>
                 </section>
             ) : (
-                <section id="can-budget-form-section">
+                <section
+                    id="can-budget-form-section"
+                    className="margin-bottom-8"
+                >
                     <h2>{`Add FY ${fiscalYear} CAN Budget`}</h2>
                     <p>{`Enter the FY ${fiscalYear} CAN Budget that teams will utilize for planning. For Multi-Year CANs, the Previous FYs Carry-Forward will display for you to review and enter as-is or edit, if needed.`}</p>
-                    <div className="display-flex flex-justify">
-                        <div>
+                    <div className="display-flex flex-justify margin-top-4">
+                        <div
+                            className="border-right-1px border-base-light"
+                            style={{ minWidth: "46%" }}
+                        >
                             <RoundedBox
-                                style={{ minHeight: "69px" }}
+                                className="font-12px"
+                                style={{ minHeight: "69px", width: "313px", padding: "17px 0 0 13px" }}
                                 id="carry-forward-card"
                             >
-                                <p>Previous FYs Carry Forward</p>
+                                <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
                                 <CurrencyFormat
                                     value={carryForwardFunding}
                                     displayType="text"
