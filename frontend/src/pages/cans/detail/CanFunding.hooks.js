@@ -89,7 +89,8 @@ export default function useCanFunding(
 
     const handleAddFundingReceived = (e) => {
         e.preventDefault();
-        alert("Add Funding Received");
+        setSubmittedAmount(budgetAmount);
+        setIsBudgetFormSubmitted(true);
     };
 
     const handleCancel = () => {
