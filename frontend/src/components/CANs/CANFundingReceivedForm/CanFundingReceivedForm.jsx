@@ -1,4 +1,5 @@
 import CurrencyInput from "../../UI/Form/CurrencyInput";
+import TextArea from "../../UI/Form/TextArea/index.js";
 
 const CANFundingReceivedForm = () => {
     return (
@@ -9,7 +10,15 @@ const CANFundingReceivedForm = () => {
                 onChange={() => {}}
                 setEnteredAmount={() => {}}
             />
+            <TextArea
+                maxLength={75}
+                name="Notes"
+                label="Notes (optional)"
+                value={""}
+                onChange={() => {}}
+            />
         </form>
     );
 };
+
 export default CANFundingReceivedForm;
