@@ -11,6 +11,7 @@ import CurrencyCard from "../../../components/UI/Cards/CurrencyCard";
 import ConfirmationModal from "../../../components/UI/Modals/index.js";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
+import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
@@ -193,7 +194,9 @@ const CanFunding = ({
                         </div>
                     </section>
                     <section id="can-funding-received-form-section">
-                        <p>Hello world!</p>
+                        <h2>{`Add FY ${fiscalYear} Funding Received YTD`}</h2>
+                        <p>{`Add funding received towards the Total FY ${fiscalYear} Budget or come back to add funding later. Funding Received means the money is in OPRE’s hands and ready to spend against.`}</p>
+                        <CANFundingReceivedForm />
                     </section>
                 </div>
             )}
