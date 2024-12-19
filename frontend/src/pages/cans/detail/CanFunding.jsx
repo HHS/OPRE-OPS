@@ -196,7 +196,15 @@ const CanFunding = ({
                     <section id="can-funding-received-form-section">
                         <h2>{`Add FY ${fiscalYear} Funding Received YTD`}</h2>
                         <p>{`Add funding received towards the Total FY ${fiscalYear} Budget or come back to add funding later. Funding Received means the money is in OPRE’s hands and ready to spend against.`}</p>
-                        <CANFundingReceivedForm />
+                        <div className="display-flex flex-justify margin-top-4">
+                            <div
+                                className="border-right-1px border-base-light"
+                                style={{ minWidth: "46%" }}
+                            >
+                                <CANFundingReceivedForm />
+                            </div>
+                            <CurrencyCard />
+                        </div>
                     </section>
                 </div>
             )}
