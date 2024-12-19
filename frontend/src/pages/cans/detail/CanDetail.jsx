@@ -1,6 +1,5 @@
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
 import { useGetDivisionQuery } from "../../../api/opsAPI";
 import CANDetailForm from "../../../components/CANs/CANDetailForm";
 import CANDetailView from "../../../components/CANs/CANDetailView";
@@ -24,6 +23,8 @@ import useGetUserFullNameFromId from "../../../hooks/user.hooks";
  * @property {number} divisionId
  * @property {number} fiscalYear
  * @property {boolean} isBudgetTeamMember
+ * @property {boolean} isEditMode
+ * @property {() => void} toggleEditMode
  */
 
 /**
@@ -41,15 +42,12 @@ const CanDetail = ({
     teamLeaders,
     divisionId,
     fiscalYear,
-    isBudgetTeamMember
+    isBudgetTeamMember,
+    isEditMode,
+    toggleEditMode
 }) => {
     const { data: division, isSuccess } = useGetDivisionQuery(divisionId);
     const divisionDirectorFullName = useGetUserFullNameFromId(isSuccess ? division.division_director_id : null);
-    const [isEditMode, setIsEditMode] = React.useState(false);
-
-    const toggleEditMode = () => {
-        setIsEditMode(!isEditMode);
-    };
 
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear);
@@ -59,7 +57,7 @@ const CanDetail = ({
         <article>
             <div className="display-flex flex-justify">
                 <h2>{!isEditMode ? "CAN Details" : "Edit CAN Details"}</h2>
-                {showButton && (
+                {showButton && !isEditMode && (
                     <button
                         id="edit"
                         className="hover:text-underline cursor-pointer"

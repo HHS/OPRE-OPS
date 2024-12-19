@@ -1191,45 +1191,32 @@ paths:
                   available_funding:
                     type: string
                   carry_forward_funding:
-                    type: integer
-                  can:
-                    type: object
+                    type: string
+                  cans:
+                    type: array
                     properties:
                       can:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            appropriation_term:
-                              type: integer
-                            authorizer_id:
-                              type: integer
-                            arrangement_type_id:
-                              type: integer
-                            number:
-                              type: string
-                            purpose:
-                              type: string
-                            managing_portfolio_id:
-                              type: integer
-                            nickname:
-                              type: string
-                            appropriation_date:
-                              type: string
-                            description:
-                              type: string
-                            id:
-                              type: integer
-                            expiration_date:
-                              type: string
-                            managing_project_id:
-                              type: integer
+                        properties:
+                          active_period:
+                            type: integer
+                          description:
+                            type: string
+                          display_name:
+                            type: string
+                          id:
+                            type: integer
+                          nick_name:
+                            type: string
+                          number:
+                            type: string
+                          portfolio_id:
+                            type: integer
+                          projects:
+                            type: array
                       carry_forward_label:
                         type: string
-                        example: ""
                       expiration_date:
                         type: string
-                        example: ""
                   expected_funding:
                     type: string
                   in_draft_funding:
@@ -1239,9 +1226,9 @@ paths:
                   new_funding:
                     type: string
                   obligated_funding:
-                    type: integer
+                    type: string
                   planned_funding:
-                    type: integer
+                    type: string
                   received_funding:
                     type: string
                   total_funding:
