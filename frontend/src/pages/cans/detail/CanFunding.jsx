@@ -148,49 +148,54 @@ const CanFunding = ({
                     </div>
                 </section>
             ) : (
-                <section
-                    id="can-budget-form-section"
-                    className="margin-bottom-8"
-                >
-                    <h2>{`Add FY ${fiscalYear} CAN Budget`}</h2>
-                    <p>{`Enter the FY ${fiscalYear} CAN Budget that teams will utilize for planning. For Multi-Year CANs, the Previous FYs Carry-Forward will display for you to review and enter as-is or edit, if needed.`}</p>
-                    <div className="display-flex flex-justify margin-top-4">
-                        <div
-                            className="border-right-1px border-base-light"
-                            style={{ minWidth: "46%" }}
-                        >
-                            <RoundedBox
-                                className="font-12px"
-                                style={{ minHeight: "69px", width: "313px", padding: "17px 0 0 13px" }}
-                                id="carry-forward-card"
+                <div>
+                    <section
+                        id="can-budget-form-section"
+                        className="margin-bottom-8"
+                    >
+                        <h2>{`Add FY ${fiscalYear} CAN Budget`}</h2>
+                        <p>{`Enter the FY ${fiscalYear} CAN Budget that teams will utilize for planning. For Multi-Year CANs, the Previous FYs Carry-Forward will display for you to review and enter as-is or edit, if needed.`}</p>
+                        <div className="display-flex flex-justify margin-top-4">
+                            <div
+                                className="border-right-1px border-base-light"
+                                style={{ minWidth: "46%" }}
                             >
-                                <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
-                                <CurrencyFormat
-                                    value={carryForwardFunding}
-                                    displayType="text"
-                                    thousandSeparator={true}
-                                    decimalScale={2}
-                                    fixedDecimalScale={true}
-                                    prefix="$ "
+                                <RoundedBox
+                                    className="font-12px"
+                                    style={{ minHeight: "69px", width: "313px", padding: "17px 0 0 13px" }}
+                                    id="carry-forward-card"
+                                >
+                                    <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
+                                    <CurrencyFormat
+                                        value={carryForwardFunding}
+                                        displayType="text"
+                                        thousandSeparator={true}
+                                        decimalScale={2}
+                                        fixedDecimalScale={true}
+                                        prefix="$ "
+                                    />
+                                </RoundedBox>
+                                <CANBudgetForm
+                                    budgetAmount={budgetAmount}
+                                    cn={cn}
+                                    res={res}
+                                    fiscalYear={fiscalYear}
+                                    handleAddBudget={handleAddBudget}
+                                    runValidate={runValidate}
+                                    setBudgetAmount={setBudgetAmount}
                                 />
-                            </RoundedBox>
-                            <CANBudgetForm
-                                budgetAmount={budgetAmount}
-                                cn={cn}
-                                res={res}
-                                fiscalYear={fiscalYear}
-                                handleAddBudget={handleAddBudget}
-                                runValidate={runValidate}
-                                setBudgetAmount={setBudgetAmount}
+                            </div>
+                            <CurrencyCard
+                                amount={submittedAmount}
+                                dataCy="can-budget-fy-card"
+                                headerText={`FY ${fiscalYear} CAN Budget`}
                             />
                         </div>
-                        <CurrencyCard
-                            amount={submittedAmount}
-                            dataCy="can-budget-fy-card"
-                            headerText={`FY ${fiscalYear} CAN Budget`}
-                        />
-                    </div>
-                </section>
+                    </section>
+                    <section id="can-funding-received-form-section">
+                        <p>Hello world!</p>
+                    </section>
+                </div>
             )}
             <Accordion
                 heading="Funding Received YTD"
