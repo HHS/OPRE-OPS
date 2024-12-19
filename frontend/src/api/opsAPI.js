@@ -219,7 +219,7 @@ export const opsApi = createApi({
                 headers: { "Content-Type": "application/json" },
                 body: data
             }),
-            invalidatesTags: ["Cans"]
+            invalidatesTags: ["Cans", "CanFunding"]
         }),
         updateCanFundingBudget: builder.mutation({
             query: ({ id, data }) => ({
@@ -228,7 +228,7 @@ export const opsApi = createApi({
                 headers: { "Content-Type": "application/json" },
                 body: data
             }),
-            invalidatesTags: ["Cans"]
+            invalidatesTags: ["Cans", "CanFunding"]
         }),
         getCanFundingSummary: builder.query({
             query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
@@ -261,7 +261,7 @@ export const opsApi = createApi({
 
                 return `/can-funding-summary?${queryParams.join("&")}`;
             },
-            providesTags: ["CanFunding", "Cans"]
+            providesTags: ["Cans", "CanFunding"]
         }),
         getNotificationsByUserId: builder.query({
             query: ({ id, auth_header }) => {
