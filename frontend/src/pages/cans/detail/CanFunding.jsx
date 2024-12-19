@@ -59,6 +59,7 @@ const CanFunding = ({
     const {
         budgetAmount,
         handleAddBudget,
+        handleAddFundingReceived,
         handleCancel,
         handleSubmit,
         modalProps,
@@ -201,9 +202,13 @@ const CanFunding = ({
                                 className="border-right-1px border-base-light"
                                 style={{ minWidth: "46%" }}
                             >
-                                <CANFundingReceivedForm />
+                                <CANFundingReceivedForm handleSubmit={handleAddFundingReceived} />
                             </div>
-                            <CurrencyCard />
+                            <ReceivedFundingCard
+                                title={`FY ${fiscalYear} Funding Received YTD`}
+                                totalReceived={receivedFunding}
+                                totalFunding={totalFunding}
+                            />
                         </div>
                     </section>
                 </div>

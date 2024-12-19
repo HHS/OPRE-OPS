@@ -87,6 +87,11 @@ export default function useCanFunding(
         setIsBudgetFormSubmitted(true);
     };
 
+    const handleAddFundingReceived = (e) => {
+        e.preventDefault();
+        alert("Add Funding Received");
+    };
+
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
@@ -124,6 +129,7 @@ export default function useCanFunding(
     return {
         budgetAmount,
         handleAddBudget,
+        handleAddFundingReceived,
         handleCancel,
         handleSubmit,
         modalProps,

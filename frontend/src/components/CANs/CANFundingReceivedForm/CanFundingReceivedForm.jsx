@@ -2,9 +2,9 @@ import CurrencyInput from "../../UI/Form/CurrencyInput";
 import TextArea from "../../UI/Form/TextArea";
 import icons from "../../../uswds/img/sprite.svg";
 
-const CANFundingReceivedForm = () => {
+const CANFundingReceivedForm = ({ handleSubmit }) => {
     return (
-        <form>
+        <form onSubmit={handleSubmit}>
             <CurrencyInput
                 name="funding-received-amount"
                 label="Funding Received"
