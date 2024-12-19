@@ -1,1 +1,1 @@
-export { default } from "./CANFundingReceivedForm";
+export { default } from "./CanFundingReceivedForm";
