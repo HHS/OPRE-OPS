@@ -10,7 +10,7 @@ import CurrencyFormat from "react-currency-format";
  * @param {Function} props.onChange - A function to call when the input value changes.
  * @param {boolean} [props.pending] - A flag to indicate if the input is pending (optional).
  * @param {Array<String>} [props.messages] - An array of error messages to display (optional).
- * @param {string} [props.value] - The value of the input field.(optional)
+ * @param {string | number} [props.value] - The value of the input field.(optional)
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {Function} [props.setEnteredAmount] - A function to call when the input value changes.
  * @returns {JSX.Element} - The rendered component.

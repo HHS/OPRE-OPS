@@ -17,7 +17,7 @@ import { NO_DATA } from "../../../constants";
 
 /**
  * @typedef {Object} CANFundingReceivedTableProps
- * @property {number} totalFunding
+ * @property {string} totalFunding
  * @property {FundingReceived[]} fundingReceived data for table
  */
 

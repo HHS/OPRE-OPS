@@ -13,6 +13,11 @@ afterEach(() => {
 
 const can502Nickname = "SSRD";
 const can502Description = "Social Science Research and Development";
+const can504 = {
+    number: 504,
+    nickname: "G994426",
+    budgetAmount: "5_000_000"
+};
 
 const currentFiscalYear = getCurrentFiscalYear();
 
@@ -166,5 +171,54 @@ describe("CAN detail page", () => {
             .and("contain", "2024")
             .and("contain", "$6,000,000.00")
             .and("contain", "60%");
+    });
+    it("handles budget form", () => {
+        cy.visit(`/cans/${can504.number}/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("#save-changes").should("be.disabled");
+        cy.get("#add-fy-budget").should("be.disabled");
+        cy.get("#carry-forward-card").should("contain", "0");
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", "0");
+        cy.get("#budget-amount").type(can504.budgetAmount);
+        cy.get("#budget-amount").clear();
+        cy.get(".usa-error-message").should("exist").contains("This is required information");
+        cy.get("#budget-amount").type(can504.budgetAmount);
+        cy.get(".usa-error-message").should("not.exist");
+        cy.get("#add-fy-budget").click();
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", "5,000,000.00");
+        cy.get("#save-changes").should("be.enabled");
+        cy.get("#save-changes").click();
+        cy.get(".usa-alert__body").should("contain", `The CAN ${can504.nickname} has been successfully updated.`);
+        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "Received $0.00 of $5,000,000.00");
+        cy.get("[data-cy=can-budget-fy-card]")
+            .should("exist")
+            .and("contain", "CAN Budget by FY")
+            .and("contain", `FY ${currentFiscalYear}`)
+            .and("contain", "$5,000,000.00");
+    });
+    it("handles cancelling from budget form", () => {
+        cy.visit(`/cans/${can504.number}/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("#carry-forward-card").should("contain", "0");
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", "5,000,000.00");
+        cy.get("#budget-amount").type("6_000_000");
+        cy.get("#add-fy-budget").click();
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", "6,000,000.00");
+        cy.get("#save-changes").should("be.enabled");
+        cy.get("[data-cy=cancel-button]").should("be.enabled");
+        cy.get("[data-cy=cancel-button]").click();
+        cy.get(".usa-modal__heading").should(
+            "contain",
+            "Are you sure you want to cancel editing? Your changes will not be saved."
+        );
+        cy.get("[data-cy='confirm-action']").click();
+        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "Received $0.00 of $5,000,000.00");
+        cy.get("[data-cy=can-budget-fy-card]")
+            .should("exist")
+            .and("contain", "CAN Budget by FY")
+            .and("contain", `FY ${currentFiscalYear}`)
+            .and("contain", "$5,000,000.00");
     });
 });

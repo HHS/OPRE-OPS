@@ -3,14 +3,20 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
-import { getTypesCounts } from "./Can.helpers";
 import { NO_DATA } from "../../../constants";
+import { getTypesCounts } from "./Can.helpers";
 
 export default function useCan() {
     /**
      *  @typedef {import("../../../components/CANs/CANTypes").CAN} CAN
+     *  @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
      */
 
+    // check CAN Funding for current fiscal year
+    // send to CanFunding hook
+    // if its present PATCH otherwise POST
+
+    const [isEditMode, setIsEditMode] = React.useState(false);
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles.includes(USER_ROLES.BUDGET_TEAM);
@@ -19,10 +25,15 @@ export default function useCan() {
     const urlPathParams = useParams();
     const canId = parseInt(urlPathParams.id ?? "-1");
     /** @type {{data?: CAN | undefined, isLoading: boolean}} */
-    const { data: can, isLoading } = useGetCanByIdQuery(canId);
+
+    const { data: can, isLoading } = useGetCanByIdQuery(canId, {
+        refetchOnMountOrArgChange: true
+    });
+    /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
     const { data: CANFunding, isLoading: CANFundingLoading } = useGetCanFundingSummaryQuery({
         ids: [canId],
-        fiscalYear: fiscalYear
+        fiscalYear: fiscalYear,
+        refetchOnMountOrArgChange: true
     });
 
     const budgetLineItemsByFiscalYear = React.useMemo(() => {
@@ -65,8 +76,15 @@ export default function useCan() {
         [fiscalYear, can]
     );
 
+    const toggleEditMode = () => {
+        setIsEditMode(!isEditMode);
+    };
+
+    const currentFiscalYearFundingId = can?.funding_budgets?.find((funding) => funding.fiscal_year === fiscalYear)?.id;
+
     return {
         can: can ?? null,
+        currentFiscalYearFundingId,
         isLoading,
         canId,
         fiscalYear,
@@ -82,17 +100,20 @@ export default function useCan() {
         teamLeaders: can?.portfolio?.team_leaders ?? [],
         portfolioName: can?.portfolio?.name,
         portfolioId: can?.portfolio_id ?? -1,
-        totalFunding: CANFunding?.total_funding,
-        plannedFunding: CANFunding?.planned_funding,
-        obligatedFunding: CANFunding?.obligated_funding,
-        inExecutionFunding: CANFunding?.in_execution_funding,
-        inDraftFunding: CANFunding?.in_draft_funding,
-        expectedFunding: CANFunding?.expected_funding,
-        receivedFunding: CANFunding?.received_funding,
+        totalFunding: CANFunding?.total_funding ?? "0",
+        plannedFunding: CANFunding?.planned_funding ?? "0",
+        obligatedFunding: CANFunding?.obligated_funding ?? "0",
+        inExecutionFunding: CANFunding?.in_execution_funding ?? "0",
+        inDraftFunding: CANFunding?.in_draft_funding ?? "0",
+        receivedFunding: CANFunding?.received_funding ?? "0",
+        carryForwardFunding: CANFunding?.carry_forward_funding ?? "0",
         subTitle: can?.nick_name ?? "",
         projectTypesCount,
         budgetLineTypesCount,
         agreementTypesCount,
-        isBudgetTeam
+        isBudgetTeam,
+        toggleEditMode,
+        isEditMode,
+        setIsEditMode
     };
 }

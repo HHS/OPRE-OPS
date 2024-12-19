@@ -16,6 +16,7 @@ import CanSpending from "./CanSpending";
 const Can = () => {
     const {
         can,
+        currentFiscalYearFundingId,
         isLoading,
         canId,
         fiscalYear,
@@ -41,7 +42,10 @@ const Can = () => {
         budgetLineTypesCount,
         agreementTypesCount,
         receivedFunding,
-        isBudgetTeam
+        isBudgetTeam,
+        carryForwardFunding,
+        isEditMode,
+        toggleEditMode
     } = useCan();
 
     if (isLoading || CANFundingLoading) {
@@ -61,10 +65,12 @@ const Can = () => {
 
             <section className="display-flex flex-justify margin-top-3">
                 <CanDetailTabs canId={canId} />
-                <CANFiscalYearSelect
-                    fiscalYear={fiscalYear}
-                    setSelectedFiscalYear={setSelectedFiscalYear}
-                />
+                {!isEditMode && (
+                    <CANFiscalYearSelect
+                        fiscalYear={fiscalYear}
+                        setSelectedFiscalYear={setSelectedFiscalYear}
+                    />
+                )}
             </section>
             <Routes>
                 <Route
@@ -81,6 +87,8 @@ const Can = () => {
                             teamLeaders={teamLeaders ?? []}
                             fiscalYear={fiscalYear}
                             isBudgetTeamMember={isBudgetTeam}
+                            isEditMode={isEditMode}
+                            toggleEditMode={toggleEditMode}
                         />
                     }
                 />
@@ -105,12 +113,19 @@ const Can = () => {
                     path="funding"
                     element={
                         <CanFunding
+                            canId={canId}
+                            canNumber={canNumber}
+                            currentFiscalYearFundingId={currentFiscalYearFundingId}
                             funding={fundingDetails}
                             fundingBudgets={fundingBudgets}
                             fiscalYear={fiscalYear}
                             receivedFunding={receivedFunding}
                             totalFunding={totalFunding}
                             fundingReceived={fundingReceivedByFiscalYear}
+                            isBudgetTeamMember={isBudgetTeam}
+                            isEditMode={isEditMode}
+                            toggleEditMode={toggleEditMode}
+                            carryForwardFunding={carryForwardFunding}
                         />
                     }
                 />
