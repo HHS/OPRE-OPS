@@ -17,7 +17,7 @@ const CANFundingReceivedForm = () => {
                 value={""}
                 onChange={() => {}}
             />
-            <p>Test text</p>
+            <p>Test 2</p>
         </form>
     );
 };
