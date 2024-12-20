@@ -67,8 +67,10 @@ const CanFunding = ({
         runValidate,
         receivedFundingAmount,
         cn,
+        notes,
         res,
         setBudgetAmount,
+        setNotes,
         setReceivedFundingAmount,
         setShowModal,
         showButton,
@@ -210,15 +212,16 @@ const CanFunding = ({
                                     receivedFundingAmount={receivedFundingAmount}
                                     setReceivedFundingAmount={setReceivedFundingAmount}
                                     handleSubmit={handleAddFundingReceived}
+                                    setNotes={setNotes}
                                 />
                             </div>
                             <ReceivedFundingCard
                                 title={`FY ${fiscalYear} Funding Received YTD`}
                                 totalReceived={submittedReceivedFundingAmount || 0}
-                                totalFunding={totalFunding}
+                                totalFunding={submittedAmount}
                             />
                         </div>
-                        <DebugCode data={{ receivedFundingAmount, submittedReceivedFundingAmount }} />
+                        <DebugCode data={{ receivedFundingAmount, submittedReceivedFundingAmount, notes }} />
                     </section>
                 </div>
             )}

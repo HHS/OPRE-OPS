@@ -32,6 +32,7 @@ export default function useCanFunding(
     const [submittedAmount, setSubmittedAmount] = React.useState(""); // submitted from add FY budget
     const [receivedFundingAmount, setReceivedFundingAmount] = React.useState(""); // user input
     const [submittedReceivedFundingAmount, setSubmittedReceivedFundingAmount] = React.useState(""); // submitted from add funding received
+    const [notes, setNotes] = React.useState("");
     const [isBudgetFormSubmitted, setIsBudgetFormSubmitted] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
@@ -92,6 +93,8 @@ export default function useCanFunding(
     const handleAddFundingReceived = (e) => {
         e.preventDefault();
         setSubmittedReceivedFundingAmount(receivedFundingAmount);
+        setReceivedFundingAmount("");
+        setNotes("");
     };
 
     const handleCancel = () => {
@@ -109,6 +112,8 @@ export default function useCanFunding(
         setSubmittedAmount(totalFunding);
         setIsBudgetFormSubmitted(false);
         setShowModal(false);
+        setReceivedFundingAmount("");
+        setNotes("");
         toggleEditMode();
         setModalProps({
             heading: "",
@@ -146,6 +151,8 @@ export default function useCanFunding(
         showButton,
         showModal,
         submittedAmount,
-        isBudgetFormSubmitted
+        isBudgetFormSubmitted,
+        notes,
+        setNotes
     };
 }

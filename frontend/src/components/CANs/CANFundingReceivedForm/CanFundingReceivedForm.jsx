@@ -8,6 +8,8 @@ import icons from "../../../uswds/img/sprite.svg";
  * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleSubmit
  * @property {(name: string, value: string) => void} runValidate
  * @property { React.Dispatch<React.SetStateAction<string>>} setReceivedFundingAmount
+ * @property {string} notes
+ * @property { React.Dispatch<React.SetStateAction<string>>} setNotes
  */
 
 /**
@@ -16,9 +18,15 @@ import icons from "../../../uswds/img/sprite.svg";
  * @returns  {JSX.Element} - The component JSX.
  */
 
-const CANFundingReceivedForm = ({ handleSubmit, receivedFundingAmount, setReceivedFundingAmount }) => {
+const CANFundingReceivedForm = ({ handleSubmit, receivedFundingAmount, setReceivedFundingAmount, notes, setNotes }) => {
     return (
-        <form onSubmit={handleSubmit}>
+        <form
+            onSubmit={(e) => {
+                handleSubmit(e);
+                // setNotes("");
+                // setReceivedFundingAmount("");
+            }}
+        >
             <CurrencyInput
                 name="funding-received-amount"
                 label="Funding Received"
@@ -30,8 +38,8 @@ const CANFundingReceivedForm = ({ handleSubmit, receivedFundingAmount, setReceiv
                 maxLength={75}
                 name="Notes"
                 label="Notes (optional)"
-                value={""}
-                onChange={() => {}}
+                value={notes}
+                onChange={(name, value) => setNotes(value)}
             />
             <button className="usa-button usa-button--outline margin-top-4">
                 <svg
