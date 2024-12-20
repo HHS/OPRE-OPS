@@ -4,6 +4,9 @@ import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * @typedef {Object} CANFundingReceivedFormProps
+ * @property {(arg: string) => string} cn
+ * @property {Object} res
+ * @property {Object} suite
  * @property {string} receivedFundingAmount
  * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleSubmit
  * @property {(name: string, value: string) => void} runValidate
@@ -18,21 +21,32 @@ import icons from "../../../uswds/img/sprite.svg";
  * @returns  {JSX.Element} - The component JSX.
  */
 
-const CANFundingReceivedForm = ({ handleSubmit, receivedFundingAmount, setReceivedFundingAmount, notes, setNotes }) => {
+const CANFundingReceivedForm = ({
+    cn,
+    res,
+    runValidate,
+    handleSubmit,
+    receivedFundingAmount,
+    setReceivedFundingAmount,
+    notes,
+    setNotes
+}) => {
     return (
         <form
             onSubmit={(e) => {
                 handleSubmit(e);
-                // setNotes("");
-                // setReceivedFundingAmount("");
             }}
         >
             <CurrencyInput
                 name="funding-received-amount"
                 label="Funding Received"
-                onChange={() => {}}
+                onChange={(name, value) => {
+                    runValidate("funding-received-amount", value);
+                }}
                 setEnteredAmount={setReceivedFundingAmount}
                 value={receivedFundingAmount || ""}
+                messages={res.getErrors("funding-received-amount")}
+                className={cn("funding-received-amount")}
             />
             <TextArea
                 maxLength={75}

@@ -213,6 +213,10 @@ const CanFunding = ({
                                     setReceivedFundingAmount={setReceivedFundingAmount}
                                     handleSubmit={handleAddFundingReceived}
                                     setNotes={setNotes}
+                                    notes={notes}
+                                    cn={cn}
+                                    res={res}
+                                    runValidate={runValidate}
                                 />
                             </div>
                             <ReceivedFundingCard
