@@ -2,7 +2,7 @@ import React from "react";
 import { useAddCanFundingBudgetsMutation, useUpdateCanFundingBudgetMutation } from "../../../api/opsAPI.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
-import suite from "../../../components/CANs/CANBudgetForm/suite.js";
+import suite from "./CanFundingSuite.js";
 import classnames from "vest/classnames";
 
 /**
@@ -28,8 +28,12 @@ export default function useCanFunding(
 ) {
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
-    const [budgetAmount, setBudgetAmount] = React.useState("");
-    const [submittedAmount, setSubmittedAmount] = React.useState("");
+    const [budgetAmount, setBudgetAmount] = React.useState(""); // user input
+    const [submittedAmount, setSubmittedAmount] = React.useState(""); // submitted from add FY budget
+    const [receivedFundingAmount, setReceivedFundingAmount] = React.useState(""); // user input
+    const [submittedReceivedFundingAmount, setSubmittedReceivedFundingAmount] = React.useState(""); // submitted from add funding received
+    const [notes, setNotes] = React.useState("");
+    const [submittedNotes, setSubmittedNotes] = React.useState("");
     const [isBudgetFormSubmitted, setIsBudgetFormSubmitted] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
@@ -87,6 +91,14 @@ export default function useCanFunding(
         setIsBudgetFormSubmitted(true);
     };
 
+    const handleAddFundingReceived = (e) => {
+        e.preventDefault();
+        setSubmittedReceivedFundingAmount(receivedFundingAmount);
+        setReceivedFundingAmount("");
+        setSubmittedNotes(notes);
+        setNotes("");
+    };
+
     const handleCancel = () => {
         setShowModal(true);
         setModalProps({
@@ -102,6 +114,8 @@ export default function useCanFunding(
         setSubmittedAmount(totalFunding);
         setIsBudgetFormSubmitted(false);
         setShowModal(false);
+        setReceivedFundingAmount("");
+        setNotes("");
         toggleEditMode();
         setModalProps({
             heading: "",
@@ -113,28 +127,29 @@ export default function useCanFunding(
     };
 
     const runValidate = (name, value) => {
-        suite(
-            {
-                ...{ [name]: value }
-            },
-            name
-        );
+        suite({ submittedAmount, ...{ [name]: value } }, name);
     };
 
     return {
         budgetAmount,
         handleAddBudget,
+        handleAddFundingReceived,
         handleCancel,
         handleSubmit,
         modalProps,
+        receivedFundingAmount,
         runValidate,
         res,
         cn,
         setBudgetAmount,
+        setReceivedFundingAmount,
         setShowModal,
+        submittedReceivedFundingAmount,
         showButton,
         showModal,
         submittedAmount,
-        isBudgetFormSubmitted
+        isBudgetFormSubmitted,
+        notes,
+        setNotes
     };
 }
