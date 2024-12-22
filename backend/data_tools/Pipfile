@@ -20,7 +20,7 @@ azure-storage-blob = "==12.24.0"
 azure-identity = "==1.19.0"
 azure-keyvault-secrets = "==4.9.0"
 loguru = "==0.7.3"
-click = "==8.1.7"
+click = "==8.1.8"
 aiohttp = "==3.11.11"
 
 [dev-packages]
