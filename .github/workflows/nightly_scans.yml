@@ -25,7 +25,7 @@ jobs:
           target: 'https://stg.ops.opre.acf.gov/'
           allow_issue_writing: false
           fail_action: false
-          cmd_options: '-I'
+          cmd_options: '-I -l FAIL'
 
       ## Manually reviewed the action, and validated it performs basic
       ## conversion from zap.json to zap.sarif.
