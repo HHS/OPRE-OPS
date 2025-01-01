@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d9df517535045132d968c63f58df1432a4f37a68db3075fa2669ca62d6899d4c"
+            "sha256": "a07af10174b481d1c66167411e13a4a685ddb025596adc6a34afc0dfeb8b022e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -126,12 +126,12 @@
         },
         "alembic-postgresql-enum": {
             "hashes": [
-                "sha256:c9eb20cb594085a48175aabcc5ffb448e6abfcc3f34cd9d03a1b7d5cc35457b8",
-                "sha256:fb0af50059891bf3fb9638d4c32a61b4eee116c302a90e0c74ed3f5f396153f4"
+                "sha256:4917dbd99e3ced777169301b2bc294dd6927668867e7017b27d090d0cbf0c876",
+                "sha256:84e4da63b8849af5f06e966ba2b32678813d8cc1841fb17c37b73155358cdb9b"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.7' and python_version < '4.0'",
-            "version": "==1.4.0"
+            "version": "==1.5.0"
         },
         "attrs": {
             "hashes": [
@@ -1502,11 +1502,11 @@
         },
         "argcomplete": {
             "hashes": [
-                "sha256:036d020d79048a5d525bc63880d7a4b8d1668566b8a76daf1144c0bbe0f63472",
-                "sha256:23146ed7ac4403b70bd6026402468942ceba34a6732255b9edf5b7354f68a6bb"
+                "sha256:2ab2c4a215c59fd6caaff41a869480a23e8f6a5f910b266c1808037f4e375b61",
+                "sha256:c12bf50eded8aebb298c7b7da7a5ff3ee24dffd9f5281867dfe1424b58c55392"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==3.5.2"
+            "version": "==3.5.3"
         },
         "asttokens": {
             "hashes": [
