@@ -225,7 +225,7 @@ const CanFunding = ({
                                 totalFunding={submittedAmount}
                             />
                         </div>
-                        <DebugCode data={{ receivedFundingAmount, submittedReceivedFundingAmount, notes }} />
+                        <DebugCode data={{ submittedAmount, receivedFundingAmount, submittedReceivedFundingAmount, notes }} />
                     </section>
                 </div>
             )}

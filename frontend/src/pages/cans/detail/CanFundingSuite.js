@@ -12,7 +12,8 @@ const suite = create((data = {}, fieldName) => {
     });
 
     test("funding-received-amount", "Amount cannot exceed FY Budget", () => {
-        enforce(data["funding-received-amount"]).lessThanOrEquals(data.submittedAmount);
+        const fundingReceivedAmount = data["funding-received-amount"].replace(/,/g, "");
+        enforce(fundingReceivedAmount).lessThanOrEquals(data.submittedAmount);
     });
 });
 
