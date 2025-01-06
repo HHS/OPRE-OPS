@@ -58,7 +58,7 @@ const CanFunding = ({
     carryForwardFunding
 }) => {
     const {
-        budgetAmount,
+        // budgetAmount,
         handleAddBudget,
         handleAddFundingReceived,
         handleCancel,
@@ -69,15 +69,18 @@ const CanFunding = ({
         cn,
         notes,
         res,
-        setBudgetAmount,
+        // setBudgetAmount,
         setNotes,
         setReceivedFundingAmount,
         setShowModal,
         showButton,
         showModal,
         submittedReceivedFundingAmount,
-        submittedAmount,
-        isBudgetFormSubmitted
+        // submittedAmount,
+        // isBudgetFormSubmitted,
+        budgetForm,
+        setBudgetForm,
+        handleEnteredAmount
     } = useCanFunding(
         canId,
         canNumber,
@@ -184,17 +187,18 @@ const CanFunding = ({
                                     />
                                 </RoundedBox>
                                 <CANBudgetForm
-                                    budgetAmount={budgetAmount}
+                                    budgetAmount={budgetForm.enteredAmount}
                                     cn={cn}
                                     res={res}
                                     fiscalYear={fiscalYear}
                                     handleAddBudget={handleAddBudget}
                                     runValidate={runValidate}
-                                    setBudgetAmount={setBudgetAmount}
+                                    setBudgetAmount={handleEnteredAmount}
+                                    //handleEnteredAmount={handleEnteredAmount}
                                 />
                             </div>
                             <CurrencyCard
-                                amount={submittedAmount}
+                                amount={budgetForm.submittedAmount}
                                 dataCy="can-budget-fy-card"
                                 headerText={`FY ${fiscalYear} CAN Budget`}
                             />
@@ -222,10 +226,12 @@ const CanFunding = ({
                             <ReceivedFundingCard
                                 title={`FY ${fiscalYear} Funding Received YTD`}
                                 totalReceived={submittedReceivedFundingAmount || 0}
-                                totalFunding={submittedAmount}
+                                totalFunding={budgetForm.submittedAmount}
                             />
                         </div>
-                        <DebugCode data={{ submittedAmount, receivedFundingAmount, submittedReceivedFundingAmount, notes }} />
+                        <DebugCode
+                            data={{ budgetForm, receivedFundingAmount, submittedReceivedFundingAmount, notes }}
+                        />
                     </section>
                 </div>
             )}
@@ -254,7 +260,7 @@ const CanFunding = ({
                     <button
                         id="save-changes"
                         className="usa-button"
-                        disabled={!isBudgetFormSubmitted}
+                        disabled={!budgetForm.isSubmitted}
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
                     >

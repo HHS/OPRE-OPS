@@ -28,13 +28,13 @@ export default function useCanFunding(
 ) {
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
-    const [budgetAmount, setBudgetAmount] = React.useState(""); // user input
-    const [submittedAmount, setSubmittedAmount] = React.useState(""); // submitted from add FY budget
+    // const [budgetAmount, setBudgetAmount] = React.useState(""); // user input
+    // const [submittedAmount, setSubmittedAmount] = React.useState(""); // submitted from add FY budget
     const [receivedFundingAmount, setReceivedFundingAmount] = React.useState(""); // user input
     const [submittedReceivedFundingAmount, setSubmittedReceivedFundingAmount] = React.useState(""); // submitted from add funding received
     const [notes, setNotes] = React.useState("");
     const [submittedNotes, setSubmittedNotes] = React.useState("");
-    const [isBudgetFormSubmitted, setIsBudgetFormSubmitted] = React.useState(false);
+    // const [isBudgetFormSubmitted, setIsBudgetFormSubmitted] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -43,12 +43,30 @@ export default function useCanFunding(
         handleConfirm: () => {}
     });
 
+    const [budgetForm, setBudgetForm] = React.useState({
+        enteredAmount: "",
+        submittedAmount: "",
+        isSubmitted: false
+    });
+
+    const handleEnteredAmount = (value) => {
+        setBudgetForm({
+            ...budgetForm,
+            enteredAmount: value
+        });
+    };
+
+    // setBudgetForm({
+    //     ...budgetForm,
+    //     enteredAmount: value
+    // })
+
     const [addCanFundingBudget] = useAddCanFundingBudgetsMutation();
     const [updateCanFundingBudget] = useUpdateCanFundingBudgetMutation();
     const { setAlert } = useAlert();
 
     React.useEffect(() => {
-        setSubmittedAmount(totalFunding);
+        setBudgetForm({ ...budgetForm, submittedAmount: totalFunding });
     }, [totalFunding]);
     // Validation
     let res = suite.get();
@@ -64,7 +82,7 @@ export default function useCanFunding(
         const payload = {
             fiscal_year: fiscalYear,
             can_id: canId,
-            budget: submittedAmount
+            budget: budgetForm.submittedAmount
         };
         setAlert({
             type: "success",
@@ -87,8 +105,9 @@ export default function useCanFunding(
 
     const handleAddBudget = (e) => {
         e.preventDefault();
-        setSubmittedAmount(budgetAmount);
-        setIsBudgetFormSubmitted(true);
+        // setSubmittedAmount(budgetAmount);
+        // setIsBudgetFormSubmitted(true);
+        setBudgetForm({ ...budgetForm, submittedAmount: budgetForm.enteredAmount, isSubmitted: true });
     };
 
     const handleAddFundingReceived = (e) => {
@@ -110,9 +129,10 @@ export default function useCanFunding(
     };
 
     const cleanUp = () => {
-        setBudgetAmount("");
-        setSubmittedAmount(totalFunding);
-        setIsBudgetFormSubmitted(false);
+        // setBudgetAmount("");
+        // setSubmittedAmount(totalFunding);
+        // setIsBudgetFormSubmitted(false);
+        setBudgetForm({ enteredAmount: "", submittedAmount: totalFunding, isSubmitted: false });
         setShowModal(false);
         setReceivedFundingAmount("");
         setNotes("");
@@ -127,11 +147,11 @@ export default function useCanFunding(
     };
 
     const runValidate = (name, value) => {
-        suite({ submittedAmount, ...{ [name]: value } }, name);
+        suite({ submittedAmount: budgetForm.submittedAmount, ...{ [name]: value } }, name);
     };
 
     return {
-        budgetAmount,
+        // budgetAmount,
         handleAddBudget,
         handleAddFundingReceived,
         handleCancel,
@@ -141,15 +161,18 @@ export default function useCanFunding(
         runValidate,
         res,
         cn,
-        setBudgetAmount,
+        // setBudgetAmount,
         setReceivedFundingAmount,
         setShowModal,
         submittedReceivedFundingAmount,
         showButton,
         showModal,
-        submittedAmount,
-        isBudgetFormSubmitted,
+        // submittedAmount,
+        // isBudgetFormSubmitted,
         notes,
-        setNotes
+        setNotes,
+        budgetForm,
+        setBudgetForm,
+        handleEnteredAmount
     };
 }
