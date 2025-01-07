@@ -1,5 +1,9 @@
 import React from "react";
-import { useAddCanFundingBudgetsMutation, useUpdateCanFundingBudgetMutation } from "../../../api/opsAPI.js";
+import {
+    useAddCanFundingBudgetsMutation,
+    useUpdateCanFundingBudgetMutation,
+    useAddCanFundingReceivedMutation
+} from "../../../api/opsAPI.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
 import suite from "./CanFundingSuite.js";
@@ -28,13 +32,6 @@ export default function useCanFunding(
 ) {
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
-    // const [budgetAmount, setBudgetAmount] = React.useState(""); // user input
-    // const [submittedAmount, setSubmittedAmount] = React.useState(""); // submitted from add FY budget
-    const [receivedFundingAmount, setReceivedFundingAmount] = React.useState(""); // user input
-    const [submittedReceivedFundingAmount, setSubmittedReceivedFundingAmount] = React.useState(""); // submitted from add funding received
-    const [notes, setNotes] = React.useState("");
-    const [submittedNotes, setSubmittedNotes] = React.useState("");
-    // const [isBudgetFormSubmitted, setIsBudgetFormSubmitted] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
@@ -49,25 +46,46 @@ export default function useCanFunding(
         isSubmitted: false
     });
 
-    const handleEnteredAmount = (value) => {
-        setBudgetForm({
-            ...budgetForm,
-            enteredAmount: value
-        });
-    };
-
-    // setBudgetForm({
-    //     ...budgetForm,
-    //     enteredAmount: value
-    // })
+    const [fundingReceivedForm, setFundingReceivedForm] = React.useState({
+        enteredAmount: "",
+        submittedAmount: "",
+        enteredNotes: "",
+        submittedNotes: ""
+    });
 
     const [addCanFundingBudget] = useAddCanFundingBudgetsMutation();
     const [updateCanFundingBudget] = useUpdateCanFundingBudgetMutation();
+    const [addCanFundingReceived] = useAddCanFundingReceivedMutation();
     const { setAlert } = useAlert();
 
     React.useEffect(() => {
         setBudgetForm({ ...budgetForm, submittedAmount: totalFunding });
     }, [totalFunding]);
+
+    const handleEnteredBudgetAmount = (value) => {
+        const nextForm = {
+            ...budgetForm,
+            enteredAmount: value
+        };
+        setBudgetForm(nextForm);
+    };
+
+    const handleEnteredFundingReceivedAmount = (value) => {
+        const nextForm = {
+            ...fundingReceivedForm,
+            enteredAmount: value
+        };
+        setFundingReceivedForm(nextForm);
+    };
+
+    const handleEnteredNotes = (value) => {
+        const nextForm = {
+            ...fundingReceivedForm,
+            enteredNotes: value
+        };
+        setFundingReceivedForm(nextForm);
+    };
+
     // Validation
     let res = suite.get();
 
@@ -84,38 +102,78 @@ export default function useCanFunding(
             can_id: canId,
             budget: budgetForm.submittedAmount
         };
-        setAlert({
-            type: "success",
-            heading: "CAN Funding Updated",
-            message: `The CAN ${canNumber} has been successfully updated.`
-        });
-        if (currentFiscalYearFundingId) {
-            updateCanFundingBudget({
-                id: currentFiscalYearFundingId,
-                data: payload
-            });
-        } else {
-            addCanFundingBudget({
-                data: payload
-            });
-        }
+        const fundingPayload = {
+            fiscal_year: fiscalYear,
+            can_id: canId,
+            funding: fundingReceivedForm.submittedAmount,
+            notes: fundingReceivedForm.submittedNotes
+        };
 
+        const updateFunding = async () => {
+            try {
+                if (currentFiscalYearFundingId) {
+                    // PATCH for existing CAN Funding
+                    await updateCanFundingBudget({
+                        id: currentFiscalYearFundingId,
+                        data: payload
+                    }).unwrap();
+                    console.log("CAN Funding Updated");
+                } else {
+                    // POST for new CAN Funding
+                    await addCanFundingBudget({
+                        data: payload
+                    }).unwrap();
+                    console.log("CAN Funding Added");
+                }
+
+                await addCanFundingReceived({
+                    data: fundingPayload
+                }).unwrap();
+                console.log("Funding Received Updated");
+
+                setAlert({
+                    type: "success",
+                    heading: "CAN Funding Updated",
+                    message: `The CAN ${canNumber} has been successfully updated.`
+                });
+            } catch (error) {
+                console.error("Error Updating CAN", error);
+                setAlert({
+                    type: "error",
+                    heading: "Error",
+                    message: "An error occurred while updating the CAN.",
+                    redirectUrl: "/error"
+                });
+            }
+        };
+
+        updateFunding();
         cleanUp();
     };
 
     const handleAddBudget = (e) => {
         e.preventDefault();
-        // setSubmittedAmount(budgetAmount);
-        // setIsBudgetFormSubmitted(true);
-        setBudgetForm({ ...budgetForm, submittedAmount: budgetForm.enteredAmount, isSubmitted: true });
+
+        const nextForm = {
+            ...budgetForm,
+            enteredAmount: "",
+            submittedAmount: budgetForm.enteredAmount,
+            isSubmitted: true
+        };
+        setBudgetForm(nextForm);
     };
 
     const handleAddFundingReceived = (e) => {
         e.preventDefault();
-        setSubmittedReceivedFundingAmount(receivedFundingAmount);
-        setReceivedFundingAmount("");
-        setSubmittedNotes(notes);
-        setNotes("");
+
+        const nextForm = {
+            ...fundingReceivedForm,
+            enteredAmount: "",
+            submittedAmount: fundingReceivedForm.enteredAmount,
+            enteredNotes: "",
+            submittedNotes: fundingReceivedForm.enteredNotes
+        };
+        setFundingReceivedForm(nextForm);
     };
 
     const handleCancel = () => {
@@ -129,13 +187,10 @@ export default function useCanFunding(
     };
 
     const cleanUp = () => {
-        // setBudgetAmount("");
-        // setSubmittedAmount(totalFunding);
-        // setIsBudgetFormSubmitted(false);
         setBudgetForm({ enteredAmount: "", submittedAmount: totalFunding, isSubmitted: false });
         setShowModal(false);
-        setReceivedFundingAmount("");
-        setNotes("");
+        const nextForm = { ...fundingReceivedForm, enteredAmount: "", enteredNotes: "" };
+        setFundingReceivedForm(nextForm);
         toggleEditMode();
         setModalProps({
             heading: "",
@@ -151,28 +206,21 @@ export default function useCanFunding(
     };
 
     return {
-        // budgetAmount,
         handleAddBudget,
         handleAddFundingReceived,
         handleCancel,
         handleSubmit,
         modalProps,
-        receivedFundingAmount,
         runValidate,
         res,
         cn,
-        // setBudgetAmount,
-        setReceivedFundingAmount,
         setShowModal,
-        submittedReceivedFundingAmount,
         showButton,
         showModal,
-        // submittedAmount,
-        // isBudgetFormSubmitted,
-        notes,
-        setNotes,
         budgetForm,
-        setBudgetForm,
-        handleEnteredAmount
+        handleEnteredBudgetAmount,
+        fundingReceivedForm,
+        handleEnteredFundingReceivedAmount,
+        handleEnteredNotes
     };
 }

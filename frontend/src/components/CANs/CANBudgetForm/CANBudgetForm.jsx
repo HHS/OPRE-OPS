@@ -24,7 +24,6 @@ const CANBudgetForm = ({ budgetAmount, cn, res, fiscalYear, handleAddBudget, run
         <form
             onSubmit={(e) => {
                 handleAddBudget(e);
-                setBudgetAmount("");
             }}
         >
             <div style={{ width: "383px" }}>

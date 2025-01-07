@@ -58,29 +58,22 @@ const CanFunding = ({
     carryForwardFunding
 }) => {
     const {
-        // budgetAmount,
         handleAddBudget,
         handleAddFundingReceived,
         handleCancel,
         handleSubmit,
         modalProps,
         runValidate,
-        receivedFundingAmount,
         cn,
-        notes,
         res,
-        // setBudgetAmount,
-        setNotes,
-        setReceivedFundingAmount,
         setShowModal,
         showButton,
         showModal,
-        submittedReceivedFundingAmount,
-        // submittedAmount,
-        // isBudgetFormSubmitted,
         budgetForm,
-        setBudgetForm,
-        handleEnteredAmount
+        handleEnteredBudgetAmount,
+        fundingReceivedForm,
+        handleEnteredFundingReceivedAmount,
+        handleEnteredNotes
     } = useCanFunding(
         canId,
         canNumber,
@@ -193,12 +186,11 @@ const CanFunding = ({
                                     fiscalYear={fiscalYear}
                                     handleAddBudget={handleAddBudget}
                                     runValidate={runValidate}
-                                    setBudgetAmount={handleEnteredAmount}
-                                    //handleEnteredAmount={handleEnteredAmount}
+                                    setBudgetAmount={handleEnteredBudgetAmount}
                                 />
                             </div>
                             <CurrencyCard
-                                amount={budgetForm.submittedAmount}
+                                amount={+budgetForm.submittedAmount}
                                 dataCy="can-budget-fy-card"
                                 headerText={`FY ${fiscalYear} CAN Budget`}
                             />
@@ -213,11 +205,11 @@ const CanFunding = ({
                                 style={{ minWidth: "46%" }}
                             >
                                 <CANFundingReceivedForm
-                                    receivedFundingAmount={receivedFundingAmount}
-                                    setReceivedFundingAmount={setReceivedFundingAmount}
+                                    receivedFundingAmount={fundingReceivedForm.enteredAmount}
+                                    setReceivedFundingAmount={handleEnteredFundingReceivedAmount}
                                     handleSubmit={handleAddFundingReceived}
-                                    setNotes={setNotes}
-                                    notes={notes}
+                                    setNotes={handleEnteredNotes}
+                                    notes={fundingReceivedForm.enteredNotes}
                                     cn={cn}
                                     res={res}
                                     runValidate={runValidate}
@@ -225,13 +217,11 @@ const CanFunding = ({
                             </div>
                             <ReceivedFundingCard
                                 title={`FY ${fiscalYear} Funding Received YTD`}
-                                totalReceived={submittedReceivedFundingAmount || 0}
+                                totalReceived={fundingReceivedForm.submittedAmount || "0"}
                                 totalFunding={budgetForm.submittedAmount}
                             />
                         </div>
-                        <DebugCode
-                            data={{ budgetForm, receivedFundingAmount, submittedReceivedFundingAmount, notes }}
-                        />
+                        <DebugCode data={{ budgetForm, fundingReceivedForm }} />
                     </section>
                 </div>
             )}

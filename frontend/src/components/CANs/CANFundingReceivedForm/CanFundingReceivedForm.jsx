@@ -6,7 +6,6 @@ import icons from "../../../uswds/img/sprite.svg";
  * @typedef {Object} CANFundingReceivedFormProps
  * @property {(arg: string) => string} cn
  * @property {Object} res
- * @property {Object} suite
  * @property {string} receivedFundingAmount
  * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleSubmit
  * @property {(name: string, value: string) => void} runValidate
@@ -31,34 +30,43 @@ const CANFundingReceivedForm = ({
     notes,
     setNotes
 }) => {
+    const isFormInValid = !receivedFundingAmount || res.hasErrors("funding-received-amount");
+    const fillColor = !isFormInValid ? "#005ea2" : "#757575";
+
     return (
         <form
             onSubmit={(e) => {
                 handleSubmit(e);
             }}
         >
-            <CurrencyInput
-                name="funding-received-amount"
-                label="Funding Received"
-                onChange={(name, value) => {
-                    runValidate("funding-received-amount", value);
-                }}
-                setEnteredAmount={setReceivedFundingAmount}
-                value={receivedFundingAmount || ""}
-                messages={res.getErrors("funding-received-amount")}
-                className={cn("funding-received-amount")}
-            />
-            <TextArea
-                maxLength={75}
-                name="Notes"
-                label="Notes (optional)"
-                value={notes}
-                onChange={(name, value) => setNotes(value)}
-            />
-            <button className="usa-button usa-button--outline margin-top-4">
+            <div style={{ width: "383px" }}>
+                <CurrencyInput
+                    name="funding-received-amount"
+                    label="Funding Received"
+                    onChange={(name, value) => {
+                        runValidate("funding-received-amount", value);
+                    }}
+                    setEnteredAmount={setReceivedFundingAmount}
+                    value={receivedFundingAmount || ""}
+                    messages={res.getErrors("funding-received-amount")}
+                    className={`${cn("funding-received-amount")} margin-top-0`}
+                />
+                <TextArea
+                    maxLength={75}
+                    name="Notes"
+                    label="Notes (optional)"
+                    value={notes}
+                    onChange={(name, value) => setNotes(value)}
+                    textAreaStyle={{ height: "51px" }}
+                />{" "}
+            </div>
+            <button
+                className="usa-button usa-button--outline margin-top-4"
+                disabled={isFormInValid}
+            >
                 <svg
                     className="height-2 width-2 margin-right-05 cursor-pointer"
-                    style={{ fill: "#005ea2" }}
+                    style={{ fill: fillColor }}
                 >
                     <use xlinkHref={`${icons}#add`}></use>
                 </svg>
