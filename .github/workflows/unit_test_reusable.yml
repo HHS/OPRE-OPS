@@ -4,12 +4,7 @@ on:
 jobs:
   backend-api:
     name: Backend API Unit Tests
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - ubuntu-22.04
-          - ubuntu-24.04
+    runs-on: ubuntu-22.04
     env:
       JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
       JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
