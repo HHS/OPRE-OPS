@@ -30,7 +30,7 @@ const testBli = {
     agreement_id: 11,
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
-    date_needed: "2025-01-01",
+    date_needed: "2044-01-01",
     proc_shop_fee_percentage: 0.005
 };
 
