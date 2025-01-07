@@ -1,7 +1,6 @@
 from enum import Enum, auto
-from typing import Optional
 
-from sqlalchemy import ForeignKey, Integer
+from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -29,17 +28,19 @@ class CANHistoryType(Enum):
     CAN_DIVISION_EDITED = auto()
     CAN_CARRY_FORWARD_CALCULATED = auto()
 
-class CANHistoryModel(BaseModel):
+class CANHistory(BaseModel):
     __tablename__ = "can_history"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    can_id = Mapped[int] = mapped_column(
-        Integer, ForeignKey("cans.id")
+    can_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("can.id")
     )
-    ops_event_id = Mapped[int] # Foreign Key
-    history_title = Mapped[Optional[str]]
-    history_message = Mapped[Optional[str]]
-    timestamp = Mapped[Optional[str]]
-    history_type = Mapped[CANHistoryType] = mapped_column(
+    ops_event_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("ops_event.id")
+    )
+    history_title: Mapped[str]
+    history_message: Mapped[str] = mapped_column(Text)
+    timestamp: Mapped[str]
+    history_type: Mapped[CANHistoryType] = mapped_column(
         ENUM(CANHistoryType), nullable=True
     )
