@@ -16,7 +16,7 @@
     "@nivo/core": "0.88.0",
     "@nivo/pie": "0.88.0",
     "@reduxjs/toolkit": "2.5.0",
-    "@uswds/uswds": "3.10.0",
+    "@uswds/uswds": "3.11.0",
     "@vitejs/plugin-react": "4.3.4",
     "axios": "1.7.9",
     "clsx": "2.1.1",
@@ -25,10 +25,10 @@
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-cypress": "4.1.0",
     "eslint-plugin-import": "2.31.0",
-    "eslint-plugin-jest": "28.9.0",
+    "eslint-plugin-jest": "28.10.0",
     "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-prettier": "5.2.1",
-    "eslint-plugin-react": "7.37.2",
+    "eslint-plugin-react": "7.37.3",
     "eslint-plugin-react-hooks": "5.1.0",
     "eslint-plugin-react-refresh": "0.4.16",
     "eslint-plugin-testing-library": "6.5.0",
@@ -40,10 +40,10 @@
     "react": "18.3.1",
     "react-currency-format": "1.1.0",
     "react-dom": "18.3.1",
-    "react-markdown": "9.0.1",
+    "react-markdown": "9.0.3",
     "react-modal": "3.16.3",
     "react-redux": "9.2.0",
-    "react-router-dom": "6.28.0",
+    "react-router-dom": "6.28.1",
     "react-select": "5.9.0",
     "react-slider": "2.0.6",
     "sass": "1.83.0",
@@ -57,7 +57,7 @@
     "vite-plugin-svgr": "4.3.0"
   },
   "overrides": {
-    "rollup": "4.28.1"
+    "rollup": "4.29.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "6.6.3",
@@ -69,15 +69,15 @@
     "@vitest/coverage-istanbul": "2.1.8",
     "@vitest/ui": "2.1.8",
     "axe-core": "4.10.2",
-    "cypress": "13.16.1",
+    "cypress": "13.17.0",
     "cypress-axe": "1.5.0",
     "cypress-localstorage-commands": "2.2.7",
-    "globals": "15.13.0",
+    "globals": "15.14.0",
     "history": "5.3.0",
-    "msw": "2.6.9",
+    "msw": "2.7.0",
     "prettier": "3.4.2",
     "redux-mock-store": "1.5.5",
-    "semantic-release": "24.2.0",
+    "semantic-release": "24.2.1",
     "vitest": "2.1.8"
   },
   "scripts": {

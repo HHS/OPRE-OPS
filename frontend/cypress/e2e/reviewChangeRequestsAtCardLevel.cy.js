@@ -30,7 +30,7 @@ const testBli = {
     agreement_id: 11,
     amount: 1000000,
     status: BLI_STATUS.DRAFT,
-    date_needed: "2025-1-01",
+    date_needed: "2044-1-01",
     proc_shop_fee_percentage: 0.005
 };
 
@@ -629,7 +629,7 @@ describe("Review Change Requests at Card Level", () => {
                     url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
                     body: {
                         id: bliId,
-                        date_needed: "2028-11-15",
+                        date_needed: "2048-11-15",
                         requestor_notes: "Test requestor notes"
                     },
                     headers: {
@@ -657,7 +657,7 @@ describe("Review Change Requests at Card Level", () => {
                         // see if there are any review cards
                         cy.get("[data-cy='review-card']").should("exist").contains("Budget Change");
                         cy.get("[data-cy='review-card']").contains(/obligate by date/i);
-                        cy.get("[data-cy='review-card']").contains("11/15/2028");
+                        cy.get("[data-cy='review-card']").contains("11/15/2048");
                         // hover over first card
                         cy.get("[data-cy='review-card']").first().trigger("mouseover");
                         // click on button id approve
@@ -691,7 +691,7 @@ describe("Review Change Requests at Card Level", () => {
                             '[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]'
                         ).should(
                             "have.text",
-                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2025 to 11/15/2028 as requested by Budget Team.`
+                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2044 to 11/15/2048 as requested by Budget Team.`
                         );
                         cy.get('[data-cy="agreement-history-list"] > :nth-child(1) > [data-cy="log-item-children"]')
                             .should("exist")

@@ -30,7 +30,7 @@ const testBli = {
     agreement_id: 11,
     amount: 1000000,
     status: BLI_STATUS.PLANNED,
-    date_needed: "2025-1-01",
+    date_needed: "2044-01-01",
     proc_shop_fee_percentage: 0.005
 };
 
@@ -86,8 +86,8 @@ describe("Budget Change Requests", () => {
             .then(({ agreementId, bliId }) => {
                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines?mode=edit`);
                 cy.get("#servicesComponentSelect").select("1");
-                cy.get("#pop-start-date").type("01/01/2024");
-                cy.get("#pop-end-date").type("01/01/2025");
+                cy.get("#pop-start-date").type("01/01/2044");
+                cy.get("#pop-end-date").type("01/01/2045");
                 cy.get("#description").type("This is a description.");
                 cy.get("[data-cy='add-services-component-btn']").click();
                 cy.get("tbody").children().as("table-rows").should("have.length", 1);
@@ -106,7 +106,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="alert"]').should("exist");
                 cy.get('[data-cy="alert"]').should(($alert) => {
                     expect($alert).to.contain(`BL ${bliId} Amount: $1,000,000.00 to $2,222,222.00`);
-                    expect($alert).to.contain(`BL ${bliId} Obligate By Date: 1/1/2025 to 1/1/2048`);
+                    expect($alert).to.contain(`BL ${bliId} Obligate By Date: 1/1/2044 to 1/1/2048`);
                     expect($alert).to.contain(`BL ${bliId} CAN: G994426 to G99MVT3`);
                 });
                 // verify agreement history
@@ -129,7 +129,7 @@ describe("Budget Change Requests", () => {
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Obligate Date In Review/,
-                            `System Owner requested a budget change on BL ${bliId} from 1/1/2025 to 1/1/2048 and it's currently In Review for approval.`
+                            `System Owner requested a budget change on BL ${bliId} from 1/1/2044 to 1/1/2048 and it's currently In Review for approval.`
                         );
                     })
                     .then(() => {
@@ -200,8 +200,8 @@ describe("Budget Change Requests", () => {
             .then(({ agreementId, bliId }) => {
                 cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines?mode=edit`);
                 cy.get("#servicesComponentSelect").select("1");
-                cy.get("#pop-start-date").type("01/01/2024");
-                cy.get("#pop-end-date").type("01/01/2025");
+                cy.get("#pop-start-date").type("01/01/2044");
+                cy.get("#pop-end-date").type("01/01/2045");
                 cy.get("#description").type("This is a description.");
                 cy.get("[data-cy='add-services-component-btn']").click();
                 cy.get("tbody").children().as("table-rows").should("have.length", 1);
@@ -303,8 +303,8 @@ describe("Budget Change Requests", () => {
                     `/agreements/${agreementId}/budget-lines?mode=edit&budget-line-id=${bliId}#budget-lines-header`
                 );
                 cy.get("#servicesComponentSelect").select("1");
-                cy.get("#pop-start-date").type("01/01/2024");
-                cy.get("#pop-end-date").type("01/01/2025");
+                cy.get("#pop-start-date").type("01/01/2044");
+                cy.get("#pop-end-date").type("01/01/2045");
                 cy.get("#description").type("This is a description.");
                 cy.get("[data-cy='add-services-component-btn']").click();
                 cy.get("tbody").children().as("table-rows").should("have.length", 1);
