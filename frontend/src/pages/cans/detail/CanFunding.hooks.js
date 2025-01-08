@@ -50,7 +50,8 @@ export default function useCanFunding(
         enteredAmount: "",
         submittedAmount: "",
         enteredNotes: "",
-        submittedNotes: ""
+        submittedNotes: "",
+        isSubmitted: false
     });
 
     const [addCanFundingBudget] = useAddCanFundingBudgetsMutation();
@@ -111,25 +112,29 @@ export default function useCanFunding(
 
         const updateFunding = async () => {
             try {
-                if (currentFiscalYearFundingId) {
-                    // PATCH for existing CAN Funding
-                    await updateCanFundingBudget({
-                        id: currentFiscalYearFundingId,
-                        data: payload
-                    }).unwrap();
-                    console.log("CAN Funding Updated");
-                } else {
-                    // POST for new CAN Funding
-                    await addCanFundingBudget({
-                        data: payload
-                    }).unwrap();
-                    console.log("CAN Funding Added");
+                if (+payload.budget > 0) {
+                    if (currentFiscalYearFundingId) {
+                        // PATCH for existing CAN Funding
+                        await updateCanFundingBudget({
+                            id: currentFiscalYearFundingId,
+                            data: payload
+                        }).unwrap();
+                        console.log("CAN Funding Updated");
+                    } else {
+                        // POST for new CAN Funding
+                        await addCanFundingBudget({
+                            data: payload
+                        }).unwrap();
+                        console.log("CAN Funding Added");
+                    }
                 }
 
-                await addCanFundingReceived({
-                    data: fundingPayload
-                }).unwrap();
-                console.log("Funding Received Updated");
+                if (+fundingPayload.funding > 0) {
+                    await addCanFundingReceived({
+                        data: fundingPayload
+                    }).unwrap();
+                    console.log("Funding Received Updated");
+                }
 
                 setAlert({
                     type: "success",
@@ -171,7 +176,8 @@ export default function useCanFunding(
             enteredAmount: "",
             submittedAmount: fundingReceivedForm.enteredAmount,
             enteredNotes: "",
-            submittedNotes: fundingReceivedForm.enteredNotes
+            submittedNotes: fundingReceivedForm.enteredNotes,
+            isSubmitted: true
         };
         setFundingReceivedForm(nextForm);
     };

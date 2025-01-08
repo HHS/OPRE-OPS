@@ -250,7 +250,7 @@ const CanFunding = ({
                     <button
                         id="save-changes"
                         className="usa-button"
-                        disabled={!budgetForm.isSubmitted}
+                        disabled={!budgetForm.isSubmitted && !fundingReceivedForm.isSubmitted}
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
                     >
