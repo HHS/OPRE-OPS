@@ -1,0 +1,9 @@
+{
+    ops_event: [
+        { // 1
+            event_type: "CREATE_NEW_CAN",
+            event_status: "SUCCESS",
+            event_details: '{"message": "Hello World"}'
+        }
+    ]
+}

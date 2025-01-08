@@ -31,6 +31,7 @@ services:
       /bin/sh -c "
       . .venv/bin/activate &&
       alembic upgrade head &&
+      DATA=./data_tools/data/ops_event.json5 python ./data_tools/src/import_static_data/import_data.py
       DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py &&
       DATA=./data_tools/data/portfolio_data.json5 python ./data_tools/src/import_static_data/import_data.py &&

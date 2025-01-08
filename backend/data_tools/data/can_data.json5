@@ -531,4 +531,14 @@
       funding: 1000000.0,
     },
   ],
+  can_history: [
+    { // 1
+      can_id: 500,
+      ops_event_id: 1,
+      history_title: "CAN Imported!",
+      history_message: "CAN Imported by Reed on Wednesdsay January 1st",
+      timestamp: "2025-01-01T00:07:00.000000Z",
+      history_type: "CAN_DATA_IMPORT"
+    }
+  ]
 }
