@@ -55,7 +55,7 @@ const ReverseLineGraph = ({ data = [], setActiveId = () => {} }) => {
                 <div
                     className={`${styles.leftBar}`}
                     style={{
-                        flex: `${ratio * 100}%`,
+                        flex: `0  1 ${ratio * 100}%`,
                         backgroundColor: leftColor
                     }}
                     onMouseEnter={() => setActiveId(leftId)}

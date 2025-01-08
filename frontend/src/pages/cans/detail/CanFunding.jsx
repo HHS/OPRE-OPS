@@ -89,6 +89,8 @@ const CanFunding = ({
         return <div>No funding information available for this CAN.</div>;
     }
 
+    const totalReceived = parseFloat(receivedFunding) + parseFloat(fundingReceivedForm?.submittedAmount || "0");
+
     return (
         <div>
             {showModal && (
@@ -217,11 +219,11 @@ const CanFunding = ({
                             </div>
                             <ReceivedFundingCard
                                 title={`FY ${fiscalYear} Funding Received YTD`}
-                                totalReceived={fundingReceivedForm.submittedAmount || "0"}
+                                totalReceived={totalReceived.toString() || "0"}
                                 totalFunding={budgetForm.submittedAmount}
                             />
                         </div>
-                        <DebugCode data={{ budgetForm, fundingReceivedForm }} />
+                        <DebugCode data={{ budgetForm, fundingReceivedForm, totalReceived, receivedFunding }} />
                     </section>
                 </div>
             )}

@@ -53,7 +53,7 @@ const CANFundingReceivedForm = ({
                 />
                 <TextArea
                     maxLength={75}
-                    name="Notes"
+                    name="notes"
                     label="Notes (optional)"
                     value={notes}
                     onChange={(name, value) => setNotes(value)}
@@ -63,6 +63,7 @@ const CANFundingReceivedForm = ({
             <button
                 className="usa-button usa-button--outline margin-top-4"
                 disabled={isFormInValid}
+                data-cy="add-funding-received-btn"
             >
                 <svg
                     className="height-2 width-2 margin-right-05 cursor-pointer"
