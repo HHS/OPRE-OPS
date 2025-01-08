@@ -1,42 +1,23 @@
 from flask import Response, request
 from flask_jwt_extended import jwt_required
 
-from models import OpsEventType
-from ops_api.ops.auth.auth_types import Permission, PermissionType
-from ops_api.ops.auth.decorators import is_authorized
-from ops_api.ops.base_views import BaseListAPI
-from ops_api.ops.schemas.cans import CreateUpdateFundingBudgetSchema, FundingBudgetSchema
-from ops_api.ops.services.can_funding_budget import CANFundingBudgetService
+from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.schemas.can_history import CANHistoryItemSchema, GetHistoryListQueryParametersSchema
+from ops_api.ops.services.can_history import CANHistoryService
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-class CANHistoryListAPI(BaseListAPI):
+class CANHistoryItemAPI(BaseItemAPI):
     def __init__(self, model):
         super().__init__(model)
-        self.service = CANFundingBudgetService()
+        self.service = CANHistoryService()
+        self._get_schema = GetHistoryListQueryParametersSchema()
 
     @jwt_required()
     @error_simulator
     def get(self) -> Response:
-        result = self.service.get_list()
-        funding_budget_schema = FundingBudgetSchema()
-        return make_response_with_headers([funding_budget_schema.dump(funding_budget) for funding_budget in result])
-
-    @is_authorized(PermissionType.POST, Permission.CAN)
-    def post(self) -> Response:
-        """
-        Create a new CANFundingBudget object
-        """
-        with OpsEventHandler(OpsEventType.CREATE_CAN_FUNDING_BUDGET) as meta:
-            request_data = request.get_json()
-            schema = CreateUpdateFundingBudgetSchema()
-            serialized_request = schema.load(request_data)
-
-            created_funding_budget = self.service.create(serialized_request)
-
-            funding_budget_schema = FundingBudgetSchema()
-            serialized_funding_budget = funding_budget_schema.dump(created_funding_budget)
-            meta.metadata.update({"new_can_funding_budget": serialized_funding_budget})
-            return make_response_with_headers(serialized_funding_budget, 201)
+        data = self._get_schema.dump(self._get_schema.load(request.args))
+        result = self.service.get(data.get("can_id"), data.get("limit"), data.get("offset"))
+        can_history_schema = CANHistoryItemSchema()
+        return make_response_with_headers([can_history_schema.dump(funding_budget) for funding_budget in result])

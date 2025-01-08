@@ -2,7 +2,7 @@ from marshmallow import EXCLUDE, Schema, fields
 from models import CANHistoryType
 
 
-class CANHistoryListSchema(Schema):
+class CANHistoryItemSchema(Schema):
     id = fields.Integer(required=True)
     can_id = fields.Integer(required=True)
     ops_event_id = fields.Integer(required=True)
