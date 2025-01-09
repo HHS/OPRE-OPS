@@ -18,6 +18,7 @@ from ops_api.ops.views import (
     CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC,
     CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC,
     CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
+    CAN_HISTORY_LIST_API_VIEW_FUNC,
     CAN_ITEM_API_VIEW_FUNC,
     CAN_LIST_API_VIEW_FUNC,
     CANS_BY_PORTFOLIO_API_VIEW_FUNC,
@@ -172,9 +173,11 @@ def register_api(api_bp: Blueprint) -> None:
     )
 
     api_bp.add_url_rule(
-        "/can-funding-summary",
+        "/can-funding-summary/",
         view_func=CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     )
+
+    api_bp.add_url_rule("/can-history/", view_func=CAN_HISTORY_LIST_API_VIEW_FUNC)
     api_bp.add_url_rule(
         "/portfolio-funding-summary/<int:id>",
         view_func=PORTFOLIO_FUNDING_SUMMARY_ITEM_API_VIEW_FUNC,

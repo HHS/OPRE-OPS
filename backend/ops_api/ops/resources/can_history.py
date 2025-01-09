@@ -1,14 +1,14 @@
 from flask import Response, request
 from flask_jwt_extended import jwt_required
 
-from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.base_views import BaseListAPI
 from ops_api.ops.schemas.can_history import CANHistoryItemSchema, GetHistoryListQueryParametersSchema
 from ops_api.ops.services.can_history import CANHistoryService
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
 
 
-class CANHistoryItemAPI(BaseItemAPI):
+class CANHistoryListAPI(BaseListAPI):
     def __init__(self, model):
         super().__init__(model)
         self.service = CANHistoryService()
