@@ -47,7 +47,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           context: ${{ github.workspace }}/${{ env.WORKING_DIR }}
           dockerfile: ${{ github.workspace }}/${{ env.WORKING_DIR }}/${{ env.BE_DOCKER_FILE }}
-          image_tags: "${{ github.sha }}"
+          image_tags: "${{ env.ENVIRONMENT }},${{ github.sha }}"
 
   deploy-data-tools:
     needs: build-data-tools

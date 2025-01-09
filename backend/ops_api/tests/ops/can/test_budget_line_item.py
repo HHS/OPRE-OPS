@@ -784,7 +784,7 @@ def test_patch_budget_line_items_using_e2e_test(auth_client, test_bli_new, test_
         "comments": "note one",
         "versions": [{"id": 29, "transaction_id": 397}],
         "agreement": 1,
-        "date_needed": "2025-12-01",
+        "date_needed": "2044-12-01",
         "agreement_id": 1,
         "created_by_user": 21,
         "line_description": "SC1",
@@ -896,7 +896,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
     data = data | {
         "can_id": test_can.id,
         "amount": 111.11,
-        "date_needed": "2025-01-01",
+        "date_needed": "2044-01-01",
     }
     resp = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
@@ -946,7 +946,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
         "status": "PLANNED",
         "can_id": test_can.id,
         "amount": 111.11,
-        "date_needed": "2025-01-01",
+        "date_needed": "2044-01-01",
     }
     resp = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
@@ -999,7 +999,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
         "status": "PLANNED",
         "can_id": test_can.id,
         "amount": 111.11,
-        "date_needed": "2025-01-01",
+        "date_needed": "2044-01-01",
     }
     resp = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
@@ -1059,7 +1059,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
         "status": "PLANNED",
         "can_id": test_can.id,
         "amount": 111.11,
-        "date_needed": "2025-01-01",
+        "date_needed": "2044-01-01",
     }
     resp = auth_client.post("/api/v1/budget-line-items/", json=data)
     assert resp.status_code == 201
