@@ -50,13 +50,12 @@ describe("CANFundingReceivedForm", () => {
     });
 
     it("calls handleSubmit when form is submitted", async () => {
-        const { container } = render(
+        render(
             <CANFundingReceivedForm
                 {...defaultProps}
                 receivedFundingAmount="1000"
             />
         );
-        const form = container.querySelector("form");
 
         await user.click(screen.getByRole("button", { name: /Add Funding Received/i }));
 
