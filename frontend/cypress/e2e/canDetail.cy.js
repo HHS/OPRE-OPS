@@ -172,7 +172,7 @@ describe("CAN detail page", () => {
             .and("contain", "$6,000,000.00")
             .and("contain", "60%");
     });
-    it.only("handles budget form", () => {
+    it("handles budget form", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
@@ -196,7 +196,7 @@ describe("CAN detail page", () => {
             .and("contain", `FY ${currentFiscalYear}`)
             .and("contain", "$5,000,000.00");
     });
-    it.only("handle funding received form", () => {
+    it("handle funding received form", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
