@@ -73,7 +73,9 @@ const CanFunding = ({
         handleEnteredBudgetAmount,
         fundingReceivedForm,
         handleEnteredFundingReceivedAmount,
-        handleEnteredNotes
+        handleEnteredNotes,
+        totalReceived,
+        enteredFundingReceived
     } = useCanFunding(
         canId,
         canNumber,
@@ -82,14 +84,14 @@ const CanFunding = ({
         isBudgetTeamMember,
         isEditMode,
         toggleEditMode,
+        receivedFunding,
+        fundingReceived,
         currentFiscalYearFundingId
     );
 
     if (!funding) {
         return <div>No funding information available for this CAN.</div>;
     }
-
-    const totalReceived = parseFloat(receivedFunding) + parseFloat(fundingReceivedForm?.submittedAmount || "0");
 
     return (
         <div>
@@ -182,6 +184,9 @@ const CanFunding = ({
                                     />
                                 </RoundedBox>
                                 <CANBudgetForm
+                                    totalFunding={
+                                        budgetForm.submittedAmount ? budgetForm.submittedAmount : totalFunding
+                                    }
                                     budgetAmount={budgetForm.enteredAmount}
                                     cn={cn}
                                     res={res}
@@ -217,13 +222,18 @@ const CanFunding = ({
                                     runValidate={runValidate}
                                 />
                             </div>
+                            {/* <ReceivedFundingCard
+                            title={`FY ${fiscalYear} Funding Received YTD`}
+                            totalReceived={receivedFunding}
+                            totalFunding={totalFunding}
+                        /> */}
                             <ReceivedFundingCard
                                 title={`FY ${fiscalYear} Funding Received YTD`}
                                 totalReceived={totalReceived.toString() || "0"}
                                 totalFunding={budgetForm.submittedAmount}
                             />
                         </div>
-                        <DebugCode data={{ budgetForm, fundingReceivedForm, totalReceived, receivedFunding }} />
+                        <DebugCode data={{ fundingReceivedForm }} />
                     </section>
                 </div>
             )}
@@ -231,11 +241,11 @@ const CanFunding = ({
                 heading="Funding Received YTD"
                 level={2}
             >
-                {fundingReceived.length === 0 ? (
+                {enteredFundingReceived.length === 0 ? (
                     <p className="text-center">No funding received data available for this CAN.</p>
                 ) : (
                     <CANFundingReceivedTable
-                        fundingReceived={fundingReceived}
+                        fundingReceived={enteredFundingReceived}
                         totalFunding={totalFunding}
                     />
                 )}

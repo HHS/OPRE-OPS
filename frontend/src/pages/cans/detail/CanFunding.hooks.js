@@ -8,6 +8,12 @@ import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
 import suite from "./CanFundingSuite.js";
 import classnames from "vest/classnames";
+import { NO_DATA } from "../../../constants.js";
+import { useSelector } from "react-redux";
+
+/**
+ * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ */
 
 /**
  * @description - Custom hook for the CAN Funding component.
@@ -18,6 +24,8 @@ import classnames from "vest/classnames";
  * @param {boolean} isBudgetTeamMember
  * @param {boolean} isEditMode
  * @param {() => void} toggleEditMode
+ * @param {string} receivedFunding
+ * @param {FundingReceived[]} fundingReceived
  * @param {number} [currentFiscalYearFundingId] - The id of the current fiscal year funding. optional
  */
 export default function useCanFunding(
@@ -28,11 +36,15 @@ export default function useCanFunding(
     isBudgetTeamMember,
     isEditMode,
     toggleEditMode,
+    receivedFunding,
+    fundingReceived,
     currentFiscalYearFundingId
 ) {
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
     const [showModal, setShowModal] = React.useState(false);
+    const [totalReceived, setTotalReceived] = React.useState(parseFloat(receivedFunding || "0"));
+    const [enteredFundingReceived, setEnteredFundingReceived] = React.useState([...fundingReceived]);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
         actionButtonText: "",
@@ -58,10 +70,15 @@ export default function useCanFunding(
     const [updateCanFundingBudget] = useUpdateCanFundingBudgetMutation();
     const [addCanFundingReceived] = useAddCanFundingReceivedMutation();
     const { setAlert } = useAlert();
+    const activeUserFullName = useSelector((state) => state.auth?.activeUser?.full_name) || "";
 
     React.useEffect(() => {
         setBudgetForm({ ...budgetForm, submittedAmount: totalFunding });
     }, [totalFunding]);
+
+    React.useEffect(() => {
+        setEnteredFundingReceived([...fundingReceived]);
+    }, [fundingReceived]);
 
     const handleEnteredBudgetAmount = (value) => {
         const nextForm = {
@@ -133,6 +150,7 @@ export default function useCanFunding(
                     await addCanFundingReceived({
                         data: fundingPayload
                     }).unwrap();
+                    setTotalReceived(totalReceived);
                     console.log("Funding Received Updated");
                 }
 
@@ -171,6 +189,22 @@ export default function useCanFunding(
     const handleAddFundingReceived = (e) => {
         e.preventDefault();
 
+        // Update total received first using the functional update pattern
+        setTotalReceived((currentTotal) => currentTotal + +fundingReceivedForm.enteredAmount);
+
+        // update the table data
+        const newFundingReceived = {
+            id: NO_DATA,
+            created_on: new Date().toISOString(),
+            created_by_user: {
+                full_name: activeUserFullName
+            },
+            notes: fundingReceivedForm.enteredNotes,
+            funding: +fundingReceivedForm.enteredAmount,
+            fiscal_year: fiscalYear
+        };
+        setEnteredFundingReceived([...enteredFundingReceived, newFundingReceived]);
+        // Then update the form state
         const nextForm = {
             ...fundingReceivedForm,
             enteredAmount: "",
@@ -188,11 +222,15 @@ export default function useCanFunding(
             heading: "Are you sure you want to cancel editing? Your changes will not be saved.",
             actionButtonText: "Cancel Edits",
             secondaryButtonText: "Continue Editing",
-            handleConfirm: () => cleanUp()
+            handleConfirm: () => {
+                setTotalReceived(parseFloat(receivedFunding || "0"));
+                cleanUp();
+            }
         });
     };
 
     const cleanUp = () => {
+        setEnteredFundingReceived([...fundingReceived]);
         setBudgetForm({ enteredAmount: "", submittedAmount: totalFunding, isSubmitted: false });
         setShowModal(false);
         const nextForm = { ...fundingReceivedForm, enteredAmount: "", enteredNotes: "" };
@@ -208,7 +246,7 @@ export default function useCanFunding(
     };
 
     const runValidate = (name, value) => {
-        suite({ submittedAmount: budgetForm.submittedAmount, ...{ [name]: value } }, name);
+        suite({ remainingAmount: +budgetForm.submittedAmount - totalReceived, ...{ [name]: value } }, name);
     };
 
     return {
@@ -227,6 +265,8 @@ export default function useCanFunding(
         handleEnteredBudgetAmount,
         fundingReceivedForm,
         handleEnteredFundingReceivedAmount,
-        handleEnteredNotes
+        handleEnteredNotes,
+        totalReceived,
+        enteredFundingReceived
     };
 }
