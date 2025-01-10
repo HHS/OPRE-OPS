@@ -12,7 +12,6 @@ import ConfirmationModal from "../../../components/UI/Modals/index.js";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
 import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
-import DebugCode from "../../../components/DebugCode";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
@@ -233,7 +232,6 @@ const CanFunding = ({
                                 totalFunding={budgetForm.submittedAmount}
                             />
                         </div>
-                        <DebugCode data={{ fundingReceivedForm }} />
                     </section>
                 </div>
             )}
