@@ -1,4 +1,5 @@
 import constants from "../../../constants";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").FundingBudget} FundingBudget
  */
@@ -27,13 +28,6 @@ const calculateFYTotalsMap = (fundingBudgets) => {
 
 const getMaxFyTotal = (fyTotals) => {
     return Math.max(...fyTotals.map((o) => o.total));
-};
-
-const getCurrentFiscalYear = () => {
-    const today = new Date();
-    const month = today.getMonth();
-    const year = today.getFullYear();
-    return month >= 9 ? year + 1 : year;
 };
 
 const getLast5FiscalYears = () => {

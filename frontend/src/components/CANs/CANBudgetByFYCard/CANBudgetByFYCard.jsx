@@ -1,4 +1,3 @@
-import DebugCode from "../../DebugCode";
 import Card from "../../UI/Cards/Card";
 import LineBar from "../../UI/DataViz/LineBar";
 import { summaryCard } from "./CANBudgetByFYCard.helpers";
@@ -35,7 +34,6 @@ const CANBudgetByFYCard = ({ fundingBudgets }) => {
                         total={item.total}
                     />
                 ))}
-                <DebugCode data={chartData} />
             </Card>
         </>
     );
