@@ -22,7 +22,6 @@ from models import (
     CANFundingDetails,
     ChangeRequestStatus,
     OpsDBHistory,
-    OpsEvent,
     Project,
     User,
     Vendor,
@@ -185,7 +184,6 @@ def loaded_db(app: Flask, app_ctx: None, auth_client: FlaskClient) -> Session:
     session.rollback()
 
     session.execute(delete(OpsDBHistory))
-    session.execute(delete(OpsEvent))
 
     session.commit()
     session.close()

@@ -9,6 +9,7 @@ from models import (
     CANFundingBudget,
     CANFundingDetails,
     CANFundingReceived,
+    CANHistory,
     ChangeRequest,
     ContractAgreement,
     Division,
@@ -48,6 +49,7 @@ from ops_api.ops.resources.can_funding_budget import CANFundingBudgetItemAPI, CA
 from ops_api.ops.resources.can_funding_details import CANFundingDetailsItemAPI, CANFundingDetailsListAPI
 from ops_api.ops.resources.can_funding_received import CANFundingReceivedItemAPI, CANFundingReceivedListAPI
 from ops_api.ops.resources.can_funding_summary import CANFundingSummaryListAPI
+from ops_api.ops.resources.can_history import CANHistoryListAPI
 from ops_api.ops.resources.cans import CANItemAPI, CANListAPI, CANsByPortfolioAPI
 from ops_api.ops.resources.change_requests import ChangeRequestListAPI, ChangeRequestReviewAPI
 from ops_api.ops.resources.contract import ContractItemAPI, ContractListAPI
@@ -110,6 +112,7 @@ CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC = CANFundingReceivedListAPI.as_view(
 CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC = CANFundingReceivedItemAPI.as_view(
     "can-funding-received-item", CANFundingReceived
 )
+CAN_HISTORY_LIST_API_VIEW_FUNC = CANHistoryListAPI.as_view("can-history-group", CANHistory)
 
 # BUDGET LINE ITEM ENDPOINTS
 BUDGET_LINE_ITEMS_ITEM_API_VIEW_FUNC = BudgetLineItemsItemAPI.as_view("budget-line-items-item", BudgetLineItem)
