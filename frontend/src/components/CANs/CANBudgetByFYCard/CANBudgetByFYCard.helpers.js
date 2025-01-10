@@ -24,31 +24,42 @@ const calculateFYTotalsMap = (fundingBudgets) => {
         return acc;
     }, {});
 };
-const calculateFyTotalsAll = (fyTotalsMap) => {
-    return Object.keys(fyTotalsMap).map((fy) => ({
-        fiscalYear: fy,
-        total: fyTotalsMap[fy]
-    }));
-};
 
 const getMaxFyTotal = (fyTotals) => {
     return Math.max(...fyTotals.map((o) => o.total));
 };
 
+const getCurrentFiscalYear = () => {
+    const today = new Date();
+    const month = today.getMonth();
+    const year = today.getFullYear();
+    return month >= 9 ? year + 1 : year;
+};
+
+const getLast5FiscalYears = () => {
+    const currentFY = getCurrentFiscalYear();
+    return Array.from({ length: 5 }, (_, i) => (currentFY - i).toString());
+};
+
 /** @param {FundingBudget[]} fundingBudgets */
 export const summaryCard = (fundingBudgets) => {
     const fyTotalsMap = calculateFYTotalsMap(fundingBudgets);
-    const fyTotalsAll = calculateFyTotalsAll(fyTotalsMap);
-    const fyTotals = fyTotalsAll.slice(0, 5).reverse();
+    const last5FYs = getLast5FiscalYears();
+
+    // Ensure all 5 years exist in the data
+    const fyTotals = last5FYs.map((fy) => ({
+        fiscalYear: fy,
+        total: fyTotalsMap[fy] || 0
+    }));
+
     const maxFyTotal = getMaxFyTotal(fyTotals);
-    const chartData = fyTotals.map((fyVal, index) => {
-        return {
-            FY: fyVal.fiscalYear,
-            total: fyVal.total,
-            ratio: fyVal.total / maxFyTotal,
-            color: budgetsByFYChartColors[index].color
-        };
-    });
+    const chartData = fyTotals.map((fyVal, index) => ({
+        FY: fyVal.fiscalYear,
+        total: fyVal.total,
+        ratio: maxFyTotal ? fyVal.total / maxFyTotal : 0,
+        color: budgetsByFYChartColors[index].color
+    }));
+
     return {
         chartData
     };
