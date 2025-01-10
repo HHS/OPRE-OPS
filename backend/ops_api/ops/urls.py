@@ -173,7 +173,7 @@ def register_api(api_bp: Blueprint) -> None:
     )
 
     api_bp.add_url_rule(
-        "/can-funding-summary/",
+        "/can-funding-summary",
         view_func=CAN_FUNDING_SUMMARY_LIST_API_VIEW_FUNC,
     )
 

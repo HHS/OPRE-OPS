@@ -1,4 +1,5 @@
 from marshmallow import EXCLUDE, Schema, fields
+from marshmallow.validate import Range
 from models import CANHistoryType
 
 
@@ -17,5 +18,5 @@ class GetHistoryListQueryParametersSchema(Schema):
         unknown = EXCLUDE  # Exclude unknown fields
 
     can_id = fields.Integer(required=True)
-    limit = fields.Integer(default=10, allow_none=True)
-    offset = fields.Integer(default=0, allow_none=True)
+    limit = fields.Integer(default=10, validate=Range(min=1, error="Limit must be greater than 0"), allow_none=True)
+    offset = fields.Integer(default=0, validate=Range(min=0, error="Limit must be greater than 0"), allow_none=True)
