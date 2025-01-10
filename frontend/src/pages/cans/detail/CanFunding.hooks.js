@@ -150,7 +150,6 @@ export default function useCanFunding(
                     await addCanFundingReceived({
                         data: fundingPayload
                     }).unwrap();
-                    setTotalReceived(totalReceived);
                     console.log("Funding Received Updated");
                 }
 
