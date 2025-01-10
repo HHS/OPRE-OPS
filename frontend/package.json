@@ -48,7 +48,7 @@
     "react-slider": "2.0.6",
     "sass": "1.83.0",
     "sass-loader": "16.0.4",
-    "styled-components": "6.1.13",
+    "styled-components": "6.1.14",
     "vest": "5.4.6",
     "vite": "5.4.11",
     "vite-jsconfig-paths": "2.0.1",
