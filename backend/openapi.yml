@@ -2889,6 +2889,10 @@ components:
               - CAN_DIVISION_EDITED
               - CAN_CARRY_FORWARD_CALCULATED
             example: "CAN_NICKNAME_EDITED"
+        required:
+          - id
+          - can_id
+          - ops_event_id
     FundingReceived:
       description: Funding Received Object
       type: object
