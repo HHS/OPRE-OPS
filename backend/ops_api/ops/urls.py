@@ -110,11 +110,11 @@ def register_api(api_bp: Blueprint) -> None:
     api_bp.add_url_rule("/can-funding-details/", view_func=CAN_FUNDING_DETAILS_LIST_API_VIEW_FUNC)
 
     api_bp.add_url_rule(
-        "/cans-funding-received/",
+        "/can-funding-received/",
         view_func=CAN_FUNDING_RECEIVED_LIST_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
-        "/cans-funding-received/<int:id>",
+        "/can-funding-received/<int:id>",
         view_func=CAN_FUNDING_RECEIVED_ITEM_API_VIEW_FUNC,
     )
     api_bp.add_url_rule(
