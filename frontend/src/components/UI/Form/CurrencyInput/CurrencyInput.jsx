@@ -13,6 +13,7 @@ import CurrencyFormat from "react-currency-format";
  * @param {string | number} [props.value] - The value of the input field.(optional)
  * @param {string} [props.className] - Additional CSS classes to apply to the component (optional).
  * @param {Function} [props.setEnteredAmount] - A function to call when the input value changes.
+ * @param {string} [props.placeholder] - The placeholder text to display in the input
  * @returns {JSX.Element} - The rendered component.
  */
 const CurrencyInput = ({
@@ -23,7 +24,8 @@ const CurrencyInput = ({
     messages = [],
     value,
     className,
-    setEnteredAmount
+    setEnteredAmount,
+    placeholder = "$"
 }) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
@@ -49,7 +51,7 @@ const CurrencyInput = ({
                 thousandSeparator={true}
                 decimalScale={2}
                 renderText={(value) => value}
-                placeholder="$"
+                placeholder={placeholder}
                 onValueChange={(values) => {
                     const { floatValue } = values;
                     setEnteredAmount(floatValue);
