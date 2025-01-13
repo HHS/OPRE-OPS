@@ -176,6 +176,7 @@ describe("CAN detail page", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
+        cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
         cy.get("#save-changes").should("be.disabled");
         cy.get("#add-fy-budget").should("be.disabled");
         cy.get("#carry-forward-card").should("contain", "0");
@@ -220,5 +221,11 @@ describe("CAN detail page", () => {
             .and("contain", "CAN Budget by FY")
             .and("contain", `FY ${currentFiscalYear}`)
             .and("contain", "$5,000,000.00");
+    });
+    it("handles not showing carry forward card", () => {
+        cy.visit(`/cans/500/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("#carry-forward-card").should("not.exist");
     });
 });
