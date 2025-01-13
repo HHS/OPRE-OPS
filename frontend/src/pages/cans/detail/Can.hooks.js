@@ -41,8 +41,6 @@ export default function useCan() {
         fiscalYear: fiscalYear - 1
     });
     const carryForwardFunding = previousFYfundingSummary?.available_funding ?? 0;
-    console.log({previousFYfundingSummary});
-    
 
     const budgetLineItemsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear || !can) return [];
