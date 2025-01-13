@@ -22,6 +22,7 @@ from models import (
     CANFundingDetails,
     ChangeRequestStatus,
     OpsDBHistory,
+    OpsEvent,
     Project,
     User,
     Vendor,
@@ -254,6 +255,12 @@ def test_can(loaded_db) -> CAN | None:
 def test_cans(loaded_db) -> list[Type[CAN] | None]:
     """Get two test CANs."""
     return [loaded_db.get(CAN, 500), loaded_db.get(CAN, 501)]
+
+
+@pytest.fixture()
+def test_create_can_history_item(loaded_db) -> OpsEvent | None:
+    """Get OPS Event item for creation of CAN 500"""
+    return loaded_db.get(OpsEvent, 1)
 
 
 @pytest.fixture()

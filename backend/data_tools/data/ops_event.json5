@@ -4,7 +4,125 @@
       // 1
       event_type: "CREATE_NEW_CAN",
       event_status: "SUCCESS",
-      event_details: '{"message": "Hello World"}',
+      event_details: {
+        "new_can": {
+            "id": 500,
+            "number": "G99HRF2",
+            "projects": [],
+            "nick_name": null,
+            "portfolio": {
+                "id": 6,
+                "name": "Healthy Marriage & Responsible Fatherhood",
+                "urls": [
+                    {
+                        "id": 6,
+                        "url": "https://www.acf.hhs.gov/opre/topic/strengthening-families-healthy-marriage-responsible-fatherhood",
+                        "created_by": null,
+                        "created_on": "2025-01-13T21:42:53.949599Z",
+                        "updated_by": null,
+                        "updated_on": "2025-01-13T21:42:53.949599Z",
+                        "portfolio_id": 6,
+                        "created_by_user": null,
+                        "updated_by_user": null
+                    }
+                ],
+                "status": "IN_PROCESS",
+                "division": {
+                    "id": 5,
+                    "name": "Division of Family Strengthening",
+                    "created_by": null,
+                    "created_on": "2025-01-13T21:42:51.149817Z",
+                    "updated_by": null,
+                    "updated_on": "2025-01-13T21:42:51.149817Z",
+                    "abbreviation": "DFS",
+                    "division_director_id": 522,
+                    "deputy_division_director_id": null
+                },
+                "created_by": null,
+                "created_on": "2025-01-13T21:42:53.928887Z",
+                "updated_by": null,
+                "updated_on": "2025-01-13T21:42:53.928887Z",
+                "division_id": 5,
+                "abbreviation": "HMRF",
+                "team_leaders": [
+                    {
+                        "id": 505,
+                        "full_name": "Katie Pahigiannis"
+                    }
+                ],
+                "created_by_user": null,
+                "updated_by_user": null
+              },
+              "created_by": 520,
+              "created_on": "2025-01-13T22:22:42.980021Z",
+              "updated_by": 520,
+              "updated_on": "2025-01-13T22:22:42.980021Z",
+              "description": "Healthy Marriages Responsible Fatherhood - OPRE",
+              "obligate_by": 2024,
+              "display_name": "G99HRF2",
+              "funding_type": "Discretionary",
+              "portfolio_id": 6,
+              "active_period": 1,
+              "funding_method": "Direct",
+              "created_by_user": {
+                  "id": 520,
+                  "full_name": "System Owner"
+              },
+              "funding_budgets": [],
+              "funding_details": {
+                  "id": 1,
+                  "allotment": null,
+                  "allowance": null,
+                  "fund_code": "AAXXXX20231DAD",
+                  "created_by": null,
+                  "created_on": "2025-01-13T21:42:59.053589Z",
+                  "updated_by": null,
+                  "updated_on": "2025-01-13T21:42:59.053589Z",
+                  "fiscal_year": 2023,
+                  "obligate_by": 2024,
+                  "display_name": "CANFundingDetails#1",
+                  "funding_type": "Discretionary",
+                  "active_period": 1,
+                  "sub_allowance": null,
+                  "funding_method": "Direct",
+                  "funding_source": "OPRE",
+                  "created_by_user": null,
+                  "funding_partner": null,
+                  "updated_by_user": null,
+                  "funding_received": "Quarterly",
+                  "method_of_transfer": "DIRECT"
+              },
+              "updated_by_user": {
+                  "id": 520,
+                  "full_name": "System Owner"
+              },
+              "funding_received": [],
+              "budget_line_items": [],
+              "funding_frequency": "Quarterly",
+              "funding_details_id": 1
+          },
+          "request.json": {
+              "number": "G99HRF2",
+              "description": "Healthy Marriages Responsible Fatherhood - OPRE",
+              "portfolio_id": 6,
+              "funding_details_id": 1
+          },
+          "request.values": {},
+          "request.headers": {
+              "Host": "localhost:8080",
+              "Accept": "*/*",
+              "Connection": "keep-alive",
+              "User-Agent": "PostmanRuntime/7.42.0",
+              "Content-Type": "application/json",
+              "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzM2ODA2MDc4LCJqdGkiOiJiYzA2NTEyYi1iZDI3LTQzMTgtYjZiZC05MGYzZDMwNzQwNGMiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzM2ODA2MDc4LCJjc3JmIjoiNmFhNWMzY2EtYWYwYS00ZmViLTk1YzEtOGJkZDY4ODgyNjY1IiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzM2ODA3ODc4LCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.E8V9jkCqmJifwqhknGTWBpKw3EI2plvZO42Pc9VtP6hyBt-1CpAO1ukXoSg7MEOHQEsi1bVDYXcRqs2HFF2Arq2-gvC74O1xqQ7J8tYyN2DgDPAu9fTFQI3ejjGmcAzwj5bBJIwIdiRTxz4_xHTb7iRvxtekWrxvNzatVzhx8zSYRFK4nIu2QL_B_WY38DOCv1MQercOO6TdBgHV0m-Ci16lFotfqmiuiwS_82UeNurUcP5EcEVShH5xjeQAMZhkONM-XeM-AXvcl6fjVlM0G0gqvD8i5BVEtKl9dQOVLmZzLGJVVLuESofCtKA2aKGLG-hFQzSelXqlqiJoRQHvjQ",
+              "Cache-Control": "no-cache",
+              "Postman-Token": "ae6383f8-9979-4a87-ab87-0c97e45eb7f6",
+              "Content-Length": "150",
+              "Accept-Encoding": "gzip, deflate, br"
+          },
+          "request.remote_addr": "192.168.127.1",
+          "request.remote_user": null
+      }
     },
     {
       // 2
