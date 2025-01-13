@@ -9,7 +9,7 @@ from ops.services.can_funding_received import CANFundingReceivedService
 def test_funding_received_get_all(auth_client, mocker, test_can):
     mocker_get_can = mocker.patch("ops_api.ops.services.can_funding_received.CANFundingReceivedService.get_list")
     mocker_get_can.return_value = [test_can]
-    response = auth_client.get("/api/v1/cans-funding-received/")
+    response = auth_client.get("/api/v1/can-funding-received/")
     assert response.status_code == 200
     assert len(response.json) == 1
     mocker_get_can.assert_called_once()
@@ -26,7 +26,7 @@ def test_funding_received_service_get_all(auth_client, loaded_db):
 def test_funding_received_get_by_id(auth_client, mocker, test_can):
     mocker_get_can = mocker.patch("ops_api.ops.services.can_funding_received.CANFundingReceivedService.get")
     mocker_get_can.return_value = test_can
-    response = auth_client.get(f"/api/v1/cans-funding-received/{test_can.id}")
+    response = auth_client.get(f"/api/v1/can-funding-received/{test_can.id}")
     assert response.status_code == 200
     # assert response.json["number"] == "G99HRF2"
 
@@ -48,7 +48,7 @@ def test_funding_received_post_creates_funding_received(budget_team_auth_client,
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.create"
     )
     mocker_create_funding_received.return_value = mock_output_data
-    response = budget_team_auth_client.post("/api/v1/cans-funding-received/", json=input_data)
+    response = budget_team_auth_client.post("/api/v1/can-funding-received/", json=input_data)
 
     assert response.status_code == 201
     mocker_create_funding_received.assert_called_once_with(input_data)
@@ -61,7 +61,7 @@ def test_funding_received_post_creates_funding_received(budget_team_auth_client,
 @pytest.mark.usefixtures("app_ctx")
 def test_basic_user_cannot_post_funding_received(basic_user_auth_client):
     input_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "This is a note"}
-    response = basic_user_auth_client.post("/api/v1/cans-funding-received/", json=input_data)
+    response = basic_user_auth_client.post("/api/v1/can-funding-received/", json=input_data)
 
     assert response.status_code == 403
 
@@ -102,7 +102,7 @@ def test_funding_received_patch(budget_team_auth_client, mocker):
     )
     funding_received.notes = update_data["notes"]
     mocker_update_funding_received.return_value = funding_received
-    response = budget_team_auth_client.patch(f"/api/v1/cans-funding-received/{test_funding_id}", json=update_data)
+    response = budget_team_auth_client.patch(f"/api/v1/can-funding-received/{test_funding_id}", json=update_data)
 
     assert response.status_code == 200
     mocker_update_funding_received.assert_called_once_with(update_data, test_funding_id)
@@ -117,7 +117,7 @@ def test_funding_received_patch_404(budget_team_auth_client):
         "notes": "Test CANFundingReceived Created by unit test",
     }
 
-    response = budget_team_auth_client.patch(f"/api/v1/cans-funding-received/{test_funding_id}", json=update_data)
+    response = budget_team_auth_client.patch(f"/api/v1/can-funding-received/{test_funding_id}", json=update_data)
 
     assert response.status_code == 404
 
@@ -127,7 +127,7 @@ def test_basic_user_cannot_patch_funding_received(basic_user_auth_client):
     data = {
         "notes": "An updated can description",
     }
-    response = basic_user_auth_client.patch("/api/v1/cans-funding-received/517", json=data)
+    response = basic_user_auth_client.patch("/api/v1/can-funding-received/517", json=data)
 
     assert response.status_code == 403
 
@@ -176,9 +176,7 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     )
     funding_received.funding = update_data["funding"]
     mocker_update_funding_received.return_value = funding_received
-    response = budget_team_auth_client.put(
-        f"/api/v1/cans-funding-received/{test_funding_received_id}", json=update_data
-    )
+    response = budget_team_auth_client.put(f"/api/v1/can-funding-received/{test_funding_received_id}", json=update_data)
 
     update_data["notes"] = None
     assert response.status_code == 200
@@ -192,7 +190,7 @@ def test_basic_user_cannot_put_funding_received(basic_user_auth_client):
     data = {
         "notes": "An updated can description",
     }
-    response = basic_user_auth_client.put("/api/v1/cans-funding-received/517", json=data)
+    response = basic_user_auth_client.put("/api/v1/can-funding-received/517", json=data)
 
     assert response.status_code == 403
 
@@ -202,9 +200,7 @@ def test_funding_received_put_404(budget_team_auth_client):
     test_funding_received_id = 600
     update_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "Test test test"}
 
-    response = budget_team_auth_client.put(
-        f"/api/v1/cans-funding-received/{test_funding_received_id}", json=update_data
-    )
+    response = budget_team_auth_client.put(f"/api/v1/can-funding-received/{test_funding_received_id}", json=update_data)
 
     assert response.status_code == 404
 
@@ -246,7 +242,7 @@ def test_funding_received_delete(budget_team_auth_client, mocker):
     mocker_delete_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.delete"
     )
-    response = budget_team_auth_client.delete(f"/api/v1/cans-funding-received/{test_funding_received_id}")
+    response = budget_team_auth_client.delete(f"/api/v1/can-funding-received/{test_funding_received_id}")
 
     assert response.status_code == 200
     mocker_delete_funding_received.assert_called_once_with(test_funding_received_id)
@@ -258,14 +254,14 @@ def test_funding_received_delete(budget_team_auth_client, mocker):
 def test_can_delete_404(budget_team_auth_client):
     test_can_id = 600
 
-    response = budget_team_auth_client.delete(f"/api/v1/cans-funding-received/{test_can_id}")
+    response = budget_team_auth_client.delete(f"/api/v1/can-funding-received/{test_can_id}")
 
     assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_basic_user_cannot_delete_cans(basic_user_auth_client):
-    response = basic_user_auth_client.delete("/api/v1/cans-funding-received/517")
+    response = basic_user_auth_client.delete("/api/v1/can-funding-received/517")
 
     assert response.status_code == 403
 
