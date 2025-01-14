@@ -2,8 +2,7 @@ import pytest
 
 from models import CANHistory, CANHistoryType
 from ops.services.can_history import CANHistoryService
-
-# from sqlalchemy import select
+from ops.services.can_messages import can_history_trigger
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -17,7 +16,7 @@ def test_get_can_history(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_custom_length(loaded_db):
+def test_get_can_history_custom_length():
     test_can_id = 500
     test_limit = 5
     can_history_service = CANHistoryService()
@@ -27,7 +26,7 @@ def test_get_can_history_custom_length(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_get_can_history_custom_offset(loaded_db):
+def test_get_can_history_custom_offset():
     test_can_id = 500
     can_history_service = CANHistoryService()
     # Set a limit higher than our test data so we can get all results
@@ -131,3 +130,21 @@ def test_get_can_history_list_from_api_with_nonexistent_can(auth_client, mocker)
     response = auth_client.get(f"/api/v1/can-history/?can_id={test_can_id}&limit=5&offset=1")
     assert response.status_code == 200
     assert len(response.json) == 0
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
+    before_can_history_count = loaded_db.query(CANHistory).count()
+    can_history_trigger(test_create_can_history_item, loaded_db)
+    can_history_list = loaded_db.query(CANHistory).all()
+    after_can_history_count = len(can_history_list)
+    assert after_can_history_count == before_can_history_count + 1
+
+    new_can_history_item = can_history_list[after_can_history_count - 1]
+    event_details = test_create_can_history_item.event_details
+    assert new_can_history_item.can_id == event_details["new_can"]["id"]
+    assert new_can_history_item.ops_event_id == test_create_can_history_item.id
+    assert new_can_history_item.history_type == CANHistoryType.CAN_DATA_IMPORT
+    assert new_can_history_item.history_title == "**FY 2025 Data Import**"
+    assert new_can_history_item.history_message == "FY 2025 CAN Funding Information imported from CANBACs"
+    assert new_can_history_item.timestamp == test_create_can_history_item.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
