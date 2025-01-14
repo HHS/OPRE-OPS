@@ -185,9 +185,10 @@ export const codesToDisplayText = {
     },
     methodOfTransfer: {
         DIRECT: "Direct",
-        COST_SHARE: "MOU",
+        COST_SHARE: "Cost Share",
         IAA: "IAA",
-        IDDA: "IDDA"
+        IDDA: "IDDA",
+        OTHER: "Other"
     },
     project: {
         ADMINISTRATIVE_AND_SUPPORT: "Admin & Support",
