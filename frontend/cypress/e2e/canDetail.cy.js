@@ -238,7 +238,7 @@ describe("CAN detail page", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
-        cy.get("#carry-forward-card").should("contain", "$ 5,000,000.00");
+        cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
         cy.get("[data-cy='can-budget-fy-card']").should("contain", "5,000,000.00");
         cy.get("#budget-amount").type("6_000_000");
         cy.get("#add-fy-budget").click();
