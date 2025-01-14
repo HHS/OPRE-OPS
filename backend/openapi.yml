@@ -1161,6 +1161,7 @@ paths:
                 - COST_SHARE
                 - IAA
                 - IDDA
+                - OTHER
             example: [ "DIRECT", "IAA" ]
         - name: portfolio
           in: query
@@ -2967,6 +2968,7 @@ components:
             - COST_SHARE
             - IAA
             - IDDA
+            - OTHER
         sub_allowance:
           type: string
     FundingDetails:
@@ -3002,6 +3004,7 @@ components:
             - COST_SHARE
             - IAA
             - IDDA
+            - OTHER
         sub_allowance:
           type: string
         created_on:
