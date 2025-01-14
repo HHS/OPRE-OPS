@@ -3,24 +3,21 @@ from functools import wraps
 from typing import Callable, Optional
 
 from flask import Response, current_app, request
-from flask_jwt_extended import current_user, get_jwt_identity, jwt_required
+from flask_jwt_extended import current_user, jwt_required
 
-from models import User, UserSession, UserStatus
-from models.events import OpsEventType
+from models import User, UserStatus
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.authorization_providers import _check_role
 from ops_api.ops.auth.exceptions import ExtraCheckError, InvalidUserSessionError, NotActiveUserError
-
-#  from ops_api.ops.auth.service import idle_logout
 from ops_api.ops.auth.utils import (
     deactivate_all_user_sessions,
     get_all_user_sessions,
     get_bearer_token,
     get_latest_user_session,
     get_user_from_userinfo,
+    idle_logout,
 )
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -156,18 +153,3 @@ def check_last_active_at(latest_user_session, threshold_in_seconds=None):
         f"{final_threshold_in_seconds} seconds ago"
     )
     return (datetime.now() - latest_user_session.last_active_at).total_seconds() > final_threshold_in_seconds
-
-
-def idle_logout(user: User, user_sessions: list[UserSession]) -> dict[str, str]:
-    """
-    Records an OpsEvent related to the user being logged out due to an idle session and deactivates all sessions including the current one.
-    Returns a dict of two strings containing a statement about what action was taken
-    """
-    with OpsEventHandler(OpsEventType.IDLE_LOGOUT) as la:
-        identity = get_jwt_identity()
-        la.metadata.update({"oidc_id": identity})
-
-    # user_sessions = get_all_user_sessions(user.id, current_app.db_session)
-    deactivate_all_user_sessions(user_sessions)
-
-    return {"message": f"User: {user.id} logged out for their session not being active within the configured threshold"}
