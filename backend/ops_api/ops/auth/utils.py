@@ -13,8 +13,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import User, UserSession
+
+# from models.events import OpsEventType
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.exceptions import PrivateKeyError
+
+# from ops_api.ops.utils.events import OpsEventHandler
 
 
 def create_oauth_jwt(
