@@ -18,6 +18,7 @@ class CANMethodOfTransfer(Enum):
     COST_SHARE = auto()
     IAA = auto()
     IDDA = auto()
+    OTHER = auto()
 
 
 class CANStatus(Enum):
