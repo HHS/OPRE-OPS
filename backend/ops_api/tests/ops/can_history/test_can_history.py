@@ -1,6 +1,6 @@
 import pytest
 
-from models import CANHistory, CANHistoryType
+from models import CANHistory, CANHistoryType, OpsEvent
 from ops.services.can_history import CANHistoryService
 from ops.services.can_messages import can_history_trigger
 
@@ -148,3 +148,33 @@ def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
     assert new_can_history_item.history_title == "**FY 2025 Data Import**"
     assert new_can_history_item.history_message == "FY 2025 CAN Funding Information imported from CANBACs"
     assert new_can_history_item.timestamp == test_create_can_history_item.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_can_can_history_next_fiscal_year(loaded_db):
+    next_fy_can_ops_event = loaded_db.get(OpsEvent, 17)
+    can_history_trigger(next_fy_can_ops_event, loaded_db)
+    can_history_list = loaded_db.query(CANHistory).all()
+    can_history_count = len(can_history_list)
+    new_can_history_item = can_history_list[can_history_count - 1]
+
+    assert new_can_history_item.history_type == CANHistoryType.CAN_DATA_IMPORT
+    assert new_can_history_item.history_title == "**FY 2026 Data Import**"
+    assert new_can_history_item.history_message == "FY 2026 CAN Funding Information imported from CANBACs"
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_can_history_create_can_funding_budget(loaded_db):
+    funding_budget_created_event = loaded_db.get(OpsEvent, 20)
+    can_history_trigger(funding_budget_created_event, loaded_db)
+    can_history_list = loaded_db.query(CANHistory).all()
+    can_history_count = len(can_history_list)
+    new_can_history_item = can_history_list[can_history_count - 1]
+
+    assert new_can_history_item.history_type == CANHistoryType.CAN_FUNDING_CREATED
+    assert new_can_history_item.history_title == "**FY 2025 Budget Entered**"
+    assert new_can_history_item.history_message == "System Owner entered a FY 2025 budget of $10,000.00"
+    assert (
+        new_can_history_item.can_id == funding_budget_created_event.event_details["new_can_funding_budget"]["can"]["id"]
+    )
+    assert new_can_history_item.timestamp == funding_budget_created_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")

@@ -2158,6 +2158,7 @@
           notes: "For test data",
           can_id: 500,
           fiscal_year: 2025,
+          budget: 10000.00
         },
         "request.values": {},
         "request.headers": {
@@ -2190,6 +2191,7 @@
                 project_type: "RESEARCH",
               },
             ],
+            budget: 10000.00,
             nick_name: "Test CAN",
             description: "Healthy Marriages Responsible Fatherhood - OPRE",
             obligate_by: 2024,
