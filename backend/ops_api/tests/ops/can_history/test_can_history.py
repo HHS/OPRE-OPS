@@ -1,6 +1,6 @@
 import pytest
 
-from models import CANHistory, CANHistoryType
+from models import CANHistory, CANHistoryType, OpsEvent
 from ops.services.can_history import CANHistoryService
 from ops.services.can_messages import can_history_trigger
 
@@ -148,3 +148,15 @@ def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
     assert new_can_history_item.history_title == "**FY 2025 Data Import**"
     assert new_can_history_item.history_message == "FY 2025 CAN Funding Information imported from CANBACs"
     assert new_can_history_item.timestamp == test_create_can_history_item.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+@pytest.mark.usefixtures("app_ctx")
+def test_create_can_can_history_next_fiscal_year(loaded_db):
+    next_fy_can_ops_event = loaded_db.get(OpsEvent,17)
+    can_history_trigger(next_fy_can_ops_event, loaded_db)
+    can_history_list = loaded_db.query(CANHistory).all()
+    can_history_count = len(can_history_list)
+    new_can_history_item = can_history_list[can_history_count - 1]
+
+    assert new_can_history_item.history_type == CANHistoryType.CAN_DATA_IMPORT
+    assert new_can_history_item.history_title == "**FY 2026 Data Import**"
+    assert new_can_history_item.history_message == "FY 2026 CAN Funding Information imported from CANBACs"
