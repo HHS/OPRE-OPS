@@ -235,7 +235,7 @@ def test_history_expanded_with_web_client(auth_client, loaded_db, test_user, tes
     "class_name,row_key,expected_status",
     [
         (None, None, 404),
-        ("BudgetLineItem", "21", 404),  # Something that doesn't exist in the history.
+        ("BudgetLineItem", "31", 404),  # Something that doesn't exist in the history.
     ],
 )
 @pytest.mark.usefixtures("app_ctx")
