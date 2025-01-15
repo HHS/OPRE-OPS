@@ -10,11 +10,16 @@ def can_history_trigger(
 ):
     logger.debug(f"Handling event {event.event_type} with details: {event.event_details}")
     assert session is not None
+    current_fiscal_year = event.created_on.year
+
+    if event.created_on.month >= 10:
+        current_fiscal_year = current_fiscal_year + 1 #If we are in October, this event is the new fiscal year.
+
     history_event = CANHistory(
         can_id=event.event_details["new_can"]["id"],
         ops_event_id=event.id,
-        history_title="**FY 2025 Data Import**",
-        history_message="FY 2025 CAN Funding Information imported from CANBACs",
+        history_title=f"**FY {current_fiscal_year} Data Import**",
+        history_message=f"FY {current_fiscal_year} CAN Funding Information imported from CANBACs",
         timestamp=event.created_on,
         history_type=CANHistoryType.CAN_DATA_IMPORT,
     )
