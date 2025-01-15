@@ -232,7 +232,7 @@ export const opsApi = createApi({
         }),
         addCanFundingReceived: builder.mutation({
             query: ({ data }) => ({
-                url: `/cans-funding-received/`,
+                url: `/can-funding-received/`,
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: data
