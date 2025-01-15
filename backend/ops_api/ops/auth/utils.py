@@ -210,7 +210,6 @@ def idle_logout(user: User, user_sessions: list[UserSession]) -> dict[str, str]:
         identity = get_jwt_identity()
         la.metadata.update({"oidc_id": identity})
 
-    # user_sessions = get_all_user_sessions(user.id, current_app.db_session)
     deactivate_all_user_sessions(user_sessions)
 
     return {"message": f"User: {user.id} logged out for their session not being active within the configured threshold"}
