@@ -1,8 +1,8 @@
 """adding new OpsEvent Type
 
-Revision ID: 8196b9d25012
-Revises: 6615ac7d4eea
-Create Date: 2025-01-14 05:43:09.158804+00:00
+Revision ID: a351642bb245
+Revises: 52bf070f396e
+Create Date: 2025-01-15 06:43:42.033967+00:00
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ from alembic import op
 from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
-revision: str = '8196b9d25012'
-down_revision: Union[str, None] = '6615ac7d4eea'
+revision: str = 'a351642bb245'
+down_revision: Union[str, None] = '52bf070f396e'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
