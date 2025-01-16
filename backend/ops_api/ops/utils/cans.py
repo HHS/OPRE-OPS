@@ -87,8 +87,6 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
 
         total_funding = sum([c.budget for c in can.funding_budgets if c.fiscal_year == fiscal_year]) or 0
 
-        carry_forward_funding = sum([c.budget for c in can.funding_budgets[1:] if c.fiscal_year == fiscal_year]) or 0
-
         new_funding = get_new_funding_by_fiscal_year(can, fiscal_year)
 
         planned_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.PLANNED, fiscal_year)
@@ -101,8 +99,6 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
         received_funding = sum([c.funding for c in can.funding_received]) or 0
 
         total_funding = sum([c.budget for c in can.funding_budgets]) or 0
-
-        carry_forward_funding = sum([c.budget for c in can.funding_budgets[1:]]) or 0
 
         new_funding = get_new_funding_by_funding_details(can)
 
@@ -128,7 +124,7 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
                 "expiration_date": f"10/01/{can.obligate_by}" if can.obligate_by else "",
             }
         ],
-        "carry_forward_funding": carry_forward_funding,
+        "carry_forward_funding": available_funding,
         "received_funding": received_funding,
         "expected_funding": total_funding - received_funding,
         "in_draft_funding": in_draft_funding,
