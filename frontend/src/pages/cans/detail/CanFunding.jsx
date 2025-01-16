@@ -12,6 +12,7 @@ import ConfirmationModal from "../../../components/UI/Modals/index.js";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
 import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
+import DebugCode from "../../../components/DebugCode";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
@@ -33,6 +34,7 @@ import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedF
  * @property {boolean} isBudgetTeamMember
  * @property {boolean} isEditMode
  * @property {() => void} toggleEditMode
+ * @property {() => void} deleteFundingReceived
  * @property {string} carryForwardFunding
  */
 
@@ -74,7 +76,10 @@ const CanFunding = ({
         handleEnteredFundingReceivedAmount,
         handleEnteredNotes,
         totalReceived,
-        enteredFundingReceived
+        enteredFundingReceived,
+        populateFundingReceivedForm,
+        cancelFundingReceived,
+        deleteFundingReceived
     } = useCanFunding(
         canId,
         canNumber,
@@ -202,7 +207,10 @@ const CanFunding = ({
                             />
                         </div>
                     </section>
-                    <section id="can-funding-received-form-section" className="margin-bottom-4">
+                    <section
+                        id="can-funding-received-form-section"
+                        className="margin-bottom-4"
+                    >
                         <h2>{`Add FY ${fiscalYear} Funding Received YTD`}</h2>
                         <p>{`Add funding received towards the Total FY ${fiscalYear} Budget or come back to add funding later. Funding Received means the money is in OPRE’s hands and ready to spend against.`}</p>
                         <div className="display-flex flex-justify margin-top-4">
@@ -214,11 +222,13 @@ const CanFunding = ({
                                     receivedFundingAmount={fundingReceivedForm.enteredAmount}
                                     setReceivedFundingAmount={handleEnteredFundingReceivedAmount}
                                     handleSubmit={handleAddFundingReceived}
+                                    isEditing={fundingReceivedForm.isEditing}
                                     setNotes={handleEnteredNotes}
                                     notes={fundingReceivedForm.enteredNotes}
                                     cn={cn}
                                     res={res}
                                     runValidate={runValidate}
+                                    cancelFundingReceived={cancelFundingReceived}
                                 />
                             </div>
                             <ReceivedFundingCard
@@ -240,9 +250,13 @@ const CanFunding = ({
                     <CANFundingReceivedTable
                         fundingReceived={enteredFundingReceived}
                         totalFunding={totalFunding}
+                        isEditMode={isEditMode}
+                        populateFundingReceivedForm={populateFundingReceivedForm}
+                        deleteFundingReceived={deleteFundingReceived}
                     />
                 )}
             </Accordion>
+            <DebugCode data={enteredFundingReceived} />
             {isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-8">
                     <button

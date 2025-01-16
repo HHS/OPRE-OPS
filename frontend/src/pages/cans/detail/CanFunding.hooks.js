@@ -2,7 +2,8 @@ import React from "react";
 import {
     useAddCanFundingBudgetsMutation,
     useUpdateCanFundingBudgetMutation,
-    useAddCanFundingReceivedMutation
+    useAddCanFundingReceivedMutation,
+    useUpdateCanFundingReceivedMutation
 } from "../../../api/opsAPI.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -10,6 +11,7 @@ import suite from "./CanFundingSuite.js";
 import classnames from "vest/classnames";
 import { NO_DATA } from "../../../constants.js";
 import { useSelector } from "react-redux";
+import cryptoRandomString from "crypto-random-string";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
@@ -45,6 +47,7 @@ export default function useCanFunding(
     const [showModal, setShowModal] = React.useState(false);
     const [totalReceived, setTotalReceived] = React.useState(parseFloat(receivedFunding || "0"));
     const [enteredFundingReceived, setEnteredFundingReceived] = React.useState([...fundingReceived]);
+    const [deletedFundingReceivedIds, setDeletedFundingReceivedIds] = React.useState([]);
     const [modalProps, setModalProps] = React.useState({
         heading: "",
         actionButtonText: "",
@@ -58,17 +61,23 @@ export default function useCanFunding(
         isSubmitted: false
     });
 
-    const [fundingReceivedForm, setFundingReceivedForm] = React.useState({
+    const initialFundingReceivedForm = {
         enteredAmount: "",
         submittedAmount: "",
         enteredNotes: "",
         submittedNotes: "",
-        isSubmitted: false
-    });
+        isSubmitted: false,
+        isEditing: false,
+        id: null,
+        tempId: null
+    };
+
+    const [fundingReceivedForm, setFundingReceivedForm] = React.useState(initialFundingReceivedForm);
 
     const [addCanFundingBudget] = useAddCanFundingBudgetsMutation();
     const [updateCanFundingBudget] = useUpdateCanFundingBudgetMutation();
     const [addCanFundingReceived] = useAddCanFundingReceivedMutation();
+    const [updateCanFundingReceived] = useUpdateCanFundingReceivedMutation();
     const { setAlert } = useAlert();
     const activeUserFullName = useSelector((state) => state.auth?.activeUser?.full_name) || "";
 
@@ -115,61 +124,84 @@ export default function useCanFunding(
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
         const payload = {
             fiscal_year: fiscalYear,
             can_id: canId,
             budget: budgetForm.submittedAmount
         };
-        const fundingPayload = {
-            fiscal_year: fiscalYear,
-            can_id: canId,
-            funding: fundingReceivedForm.submittedAmount,
-            notes: fundingReceivedForm.submittedNotes
-        };
 
-        const updateFunding = async () => {
-            try {
-                if (+payload.budget > 0) {
-                    if (currentFiscalYearFundingId) {
-                        // PATCH for existing CAN Funding
-                        await updateCanFundingBudget({
-                            id: currentFiscalYearFundingId,
-                            data: payload
-                        }).unwrap();
-                        console.log("CAN Funding Updated");
-                    } else {
-                        // POST for new CAN Funding
-                        await addCanFundingBudget({
-                            data: payload
-                        }).unwrap();
-                        console.log("CAN Funding Added");
-                    }
-                }
-
-                if (+fundingPayload.funding > 0) {
-                    await addCanFundingReceived({
-                        data: fundingPayload
+        const handleFundingBudget = async () => {
+            if (+payload.budget > 0) {
+                if (currentFiscalYearFundingId) {
+                    // PATCH for existing CAN Funding
+                    await updateCanFundingBudget({
+                        id: currentFiscalYearFundingId,
+                        data: payload
                     }).unwrap();
-                    console.log("Funding Received Updated");
+                    console.log("CAN Funding Updated");
+                } else {
+                    // POST for new CAN Funding
+                    await addCanFundingBudget({
+                        data: payload
+                    }).unwrap();
+                    console.log("CAN Funding Added");
                 }
-
-                setAlert({
-                    type: "success",
-                    heading: "CAN Funding Updated",
-                    message: `The CAN ${canNumber} has been successfully updated.`
-                });
-            } catch (error) {
-                console.error("Error Updating CAN", error);
-                setAlert({
-                    type: "error",
-                    heading: "Error",
-                    message: "An error occurred while updating the CAN.",
-                    redirectUrl: "/error"
-                });
             }
         };
 
-        updateFunding();
+        const handleFundingReceived = async () => {
+            const fundingPromise = [];
+            enteredFundingReceived.map((fundingItem) => {
+                //POST
+                if (fundingItem.id === NO_DATA && "tempId" in fundingItem) {
+                    fundingPromise.push(
+                        addCanFundingReceived({
+                            data: {
+                                fiscal_year: fiscalYear,
+                                can_id: canId,
+                                funding: fundingItem.funding,
+                                notes: fundingItem.notes
+                            }
+                        })
+                    );
+                } else if (fundingItem.id !== NO_DATA && "tempId" in fundingItem) {
+                    //PATCH
+                    fundingPromise.push(
+                        updateCanFundingReceived({
+                            id: fundingItem.id,
+                            data: {
+                                fiscal_year: fiscalYear,
+                                can_id: canId,
+                                funding: fundingItem.funding,
+                                notes: fundingItem.notes
+                            }
+                        })
+                    );
+                }
+            });
+            await Promise.all(fundingPromise);
+        };
+
+        try {
+            handleFundingBudget();
+            handleFundingReceived();
+
+            setAlert({
+                type: "success",
+                heading: "CAN Funding Updated",
+                message: `The CAN ${canNumber} has been successfully updated.`
+            });
+        } catch (error) {
+            console.error("Error Updating CAN", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while updating the CAN.",
+                redirectUrl: "/error"
+            });
+        }
+
         cleanUp();
     };
 
@@ -189,11 +221,12 @@ export default function useCanFunding(
         e.preventDefault();
 
         // Update total received first using the functional update pattern
-        setTotalReceived((currentTotal) => currentTotal + +fundingReceivedForm.enteredAmount);
 
         // update the table data
-        const newFundingReceived = {
-            id: NO_DATA,
+        const isRealId = fundingReceivedForm.id && fundingReceivedForm.id !== NO_DATA;
+        let newFundingReceived = {
+            id: fundingReceivedForm.id ?? NO_DATA,
+            tempId: fundingReceivedForm.tempId ?? `temp-${cryptoRandomString({ length: 3 })}`,
             created_on: new Date().toISOString(),
             created_by_user: {
                 full_name: activeUserFullName
@@ -202,7 +235,16 @@ export default function useCanFunding(
             funding: +fundingReceivedForm.enteredAmount,
             fiscal_year: fiscalYear
         };
-        setEnteredFundingReceived([...enteredFundingReceived, newFundingReceived]);
+
+        // Check if we are editing an existing funding received
+        if (fundingReceivedForm.isEditing) {
+            editFundingReceived(newFundingReceived);
+        } else {
+            // Add the new funding received
+            setTotalReceived((currentTotal) => currentTotal + +fundingReceivedForm.enteredAmount);
+            setEnteredFundingReceived([...enteredFundingReceived, newFundingReceived]);
+        }
+
         // Then update the form state
         const nextForm = {
             ...fundingReceivedForm,
@@ -210,9 +252,70 @@ export default function useCanFunding(
             submittedAmount: fundingReceivedForm.enteredAmount,
             enteredNotes: "",
             submittedNotes: fundingReceivedForm.enteredNotes,
-            isSubmitted: true
+            isSubmitted: true,
+            isEditing: false,
+            id: null,
+            tempId: null
         };
         setFundingReceivedForm(nextForm);
+    };
+
+    const editFundingReceived = (newFundingReceived) => {
+        // Overwrite the existing funding received in enteredFundingReceived with the new data
+        const matchingFundingReceived = enteredFundingReceived.find((fundingEntry) => {
+            if (newFundingReceived.id === NO_DATA) {
+                //new funding received
+                return fundingEntry.tempId === newFundingReceived.tempId;
+            }
+            return fundingEntry.id.toString() === newFundingReceived.id.toString(); // TODO: can we update the id type from number to string, then no need to convert?
+        });
+
+        const matchingFundingReceivedFunding = +matchingFundingReceived?.funding || 0;
+        setTotalReceived(
+            (currentTotal) => currentTotal - matchingFundingReceivedFunding + +fundingReceivedForm.enteredAmount
+        );
+
+        const updatedFundingReceived = enteredFundingReceived.map((fundingEntry) => {
+            if (fundingEntry.id.toString() === NO_DATA) {
+                return fundingEntry.tempId === newFundingReceived.tempId
+                    ? { ...matchingFundingReceived, ...newFundingReceived }
+                    : fundingEntry;
+            } else {
+                return fundingEntry.id.toString() === newFundingReceived.id.toString()
+                    ? { ...matchingFundingReceived, ...newFundingReceived }
+                    : fundingEntry;
+            }
+        });
+        setEnteredFundingReceived(updatedFundingReceived);
+    };
+
+    const cancelFundingReceived = (e) => {
+        e.preventDefault();
+        setFundingReceivedForm(initialFundingReceivedForm);
+    };
+
+    const deleteFundingReceived = (fundingReceivedId) => {
+        const matchingFundingReceived = enteredFundingReceived.find((fundingItem) => {
+            if (fundingItem.id === NO_DATA) {
+                return fundingItem.tempId === fundingReceivedId;
+            }
+            return fundingItem.id === fundingReceivedId;
+        });
+
+        const newEnteredFundingReceived = enteredFundingReceived.filter((fundingItem) => {
+            const shouldNotDelete =
+                fundingItem.id === NO_DATA
+                    ? fundingItem.tempId !== matchingFundingReceived.tempId
+                    : fundingItem.id !== matchingFundingReceived.id;
+            return shouldNotDelete;
+        });
+
+        setEnteredFundingReceived(newEnteredFundingReceived);
+
+        if (matchingFundingReceived.id !== NO_DATA) {
+            const newDeletedFundingReceivedIds = [...deletedFundingReceivedIds, fundingReceivedId]
+            setDeletedFundingReceivedIds(newDeletedFundingReceivedIds);
+        }
     };
 
     const handleCancel = () => {
@@ -248,6 +351,26 @@ export default function useCanFunding(
         suite({ remainingAmount: +budgetForm.submittedAmount - totalReceived, ...{ [name]: value } }, name);
     };
 
+    const populateFundingReceivedForm = (fundingReceivedId) => {
+        let matchingFundingReceived;
+        if (fundingReceivedId.toString().includes("temp")) {
+            matchingFundingReceived = enteredFundingReceived.find((f) => f.tempId === fundingReceivedId);
+        } else {
+            matchingFundingReceived = enteredFundingReceived.find((f) => f.id === fundingReceivedId);
+        }
+
+        const { funding, notes } = matchingFundingReceived;
+        const nextForm = {
+            enteredAmount: funding,
+            enteredNotes: notes,
+            isEditing: true,
+            id: fundingReceivedId.toString().includes("temp") ? NO_DATA : fundingReceivedId,
+            tempId: matchingFundingReceived?.tempId
+        };
+
+        setFundingReceivedForm(nextForm);
+    };
+
     return {
         handleAddBudget,
         handleAddFundingReceived,
@@ -266,6 +389,9 @@ export default function useCanFunding(
         handleEnteredFundingReceivedAmount,
         handleEnteredNotes,
         totalReceived,
-        enteredFundingReceived
+        enteredFundingReceived,
+        populateFundingReceivedForm,
+        cancelFundingReceived,
+        deleteFundingReceived
     };
 }

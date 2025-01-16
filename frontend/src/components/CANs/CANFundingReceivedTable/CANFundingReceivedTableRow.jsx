@@ -10,6 +10,7 @@ import {
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import { NO_DATA } from "../../../constants";
 import TableRowExpandable from "../../UI/TableRowExpandable";
+import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
@@ -19,6 +20,9 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
  * @typedef {Object} CANFundingReceivedTableRowProps
  * @property {string} totalFunding
  * @property {FundingReceived} fundingReceived data for table
+ * @property {boolean} isEditMode for if we're in edit mode
+ * @property {(id: number) => void} populateFundingReceivedForm function for editing funding received
+ * @property {() => void} deleteFundingReceived
  */
 
 /**
@@ -27,10 +31,17 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
  * @returns  {JSX.Element} - The component JSX.
  */
 
-const CANFundingReceivedTableRow = ({ fundingReceived, totalFunding }) => {
-    const { isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
+const CANFundingReceivedTableRow = ({
+    fundingReceived,
+    totalFunding,
+    isEditMode,
+    populateFundingReceivedForm,
+    deleteFundingReceived
+}) => {
+    const { isRowActive, isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    const tempRowId = fundingReceived.id.toString() === NO_DATA ? fundingReceived.tempId : fundingReceived.id;
 
     /**
      * Component for displaying funding received data in a table format
@@ -83,13 +94,14 @@ const CANFundingReceivedTableRow = ({ fundingReceived, totalFunding }) => {
     /**
      * @component TableRowData component renders a table row
      * @param {Object} props - The properties object.
-     * @param {number} props.rowId - The identifier for the row.
+     * @param {number} props.rowId - The label of the row.
      * @param {number} props.fiscalYear - The fiscal year for the funding data.
      * @param {number} [props.funding] - The amount of funding received.
+     * @param {string} [props.tempId] - The temp ID of unsaved funding received.
      * @param {number} props.totalFunding - The total funding available.
      * @returns {JSX.Element} The rendered table row data.
      */
-    const TableRowData = ({ rowId, fiscalYear, funding = 0, totalFunding }) => (
+    const TableRowData = ({ rowId, fiscalYear, funding = 0, totalFunding, tempId }) => (
         <>
             <th
                 scope="row"
@@ -123,6 +135,31 @@ const CANFundingReceivedTableRow = ({ fundingReceived, totalFunding }) => {
             >
                 {calculatePercent(funding, totalFunding)}%
             </td>
+            {isRowActive && isEditMode ? (
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                >
+                    <ChangeIcons
+                        item={{ id: tempRowId, display_name: "Funding Received Item" }}
+                        handleDeleteItem={() => {
+                            deleteFundingReceived(tempRowId);
+                        }}
+                        handleSetItemForEditing={() => {
+                            populateFundingReceivedForm(tempRowId);
+                        }}
+                        isItemEditable={true}
+                        isItemDeletable={true}
+                        duplicateIcon={false}
+                    />
+                </td>
+            ) : (
+                <td
+                    className={borderExpandedStyles}
+                    style={bgExpandedStyles}
+                    width="113px"
+                ></td> // empty cell to maintain alignment
+            )}
         </>
     );
     return (
@@ -130,6 +167,7 @@ const CANFundingReceivedTableRow = ({ fundingReceived, totalFunding }) => {
             tableRowData={
                 <TableRowData
                     rowId={fundingReceived.id}
+                    tempId={fundingReceived.tempId}
                     fiscalYear={fundingReceived.fiscal_year}
                     funding={fundingReceived.funding}
                     totalFunding={+totalFunding}
