@@ -244,38 +244,6 @@
             to MIECHV and home visiting.\
       ",
     },
-//    { // 8
-//      name: "Program Support",
-//      abbreviation: "PS",
-//      division_id: 6,
-//      status: "IN_PROCESS",
-//      team_leaders: [
-//        {
-//          "tablename": "ops_user",
-//          id: 507
-//        },
-//        {
-//          "tablename": "ops_user",
-//          id: 508
-//        },
-//        {
-//          "tablename": "ops_user",
-//          id: 520
-//        }
-//      ],
-//      description: "\
-//            Evidence capacity” refers to the knowledge, skills, behaviors, and resources that enable an organization\
-//            to build and use evidence in its work. OPRE’s Evidence Capacity Framework outlines five key dimensions of\
-//            capacity: Evidence Culture, Evidence Infrastructure, Engagement, Human Capital, and Leadership.  Examples\
-//            of evidence capacity-building activities include learning agenda development; performance measurement\
-//            design or improvement; analyzing administrative data and conducting targeted collection of data to answer\
-//            operational questions; and providing training and technical assistance on evidence-related topics such as\
-//            rapid cycle evaluation and continuous quality improvement.\n\nMany OPRE projects support the development\
-//            of evidence capacity within ACF and among its grant recipients.  For the purpose of OPS, this portfolio\
-//            covers projects that advance ACF’s operational data and evidence capacity.  This portfolio is led by the\
-//            OPRE Division of Data and Improvement.\
-//      ",
-//    },
     { // 8
       name: "Data Governance",
       abbreviation: "DG",
