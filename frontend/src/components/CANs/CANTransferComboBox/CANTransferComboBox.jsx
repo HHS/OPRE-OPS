@@ -28,7 +28,8 @@ const CANTransferComboBox = ({
         { id: 1, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.DIRECT) },
         { id: 2, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.COST_SHARE) },
         { id: 3, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IAA) },
-        { id: 4, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IDDA) }
+        { id: 4, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.IDDA) },
+        { id: 5, title: convertCodeForDisplay("methodOfTransfer", CAN_TRANSFER.OTHER) }
     ];
 
     return (

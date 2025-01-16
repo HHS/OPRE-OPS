@@ -376,7 +376,7 @@ paths:
           description: Bad Request
         "401":
           description: Unauthorized
-  /api/v1/cans-funding-received/:
+  /api/v1/can-funding-received/:
     get:
       tags:
         - CANs Funding Received
@@ -544,7 +544,7 @@ paths:
           description: Unauthorized
         "404":
           description: Unable to find specified CANFundingReceived
-  /api/v1/cans-funding-details/:
+  /api/v1/can-funding-details/:
       get:
         tags:
           - CANs Funding Details
@@ -1161,6 +1161,7 @@ paths:
                 - COST_SHARE
                 - IAA
                 - IDDA
+                - OTHER
             example: [ "DIRECT", "IAA" ]
         - name: portfolio
           in: query
@@ -2971,6 +2972,7 @@ components:
             - COST_SHARE
             - IAA
             - IDDA
+            - OTHER
         sub_allowance:
           type: string
     FundingDetails:
@@ -3006,6 +3008,7 @@ components:
             - COST_SHARE
             - IAA
             - IDDA
+            - OTHER
         sub_allowance:
           type: string
         created_on:

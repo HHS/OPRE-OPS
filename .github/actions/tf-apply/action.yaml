@@ -71,7 +71,7 @@ runs:
 
     - name: Twingate Connect
       if: ${{ inputs.twingate_service_key != '' }} # Corrected syntax with a colon after the condition
-      uses: twingate/github-action@4493ffc3806241aa98194a3fa679f874bce013b5
+      uses: twingate/github-action@68fd9f74fa087bae27d565c4f5e4b12176853826
       with:
         service-key: ${{ inputs.twingate_service_key }}
 
