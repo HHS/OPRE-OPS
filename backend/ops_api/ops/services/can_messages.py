@@ -1,7 +1,11 @@
+import locale
+
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from models import CANHistory, CANHistoryType, OpsEvent, OpsEventType
+
+locale.setlocale(locale.LC_ALL, "")
 
 
 def can_history_trigger(

@@ -181,9 +181,9 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
 
     funding_budget_created_event_2 = loaded_db.get(OpsEvent, 29)
     can_history_trigger(funding_budget_created_event_2, loaded_db)
-    can_history_list = loaded_db.query(CANHistory).all()
-    can_history_count = len(can_history_list)
-    new_can_history_item_2 = can_history_list[can_history_count - 1]
+    history_list = loaded_db.query(CANHistory).all()
+    history_count = len(history_list)
+    new_can_history_item_2 = history_list[history_count - 1]
 
     assert new_can_history_item_2.history_type == CANHistoryType.CAN_FUNDING_CREATED
     assert new_can_history_item_2.history_title == "**FY 2025 Budget Entered**"
