@@ -171,6 +171,12 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
     mock_output_data = CAN(id=517, portfolio_id=6, number="G998235", description="Test CAN Created by unit test")
     mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
     mocker_create_can.return_value = mock_output_data
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = ""
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+    mocker_ops_event_ctxt_mgr.return_value = ""
+    mock_test = mocker.patch("ops_api.ops.services.can_messages.can_history_trigger")
+    mock_test.return_value = ""
     response = budget_team_auth_client.post("/api/v1/cans/", json=input_data)
 
     # Add fields that are default populated on load.
