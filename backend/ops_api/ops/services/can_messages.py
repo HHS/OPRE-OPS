@@ -28,7 +28,7 @@ def can_history_trigger(
             session.add(history_event)
         case OpsEventType.CREATE_CAN_FUNDING_BUDGET:
             history_event = CANHistory(
-                can_id=event.event_details["new_can"]["id"],
+                can_id=event.event_details["new_can_funding_budget"]["can"]["id"],
                 ops_event_id=event.id,
                 history_title=f"**FY {current_fiscal_year} Budget Entered**",
                 history_message=f"System Owner entered a FY {current_fiscal_year} budget of $10,000.00",
