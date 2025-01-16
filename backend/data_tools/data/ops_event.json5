@@ -2203,7 +2203,7 @@
             funding_frequency: "Quarterly",
           },
           notes: "For test data",
-          budget: null,
+          budget: 10000.00,
           can_id: 500,
           versions: [
             {
@@ -2364,7 +2364,7 @@
             funding_frequency: "Quarterly",
           },
           notes: "For test data",
-          budget: null,
+          budget: 30000.00,
           can_id: 500,
           versions: [
             {
@@ -2397,16 +2397,16 @@
           fiscal_year: 2025,
           display_name: "CANFundingBudget#32",
           created_by_user: {
-            id: 520,
-            full_name: "System Owner",
+            id: 515,
+            full_name: "Cliff Hill",
           },
           updated_by_user: {
-            id: 520,
-            full_name: "System Owner",
+            id: 515,
+            full_name: "Cliff Hill",
           },
         },
       },
       created_on: "2025-01-13T21:42:53.928887Z",
     },
-  ],
+  ]
 }

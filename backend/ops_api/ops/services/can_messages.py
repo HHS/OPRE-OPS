@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from models import CANHistory, CANHistoryType, OpsEvent, OpsEventType
 
-locale.setlocale(locale.LC_ALL, "")
+locale.setlocale(locale.LC_ALL, "en_CA.UTF-8")
 
 
 def can_history_trigger(
@@ -31,11 +31,13 @@ def can_history_trigger(
             )
             session.add(history_event)
         case OpsEventType.CREATE_CAN_FUNDING_BUDGET:
+            budget = locale.currency(event.event_details["new_can_funding_budget"]["budget"], grouping=True)
+            creator_name = event.event_details["new_can_funding_budget"]["created_by_user"]["full_name"]
             history_event = CANHistory(
                 can_id=event.event_details["new_can_funding_budget"]["can"]["id"],
                 ops_event_id=event.id,
                 history_title=f"**FY {current_fiscal_year} Budget Entered**",
-                history_message=f"System Owner entered a FY {current_fiscal_year} budget of $10,000.00",
+                history_message=f"{creator_name} entered a FY {current_fiscal_year} budget of {budget}",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_FUNDING_CREATED,
             )
