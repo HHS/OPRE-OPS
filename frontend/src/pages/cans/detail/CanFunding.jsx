@@ -92,6 +92,8 @@ const CanFunding = ({
         return <div>No funding information available for this CAN.</div>;
     }
 
+    const showCarryForwardCard = funding.active_period != 1 && fiscalYear > funding.fiscal_year;
+
     return (
         <div>
             {showModal && (
@@ -167,22 +169,25 @@ const CanFunding = ({
                                 className="border-right-1px border-base-light"
                                 style={{ minWidth: "46%" }}
                             >
-                                <RoundedBox
-                                    className="font-12px"
-                                    style={{ minHeight: "69px", width: "313px", padding: "17px 0 0 13px" }}
-                                    id="carry-forward-card"
-                                >
-                                    <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
-                                    <CurrencyFormat
-                                        value={carryForwardFunding}
-                                        displayType="text"
-                                        thousandSeparator={true}
-                                        decimalScale={2}
-                                        fixedDecimalScale={true}
-                                        prefix="$ "
-                                    />
-                                </RoundedBox>
+                                {showCarryForwardCard && (
+                                    <RoundedBox
+                                        className="font-12px"
+                                        style={{ minHeight: "69px", width: "313px", padding: "17px 0 0 13px" }}
+                                        id="carry-forward-card"
+                                    >
+                                        <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
+                                        <CurrencyFormat
+                                            value={carryForwardFunding}
+                                            displayType="text"
+                                            thousandSeparator={true}
+                                            decimalScale={2}
+                                            fixedDecimalScale={true}
+                                            prefix="$ "
+                                        />
+                                    </RoundedBox>
+                                )}
                                 <CANBudgetForm
+                                    showCarryForwardCard={showCarryForwardCard}
                                     totalFunding={
                                         budgetForm.submittedAmount ? budgetForm.submittedAmount : totalFunding
                                     }
@@ -202,7 +207,10 @@ const CanFunding = ({
                             />
                         </div>
                     </section>
-                    <section id="can-funding-received-form-section" className="margin-bottom-4">
+                    <section
+                        id="can-funding-received-form-section"
+                        className="margin-bottom-4"
+                    >
                         <h2>{`Add FY ${fiscalYear} Funding Received YTD`}</h2>
                         <p>{`Add funding received towards the Total FY ${fiscalYear} Budget or come back to add funding later. Funding Received means the money is in OPRE’s hands and ready to spend against.`}</p>
                         <div className="display-flex flex-justify margin-top-4">
