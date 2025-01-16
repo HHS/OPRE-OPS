@@ -2168,7 +2168,7 @@
           Connection: "keep-alive",
           "User-Agent": "PostmanRuntime/7.42.0",
           "Content-Type": "application/json",
-          Authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzM2ODgzMzI4LCJqdGkiOiI4NmQyZGRiOC1jYzY1LTRiYTEtYWNiNy1jMWYyODUwMWNiNDEiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzM2ODgzMzI4LCJjc3JmIjoiYjYzNDc4MjQtMmZlMy00Zjg0LWI1ZjgtNTY4YWM0YzNjZDBjIiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzM2ODg1MTI4LCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.JpCUxGvcFMlo8IqdRMkyHA0d7v5m3RacC93wGsm6C8hNL4Cpr2ZEXsepszDxYQt7eHU5BcaZxGMXl-Di3qY_7KDBvSCJ1UqsNIqwjWPX_FkargkNN1hfhLzYwMHhJTYkist72cty9GbW-oHFLah0z6JCsZzsuHcEsmFJMHyMq1sYU3v7iOT4koHcZRbc7nLkaUQqpYawkfjHuVuELMH3hSNRlZXwAxl5BtHgegE8t1axThc-4AktZnQKlmYL-S-k_J5hbg4-SCY0oo1JwFEQ7M_8HyU0pB-FuBsDTYL4DNryMtKLA4oNQF_V74ckTX9ekXzPtjr4DZC4twxgXLlgkw",
+          Authorization: "Bearer token",
           "Cache-Control": "no-cache",
           "Postman-Token": "4f387ec2-c547-4866-987b-4a9d23a84030",
           "Content-Length": "76",
@@ -2203,7 +2203,7 @@
             funding_frequency: "Quarterly",
           },
           notes: "For test data",
-          budget: 10000.00,
+          budget: 10000.0,
           can_id: 500,
           versions: [
             {
@@ -2251,7 +2251,72 @@
       // 21
       event_type: "CREATE_CAN_FUNDING_RECEIVED",
       event_status: "SUCCESS",
-      event_details: '{"message": "Hello World"}',
+      event_details: {
+        "request.json": {
+          can_id: 500,
+          funding: 1000,
+          fiscal_year: 2025,
+        },
+        "request.values": {},
+        "request.headers": {
+          Host: "localhost:8080",
+          Accept: "*/*",
+          Connection: "keep-alive",
+          "User-Agent": "PostmanRuntime/7.42.0",
+          "Content-Type": "application/json",
+          Authorization: "Bearer token",
+          "Cache-Control": "no-cache",
+          "Postman-Token": "deee8766-edbf-4e31-9c79-47764de887b2",
+          "Content-Length": "67",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+        "request.remote_addr": "192.168.127.1",
+        "request.remote_user": null,
+        new_can_funding_received: {
+          id: 526,
+          can: {
+            id: 500,
+            number: "G99HRF2",
+            projects: [
+              {
+                id: 1000,
+                url: "https://www.acf.hhs.gov/opre/project/acf-human-services-interoperability-support",
+                title: "Human Services Interoperability Support",
+                description: "This contract will conduct interoperability activities to facilitate the exchange of information within, between, and from states and tribal organizations by facilitating lower-burden, interoperable data reporting and exchange to other state agencies and to ACF. The contract will focus on developing content that facilitates streamlined, interoperable reporting to ACF. The contract will also conduct research and evaluation activities with states and tribal organizations to assess the effectiveness of providing these interoperability artifacts for these organizations to use. The ability to share data and develop interoperable data systems is important for effective operation and oversight of these programs. This contract is designed to address these requirements and deliver needed and practical tools to accelerate implementation of data sharing and interoperable initiatives.",
+                short_title: "HSS",
+                project_type: "RESEARCH",
+              },
+            ],
+            nick_name: "HMRF-OPRE",
+            description: "Healthy Marriages Responsible Fatherhood - OPRE",
+            obligate_by: 2024,
+            display_name: "G99HRF2",
+            funding_type: "Discretionary",
+            portfolio_id: 6,
+            active_period: 1,
+            funding_method: "Direct",
+            funding_frequency: "Quarterly",
+          },
+          notes: null,
+          can_id: 500,
+          funding: 1000.0,
+          created_by: 520,
+          created_on: "2025-01-16T20:52:13.607111Z",
+          updated_by: 520,
+          updated_on: "2025-01-16T20:52:13.607111Z",
+          fiscal_year: 2025,
+          display_name: "CANFundingReceived#526",
+          created_by_user: {
+            id: 520,
+            full_name: "System Owner",
+          },
+          updated_by_user: {
+            id: 520,
+            full_name: "System Owner",
+          },
+        },
+      },
+      created_on: "2025-01-13T21:43:53.928887Z",
     },
     {
       // 22
@@ -2276,7 +2341,7 @@
           Accept: "*/*",
           Connection: "keep-alive",
           "User-Agent": "PostmanRuntime/7.42.0",
-          Authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzM2ODgzMzI4LCJqdGkiOiI4NmQyZGRiOC1jYzY1LTRiYTEtYWNiNy1jMWYyODUwMWNiNDEiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzM2ODgzMzI4LCJjc3JmIjoiYjYzNDc4MjQtMmZlMy00Zjg0LWI1ZjgtNTY4YWM0YzNjZDBjIiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzM2ODg1MTI4LCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.JpCUxGvcFMlo8IqdRMkyHA0d7v5m3RacC93wGsm6C8hNL4Cpr2ZEXsepszDxYQt7eHU5BcaZxGMXl-Di3qY_7KDBvSCJ1UqsNIqwjWPX_FkargkNN1hfhLzYwMHhJTYkist72cty9GbW-oHFLah0z6JCsZzsuHcEsmFJMHyMq1sYU3v7iOT4koHcZRbc7nLkaUQqpYawkfjHuVuELMH3hSNRlZXwAxl5BtHgegE8t1axThc-4AktZnQKlmYL-S-k_J5hbg4-SCY0oo1JwFEQ7M_8HyU0pB-FuBsDTYL4DNryMtKLA4oNQF_V74ckTX9ekXzPtjr4DZC4twxgXLlgkw",
+          Authorization: "Bearer token",
           "Cache-Control": "no-cache",
           "Postman-Token": "8e6a5fc3-0e3e-482f-90a3-7e6bc3ac0f9a",
           "Accept-Encoding": "gzip, deflate, br",
@@ -2290,7 +2355,23 @@
       // 25
       event_type: "DELETE_CAN_FUNDING_RECEIVED",
       event_status: "SUCCESS",
-      event_details: '{"message": "Hello World"}',
+      event_details: {
+        "request.values": {},
+        "request.headers": {
+          Host: "localhost:8080",
+          Accept: "*/*",
+          Connection: "keep-alive",
+          "User-Agent": "PostmanRuntime/7.42.0",
+          Authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzM3MDYwNTcyLCJqdGkiOiJiM2RmODk0My0xMTZjLTRhYjctYTk2Ni05NThjMmM1M2Q5NWYiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzM3MDYwNTcyLCJjc3JmIjoiNDdkZTRjYTAtYWZjZS00MjhhLWI3NWItNjUyNDU1Y2Q1ZDgwIiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzM3MDYyMzcyLCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.VL6ylhIZNG3ey6OFWnE-IFyO2xz1DzwgO6a-LmgWPxR7QtNo2iP3PQE23LFNqE7LuJWqwXItXU6Tz2-MiZOCe7v8vFy7_OHeTOitmdyukitQIj2d4kbbAqbfztW7I1M6Hevu88hucdTiH4TUYZp-sQdg3azMx9mczsMYOdNA16fAs1aXXjn1igZPcwNvROaNPka0Is4VK9Ss8fl_qXo-AtdV1ubSHxTdOf4sM4VFusg9GCvHTjwLiT8i74qRvUMjB923qYJh-wJU_bBwl9-DJNokXgk7zhNslTBFUsae_O1DQjVZhGHU_dMnJNrgobpmo4-6MmwNisGlwjS5OdCOkA",
+          "Cache-Control": "no-cache",
+          "Postman-Token": "f488445f-e481-4bbe-8f56-4488aeab5b80",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+        "request.remote_addr": "192.168.127.1",
+        "request.remote_user": null,
+        "Deleted CANFundingReceived": 526,
+      },
+      created_on: "2025-01-14T21:43:53.928887Z",
     },
     {
       // 26
@@ -2329,7 +2410,7 @@
           Connection: "keep-alive",
           "User-Agent": "PostmanRuntime/7.42.0",
           "Content-Type": "application/json",
-          Authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzM2ODgzMzI4LCJqdGkiOiI4NmQyZGRiOC1jYzY1LTRiYTEtYWNiNy1jMWYyODUwMWNiNDEiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzM2ODgzMzI4LCJjc3JmIjoiYjYzNDc4MjQtMmZlMy00Zjg0LWI1ZjgtNTY4YWM0YzNjZDBjIiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzM2ODg1MTI4LCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.JpCUxGvcFMlo8IqdRMkyHA0d7v5m3RacC93wGsm6C8hNL4Cpr2ZEXsepszDxYQt7eHU5BcaZxGMXl-Di3qY_7KDBvSCJ1UqsNIqwjWPX_FkargkNN1hfhLzYwMHhJTYkist72cty9GbW-oHFLah0z6JCsZzsuHcEsmFJMHyMq1sYU3v7iOT4koHcZRbc7nLkaUQqpYawkfjHuVuELMH3hSNRlZXwAxl5BtHgegE8t1axThc-4AktZnQKlmYL-S-k_J5hbg4-SCY0oo1JwFEQ7M_8HyU0pB-FuBsDTYL4DNryMtKLA4oNQF_V74ckTX9ekXzPtjr4DZC4twxgXLlgkw",
+          Authorization: "Bearer token",
           "Cache-Control": "no-cache",
           "Postman-Token": "4f387ec2-c547-4866-987b-4a9d23a84030",
           "Content-Length": "76",
@@ -2364,7 +2445,7 @@
             funding_frequency: "Quarterly",
           },
           notes: "For test data",
-          budget: 30000.00,
+          budget: 30000.0,
           can_id: 500,
           versions: [
             {
@@ -2408,5 +2489,5 @@
       },
       created_on: "2025-01-13T21:42:53.928887Z",
     },
-  ]
+  ],
 }
