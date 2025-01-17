@@ -13,7 +13,7 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
  * @param {Filters} filters - The filters to apply.
  * @returns {CAN[]} - The sorted array of CANs.
  */
-export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
+export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYear) => {
     if (!cans || cans.length === 0) {
         return [];
     }
@@ -42,7 +42,7 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
     });
 
     // NOTE: Filter by filter prop
-    filteredCANs = applyAdditionalFilters(filteredCANs, filters);
+    filteredCANs = applyAdditionalFilters(filteredCANs, filters, fiscalYear);
 
     return sortCANs(filteredCANs);
 };
@@ -68,9 +68,10 @@ const sortCANs = (cans) => {
  * @description Applies additional filters to the CANs.
  * @param {CAN[]} cans - The array of CANs to filter.
  * @param {Filters} filters - The filters to apply.
+ * @param {number} fiscalYear - The fiscal year that is applied to the filter.
  * @returns {CAN[]} - The filtered array of CANs.
  */
-const applyAdditionalFilters = (cans, filters) => {
+const applyAdditionalFilters = (cans, filters, fiscalYear) => {
     let filteredCANs = cans;
 
     // Filter by active period
@@ -99,7 +100,7 @@ const applyAdditionalFilters = (cans, filters) => {
     if (filters.budget && filters.budget.length > 0) {
         filteredCANs = filteredCANs.filter((can) => {
             // Skip CANs with no funding budgets or only null budgets
-            const validBudgets = can.funding_budgets?.filter((b) => b.budget !== null);
+            const validBudgets = can.funding_budgets?.filter((b) => b.budget !== null && b.fiscal_year === fiscalYear);
             if (validBudgets?.length === 0) return false;
 
             // Check if any valid budget falls within range
