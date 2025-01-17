@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 from models import CANFundingReceived
 from ops.services.can_funding_received import CANFundingReceivedService
+from ops_api.tests.utils import DummyContextManager
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -242,6 +243,10 @@ def test_funding_received_delete(budget_team_auth_client, mocker):
     mocker_delete_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.delete"
     )
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.delete(f"/api/v1/can-funding-received/{test_funding_received_id}")
 
     assert response.status_code == 200
@@ -251,18 +256,24 @@ def test_funding_received_delete(budget_team_auth_client, mocker):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_delete_404(budget_team_auth_client):
+def test_can_delete_404(budget_team_auth_client, mocker):
     test_can_id = 600
-
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.delete(f"/api/v1/can-funding-received/{test_can_id}")
 
     assert response.status_code == 404
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_delete_cans(basic_user_auth_client):
+def test_basic_user_cannot_delete_cans(basic_user_auth_client, mocker):
     response = basic_user_auth_client.delete("/api/v1/can-funding-received/517")
-
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     assert response.status_code == 403
 
 

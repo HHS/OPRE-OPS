@@ -42,4 +42,16 @@ def can_history_trigger(
                 history_type=CANHistoryType.CAN_FUNDING_CREATED,
             )
             session.add(history_event)
+        case OpsEventType.DELETE_CAN_FUNDING_RECEIVED:
+            # budget = locale.currency(event.event_details["new_can_funding_budget"]["budget"], grouping=True)
+            creator_name = event.event_details["new_can_funding_budget"]["created_by_user"]["full_name"]
+            history_event = CANHistory(
+                can_id=event.event_details["new_can_funding_budget"]["can"]["id"],
+                ops_event_id=event.id,
+                history_title=f"**FY {current_fiscal_year} Budget Entered**",
+                history_message=f"{creator_name} entered a FY {current_fiscal_year} budget of {budget}",
+                timestamp=event.created_on,
+                history_type=CANHistoryType.CAN_FUNDING_CREATED,
+            )
+            session.add(history_event)
     session.commit()
