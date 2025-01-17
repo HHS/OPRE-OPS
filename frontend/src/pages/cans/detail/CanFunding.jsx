@@ -79,7 +79,8 @@ const CanFunding = ({
         enteredFundingReceived,
         populateFundingReceivedForm,
         cancelFundingReceived,
-        deleteFundingReceived
+        deleteFundingReceived,
+        deletedFundingReceivedIds
     } = useCanFunding(
         canId,
         canNumber,
@@ -256,7 +257,7 @@ const CanFunding = ({
                     />
                 )}
             </Accordion>
-            <DebugCode data={enteredFundingReceived} />
+            <DebugCode data={(enteredFundingReceived, deletedFundingReceivedIds)} />
             {isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-8">
                     <button
@@ -269,7 +270,7 @@ const CanFunding = ({
                     <button
                         id="save-changes"
                         className="usa-button"
-                        disabled={!budgetForm.isSubmitted && !fundingReceivedForm.isSubmitted}
+                        disabled={!budgetForm.isSubmitted && !fundingReceivedForm.isSubmitted && !deletedFundingReceivedIds.length}
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
                     >

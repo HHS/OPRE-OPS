@@ -97,11 +97,10 @@ const CANFundingReceivedTableRow = ({
      * @param {number} props.rowId - The label of the row.
      * @param {number} props.fiscalYear - The fiscal year for the funding data.
      * @param {number} [props.funding] - The amount of funding received.
-     * @param {string} [props.tempId] - The temp ID of unsaved funding received.
      * @param {number} props.totalFunding - The total funding available.
      * @returns {JSX.Element} The rendered table row data.
      */
-    const TableRowData = ({ rowId, fiscalYear, funding = 0, totalFunding, tempId }) => (
+    const TableRowData = ({ rowId, fiscalYear, funding = 0, totalFunding }) => (
         <>
             <th
                 scope="row"
@@ -167,7 +166,6 @@ const CANFundingReceivedTableRow = ({
             tableRowData={
                 <TableRowData
                     rowId={fundingReceived.id}
-                    tempId={fundingReceived.tempId}
                     fiscalYear={fundingReceived.fiscal_year}
                     funding={fundingReceived.funding}
                     totalFunding={+totalFunding}

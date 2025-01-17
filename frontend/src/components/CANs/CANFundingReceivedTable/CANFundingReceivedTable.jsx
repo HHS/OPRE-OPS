@@ -19,13 +19,19 @@ import CANFundingReceivedTableRow from "./CANFundingReceivedTableRow";
  * @param {CANFundingReceivedTableProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANFundingReceivedTable = ({ fundingReceived, totalFunding, isEditMode, populateFundingReceivedForm, deleteFundingReceived }) => {
+const CANFundingReceivedTable = ({
+    fundingReceived,
+    totalFunding,
+    isEditMode,
+    populateFundingReceivedForm,
+    deleteFundingReceived
+}) => {
     return (
         <Table tableHeadings={["Funding ID", "FY", "Funding Received", "% of Total FY Budget", " "]}>
-            {fundingReceived.map((fundingRow) => {
+            {fundingReceived.map((fundingRow, index) => {
                 return (
                     <CANFundingReceivedTableRow
-                        key={fundingRow.id}
+                        key={`fundingRow.id-${index}`}
                         fundingReceived={fundingRow}
                         totalFunding={totalFunding}
                         isEditMode={isEditMode}

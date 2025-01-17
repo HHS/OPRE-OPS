@@ -248,6 +248,13 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Cans", "CanFunding"]
         }),
+        deleteCanFundingReceived: builder.mutation({
+            query: (id) => ({
+                url: `/can-funding-received/${id}`,
+                method: "DELETE"
+            }),
+            invalidatesTags: ["Cans", "CanFunding"]
+        }),
         getCanFundingSummary: builder.query({
             query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
                 const queryParams = [];
@@ -453,6 +460,7 @@ export const {
     useUpdateCanFundingBudgetMutation,
     useAddCanFundingReceivedMutation,
     useUpdateCanFundingReceivedMutation,
+    useDeleteCanFundingReceivedMutation,
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,

@@ -3,7 +3,8 @@ import {
     useAddCanFundingBudgetsMutation,
     useUpdateCanFundingBudgetMutation,
     useAddCanFundingReceivedMutation,
-    useUpdateCanFundingReceivedMutation
+    useUpdateCanFundingReceivedMutation,
+    useDeleteCanFundingReceivedMutation
 } from "../../../api/opsAPI.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils.js";
 import useAlert from "../../../hooks/use-alert.hooks";
@@ -63,6 +64,7 @@ export default function useCanFunding(
 
     const initialFundingReceivedForm = {
         enteredAmount: "",
+        originalAmount: "",
         submittedAmount: "",
         enteredNotes: "",
         submittedNotes: "",
@@ -78,6 +80,7 @@ export default function useCanFunding(
     const [updateCanFundingBudget] = useUpdateCanFundingBudgetMutation();
     const [addCanFundingReceived] = useAddCanFundingReceivedMutation();
     const [updateCanFundingReceived] = useUpdateCanFundingReceivedMutation();
+    const [deleteCanFundingReceived] = useDeleteCanFundingReceivedMutation();
     const { setAlert } = useAlert();
     const activeUserFullName = useSelector((state) => state.auth?.activeUser?.full_name) || "";
 
@@ -89,6 +92,7 @@ export default function useCanFunding(
         setEnteredFundingReceived([...fundingReceived]);
     }, [fundingReceived]);
 
+    /** @param {string} value */
     const handleEnteredBudgetAmount = (value) => {
         const nextForm = {
             ...budgetForm,
@@ -97,6 +101,7 @@ export default function useCanFunding(
         setBudgetForm(nextForm);
     };
 
+    /** @param {string} value */
     const handleEnteredFundingReceivedAmount = (value) => {
         const nextForm = {
             ...fundingReceivedForm,
@@ -105,6 +110,7 @@ export default function useCanFunding(
         setFundingReceivedForm(nextForm);
     };
 
+    /** @param {string} value */
     const handleEnteredNotes = (value) => {
         const nextForm = {
             ...fundingReceivedForm,
@@ -122,6 +128,7 @@ export default function useCanFunding(
         warning: "warning"
     });
 
+    /** @param {React.FormEvent<HTMLFormElement>} e */
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -151,6 +158,7 @@ export default function useCanFunding(
         };
 
         const handleFundingReceived = async () => {
+            /** @type {Promise<any>[]} */
             const fundingPromise = [];
             enteredFundingReceived.map((fundingItem) => {
                 //POST
@@ -183,9 +191,19 @@ export default function useCanFunding(
             await Promise.all(fundingPromise);
         };
 
+        const handleDeleteFundingReceived = async () => {
+            /** @type {Promise<any>[]} */
+            const deletePromise = [];
+            deletedFundingReceivedIds.map((id) => {
+                deletePromise.push(deleteCanFundingReceived(id));
+            });
+            await Promise.all(deletePromise);
+        };
+
         try {
             handleFundingBudget();
             handleFundingReceived();
+            handleDeleteFundingReceived();
 
             setAlert({
                 type: "success",
@@ -205,6 +223,7 @@ export default function useCanFunding(
         cleanUp();
     };
 
+    /** @param {React.FormEvent<HTMLFormElement>} e */
     const handleAddBudget = (e) => {
         e.preventDefault();
 
@@ -217,13 +236,13 @@ export default function useCanFunding(
         setBudgetForm(nextForm);
     };
 
+    /** @param {React.FormEvent<HTMLFormElement>} e */
     const handleAddFundingReceived = (e) => {
         e.preventDefault();
 
         // Update total received first using the functional update pattern
 
         // update the table data
-        const isRealId = fundingReceivedForm.id && fundingReceivedForm.id !== NO_DATA;
         let newFundingReceived = {
             id: fundingReceivedForm.id ?? NO_DATA,
             tempId: fundingReceivedForm.tempId ?? `temp-${cryptoRandomString({ length: 3 })}`,
@@ -249,6 +268,7 @@ export default function useCanFunding(
         const nextForm = {
             ...fundingReceivedForm,
             enteredAmount: "",
+            originalAmount: "",
             submittedAmount: fundingReceivedForm.enteredAmount,
             enteredNotes: "",
             submittedNotes: fundingReceivedForm.enteredNotes,
@@ -260,6 +280,7 @@ export default function useCanFunding(
         setFundingReceivedForm(nextForm);
     };
 
+    /** @param {FundingReceived} newFundingReceived */
     const editFundingReceived = (newFundingReceived) => {
         // Overwrite the existing funding received in enteredFundingReceived with the new data
         const matchingFundingReceived = enteredFundingReceived.find((fundingEntry) => {
@@ -267,8 +288,10 @@ export default function useCanFunding(
                 //new funding received
                 return fundingEntry.tempId === newFundingReceived.tempId;
             }
-            return fundingEntry.id.toString() === newFundingReceived.id.toString(); // TODO: can we update the id type from number to string, then no need to convert?
+            return fundingEntry.id === newFundingReceived.id;
         });
+
+        console.log({ matchingFundingReceived });
 
         const matchingFundingReceivedFunding = +matchingFundingReceived?.funding || 0;
         setTotalReceived(
@@ -276,12 +299,12 @@ export default function useCanFunding(
         );
 
         const updatedFundingReceived = enteredFundingReceived.map((fundingEntry) => {
-            if (fundingEntry.id.toString() === NO_DATA) {
+            if (fundingEntry.id === NO_DATA) {
                 return fundingEntry.tempId === newFundingReceived.tempId
                     ? { ...matchingFundingReceived, ...newFundingReceived }
                     : fundingEntry;
             } else {
-                return fundingEntry.id.toString() === newFundingReceived.id.toString()
+                return fundingEntry.id === newFundingReceived.id
                     ? { ...matchingFundingReceived, ...newFundingReceived }
                     : fundingEntry;
             }
@@ -289,11 +312,14 @@ export default function useCanFunding(
         setEnteredFundingReceived(updatedFundingReceived);
     };
 
+    /** @param {React.FormEvent<HTMLFormElement>} e */
     const cancelFundingReceived = (e) => {
         e.preventDefault();
         setFundingReceivedForm(initialFundingReceivedForm);
+        suite.reset();
     };
 
+    /** @param {number | string} fundingReceivedId */
     const deleteFundingReceived = (fundingReceivedId) => {
         const matchingFundingReceived = enteredFundingReceived.find((fundingItem) => {
             if (fundingItem.id === NO_DATA) {
@@ -305,15 +331,15 @@ export default function useCanFunding(
         const newEnteredFundingReceived = enteredFundingReceived.filter((fundingItem) => {
             const shouldNotDelete =
                 fundingItem.id === NO_DATA
-                    ? fundingItem.tempId !== matchingFundingReceived.tempId
-                    : fundingItem.id !== matchingFundingReceived.id;
+                    ? fundingItem.tempId !== matchingFundingReceived?.tempId
+                    : fundingItem.id !== matchingFundingReceived?.id;
             return shouldNotDelete;
         });
 
         setEnteredFundingReceived(newEnteredFundingReceived);
 
-        if (matchingFundingReceived.id !== NO_DATA) {
-            const newDeletedFundingReceivedIds = [...deletedFundingReceivedIds, fundingReceivedId]
+        if (matchingFundingReceived?.id !== NO_DATA) {
+            const newDeletedFundingReceivedIds = [...deletedFundingReceivedIds, fundingReceivedId];
             setDeletedFundingReceivedIds(newDeletedFundingReceivedIds);
         }
     };
@@ -332,11 +358,11 @@ export default function useCanFunding(
     };
 
     const cleanUp = () => {
+        setDeletedFundingReceivedIds([]);
         setEnteredFundingReceived([...fundingReceived]);
         setBudgetForm({ enteredAmount: "", submittedAmount: totalFunding, isSubmitted: false });
         setShowModal(false);
-        const nextForm = { ...fundingReceivedForm, enteredAmount: "", enteredNotes: "" };
-        setFundingReceivedForm(nextForm);
+        setFundingReceivedForm(initialFundingReceivedForm);
         toggleEditMode();
         setModalProps({
             heading: "",
@@ -347,22 +373,45 @@ export default function useCanFunding(
         suite.reset();
     };
 
+    /**
+     * Executes validation for a specific form field
+     * @param {string} name - The name of the form field to validate
+     * @param {number|string} value - The value to validate for the given field
+     * @returns {void}
+     */
     const runValidate = (name, value) => {
-        suite({ remainingAmount: +budgetForm.submittedAmount - totalReceived, ...{ [name]: value } }, name);
+        suite(
+            {
+                remainingAmount: +budgetForm.submittedAmount - totalReceived + +fundingReceivedForm.originalAmount,
+                ...{ [name]: value }
+            },
+            name
+        );
     };
 
+    /**
+     * Populates the funding received form with data from a selected funding record
+     * @param {(string|number)} fundingReceivedId - The ID of the funding record to populate (can be a temporary ID or actual ID)
+     * @returns {void}
+     * @description
+     * This function finds a matching funding record from enteredFundingReceived array using either
+     * a temporary ID or actual ID. It then creates a form object with the funding amount, notes,
+     * and relevant IDs, setting isEditing to true. The form data is then set using setFundingReceivedForm.
+     */
     const populateFundingReceivedForm = (fundingReceivedId) => {
-        let matchingFundingReceived;
-        if (fundingReceivedId.toString().includes("temp")) {
-            matchingFundingReceived = enteredFundingReceived.find((f) => f.tempId === fundingReceivedId);
-        } else {
-            matchingFundingReceived = enteredFundingReceived.find((f) => f.id === fundingReceivedId);
+        const matchingFundingReceived = fundingReceivedId.toString().includes("temp")
+            ? enteredFundingReceived.find((f) => f.tempId === fundingReceivedId)
+            : enteredFundingReceived.find((f) => f.id === fundingReceivedId);
+
+        if (!matchingFundingReceived) {
+            return;
         }
 
         const { funding, notes } = matchingFundingReceived;
         const nextForm = {
             enteredAmount: funding,
             enteredNotes: notes,
+            originalAmount: funding,
             isEditing: true,
             id: fundingReceivedId.toString().includes("temp") ? NO_DATA : fundingReceivedId,
             tempId: matchingFundingReceived?.tempId
@@ -392,6 +441,7 @@ export default function useCanFunding(
         enteredFundingReceived,
         populateFundingReceivedForm,
         cancelFundingReceived,
-        deleteFundingReceived
+        deleteFundingReceived,
+        deletedFundingReceivedIds
     };
 }

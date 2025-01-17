@@ -97,7 +97,8 @@ export type FundingReceived = {
     display_name?: string;
     fiscal_year: number;
     funding?: number;
-    id: number;
+    id: number | string;
+    tempId?: string;
     notes?: string;
     created_by?: any;
     created_by_user?: any;
