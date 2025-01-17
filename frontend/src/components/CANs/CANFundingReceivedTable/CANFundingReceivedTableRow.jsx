@@ -157,6 +157,7 @@ const CANFundingReceivedTableRow = ({
                     className={borderExpandedStyles}
                     style={bgExpandedStyles}
                     width="113px"
+                    aria-label="Actions column"
                 ></td> // empty cell to maintain alignment
             )}
         </>
