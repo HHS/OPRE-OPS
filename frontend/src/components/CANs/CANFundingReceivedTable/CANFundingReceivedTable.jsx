@@ -10,7 +10,7 @@ import CANFundingReceivedTableRow from "./CANFundingReceivedTableRow";
  * @property {string} totalFunding
  * @property {FundingReceived[]} fundingReceived data for table
  * @property {boolean} isEditMode for if we're in edit mode
- * @property {(id: number) => void} populateFundingReceivedForm function for editing funding received
+ * @property {(id: number | string) => void} populateFundingReceivedForm function for editing funding received
  * @property {() => void} deleteFundingReceived
  */
 
@@ -27,7 +27,7 @@ const CANFundingReceivedTable = ({
     deleteFundingReceived
 }) => {
     return (
-        <Table tableHeadings={["Funding ID", "FY", "Funding Received", "% of Total FY Budget", " "]}>
+        <Table tableHeadings={["Funding ID", "FY", "Funding Received", "% of Total FY Budget"]}>
             {fundingReceived.map((fundingRow, index) => {
                 return (
                     <CANFundingReceivedTableRow

@@ -1,16 +1,16 @@
 import { faClock } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
+import { NO_DATA } from "../../../constants";
 import { calculatePercent, formatDateToMonthDayYear } from "../../../helpers/utils";
+import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
+import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
     expandedRowBGColor,
     removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
-import { NO_DATA } from "../../../constants";
-import TableRowExpandable from "../../UI/TableRowExpandable";
-import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
@@ -21,8 +21,8 @@ import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
  * @property {string} totalFunding
  * @property {FundingReceived} fundingReceived data for table
  * @property {boolean} isEditMode for if we're in edit mode
- * @property {(id: number) => void} populateFundingReceivedForm function for editing funding received
- * @property {() => void} deleteFundingReceived
+ * @property {(id: number | string) => void} populateFundingReceivedForm function for editing funding received
+ * @property {(tempRowId: string | number ) => void} deleteFundingReceived
  */
 
 /**
@@ -41,7 +41,7 @@ const CANFundingReceivedTableRow = ({
     const { isRowActive, isExpanded, setIsExpanded, setIsRowActive } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    const tempRowId = fundingReceived.id.toString() === NO_DATA ? fundingReceived.tempId : fundingReceived.id;
+    const tempRowId = (fundingReceived.id?.toString() === NO_DATA ? fundingReceived.tempId : fundingReceived.id) ?? -1;
 
     /**
      * Component for displaying funding received data in a table format
@@ -94,7 +94,7 @@ const CANFundingReceivedTableRow = ({
     /**
      * @component TableRowData component renders a table row
      * @param {Object} props - The properties object.
-     * @param {number} props.rowId - The label of the row.
+     * @param {number | string} props.rowId - The label of the row.
      * @param {number} props.fiscalYear - The fiscal year for the funding data.
      * @param {number} [props.funding] - The amount of funding received.
      * @param {number} props.totalFunding - The total funding available.
