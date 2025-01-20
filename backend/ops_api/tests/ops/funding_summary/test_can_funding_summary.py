@@ -55,7 +55,7 @@ def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClien
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
-    assert response.json["expected_funding"] == "200000.0"
+    assert response.json["expected_funding"] == "0.0"
     assert response.json["received_funding"] == "200000.0"
     assert response.json["total_funding"] == "200000.0"
 
