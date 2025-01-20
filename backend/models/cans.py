@@ -34,7 +34,9 @@ class CANFundingSource(Enum):
 
     OPRE = auto()
     ACF = auto()
+    ACF_MOU = auto()
     HHS = auto()
+    OTHER = auto()
 
 
 class CAN(BaseModel):
