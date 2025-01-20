@@ -342,6 +342,7 @@ export default function useCanFunding(
             const newDeletedFundingReceivedIds = [...deletedFundingReceivedIds, fundingReceivedId];
             setDeletedFundingReceivedIds(newDeletedFundingReceivedIds);
         }
+        setTotalReceived((currentTotal) => currentTotal - +matchingFundingReceived?.funding);
     };
 
     const handleCancel = () => {

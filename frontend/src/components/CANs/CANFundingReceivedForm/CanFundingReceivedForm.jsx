@@ -85,6 +85,7 @@ const CANFundingReceivedForm = ({
                 {isEditing && (
                     <button
                         className="usa-button usa-button--unstyled  margin-right-7"
+                        data-cy="cancel-funding-received-btn"
                         onClick={cancelFundingReceived}
                     >
                         Cancel
