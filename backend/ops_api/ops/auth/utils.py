@@ -8,11 +8,11 @@ from uuid import UUID
 import requests
 from authlib.jose import jwt as jose_jwt
 from flask import Config, current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import User, UserSession
+from models import OpsEventType, User, UserSession
 from ops_api.ops.auth.auth_types import UserInfoDict
 from ops_api.ops.auth.exceptions import PrivateKeyError
 
@@ -197,3 +197,19 @@ def get_request_ip_address() -> str:
         if request.headers.get("X-Forwarded-For")
         else request.remote_addr
     )
+
+
+def idle_logout(user: User, user_sessions: list[UserSession]) -> dict[str, str]:
+    """
+    Records an OpsEvent related to the user being logged out due to an idle session and deactivates all sessions including the current one.
+    Returns a dict of two strings containing a statement about what action was taken
+    """
+    from ops_api.ops.utils.events import OpsEventHandler
+
+    with OpsEventHandler(OpsEventType.IDLE_LOGOUT) as la:
+        identity = get_jwt_identity()
+        la.metadata.update({"oidc_id": identity})
+
+    deactivate_all_user_sessions(user_sessions)
+
+    return {"message": f"User: {user.id} logged out for their session not being active within the configured threshold"}
