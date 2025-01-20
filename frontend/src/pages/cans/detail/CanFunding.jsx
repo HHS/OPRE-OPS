@@ -98,6 +98,8 @@ const CanFunding = ({
         return <div>No funding information available for this CAN.</div>;
     }
 
+    const showCarryForwardCard = funding.active_period != 1 && fiscalYear > funding.fiscal_year;
+
     return (
         <div>
             {showModal && (
@@ -173,22 +175,25 @@ const CanFunding = ({
                                 className="border-right-1px border-base-light"
                                 style={{ minWidth: "46%" }}
                             >
-                                <RoundedBox
-                                    className="font-12px"
-                                    style={{ minHeight: "69px", width: "313px", padding: "17px 0 0 13px" }}
-                                    id="carry-forward-card"
-                                >
-                                    <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
-                                    <CurrencyFormat
-                                        value={carryForwardFunding}
-                                        displayType="text"
-                                        thousandSeparator={true}
-                                        decimalScale={2}
-                                        fixedDecimalScale={true}
-                                        prefix="$ "
-                                    />
-                                </RoundedBox>
+                                {showCarryForwardCard && (
+                                    <RoundedBox
+                                        className="font-12px"
+                                        style={{ minHeight: "69px", width: "313px", padding: "17px 0 0 13px" }}
+                                        id="carry-forward-card"
+                                    >
+                                        <p className="margin-0 text-base-dark">Previous FYs Carry Forward</p>
+                                        <CurrencyFormat
+                                            value={carryForwardFunding}
+                                            displayType="text"
+                                            thousandSeparator={true}
+                                            decimalScale={2}
+                                            fixedDecimalScale={true}
+                                            prefix="$ "
+                                        />
+                                    </RoundedBox>
+                                )}
                                 <CANBudgetForm
+                                    showCarryForwardCard={showCarryForwardCard}
                                     totalFunding={
                                         budgetForm.submittedAmount ? budgetForm.submittedAmount : totalFunding
                                     }

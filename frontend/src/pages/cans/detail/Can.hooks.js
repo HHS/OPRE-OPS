@@ -36,6 +36,11 @@ export default function useCan() {
         refetchOnMountOrArgChange: true
     });
 
+    const { data: previousFYfundingSummary } = useGetCanFundingSummaryQuery({
+        ids: [canId],
+        fiscalYear: fiscalYear - 1
+    });
+
     const budgetLineItemsByFiscalYear = React.useMemo(() => {
         if (!fiscalYear || !can) return [];
 
@@ -106,7 +111,7 @@ export default function useCan() {
         inExecutionFunding: CANFunding?.in_execution_funding ?? "0",
         inDraftFunding: CANFunding?.in_draft_funding ?? "0",
         receivedFunding: CANFunding?.received_funding ?? "0",
-        carryForwardFunding: CANFunding?.carry_forward_funding ?? "0",
+        carryForwardFunding: previousFYfundingSummary?.available_funding ?? 0,
         subTitle: can?.nick_name ?? "",
         projectTypesCount,
         budgetLineTypesCount,
