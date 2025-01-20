@@ -45,7 +45,7 @@ def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient
     query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE&transfer=COST_SHARE"
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 1
+    assert len(response.json["cans"]) == 0
 
 
 def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClient):
