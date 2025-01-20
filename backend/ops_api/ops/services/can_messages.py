@@ -3,7 +3,7 @@ import locale
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from models import CANHistory, CANHistoryType, OpsEvent, OpsEventType
+from models import CANHistory, CANHistoryType, OpsEvent, OpsEventStatus, OpsEventType
 
 locale.setlocale(locale.LC_ALL, "en_CA.UTF-8")
 
@@ -12,6 +12,10 @@ def can_history_trigger(
     event: OpsEvent,
     session: Session,
 ):
+    # Do not attempt to insert events into CAN History for failed or unknown status events
+    if event.event_status == OpsEventStatus.FAILED or event.event_status == OpsEventStatus.UNKNOWN:
+        return
+
     logger.debug(f"Handling event {event.event_type} with details: {event.event_details}")
     assert session is not None
     current_fiscal_year = event.created_on.year
