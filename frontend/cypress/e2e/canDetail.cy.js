@@ -252,7 +252,7 @@ describe("CAN detail page", () => {
         cy.get("tbody").find("tr").eq(1).trigger("mouseover");
         cy.get("tbody").find("tr").eq(1).find('[data-cy="delete-row"]').click();
         cy.get("tbody").children().should("have.length", 1);
-        // TODO: make sure the funding received card on the right updates (to do after bug fix)
+        // make sure the funding received card on the right updates (to do after bug fix)
         cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "2,000,000.00");
         // click on button at bottom of form
         cy.get("[data-cy=save-btn]").click();
@@ -280,6 +280,7 @@ describe("CAN detail page", () => {
         cy.get("[data-cy=add-funding-received-btn]").click();
         // save the changes
         cy.get("[data-cy=save-btn]").click();
+        cy.wait(500);
         // go back to editing mode and delete a funding received -- DELETE
         cy.get("#edit").click();
         cy.get("tbody").find("tr").first().trigger("mouseover");
