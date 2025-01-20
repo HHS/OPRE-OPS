@@ -49,7 +49,7 @@ def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient
 
 
 def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE"
+    query_params = f"can_ids={0}&fiscal_year=2021&transfer=COST_SHARE"
 
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
 
