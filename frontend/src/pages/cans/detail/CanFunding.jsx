@@ -33,6 +33,7 @@ import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedF
  * @property {boolean} isBudgetTeamMember
  * @property {boolean} isEditMode
  * @property {() => void} toggleEditMode
+ * @property {() => void} deleteFundingReceived
  * @property {string} carryForwardFunding
  */
 
@@ -74,7 +75,11 @@ const CanFunding = ({
         handleEnteredFundingReceivedAmount,
         handleEnteredNotes,
         totalReceived,
-        enteredFundingReceived
+        enteredFundingReceived,
+        populateFundingReceivedForm,
+        cancelFundingReceived,
+        deleteFundingReceived,
+        deletedFundingReceivedIds
     } = useCanFunding(
         canId,
         canNumber,
@@ -222,11 +227,13 @@ const CanFunding = ({
                                     receivedFundingAmount={fundingReceivedForm.enteredAmount}
                                     setReceivedFundingAmount={handleEnteredFundingReceivedAmount}
                                     handleSubmit={handleAddFundingReceived}
+                                    isEditing={fundingReceivedForm.isEditing}
                                     setNotes={handleEnteredNotes}
                                     notes={fundingReceivedForm.enteredNotes}
                                     cn={cn}
                                     res={res}
                                     runValidate={runValidate}
+                                    cancelFundingReceived={cancelFundingReceived}
                                 />
                             </div>
                             <ReceivedFundingCard
@@ -248,6 +255,9 @@ const CanFunding = ({
                     <CANFundingReceivedTable
                         fundingReceived={enteredFundingReceived}
                         totalFunding={totalFunding}
+                        isEditMode={isEditMode}
+                        populateFundingReceivedForm={populateFundingReceivedForm}
+                        deleteFundingReceived={deleteFundingReceived}
                     />
                 )}
             </Accordion>
@@ -263,7 +273,11 @@ const CanFunding = ({
                     <button
                         id="save-changes"
                         className="usa-button"
-                        disabled={!budgetForm.isSubmitted && !fundingReceivedForm.isSubmitted}
+                        disabled={
+                            !budgetForm.isSubmitted &&
+                            !fundingReceivedForm.isSubmitted &&
+                            !deletedFundingReceivedIds.length
+                        }
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
                     >
