@@ -1461,6 +1461,7 @@ const selectedBudgetLinesToAmount = [
         can: {
             appropriation_date: "2023-10-01T00:00:00.000000Z",
             active_period: 1,
+            authorizer_id: 26,
             description: "Social Science Research and Development",
             display_name: "G99PHS9",
             expiration_date: "2024-09-01T00:00:00.000000Z",
@@ -1538,6 +1539,7 @@ const selectedBudgetLinesToCans = [
         can: {
             appropriation_date: "2022-10-01T00:00:00.000000Z",
             active_period: 1,
+            authorizer_id: 26,
             description: "Example CAN",
             display_name: "G99XXX8",
             expiration_date: "2023-09-01T00:00:00.000000Z",
@@ -1580,6 +1582,7 @@ const selectedBudgetLinesToCans = [
         can: {
             appropriation_date: "2023-10-01T00:00:00.000000Z",
             active_period: 1,
+            authorizer_id: 26,
             description: "Social Science Research and Development",
             display_name: "G99PHS9",
             expiration_date: "2024-09-01T00:00:00.000000Z",
@@ -1657,6 +1660,7 @@ const selectedBudgetLinesDRAFT_TO_PLANNED = [
         can: {
             appropriation_date: "2023-10-01T00:00:00.000000Z",
             active_period: 1,
+            authorizer_id: 26,
             description: "Head Start Research",
             display_name: "G994426",
             expiration_date: "2024-09-01T00:00:00.000000Z",
@@ -1711,6 +1715,7 @@ const selectedBudgetLinesDRAFT_TO_PLANNED = [
         can: {
             appropriation_date: "2023-10-01T00:00:00.000000Z",
             active_period: 1,
+            authorizer_id: 26,
             description: "Head Start Research",
             display_name: "G994426",
             expiration_date: "2024-09-01T00:00:00.000000Z",
@@ -1768,6 +1773,7 @@ const selectedBudgetLines_CAN_and_AMT = [
         can: {
             appropriation_date: "2022-10-01T00:00:00.000000Z",
             active_period: 1,
+            authorizer_id: 26,
             description: "Example CAN",
             display_name: "G99XXX8",
             expiration_date: "2023-09-01T00:00:00.000000Z",
@@ -1810,6 +1816,7 @@ const selectedBudgetLines_CAN_and_AMT = [
         can: {
             appropriation_date: "2023-10-01T00:00:00.000000Z",
             active_period: 1,
+            authorizer_id: 26,
             description: "Social Science Research and Development",
             display_name: "G99PHS9",
             expiration_date: "2024-09-01T00:00:00.000000Z",

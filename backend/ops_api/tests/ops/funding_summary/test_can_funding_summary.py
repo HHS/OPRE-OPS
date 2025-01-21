@@ -185,7 +185,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                 "expiration_date": "10/01/2024",
             }
         ],
-        "carry_forward_funding": 0,
+        "carry_forward_funding": Decimal("-860000.00"),
         "expected_funding": Decimal("260000.0"),
         "in_draft_funding": 0,
         "in_execution_funding": Decimal("2000000.00"),
@@ -279,7 +279,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                 "expiration_date": "10/01/2024",
             }
         ],
-        "carry_forward_funding": 0,
+        "carry_forward_funding": Decimal("1140000.0"),
         "in_draft_funding": Decimal("0.0"),
         "expected_funding": Decimal("260000.0"),
         "in_execution_funding": 0,
@@ -316,7 +316,7 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert len(response.json["cans"]) == 2
 
     assert available_funding == "3340000.00"
-    assert carry_forward_funding == "10000000.0"
+    assert carry_forward_funding == "3340000.00"
     assert response.json["new_funding"] == "1340000.0"
 
 
