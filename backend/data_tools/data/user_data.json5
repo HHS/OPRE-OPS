@@ -34,6 +34,16 @@
       id: 7,
       name: "Non-OPRE Division",
       abbreviation: "OTHER",
+    },
+    {
+      id: 8,
+      name: "Division of Data Privacy",
+      abbreviation: "DDP",
+    },
+    {
+      id: 9,
+      name: "Division of Data Governance",
+      abbreviation: "DDG",
     }
   ],
   role: [

@@ -52,6 +52,7 @@ const ChangeIcons = ({
                                 title="Edit"
                                 aria-label="Edit"
                                 data-cy="edit-row"
+                                data-testid="edit-row"
                                 onClick={() => handleSetItemForEditing(item?.id)}
                             >
                                 <FontAwesomeIcon
@@ -70,6 +71,7 @@ const ChangeIcons = ({
                                 title="Delete"
                                 aria-label="Delete"
                                 data-cy="delete-row"
+                                data-testid="delete-row"
                                 onClick={() => isItemDeletable && handleDeleteItem(item.id, item.display_name)}
                             >
                                 <FontAwesomeIcon
@@ -96,6 +98,7 @@ const ChangeIcons = ({
                                 aria-label="Edit"
                                 data-cy="edit-row"
                                 disabled={true}
+                                data-testid="edit-row"
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}
@@ -113,6 +116,7 @@ const ChangeIcons = ({
                                 title="Delete"
                                 aria-label="Delete"
                                 data-cy="delete-row"
+                                data-testid="delete-row"
                             >
                                 <FontAwesomeIcon
                                     icon={faTrash}
@@ -133,6 +137,7 @@ const ChangeIcons = ({
                             title="Duplicate"
                             aria-label="Duplicate"
                             data-cy="duplicate-row"
+                            data-testid="duplicate-row"
                             onClick={() => handleDuplicateItem(item?.id)}
                         >
                             <FontAwesomeIcon
@@ -154,6 +159,7 @@ const ChangeIcons = ({
                             title="Disabled"
                             aria-label="Disabled"
                             data-cy="duplicate-row"
+                            data-testid="duplicate-row"
                             disabled={true}
                             onClick={() => {}}
                         >
@@ -174,6 +180,7 @@ const ChangeIcons = ({
                             title="Submit for approval"
                             aria-label="Submit for approval"
                             data-cy="submit-row"
+                            data-testid="submit-row"
                             onClick={() => handleSubmitItemForApproval(item.id)}
                         >
                             <svg className="usa-icon text-primary height-205 width-205 cursor-pointer margin-left-0">
@@ -197,6 +204,7 @@ const ChangeIcons = ({
                             title="Submit for Approval"
                             aria-label="Submit for Approval"
                             data-cy="submit-row"
+                            data-testid="submit-row"
                             disabled={true}
                         >
                             <svg

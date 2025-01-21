@@ -22,7 +22,7 @@ def test_division_create():
 def test_get_divisions_list(auth_client):
     response = auth_client.get("/api/v1/divisions/")
     assert response.status_code == 200
-    assert len(response.json) == 7
+    assert len(response.json) == 9
 
 
 @pytest.mark.usefixtures("app_ctx")
