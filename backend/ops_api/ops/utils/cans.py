@@ -124,7 +124,7 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
                 "expiration_date": f"10/01/{can.obligate_by}" if can.obligate_by else "",
             }
         ],
-        "carry_forward_funding": available_funding,
+        "carry_forward_funding": available_funding,  # Carry forward funding is the same as available funding
         "received_funding": received_funding,
         "expected_funding": total_funding - received_funding,
         "in_draft_funding": in_draft_funding,
