@@ -39,6 +39,7 @@ export default function useCanFunding(
     isBudgetTeamMember,
     isEditMode,
     toggleEditMode,
+    setWelcomeModal,
     receivedFunding,
     fundingReceived,
     currentFiscalYearFundingId
@@ -365,6 +366,7 @@ export default function useCanFunding(
         setShowModal(false);
         setFundingReceivedForm(initialFundingReceivedForm);
         toggleEditMode();
+        setWelcomeModal();
         setModalProps({
             heading: "",
             actionButtonText: "",

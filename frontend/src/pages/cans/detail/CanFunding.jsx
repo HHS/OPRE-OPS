@@ -4,6 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import CANBudgetByFYCard from "../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard";
 import CANBudgetForm from "../../../components/CANs/CANBudgetForm";
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
+import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
 import CANFundingReceivedTable from "../../../components/CANs/CANFundingReceivedTable";
 import Accordion from "../../../components/UI/Accordion";
 import ReceivedFundingCard from "../../../components/UI/Cards/BudgetCard/ReceivedFundingCard";
@@ -11,12 +12,20 @@ import CurrencyCard from "../../../components/UI/Cards/CurrencyCard";
 import ConfirmationModal from "../../../components/UI/Modals/index.js";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
-import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
  * @typedef {import("../../../components/CANs/CANTypes").FundingBudget} FundingBudget
  * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ */
+
+/**
+ * @typedef {Object} welcomeModal
+ * @property {boolean} showModal
+ * @property {string} heading
+ * @property {string} actionButtonText
+ * @property {() => void} setShowModal
+ * @property {() => void} handleConfirm
  */
 
 /**
@@ -34,7 +43,9 @@ import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedF
  * @property {boolean} isEditMode
  * @property {() => void} toggleEditMode
  * @property {() => void} deleteFundingReceived
- * @property {string} carryForwardFunding
+ * @property {string} carryForwardFunding,
+ * @property {welcomeModal} welcomeModal
+ * @property {() => void} setWelcomeModal
  */
 
 /**
@@ -55,7 +66,9 @@ const CanFunding = ({
     isBudgetTeamMember,
     isEditMode,
     toggleEditMode,
-    carryForwardFunding
+    carryForwardFunding,
+    welcomeModal,
+    setWelcomeModal
 }) => {
     const {
         handleAddBudget,
@@ -88,6 +101,7 @@ const CanFunding = ({
         isBudgetTeamMember,
         isEditMode,
         toggleEditMode,
+        setWelcomeModal,
         receivedFunding,
         fundingReceived,
         currentFiscalYearFundingId
@@ -97,10 +111,18 @@ const CanFunding = ({
         return <div>No funding information available for this CAN.</div>;
     }
 
-    const showCarryForwardCard = funding.active_period != 1 && fiscalYear > funding.fiscal_year;
+    const showCarryForwardCard = funding.active_period !== 1 && fiscalYear > funding.fiscal_year;
 
     return (
         <div>
+            {+totalFunding === 0 && welcomeModal.showModal && (
+                <ConfirmationModal
+                    heading={welcomeModal.heading}
+                    setShowModal={setWelcomeModal}
+                    actionButtonText={welcomeModal.actionButtonText}
+                    handleConfirm={welcomeModal.handleConfirm}
+                />
+            )}
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -217,7 +239,7 @@ const CanFunding = ({
                         className="margin-bottom-4"
                     >
                         <h2>{`Add FY ${fiscalYear} Funding Received YTD`}</h2>
-                        <p>{`Add funding received towards the Total FY ${fiscalYear} Budget or come back to add funding later. Funding Received means the money is in OPRE’s hands and ready to spend against.`}</p>
+                        <p>{`Add funding received towards the Total FY ${fiscalYear} Budget or come back to add funding later. Funding Received means the money is in OPRE's hands and ready to spend against.`}</p>
                         <div className="display-flex flex-justify margin-top-4">
                             <div
                                 className="border-right-1px border-base-light"
