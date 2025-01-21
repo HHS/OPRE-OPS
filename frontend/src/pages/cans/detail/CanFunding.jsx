@@ -12,7 +12,6 @@ import ConfirmationModal from "../../../components/UI/Modals/index.js";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
 import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
-import DebugCode from "../../../components/DebugCode";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
@@ -262,7 +261,6 @@ const CanFunding = ({
                     />
                 )}
             </Accordion>
-            <DebugCode data={(enteredFundingReceived, deletedFundingReceivedIds)} />
             {isEditMode && (
                 <div className="grid-row flex-justify-end margin-top-8">
                     <button
@@ -275,7 +273,11 @@ const CanFunding = ({
                     <button
                         id="save-changes"
                         className="usa-button"
-                        disabled={!budgetForm.isSubmitted && !fundingReceivedForm.isSubmitted && !deletedFundingReceivedIds.length}
+                        disabled={
+                            !budgetForm.isSubmitted &&
+                            !fundingReceivedForm.isSubmitted &&
+                            !deletedFundingReceivedIds.length
+                        }
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
                     >
