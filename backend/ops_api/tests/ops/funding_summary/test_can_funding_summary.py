@@ -337,9 +337,9 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 6
-    assert response.json["expected_funding"] == "4520000.0"
-    assert response.json["received_funding"] == "8760000.0"
-    assert response.json["total_funding"] == "13280000.0"
+    assert response.json["expected_funding"] == 4520000.0
+    assert response.json["received_funding"] == 8760000.0
+    assert response.json["total_funding"] == 13280000.0
 
 
 def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
@@ -358,7 +358,7 @@ def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, t
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
     assert "new_funding" in response.json
-    assert response.json["obligated_funding"] == "0.0"
+    assert response.json["obligated_funding"] == 0.0
 
 
 def test_get_nested_attribute_existing_attribute():
@@ -471,7 +471,7 @@ def test_aggregate_funding_summaries():
                     "expiration_date": "10/01/2025",
                 }
             ],
-            "carry_forward_funding": 20000,
+            "carry_forward_funding": 100000,
             "received_funding": 75000,
             "expected_funding": 125000 - 75000,
             "in_draft_funding": 0,
@@ -495,7 +495,7 @@ def test_aggregate_funding_summaries():
                     "expiration_date": "10/01/2026",
                 }
             ],
-            "carry_forward_funding": 30000,
+            "carry_forward_funding": 150000,
             "received_funding": 100000,
             "expected_funding": 180000 - 100000,
             "in_draft_funding": 0,
