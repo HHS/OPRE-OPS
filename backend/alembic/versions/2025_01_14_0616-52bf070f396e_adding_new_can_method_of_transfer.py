@@ -1,7 +1,7 @@
 """adding new CAN Method of Transfer
 
 Revision ID: 52bf070f396e
-Revises: 6615ac7d4eea
+Revises: 98a16d1ef6be
 Create Date: 2025-01-14 06:16:14.707739+00:00
 
 """
@@ -13,7 +13,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision: str = '52bf070f396e'
-down_revision: Union[str, None] = '6615ac7d4eea'
+down_revision: Union[str, None] = '98a16d1ef6be'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

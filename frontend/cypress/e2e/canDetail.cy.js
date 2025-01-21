@@ -26,9 +26,9 @@ describe("CAN detail page", () => {
         cy.visit("/cans/502/");
         cy.get("h1").should("contain", "G99PHS9"); // heading
         cy.get("p").should("contain", can502Nickname); // sub-heading
-        cy.get("span").should("contain", "Nicole Deterding"); // team member
+        cy.get("span").should("contain", "Sheila Celentano"); // team member
         cy.get("span").should("contain", "Director Derrek"); // division director
-        cy.get("span").should("contain", "Program Support"); // portfolio
+        cy.get("span").should("contain", "Data Governance"); // portfolio
         cy.get("span").should("contain", "Division of Data and Improvement"); // division
     });
     it("CAN Edit form", () => {
@@ -176,6 +176,7 @@ describe("CAN detail page", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
+        cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
         cy.get("#save-changes").should("be.disabled");
         cy.get("#add-fy-budget").should("be.disabled");
         cy.get("#carry-forward-card").should("contain", "0");
@@ -237,7 +238,7 @@ describe("CAN detail page", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
-        cy.get("#carry-forward-card").should("contain", "$ 5,000,000.00");
+        cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
         cy.get("[data-cy='can-budget-fy-card']").should("contain", "5,000,000.00");
         cy.get("#budget-amount").type("6_000_000");
         cy.get("#add-fy-budget").click();
@@ -264,5 +265,11 @@ describe("CAN detail page", () => {
             .and("contain", "$5,000,000.00");
         // check table has one row
         cy.get("tbody").children().should("have.length", 1);
+    });
+    it("handles not showing carry forward card", () => {
+        cy.visit(`/cans/500/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("#carry-forward-card").should("not.exist");
     });
 });
