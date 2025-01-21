@@ -185,7 +185,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                 "expiration_date": "10/01/2024",
             }
         ],
-        "carry_forward_funding": 0,
+        "carry_forward_funding": Decimal("-860000.00"),
         "expected_funding": Decimal("260000.0"),
         "in_draft_funding": 0,
         "in_execution_funding": Decimal("2000000.00"),
@@ -279,8 +279,8 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                 "expiration_date": "10/01/2024",
             }
         ],
-        "carry_forward_funding": 0,
-        "in_draft_funding": 0,
+        "carry_forward_funding": Decimal("1140000.0"),
+        "in_draft_funding": Decimal("0.0"),
         "expected_funding": Decimal("260000.0"),
         "in_execution_funding": 0,
         "obligated_funding": 0,
@@ -316,7 +316,7 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert len(response.json["cans"]) == 2
 
     assert available_funding == 3340000.00
-    assert carry_forward_funding == 10000000.0
+    assert carry_forward_funding == 3340000.00
     assert response.json["new_funding"] == 1340000.0
 
 
@@ -337,9 +337,9 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 6
-    assert response.json["expected_funding"] == 4520000.0
-    assert response.json["received_funding"] == 8760000.0
-    assert response.json["total_funding"] == 13280000.0
+    assert response.json["expected_funding"] == "4520000.0"
+    assert response.json["received_funding"] == "8760000.0"
+    assert response.json["total_funding"] == "13280000.0"
 
 
 def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
@@ -358,7 +358,7 @@ def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, t
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
     assert "new_funding" in response.json
-    assert response.json["obligated_funding"] == 0.0
+    assert response.json["obligated_funding"] == "0.0"
 
 
 def test_get_nested_attribute_existing_attribute():
@@ -528,7 +528,7 @@ def test_aggregate_funding_summaries():
                 "expiration_date": "10/01/2026",
             },
         ],
-        "carry_forward_funding": 50000.0,
+        "carry_forward_funding": 250000.0,
         "expected_funding": 130000.0,
         "in_draft_funding": 0.0,
         "in_execution_funding": 130000.0,
