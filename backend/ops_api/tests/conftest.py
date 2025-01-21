@@ -234,6 +234,15 @@ def test_non_admin_user(loaded_db) -> User | None:
 
 
 @pytest.fixture()
+def test_budget_team_user(loaded_db):
+    """Get a test budget team user
+
+    N.B. This user has an non-SYSTEM_OWNER role whose status is ACTIVE.
+    """
+    return loaded_db.get(User, 523)
+
+
+@pytest.fixture()
 def test_vendor(loaded_db) -> Vendor | None:
     """Get a test Vendor."""
     return loaded_db.get(Vendor, 100)

@@ -50,7 +50,7 @@ def can_history_trigger(
             # budget = locale.currency(event.event_details["new_can_funding_budget"]["budget"], grouping=True)
             creator_name = event.event_details["new_can_funding_budget"]["created_by_user"]["full_name"]
             history_event = CANHistory(
-                can_id=event.event_details["new_can_funding_budget"]["can"]["id"],
+                can_id=event.event_details["new_can_funding_budget"]["can_id"],
                 ops_event_id=event.id,
                 history_title=f"**FY {current_fiscal_year} Budget Entered**",
                 history_message=f"{creator_name} entered a FY {current_fiscal_year} budget of {budget}",

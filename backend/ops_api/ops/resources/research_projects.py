@@ -164,9 +164,6 @@ class ResearchProjectListAPI(BaseListAPI):
                         return make_response_with_headers({}, 400)
                     else:
                         new_rp.team_leaders.append(team_leader)
-                # new_rp.team_leaders = [
-                #     current_app.db_session.get(User, tl_id["id"]) for tl_id in data.get("team_leaders", [])
-                # ]
 
                 current_app.db_session.add(new_rp)
                 current_app.db_session.commit()
