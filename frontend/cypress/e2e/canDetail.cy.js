@@ -176,6 +176,11 @@ describe("CAN detail page", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
+        // Check welcome modal
+        cy.get("#ops-modal-heading").contains(
+            "Data from the previous fiscal year can no longer be edited, but can be viewed by changing the FY dropdown on the CAN details page."
+        );
+        cy.get("[data-cy=confirm-action]").click();
         cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
         cy.get("#save-changes").should("be.disabled");
         cy.get("#add-fy-budget").should("be.disabled");
@@ -201,6 +206,8 @@ describe("CAN detail page", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
+        // welcome modal should not be present
+        cy.get("#ops-modal-heading").should("not.exist");
         // check that all buttons (saved, all funding received) are disabled
         cy.get("[data-cy=add-funding-received-btn]").should("be.disabled");
         cy.get("[data-cy=save-btn]").should("be.disabled");
@@ -224,16 +231,72 @@ describe("CAN detail page", () => {
         cy.get("[data-cy=add-funding-received-btn]").click();
         // check card on the right
         cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "1,000,000.00");
-        // click on button at bottom of form
+        // edit a funding from table interaction
+        cy.get("tbody").find("tr").first().trigger("mouseover");
+        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').should("exist");
+        cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').should("exist");
+        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+        // verify form is populated correctly
+        cy.get("#funding-received-amount").invoke("val").should("equal", "1,000,000");
+        cy.get("#notes").invoke("val").should("equal", "Test notes");
+        // edit funding received form
+        cy.get("#funding-received-amount").clear();
+        cy.get("#funding-received-amount").type("2_000_000");
+        cy.get("[data-cy=add-funding-received-btn]").click();
+        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "2,000,000.00");
+        // validation check to ensure amount does not exceed budget amount
+        cy.get("tbody").find("tr").first().trigger("mouseover");
+        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+        cy.get("#funding-received-amount").clear();
+        cy.get("#funding-received-amount").type("5_000_001");
+        cy.get("[data-cy=add-funding-received-btn]").should("be.disabled");
+        cy.get(".usa-error-message").should("exist").contains("Amount cannot exceed FY Budget");
+        cy.get("[data-cy=cancel-funding-received-btn]").click();
+        // delete a funding received from table
+        cy.get("#funding-received-amount").type("3_000_000");
+        cy.get("#notes").type("Delete me please");
+        cy.get("[data-cy=add-funding-received-btn]").click();
+        cy.get("tbody").find("tr").eq(1).trigger("mouseover");
+        cy.get("tbody").find("tr").eq(1).find('[data-cy="delete-row"]').click();
+        cy.get("tbody").children().should("have.length", 1);
+        // make sure the funding received card on the right updates
+        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "2,000,000.00");
+        // click on save button at bottom of form
         cy.get("[data-cy=save-btn]").click();
         // check success alert
         cy.get(".usa-alert__body").should("contain", `The CAN ${can504.nickname} has been successfully updated.`);
         // check that table and card are updated
         cy.get("[data-cy=budget-received-card]")
             .should("exist")
-            .and("contain", "Received $1,000,000.00 of $5,000,000.00");
-        cy.get("tbody").children().should("contain", "2025").and("contain", "$1,000,000.00").and("contain", "20%");
+            .and("contain", "Received $2,000,000.00 of $5,000,000.00");
+        cy.get("tbody").children().should("contain", "2025").and("contain", "$2,000,000.00").and("contain", "40%");
     });
+    it("handle posting, patching, and deleting funding received", () => {
+        // create a new funding received -- POST
+        cy.visit(`/cans/${can504.number}/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("#funding-received-amount").type("1_000_000");
+        cy.get("#notes").type("I should post");
+        cy.get("[data-cy=add-funding-received-btn]").click();
+        // edit note on the existing funding received -- PATCH
+        cy.get("tbody").find("tr").first().trigger("mouseover");
+        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+        cy.get("#notes").clear();
+        cy.get("#notes").type("I should patch");
+        cy.get("[data-cy=add-funding-received-btn]").click();
+        // save the changes
+        cy.get("[data-cy=save-btn]").click();
+        cy.wait(500);
+        // go back to editing mode and delete a funding received -- DELETE
+        cy.get("#edit").click();
+        cy.get("tbody").find("tr").first().trigger("mouseover");
+        cy.get("tbody").find("tr").first().find('[data-cy="delete-row"]').click();
+        cy.get("tbody").children().should("have.length", 1);
+        // save the changes
+        cy.get("[data-cy=save-btn]").click();
+    });
+
     it("handles cancelling from budget form", () => {
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
@@ -257,7 +320,7 @@ describe("CAN detail page", () => {
         cy.get("[data-cy='confirm-action']").click();
         cy.get("[data-cy=budget-received-card]")
             .should("exist")
-            .and("contain", "Received $1,000,000.00 of $5,000,000.00");
+            .and("contain", "Received $2,000,000.00 of $5,000,000.00");
         cy.get("[data-cy=can-budget-fy-card]")
             .should("exist")
             .and("contain", "CAN Budget by FY")

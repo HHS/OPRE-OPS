@@ -4,6 +4,7 @@ import CurrencyFormat from "react-currency-format";
 import CANBudgetByFYCard from "../../../components/CANs/CANBudgetByFYCard/CANBudgetByFYCard";
 import CANBudgetForm from "../../../components/CANs/CANBudgetForm";
 import CANFundingInfoCard from "../../../components/CANs/CANFundingInfoCard";
+import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
 import CANFundingReceivedTable from "../../../components/CANs/CANFundingReceivedTable";
 import Accordion from "../../../components/UI/Accordion";
 import ReceivedFundingCard from "../../../components/UI/Cards/BudgetCard/ReceivedFundingCard";
@@ -11,12 +12,20 @@ import CurrencyCard from "../../../components/UI/Cards/CurrencyCard";
 import ConfirmationModal from "../../../components/UI/Modals/index.js";
 import RoundedBox from "../../../components/UI/RoundedBox";
 import useCanFunding from "./CanFunding.hooks.js";
-import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedForm";
 
 /**
  * @typedef {import("../../../components/CANs/CANTypes").FundingDetails} FundingDetails
  * @typedef {import("../../../components/CANs/CANTypes").FundingBudget} FundingBudget
  * @typedef {import("../../../components/CANs/CANTypes").FundingReceived} FundingReceived
+ */
+
+/**
+ * @typedef {Object} welcomeModal
+ * @property {boolean} showModal
+ * @property {string} heading
+ * @property {string} actionButtonText
+ * @property {() => void} setShowModal
+ * @property {() => void} handleConfirm
  */
 
 /**
@@ -33,7 +42,10 @@ import CANFundingReceivedForm from "../../../components/CANs/CANFundingReceivedF
  * @property {boolean} isBudgetTeamMember
  * @property {boolean} isEditMode
  * @property {() => void} toggleEditMode
- * @property {string} carryForwardFunding
+ * @property {() => void} deleteFundingReceived
+ * @property {string} carryForwardFunding,
+ * @property {welcomeModal} welcomeModal
+ * @property {() => void} setWelcomeModal
  */
 
 /**
@@ -54,7 +66,9 @@ const CanFunding = ({
     isBudgetTeamMember,
     isEditMode,
     toggleEditMode,
-    carryForwardFunding
+    carryForwardFunding,
+    welcomeModal,
+    setWelcomeModal
 }) => {
     const {
         handleAddBudget,
@@ -74,7 +88,11 @@ const CanFunding = ({
         handleEnteredFundingReceivedAmount,
         handleEnteredNotes,
         totalReceived,
-        enteredFundingReceived
+        enteredFundingReceived,
+        populateFundingReceivedForm,
+        cancelFundingReceived,
+        deleteFundingReceived,
+        deletedFundingReceivedIds
     } = useCanFunding(
         canId,
         canNumber,
@@ -83,6 +101,7 @@ const CanFunding = ({
         isBudgetTeamMember,
         isEditMode,
         toggleEditMode,
+        setWelcomeModal,
         receivedFunding,
         fundingReceived,
         currentFiscalYearFundingId
@@ -92,10 +111,18 @@ const CanFunding = ({
         return <div>No funding information available for this CAN.</div>;
     }
 
-    const showCarryForwardCard = funding.active_period != 1 && fiscalYear > funding.fiscal_year;
+    const showCarryForwardCard = funding.active_period !== 1 && fiscalYear > funding.fiscal_year;
 
     return (
         <div>
+            {+totalFunding === 0 && welcomeModal.showModal && (
+                <ConfirmationModal
+                    heading={welcomeModal.heading}
+                    setShowModal={setWelcomeModal}
+                    actionButtonText={welcomeModal.actionButtonText}
+                    handleConfirm={welcomeModal.handleConfirm}
+                />
+            )}
             {showModal && (
                 <ConfirmationModal
                     heading={modalProps.heading}
@@ -222,11 +249,13 @@ const CanFunding = ({
                                     receivedFundingAmount={fundingReceivedForm.enteredAmount}
                                     setReceivedFundingAmount={handleEnteredFundingReceivedAmount}
                                     handleSubmit={handleAddFundingReceived}
+                                    isEditing={fundingReceivedForm.isEditing}
                                     setNotes={handleEnteredNotes}
                                     notes={fundingReceivedForm.enteredNotes}
                                     cn={cn}
                                     res={res}
                                     runValidate={runValidate}
+                                    cancelFundingReceived={cancelFundingReceived}
                                 />
                             </div>
                             <ReceivedFundingCard
@@ -248,6 +277,9 @@ const CanFunding = ({
                     <CANFundingReceivedTable
                         fundingReceived={enteredFundingReceived}
                         totalFunding={totalFunding}
+                        isEditMode={isEditMode}
+                        populateFundingReceivedForm={populateFundingReceivedForm}
+                        deleteFundingReceived={deleteFundingReceived}
                     />
                 )}
             </Accordion>
@@ -263,7 +295,11 @@ const CanFunding = ({
                     <button
                         id="save-changes"
                         className="usa-button"
-                        disabled={!budgetForm.isSubmitted && !fundingReceivedForm.isSubmitted}
+                        disabled={
+                            !budgetForm.isSubmitted &&
+                            !fundingReceivedForm.isSubmitted &&
+                            !deletedFundingReceivedIds.length
+                        }
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
                     >
