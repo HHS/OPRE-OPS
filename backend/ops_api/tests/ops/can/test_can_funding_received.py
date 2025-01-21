@@ -237,17 +237,31 @@ def test_service_update_funding_received_with_nones(loaded_db):
 
 # Testing deleting CANFundingReceived
 @pytest.mark.usefixtures("app_ctx")
-def test_funding_received_delete(budget_team_auth_client, mocker):
+def test_funding_received_delete(budget_team_auth_client, mocker, test_budget_team_user):
     test_funding_received_id = 517
 
     mocker_delete_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.delete"
     )
+    funding_received = CANFundingReceived(
+        can_id=test_funding_received_id,
+        fiscal_year=2024,
+        funding=123456,
+        notes="This is a note",
+        created_by=test_budget_team_user.id,
+    )
+    mocker_delete_funding_received.return_value = funding_received
     context_manager = DummyContextManager()
     mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
     mocker_ops_event_ctxt_mgr.return_value = context_manager
     mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
+
     response = budget_team_auth_client.delete(f"/api/v1/can-funding-received/{test_funding_received_id}")
+
+    assert context_manager.metadata["deleted_can_funding_received"] is not None
+    assert context_manager.metadata["deleted_can_funding_received"]["can_id"] == test_funding_received_id
+    assert context_manager.metadata["deleted_can_funding_received"]["funding"] == funding_received.funding
+    assert context_manager.metadata["deleted_can_funding_received"]["created_by"] == test_budget_team_user.id
 
     assert response.status_code == 200
     mocker_delete_funding_received.assert_called_once_with(test_funding_received_id)
