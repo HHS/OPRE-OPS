@@ -2,11 +2,11 @@ from datetime import date, datetime
 from typing import List, Optional, override
 
 from flask import Response, current_app, request
-from marshmallow import Schema, fields
 from marshmallow_enum import EnumField
 from sqlalchemy import select
 from sqlalchemy.exc import PendingRollbackError, SQLAlchemyError
 
+from marshmallow import Schema, fields
 from models import (
     CAN,
     Agreement,
@@ -38,7 +38,7 @@ class TeamLeaders(Schema):
 
 class RequestBody(Schema):
     project_type: ProjectType = EnumField(ProjectType)
-    title: str = fields.String()
+    title: str = fields.String(required=True)
     short_title: str = fields.String()
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
@@ -155,9 +155,18 @@ class ResearchProjectListAPI(BaseListAPI):
                 data = ResearchProjectListAPI._post_schema.load(request.json)
                 new_rp = ResearchProject(**data)
 
-                new_rp.team_leaders = [
-                    current_app.db_session.get(User, tl_id["id"]) for tl_id in data.get("team_leaders", [])
-                ]
+                for tl_id in data.get("team_leaders", []):
+                    team_leader = current_app.db_session.get(User, tl_id["id"])
+                    if team_leader is None:
+                        current_app.logger.error(
+                            f"POST to {ENDPOINT_STRING}: Provided invalid Team Leader {tl_id['id']}"
+                        )
+                        return make_response_with_headers({}, 400)
+                    else:
+                        new_rp.team_leaders.append(team_leader)
+                # new_rp.team_leaders = [
+                #     current_app.db_session.get(User, tl_id["id"]) for tl_id in data.get("team_leaders", [])
+                # ]
 
                 current_app.db_session.add(new_rp)
                 current_app.db_session.commit()

@@ -133,6 +133,20 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         return response
 
+    def is_bli_editable(budget_line_item):
+        """A utility function that determines if a BLI is editable"""
+        editable = budget_line_item.status in [
+            BudgetLineItemStatus.DRAFT,
+            BudgetLineItemStatus.PLANNED,
+            BudgetLineItemStatus.IN_EXECUTION,
+        ]
+
+        # if the BLI is in review, it cannot be edited
+        if budget_line_item.in_review:
+            editable = False
+
+        return editable
+
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{method} to {ENDPOINT_STRING}"
 
@@ -145,21 +159,11 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             budget_line_item = current_app.db_session.get(BudgetLineItem, id)
             if not budget_line_item:
                 return make_response_with_headers({}, 400)  # should this return 404, tests currently expect 400
-            editable = budget_line_item.status in [
-                BudgetLineItemStatus.DRAFT,
-                BudgetLineItemStatus.PLANNED,
-                BudgetLineItemStatus.IN_EXECUTION,
-            ]
-
-            # if the BLI is in review, it cannot be edited
-            if budget_line_item.in_review:
-                editable = False
+            editable = self.is_bli_editable(budget_line_item)
 
             # 403: forbidden to edit
             if not editable:
                 return make_response_with_headers({"message": "This BLI cannot be edited"}, 403)
-
-            can_service = CANService()
 
             # pull out requestor_notes from BLI data for change requests
             request_data = request.json
@@ -167,7 +171,9 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
             # Throws not-found error if can does not exist
             try:
-                can_service.get(request_data["can_id"])
+                can_service = CANService()
+                if "can_id" in request_data:
+                    can_service.get(request_data["can_id"])
             except NotFound:
                 return make_response_with_headers({}, 400)
 
@@ -388,10 +394,12 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
             if not self.associated_with_agreement(agreement_id, PermissionType.POST):
                 return make_response_with_headers({}, 403)
-            can_service = CANService()
+
             # Throws not-found error if can does not exist
             try:
-                can_service.get(data["can_id"])
+                can_service = CANService()
+                if "can_id" in data and data["can_id"] is not None:
+                    can_service.get(data["can_id"])
             except NotFound:
                 return make_response_with_headers({}, 400)
 

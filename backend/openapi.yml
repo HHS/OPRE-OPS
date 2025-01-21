@@ -3343,6 +3343,8 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+      required:
+        - title
     ResearchProjects:
       description: OPS List of Research Projects
       type: array
