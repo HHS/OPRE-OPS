@@ -130,7 +130,7 @@ const mockCanFundingData = {
             expiration_date: "09/01/2024"
         }
     ],
-    carry_forward_funding: 0,
+    carry_forward_funding: "7000000.00",
     expected_funding: "4000000.00",
     in_draft_funding: 0,
     in_execution_funding: "2000000.00",
