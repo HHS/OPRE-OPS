@@ -1238,45 +1238,47 @@ const canData = [
 
 const canFundingCardData = {
     available_funding: "14300000.00",
-    cans: [{
-        can: {
-            appropriation_date: "2023-10-01T00:00:00.000000Z",
-            active_period: 1,
-            arrangement_type: "OPRE_APPROPRIATION",
-            authorizer: 26,
-            authorizer_id: 26,
-            budget_line_items: [15011, 15017, 15020],
-            can_type: null,
-            created_by: null,
-            created_by_user: null,
-            created_on: "2024-07-29T14:44:58.757452Z",
-            description: "Social Science Research and Development",
-            display_name: "G99PHS9",
-            division_id: 6,
-            expiration_date: "2024-09-01T00:00:00.000000Z",
-            external_authorizer_id: null,
-            funding_sources: [26],
-            id: 502,
-            managing_portfolio: 8,
-            portfolio_id: 8,
-            nick_name: "SSRD",
-            number: "G99PHS9",
-            projects: [],
-            shared_portfolios: [],
-            updated_by: null,
-            updated_by_user: null,
-            updated_on: "2024-07-29T14:44:58.757452Z",
-            versions: [
-                {
-                    id: 502,
-                    transaction_id: 208
-                }
-            ]
-        },
-        carry_forward_label: "Carry-Forward",
-        expiration_date: "09/01/2024",
-    }],
-    carry_forward_funding: 0,
+    cans: [
+        {
+            can: {
+                appropriation_date: "2023-10-01T00:00:00.000000Z",
+                active_period: 1,
+                arrangement_type: "OPRE_APPROPRIATION",
+                authorizer: 26,
+                authorizer_id: 26,
+                budget_line_items: [15011, 15017, 15020],
+                can_type: null,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-07-29T14:44:58.757452Z",
+                description: "Social Science Research and Development",
+                display_name: "G99PHS9",
+                division_id: 6,
+                expiration_date: "2024-09-01T00:00:00.000000Z",
+                external_authorizer_id: null,
+                funding_sources: [26],
+                id: 502,
+                managing_portfolio: 8,
+                portfolio_id: 8,
+                nick_name: "SSRD",
+                number: "G99PHS9",
+                projects: [],
+                shared_portfolios: [],
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-07-29T14:44:58.757452Z",
+                versions: [
+                    {
+                        id: 502,
+                        transaction_id: 208
+                    }
+                ]
+            },
+            carry_forward_label: "Carry-Forward",
+            expiration_date: "09/01/2024"
+        }
+    ],
+    carry_forward_funding: "14300000.00",
     expected_funding: "5000000.00",
     in_draft_funding: 0,
     in_execution_funding: "2000000.00",
@@ -1289,45 +1291,47 @@ const canFundingCardData = {
 
 const canFundingCardData2 = {
     available_funding: "1979500.00",
-    cans: [{
-        can: {
-            appropriation_date: "2022-10-01T00:00:00.000000Z",
-            active_period: 1,
-            arrangement_type: "OPRE_APPROPRIATION",
-            authorizer: 26,
-            authorizer_id: 26,
-            budget_line_items: [15018, 15021],
-            can_type: null,
-            created_by: null,
-            created_by_user: null,
-            created_on: "2024-07-29T14:44:58.941288Z",
-            description: "Example CAN",
-            display_name: "G99XXX8",
-            division_id: 4,
-            expiration_date: "2023-09-01T00:00:00.000000Z",
-            external_authorizer_id: null,
-            funding_sources: [26],
-            id: 512,
-            managing_portfolio: 3,
-            portfolio_id: 3,
-            nick_name: "",
-            number: "G99XXX8",
-            projects: [1000],
-            shared_portfolios: [],
-            updated_by: null,
-            updated_by_user: null,
-            updated_on: "2024-07-29T14:44:58.941288Z",
-            versions: [
-                {
-                    id: 512,
-                    transaction_id: 229
-                }
-            ]
-        },
-        carry_forward_label: "Carry-Forward",
-        expiration_date: "09/01/2023",
-    }],
-    carry_forward_funding: 0,
+    cans: [
+        {
+            can: {
+                appropriation_date: "2022-10-01T00:00:00.000000Z",
+                active_period: 1,
+                arrangement_type: "OPRE_APPROPRIATION",
+                authorizer: 26,
+                authorizer_id: 26,
+                budget_line_items: [15018, 15021],
+                can_type: null,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-07-29T14:44:58.941288Z",
+                description: "Example CAN",
+                display_name: "G99XXX8",
+                division_id: 4,
+                expiration_date: "2023-09-01T00:00:00.000000Z",
+                external_authorizer_id: null,
+                funding_sources: [26],
+                id: 512,
+                managing_portfolio: 3,
+                portfolio_id: 3,
+                nick_name: "",
+                number: "G99XXX8",
+                projects: [1000],
+                shared_portfolios: [],
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-07-29T14:44:58.941288Z",
+                versions: [
+                    {
+                        id: 512,
+                        transaction_id: 229
+                    }
+                ]
+            },
+            carry_forward_label: "Carry-Forward",
+            expiration_date: "09/01/2023"
+        }
+    ],
+    carry_forward_funding: "1979500.00",
     expected_funding: "520000.00",
     in_execution_funding: 0,
     obligated_funding: "500.00",
@@ -1338,45 +1342,47 @@ const canFundingCardData2 = {
 
 const canFundingCard_G994426 = {
     available_funding: "37000000.00",
-    cans: [{
-        can: {
-            appropriation_date: "2023-10-01T00:00:00.000000Z",
-            active_period: 1,
-            arrangement_type: "OPRE_APPROPRIATION",
-            authorizer: 26,
-            authorizer_id: 26,
-            budget_line_items: [15000, 15001, 15012, 15022, 15023],
-            can_type: null,
-            created_by: null,
-            created_by_user: null,
-            created_on: "2024-08-02T13:45:56.155989Z",
-            description: "Head Start Research",
-            display_name: "G994426",
-            division_id: 4,
-            expiration_date: "2024-09-01T00:00:00.000000Z",
-            external_authorizer_id: null,
-            funding_sources: [26],
-            id: 504,
-            managing_portfolio: 2,
-            portfolio_id: 2,
-            nick_name: "HS",
-            number: "G994426",
-            projects: [],
-            shared_portfolios: [],
-            updated_by: null,
-            updated_by_user: null,
-            updated_on: "2024-08-02T13:45:56.155989Z",
-            versions: [
-                {
-                    id: 504,
-                    transaction_id: 212
-                }
-            ]
-        },
-        carry_forward_label: "Carry-Forward",
-        expiration_date: "09/01/2024",
-    }],
-    carry_forward_funding: 0,
+    cans: [
+        {
+            can: {
+                appropriation_date: "2023-10-01T00:00:00.000000Z",
+                active_period: 1,
+                arrangement_type: "OPRE_APPROPRIATION",
+                authorizer: 26,
+                authorizer_id: 26,
+                budget_line_items: [15000, 15001, 15012, 15022, 15023],
+                can_type: null,
+                created_by: null,
+                created_by_user: null,
+                created_on: "2024-08-02T13:45:56.155989Z",
+                description: "Head Start Research",
+                display_name: "G994426",
+                division_id: 4,
+                expiration_date: "2024-09-01T00:00:00.000000Z",
+                external_authorizer_id: null,
+                funding_sources: [26],
+                id: 504,
+                managing_portfolio: 2,
+                portfolio_id: 2,
+                nick_name: "HS",
+                number: "G994426",
+                projects: [],
+                shared_portfolios: [],
+                updated_by: null,
+                updated_by_user: null,
+                updated_on: "2024-08-02T13:45:56.155989Z",
+                versions: [
+                    {
+                        id: 504,
+                        transaction_id: 212
+                    }
+                ]
+            },
+            carry_forward_label: "Carry-Forward",
+            expiration_date: "09/01/2024"
+        }
+    ],
+    carry_forward_funding: "37000000.00",
     expected_funding: "16000000.00",
     in_execution_funding: "2000000.00",
     obligated_funding: 0,
