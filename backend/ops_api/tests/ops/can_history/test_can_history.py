@@ -206,12 +206,13 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
     new_can_history_item = can_history_list[can_history_count - 1]
 
     assert new_can_history_item.history_type == CANHistoryType.CAN_RECEIVED_DELETED
-    assert new_can_history_item.history_title == "**Funding Deleted**"
+    assert new_can_history_item.history_title == "**Funding Received Deleted**"
     assert (
-        new_can_history_item.history_message == "System Owner deleted funding received 27 in the amount of $200,000.00"
+        new_can_history_item.history_message
+        == "System Owner deleted funding received for funding ID 526 in the amount of $1,000.00"
     )
     assert (
         new_can_history_item.can_id
-        == funding_received_deleted_event.event_details["new_can_funding_budget"]["can"]["id"]
+        == funding_received_deleted_event.event_details["deleted_can_funding_received"]["can_id"]
     )
     assert new_can_history_item.timestamp == funding_received_deleted_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")

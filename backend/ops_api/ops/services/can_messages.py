@@ -3,7 +3,7 @@ import locale
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from models import CANHistory, CANHistoryType, OpsEvent, OpsEventStatus, OpsEventType
+from models import CANHistory, CANHistoryType, OpsEvent, OpsEventStatus, OpsEventType, User
 
 locale.setlocale(locale.LC_ALL, "en_CA.UTF-8")
 
@@ -22,6 +22,8 @@ def can_history_trigger(
 
     if event.created_on.month >= 10:
         current_fiscal_year = current_fiscal_year + 1  # If we are in October, this event is the new fiscal year.
+
+    event_user = session.get(User, event.created_by)
 
     match event.event_type:
         case OpsEventType.CREATE_NEW_CAN:
@@ -48,7 +50,7 @@ def can_history_trigger(
             session.add(history_event)
         case OpsEventType.DELETE_CAN_FUNDING_RECEIVED:
             funding = locale.currency(event.event_details["deleted_can_funding_received"]["funding"], grouping=True)
-            creator_name = event.created_by_user.full_name
+            creator_name = f"{event_user.first_name} {event_user.last_name}"
             history_event = CANHistory(
                 can_id=event.event_details["deleted_can_funding_received"]["can_id"],
                 ops_event_id=event.id,
