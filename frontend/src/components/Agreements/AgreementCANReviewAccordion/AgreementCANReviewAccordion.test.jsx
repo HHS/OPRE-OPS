@@ -1273,7 +1273,7 @@ const canFundingCardData = {
             expiration_date: "09/01/2024"
         }
     ],
-    carry_forward_funding: 0,
+    carry_forward_funding: "14300000.00",
     expected_funding: "5000000.00",
     in_draft_funding: 0,
     in_execution_funding: "2000000.00",
@@ -1323,7 +1323,7 @@ const canFundingCardData2 = {
             expiration_date: "09/01/2023"
         }
     ],
-    carry_forward_funding: 0,
+    carry_forward_funding: "1979500.00",
     expected_funding: "520000.00",
     in_execution_funding: 0,
     obligated_funding: "500.00",
@@ -1371,7 +1371,7 @@ const canFundingCard_G994426 = {
             expiration_date: "09/01/2024"
         }
     ],
-    carry_forward_funding: 0,
+    carry_forward_funding: "37000000.00",
     expected_funding: "16000000.00",
     in_execution_funding: "2000000.00",
     obligated_funding: 0,
