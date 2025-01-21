@@ -133,7 +133,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         return response
 
-    def is_bli_editable(budget_line_item):
+    def is_bli_editable(self, budget_line_item):
         """A utility function that determines if a BLI is editable"""
         editable = budget_line_item.status in [
             BudgetLineItemStatus.DRAFT,
