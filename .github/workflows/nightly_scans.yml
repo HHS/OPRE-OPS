@@ -25,7 +25,7 @@ jobs:
           target: 'https://stg.ops.opre.acf.gov/'
           allow_issue_writing: false
           fail_action: false
-          cmd_options: '-I'
+          cmd_options: '-I -l FAIL'
 
       ## Manually reviewed the action, and validated it performs basic
       ## conversion from zap.json to zap.sarif.
@@ -34,6 +34,6 @@ jobs:
         uses: SvanBoxel/zaproxy-to-ghas@cfc77481d74a17a4c3d6b753aa9d7abef453d501 # v1.0.2
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@babb554ede22fd5605947329c4d04d8e7a0b8155 # v3
+        uses: github/codeql-action/upload-sarif@b6a472f63d85b9c78a3ac5e89422239fc15e9b3c # v3
         with:
           sarif_file: results.sarif

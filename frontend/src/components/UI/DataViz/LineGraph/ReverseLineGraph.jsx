@@ -55,8 +55,10 @@ const ReverseLineGraph = ({ data = [], setActiveId = () => {} }) => {
                 <div
                     className={`${styles.leftBar}`}
                     style={{
-                        flex: `${ratio * 100}%`,
-                        backgroundColor: leftColor
+                        flex: `0  1 ${ratio * 100}%`,
+                        backgroundColor: leftColor,
+                        borderTopRightRadius: ratio === 1 ? "4px" : "0",
+                        borderBottomRightRadius: ratio === 1 ? "4px" : "0"
                     }}
                     onMouseEnter={() => setActiveId(leftId)}
                     onMouseLeave={() => setActiveId(0)}
@@ -73,7 +75,9 @@ const ReverseLineGraph = ({ data = [], setActiveId = () => {} }) => {
                         transparent 5px,
                         var(--data-viz-budget-graph-1) 5px,
                         var(--data-viz-budget-graph-1) 6px
-                    )`
+                    )`,
+                    borderTopLeftRadius: "4px",
+                    borderBottomLeftRadius: "4px"
                 }}
                 onMouseEnter={() => setActiveId(rightId)}
                 onMouseLeave={() => setActiveId(0)}

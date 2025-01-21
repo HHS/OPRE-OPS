@@ -376,7 +376,7 @@ paths:
           description: Bad Request
         "401":
           description: Unauthorized
-  /api/v1/cans-funding-received/:
+  /api/v1/can-funding-received/:
     get:
       tags:
         - CANs Funding Received
@@ -544,7 +544,7 @@ paths:
           description: Unauthorized
         "404":
           description: Unable to find specified CANFundingReceived
-  /api/v1/cans-funding-details/:
+  /api/v1/can-funding-details/:
       get:
         tags:
           - CANs Funding Details
@@ -877,6 +877,42 @@ paths:
           description: Unauthorized
         "404":
           description: Unable to find specified CANFundingBudget
+  /api/v1/can-history:
+    get:
+      tags:
+        - CAN History
+      operationId: getAllCANHistory
+      summary: Get a list all CAN history objects
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - name: can_id
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: 0
+        - name: limit
+          in: query
+          schema:
+              type: integer
+              default: 10
+          example: 10
+      description: Get CANHistory
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CANHistoryList"
+        "401":
+          description: Insufficient Privileges to use this endpoint.
+        "403":
+            description: Forbidden
   /api/v1/portfolios:
     get:
       tags:
@@ -1057,6 +1093,7 @@ paths:
                         "appropriation_date": "01/10/2023",
                         "appropriation_term": 1,
                         "arrangement_type_id": 3,
+                        "authorizer_id": 26,
                         "description": "Incoming Interagency Agreements",
                         "expiration_date": "01/09/2024",
                         "id": 2,
@@ -1070,6 +1107,7 @@ paths:
                         "appropriation_date": "01/10/2022",
                         "appropriation_term": 1,
                         "arrangement_type_id": 4,
+                        "authorizer_id": 26,
                         "description": "Child Development Research Fellowship Grant Program",
                         "expiration_date": "01/09/2023",
                         "id": 4,
@@ -1123,6 +1161,7 @@ paths:
                 - COST_SHARE
                 - IAA
                 - IDDA
+                - OTHER
             example: [ "DIRECT", "IAA" ]
         - name: portfolio
           in: query
@@ -1153,43 +1192,32 @@ paths:
                   available_funding:
                     type: string
                   carry_forward_funding:
-                    type: integer
-                  can:
-                    type: object
+                    type: string
+                  cans:
+                    type: array
                     properties:
                       can:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            appropriation_term:
-                              type: integer
-                            arrangement_type_id:
-                              type: integer
-                            number:
-                              type: string
-                            purpose:
-                              type: string
-                            managing_portfolio_id:
-                              type: integer
-                            nickname:
-                              type: string
-                            appropriation_date:
-                              type: string
-                            description:
-                              type: string
-                            id:
-                              type: integer
-                            expiration_date:
-                              type: string
-                            managing_project_id:
-                              type: integer
+                        properties:
+                          active_period:
+                            type: integer
+                          description:
+                            type: string
+                          display_name:
+                            type: string
+                          id:
+                            type: integer
+                          nick_name:
+                            type: string
+                          number:
+                            type: string
+                          portfolio_id:
+                            type: integer
+                          projects:
+                            type: array
                       carry_forward_label:
                         type: string
-                        example: ""
                       expiration_date:
                         type: string
-                        example: ""
                   expected_funding:
                     type: string
                   in_draft_funding:
@@ -1199,9 +1227,9 @@ paths:
                   new_funding:
                     type: string
                   obligated_funding:
-                    type: integer
+                    type: string
                   planned_funding:
-                    type: integer
+                    type: string
                   received_funding:
                     type: string
                   total_funding:
@@ -1217,6 +1245,7 @@ paths:
                           "appropriation_date": "01/10/2022",
                           "appropriation_term": 1,
                           "arrangement_type_id": 4,
+                          "authorizer_id": 26,
                           "description": "Child Development Research Fellowship Grant Program",
                           "expiration_date": "01/09/2023",
                           "id": 4,
@@ -2806,6 +2835,65 @@ components:
         - id
         - portfolio_id
         - number
+    CANHistoryList:
+      description: A list of CAN objects with their history
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/CANHistoryItem"
+    CANHistoryItem:
+        description: A single CAN object with its history
+        type: object
+        properties:
+          id:
+            type: integer
+            description: The unique identifier for the history record.
+            example: 2
+          can_id:
+            type: integer
+            description: FK to the CAN object that the history record is associated with.
+            example: 3
+          ops_event_id:
+            type: integer
+            description: FK to the OPS event that triggered the history record.
+            example: 4
+          history_title:
+            type: string
+            description: The title of the history event in Markdown format.
+            example: "Nickname Edited"
+          history_message:
+            type: string
+            description: The message that describes the history event in Markdown format.
+            example: "Omkar Kuber edited the nickname from 'CAN 1' to 'CAN 2'"
+          timestamp:
+            type: string
+            description: The timestamp of when the history event was created (different than created_on).
+            format: date-time
+            example: "2023-09-01T00:00:00.000000Z"
+          history_type:
+            type: string
+            enum:
+              - CAN_DATA_IMPORT
+              - CAN_NICKNAME_EDITED
+              - CAN_DESCRIPTION_EDITED
+              - CAN_FUNDING_CREATED
+              - CAN_RECEIVED_CREATED
+              - CAN_FUNDING_EDITED
+              - CAN_RECEIVED_EDITED
+              - CAN_FUNDING_DELETED
+              - CAN_RECEIVED_DELETED
+              - CAN_PORTFOLIO_CREATED
+              - CAN_PORTFOLIO_DELETED
+              - CAN_PORTFOLIO_EDITED
+              - CAN_DIVISION_CREATED
+              - CAN_DIVISION_DELETED
+              - CAN_DIVISION_EDITED
+              - CAN_CARRY_FORWARD_CALCULATED
+            example: "CAN_NICKNAME_EDITED"
+        required:
+          - id
+          - can_id
+          - ops_event_id
     FundingReceived:
       description: Funding Received Object
       type: object
@@ -2884,6 +2972,7 @@ components:
             - COST_SHARE
             - IAA
             - IDDA
+            - OTHER
         sub_allowance:
           type: string
     FundingDetails:
@@ -2919,6 +3008,7 @@ components:
             - COST_SHARE
             - IAA
             - IDDA
+            - OTHER
         sub_allowance:
           type: string
         created_on:
@@ -4084,6 +4174,7 @@ components:
         - appropriation_date: "2023-09-01T00:00:00.000000Z"
         - appropriation_term: 1
         - arrangement_type_id: 2
+        - authorizer_id: 23
         - description: Healthy Marriages Responsible Fatherhood - OFA
         - expiration_date: "2023-09-01T00:00:00.000000Z"
         - id: 10
@@ -4100,6 +4191,7 @@ components:
                   "appropriation_date": "2023-09-01T00:00:00.000000Z",
                   "appropriation_term": 1,
                   "arrangement_type_id": 3,
+                  "authorizer_id": 26,
                   "description": "Incoming Interagency Agreements",
                   "expiration_date": "2023-09-01T00:00:00.000000Z",
                   "id": 2,
@@ -4117,6 +4209,7 @@ components:
                   "appropriation_date": "2023-09-01T00:00:00.000000Z",
                   "appropriation_term": 1,
                   "arrangement_type_id": 4,
+                  "authorizer_id": 26,
                   "description": "Child Development Research Fellowship Grant Program",
                   "expiration_date": "2023-09-01T00:00:00.000000Z",
                   "id": 4,

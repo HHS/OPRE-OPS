@@ -212,6 +212,33 @@ export const opsApi = createApi({
             }),
             invalidatesTags: ["Cans"]
         }),
+        addCanFundingBudgets: builder.mutation({
+            query: ({ data }) => ({
+                url: `/can-funding-budgets/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: ["Cans", "CanFunding"]
+        }),
+        updateCanFundingBudget: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/can-funding-budgets/${id}`,
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: ["Cans", "CanFunding"]
+        }),
+        addCanFundingReceived: builder.mutation({
+            query: ({ data }) => ({
+                url: `/can-funding-received/`,
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: data
+            }),
+            invalidatesTags: ["Cans", "CanFunding"]
+        }),
         getCanFundingSummary: builder.query({
             query: ({ ids, fiscalYear, activePeriod, transfer, portfolio, fyBudgets }) => {
                 const queryParams = [];
@@ -243,7 +270,7 @@ export const opsApi = createApi({
 
                 return `/can-funding-summary?${queryParams.join("&")}`;
             },
-            providesTags: ["CanFunding"]
+            providesTags: ["Cans", "CanFunding"]
         }),
         getNotificationsByUserId: builder.query({
             query: ({ id, auth_header }) => {
@@ -331,8 +358,8 @@ export const opsApi = createApi({
             invalidatesTags: ["ServicesComponents", "Agreements", "BudgetLineItems", "AgreementHistory"]
         }),
         getChangeRequestsList: builder.query({
-            query: ({userId}) => ({
-                url: `/change-requests/${userId ? `?userId=${userId}` : ""}`,
+            query: ({ userId }) => ({
+                url: `/change-requests/${userId ? `?userId=${userId}` : ""}`
             }),
             providesTags: ["ChangeRequests"]
         }),
@@ -413,6 +440,9 @@ export const {
     useGetCansQuery,
     useGetCanByIdQuery,
     useUpdateCanMutation,
+    useAddCanFundingBudgetsMutation,
+    useUpdateCanFundingBudgetMutation,
+    useAddCanFundingReceivedMutation,
     useGetCanFundingSummaryQuery,
     useGetNotificationsByUserIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,

@@ -45,7 +45,7 @@
     { // 2
       name: "Head Start",
       abbreviation: "HS",
-      division_id: 1,
+      division_id: 4,
       status: "IN_PROCESS",
       team_leaders: [
         {
@@ -54,20 +54,21 @@
         }
       ],
       description: "\
-             Established in 1965, Head Start was designed to promote the school readiness of children, ages\
-             three to five, from families with low income, by supporting the development of the whole child through\
-             high-quality, comprehensive services. In 1994, the Early Head Start program was established to provide\
-             the same comprehensive services to families with low income who have infants and toddlers, as well as\
-             pregnant women. Today, ACF’s Office of Head Start oversees approximately 1,600 Head Start and Early Head\
-             Start grantees that serve nearly one million children, birth to age five, and their families.\
-             \n\nFor over 50 years, Head Start research has examined the impact of its programs as a whole and how\
-             those impacts vary for different populations, communities, or program characteristics. In doing so,\
-             Head Start research targets strategies for improving program quality and child and family outcomes.\
-             Through partnerships between researchers and local programs, Head Start develops and evaluates\
-             innovations in Head Start practice related to infant mental health, parenting, dual language learning,\
-             curricular enhancements, caregiver-child interactions, dual-generation approaches, and other topics.\
-             This growing research base provides valuable information not only for guiding program improvements in\
-             Head Start itself, but also for the larger field of ECE.\
+            Established in 1965, Head Start was designed to promote the school readiness of children, ages three to\
+            five, from families with low income, by supporting the development of the whole child through high-quality,\
+            comprehensive services. In 1994, the Early Head Start program was established to provide the same\
+            comprehensive services to families with low income who have infants and toddlers, as well as pregnant\
+            women. Today, ACF’s Office of Head Start oversees approximately 1,600 Head Start and Early Head Start\
+            grant recipients that serve nearly one million children, birth to age five, and their families.\
+            \n\nFor over 50 years, Head Start research has examined the impact of its programs as a whole, how those\
+            impacts vary for different populations, communities, or program characteristics, how programs deliver\
+            services, the quality of services, the qualifications of staff, and the characteristics and needs of\
+            children and families. In doing so, Head Start research targets strategies for improving program quality\
+            and child and family outcomes. Through partnerships between researchers and local programs, Head Start\
+            develops and evaluates innovations in Head Start practice related to infant mental health, parenting,\
+            dual language learning, curricular enhancements, caregiver-child interactions, dual-generation approaches,\
+            and other topics. This growing research base provides valuable information not only for guiding program\
+            improvements in Head Start itself, but also for the larger field of early care and education.\
       ",
     },
     { // 3
@@ -113,31 +114,34 @@
         }
       ],
       description: "\
-            ACF’s Office of Family Assistance administers the Temporary Assistance for Needy Families (TANF)\
-            program. Established by the Personal Responsibility and Work Opportunity Reconciliation Act (PRWORA)\
-            of 1996, the TANF block grant provides funds to States, eligible territories, and tribes, which decide\
-            on the design of the program, the type and amount of assistance payments to families, and the range of\
-            other services to be provided. In FY 2021, ACF provided $16.5 billion in TANF funding. Approximately\
-            437,000 adults and 1.6 million children received TANF cash assistance in FY 2019. The program supports\
-            a wide range of efforts to promote family economic stability. For example, TANF grant dollars are used\
-            for programs that promote job readiness through education and training; provide assistance with child\
-            care, transportation, or other services that support employment activities; and improve services that\
-            support family strengthening.\
-            \n\nACF’s recent TANF-related research and evaluation has sought to understand and inform how TANF and\
-            other programs that serve TANF or TANF-eligible populations can best support their self-sufficiency and\
-            economic well-being. Rigorous studies funded by ACF and others have demonstrated that different types of\
-            interventions can improve labor market outcomes for disadvantaged groups, with variation in the\
-            magnitude and duration of impacts. However, there are still significant gaps in our understanding—and\
-            even more still to learn if we want to keep improving the effectiveness and efficiency of services.\
-            Future activities will also be informed by emerging findings from ongoing research and evaluation\
-            activities, other learning activities, and continued engagement with welfare and family self-sufficiency\
-            stakeholders.\
-            \n\nOPRE’s self-sufficiency, welfare, and employment portfolio addresses innovative approaches for\
-            increasing economic self-sufficiency and reducing public assistance dependency, including rigorous\
-            evaluations of promising employment and training strategies. Studies address a variety of topics\
-            including alternative welfare-to-work strategies, career pathways and post-secondary training models,\
-            employment retention and advancement approaches, subsidized employment and job search strategies, and\
-            tests to understand the effects of employment coaching models.\
+        The Personal Responsibility and Work Opportunity Reconciliation Act (PRWORA) of 1996 established the\
+        Temporary Assistance for Needy Families (TANF) program to help children and families with low incomes\
+        achieve economic security and stability. Under TANF, states, eligible territories, and tribes receive block\
+        grant funds to provide cash assistance to eligible families and a range of other services to accomplish\
+        one of the program’s four broad purposes. While TANF jurisdictions must meet certain work\
+        participation and cost sharing requirements, they have considerable flexibility to design and implement\
+        programs that best serve their distinct communities.\
+        \n\nPRWORA also authorized funding for welfare research, evaluation, and technical assistance activities.\
+        The Consolidated Appropriations Act of 2017 significantly increased the amount of this funding by\
+        establishing a set-aside of 0.33% of the TANF block grant to support these activities. The legislation\
+        directs ACF to use these funds for TANF-related research and evaluation; the development of a “what\
+        works clearinghouse” of effective approaches for moving welfare recipients into work; technical\
+        assistance to support TANF programs and services; and federal administration of these activities. The\
+        set-aside and the research, evaluation, and technical assistance it funds is referred to as the ‘Welfare\
+        Research’ portfolio.\
+        \n\nOPRE’s Division of Economic Independence partners with the Office of Family Assistance (OFA) to carry\
+        out the Welfare Research portfolio. OFA administers the TANF program; collects and analyzes program\
+        data on caseloads, expenditures, and work participation; and provides programmatic technical\
+        assistance to TANF jurisdictions. OPRE conducts rigorous research and evaluation to better understand\
+        how TANF and other human services programs can best support the self-sufficiency and economic well-\
+        being of children and families with low incomes. These studies address a range of topics including TANF\
+        program administration; employment, training, and occupational skill-building programs; coordination\
+        across social services delivery systems; and the role of broader social context and environmental factors.\
+        Within these and related topics, OPRE funds experimental impact evaluations, implementation\
+        evaluations, and descriptive research projects aimed at informing the design and implementation of\
+        TANF programs and services. OPRE also supports activities to build the research and evaluation capacity\
+        of TANF and other human services programs, and to communicate findings from the Welfare Research\
+        portfolio to the broader field.\
       ",
     },
     { // 5
@@ -152,36 +156,21 @@
         }
       ],
       description: "\
-            Despite recent declines in teen childbirth rates, teen pregnancy rates in the United States are much\
-            higher than in other western industrialized nations. More research and programming innovations are needed\
-            to identify effective ways to decrease rates of teen sexual risk behavior and associated negative\
-            outcomes. Since 2009, ACF has supported research and evaluation efforts in teen pregnancy prevention\
-            and, more recently, sexual risk avoidance. ACF supports a number of research and evaluation activities\
-            as well as learning from a broad array of other activities such as performance management, technical\
-            assistance, stakeholder engagement, site monitoring, and program improvement.\
-            \n\nTo help reduce non-marital sexual activity, teen pregnancies, sexually transmitted infections, and\
-            other risk behaviors, ACF’s Family and Youth Services Bureau oversees two funding streams within the\
-            Adolescent Pregnancy Prevention (APP) program: the Personal Responsibility Education Program (PREP) and\
-            the Sexual Risk Avoidance Education (SRAE) Program. PREP programs educate adolescents on both abstinence\
-            and contraception for the prevention of pregnancy and sexually transmitted infections. The SRAE Program\
-            funds projects that exclusively implement sexual risk avoidance education that teaches youth how to\
-            voluntarily refrain from non-marital sexual activity, empower youth to make healthy decisions, and\
-            provide tools and resources to prevent youth engagement in other risky behaviors.\
-            \n\nACF coordinates research and evaluation with other offices that oversee teen pregnancy prevention\
-            programming and evaluation, including the Department of Health and Human Services’ (HHS) Office of\
-            Population Affairs (OPA), the HHS Office of the Assistant Secretary for Planning and Evaluation (ASPE),\
-            and the Centers for Disease Control and Prevention’s Division of Reproductive Health (DRH). Past ACF\
-            research includes the completion of a multi-component evaluation which included national descriptive\
-            and performance analysis studies and an impact and implementation study of four PREP sites. Key findings\
-            from the 2018-2019 performance measures show that 141,586 youth were served during that reporting\
-            period. The most commonly implemented Adulthood Preparation Subjects (APS) by grantees were healthy\
-            relationships, healthy life skills, and adolescent development. Nearly 90 percent of the youth reported\
-            that they felt respected as people and that the material presented was clear most or all of the time.\
-            Large majorities of youth reported that the discussions or activities helped them to learn program\
-            lessons and that they had a chance to ask questions most or all of the time.\
-            \n\nOPRE’s youth services portfolio also includes research and evaluation of approaches to improve other\
-            outcomes for at-risk youth, including unaccompanied refugee minors, youth at-risk of homelessness, and\
-            youth with experience in the child welfare system.\
+          Despite recent declines in teen childbirth rates, adolescent pregnancy rates in the United States are much\
+          higher than in other western industrialized nations. More research and programming innovations are needed to\
+          identify effective ways to decrease rates of adolescent sexual risk behavior and associated negative\
+          outcomes. Since 2009, ACF has supported research and evaluation efforts in adolescent pregnancy prevention\
+          and, more recently, sexual risk avoidance. ACF supports a number of research and evaluation activities as\
+          well as learning from a broad array of other activities such as performance management, technical\
+          assistance, stakeholder engagement, site monitoring, and program improvement.\
+          \n\nTo help reduce non-marital sexual activity, adolescent pregnancies, sexually transmitted infections,\
+          and other risk behaviors, ACF’s Family and Youth Services Bureau oversees two funding streams within the\
+          Adolescent Pregnancy Prevention (APP) program: the Personal Responsibility Education Program (PREP) and the\
+          Sexual Risk Avoidance Education (SRAE) Program. PREP programs educate adolescents on both abstinence and\
+          contraception for the prevention of pregnancy and sexually transmitted infections. The SRAE Program funds\
+          projects that exclusively implement sexual risk avoidance education that teaches youth how to voluntarily\
+          refrain from non-marital sexual activity, empower youth to make healthy decisions, and provide tools and\
+          resources to prevent youth engagement in other risky behaviors.\
       ",
     },
     { // 6
@@ -198,24 +187,25 @@
       description: "\
             The Healthy Marriage and Responsible Fatherhood (HMRF) program is part of ACF’s strategy to improve the\
             long-term well-being of children and families. HMRF is a $150 million discretionary grant program\
-            originally authorized under the Deficit Reduction Act of 2005 and reauthorized under the Claims\
-            Resolution Act of 2010. ACF supports a number of research and evaluation activities as well as learning\
-            from a broad array of other activities such as performance management, technical assistance, stakeholder\
-            engagement, site monitoring, and continuous quality improvement.\
-            \n\nA large body of research has shown that, on average, children raised in stable, two-parent families\
-            have better outcomes on a range of measures, even into adulthood. Research has also identified dimensions\
-            of couples’ relationship functioning (e.g., positive communication, effective conflict management,\
-            problem solving, etc.) that could be modified or enhanced through relationship- focused educational\
-            programming.  Some evaluations have found that such programming can produce improvement in multiple\
-            dimensions of relationship quality and reductions in break-up or divorce. In recent decades, efforts to\
-            support and promote responsible fatherhood have been spurred by research that shows a link between\
-            supportive fathering and positive child outcomes. Responsible fatherhood programs aim to provide\
-            resources and supports to fathers around healthy marriage and relationships, parenting, and economic\
-            stability.\
-            \n\nOPRE’s strengthening families, healthy marriage, and responsible fatherhood portfolio includes\
+            originally authorized under the Deficit Reduction Act of 2005 and reauthorized under the Claims Resolution\
+            Act of 2010. ACF supports a number of research and evaluation activities as well as learning from a broad\
+            array of other activities such as performance management, technical assistance, stakeholder engagement,\
+            site monitoring, and continuous quality improvement.\
+            \n\nA large body of research has shown that, on average, children raised in stable families with involved\
+            parents and caregivers have better outcomes on a range of measures, even into adulthood. Research has also\
+            identified dimensions of couples’ relationship functioning (e.g., positive communication, effective\
+            conflict management, problem solving, etc.) that could be modified or enhanced through relationship-focused\
+            educational programming. Some evaluations have found that such programming can produce improvement in\
+            multiple dimensions of relationship quality and stability. In recent decades, efforts to support and\
+            promote supportive fathering have been spurred by research that shows a link between supportive fathering\
+            and positive child outcomes. Thus, fatherhood programs aim to provide resources and supports to fathers\
+            around healthy marriage and relationships, parenting, and economic stability.\
+            \n\nOPRE’s strengthening families, healthy relationships and marriages, and fatherhood portfolio includes\
             research and evaluation on topics such as family formation and stability, co-parenting, marriage,\
-            fatherhood, and violence in relationships. Studies include a focus on the implications of programs and\
-            policies (including welfare policies) for child, adult, and family well-being.\
+            fatherhood, and violence in relationships. This research helps us develop more accurate knowledge of the\
+            unique experiences of populations served by HMRF programs through a better understanding their strengths.\
+            Studies include a focus on the implications of programs and policies (including welfare policies) for\
+            child, adult, and family well-being.\
       ",
     },
     { // 7
@@ -231,54 +221,81 @@
       ],
       description: "\
             Home visiting is a service delivery strategy that aims to support the healthy development and well-being\
-            of children and families. While each home visiting model has its unique aspects, in general, home\
-            visiting involves three main intervention activities conducted through one-on-one interactions between\
-            home visitors and families: assessing family needs, educating and supporting parents, and referring\
-            families to needed services in the community. Early childhood home visiting programs aim to improve a\
-            wide range of outcomes including maternal health, child health and development, child maltreatment\
-            prevention, and family economic self-sufficiency.\
-            \n\nThe Health Resources and Services Administration (HRSA) administers the Maternal, Infant, and Early\
-            Childhood Home Visiting (MIECHV) Program in collaboration with ACF, which oversees the Tribal MIECHV\
-            program. The Tribal MIECHV program provides grants to tribes, tribal organizations, and Urban Indian\
-            Organizations to develop, implement, and evaluate home visiting programs in American Indian and Alaska\
-            Native communities. The MIECHV Program carries out a continuous program of research and evaluation\
-            activities in order to increase knowledge about the implementation and effectiveness of home visiting\
-            programs. OPRE, in collaboration with HRSA and with the Tribal MIECHV program, oversees a majority of\
-            the MIECHV-funded research and evaluation projects.\
-            \n\nThe home visiting field has engaged in research and evaluation for decades, generating a rich\
-            literature on the effects of home visiting. Studies have found home visiting impacts on child development,\
-            school readiness, family economic self-sufficiency, maternal health, reductions in child maltreatment,\
-            child health, positive parenting practices, juvenile delinquency, family violence, and crime. While\
-            effects have varied across studies, overall, the research indicates that home visiting has had modest\
-            benefits for families on average. However, there are still significant gaps in our understanding—and\
-            even more still to learn if we want to keep improving the effectiveness and efficiency of services.\
+            of children and families. While each home visiting model has its unique aspects, in general, home visiting\
+            involves three main intervention activities conducted through one-on-one interactions between home\
+            visitors and families: assessing family needs, educating and supporting parents, and referring families to\
+            needed services in the community. Early childhood home visiting programs aim to improve a wide range of\
+            outcomes including maternal health, child health and development, child maltreatment prevention, and family\
+            economic self-sufficiency.\
+            \n\nFederal investment in home visiting — and related research and evaluation — has greatly expanded\
+            through the Maternal, Infant, and Early Childhood Home Visiting (MIECHV) Program, which was established in\
+            2010. The MIECHV Program supports home visiting for expectant and new parents with children up to\
+            kindergarten entry age who live in communities that are at-risk for poor maternal and child health\
+            outcomes. Families choose to participate in home visiting programs, and partner with health, social\
+            service, and child development professionals to set and achieve goals that improve their health and\
+            well-being. MIECHV is administered by the Health Resources and Services Administration (HRSA) in\
+            collaboration with ACF. HRSA oversees the state and territory MIECHV Program, which provides grants to\
+            states, territories, and eligible non-profit organizations to develop and implement statewide home visiting\
+            programs. ACF oversees the Tribal MIECHV program, which provides grants to tribes, tribal organizations,\
+            and Urban Indian Organizations to develop, implement, and evaluate home visiting programs in American\
+            Indian and Alaska Native communities.\
+            \n\nIn collaboration with HRSA and with ACF’s Tribal MIECHV program, ACF’s Office of Planning, Research,\
+            and Evaluation manages and partners on research, evaluation, and technical assistance activities related\
+            to MIECHV and home visiting.\
       ",
     },
     { // 8
-      name: "Program Support",
-      abbreviation: "PS",
+      name: "Data Governance",
+      abbreviation: "DG",
       division_id: 6,
       status: "IN_PROCESS",
       team_leaders: [
         {
           "tablename": "ops_user",
-          id: 507
+          id: 68
         },
-        {
-          "tablename": "ops_user",
-          id: 508
-        },
-        {
-          "tablename": "ops_user",
-          id: 520
-        }
       ],
-      description: "",
+      description: "\
+            Data governance is the mechanism (i.e., structures, processes, and policies) for organizational staff and\
+            leadership to manage data throughout the data lifecycle, while ensuring its security, exploring\
+            opportunities to share data for evidence-building activities, and using data for programmatic, evaluation\
+            and research purposes. ACF’s goals related to data governance are to make data more usable, accessible,\
+            and protected to meet the operational and evidence-building data governance needs of ACF; meet the\
+            operational and evidence-building data governance needs of ACF offices;  and promote the reuse of ACF\
+            data for evidence-building purposes at the state, local, tribal, territory, and grant recipient levels.\
+            \n\nThe Data Governance Team within DDI has primary responsibility for coordinating ACF's data governance\
+            activities. For the purpose of OPS, this portfolio covers projects that advance ACF’s progress in meeting\
+            its data governance goals. This portfolio is led by the OPRE Division of Data and Improvement.\
+      ",
     },
     { // 9
+      name: "Office Of The Director",
+      abbreviation: "OD",
+      division_id: 3,
+      status: "IN_PROCESS",
+      team_leaders: [],
+      description: "",
+    },
+    { // 10
+      name: "Privacy & Security",
+      abbreviation: "PS",
+      division_id: 8,
+      status: "IN_PROCESS",
+      team_leaders: [],
+      description: "",
+    },
+    { // 11
       name: "Data Governance",
       abbreviation: "DG",
-      division_id: 6,
+      division_id: 9,
+      status: "IN_PROCESS",
+      team_leaders: [],
+      description: "",
+    },
+    { // 12
+      name: "Not A Specific Portfolio",
+      abbreviation: "NON-OPRE",
+      division_id: 3,
       status: "IN_PROCESS",
       team_leaders: [],
       description: "",

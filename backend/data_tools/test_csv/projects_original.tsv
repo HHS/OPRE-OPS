@@ -1,0 +1,102 @@
+SYS_PROJECT_ID	PROJECT_TITLE	PROJECT_SHORT_TITLE	PROJECT_DESCRIPTION	PROJECT_URL	PROJECT_TEAM_LEADERS	PROJECT_TYPE	PROJECT_ORIGINATION_DATE	PROJECT_METHODOLOGIES	PROJECT_POPULATIONS
+1	Human Services Interoperability Support	HSS	This contract will conduct interoperability activities to facilitate the exchange of information within, between, and from states and tribal organizations by facilitating lower-burden, interoperable data reporting and exchange to other state agencies and to ACF. The contract will focus on developing content that facilitates streamlined, interoperable reporting to ACF. The contract will also conduct research and evaluation activities with states and tribal organizations to assess the effectiveness of providing these interoperability artifacts for these organizations to use. The ability to share data and develop interoperable data systems is important for effective operation and oversight of these programs. This contract is designed to address these requirements and deliver needed and practical tools to accelerate implementation of data sharing and interoperable initiatives.	https://www.acf.hhs.gov/opre/project/acf-human-services-interoperability-support	chris.fortunato@example.com	RESEARCH	2021-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+2	Youth Demonstration Development Project	YDD	OPRE launched the Youth Demonstration Development Project (YDD) in 2009 to systematically review the current field of research on youth development and successful transition to adulthood. The primary objective of YDD, conducted for OPRE by Mathematica Policy Research and its partner, Chapin Hall Center for Children, was to develop a conceptual framework that could be applied to existing or new ACF programs to improve the well-being of at-risk youth and increase their ability to become self-sufficient adults and avoid long-term reliance on public assistance. These frameworks will inform ACF’s decisions about possible demonstrations and evaluations of innovative approaches to improving outcomes among youth at risk of not achieving self-sufficiency.	https://www.acf.hhs.gov/opre/project/acf-youth-demonstration-development-project-2009-2013		RESEARCH	2009-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+3	Annual Performance Plans and Reports	APP	The Administration for Children and Families (ACF), within the U.S. Department of Health and Human Services, is responsible for federal programs that address the needs of vulnerable children and families throughout our society, including Native Americans, individuals with developmental disabilities, and refugees.	https://www.acf.hhs.gov/opre/project/acf-annual-performance-plans-and-reports-2000-2012		RESEARCH	2000-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+4	Data Governance Consulting and Support	DGC	The purpose of this project is to provide information gathering, analysis, consultation, and technical support to OPRE and its partners to strengthen data governance practices within ACF offices, and between ACF and its partners at the federal, state, local, and Tribal levels. Data governance includes all aspects of data handling and use throughout the data lifecycle including collection, cleaning, quality assurance, documentation, storage, security, access, privacy protection, use, archiving, and destruction.	https://www.acf.hhs.gov/opre/project/acf-data-governance-consulting-and-support		RESEARCH	2021-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+5	Evidence Capacity Support	ECS	The Office of Planning, Research, and Evaluation (OPRE) and program offices at the Administration for Children and Families (ACF) are partnering to extend and deepen evidence capacity. Evidence capacity refers to a culture of, and infrastructure for, building and using evidence for learning and improvement. Through the ACF Evidence Capacity Support project, Mathematica and Child Trends are supporting ACF in conducting this work.	https://www.acf.hhs.gov/opre/project/acf-evidence-capacity-support		RESEARCH	2018-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+6	Interoperability Initiative	IA	The ACF Interoperability Initiative provides leadership and technical support to increase the capacity and efficiency of social service data systems to share data in a consistent	https://www.acf.hhs.gov/opre/project/acf-interoperability-initiative		RESEARCH	2022-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+7	Program Guidance on Sharing Administrative Data	PGS	Individual ACF programs have developed informational memoranda for states on data sharing across social service systems.	https://www.acf.hhs.gov/opre/project/acf-program-guidance-sharing-administrative-data		RESEARCH	2022-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+8	Responsible Fatherhood and Healthy Marriage Research Initiative	RFH	The purpose of this initiative was to evaluate services to promote responsible fatherhood through encouraging and supporting healthy marriages between low-income parents. The studies used experimental research designs to test the effectiveness of approaches to helping interested low-income fathers and couples understand the importance of two-parent families for child well-being, helping couples achieve their desire for a healthy marriage and sustain those marriages, and helping fathers develop the skills to be responsible parents.	https://www.acf.hhs.gov/opre/project/acf-responsible-fatherhood-and-healthy-marriage-research-initiative-2006-2011		RESEARCH	2006-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+9	Baby's First Years	BFY	Baby’s First Years, launched in 2017, is a multi-site randomized controlled trial supported by a grant from the Eunice Kennedy Shriver National Institute of Child Health and Human Development (NICHD) within the National Institutes of Health, along with other public and private funders. This study seeks to fill important gaps in scientific knowledge about the role of economic resources in children’s early development by evaluating whether unconditional cash payments have a causal effect on the cognitive, socio-emotional, and brain development of infants and toddlers in low-income U.S. families. Specifically, 1,000 mothers of infants with incomes below the federal poverty line have been recruited into the study and are receiving monthly cash payments by debit card for the first 52 months of the child's life. Parents in the experimental group are receiving $333 per month ($4,000 per year), whereas parents in the control group are receiving a nominal monthly payment of $20. Mothers were recruited in New York City, greater New Orleans, the Twin Cities, and the Omaha metropolitan area.	https://www.acf.hhs.gov/opre/project/babys-first-years		RESEARCH	2019-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+10	African American Child and Family Research Center	AAC	"The National African American Child and Family Research Center, supported by a five-year OPRE
+        grant (2021 — 2026), will provide national leadership and excellence by investigating the assets, needs,
+        and experiences of the diverse population of African American families and children served (or potentially
+        served) by ACF programs, as well as promising approaches to address economic and social inequities and,
+        ultimately, promote social and economic well-being.  The primary focus of this Center will be on childcare
+        assistance, TANF, and Head Start and Early Head Start programs and the populations they serve. The work of
+        the Center will draw on interdisciplinary approaches to accomplish the three goals listed below.
+
+
+1. Advance Research
+        The Center will plan, initiate, and maintain a community-engaged, focused, and high-caliber research program.
+        The Center’s program of research will build on the existing literature related to African American children
+        and families and should be directly relevant to the needs and interests of ACF areas of programmatic concern.
+
+
+2. Build Research Capacity
+        The Center will build research capacity and infrastructure to conduct research relevant to ACF program and
+        policy goals that is culturally rigorous and informed by an understanding of current and historical
+        circumstances that shape the experiences of African Americans. In addition, the Center will contribute to the
+        development and expansion of the pool of researchers reflective of the communities being studied by the Center.
+
+
+3. Communicate Research
+        The Center will develop and implement a dissemination strategy that broadly and efficiently communicates
+        findings from research conducted within and outside of the Center and increases the use of research, data, and
+        relevant resources for a wide audience including researchers, federal and state policymakers, ACF grantees,
+        program administrators, and communities participating in the research.
+
+
+The Center is led by the Morehouse School of Medicine.
+
+
+The OPRE point of contact is Megan Reid.\"	https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center		RESEARCH	2022-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+11	Early Care and Education Leadership Study (ExCELS)	ECE	"Leadership is widely recognized as an essential driver of organizational performance and improvement, but
+        little is known about its role in driving quality of early childhood programs and outcomes for staff and
+        families. In launching the Early Care and Education Leadership Study (ExCELS), the U.S. Department of Health
+        and Human Services’ Office of Planning, Research, and Evaluation (OPRE) seeks to fill the definitional and
+        measurement gaps to help the early childhood field understand how effective leaders can improve quality
+        experiences for families in early care and education (ECE) settings.
+
+
+OPRE contracted with Mathematica Policy Research and its subcontractor, the University of Massachusetts,
+        Boston, to conduct this study. The study team is identifying key leadership constructs, mapping out and testing
+        their associations to outcomes, and developing a short-form instrument to measure ECE leadership in
+        center-based settings. Project staff and OPRE will partner with substantive, technical, and practical experts
+        as well as a range of stakeholders from government agencies and leadership development programs to inform the
+        work. Project staff and OPRE will partner with substantive, technical, and practical experts as well as
+        seeking input and engagement with leadership development programs (e.g., ECE teaching staff, ECE directors)
+        as well as those from government agencies to inform the work.
+
+
+The goals of this multi-phase study are to:
+
+
+
+
+* Review the existing research literature to identify the key features of effective ECE leadership and
+        highlight gaps in our understanding
+
+* Construct a theory of change that shows how ECE leaders can act as change agents for quality improvement
+
+* Develop a compendium of existing measures aligned with the theory of change to identify measurement gaps
+
+* Identify promising leadership quality improvement initiatives and methods of evaluating them
+
+* Conduct a descriptive study in 100 centers that receive funding from Head Start or the Child Care and
+          Development Fund to test hypothesized associations between leadership constructs and outcomes in the
+          theory of change\"	https://www.acf.hhs.gov/opre/project/early-care-and-education-leadership-study-excels-2018-2023		RESEARCH	2018-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+12	Fathers and Continuous Learning (FCL)	FCL	"Evidence suggests that fathers play an important role in children\'s development and that they can serve as\
+         a key source of emotional and financial support. In many social services, however, fathers are overlooked.\
+         This is the case in the child welfare system, where data from the Child and Family Service Reviews indicate\
+         that fathers and paternal relatives are minimally engaged and may be untapped resources.\
+         \n\nThe purpose of this project is to bridge the gap between what we know about the importance of fathers\
+         and practices in the child welfare system that may contribute to low levels of father and paternal relative\
+         engagement. Partnering with the Office of Family Assistance (which oversees the Healthy Marriage and\
+         Responsible Fatherhood discretionary grant program) and the Children’s Bureau, this project aims to:\
+         \n\n* Synthesize what we already know about a) efforts to engage fathers and paternal relatives of children\
+         involved in the child welfare system, and b) Continuous Quality Improvement approaches within the child\
+         welfare system;\
+         \n* Map ""touch points"" within a child welfare case where fathers and/or paternal relatives could be more \
+         fully engaged;\
+         \n* Identify potential strategies and interventions that could be used at the touch points to increase their\
+         engagement;\
+         \n* Select a collaborative Continuous Quality Improvement approach and use it to work intensively with a few\
+         sites to implement and test these father and paternal relative engagement strategies and interventions;\
+         \n* Conduct a pilot study to examine the feasibility and implementation of the Continuous Quality Improvement\
+         approach and the engagement strategies and interventions; and\
+         \n* Conduct an evaluation of the selected continuous learning methodology and the engagement strategies and\
+         interventions.\"	https://www.acf.hhs.gov/opre/project/fathers-and-continuous-learning		RESEARCH	2017-01-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+13	Mother and Infant Home Visiting Program Evaluation 2	MIHOPE	MIHOPE is a longitudinal study of the effects of Maternal, Infant, and Early Childhood Home Visiting (MIECHV)-funded home visiting on child and family outcomes. The overarching goal of MIHOPE is to learn whether families and children benefit from MIECHV-funded early childhood home visiting programs, and if so, how.	https://www.acf.hhs.gov/opre/project/mother-and-infant-home-visiting-program-evaluation-mihope-2011-2021		RESEARCH	2011-10-01	SURVEY,FIELD_RESEARCH_PARTICIPANT_OBSERVATION,ETHNOGRAPHY,EXPERIMENT,SECONDARY_DATA_ANALYSIS,CASE_STUDY 	POPULATION_1
+14	Support Project #1	SP1			chris.fortunato@example.com	ADMINISTRATIVE_AND_SUPPORT
+15	Support Project #2	SP2			chris.fortunato@example.com	ADMINISTRATIVE_AND_SUPPORT

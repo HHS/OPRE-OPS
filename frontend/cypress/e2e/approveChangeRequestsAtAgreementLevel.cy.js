@@ -30,7 +30,7 @@ const testBli = {
     agreement_id: 11,
     amount: 1_000_000,
     status: BLI_STATUS.DRAFT,
-    date_needed: "2025-01-01",
+    date_needed: "2044-01-01",
     proc_shop_fee_percentage: 0.005
 };
 
@@ -400,7 +400,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                         id: bliId,
                         amount: 2_000_000,
                         can_id: 502,
-                        date_needed: "2025-09-15",
+                        date_needed: "2044-09-15",
                         requestor_notes: "Test requestor notes"
                     },
                     headers: {
@@ -443,8 +443,8 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get("[data-cy='review-card']").contains("G99PHS9");
                 // next card
                 cy.get("[data-cy='review-card']").contains(/obligate by date/i);
-                cy.get("[data-cy='review-card']").contains("1/1/2025");
-                cy.get("[data-cy='review-card']").contains("9/15/2025");
+                cy.get("[data-cy='review-card']").contains("1/1/2044");
+                cy.get("[data-cy='review-card']").contains("9/15/2044");
                 //class accordion__content contains a paragraph that contains the text planned status change
                 cy.get(".usa-accordion__content").contains("budget changes");
                 // section BLs not associated with a Services Component should have a table
@@ -452,11 +452,11 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 // table should contains a table item  with text PLANNED and css class table-item-diff
                 cy.get(".table-item-diff").contains("$2,000,000.00");
                 cy.get(".table-item-diff").contains("G99PHS9");
-                cy.get(".table-item-diff").contains("9/15/2025");
+                cy.get(".table-item-diff").contains("9/15/2044");
                 cy.get('[data-cy="button-toggle-After Approval"]').first().click();
                 cy.get(".table-item-diff").contains("1,000,000.00");
                 cy.get(".table-item-diff").contains("G994426");
-                cy.get(".table-item-diff").contains("1/1/2025");
+                cy.get(".table-item-diff").contains("1/1/2044");
                 // TODO: add more tests
                 // click on checkbox with id approve-confirmation
                 cy.get(".usa-checkbox__label").click();
@@ -468,7 +468,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                 cy.get(".usa-alert__body").should("contain", testAgreement.name);
                 cy.get(".usa-alert__body")
                     .should("include.text", `BL ${bliId} Amount: $1,000,000.00 to $2,000,000.00`)
-                    .and("include.text", `BL ${bliId} Obligate By Date: 1/1/2025 to 9/15/2025`)
+                    .and("include.text", `BL ${bliId} Obligate By Date: 1/1/2044 to 9/15/2044`)
                     .and("include.text", `BL ${bliId} CAN: G994426 to G99PHS9`);
                 cy.get("[data-cy='close-alert']").click();
                 // nav element should not contain the text 1
@@ -494,7 +494,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
                     .then(() => {
                         return checkHistoryItem(
                             /Budget Change to Obligate Date/,
-                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2025 to 9/15/2025 as requested by Budget Team.`
+                            `Dave Director approved the budget change on BL ${bliId} from 1/1/2044 to 9/15/2044 as requested by Budget Team.`
                         );
                     })
                     .then(() => {

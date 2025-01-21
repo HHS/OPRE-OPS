@@ -64,7 +64,7 @@ def test_can_get_can_funding_summary_invalid_transfer(auth_client: FlaskClient):
     query_params = f"can_ids={0}&fiscal_year=2023&transfer=INVALID"
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
     assert response.status_code == 400
-    assert response.json["Error"] == "Invalid 'transfer' value. Must be one of: DIRECT, COST_SHARE, IAA, IDDA."
+    assert response.json["Error"] == "Invalid 'transfer' value. Must be one of: DIRECT, COST_SHARE, IAA, IDDA, OTHER."
 
 
 def test_can_get_can_funding_summary_mou_transfer(auth_client: FlaskClient):
