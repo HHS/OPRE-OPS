@@ -199,7 +199,7 @@ def aggregate_funding_summaries(funding_summaries: List[dict]) -> CanFundingSumm
     :param funding_summaries: List of funding summaries to aggregate
     :return: A single total funding summary
     """
-    totals = {
+    totals: CanFundingSummary = {
         "available_funding": 0.0,
         "cans": [],
         "carry_forward_funding": 0.0,
