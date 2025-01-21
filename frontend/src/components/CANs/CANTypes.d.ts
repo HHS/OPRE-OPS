@@ -75,7 +75,7 @@ export type FundingDetails = {
     fiscal_year: number;
     fund_code: string;
     funding_partner?: string;
-    funding_source?: "OPRE" | "ACF" | "HHS";
+    funding_source?: keyof typeof CAN_FUNDING_SOURCE;
     funding_method?: "Direct" | "Reimbursable";
     funding_received?: "Quarterly" | "FY Start";
     funding_type?: "Discretionary" | "Mandatory";
