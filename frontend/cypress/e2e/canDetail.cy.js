@@ -27,7 +27,7 @@ describe("CAN detail page", () => {
         cy.get("h1").should("contain", "G99PHS9"); // heading
         cy.get("p").should("contain", can502Nickname); // sub-heading
         cy.get("span").should("contain", "Sheila Celentano"); // team member
-        cy.get("span").should("contain", "Dave Director"); // division director
+        cy.get("span").should("contain", "Director Derrek"); // division director
         cy.get("span").should("contain", "Data Governance"); // portfolio
         cy.get("span").should("contain", "Division of Data Governance"); // division
     });
