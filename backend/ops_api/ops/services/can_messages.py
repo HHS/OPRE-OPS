@@ -49,13 +49,13 @@ def can_history_trigger(
             )
             session.add(history_event)
         case OpsEventType.CREATE_CAN_FUNDING_RECEIVED:
-            funding = locale.currency(event.event_details["deleted_can_funding_received"]["funding"], grouping=True)
+            funding = locale.currency(event.event_details["new_can_funding_received"]["funding"], grouping=True)
             creator_name = f"{event_user.first_name} {event_user.last_name}"
             history_event = CANHistory(
-                can_id=event.event_details["deleted_can_funding_received"]["can_id"],
+                can_id=event.event_details["new_can_funding_received"]["can_id"],
                 ops_event_id=event.id,
-                history_title="Funding Received Deleted",
-                history_message=f"{creator_name} deleted funding received for funding ID {event.event_details['deleted_can_funding_received']['id']} in the amount of {funding}",
+                history_title="Funding Received Added",
+                history_message=f"{creator_name} added funding received to funding ID {event.event_details['new_can_funding_received']['id']} in the amount of {funding}",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_RECEIVED_CREATED,
             )

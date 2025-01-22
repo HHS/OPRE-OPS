@@ -49,9 +49,17 @@ def test_funding_received_post_creates_funding_received(budget_team_auth_client,
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.create"
     )
     mocker_create_funding_received.return_value = mock_output_data
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.post("/api/v1/can-funding-received/", json=input_data)
 
     assert response.status_code == 201
+    assert context_manager.metadata["new_can_funding_received"] is not None
+    assert context_manager.metadata["new_can_funding_received"]["can_id"] == mock_output_data.can_id
+    assert context_manager.metadata["new_can_funding_received"]["funding"] == mock_output_data.funding
+    assert context_manager.metadata["new_can_funding_received"]["id"] == mock_output_data.id
     mocker_create_funding_received.assert_called_once_with(input_data)
     assert response.json["id"] == mock_output_data.id
     assert response.json["can_id"] == mock_output_data.can_id

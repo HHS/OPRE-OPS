@@ -2246,7 +2246,7 @@
         },
       },
       created_on: "2025-01-13T21:42:53.928887Z",
-      created_by: 516
+      created_by: 516,
     },
     {
       // 21
@@ -2255,7 +2255,7 @@
       event_details: {
         "request.json": {
           can_id: 500,
-          funding: 1000,
+          funding: 250000,
           fiscal_year: 2025,
         },
         "request.values": {},
@@ -2263,12 +2263,12 @@
           Host: "localhost:8080",
           Accept: "*/*",
           Connection: "keep-alive",
-          "User-Agent": "PostmanRuntime/7.42.0",
+          "User-Agent": "PostmanRuntime/7.43.0",
           "Content-Type": "application/json",
           Authorization: "Bearer token",
           "Cache-Control": "no-cache",
-          "Postman-Token": "deee8766-edbf-4e31-9c79-47764de887b2",
-          "Content-Length": "67",
+          "Postman-Token": "fa86f794-f5ba-415b-b8cb-767c291c16f6",
+          "Content-Length": "69",
           "Accept-Encoding": "gzip, deflate, br",
         },
         "request.remote_addr": "192.168.127.1",
@@ -2300,24 +2300,25 @@
           },
           notes: null,
           can_id: 500,
-          funding: 1000.0,
-          created_by: 520,
-          created_on: "2025-01-16T20:52:13.607111Z",
-          updated_by: 520,
-          updated_on: "2025-01-16T20:52:13.607111Z",
+          funding: 250000.0,
+          created_by: 516,
+          created_on: "2025-01-22T20:07:20.935608Z",
+          updated_by: 516,
+          updated_on: "2025-01-22T20:07:20.935608Z",
           fiscal_year: 2025,
           display_name: "CANFundingReceived#526",
           created_by_user: {
-            id: 520,
-            full_name: "System Owner",
+            id: 516,
+            full_name: "Steve Tekell",
           },
           updated_by_user: {
-            id: 520,
-            full_name: "System Owner",
+            id: 516,
+            full_name: "Steve Tekell",
           },
         },
       },
       created_on: "2025-01-13T21:43:53.928887Z",
+      created_by: 516,
     },
     {
       // 22
@@ -2514,7 +2515,7 @@
         },
       },
       created_on: "2025-01-13T21:42:53.928887Z",
-      created_by: 516
+      created_by: 516,
     },
     {
       // 28
