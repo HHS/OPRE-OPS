@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
 import { getAccessToken, getAuthorizationCode } from "./auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { faArrowRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import User from "../UI/Header/User";
 import { apiLogin, apiLogout } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
@@ -98,7 +98,7 @@ const AuthSection = () => {
                         }
                     >
                         <span className="margin-1">Sign-in</span>
-                        <FontAwesomeIcon icon={solid("arrow-right-to-bracket")} />
+                        <FontAwesomeIcon icon={faArrowRightToBracket} />
                     </button>
                 </div>
             )}

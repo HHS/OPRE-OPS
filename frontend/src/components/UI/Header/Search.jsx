@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 export const Search = () => {
     return (
@@ -28,7 +28,7 @@ export const Search = () => {
                         value="Search"
                     >
                         <FontAwesomeIcon
-                            icon={solid("magnifying-glass")}
+                            icon={faMagnifyingGlass}
                             title="Search"
                         />
                     </button>

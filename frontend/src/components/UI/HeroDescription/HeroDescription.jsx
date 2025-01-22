@@ -1,7 +1,7 @@
 import cssStyles from "./HeroDescription.module.css";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { faUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import ReactMarkdown from "react-markdown";
 /**
  * @component
@@ -70,7 +70,7 @@ const HeroDescription = ({ label, description, urls }) => {
                     >
                         See more on the website
                         <FontAwesomeIcon
-                            icon={solid("up-right-from-square")}
+                            icon={faUpRightFromSquare}
                             className={`h-9  ${cssStyles.upRightIcon}`}
                         />
                     </a>
