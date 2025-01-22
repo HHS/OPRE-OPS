@@ -52,7 +52,7 @@ class CANFundingReceivedItemAPI(BaseItemAPI):
             output_schema = FundingReceivedSchema()
             updated_funding_received = self.can_service.update(serialized_request, id)
             serialized_funding_received = output_schema.dump(updated_funding_received)
-            meta.metadata.update({"updated_can_funding_budget": serialized_funding_received})
+            meta.metadata.update({"updated_can_funding_received": serialized_funding_received})
             return make_response_with_headers(serialized_funding_received)
 
     @is_authorized(PermissionType.DELETE, Permission.CAN)
