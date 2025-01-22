@@ -145,7 +145,7 @@ def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
     assert new_can_history_item.can_id == event_details["new_can"]["id"]
     assert new_can_history_item.ops_event_id == test_create_can_history_item.id
     assert new_can_history_item.history_type == CANHistoryType.CAN_DATA_IMPORT
-    assert new_can_history_item.history_title == "**FY 2025 Data Import**"
+    assert new_can_history_item.history_title == "FY 2025 Data Import"
     assert new_can_history_item.history_message == "FY 2025 CAN Funding Information imported from CANBACs"
     assert new_can_history_item.timestamp == test_create_can_history_item.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
 
@@ -159,7 +159,7 @@ def test_create_can_can_history_next_fiscal_year(loaded_db):
     new_can_history_item = can_history_list[can_history_count - 1]
 
     assert new_can_history_item.history_type == CANHistoryType.CAN_DATA_IMPORT
-    assert new_can_history_item.history_title == "**FY 2026 Data Import**"
+    assert new_can_history_item.history_title == "FY 2026 Data Import"
     assert new_can_history_item.history_message == "FY 2026 CAN Funding Information imported from CANBACs"
 
 
@@ -172,7 +172,7 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
     new_can_history_item = can_history_list[can_history_count - 1]
 
     assert new_can_history_item.history_type == CANHistoryType.CAN_FUNDING_CREATED
-    assert new_can_history_item.history_title == "**FY 2025 Budget Entered**"
+    assert new_can_history_item.history_title == "FY 2025 Budget Entered"
     assert new_can_history_item.history_message == "System Owner entered a FY 2025 budget of $10,000.00"
     assert (
         new_can_history_item.can_id == funding_budget_created_event.event_details["new_can_funding_budget"]["can"]["id"]
@@ -186,7 +186,7 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
     new_can_history_item_2 = history_list[history_count - 1]
 
     assert new_can_history_item_2.history_type == CANHistoryType.CAN_FUNDING_CREATED
-    assert new_can_history_item_2.history_title == "**FY 2025 Budget Entered**"
+    assert new_can_history_item_2.history_title == "FY 2025 Budget Entered"
     assert new_can_history_item_2.history_message == "Cliff Hill entered a FY 2025 budget of $30,000.00"
     assert (
         new_can_history_item_2.can_id
@@ -206,7 +206,7 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
     new_can_history_item = can_history_list[can_history_count - 1]
 
     assert new_can_history_item.history_type == CANHistoryType.CAN_RECEIVED_DELETED
-    assert new_can_history_item.history_title == "**Funding Received Deleted**"
+    assert new_can_history_item.history_title == "Funding Received Deleted"
     assert (
         new_can_history_item.history_message
         == "Steve Tekell deleted funding received for funding ID 526 in the amount of $1,000.00"
