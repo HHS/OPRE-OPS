@@ -8,11 +8,22 @@ const mockProps = {
     nickname: "Test Nickname",
     portfolioName: "Test Portfolio",
     teamLeaders: [
-        { id: 1, full_name: "John Doe" },
-        { id: 2, full_name: "Jane Smith" }
+        { id: 1, full_name: "John Doe", email: "jdoe@example.com" },
+        { id: 2, full_name: "Jane Smith", email: "jsmith@example.com" }
     ],
     divisionDirectorFullName: "Director Name",
-    divisionName: "Test Division"
+    divisionName: "Test Division",
+    canHistoryItems: [
+        {
+            id: 1,
+            can_id: 500,
+            ops_event_id: 1,
+            history_title: "Test History Title",
+            history_message: "Test History Message",
+            timestamp: "2021-01-01T00:00:00Z",
+            history_type: "Test History Type"
+        }
+    ]
 };
 
 describe("CANDetailView", () => {
@@ -46,7 +57,7 @@ describe("CANDetailView", () => {
         );
 
         expect(screen.getByText("History")).toBeInTheDocument();
-        expect(screen.getByText("Not yet implemented")).toBeInTheDocument();
+        // TODO: Add more specific tests for history section
     });
 
     it("renders without team leaders", () => {

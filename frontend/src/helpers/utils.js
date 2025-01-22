@@ -225,6 +225,16 @@ export const convertCodeForDisplay = (listName, code) => {
     return codeMap[code] ? codeMap[code] : code;
 };
 
+/**
+ * Converts a date to a relative time string (e.g., "2 hours ago", "about a minute ago")
+ * @param {(Date|string)} dateParam - The date to convert. Can be a Date object or an ISO string
+ * @returns {string|null} A human-readable string representing relative time,
+ *                        formatted date string for dates older than 24 hours,
+ *                        or null if no date provided
+ * @example
+ * timeAgo("2023-05-20T15:00:00") // returns "about a minute ago"
+ * timeAgo(new Date()) // returns "now"
+ */
 export const timeAgo = (dateParam) => {
     if (!dateParam) {
         return null;
@@ -238,8 +248,9 @@ export const timeAgo = (dateParam) => {
 
     const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
     const today = new Date();
-    const seconds = Math.round((today - date) / 1000);
+    const seconds = Math.round((today.getTime() - date.getTime()) / 1000);
     const minutes = Math.round(seconds / 60);
+    const hours = Math.round(minutes / 60);
 
     if (seconds < 5) {
         return "now";
@@ -249,11 +260,12 @@ export const timeAgo = (dateParam) => {
         return "about a minute ago";
     } else if (minutes < 60) {
         return `${minutes} minutes ago`;
+    } else if (hours < 24) {
+        return `${hours} hours ago`;
     }
 
     return new Date(date).toLocaleString("en-US", {
-        dateStyle: "long",
-        timeStyle: "short"
+        dateStyle: "long"
     });
 };
 

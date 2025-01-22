@@ -1,6 +1,9 @@
-import TermTag from "../../UI/Term/TermTag";
-import Term from "../../UI/Term";
+import React from "react";
+import InfiniteScroll from "../../Agreements/AgreementDetails/InfiniteScroll";
+import LogItem from "../../UI/LogItem";
 import Tag from "../../UI/Tag";
+import Term from "../../UI/Term";
+import TermTag from "../../UI/Term/TermTag";
 /**
  * @typedef {Object} CANDetailViewProps
  * @property {string} description
@@ -10,6 +13,7 @@ import Tag from "../../UI/Tag";
  * @property {import("../../Users/UserTypes").SafeUser[]} teamLeaders
  * @property {string} divisionDirectorFullName
  * @property {string} divisionName
+ * @property {import("../../CANs/CANTypes").CanHistoryItem[]} canHistoryItems
  */
 /**
  * This component needs to wrapped in a <dl> element.
@@ -17,7 +21,18 @@ import Tag from "../../UI/Tag";
  * @param {CANDetailViewProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered component.
  */
-const CANDetailView = ({ description, number, nickname, portfolioName, teamLeaders, divisionDirectorFullName, divisionName}) => {
+const CANDetailView = ({
+    canHistoryItems = [],
+    description,
+    number,
+    nickname,
+    portfolioName,
+    teamLeaders,
+    divisionDirectorFullName,
+    divisionName
+}) => {
+    const [isLoading, setIsLoading] = React.useState(false);
+
     return (
         <div className="grid-row font-12px">
             {/* // NOTE: Left Column */}
@@ -33,7 +48,34 @@ const CANDetailView = ({ description, number, nickname, portfolioName, teamLeade
                 </dl>
                 <section data-cy="history">
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                    <p>Not yet implemented</p>
+                    <div
+                        className="overflow-y-scroll force-show-scrollbars"
+                        style={{ height: "15rem" }}
+                    >
+                        {canHistoryItems.length > 0 ? (
+                            <ul
+                                className="usa-list--unstyled"
+                                data-cy="can-history-list"
+                            >
+                                {canHistoryItems.map((canHistoryItem) => (
+                                    <LogItem
+                                        key={canHistoryItem.id}
+                                        title={canHistoryItem.history_title}
+                                        createdOn={canHistoryItem.timestamp}
+                                        message={canHistoryItem.history_message}
+                                    />
+                                ))}
+                                <InfiniteScroll
+                                    fetchMoreData={() => {
+                                        setIsLoading(true);
+                                    }}
+                                    isLoading={isLoading}
+                                />
+                            </ul>
+                        ) : (
+                            <p>No History</p>
+                        )}
+                    </div>
                 </section>
             </div>
             {/* // NOTE: Right Column */}
