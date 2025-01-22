@@ -5,3 +5,11 @@ export const CAN_TRANSFER = {
     IAA: "IAA",
     OTHER: "OTHER"
 };
+
+export const CAN_FUNDING_SOURCE = {
+    OPRE: "OPRE",
+    ACF: "ACF",
+    ACF_MOU: "ACF MOU",
+    HHS: "HHS",
+    OTHER: "Other"
+};
