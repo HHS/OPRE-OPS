@@ -189,24 +189,24 @@ def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None,
     return cans
 
 
-def aggregate_funding_summaries(funding_summaries: List[dict]) -> dict:
+def aggregate_funding_summaries(funding_summaries: List[dict]) -> CanFundingSummary:
     """
     Aggregates the funding summaries for multiple cans into a single total funding summary.
     :param funding_summaries: List of funding summaries to aggregate
     :return: A single total funding summary
     """
-    totals = {
-        "available_funding": "0.0",
+    totals: CanFundingSummary = {
+        "available_funding": 0.0,
         "cans": [],
-        "carry_forward_funding": "0.0",
-        "expected_funding": "0.0",
-        "in_draft_funding": "0.0",
-        "in_execution_funding": "0.0",
-        "new_funding": "0.0",
-        "obligated_funding": "0.0",
-        "planned_funding": "0.0",
-        "received_funding": "0.0",
-        "total_funding": "0.0",
+        "carry_forward_funding": 0.0,
+        "expected_funding": 0.0,
+        "in_draft_funding": 0.0,
+        "in_execution_funding": 0.0,
+        "new_funding": 0.0,
+        "obligated_funding": 0.0,
+        "planned_funding": 0.0,
+        "received_funding": 0.0,
+        "total_funding": 0.0,
     }
 
     for summary in funding_summaries:
@@ -214,10 +214,10 @@ def aggregate_funding_summaries(funding_summaries: List[dict]) -> dict:
             if key != "cans":
                 current_value = summary.get(key, None)
                 if current_value is None:
-                    current_value = "0.0"
+                    current_value = 0.0
                 if isinstance(current_value, (int, float, Decimal)):
-                    current_value = str(Decimal(current_value))
-                totals[key] = str(Decimal(totals[key]) + Decimal(current_value))
+                    current_value = Decimal(current_value)
+                totals[key] = Decimal(totals[key]) + Decimal(current_value)
 
         totals["cans"].append(summary.get("cans", [])[0])
 
