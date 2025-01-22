@@ -91,11 +91,6 @@ def test_service_create_funding_budget(loaded_db):
     loaded_db.commit()
 
 
-def test_service_create_funding_budget_with_missing_budget():
-    with pytest.raises(ValueError):
-        CANFundingBudgetService().create({"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"})
-
-
 def test_funding_budget_post_400_missing_budget(budget_team_auth_client):
     response = budget_team_auth_client.post(
         "/api/v1/can-funding-budgets/", json={"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"}
