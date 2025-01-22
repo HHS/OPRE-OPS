@@ -30,7 +30,7 @@ def can_history_trigger(
             history_event = CANHistory(
                 can_id=event.event_details["new_can"]["id"],
                 ops_event_id=event.id,
-                history_title=f"**FY {current_fiscal_year} Data Import**",
+                history_title=f"FY {current_fiscal_year} Data Import",
                 history_message=f"FY {current_fiscal_year} CAN Funding Information imported from CANBACs",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_DATA_IMPORT,
@@ -42,7 +42,7 @@ def can_history_trigger(
             history_event = CANHistory(
                 can_id=event.event_details["new_can_funding_budget"]["can"]["id"],
                 ops_event_id=event.id,
-                history_title=f"**FY {current_fiscal_year} Budget Entered**",
+                history_title=f"FY {current_fiscal_year} Budget Entered",
                 history_message=f"{creator_name} entered a FY {current_fiscal_year} budget of {budget}",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_FUNDING_CREATED,
@@ -54,7 +54,7 @@ def can_history_trigger(
             history_event = CANHistory(
                 can_id=event.event_details["deleted_can_funding_received"]["can_id"],
                 ops_event_id=event.id,
-                history_title="**Funding Received Deleted**",
+                history_title="Funding Received Deleted",
                 history_message=f"{creator_name} deleted funding received for funding ID {event.event_details['deleted_can_funding_received']['id']} in the amount of {funding}",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_RECEIVED_DELETED,
