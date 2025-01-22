@@ -209,7 +209,7 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
     assert new_can_history_item.history_title == "**Funding Received Deleted**"
     assert (
         new_can_history_item.history_message
-        == "System Owner deleted funding received for funding ID 526 in the amount of $1,000.00"
+        == "Steve Tekell deleted funding received for funding ID 526 in the amount of $1,000.00"
     )
     assert (
         new_can_history_item.can_id

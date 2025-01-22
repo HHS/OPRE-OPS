@@ -169,14 +169,6 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             request_data = request.json
             requestor_notes = request_data.pop("requestor_notes", None)
 
-            # Throws not-found error if can does not exist
-            try:
-                can_service = CANService()
-                if "can_id" in request_data:
-                    can_service.get(request_data["can_id"])
-            except NotFound:
-                return make_response_with_headers({}, 400)
-
             # validate and normalize the request data
             change_data, changing_from_data = validate_and_prepare_change_data(
                 request_data,
@@ -185,6 +177,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 ["id", "agreement_id"],
                 partial=False,
             )
+
+            # Throws not-found error if can does not exist
+            try:
+                can_service = CANService()
+                if "can_id" in request_data and request_data["can_id"] is not None:
+                    can_service.get(request_data["can_id"])
+            except NotFound:
+                return make_response_with_headers({}, 400)
 
             has_status_change = "status" in change_data
             has_non_status_change = len(change_data) > 1 if has_status_change else len(change_data) > 0
@@ -216,6 +216,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
             if not directly_editable and changed_budget_or_status_prop_keys:
                 change_request_ids = self.add_change_requests(
+                    id,
                     budget_line_item,
                     changing_from_data,
                     change_data,
@@ -232,7 +233,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 return make_response_with_headers(bli_dict, 200)
 
     def add_change_requests(
-        budget_line_item, changing_from_data, change_data, changed_budget_or_status_prop_keys, requestor_notes
+        self, id, budget_line_item, changing_from_data, change_data, changed_budget_or_status_prop_keys, requestor_notes
     ):
         change_request_ids = []
         # create a change request for each changed prop separately (for separate approvals)

@@ -155,6 +155,7 @@ class ResearchProjectListAPI(BaseListAPI):
                 data = ResearchProjectListAPI._post_schema.load(request.json)
                 new_rp = ResearchProject(**data)
 
+                tl_users = []
                 for tl_id in data.get("team_leaders", []):
                     team_leader = current_app.db_session.get(User, tl_id["id"])
                     if team_leader is None:
@@ -163,7 +164,9 @@ class ResearchProjectListAPI(BaseListAPI):
                         )
                         return make_response_with_headers({}, 400)
                     else:
-                        new_rp.team_leaders.append(team_leader)
+                        tl_users.append(team_leader)
+                # convert team leaders from key value pair to user object on ResearchProject
+                new_rp.team_leaders = tl_users
 
                 current_app.db_session.add(new_rp)
                 current_app.db_session.commit()
