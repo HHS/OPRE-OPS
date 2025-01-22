@@ -53,7 +53,7 @@ const canData = {
 };
 
 const canFundingCardData = {
-    available_funding: "14300000.00",
+    available_funding: 14300000.0,
     cans: [
         {
             can: {
@@ -91,13 +91,13 @@ const canFundingCardData = {
             expiration_date: "09/01/2024"
         }
     ],
-    carry_forward_funding: "14300000.00",
-    expected_funding: "5000000.00",
+    carry_forward_funding: 14300000.0,
+    expected_funding: 5000000.0,
     in_draft_funding: 0,
-    in_execution_funding: "2000000.00",
+    in_execution_funding: 2000000.0,
     new_funding: 0,
     obligated_funding: 0,
-    planned_funding: "7700000.00",
-    received_funding: "19000000.00",
-    total_funding: "24000000.00"
+    planned_funding: 7700000.0,
+    received_funding: 19000000.0,
+    total_funding: 24000000.0
 };
