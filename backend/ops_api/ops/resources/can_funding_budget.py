@@ -87,10 +87,7 @@ class CANFundingBudgetListAPI(BaseListAPI):
             schema = CreateUpdateFundingBudgetSchema()
             serialized_request = schema.load(request_data)
 
-            try:
-                created_funding_budget = self.service.create(serialized_request)
-            except ValueError as e:
-                return make_response_with_headers({"error": str(e)}, 400)
+            created_funding_budget = self.service.create(serialized_request)
 
             funding_budget_schema = FundingBudgetSchema()
             serialized_funding_budget = funding_budget_schema.dump(created_funding_budget)

@@ -24,9 +24,6 @@ class CANFundingBudgetService:
         """
         Create a new CAN Funding Budget and save it to the database
         """
-        if "budget" not in create_funding_budget_request:
-            raise ValueError("'budget' is a required field")
-
         new_can = CANFundingBudget(**create_funding_budget_request)
 
         current_app.db_session.add(new_can)
