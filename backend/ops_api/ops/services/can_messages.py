@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from models import CANHistory, CANHistoryType, OpsEvent, OpsEventStatus, OpsEventType, User
 
-locale.setlocale(locale.LC_ALL, "en_CA.UTF-8")
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
 
 def can_history_trigger(
