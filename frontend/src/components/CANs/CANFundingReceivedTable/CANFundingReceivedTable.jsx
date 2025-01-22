@@ -11,7 +11,7 @@ import CANFundingReceivedTableRow from "./CANFundingReceivedTableRow";
  * @property {FundingReceived[]} fundingReceived data for table
  * @property {boolean} isEditMode for if we're in edit mode
  * @property {(id: number | string) => void} populateFundingReceivedForm function for editing funding received
- * @property {() => void} deleteFundingReceived
+ * @property {(fundingReceivedId: number | string) => void} deleteFundingReceived
  */
 
 /**

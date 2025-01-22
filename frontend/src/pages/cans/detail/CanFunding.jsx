@@ -21,11 +21,11 @@ import useCanFunding from "./CanFunding.hooks.js";
 
 /**
  * @typedef {Object} welcomeModal
- * @property {boolean} showModal
  * @property {string} heading
  * @property {string} actionButtonText
- * @property {() => void} setShowModal
+ * @property {string} secondaryButtonText
  * @property {() => void} handleConfirm
+ * @property {boolean} showModal
  */
 
 /**
