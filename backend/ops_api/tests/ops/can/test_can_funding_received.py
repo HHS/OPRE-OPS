@@ -39,7 +39,7 @@ def test_funding_received_service_get_by_id(test_can):
 
 
 # Testing CANFundingReceived Creation
-def test_funding_budget_post_400_missing_budget(budget_team_auth_client):
+def test_funding_received_post_400_missing_funding(budget_team_auth_client):
     response = budget_team_auth_client.post(
         "/api/v1/can-funding-received/", json={"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"}
     )
