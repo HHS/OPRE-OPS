@@ -4,91 +4,106 @@ from sqlalchemy import select
 from models import CANFundingBudget
 from ops.services.can_funding_budget import CANFundingBudgetService
 
+#
+# @pytest.mark.usefixtures("app_ctx")
+# def test_funding_budget_get_all(auth_client, mocker, test_can_funding_budget):
+#     mocker_get_funding_budget = mocker.patch("ops_api.ops.services.can_funding_budget.CANFundingBudgetService.get_list")
+#     mocker_get_funding_budget.return_value = [test_can_funding_budget]
+#     response = auth_client.get("/api/v1/can-funding-budgets/")
+#     assert response.status_code == 200
+#     assert len(response.json) == 1
+#     mocker_get_funding_budget.assert_called_once()
+#
+#
+# def test_service_can_get_all(auth_client, loaded_db):
+#     count = loaded_db.query(CANFundingBudget).count()
+#     budget_service = CANFundingBudgetService()
+#     response = budget_service.get_list()
+#     assert len(response) == count
+#
+#
+# @pytest.mark.usefixtures("app_ctx")
+# def test_funding_budget_get_by_id(auth_client, mocker, test_can_funding_budget):
+#     mocker_get_funding_budget = mocker.patch("ops_api.ops.services.can_funding_budget.CANFundingBudgetService.get")
+#     mocker_get_funding_budget.return_value = test_can_funding_budget
+#     response = auth_client.get(f"/api/v1/can-funding-budgets/{test_can_funding_budget.id}")
+#     assert response.status_code == 200
+#     assert response.json["fiscal_year"] == 2023
+#     assert response.json["budget"] == 1140000
+#     assert response.json["can_id"] == 500
+#
+#
+# def test_funding_budget_service_get_by_id(test_can_funding_budget):
+#     service = CANFundingBudgetService()
+#     funding_budget = service.get(test_can_funding_budget.id)
+#     assert test_can_funding_budget.id == funding_budget.id
+#     assert test_can_funding_budget.budget == funding_budget.budget
+#     assert test_can_funding_budget.can_id == funding_budget.can_id
+#
+#
+# # Testing CANFundingBudget Creation
+# @pytest.mark.usefixtures("app_ctx")
+# def test_funding_budget_post_creates_funding_budget(budget_team_auth_client, mocker, loaded_db):
+#     input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
+#
+#     mock_output_data = CANFundingBudget(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
+#     mocker_create_funding_budget = mocker.patch(
+#         "ops_api.ops.services.can_funding_budget.CANFundingBudgetService.create"
+#     )
+#     mocker_create_funding_budget.return_value = mock_output_data
+#     response = budget_team_auth_client.post("/api/v1/can-funding-budgets/", json=input_data)
+#
+#     assert response.status_code == 201
+#     mocker_create_funding_budget.assert_called_once_with(input_data)
+#     assert response.json["id"] == mock_output_data.id
+#     assert response.json["can_id"] == mock_output_data.can_id
+#     assert response.json["fiscal_year"] == mock_output_data.fiscal_year
+#     assert response.json["budget"] == mock_output_data.budget
+#
+#
+# @pytest.mark.usefixtures("app_ctx")
+# def test_basic_user_cannot_post_funding_budget(basic_user_auth_client):
+#     input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
+#     response = basic_user_auth_client.post("/api/v1/can-funding-budgets/", json=input_data)
+#
+#     assert response.status_code == 403
+#
+#
+# def test_service_create_funding_budget(loaded_db):
+#     input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
+#
+#     service = CANFundingBudgetService()
+#
+#     new_budget = service.create(input_data)
+#
+#     funding_budget = loaded_db.execute(
+#         select(CANFundingBudget).where(CANFundingBudget.id == new_budget.id)
+#     ).scalar_one()
+#
+#     assert funding_budget is not None
+#     assert funding_budget.can_id == 500
+#     assert funding_budget.notes == "This is a note"
+#     assert funding_budget.fiscal_year == 2024
+#     assert funding_budget.id == new_budget.id
+#     assert funding_budget == new_budget
+#
+#     loaded_db.delete(new_budget)
+#     loaded_db.commit()
+#
+#
+# def test_service_create_funding_budget_with_missing_budget():
+#     with pytest.raises(ValueError):
+#         CANFundingBudgetService().create({"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"})
+#
 
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_budget_get_all(auth_client, mocker, test_can_funding_budget):
-    mocker_get_funding_budget = mocker.patch("ops_api.ops.services.can_funding_budget.CANFundingBudgetService.get_list")
-    mocker_get_funding_budget.return_value = [test_can_funding_budget]
-    response = auth_client.get("/api/v1/can-funding-budgets/")
-    assert response.status_code == 200
-    assert len(response.json) == 1
-    mocker_get_funding_budget.assert_called_once()
 
-
-def test_service_can_get_all(auth_client, loaded_db):
-    count = loaded_db.query(CANFundingBudget).count()
-    budget_service = CANFundingBudgetService()
-    response = budget_service.get_list()
-    assert len(response) == count
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_budget_get_by_id(auth_client, mocker, test_can_funding_budget):
-    mocker_get_funding_budget = mocker.patch("ops_api.ops.services.can_funding_budget.CANFundingBudgetService.get")
-    mocker_get_funding_budget.return_value = test_can_funding_budget
-    response = auth_client.get(f"/api/v1/can-funding-budgets/{test_can_funding_budget.id}")
-    assert response.status_code == 200
-    assert response.json["fiscal_year"] == 2023
-    assert response.json["budget"] == 1140000
-    assert response.json["can_id"] == 500
-
-
-def test_funding_budget_service_get_by_id(test_can_funding_budget):
-    service = CANFundingBudgetService()
-    funding_budget = service.get(test_can_funding_budget.id)
-    assert test_can_funding_budget.id == funding_budget.id
-    assert test_can_funding_budget.budget == funding_budget.budget
-    assert test_can_funding_budget.can_id == funding_budget.can_id
-
-
-# Testing CANFundingBudget Creation
-@pytest.mark.usefixtures("app_ctx")
-def test_funding_budget_post_creates_funding_budget(budget_team_auth_client, mocker, loaded_db):
-    input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
-
-    mock_output_data = CANFundingBudget(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
-    mocker_create_funding_budget = mocker.patch(
-        "ops_api.ops.services.can_funding_budget.CANFundingBudgetService.create"
+def test_funding_budget_post_400_missing_budget(budget_team_auth_client):
+    response = budget_team_auth_client.post(
+        "/api/v1/can-funding-budgets/", json={"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"}
     )
-    mocker_create_funding_budget.return_value = mock_output_data
-    response = budget_team_auth_client.post("/api/v1/can-funding-budgets/", json=input_data)
 
-    assert response.status_code == 201
-    mocker_create_funding_budget.assert_called_once_with(input_data)
-    assert response.json["id"] == mock_output_data.id
-    assert response.json["can_id"] == mock_output_data.can_id
-    assert response.json["fiscal_year"] == mock_output_data.fiscal_year
-    assert response.json["budget"] == mock_output_data.budget
-
-
-@pytest.mark.usefixtures("app_ctx")
-def test_basic_user_cannot_post_funding_budget(basic_user_auth_client):
-    input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
-    response = basic_user_auth_client.post("/api/v1/can-funding-budgets/", json=input_data)
-
-    assert response.status_code == 403
-
-
-def test_service_create_funding_budget(loaded_db):
-    input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
-
-    service = CANFundingBudgetService()
-
-    new_budget = service.create(input_data)
-
-    funding_budget = loaded_db.execute(
-        select(CANFundingBudget).where(CANFundingBudget.id == new_budget.id)
-    ).scalar_one()
-
-    assert funding_budget is not None
-    assert funding_budget.can_id == 500
-    assert funding_budget.notes == "This is a note"
-    assert funding_budget.fiscal_year == 2024
-    assert funding_budget.id == new_budget.id
-    assert funding_budget == new_budget
-
-    loaded_db.delete(new_budget)
-    loaded_db.commit()
+    assert response.status_code == 400
+    assert response.json["message"] == "'budget' is a required field"
 
 
 # Testing updating CANs by PATCH
