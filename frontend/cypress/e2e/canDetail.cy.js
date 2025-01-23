@@ -174,6 +174,7 @@ describe("CAN detail page", () => {
     });
     it("handles budget form", () => {
         cy.visit(`/cans/${can504.number}/funding`);
+        cy.wait(10000);
         cy.get("#edit").click();
         cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
         cy.get("#save-changes").should("be.disabled");
