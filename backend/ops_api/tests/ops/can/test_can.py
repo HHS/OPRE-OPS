@@ -2,7 +2,6 @@ import datetime
 
 import pytest
 from sqlalchemy import func, select
-from werkzeug.exceptions import NotFound
 
 from models import CAN, BudgetLineItem, CANFundingSource, CANStatus
 from ops.services.cans import CANService
@@ -234,17 +233,6 @@ def test_service_create_can(loaded_db):
 def test_can_patch(budget_team_auth_client, mocker, unadded_can):
     test_can_id = 517
     update_data = {"description": "Updated Description", "nick_name": "My nick name"}
-    data = {
-        "portfolio_id": 6,
-        "number": "G998235",
-        "description": "Test CAN Created by unit test",
-    }
-    can_service = CANService()
-    try:
-        can_service.get(test_can_id)
-    except NotFound:
-        can_service.create(data)
-
     mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update")
     unadded_can.description = update_data["description"]
     updated_can = CAN(portfolio_id=6, number="G998235", description="Updated Description", nick_name="My nick name")

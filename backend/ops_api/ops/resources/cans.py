@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import desert
-from deepdiff import DeepDiff
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import select
@@ -46,12 +45,9 @@ class CANItemAPI(BaseItemAPI):
             # Setting partial to true ignores any missing fields.
             schema = CreateUpdateCANRequestSchema(partial=True)
             serialized_request = schema.load(request_data)
-            old_can = self.can_service.get(id)
             updated_can = self.can_service.update(serialized_request, id)
-            serialized_old_can = schema.dump(old_can)
             serialized_can = schema.dump(updated_can)
-            values_changed = DeepDiff(serialized_old_can, serialized_can)
-            meta.metadata.update({"updated_can": values_changed})
+            meta.metadata.update({"updated_can": serialized_can})
             return make_response_with_headers(schema.dump(updated_can))
 
     @is_authorized(PermissionType.PATCH, Permission.CAN)
