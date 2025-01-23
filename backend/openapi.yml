@@ -2964,7 +2964,9 @@ components:
           enum:
             - OPRE
             - ACF
+            - ACF_MOU
             - HHS
+            - OTHER
         method_of_transfer:
           type: string
           enum:
@@ -2998,7 +3000,9 @@ components:
           enum:
             - OPRE
             - ACF
+            - ACF_MOU
             - HHS
+            - OTHER
         id:
           type: integer
         method_of_transfer:

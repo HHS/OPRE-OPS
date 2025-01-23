@@ -42,22 +42,22 @@ def test_can_get_can_funding_summary_fy_budget(auth_client: FlaskClient):
 
 
 def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=MOU&transfer=MOU"
+    query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE&transfer=COST_SHARE"
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
 
 
 def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE"
+    query_params = f"can_ids={0}&fiscal_year=2021&transfer=COST_SHARE"
 
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
 
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 0
+    assert len(response.json["cans"]) == 1
     assert response.json["expected_funding"] == "0.0"
-    assert response.json["received_funding"] == "0.0"
-    assert response.json["total_funding"] == "0.0"
+    assert response.json["received_funding"] == "200000.0"
+    assert response.json["total_funding"] == "200000.0"
 
 
 def test_can_get_can_funding_summary_invalid_transfer(auth_client: FlaskClient):
@@ -65,13 +65,6 @@ def test_can_get_can_funding_summary_invalid_transfer(auth_client: FlaskClient):
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
     assert response.status_code == 400
     assert response.json["Error"] == "Invalid 'transfer' value. Must be one of: DIRECT, COST_SHARE, IAA, IDDA, OTHER."
-
-
-def test_can_get_can_funding_summary_mou_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=MOU"
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
-    assert response.status_code == 200
-    assert len(response.json["cans"]) == 0
 
 
 def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: FlaskClient) -> None:
