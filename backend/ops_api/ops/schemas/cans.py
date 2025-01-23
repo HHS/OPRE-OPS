@@ -171,7 +171,7 @@ class FundingReceivedSchema(Schema):
 class CreateUpdateFundingReceivedSchema(Schema):
     fiscal_year = fields.Integer(required=True)
     can_id = fields.Integer(required=True)
-    funding = fields.Integer(load_default=None)
+    funding = fields.Integer(required=True)
     notes = fields.String(load_default=None)
 
 
