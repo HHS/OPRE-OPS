@@ -1,6 +1,6 @@
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useGetCanHistoryQuery, useGetDivisionQuery } from "../../../api/opsAPI";
+import { useGetDivisionQuery } from "../../../api/opsAPI";
 import CANDetailForm from "../../../components/CANs/CANDetailForm";
 import CANDetailView from "../../../components/CANs/CANDetailView/CANDetailView";
 import { NO_DATA } from "../../../constants.js";
@@ -48,15 +48,9 @@ const CanDetail = ({
 }) => {
     const { data: division, isSuccess } = useGetDivisionQuery(divisionId);
     const divisionDirectorFullName = useGetUserFullNameFromId(isSuccess ? division.division_director_id : null);
-    //const { data: canHistoryItems, isLoading } = useGetCanHistoryQuery({ canId, limit: 5, offset: 0 });
-
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear);
     const divisionName = division?.display_name ?? NO_DATA;
-
-    // if (isLoading) {
-    //     return <div>Loading...</div>;
-    // }
 
     return (
         <article>

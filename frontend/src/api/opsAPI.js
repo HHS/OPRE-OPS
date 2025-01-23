@@ -291,16 +291,13 @@ export const opsApi = createApi({
         getCanHistory: builder.query({
             query: ({ canId, offset, limit }) => {
                 const queryParams = [];
-                if (canId) {
-                    queryParams.push(`can_id=${canId}`);
-                }
                 if (limit) {
                     queryParams.push(`limit=${limit}`);
                 }
                 if (offset) {
                     queryParams.push(`offset=${offset}`);
                 }
-                return `/can-history/?${queryParams.join("&")}`;
+                return `/can-history/?can_id=${canId}&${queryParams.join("&")}`;
             },
             providesTags: ["Cans"]
         }),

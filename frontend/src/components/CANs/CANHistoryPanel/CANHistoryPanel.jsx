@@ -14,7 +14,6 @@ import LogItem from "../../UI/LogItem";
 
 const CanHistoryPanel = ({ canId }) => {
     const [offset, setOffset] = useState(0);
-    const [isFetching, setIsFetching] = useState(false);
     const [stopped, setStopped] = useState(false);
     /**
      * @type {CanHistoryItem[]}
@@ -28,8 +27,9 @@ const CanHistoryPanel = ({ canId }) => {
 
     const {
         data: canHistoryItems,
-        error,
-        isLoading
+        isError,
+        isLoading,
+        isFetching
     } = useGetCanHistoryQuery({
         canId,
         limit: 5,
@@ -38,13 +38,12 @@ const CanHistoryPanel = ({ canId }) => {
 
     useEffect(() => {
         if (canHistoryItems && canHistoryItems.length > 0) {
-            console.log({ canHistoryItems });
             setCanHistory([...cantHistory, ...canHistoryItems]);
         }
         if (!isLoading && canHistoryItems && canHistoryItems.length === 0) {
             setStopped(true);
         }
-        if (error) {
+        if (isError) {
             setStopped(true);
         }
     }, [canHistoryItems]);
@@ -52,16 +51,10 @@ const CanHistoryPanel = ({ canId }) => {
     const fetchMoreData = () => {
         if (stopped) return;
         if (!isFetching) {
-            setIsFetching(true);
             setOffset(offset + 5);
-            setIsFetching(false);
         }
         return Promise.resolve();
     };
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
 
     return (
         <>
@@ -73,6 +66,8 @@ const CanHistoryPanel = ({ canId }) => {
                     role="region"
                     aria-live="polite"
                     aria-label="CAN History"
+                    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                    tabIndex={0}
                 >
                     <ul
                         className="usa-list--unstyled"

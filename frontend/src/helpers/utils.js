@@ -260,6 +260,8 @@ export const timeAgo = (dateParam) => {
         return "about a minute ago";
     } else if (minutes < 60) {
         return `${minutes} minutes ago`;
+    } else if (hours === 1) {
+        return `${hours} hour ago`;
     } else if (hours < 24) {
         return `${hours} hours ago`;
     }

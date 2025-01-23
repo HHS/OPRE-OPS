@@ -80,6 +80,13 @@ describe("CAN detail page", () => {
         cy.get("p").should("contain", can502Nickname);
         cy.get("dd").should("contain", can502Description);
     });
+    it("handles history", () => {
+        cy.visit("/cans/500/");
+        checkCANHistory();
+    });
+});
+
+describe("CAN spending page", () => {
     it("shows the CAN Spending page", () => {
         cy.visit("/cans/504/spending");
         cy.get("#fiscal-year-select").select("2043");
@@ -132,6 +139,10 @@ describe("CAN detail page", () => {
         cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();
         cy.get("button").should("have.class", "usa-current").contains("1");
     });
+});
+
+// TODO: Add tests to check for history logs for each budget and funding change after backend is implemented
+describe("CAN funding page", () => {
     it("shows the CAN Funding page", () => {
         cy.visit("/cans/504/funding");
         cy.get("#fiscal-year-select").select("2024");
@@ -330,3 +341,11 @@ describe("CAN detail page", () => {
         cy.get("#carry-forward-card").should("not.exist");
     });
 });
+
+const checkCANHistory = () => {
+    cy.get("h3").should("have.text", "History");
+    cy.get('[data-cy="can-history-container"]').should("exist");
+    cy.get('[data-cy="can-history-container"]').scrollIntoView();
+    cy.get('[data-cy="can-history-list"]').should("exist");
+    cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should("exist");
+};
