@@ -83,8 +83,6 @@ class CANFundingSummaryService:
 
     @staticmethod
     def get_mapped_transfer_value(transfer: list[str]) -> tuple[bool, Optional[List[CANMethodOfTransfer]]]:
-        if "MOU" in transfer:
-            transfer[transfer.index("MOU")] = "COST_SHARE"
         try:
             transfer = [CANMethodOfTransfer[t] for t in transfer]
         except KeyError:
