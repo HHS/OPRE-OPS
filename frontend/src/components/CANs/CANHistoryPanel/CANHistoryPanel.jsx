@@ -41,6 +41,9 @@ const CanHistoryPanel = ({ canId }) => {
             console.log({ canHistoryItems });
             setCanHistory([...cantHistory, ...canHistoryItems]);
         }
+        if (!isLoading && canHistoryItems && canHistoryItems.length === 0) {
+            setStopped(true);
+        }
         if (error) {
             setStopped(true);
         }
@@ -48,11 +51,12 @@ const CanHistoryPanel = ({ canId }) => {
 
     const fetchMoreData = () => {
         if (stopped) return;
-        if (!isFetching && !stopped) {
+        if (!isFetching) {
             setIsFetching(true);
             setOffset(offset + 5);
             setIsFetching(false);
         }
+        return Promise.resolve();
     };
 
     if (isLoading) {
