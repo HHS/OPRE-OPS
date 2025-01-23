@@ -1,6 +1,6 @@
 from csv import DictReader
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 from loguru import logger
 from sqlalchemy import and_, select
@@ -14,21 +14,23 @@ class CANData:
     """
     Dataclass to represent a CAN data row.
     """
-    SYS_CAN_ID: int
+
     CAN_NBR: str
-    CAN_DESCRIPTION: str
     FUND: str
-    ALLOWANCE: str
-    ALLOTMENT_ORG: str
-    SUB_ALLOWANCE: str
-    CURRENT_FY_FUNDING_YTD: float
-    APPROP_PREFIX: str
-    APPROP_POSTFIX: str
-    APPROP_YEAR: str
     PORTFOLIO: str
-    FUNDING_SOURCE: str
-    METHOD_OF_TRANSFER: str
-    NICK_NAME: str
+    SYS_CAN_ID: Optional[int] = field(default=None)
+    CAN_DESCRIPTION: Optional[str] = field(default=None)
+    ALLOWANCE: Optional[str] = field(default=None)
+    ALLOTMENT_ORG: Optional[str] = field(default=None)
+    SUB_ALLOWANCE: Optional[str] = field(default=None)
+    CURRENT_FY_FUNDING_YTD: Optional[float] = field(default=None)
+    APPROP_PREFIX: Optional[str] = field(default=None)
+    APPROP_POSTFIX: Optional[str] = field(default=None)
+    APPROP_YEAR: Optional[str] = field(default=None)
+    FUNDING_SOURCE: Optional[str] = field(default=None)
+    METHOD_OF_TRANSFER: Optional[str] = field(default=None)
+    NICK_NAME: Optional[str] = field(default=None)
+    FUNDING_PARTNER: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if not self.CAN_NBR:
@@ -45,10 +47,11 @@ class CANData:
         self.APPROP_PREFIX = str(self.APPROP_PREFIX) if self.APPROP_PREFIX else None
         self.APPROP_POSTFIX = str(self.APPROP_POSTFIX) if self.APPROP_POSTFIX else None
         self.APPROP_YEAR = str(self.APPROP_YEAR) if self.APPROP_YEAR else None
-        self.PORTFOLIO = str(self.PORTFOLIO) if self.PORTFOLIO else None
+        self.PORTFOLIO = str(self.PORTFOLIO).upper() if self.PORTFOLIO else None
         self.FUNDING_SOURCE = str(self.FUNDING_SOURCE) if self.FUNDING_SOURCE else None
-        self.METHOD_OF_TRANSFER = str(self.METHOD_OF_TRANSFER) if self.METHOD_OF_TRANSFER else None
+        self.METHOD_OF_TRANSFER = str(self.METHOD_OF_TRANSFER).upper() if self.METHOD_OF_TRANSFER else None
         self.NICK_NAME = str(self.NICK_NAME) if self.NICK_NAME else None
+        self.FUNDING_PARTNER = str(self.FUNDING_PARTNER) if self.FUNDING_PARTNER else None
 
 
 def create_can_data(data: dict) -> CANData:
@@ -61,6 +64,7 @@ def create_can_data(data: dict) -> CANData:
     """
     return CANData(**data)
 
+
 def validate_data(data: CANData) -> bool:
     """
     Validate the data in a CanData instance.
@@ -69,12 +73,15 @@ def validate_data(data: CANData) -> bool:
 
     :return: True if the data is valid, False otherwise.
     """
-    return all([
-        data.CAN_NBR is not None,
-        data.PORTFOLIO is not None,
-        data.FUNDING_SOURCE is not None,
-        data.METHOD_OF_TRANSFER is not None,
-    ])
+    return all(
+        [
+            data.CAN_NBR is not None,
+            data.PORTFOLIO is not None,
+            data.FUNDING_SOURCE is not None,
+            data.METHOD_OF_TRANSFER is not None,
+        ]
+    )
+
 
 def validate_all(data: List[CANData]) -> bool:
     """
@@ -85,6 +92,7 @@ def validate_all(data: List[CANData]) -> bool:
     :return: A list of valid CanData instances.
     """
     return sum(1 for d in data if validate_data(d)) == len(data)
+
 
 def create_models(data: CANData, sys_user: User, session: Session) -> None:
     """
@@ -106,7 +114,9 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
     logger.debug(f"Creating models for {data}")
 
     try:
-        portfolio = session.execute(select(Portfolio).where(Portfolio.abbreviation == data.PORTFOLIO)).scalar_one_or_none()
+        portfolio = session.execute(
+            select(Portfolio).where(Portfolio.abbreviation == data.PORTFOLIO)
+        ).scalar_one_or_none()
         if not portfolio:
             raise ValueError(f"Portfolio not found for {data.PORTFOLIO}")
 
@@ -153,18 +163,25 @@ def get_or_create_funding_details(data: CANData, sys_user: User, session: Sessio
     appropriation = "-".join([data.APPROP_PREFIX or "", appropriation_year, data.APPROP_POSTFIX or ""])
 
     method_of_transfer = CANMethodOfTransfer[data.METHOD_OF_TRANSFER]
-    funding_source = CANFundingSource[data.FUNDING_SOURCE]
-    existing_funding_details = session.execute(select(CANFundingDetails).where(
-        and_(
-            CANFundingDetails.fiscal_year == fiscal_year,
-            CANFundingDetails.fund_code == fund_code,
-            CANFundingDetails.allowance == allowance,
-            CANFundingDetails.sub_allowance == sub_allowance,
-            CANFundingDetails.allotment == allotment,
-            CANFundingDetails.appropriation == appropriation,
-            CANFundingDetails.method_of_transfer == method_of_transfer,
-            CANFundingDetails.funding_source == funding_source,
-        ))).scalar_one_or_none()
+    funding_source = (
+        CANFundingSource[data.FUNDING_SOURCE] if data.FUNDING_SOURCE != "ACF - MOU" else CANFundingSource.ACF_MOU
+    )
+    funding_partner = data.FUNDING_PARTNER
+    existing_funding_details = session.execute(
+        select(CANFundingDetails).where(
+            and_(
+                CANFundingDetails.fiscal_year == fiscal_year,
+                CANFundingDetails.fund_code == fund_code,
+                CANFundingDetails.allowance == allowance,
+                CANFundingDetails.sub_allowance == sub_allowance,
+                CANFundingDetails.allotment == allotment,
+                CANFundingDetails.appropriation == appropriation,
+                CANFundingDetails.method_of_transfer == method_of_transfer,
+                CANFundingDetails.funding_source == funding_source,
+                CANFundingDetails.funding_partner == funding_partner,
+            )
+        )
+    ).scalar_one_or_none()
     if not existing_funding_details:
         funding_details = CANFundingDetails(
             fiscal_year=fiscal_year,
@@ -175,6 +192,7 @@ def get_or_create_funding_details(data: CANData, sys_user: User, session: Sessio
             appropriation=appropriation,
             method_of_transfer=method_of_transfer,
             funding_source=funding_source,
+            funding_partner=funding_partner,
             created_by=sys_user.id,
         )
         return funding_details

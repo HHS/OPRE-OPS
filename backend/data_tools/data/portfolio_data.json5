@@ -247,7 +247,7 @@
     { // 8
       name: "Data Governance",
       abbreviation: "DG",
-      division_id: 6,
+      division_id: 9,
       status: "IN_PROCESS",
       team_leaders: [
         {
@@ -285,14 +285,6 @@
       description: "",
     },
     { // 11
-      name: "Data Governance",
-      abbreviation: "DG",
-      division_id: 9,
-      status: "IN_PROCESS",
-      team_leaders: [],
-      description: "",
-    },
-    { // 12
       name: "Not A Specific Portfolio",
       abbreviation: "NON-OPRE",
       division_id: 3,

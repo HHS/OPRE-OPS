@@ -130,7 +130,7 @@ def after_user_load(conn: Connection) -> None:
             "  where deputy_division_director_id is null;"
             "update ops.division "
             " set division_director_id = (select id from ops.ops_user where email = 'director.derrek@email.com') "
-            " where id = 6;"
+            " where id = 9;"
         )
         session.execute(text(stmt))
         session.commit()
