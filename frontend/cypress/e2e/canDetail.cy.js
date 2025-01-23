@@ -173,8 +173,7 @@ describe("CAN detail page", () => {
             .and("contain", "60%");
     });
     it("handles budget form", () => {
-        cy.visit(`/cans/504/funding`);
-        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#edit").click();
         cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
         cy.get("#save-changes").should("be.disabled");
@@ -198,7 +197,6 @@ describe("CAN detail page", () => {
             .and("contain", "$5,000,000.00");
     });
     it("handle funding received form", () => {
-        cy.log(`/cans/${can504.number}/funding`);
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
