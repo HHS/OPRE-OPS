@@ -25,6 +25,8 @@ const Can = () => {
         canNumber,
         description,
         nickname,
+        modalProps,
+        resetModal,
         fundingDetails,
         fundingBudgets,
         fundingReceivedByFiscalYear,
@@ -115,6 +117,8 @@ const Can = () => {
                         <CanFunding
                             canId={canId}
                             canNumber={canNumber}
+                            welcomeModal={modalProps}
+                            setWelcomeModal={resetModal}
                             currentFiscalYearFundingId={currentFiscalYearFundingId}
                             funding={fundingDetails}
                             fundingBudgets={fundingBudgets}
