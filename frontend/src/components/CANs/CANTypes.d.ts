@@ -127,3 +127,13 @@ export type FundingSummaryCAN = {
     carry_forward_label: string;
     expiration_date: string;
 };
+
+export type CanHistoryItem  = {
+    id: number;
+    can_id: number;
+    ops_event_id: number;
+    history_title: string;
+    history_message: string;
+    timestamp: string;
+    history_type: string;
+}

@@ -288,6 +288,19 @@ export const opsApi = createApi({
             },
             providesTags: ["Cans", "CanFunding"]
         }),
+        getCanHistory: builder.query({
+            query: ({ canId, offset, limit }) => {
+                const queryParams = [];
+                if (limit) {
+                    queryParams.push(`limit=${limit}`);
+                }
+                if (offset) {
+                    queryParams.push(`offset=${offset}`);
+                }
+                return `/can-history/?can_id=${canId}&${queryParams.join("&")}`;
+            },
+            providesTags: ["Cans"]
+        }),
         getNotificationsByUserId: builder.query({
             query: ({ id, auth_header }) => {
                 if (!id) {
@@ -462,6 +475,7 @@ export const {
     useUpdateCanFundingReceivedMutation,
     useDeleteCanFundingReceivedMutation,
     useGetCanFundingSummaryQuery,
+    useGetCanHistoryQuery,
     useGetNotificationsByUserIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,
     useDismissNotificationMutation,

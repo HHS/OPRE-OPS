@@ -7,7 +7,8 @@ import {
     toSlugCase,
     toTitleCaseFromSlug,
     toLowerCaseFromSlug,
-    fromUpperCaseToTitleCase
+    fromUpperCaseToTitleCase,
+    timeAgo
 } from "./utils";
 
 test("current federal fiscal year is calculated correctly", () => {
@@ -96,4 +97,59 @@ test("renders uppercase to titlecase", () => {
     expect(fromUpperCaseToTitleCase(null)).toEqual("");
     expect(fromUpperCaseToTitleCase(undefined)).toEqual("");
     expect(fromUpperCaseToTitleCase(true)).toEqual("");
+});
+
+describe("timeAgo", () => {
+    beforeEach(() => {
+        // Mock the current date to be fixed
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date("2023-01-01T12:00:00Z"));
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    test("handles null and undefined input", () => {
+        expect(timeAgo(null)).toBeNull();
+        expect(timeAgo(undefined)).toBeNull();
+    });
+
+    test("shows 'now' for very recent dates", () => {
+        const date = new Date("2023-01-01T11:59:57Z"); // 3 seconds ago
+        expect(timeAgo(date)).toBe("now");
+    });
+
+    test("shows seconds for recent dates", () => {
+        const date = new Date("2023-01-01T11:59:30Z"); // 30 seconds ago
+        expect(timeAgo(date)).toBe("30 seconds ago");
+    });
+
+    test("shows 'about a minute ago' for ~1 minute", () => {
+        const date = new Date("2023-01-01T11:58:35Z"); // 85 seconds ago
+        expect(timeAgo(date)).toBe("about a minute ago");
+    });
+
+    test("shows minutes for < 1 hour", () => {
+        const date = new Date("2023-01-01T11:30:00Z"); // 30 minutes ago
+        expect(timeAgo(date)).toBe("30 minutes ago");
+    });
+
+    test("shows hours for < 24 hours", () => {
+        const date = new Date("2023-01-01T06:00:00Z"); // 6 hours ago
+        expect(timeAgo(date)).toBe("6 hours ago");
+    });
+
+    test("shows full date for dates > 24 hours ago", () => {
+        const date = new Date("2022-12-30T12:00:00Z"); // 2 days ago
+        expect(timeAgo(date)).toBe("December 30, 2022");
+    });
+
+    test("handles ISO string dates with timezone", () => {
+        expect(timeAgo("2023-01-01T11:30:00Z")).toBe("30 minutes ago");
+    });
+
+    test("handles ISO string dates without timezone", () => {
+        expect(timeAgo("2023-01-01T11:30:00")).toBe("30 minutes ago");
+    });
 });

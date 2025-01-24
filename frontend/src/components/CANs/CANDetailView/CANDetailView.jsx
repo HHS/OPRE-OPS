@@ -1,6 +1,7 @@
-import TermTag from "../../UI/Term/TermTag";
-import Term from "../../UI/Term";
 import Tag from "../../UI/Tag";
+import Term from "../../UI/Term";
+import TermTag from "../../UI/Term/TermTag";
+import CanHistoryPanel from "../CANHistoryPanel";
 /**
  * @typedef {Object} CANDetailViewProps
  * @property {string} description
@@ -10,6 +11,7 @@ import Tag from "../../UI/Tag";
  * @property {import("../../Users/UserTypes").SafeUser[]} teamLeaders
  * @property {string} divisionDirectorFullName
  * @property {string} divisionName
+ * @property {number} canId
  */
 /**
  * This component needs to wrapped in a <dl> element.
@@ -17,9 +19,21 @@ import Tag from "../../UI/Tag";
  * @param {CANDetailViewProps} props - The properties passed to the component.
  * @returns {JSX.Element} - The rendered component.
  */
-const CANDetailView = ({ description, number, nickname, portfolioName, teamLeaders, divisionDirectorFullName, divisionName}) => {
+const CANDetailView = ({
+    canId,
+    description,
+    number,
+    nickname,
+    portfolioName,
+    teamLeaders,
+    divisionDirectorFullName,
+    divisionName
+}) => {
     return (
-        <div className="grid-row font-12px">
+        <div
+            className="grid-row font-12px"
+            style={{ columnGap: "82px" }}
+        >
             {/* // NOTE: Left Column */}
             <div
                 className="grid-col"
@@ -33,7 +47,7 @@ const CANDetailView = ({ description, number, nickname, portfolioName, teamLeade
                 </dl>
                 <section data-cy="history">
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                    <p>Not yet implemented</p>
+                    <CanHistoryPanel canId={canId} />
                 </section>
             </div>
             {/* // NOTE: Right Column */}

@@ -1,26 +1,40 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import CANDetailView from "./CANDetailView";
+import { Provider } from "react-redux";
+import store from "../../../store";
 
 const mockProps = {
+    canId: 500,
     description: "Test CAN Description",
     number: "CAN-123",
     nickname: "Test Nickname",
     portfolioName: "Test Portfolio",
     teamLeaders: [
-        { id: 1, full_name: "John Doe" },
-        { id: 2, full_name: "Jane Smith" }
+        { id: 1, full_name: "John Doe", email: "jdoe@example.com" },
+        { id: 2, full_name: "Jane Smith", email: "jsmith@example.com" }
     ],
     divisionDirectorFullName: "Director Name",
-    divisionName: "Test Division"
+    divisionName: "Test Division",
+    canHistoryItems: [
+        {
+            id: 1,
+            can_id: 500,
+            ops_event_id: 1,
+            history_title: "Test History Title",
+            history_message: "Test History Message",
+            timestamp: "2021-01-01T00:00:00Z",
+            history_type: "Test History Type"
+        }
+    ]
 };
 
 describe("CANDetailView", () => {
     it("renders all CAN details correctly", () => {
         render(
-            <dl>
+            <Provider store={store}>
                 <CANDetailView {...mockProps} />
-            </dl>
+            </Provider>
         );
 
         // Check for basic text content
@@ -40,23 +54,23 @@ describe("CANDetailView", () => {
 
     it("renders history section", () => {
         render(
-            <dl>
+            <Provider store={store}>
                 <CANDetailView {...mockProps} />
-            </dl>
+            </Provider>
         );
 
         expect(screen.getByText("History")).toBeInTheDocument();
-        expect(screen.getByText("Not yet implemented")).toBeInTheDocument();
+        // TODO: Add more specific tests for history section
     });
 
     it("renders without team leaders", () => {
         render(
-            <dl>
+            <Provider store={store}>
                 <CANDetailView
                     {...mockProps}
                     teamLeaders={[]}
                 />
-            </dl>
+            </Provider>
         );
 
         // Verify other content still renders
