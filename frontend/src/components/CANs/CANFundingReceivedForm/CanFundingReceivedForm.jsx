@@ -10,10 +10,10 @@ import icons from "../../../uswds/img/sprite.svg";
  * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleSubmit
  * @property {boolean} isEditing
  * @property {(name: string, value: string) => void} runValidate
- * @property { React.Dispatch<React.SetStateAction<string>>} setReceivedFundingAmount
+ * @property {(value: string) => void} setReceivedFundingAmount
  * @property {string} notes
- * @property { React.Dispatch<React.SetStateAction<string>>} setNotes
- * @property { () => void } cancelFundingReceived
+ * @property {(value: string) => void} setNotes
+ * @property {(e: React.FormEvent<HTMLFormElement>) => void } cancelFundingReceived
  */
 
 /**
