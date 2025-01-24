@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 
 from models import CAN, BudgetLineItem, CANFundingSource, CANStatus
 from ops.services.cans import CANService
+from ops_api.tests.utils import DummyContextManager
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -171,7 +172,14 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
     mock_output_data = CAN(id=517, portfolio_id=6, number="G998235", description="Test CAN Created by unit test")
     mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
     mocker_create_can.return_value = mock_output_data
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.post("/api/v1/cans/", json=input_data)
+
+    assert context_manager.metadata["new_can"]["id"] == 517
+    assert context_manager.metadata["new_can"]["number"] == "G998235"
 
     # Add fields that are default populated on load.
     input_data["nick_name"] = None
@@ -224,13 +232,11 @@ def test_service_create_can(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_can_patch(budget_team_auth_client, mocker, unadded_can):
     test_can_id = 517
-    update_data = {
-        "description": "Test CAN Created by unit test",
-    }
-
+    update_data = {"description": "Updated Description", "nick_name": "My nick name"}
     mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update")
     unadded_can.description = update_data["description"]
-    mocker_update_can.return_value = unadded_can
+    updated_can = CAN(portfolio_id=6, number="G998235", description="Updated Description", nick_name="My nick name")
+    mocker_update_can.return_value = updated_can
     response = budget_team_auth_client.patch(f"/api/v1/cans/{test_can_id}", json=update_data)
 
     assert response.status_code == 200
