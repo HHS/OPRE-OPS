@@ -30,7 +30,10 @@ const CANDetailView = ({
     divisionName
 }) => {
     return (
-        <div className="grid-row font-12px">
+        <div
+            className="grid-row font-12px"
+            style={{ columnGap: "82px" }}
+        >
             {/* // NOTE: Left Column */}
             <div
                 className="grid-col"
