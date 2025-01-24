@@ -7,6 +7,7 @@ from flask_jwt_extended import get_current_user, verify_jwt_in_request
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import Any
+from werkzeug.exceptions import NotFound
 
 from models import (
     CAN,
@@ -30,6 +31,7 @@ from ops_api.ops.schemas.budget_line_items import (
     POSTRequestBodySchema,
     QueryParametersSchema,
 )
+from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.api_helpers import convert_date_strings_to_dates, validate_and_prepare_change_data
 from ops_api.ops.utils.change_requests import create_notification_of_new_request_to_reviewer
 from ops_api.ops.utils.events import OpsEventHandler
@@ -131,6 +133,20 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
 
         return response
 
+    def is_bli_editable(self, budget_line_item):
+        """A utility function that determines if a BLI is editable"""
+        editable = budget_line_item.status in [
+            BudgetLineItemStatus.DRAFT,
+            BudgetLineItemStatus.PLANNED,
+            BudgetLineItemStatus.IN_EXECUTION,
+        ]
+
+        # if the BLI is in review, it cannot be edited
+        if budget_line_item.in_review:
+            editable = False
+
+        return editable
+
     def _update(self, id, method, schema) -> Response:
         message_prefix = f"{method} to {ENDPOINT_STRING}"
 
@@ -143,15 +159,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             budget_line_item = current_app.db_session.get(BudgetLineItem, id)
             if not budget_line_item:
                 return make_response_with_headers({}, 400)  # should this return 404, tests currently expect 400
-            editable = budget_line_item.status in [
-                BudgetLineItemStatus.DRAFT,
-                BudgetLineItemStatus.PLANNED,
-                BudgetLineItemStatus.IN_EXECUTION,
-            ]
-
-            # if the BLI is in review, it cannot be edited
-            if budget_line_item.in_review:
-                editable = False
+            editable = self.is_bli_editable(budget_line_item)
 
             # 403: forbidden to edit
             if not editable:
@@ -169,6 +177,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
                 ["id", "agreement_id"],
                 partial=False,
             )
+
+            # Throws not-found error if can does not exist
+            try:
+                can_service = CANService()
+                if "can_id" in request_data and request_data["can_id"] is not None:
+                    can_service.get(request_data["can_id"])
+            except NotFound:
+                return make_response_with_headers({}, 400)
 
             has_status_change = "status" in change_data
             has_non_status_change = len(change_data) > 1 if has_status_change else len(change_data) > 0
@@ -199,32 +215,14 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             change_request_ids = []
 
             if not directly_editable and changed_budget_or_status_prop_keys:
-                # create a change request for each changed prop separately (for separate approvals)
-                # the CR model can support multiple changes in a single request,
-                # but we are limiting it to one change per request here
-                for changed_prop_key in changed_budget_or_status_prop_keys:
-                    change_keys = [changed_prop_key]
-                    change_request = BudgetLineItemChangeRequest()
-                    change_request.budget_line_item_id = id
-                    change_request.agreement_id = budget_line_item.agreement_id
-                    managing_division = get_division_for_budget_line_item(id)
-                    change_request.managing_division_id = managing_division.id if managing_division else None
-                    schema = PATCHRequestBodySchema(only=change_keys)
-                    requested_change_data = schema.dump(change_data)
-                    change_request.requested_change_data = requested_change_data
-                    old_values = schema.dump(changing_from_data)
-                    requested_change_diff = {
-                        key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
-                        for key in change_keys
-                    }
-                    change_request.requested_change_diff = requested_change_diff
-                    requested_change_info = {"target_display_name": budget_line_item.display_name}
-                    change_request.requested_change_info = requested_change_info
-                    change_request.requestor_notes = requestor_notes
-                    current_app.db_session.add(change_request)
-                    current_app.db_session.commit()
-                    create_notification_of_new_request_to_reviewer(change_request)
-                    change_request_ids.append(change_request.id)
+                change_request_ids = self.add_change_requests(
+                    id,
+                    budget_line_item,
+                    changing_from_data,
+                    change_data,
+                    changed_budget_or_status_prop_keys,
+                    requestor_notes,
+                )
 
             bli_dict = self._response_schema.dump(budget_line_item)
             meta.metadata.update({"bli": bli_dict})
@@ -234,6 +232,39 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
             else:
                 return make_response_with_headers(bli_dict, 200)
 
+    def add_change_requests(
+        self, id, budget_line_item, changing_from_data, change_data, changed_budget_or_status_prop_keys, requestor_notes
+    ):
+        change_request_ids = []
+        # create a change request for each changed prop separately (for separate approvals)
+        # the CR model can support multiple changes in a single request,
+        # but we are limiting it to one change per request here
+        for changed_prop_key in changed_budget_or_status_prop_keys:
+            change_keys = [changed_prop_key]
+            change_request = BudgetLineItemChangeRequest()
+            change_request.budget_line_item_id = id
+            change_request.agreement_id = budget_line_item.agreement_id
+            managing_division = get_division_for_budget_line_item(id)
+            change_request.managing_division_id = managing_division.id if managing_division else None
+            schema = PATCHRequestBodySchema(only=change_keys)
+            requested_change_data = schema.dump(change_data)
+            change_request.requested_change_data = requested_change_data
+            old_values = schema.dump(changing_from_data)
+            requested_change_diff = {
+                key: {"new": requested_change_data.get(key, None), "old": old_values.get(key, None)}
+                for key in change_keys
+            }
+            change_request.requested_change_diff = requested_change_diff
+            requested_change_info = {"target_display_name": budget_line_item.display_name}
+            change_request.requested_change_info = requested_change_info
+            change_request.requestor_notes = requestor_notes
+            current_app.db_session.add(change_request)
+            current_app.db_session.commit()
+            create_notification_of_new_request_to_reviewer(change_request)
+            change_request_ids.append(change_request.id)
+
+        return change_request_ids
+
     @is_authorized(
         PermissionType.PUT,
         Permission.BUDGET_LINE_ITEM,
@@ -241,6 +272,7 @@ class BudgetLineItemsItemAPI(BaseItemAPI):
     def put(self, id: int) -> Response:
         if not self.bli_associated_with_agreement(id, PermissionType.PUT):
             return make_response_with_headers({}, 403)
+
         return self._update(id, "PUT", self._put_schema)
 
     @is_authorized(
@@ -363,6 +395,14 @@ class BudgetLineItemsListAPI(BaseListAPI):
 
             if not self.associated_with_agreement(agreement_id, PermissionType.POST):
                 return make_response_with_headers({}, 403)
+
+            # Throws not-found error if can does not exist
+            try:
+                can_service = CANService()
+                if "can_id" in data and data["can_id"] is not None:
+                    can_service.get(data["can_id"])
+            except NotFound:
+                return make_response_with_headers({}, 400)
 
             data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
             data = convert_date_strings_to_dates(data)

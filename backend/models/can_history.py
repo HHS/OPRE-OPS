@@ -14,11 +14,11 @@ class CANHistoryType(Enum):
     CAN_DATA_IMPORT = auto()
     CAN_NICKNAME_EDITED = auto()
     CAN_DESCRIPTION_EDITED = auto()
-    CAN_FUNDING_CREATED = auto()
+    CAN_FUNDING_CREATED = auto() #CANFundingBudget
     CAN_RECEIVED_CREATED = auto()
-    CAN_FUNDING_EDITED = auto()
+    CAN_FUNDING_EDITED = auto() #CANFUndingBudget
     CAN_RECEIVED_EDITED = auto()
-    CAN_FUNDING_DELETED = auto()
+    CAN_FUNDING_DELETED = auto() #CANFundingBudget
     CAN_RECEIVED_DELETED = auto()
     CAN_PORTFOLIO_CREATED = auto()
     CAN_PORTFOLIO_DELETED = auto()

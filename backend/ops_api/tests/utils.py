@@ -10,3 +10,14 @@ def remove_keys(d: dict, keys: list[str]):
     elif isinstance(d, list):
         for item in d:
             remove_keys(item, keys)
+
+
+class DummyContextManager:
+    def __init__(self):
+        self.metadata = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self):
+        print("No Op")

@@ -46,11 +46,17 @@ class OpsEventHandler:
         else:
             event_status = OpsEventStatus.SUCCESS
 
+        current_user_id = None
+        try:
+            current_user_id = current_user.id if current_user else None
+        except Exception as e:
+            print(e)
+
         event = OpsEvent(
             event_type=self.event_type,
             event_status=event_status,
             event_details=self.metadata,
-            created_by=current_user.id if current_user else None,
+            created_by=current_user_id,
         )
 
         with Session(current_app.engine) as session:
