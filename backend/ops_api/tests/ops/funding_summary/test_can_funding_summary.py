@@ -42,36 +42,29 @@ def test_can_get_can_funding_summary_fy_budget(auth_client: FlaskClient):
 
 
 def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=MOU&transfer=MOU"
+    query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE&transfer=COST_SHARE"
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
 
 
 def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE"
+    query_params = f"can_ids={0}&fiscal_year=2021&transfer=COST_SHARE"
 
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
 
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 0
+    assert len(response.json["cans"]) == 1
     assert response.json["expected_funding"] == "0.0"
-    assert response.json["received_funding"] == "0.0"
-    assert response.json["total_funding"] == "0.0"
+    assert response.json["received_funding"] == "200000.0"
+    assert response.json["total_funding"] == "200000.0"
 
 
 def test_can_get_can_funding_summary_invalid_transfer(auth_client: FlaskClient):
     query_params = f"can_ids={0}&fiscal_year=2023&transfer=INVALID"
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
     assert response.status_code == 400
-    assert response.json["Error"] == "Invalid 'transfer' value. Must be one of: DIRECT, COST_SHARE, IAA, IDDA."
-
-
-def test_can_get_can_funding_summary_mou_transfer(auth_client: FlaskClient):
-    query_params = f"can_ids={0}&fiscal_year=2023&transfer=MOU"
-    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
-    assert response.status_code == 200
-    assert len(response.json["cans"]) == 0
+    assert response.json["Error"] == "Invalid 'transfer' value. Must be one of: DIRECT, COST_SHARE, IAA, IDDA, OTHER."
 
 
 def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: FlaskClient) -> None:
@@ -185,7 +178,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                 "expiration_date": "10/01/2024",
             }
         ],
-        "carry_forward_funding": 0,
+        "carry_forward_funding": Decimal("-860000.00"),
         "expected_funding": Decimal("260000.0"),
         "in_draft_funding": 0,
         "in_execution_funding": Decimal("2000000.00"),
@@ -279,7 +272,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                 "expiration_date": "10/01/2024",
             }
         ],
-        "carry_forward_funding": 0,
+        "carry_forward_funding": Decimal("1140000.0"),
         "in_draft_funding": Decimal("0.0"),
         "expected_funding": Decimal("260000.0"),
         "in_execution_funding": 0,
@@ -316,7 +309,7 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert len(response.json["cans"]) == 2
 
     assert available_funding == "3340000.00"
-    assert carry_forward_funding == "10000000.0"
+    assert carry_forward_funding == "3340000.00"
     assert response.json["new_funding"] == "1340000.0"
 
 

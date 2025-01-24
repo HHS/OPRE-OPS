@@ -5,9 +5,9 @@ from typing import Optional
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
-from marshmallow import EXCLUDE, Schema
 from sqlalchemy import select
 
+from marshmallow import EXCLUDE, Schema
 from models.base import BaseModel
 from ops_api.ops.auth.authorization_providers import AuthorizationGateway, BasicAuthorizationProvider
 from ops_api.ops.utils.errors import error_simulator

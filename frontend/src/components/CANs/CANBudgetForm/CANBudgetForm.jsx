@@ -3,6 +3,8 @@ import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * @typedef {Object} CANBudgetFormProps
+ * @property {boolean} showCarryForwardCard
+ * @property {string} totalFunding
  * @property {string} budgetAmount
  * @property {(arg: string) => string} cn
  * @property {Object} res
@@ -17,17 +19,26 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {CANBudgetFormProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANBudgetForm = ({ budgetAmount, cn, res, fiscalYear, handleAddBudget, runValidate, setBudgetAmount }) => {
+const CANBudgetForm = ({
+    totalFunding,
+    showCarryForwardCard,
+    budgetAmount,
+    cn,
+    res,
+    fiscalYear,
+    handleAddBudget,
+    runValidate,
+    setBudgetAmount
+}) => {
     const fillColor = budgetAmount ? "#005ea2" : "#757575";
 
     return (
         <form
             onSubmit={(e) => {
                 handleAddBudget(e);
-                setBudgetAmount("");
             }}
         >
-            <div style={{ width: "383px" }}>
+            <div style={{ width: "383px", marginTop: `${showCarryForwardCard ? "0" : "-24px"}` }}>
                 <CurrencyInput
                     name="budget-amount"
                     label={`FY ${fiscalYear} CAN Budget`}
@@ -38,6 +49,7 @@ const CANBudgetForm = ({ budgetAmount, cn, res, fiscalYear, handleAddBudget, run
                     value={budgetAmount || ""}
                     messages={res.getErrors("budget-amount")}
                     className={cn("budget-amount")}
+                    placeholder={`$${totalFunding}`}
                 />
             </div>
             <button

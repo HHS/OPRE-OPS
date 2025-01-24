@@ -2,9 +2,9 @@ from datetime import date
 from typing import Any
 
 from flask import current_app
-from marshmallow import EXCLUDE, Schema
 from sqlalchemy import inspect
 
+from marshmallow import EXCLUDE, Schema
 from models import BaseModel
 
 

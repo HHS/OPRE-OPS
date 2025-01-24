@@ -47,7 +47,6 @@ describe("CANBudgetForm", () => {
         await user.click(screen.getByRole("button", { name: /add fy budget/i }));
 
         expect(defaultProps.handleAddBudget).toHaveBeenCalled();
-        expect(defaultProps.setBudgetAmount).toHaveBeenCalledWith("");
     });
 
     test("calls runValidate when currency input changes", () => {

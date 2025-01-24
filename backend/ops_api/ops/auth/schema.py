@@ -1,7 +1,6 @@
 from typing import Optional
 
 from marshmallow import Schema, fields
-
 from ops_api.ops.auth.auth_types import ProviderTypes
 
 

@@ -21,6 +21,9 @@ alembic upgrade head
 echo "Loading 'user_data.json5'..."
 DATA=./data_tools/data/user_data.json5 python ./data_tools/src/import_static_data/import_data.py
 
+echo "Loading 'ops_event.json5'..."
+DATA=./data_tools/data/ops_event.json5 python ./data_tools/src/import_static_data/import_data.py
+
 echo "Loading 'vendor_and_contact_data.json5'..."
 DATA=./data_tools/data/vendor_and_contact_data.json5 python ./data_tools/src/import_static_data/import_data.py
 
@@ -44,5 +47,6 @@ DATA=./data_tools/data/first_contract_data.json5 python ./data_tools/src/import_
 
 echo "Loading 'agreements_and_blin_data.json5'..."
 DATA=./data_tools/data/agreements_and_blin_data.json5 python ./data_tools/src/import_static_data/import_data.py
+
 
 echo "Data Loading Complete!"

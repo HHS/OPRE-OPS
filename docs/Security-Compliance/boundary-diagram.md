@@ -14,7 +14,7 @@ Users with `OFA Admin` and (STT) `Data Analyst` roles can upload data on upload 
 
 ### User access
 
-All web users will log into the system through their web browsers. 
+All web users will log into the system through their web browsers.
 - all non-acf users will leverage Login.gov and two factor authentication.
 - all ACF users will leverage ACF AMS and authenticate using PIV/CAC.  Developers will also have access to the `dev` and `staging` spaces using SSH.
 
@@ -24,7 +24,7 @@ All users will be required to be approved within the application by an administr
 
 Beyond web-based authentication through ACF AMS or Login.gov, and developer SSH access to the dev Space, CircleCI will also have access to the various environments to support deployments.
 
-TDP system administrators will trigger CircleCI-based deployments via GitHub. 
+TDP system administrators will trigger CircleCI-based deployments via GitHub.
 
 ### Configuration
 

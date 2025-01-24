@@ -10,7 +10,7 @@ Accepted
 
 We have been using webpack as a module bundler for our project. However, we have encountered a bug related to the "@babel/plugin-proposal-private-property-in-object" package. This package is not declared as a dependency in "babel-preset-react-app," which we rely on. While it currently works due to the package being present in our node_modules folder, there is a risk of it breaking in the future.
 
-Moreover, "babel-preset-react-app" is no longer maintained as part of the create-react-app project. Therefore, it is unlikely that this bug will be fixed. 
+Moreover, "babel-preset-react-app" is no longer maintained as part of the create-react-app project. Therefore, it is unlikely that this bug will be fixed.
 
 ## Decision
 

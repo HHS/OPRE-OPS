@@ -185,7 +185,6 @@ def loaded_db(app: Flask, app_ctx: None, auth_client: FlaskClient) -> Session:
     session.rollback()
 
     session.execute(delete(OpsDBHistory))
-    session.execute(delete(OpsEvent))
 
     session.commit()
     session.close()
@@ -235,6 +234,15 @@ def test_non_admin_user(loaded_db) -> User | None:
 
 
 @pytest.fixture()
+def test_budget_team_user(loaded_db):
+    """Get a test budget team user
+
+    N.B. This user has an non-SYSTEM_OWNER role whose status is ACTIVE.
+    """
+    return loaded_db.get(User, 523)
+
+
+@pytest.fixture()
 def test_vendor(loaded_db) -> Vendor | None:
     """Get a test Vendor."""
     return loaded_db.get(Vendor, 100)
@@ -256,6 +264,12 @@ def test_can(loaded_db) -> CAN | None:
 def test_cans(loaded_db) -> list[Type[CAN] | None]:
     """Get two test CANs."""
     return [loaded_db.get(CAN, 500), loaded_db.get(CAN, 501)]
+
+
+@pytest.fixture()
+def test_create_can_history_item(loaded_db) -> OpsEvent | None:
+    """Get OPS Event item for creation of CAN 500"""
+    return loaded_db.get(OpsEvent, 1)
 
 
 @pytest.fixture()

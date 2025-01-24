@@ -1,5 +1,4 @@
 from marshmallow import EXCLUDE, Schema, fields
-
 from models import ChangeRequestStatus, ChangeRequestType
 from ops_api.ops.schemas.users import SafeUserSchema
 

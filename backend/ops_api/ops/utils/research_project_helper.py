@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 import desert
-import marshmallow
 from flask import current_app
 
+import marshmallow
 from models import Portfolio
 from ops_api.ops.utils.portfolios import get_total_funding
 

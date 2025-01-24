@@ -4,7 +4,7 @@ description: "This action simplifies pushes of Docker images to ghcr.io reposito
 # https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
 
 inputs:
-  github_token: 
+  github_token:
     description: "Your secrets.GITHUB_TOKEN"
     required: true
 
@@ -74,7 +74,7 @@ runs:
             export COMMIT_TAGS=${IMAGE_TAGS}
           fi
         fi
-        
+
         # lowercase the image name, see https://github.com/macbre/push-to-ghcr/issues/12
         export IMAGE_NAME=$(echo ${IMAGE_NAME} | tr '[:upper:]' '[:lower:]')
 

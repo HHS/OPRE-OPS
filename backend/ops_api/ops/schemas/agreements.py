@@ -1,5 +1,4 @@
 from marshmallow import Schema, fields
-
 from models import AgreementReason, AgreementType, ContractType, ServiceRequirementType
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
