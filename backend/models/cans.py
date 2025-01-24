@@ -18,6 +18,7 @@ class CANMethodOfTransfer(Enum):
     COST_SHARE = auto()
     IAA = auto()
     IDDA = auto()
+    OTHER = auto()
 
 
 class CANStatus(Enum):
@@ -33,7 +34,9 @@ class CANFundingSource(Enum):
 
     OPRE = auto()
     ACF = auto()
+    ACF_MOU = auto()
     HHS = auto()
+    OTHER = auto()
 
 
 class CAN(BaseModel):

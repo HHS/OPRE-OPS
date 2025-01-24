@@ -1,15 +1,14 @@
 export const budgetLine = {
     agreement_id: 1,
     agreement: {
-      name: "Contract #1: African American Child and Family Research Center",
-      agreement_type: "AgreementType.CONTRACT",
-      awarding_entity_id: 1
+        name: "Contract #1: African American Child and Family Research Center",
+        agreement_type: "AgreementType.CONTRACT",
+        awarding_entity_id: 1
     },
     amount: 1_000_000,
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
-        authorizer_id: 525,
         description: "Head Start Research",
         expiration_date: "2024-09-01T00:00:00.000000Z",
         id: 5,
@@ -54,7 +53,6 @@ export const agreement = {
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 active_period: 1,
-                authorizer_id: 525,
                 description: "Head Start Research",
                 expiration_date: "2024-09-01T00:00:00.000000Z",
                 id: 5,
@@ -110,7 +108,6 @@ export const agreement = {
             can: {
                 appropriation_date: "2023-10-01T00:00:00.000000Z",
                 active_period: 1,
-                authorizer_id: 525,
                 description: "Head Start Research",
                 expiration_date: "2024-09-01T00:00:00.000000Z",
                 id: 5,
@@ -602,7 +599,6 @@ export const budgetLineWithBudgetChangeRequest = {
     can: {
         appropriation_date: "2022-10-01T00:00:00.000000Z",
         active_period: 1,
-        authorizer_id: 26,
         description: "Example CAN",
         display_name: "G99XXX8",
         expiration_date: "2023-09-01T00:00:00.000000Z",
@@ -753,7 +749,6 @@ export const budgetLineWithStatusChangeRequestToPlanned = {
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
-        authorizer_id: 26,
         description: "Head Start Research",
         display_name: "G994426",
         expiration_date: "2024-09-01T00:00:00.000000Z",
@@ -852,7 +847,6 @@ export const budgetLineWithStatusChangeRequestToExecuting = {
     can: {
         appropriation_date: "2023-10-01T00:00:00.000000Z",
         active_period: 1,
-        authorizer_id: 26,
         description: "Social Science Research and Development",
         display_name: "G99PHS9",
         expiration_date: "2024-09-01T00:00:00.000000Z",

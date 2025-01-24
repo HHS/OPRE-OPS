@@ -25,9 +25,10 @@ const CANBudgetByFYCard = ({ fundingBudgets }) => {
                 title="CAN Budget by FY"
                 dataCy="can-budget-fy-card"
             >
-                {chartData.map((item) => (
+                {chartData.map((item, i) => (
                     <LineBar
                         key={`budget-fy-${item.FY}`}
+                        iterator={i}
                         color={item.color}
                         ratio={item.ratio}
                         title={`FY ${item.FY}`}

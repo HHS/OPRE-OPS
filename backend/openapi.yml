@@ -1161,6 +1161,7 @@ paths:
                 - COST_SHARE
                 - IAA
                 - IDDA
+                - OTHER
             example: [ "DIRECT", "IAA" ]
         - name: portfolio
           in: query
@@ -2889,6 +2890,10 @@ components:
               - CAN_DIVISION_EDITED
               - CAN_CARRY_FORWARD_CALCULATED
             example: "CAN_NICKNAME_EDITED"
+        required:
+          - id
+          - can_id
+          - ops_event_id
     FundingReceived:
       description: Funding Received Object
       type: object
@@ -2959,7 +2964,9 @@ components:
           enum:
             - OPRE
             - ACF
+            - ACF_MOU
             - HHS
+            - OTHER
         method_of_transfer:
           type: string
           enum:
@@ -2967,6 +2974,7 @@ components:
             - COST_SHARE
             - IAA
             - IDDA
+            - OTHER
         sub_allowance:
           type: string
     FundingDetails:
@@ -2992,7 +3000,9 @@ components:
           enum:
             - OPRE
             - ACF
+            - ACF_MOU
             - HHS
+            - OTHER
         id:
           type: integer
         method_of_transfer:
@@ -3002,6 +3012,7 @@ components:
             - COST_SHARE
             - IAA
             - IDDA
+            - OTHER
         sub_allowance:
           type: string
         created_on:

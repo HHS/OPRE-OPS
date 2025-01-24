@@ -3,6 +3,7 @@ import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * @typedef {Object} CANBudgetFormProps
+ * @property {boolean} showCarryForwardCard
  * @property {string} totalFunding
  * @property {string} budgetAmount
  * @property {(arg: string) => string} cn
@@ -10,7 +11,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @property {number} fiscalYear
  * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleAddBudget
  * @property {(name: string, value: string) => void} runValidate
- * @property { React.Dispatch<React.SetStateAction<string>>} setBudgetAmount
+ * @property {(value: string) => void} setBudgetAmount
  */
 
 /**
@@ -18,7 +19,17 @@ import icons from "../../../uswds/img/sprite.svg";
  * @param {CANBudgetFormProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANBudgetForm = ({ totalFunding, budgetAmount, cn, res, fiscalYear, handleAddBudget, runValidate, setBudgetAmount }) => {
+const CANBudgetForm = ({
+    totalFunding,
+    showCarryForwardCard,
+    budgetAmount,
+    cn,
+    res,
+    fiscalYear,
+    handleAddBudget,
+    runValidate,
+    setBudgetAmount
+}) => {
     const fillColor = budgetAmount ? "#005ea2" : "#757575";
 
     return (
@@ -27,7 +38,7 @@ const CANBudgetForm = ({ totalFunding, budgetAmount, cn, res, fiscalYear, handle
                 handleAddBudget(e);
             }}
         >
-            <div style={{ width: "383px" }}>
+            <div style={{ width: "383px", marginTop: `${showCarryForwardCard ? "0" : "-24px"}` }}>
                 <CurrencyInput
                     name="budget-amount"
                     label={`FY ${fiscalYear} CAN Budget`}
