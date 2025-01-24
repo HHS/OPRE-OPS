@@ -174,6 +174,7 @@ describe("CAN detail page", () => {
     });
     it("handles budget form", () => {
         cy.visit(`/cans/${can504.number}/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
         // Check welcome modal
         cy.get("#ops-modal-heading").contains(
