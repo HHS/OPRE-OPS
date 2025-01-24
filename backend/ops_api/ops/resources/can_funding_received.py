@@ -49,8 +49,9 @@ class CANFundingReceivedItemAPI(BaseItemAPI):
             schema = CreateUpdateFundingReceivedSchema()
             serialized_request = schema.load(request_data)
 
+            output_schema = FundingReceivedSchema()
             updated_funding_received = self.can_service.update(serialized_request, id)
-            serialized_funding_received = schema.dump(updated_funding_received)
+            serialized_funding_received = output_schema.dump(updated_funding_received)
             meta.metadata.update({"updated_can_funding_budget": serialized_funding_received})
             return make_response_with_headers(serialized_funding_received)
 
@@ -60,8 +61,10 @@ class CANFundingReceivedItemAPI(BaseItemAPI):
         Delete a CANFundingReceived with given id.
         """
         with OpsEventHandler(OpsEventType.DELETE_CAN_FUNDING_RECEIVED) as meta:
-            self.can_service.delete(id)
-            meta.metadata.update({"Deleted CANFundingReceived": id})
+            deleted_funding_received = self.can_service.delete(id)
+            output_schema = FundingReceivedSchema()
+            serialized_funding_received = output_schema.dump(deleted_funding_received)
+            meta.metadata.update({"deleted_can_funding_received": serialized_funding_received})
             return make_response_with_headers({"message": "CANFundingReceived deleted", "id": id}, 200)
 
 
