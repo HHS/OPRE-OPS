@@ -1,8 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import CANDetailView from "./CANDetailView";
+import { Provider } from "react-redux";
+import store from "../../../store";
 
 const mockProps = {
+    canId: 500,
     description: "Test CAN Description",
     number: "CAN-123",
     nickname: "Test Nickname",
@@ -29,9 +32,9 @@ const mockProps = {
 describe("CANDetailView", () => {
     it("renders all CAN details correctly", () => {
         render(
-            <dl>
+            <Provider store={store}>
                 <CANDetailView {...mockProps} />
-            </dl>
+            </Provider>
         );
 
         // Check for basic text content
@@ -51,9 +54,9 @@ describe("CANDetailView", () => {
 
     it("renders history section", () => {
         render(
-            <dl>
+            <Provider store={store}>
                 <CANDetailView {...mockProps} />
-            </dl>
+            </Provider>
         );
 
         expect(screen.getByText("History")).toBeInTheDocument();
@@ -62,12 +65,12 @@ describe("CANDetailView", () => {
 
     it("renders without team leaders", () => {
         render(
-            <dl>
+            <Provider store={store}>
                 <CANDetailView
                     {...mockProps}
                     teamLeaders={[]}
                 />
-            </dl>
+            </Provider>
         );
 
         // Verify other content still renders
