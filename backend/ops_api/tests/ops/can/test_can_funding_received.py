@@ -11,6 +11,7 @@ def test_funding_received_get_all(auth_client, mocker, test_can):
     mocker_get_can = mocker.patch("ops_api.ops.services.can_funding_received.CANFundingReceivedService.get_list")
     mocker_get_can.return_value = [test_can]
     response = auth_client.get("/api/v1/can-funding-received/")
+    response = auth_client.get("/api/v1/can-funding-received/")
     assert response.status_code == 200
     assert len(response.json) == 1
     mocker_get_can.assert_called_once()
