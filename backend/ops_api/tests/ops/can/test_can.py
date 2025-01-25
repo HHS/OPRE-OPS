@@ -169,7 +169,9 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
         "nick_name": "MockNickname",
     }
 
-    mock_output_data = CAN(id=517, portfolio_id=6, number="G998235", description="Test CAN Created by unit test", nick_name="MockNickname")
+    mock_output_data = CAN(
+        id=517, portfolio_id=6, number="G998235", description="Test CAN Created by unit test", nick_name="MockNickname"
+    )
     mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
     mocker_create_can.return_value = mock_output_data
     response = budget_team_auth_client.post("/api/v1/cans/", json=input_data)
