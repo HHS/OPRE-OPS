@@ -166,15 +166,15 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
         "portfolio_id": 6,
         "number": "G998235",
         "description": "Test CAN Created by unit test",
+        "nick_name": "MockNickname",
     }
 
-    mock_output_data = CAN(id=517, portfolio_id=6, number="G998235", description="Test CAN Created by unit test")
+    mock_output_data = CAN(id=517, portfolio_id=6, number="G998235", description="Test CAN Created by unit test", nick_name="MockNickname")
     mocker_create_can = mocker.patch("ops_api.ops.services.cans.CANService.create")
     mocker_create_can.return_value = mock_output_data
     response = budget_team_auth_client.post("/api/v1/cans/", json=input_data)
 
     # Add fields that are default populated on load.
-    input_data["nick_name"] = None
     input_data["funding_details_id"] = None
     assert response.status_code == 201
     mocker_create_can.assert_called_once_with(input_data)
@@ -182,6 +182,7 @@ def test_can_post_creates_can(budget_team_auth_client, mocker, loaded_db):
     assert response.json["portfolio_id"] == mock_output_data.portfolio_id
     assert response.json["number"] == mock_output_data.number
     assert response.json["description"] == mock_output_data.description
+    assert response.json["nick_name"] == mock_output_data.nick_name
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -299,6 +300,7 @@ def test_can_put(budget_team_auth_client, mocker, unadded_can):
         "description": "Test CAN Created by unit test",
         "portfolio_id": 6,
         "funding_details_id": 1,
+        "nick_name": "MockNickname",
     }
 
     mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update")
@@ -306,11 +308,11 @@ def test_can_put(budget_team_auth_client, mocker, unadded_can):
     mocker_update_can.return_value = unadded_can
     response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
 
-    update_data["nick_name"] = None
     assert response.status_code == 200
     mocker_update_can.assert_called_once_with(update_data, test_can_id)
     assert response.json["number"] == unadded_can.number
     assert response.json["description"] == unadded_can.description
+    assert response.json["nick_name"] == unadded_can.nick_name
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -331,6 +333,7 @@ def test_can_put_404(budget_team_auth_client):
         "description": "Test CAN Created by unit test",
         "portfolio_id": 6,
         "funding_details_id": 1,
+        "nick_name": "MockNickname",
     }
 
     response = budget_team_auth_client.put(f"/api/v1/cans/{test_can_id}", json=update_data)
