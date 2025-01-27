@@ -10,7 +10,7 @@ class GetCANListRequestSchema(Schema):
 
 
 class CreateUpdateCANRequestSchema(Schema):
-    nick_name = fields.String(load_default=None)
+    nick_name = fields.String(required=True)
     number = fields.String(required=True)
     description = fields.String(allow_none=True, load_default=None)
     portfolio_id = fields.Integer(required=True)
@@ -171,7 +171,7 @@ class FundingReceivedSchema(Schema):
 class CreateUpdateFundingReceivedSchema(Schema):
     fiscal_year = fields.Integer(required=True)
     can_id = fields.Integer(required=True)
-    funding = fields.Integer(load_default=None)
+    funding = fields.Integer(required=True)
     notes = fields.String(load_default=None)
 
 
