@@ -10,7 +10,7 @@ class GetCANListRequestSchema(Schema):
 
 
 class CreateUpdateCANRequestSchema(Schema):
-    nick_name = fields.String(load_default=None)
+    nick_name = fields.String(required=True)
     number = fields.String(required=True)
     description = fields.String(allow_none=True, load_default=None)
     portfolio_id = fields.Integer(required=True)
