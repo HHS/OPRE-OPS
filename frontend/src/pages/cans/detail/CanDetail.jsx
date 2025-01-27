@@ -2,7 +2,7 @@ import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useGetDivisionQuery } from "../../../api/opsAPI";
 import CANDetailForm from "../../../components/CANs/CANDetailForm";
-import CANDetailView from "../../../components/CANs/CANDetailView";
+import CANDetailView from "../../../components/CANs/CANDetailView/CANDetailView";
 import { NO_DATA } from "../../../constants.js";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
@@ -48,7 +48,6 @@ const CanDetail = ({
 }) => {
     const { data: division, isSuccess } = useGetDivisionQuery(divisionId);
     const divisionDirectorFullName = useGetUserFullNameFromId(isSuccess ? division.division_director_id : null);
-
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear);
     const divisionName = division?.display_name ?? NO_DATA;
@@ -85,6 +84,7 @@ const CanDetail = ({
                 />
             ) : (
                 <CANDetailView
+                    canId={canId}
                     description={description}
                     number={canNumber}
                     nickname={nickname}

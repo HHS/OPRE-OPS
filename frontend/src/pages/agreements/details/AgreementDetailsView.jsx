@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
+import { NO_DATA } from "../../../constants";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
@@ -12,20 +13,21 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @returns {JSX.Element} - The rendered component.
  */
 const AgreementDetailsView = ({ agreement, projectOfficer }) => {
-    const MISSING_VALUE_TEXT = "TBD";
-
     return (
         <section>
-            <div className="grid-row margin-top-2">
+            <div
+                className="grid-row margin-top-2"
+                style={{ columnGap: "82px" }}
+            >
                 <div
-                    className="grid-col-6 padding-right-1"
+                    className="grid-col"
                     data-cy="details-left-col"
                 >
                     {/* // NOTE: Left Column */}
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Description</dt>
                         <dd className="margin-0 margin-top-05 text-semibold">
-                            {agreement?.description ? agreement.description : MISSING_VALUE_TEXT}
+                            {agreement?.description ? agreement.description : NO_DATA}
                         </dd>
                     </dl>
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">Notes</h3>
@@ -49,7 +51,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                     <AgreementHistoryPanel agreementId={agreement.id} />
                 </div>
                 <div
-                    className="grid-col-6 padding-left-2"
+                    className="grid-col"
                     data-cy="details-right-col"
                 >
                     {/* // NOTE: Right Column */}
@@ -68,7 +70,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                                 text={
                                     agreement?.product_service_code?.name
                                         ? agreement.product_service_code.name
-                                        : MISSING_VALUE_TEXT
+                                        : NO_DATA
                                 }
                             />
                         </dd>
@@ -82,7 +84,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                                     text={
                                         agreement?.product_service_code?.naics
                                             ? `${agreement.product_service_code.naics}`
-                                            : MISSING_VALUE_TEXT
+                                            : NO_DATA
                                     }
                                 />
                             </dd>
@@ -95,7 +97,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                                     text={
                                         agreement?.product_service_code?.support_code
                                             ? agreement?.product_service_code?.support_code
-                                            : MISSING_VALUE_TEXT
+                                            : NO_DATA
                                     }
                                 />
                             </dd>
@@ -121,7 +123,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                                     text={
                                         agreement?.agreement_reason
                                             ? convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
-                                            : MISSING_VALUE_TEXT
+                                            : NO_DATA
                                     }
                                 />
                             </dd>
@@ -146,7 +148,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                                 text={
                                     projectOfficer && Object.keys(projectOfficer).length !== 0
                                         ? projectOfficer?.full_name
-                                        : MISSING_VALUE_TEXT
+                                        : NO_DATA
                                 }
                             />
                         </dd>
@@ -171,7 +173,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             <dd className="margin-0 margin-top-1 margin-bottom-2">
                                 <Tag
                                     tagStyle="primaryDarkTextLightBackground"
-                                    text={MISSING_VALUE_TEXT}
+                                    text={NO_DATA}
                                 />
                             </dd>
                         )}
