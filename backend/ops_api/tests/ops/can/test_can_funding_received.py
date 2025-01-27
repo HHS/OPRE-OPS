@@ -40,6 +40,15 @@ def test_funding_received_service_get_by_id(test_can):
 
 
 # Testing CANFundingReceived Creation
+def test_funding_received_post_400_missing_funding(budget_team_auth_client):
+    response = budget_team_auth_client.post(
+        "/api/v1/can-funding-received/", json={"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"}
+    )
+
+    assert response.status_code == 400
+    assert response.json["funding"][0] == "Missing data for required field."
+
+
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_received_post_creates_funding_received(budget_team_auth_client, mocker, loaded_db):
     input_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "This is a note"}

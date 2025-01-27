@@ -2769,6 +2769,7 @@ components:
       required:
         - number
         - portfolio_id
+        - nick_name
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
@@ -2943,6 +2944,7 @@ components:
       required:
         - fiscal_year
         - can_id
+        - funding
     CreateUpdateFundingDetails:
       description: A request object for the creation or updating of a FundingDetails object
       type: object
