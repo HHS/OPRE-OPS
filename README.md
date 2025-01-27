@@ -216,10 +216,12 @@ We use [pre-commit](https://pre-commit.com/index.html) hooks to help keep our co
 
 ```shell
 pre-commit install
+
+pre-commit install --hook-type commit-msg
 ```
 
 These checks will run automatically when you try to make a commit. If there is a failure, it will prevent the commit
-from succeeding. Fix the problem and try the commit again.
+from succeeding. Fix the problem and try the commit again. Installing the commit-msg hook type is not strictly necessary, but without it the commit lint will not run in the pre-commit.
 
 ## Deployment
 
