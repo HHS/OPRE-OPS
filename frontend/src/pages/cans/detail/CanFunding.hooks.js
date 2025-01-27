@@ -27,6 +27,7 @@ import cryptoRandomString from "crypto-random-string";
  * @param {boolean} isBudgetTeamMember
  * @param {boolean} isEditMode
  * @param {() => void} toggleEditMode
+ * @param {() => void} setWelcomeModal
  * @param {string} receivedFunding
  * @param {FundingReceived[]} fundingReceived
  * @param {number} [currentFiscalYearFundingId] - The id of the current fiscal year funding. optional
@@ -39,6 +40,7 @@ export default function useCanFunding(
     isBudgetTeamMember,
     isEditMode,
     toggleEditMode,
+    setWelcomeModal,
     receivedFunding,
     fundingReceived,
     currentFiscalYearFundingId
@@ -291,9 +293,9 @@ export default function useCanFunding(
             return fundingEntry.id === newFundingReceived.id;
         });
 
-        console.log({ matchingFundingReceived });
-
-        const matchingFundingReceivedFunding = +matchingFundingReceived?.funding || 0;
+        const matchingFundingReceivedFunding =
+            // set matchingFundingReceivedFunding to 0 if matchingFundingReceived is undefined
+            matchingFundingReceived && matchingFundingReceived.funding ? +matchingFundingReceived.funding : 0;
         setTotalReceived(
             (currentTotal) => currentTotal - matchingFundingReceivedFunding + +fundingReceivedForm.enteredAmount
         );
@@ -342,7 +344,7 @@ export default function useCanFunding(
             const newDeletedFundingReceivedIds = [...deletedFundingReceivedIds, fundingReceivedId];
             setDeletedFundingReceivedIds(newDeletedFundingReceivedIds);
         }
-        setTotalReceived((currentTotal) => currentTotal - +matchingFundingReceived?.funding);
+        setTotalReceived((currentTotal) => currentTotal - +(matchingFundingReceived?.funding ?? 0));
     };
 
     const handleCancel = () => {
@@ -365,6 +367,7 @@ export default function useCanFunding(
         setShowModal(false);
         setFundingReceivedForm(initialFundingReceivedForm);
         toggleEditMode();
+        setWelcomeModal();
         setModalProps({
             heading: "",
             actionButtonText: "",
