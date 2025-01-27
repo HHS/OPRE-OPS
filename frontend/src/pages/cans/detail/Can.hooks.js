@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
@@ -16,19 +16,30 @@ export default function useCan() {
     // send to CanFunding hook
     // if its present PATCH otherwise POST
 
-    const [isEditMode, setIsEditMode] = React.useState(false);
+    const urlPathParams = useParams();
+    const location = useLocation();
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles.includes(USER_ROLES.BUDGET_TEAM);
     const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
-    const urlPathParams = useParams();
     const canId = parseInt(urlPathParams.id ?? "-1");
-    /** @type {{data?: CAN | undefined, isLoading: boolean}} */
+    const initialModalProps = {
+        heading: "",
+        actionButtonText: "",
+        secondaryButtonText: "",
+        handleConfirm: () => {},
+        showModal: false
+    };
+    const [modalProps, setModalProps] = React.useState(initialModalProps);
+    const [isEditMode, setIsEditMode] = React.useState(false);
+    const isFundingPage = location.pathname.includes("funding");
 
+    /** @type {{data?: CAN | undefined, isLoading: boolean}} */
     const { data: can, isLoading } = useGetCanByIdQuery(canId, {
         refetchOnMountOrArgChange: true
     });
+
     /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
     const { data: CANFunding, isLoading: CANFundingLoading } = useGetCanFundingSummaryQuery({
         ids: [canId],
@@ -82,7 +93,25 @@ export default function useCan() {
     );
 
     const toggleEditMode = () => {
-        setIsEditMode(!isEditMode);
+        if (isFundingPage && CANFunding?.total_funding === "0") {
+            setModalProps({
+                heading: `Welcome to FY ${fiscalYear}! The new fiscal year started on October 1, ${fiscalYear - 1} and it's time to add the FY budget for this CAN.  Data from the previous fiscal year can no longer be edited, but can be viewed by changing the FY dropdown on the CAN details page.`,
+                actionButtonText: "Edit CAN",
+                secondaryButtonText: "Cancel",
+                showModal: true,
+                handleConfirm: () => {
+                    setIsEditMode(!isEditMode);
+                    setModalProps(initialModalProps);
+                }
+            });
+        } else {
+            setIsEditMode(!isEditMode);
+        }
+    };
+
+    const resetModal = () => {
+        setIsEditMode(false);
+        setModalProps(initialModalProps);
     };
 
     const currentFiscalYearFundingId = can?.funding_budgets?.find((funding) => funding.fiscal_year === fiscalYear)?.id;
@@ -98,6 +127,7 @@ export default function useCan() {
         canNumber: can?.number ?? NO_DATA,
         description: can?.description,
         nickname: can?.nick_name,
+        modalProps,
         fundingDetails: can?.funding_details ?? {},
         fundingBudgets: can?.funding_budgets ?? [],
         fundingReceivedByFiscalYear: fundingReceivedByFiscalYear,
@@ -119,6 +149,7 @@ export default function useCan() {
         isBudgetTeam,
         toggleEditMode,
         isEditMode,
-        setIsEditMode
+        setIsEditMode,
+        resetModal
     };
 }
