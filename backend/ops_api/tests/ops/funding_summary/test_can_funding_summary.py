@@ -73,7 +73,25 @@ def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: Fla
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
 
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 11
+    assert len(response.json["cans"]) == 15
+
+
+def test_can_get_can_funding_summmary_filter_budget_fiscal_year_no_cans(auth_client: FlaskClient) -> None:
+    query_params = f"can_ids={0}&fiscal_year=2023&fy_budget=3635000&fy_budget=7815000"
+
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 0
+
+
+def test_can_get_can_funding_summmary_filter_budget_fiscal_year_cans(auth_client: FlaskClient) -> None:
+    query_params = f"can_ids={0}&fiscal_year=2023&fy_budget=200000&fy_budget=592000"
+
+    response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
+
+    assert response.status_code == 200
+    assert len(response.json["cans"]) == 1
 
 
 def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
