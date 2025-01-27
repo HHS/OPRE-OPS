@@ -13,8 +13,6 @@ Accepted
 
 * If the value of `USER_SESSION_EXPIRATION` (for idleness) and `JWT_ACCESS_TOKEN_EXPIRES` are set to be the same, in combination with the previous point, a race condition can occur such that a user's access token could chronologically be invalid, expired, and unreadable before OPS can even run any of its checks to determine the validity of the user's session and properly end that session and log the user off and record the event properly. One outcome can be that when the JWT is attempted to be verified, the verification will fail as if the JWT is invalid, which it is at at that time and in that scenario, resulting in an application error/failure. On the contrary, we do in fact  expect this scenario and need better treatment of that scenario.
 
-access token, session expiration, timing of client/user's browser polling /notifications and hitting /refresh
-
 ## Decision
 
 Change `USER_SESSION_EXPIRATION` to be two minutes less than the value of `JWT_ACCESS_TOKEN_EXPIRES`
