@@ -11,7 +11,7 @@ import icons from "../../../uswds/img/sprite.svg";
  * @property {number} fiscalYear
  * @property {(e: React.FormEvent<HTMLFormElement>) => void} handleAddBudget
  * @property {(name: string, value: string) => void} runValidate
- * @property { React.Dispatch<React.SetStateAction<string>>} setBudgetAmount
+ * @property {(value: string) => void} setBudgetAmount
  */
 
 /**

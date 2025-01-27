@@ -1,6 +1,7 @@
 import CurrencyFormat from "react-currency-format";
-import styles from "./LineBar.styles.module.css";
+import { NO_DATA } from "../../../../constants";
 import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
+import styles from "./LineBar.styles.module.css";
 
 /**
  * @typedef {Object} LineBarProps
@@ -8,6 +9,7 @@ import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
  * @property {number} ratio - The ratio value that determines the bar length
  * @property {string} color - The background color of the bar
  * @property {number} total - The total amount to display formatted as currency
+ * @property {number} iterator - The index of the current item in the list
  */
 
 /**
@@ -15,7 +17,7 @@ import { getDecimalScale } from "../../../../helpers/currencyFormat.helpers";
  * @param {LineBarProps} props
  * @returns {JSX.Element} A line bar component
  */
-const LineBar = ({ title, ratio, color, total }) => {
+const LineBar = ({ title, ratio, color, total, iterator }) => {
     return (
         <div className={styles.container}>
             <span className={styles.title}>{title}</span>
@@ -26,14 +28,18 @@ const LineBar = ({ title, ratio, color, total }) => {
                 />
             </div>
             <div className={styles.amount}>
-                <CurrencyFormat
-                    value={total}
-                    displayType="text"
-                    thousandSeparator=","
-                    prefix="$"
-                    decimalScale={getDecimalScale(total)}
-                    fixedDecimalScale={true}
-                />
+                {total === 0 && iterator === 0 ? (
+                    NO_DATA
+                ) : (
+                    <CurrencyFormat
+                        value={total}
+                        displayType="text"
+                        thousandSeparator=","
+                        prefix="$"
+                        decimalScale={getDecimalScale(total)}
+                        fixedDecimalScale={true}
+                    />
+                )}
             </div>
         </div>
     );
