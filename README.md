@@ -11,8 +11,8 @@ MAPS. The purpose of OPS can be found on
 ## Dependencies
 
 At a bare minimum, you need [Docker](https://www.docker.com) and
-[Docker Compose](https://docs.docker.com/compose/install/) installed to run the application locally. If you want to do
-development, you will also need to install [Python](https://www.python.org), [Node.js](https://nodejs.org), and
+[Docker Compose](https://docs.docker.com/compose/install/) installed to run the application locally. [Podman](https://podman.io) has also been validated as a functional replacement for Docker.
+If you want to do development, you will also need to install [Python](https://www.python.org), [Node.js](https://nodejs.org), and
 [pre-commit](https://pre-commit.com/#installation).
 
 ## RSA Key Generation

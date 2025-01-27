@@ -41,7 +41,7 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
             <div
                 className={`${styles.leftBar} ${styles.dottedBar}`}
                 style={{
-                    flex: ratio,
+                    flex: `0  1 ${ratio * 100}%`,
                     backgroundColor: leftColor,
                     backgroundImage:
                         isStriped && !overBudget

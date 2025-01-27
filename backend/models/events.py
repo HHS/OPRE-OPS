@@ -31,7 +31,7 @@ class OpsEventType(Enum):
     CREATE_CAN_FUNDING_RECEIVED = auto()
     UPDATE_CAN_FUNDING_RECEIVED = auto()
     DELETE_CAN_FUNDING_RECEIVED = auto()
-    
+
     # CAN Funding Budget Related Events
     CREATE_CAN_FUNDING_BUDGET = auto()
     UPDATE_CAN_FUNDING_BUDGET = auto()
@@ -66,6 +66,7 @@ class OpsEventType(Enum):
     # Auth Related Events
     LOGIN_ATTEMPT = auto()
     LOGOUT = auto()
+    IDLE_LOGOUT = auto()
 
     # User Related Events
     GET_USER_DETAILS = auto()

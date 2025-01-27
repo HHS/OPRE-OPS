@@ -15,6 +15,7 @@ from ops_api.ops.auth.utils import (
     get_bearer_token,
     get_latest_user_session,
     get_user_from_userinfo,
+    idle_logout,
 )
 from ops_api.ops.utils.errors import error_simulator
 from ops_api.ops.utils.response import make_response_with_headers
@@ -130,7 +131,7 @@ def check_user_session_function(user: User):
             raise InvalidUserSessionError(f"User with id={user.id} is using an invalid access token")
     # Check if the last_accessed_at field of the latest user session is not more than a configurable threshold ago
     if check_last_active_at(latest_user_session):
-        deactivate_all_user_sessions(user_sessions)
+        idle_logout(user, user_sessions)
         raise InvalidUserSessionError(f"User with id={user.id} has not accessed the system for more than the threshold")
     # Update the last_accessed_at field of the latest user session (if this isn't only touching /notification)
     if "notification" not in request.endpoint:
