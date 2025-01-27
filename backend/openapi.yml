@@ -2769,6 +2769,7 @@ components:
       required:
         - number
         - portfolio_id
+        - nick_name
     CAN:
       description: Common Accounting Number (CAN) Object
       type: object
