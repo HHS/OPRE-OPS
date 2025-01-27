@@ -83,18 +83,16 @@ const CanDetail = ({
                     toggleEditMode={toggleEditMode}
                 />
             ) : (
-                <>
-                    <CANDetailView
-                        canId={canId}
-                        description={description}
-                        number={canNumber}
-                        nickname={nickname}
-                        portfolioName={portfolioName}
-                        teamLeaders={teamLeaders}
-                        divisionDirectorFullName={divisionDirectorFullName}
-                        divisionName={divisionName}
-                    />
-                </>
+                <CANDetailView
+                    canId={canId}
+                    description={description}
+                    number={canNumber}
+                    nickname={nickname}
+                    portfolioName={portfolioName}
+                    teamLeaders={teamLeaders}
+                    divisionDirectorFullName={divisionDirectorFullName}
+                    divisionName={divisionName}
+                />
             )}
         </article>
     );
