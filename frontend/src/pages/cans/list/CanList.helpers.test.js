@@ -4,7 +4,7 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
 
 const mockUser = {
     id: 1,
-    roles: [USER_ROLES.USER],
+    roles: [USER_ROLES.VIEWER_EDITOR],
     division: 1,
     display_name: "Test User",
     email: "test@example.com",
@@ -24,8 +24,9 @@ describe("sortAndFilterCANs", () => {
                 division_id: 1,
                 division: {
                     division_director_id: 1,
-                    deputy_division_director_id: 1,
-                } },
+                    deputy_division_director_id: 1
+                }
+            },
             budget_line_items: [{ team_members: [{ id: 1 }] }],
             active_period: 1
         },
@@ -35,9 +36,10 @@ describe("sortAndFilterCANs", () => {
             portfolio: {
                 division_id: 2,
                 division: {
-                division_director_id: 2,
-                deputy_division_director_id: 2,
-            } },
+                    division_director_id: 2,
+                    deputy_division_director_id: 2
+                }
+            },
             budget_line_items: [],
             active_period: 2
         },
@@ -47,9 +49,10 @@ describe("sortAndFilterCANs", () => {
             portfolio: {
                 division_id: 1,
                 division: {
-                division_director_id: 1,
-                deputy_division_director_id: 1,
-            } },
+                    division_director_id: 1,
+                    deputy_division_director_id: 1
+                }
+            },
             budget_line_items: [{ team_members: [{ id: 2 }] }],
             active_period: 1
         },
@@ -59,9 +62,10 @@ describe("sortAndFilterCANs", () => {
             portfolio: {
                 division_id: 1,
                 division: {
-                division_director_id: 1,
-                deputy_division_director_id: 1,
-            } },
+                    division_director_id: 1,
+                    deputy_division_director_id: 1
+                }
+            },
             budget_line_items: [],
             active_period: 3
         }
@@ -105,7 +109,7 @@ describe("sortAndFilterCANs", () => {
         const reviewerApprover = { ...mockUser, roles: [USER_ROLES.REVIEWER_APPROVER] };
         const result = sortAndFilterCANs(mockCANs, true, reviewerApprover, mockFilters);
         expect(result.length).toBe(3);
-        expect(result.every((can) => can.portfolio.division_id === 1 )).toBe(true);
+        expect(result.every((can) => can.portfolio.division_id === 1)).toBe(true);
     });
 
     it("should filter CANs by active period", () => {
