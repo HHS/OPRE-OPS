@@ -68,7 +68,7 @@ const Can = () => {
 
             <section className="display-flex flex-justify margin-top-3">
                 <CanDetailTabs canId={canId} />
-                {!isEditMode && (
+                {!isEditMode.detailPage && !isEditMode.fundingPage && (
                     <CANFiscalYearSelect
                         fiscalYear={fiscalYear}
                         setSelectedFiscalYear={setSelectedFiscalYear}
