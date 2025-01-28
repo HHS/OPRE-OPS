@@ -47,7 +47,8 @@ const Can = () => {
         isBudgetTeam,
         carryForwardFunding,
         isEditMode,
-        toggleEditMode
+        toggleDetailPageEditMode,
+        toggleFundingPageEditMode
     } = useCan();
 
     if (isLoading || CANFundingLoading) {
@@ -89,8 +90,8 @@ const Can = () => {
                             teamLeaders={teamLeaders ?? []}
                             fiscalYear={fiscalYear}
                             isBudgetTeamMember={isBudgetTeam}
-                            isEditMode={isEditMode}
-                            toggleEditMode={toggleEditMode}
+                            isEditMode={isEditMode.detailPage}
+                            toggleEditMode={toggleDetailPageEditMode}
                         />
                     }
                 />
@@ -127,8 +128,8 @@ const Can = () => {
                             totalFunding={totalFunding}
                             fundingReceived={fundingReceivedByFiscalYear}
                             isBudgetTeamMember={isBudgetTeam}
-                            isEditMode={isEditMode}
-                            toggleEditMode={toggleEditMode}
+                            isEditMode={isEditMode.fundingPage}
+                            toggleEditMode={toggleFundingPageEditMode}
                             carryForwardFunding={carryForwardFunding}
                         />
                     }

@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
@@ -12,12 +12,7 @@ export default function useCan() {
      *  @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
      */
 
-    // check CAN Funding for current fiscal year
-    // send to CanFunding hook
-    // if its present PATCH otherwise POST
-
     const urlPathParams = useParams();
-    const location = useLocation();
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles.includes(USER_ROLES.BUDGET_TEAM);
@@ -32,8 +27,10 @@ export default function useCan() {
         showModal: false
     };
     const [modalProps, setModalProps] = React.useState(initialModalProps);
-    const [isEditMode, setIsEditMode] = React.useState(false);
-    const isFundingPage = location.pathname.includes("funding");
+    const [isEditMode, setIsEditMode] = React.useState({
+        detailPage: false,
+        fundingPage: false
+    });
 
     /** @type {{data?: CAN | undefined, isLoading: boolean}} */
     const { data: can, isLoading } = useGetCanByIdQuery(canId, {
@@ -92,25 +89,30 @@ export default function useCan() {
         [fiscalYear, can]
     );
 
-    const toggleEditMode = () => {
-        if (isFundingPage && CANFunding?.total_funding === "0") {
+    const toggleDetailPageEditMode = () => {
+        setIsEditMode({ ...isEditMode, detailPage: !isEditMode.detailPage });
+    };
+
+    const toggleFundingPageEditMode = () => {
+        if (CANFunding?.total_funding === "0") {
             setModalProps({
                 heading: `Welcome to FY ${fiscalYear}! The new fiscal year started on October 1, ${fiscalYear - 1} and it's time to add the FY budget for this CAN.  Data from the previous fiscal year can no longer be edited, but can be viewed by changing the FY dropdown on the CAN details page.`,
                 actionButtonText: "Edit CAN",
                 secondaryButtonText: "Cancel",
                 showModal: true,
                 handleConfirm: () => {
-                    setIsEditMode(!isEditMode);
+                    setIsEditMode({ ...isEditMode, fundingPage: !isEditMode.fundingPage });
                     setModalProps(initialModalProps);
                 }
             });
-        } else {
-            setIsEditMode(!isEditMode);
         }
     };
 
     const resetModal = () => {
-        setIsEditMode(false);
+        setIsEditMode({
+            detailPage: false,
+            fundingPage: false
+        });
         setModalProps(initialModalProps);
     };
 
@@ -147,9 +149,9 @@ export default function useCan() {
         budgetLineTypesCount,
         agreementTypesCount,
         isBudgetTeam,
-        toggleEditMode,
+        toggleDetailPageEditMode,
+        toggleFundingPageEditMode,
         isEditMode,
-        setIsEditMode,
         resetModal
     };
 }
