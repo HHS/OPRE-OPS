@@ -167,15 +167,22 @@ def filter_by_fiscal_year_budget(
     """
     Filters the list of cans based on the fiscal year budget's minimum and maximum values.
     """
-    return [
-        can
-        for can in cans
-        if any(
-            fiscal_year_budget[0] <= budget.budget <= fiscal_year_budget[1]
-            for budget in can.funding_budgets
-            if budget.fiscal_year == budget_fiscal_year
-        )
-    ]
+    if fiscal_year_budget:
+        return [
+            can
+            for can in cans
+            if any(
+                fiscal_year_budget[0] <= budget.budget <= fiscal_year_budget[1]
+                for budget in can.funding_budgets
+                if budget.fiscal_year == budget_fiscal_year
+            )
+        ]
+    else:
+        return [
+            can
+            for can in cans
+            if any(fiscal_year_budget[0] <= budget.budget <= fiscal_year_budget[1] for budget in can.funding_budgets)
+        ]
 
 
 def get_filtered_cans(
@@ -188,13 +195,12 @@ def get_filtered_cans(
     # filter cans by budget fiscal year
     cans_filtered_by_fiscal_year = set()
     if fiscal_year:
-
         for can in cans:
             for each in can.funding_budgets:
                 if each.fiscal_year == fiscal_year:
                     cans_filtered_by_fiscal_year.add(can)
 
-    cans = [can for can in cans_filtered_by_fiscal_year]
+        cans = [can for can in cans_filtered_by_fiscal_year]
 
     if active_period:
         cans = filter_by_attribute(cans, "active_period", active_period)

@@ -45,7 +45,7 @@ def test_can_get_can_funding_summary_duplicate_transfer(auth_client: FlaskClient
     query_params = f"can_ids={0}&fiscal_year=2023&transfer=COST_SHARE&transfer=COST_SHARE"
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 0
+    assert len(response.json["cans"]) == 1
 
 
 def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClient):
@@ -102,7 +102,7 @@ def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
 
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 0
+    assert len(response.json["cans"]) == 1
     assert response.json["available_funding"] == "0.0"
     assert response.json["carry_forward_funding"] == "0.0"
     assert response.json["expected_funding"] == "0.0"
@@ -332,7 +332,7 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
 
 
 def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
-    url = f"/api/v1/can-funding-summary?" f"can_ids={test_cans[0].id}&can_ids={test_cans[1].id}&" f"active_period=1"
+    url = f"/api/v1/can-funding-summary?" f"can_ids={test_cans[0].id}&can_ids={test_cans[1].id}&active_period=1"
 
     response = auth_client.get(url)
 
@@ -347,7 +347,7 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
     response = auth_client.get(url)
 
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 6
+    assert len(response.json["cans"]) == 5
     assert response.json["expected_funding"] == "4520000.0"
     assert response.json["received_funding"] == "8760000.0"
     assert response.json["total_funding"] == "13280000.0"
@@ -409,8 +409,9 @@ def test_filter_cans_by_fiscal_year_budget():
         MagicMock(funding_budgets=[MagicMock(budget=500000.0)]),
     ]
 
-    fiscal_year_budget = [1000000, 2000000]
-    filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget)
+    fiscal_year_budget = [Decimal(1000000), Decimal(2000000)]
+    budget_fiscal_year = 2023
+    filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget, budget_fiscal_year)
 
     assert len(filtered_cans) == 2
 
@@ -421,8 +422,9 @@ def test_filter_cans_by_fiscal_year_budget_no_match():
         MagicMock(funding_budgets=[MagicMock(budget=7000000.0, fiscal_year=2024)]),
     ]
 
-    fiscal_year_budget = [1000000, 2000000]
-    filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget)
+    fiscal_year_budget = [Decimal(1000000), Decimal(2000000)]
+    budget_fiscal_year = 2023
+    filtered_cans = filter_by_fiscal_year_budget(cans, fiscal_year_budget, budget_fiscal_year)
 
     assert len(filtered_cans) == 0
 
