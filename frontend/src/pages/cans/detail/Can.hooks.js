@@ -105,6 +105,8 @@ export default function useCan() {
                     setModalProps(initialModalProps);
                 }
             });
+        } else {
+            setIsEditMode({ ...isEditMode, fundingPage: !isEditMode.fundingPage });
         }
     };
 
