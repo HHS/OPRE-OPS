@@ -2954,6 +2954,7 @@ components:
       required:
         - fiscal_year
         - can_id
+        - funding
     CreateUpdateFundingDetails:
       description: A request object for the creation or updating of a FundingDetails object
       type: object
@@ -3057,6 +3058,7 @@ components:
       required:
         - fiscal_year
         - can_id
+        - budget
     FundingBudget:
       description: Funding Budget Object
       type: object
@@ -3358,6 +3360,8 @@ components:
           $ref: "#/components/parameters/created_by_user"
         updated_by_user:
           $ref: "#/components/parameters/updated_by_user"
+      required:
+        - title
     ResearchProjects:
       description: OPS List of Research Projects
       type: array

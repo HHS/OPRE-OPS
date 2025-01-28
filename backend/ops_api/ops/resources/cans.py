@@ -45,7 +45,6 @@ class CANItemAPI(BaseItemAPI):
             # Setting partial to true ignores any missing fields.
             schema = CreateUpdateCANRequestSchema(partial=True)
             serialized_request = schema.load(request_data)
-
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
             meta.metadata.update({"updated_can": serialized_can})
