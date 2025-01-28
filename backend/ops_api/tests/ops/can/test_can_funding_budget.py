@@ -102,6 +102,15 @@ def test_service_create_funding_budget(loaded_db):
     loaded_db.commit()
 
 
+def test_funding_budget_post_400_missing_budget(budget_team_auth_client):
+    response = budget_team_auth_client.post(
+        "/api/v1/can-funding-budgets/", json={"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"}
+    )
+
+    assert response.status_code == 400
+    assert response.json["budget"][0] == "Missing data for required field."
+
+
 # Testing updating CANs by PATCH
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_budget_patch(budget_team_auth_client, mocker):

@@ -3048,6 +3048,7 @@ components:
       required:
         - fiscal_year
         - can_id
+        - budget
     FundingBudget:
       description: Funding Budget Object
       type: object
