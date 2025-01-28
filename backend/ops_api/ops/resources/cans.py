@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import desert
+from deepdiff import DeepDiff, parse_path
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import select
@@ -46,10 +47,36 @@ class CANItemAPI(BaseItemAPI):
             schema = CreateUpdateCANRequestSchema(partial=True)
             serialized_request = schema.load(request_data)
 
+            old_can = self.can_service.get(id)
+            old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            meta.metadata.update({"updated_can": serialized_can})
+            deep_diff = DeepDiff(old_serialized_can, serialized_can)
+
+            values_changed = deep_diff["values_changed"]
+            # Convert from deepdiff format of "root['value_changed']" to just 'value_changed' as the key in the object
+            dict_of_changes = {}
+            for key in values_changed.keys():
+                if len(parse_path(key)) == 1:
+                    dict_of_changes[parse_path(key)[0]] = values_changed[key]
+
+            # list_of_changes = [{parse_path(key)[0]: values_changed[key]} for key in values_changed.keys() if len(parse_path(key)) == 1]
+            dict_of_changes["can_id"] = id
+            dict_of_changes["updated_by"] = updated_can.updated_by
+            dict_of_changes["updated_on"] = updated_can.updated_on
+            meta.metadata.update({"can_updates": dict_of_changes})
             return make_response_with_headers(schema.dump(updated_can))
+
+        # write a function that takes two serialized objects, performs a diff, converts it into the {"name": {old value, new_value}}
+
+        # in can messages
+        # write a function that takes the update metadata and creates a history title + history message for each value changed.
+        #  nick_name + description changed -> output
+        #  Omkar changed nickname from X to Y
+        #  Omkar changed description from X to Y.
+        #  Nickname + Description
+        #  for un-accounted changes to object we will just log them and generate no history message
+        # only updates have the possibility of generating multiple can history events from one ops event
 
     @is_authorized(PermissionType.PATCH, Permission.CAN)
     def put(self, id: int) -> Response:

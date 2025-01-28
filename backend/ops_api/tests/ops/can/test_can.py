@@ -232,14 +232,29 @@ def test_service_create_can(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_can_patch(budget_team_auth_client, mocker, unadded_can):
     test_can_id = 517
-    update_data = {
-        "description": "Test CAN Created by unit test",
-    }
+    update_data = {"description": "New Description", "nick_name": "My nick name"}
 
+    old_can = CAN(
+        portfolio_id=6, number="G998235", description="Test CAN created by unit tests", nick_name="Old nickname"
+    )
+    mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get")
+    mocker_get_can.return_value = old_can
     mocker_update_can = mocker.patch("ops_api.ops.services.cans.CANService.update")
     unadded_can.description = update_data["description"]
     mocker_update_can.return_value = unadded_can
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.patch(f"/api/v1/cans/{test_can_id}", json=update_data)
+
+    assert context_manager.metadata["can_updates"] is not None
+    assert len(context_manager.metadata["can_updates"].keys()) == 2
+    # assert that new data
+    assert context_manager.metadata["can_updates"]["nick_name"]["new_value"] == update_data["nick_name"]
+    assert context_manager.metadata["can_updates"]["nick_name"]["old_value"] == old_can.nick_name
+    assert context_manager.metadata["can_updates"]["description"]["new_value"] == update_data["description"]
+    assert context_manager.metadata["can_updates"]["description"]["old_value"] == old_can.description
 
     assert response.status_code == 200
     mocker_update_can.assert_called_once_with(update_data, test_can_id)
@@ -248,7 +263,7 @@ def test_can_patch(budget_team_auth_client, mocker, unadded_can):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
+def test_can_patch_404(budget_team_auth_client):
     test_can_id = 518
     update_data = {
         "description": "Test CAN Created by unit test",
