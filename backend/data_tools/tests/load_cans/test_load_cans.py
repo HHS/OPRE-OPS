@@ -85,18 +85,6 @@ def db_with_portfolios(db_with_divisions):
     db_with_divisions.execute(text("DELETE FROM portfolio_version"))
 
 
-# def cleanup_after_test(session: Session):
-#     yield
-#     session.execute(text("DELETE FROM can_history"))
-#     session.execute(text("DELETE FROM can_history_version"))
-#     session.execute(text("DELETE FROM can"))
-#     session.execute(text("DELETE FROM can_funding_details"))
-#     session.execute(text("DELETE FROM can_version"))
-#     session.execute(text("DELETE FROM can_funding_details_version"))
-#     session.execute(text("DELETE FROM ops_db_history"))
-#     session.execute(text("DELETE FROM ops_db_history_version"))
-
-
 def test_get_config_default():
     assert isinstance(get_config(), DevConfig)
 
