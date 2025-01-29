@@ -32,6 +32,20 @@ def can_history_trigger(
                     history_type=CANHistoryType.CAN_DATA_IMPORT,
                 )
                 session.add(history_event)
+            case OpsEventType.UPDATE_CAN:
+                change_dict = event.event_details["can_updates"]["changes"]
+                for key in change_dict.keys():
+                    history_event = create_can_update_history_event(
+                        key,
+                        change_dict[key]["old_value"],
+                        change_dict[key]["new_value"],
+                        event_user,
+                        event.created_on,
+                        event.event_details["can_updates"]["can_id"],
+                        event.id,
+                    )
+                    if history_event is not None:
+                        session.add(history_event)
             case OpsEventType.CREATE_CAN_FUNDING_BUDGET:
                 current_fiscal_year = format_fiscal_year(event.event_details["new_can_funding_budget"]["created_on"])
                 budget = "${:,.2f}".format(event.event_details["new_can_funding_budget"]["budget"])
@@ -75,10 +89,40 @@ def can_history_trigger(
 
 
 def format_fiscal_year(timestamp):
-
     parsed_timestamp = datetime.fromisoformat(timestamp[:-1]).astimezone(timezone.utc)
     current_fiscal_year = f"FY {parsed_timestamp.year}"
     if parsed_timestamp.month >= 10:
         current_fiscal_year = f"FY {parsed_timestamp.year + 1}"
 
     return current_fiscal_year
+
+
+def create_can_update_history_event(
+    property_name, old_value, new_value, updated_by_user, updated_on, can_id, ops_event_id
+):
+    """A method that generates a CANHistory event for an updated property. In the case where the updated property is not one
+    that has been designed for, it will instead be logged and None will be returned from the method."""
+    match property_name:
+        case "nick_name":
+            return CANHistory(
+                can_id=can_id,
+                ops_event_id=ops_event_id,
+                history_title="Nickname Edited",
+                history_message=f"{updated_by_user.first_name} {updated_by_user.last_name} edited the nickname from {old_value} to {new_value}",
+                timestamp=updated_on,
+                history_type=CANHistoryType.CAN_NICKNAME_EDITED,
+            )
+        case "description":
+            return CANHistory(
+                can_id=can_id,
+                ops_event_id=ops_event_id,
+                history_title="Description Edited",
+                history_message=f"{updated_by_user.first_name} {updated_by_user.last_name} edited the description",
+                timestamp=updated_on,
+                history_type=CANHistoryType.CAN_DESCRIPTION_EDITED,
+            )
+        case _:
+            logger.info(
+                f"{property_name} edited by {updated_by_user.first_name} {updated_by_user.last_name} from {old_value} to {new_value}"
+            )
+            return None

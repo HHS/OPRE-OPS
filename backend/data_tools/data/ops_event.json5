@@ -2636,7 +2636,7 @@
             description: {
               new_value: "Healthy Marriages Responsible Fatherhood - OPRE",
               old_value: "Updated can description for test",
-            }
+            },
           },
           updated_by: 516,
         },
@@ -2660,7 +2660,45 @@
         "request.remote_addr": "192.168.127.1",
         "request.remote_user": null,
       },
-      created_on: "2025-01-29T18:43:53.928887Z"
+      created_by: 516,
+      created_on: "2025-01-29T18:43:53.928887Z",
+    },
+    {
+      // 31
+      event_type: "UPDATE_CAN",
+      event_status: "SUCCESS",
+      event_details: {
+        can_updates: {
+          can_id: 500,
+          changes: {
+            portfolio_id: {
+              new_value: 6,
+              old_value: 1,
+            },
+          },
+          updated_by: 516,
+        },
+        "request.json": {
+          portfolio_id: 6,
+        },
+        "request.values": {},
+        "request.headers": {
+          Host: "localhost:8080",
+          Accept: "*/*",
+          Connection: "keep-alive",
+          "User-Agent": "PostmanRuntime/7.43.0",
+          "Content-Type": "application/json",
+          Authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzM4MTc5NDk3LCJqdGkiOiI2ZTg3NWVjZC01ZTk5LTRlM2ItOWNiZi1kOTZhM2M1ZmE3ZmUiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzM4MTc5NDk3LCJjc3JmIjoiYTMzNTJjM2ItNDdlNS00YjU2LWI1ODItMTUzM2U3MDRkZTA0IiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzM4MTgxMjk3LCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.AujRcq_RfMgUU_QBwgFGq5zshMDZz2lII0-Bn6eufTC1RIyyFz69-p8U-gkeMo9WILR2_MIcX9gHdpj9Yv0rHZJXsFW4pf74Gvn_8Vxbyw80VnIuHX2wxW0HLRfcsugJTbfsRBNam5oxQ471DwWHSWv3AO2FHCIBDyvG8VhlV-2ASkFyahcg4VMsPceEYellkO14XWZgGOJnUarmkk14AXgharj1CQvqYm2-FD7VSoysfwNoB-salLM2kekX1eD8mVV_7SrmOsoEFlMSZ5DZi18I-K_kRTdwu31F0PEtM9igWBYu4fMNsFWdz9u1J9-R3t3alo_rlTfjDICR1z9A0w",
+          "Cache-Control": "no-cache",
+          "Postman-Token": "04d64712-da26-4518-ae65-6f848a2f5143",
+          "Content-Length": "102",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+        "request.remote_addr": "192.168.127.1",
+        "request.remote_user": null,
+      },
+      created_by: 516,
+      created_on: "2025-01-29T19:43:53.928887Z",
     },
   ],
 }

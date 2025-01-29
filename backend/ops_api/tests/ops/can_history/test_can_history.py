@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import select
 
 from models import CANHistory, CANHistoryType, OpsEvent
 from ops.services.can_history import CANHistoryService
@@ -237,3 +238,23 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
         == funding_received_deleted_event.event_details["deleted_can_funding_received"]["can_id"]
     )
     assert new_can_history_item.timestamp == funding_received_deleted_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_can_can_history(loaded_db):
+    update_can_event = loaded_db.get(OpsEvent, 30)
+    # can_history_count_before = len(loaded_db.query(CANHistory).all())
+    can_history_trigger(update_can_event, loaded_db)
+    can_update_history_events = (
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 30)).scalars().all()
+    )
+    assert len(can_update_history_events) == 2
+
+    nickname_can_history_event = can_update_history_events[0]
+    assert nickname_can_history_event.history_title == "Nickname Edited"
+    assert nickname_can_history_event.history_message == "Steve Tekell edited the nickname from New CAN to HMRF-OPRE"
+    assert nickname_can_history_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
+    description_can_history_event = can_update_history_events[1]
+    assert description_can_history_event.history_title == "Description Edited"
+    assert description_can_history_event.history_message == "Steve Tekell edited the description"
+    assert description_can_history_event.history_type == CANHistoryType.CAN_DESCRIPTION_EDITED

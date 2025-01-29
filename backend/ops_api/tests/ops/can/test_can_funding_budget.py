@@ -115,18 +115,30 @@ def test_funding_budget_post_400_missing_budget(budget_team_auth_client):
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_budget_patch(budget_team_auth_client, mocker):
     test_budget_id = 600
-    update_data = {
-        "notes": "Fake test update",
-    }
+    update_data = {"notes": "Fake test update", "budget": 123456}
 
     funding_budget = CANFundingBudget(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
+    old_funding_budget = CANFundingBudget(can_id=500, fiscal_year=2024, budget=100000, notes="This is a note")
+
     mocker_update_funding_budget = mocker.patch(
         "ops_api.ops.services.can_funding_budget.CANFundingBudgetService.update"
     )
+    mocker_get_funding_budget = mocker.patch("ops_api.ops.services.can_funding_budget.CANFundingBudgetService.get")
+    mocker_get_funding_budget.return_value = old_funding_budget
     funding_budget.notes = update_data["notes"]
     mocker_update_funding_budget.return_value = funding_budget
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.patch(f"/api/v1/can-funding-budgets/{test_budget_id}", json=update_data)
 
+    assert context_manager.metadata["funding_budget_updates"]["changes"] is not None
+    changes = context_manager.metadata["funding_budget_updates"]["changes"]
+    assert len(changes.keys()) == 2
+    # assert that new data
+    assert changes["budget"]["new_value"] == update_data["budget"]
+    assert changes["budget"]["old_value"] == old_funding_budget.budget
     assert response.status_code == 200
     mocker_update_funding_budget.assert_called_once_with(update_data, test_budget_id)
     assert response.json["budget"] == funding_budget.budget
