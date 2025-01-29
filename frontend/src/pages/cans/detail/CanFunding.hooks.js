@@ -27,7 +27,7 @@ import cryptoRandomString from "crypto-random-string";
  * @param {boolean} isBudgetTeamMember
  * @param {boolean} isEditMode
  * @param {() => void} toggleEditMode
- * @param {() => void} setWelcomeModal
+ * @param {() => void} resetWelcomeModal
  * @param {number} receivedFunding
  * @param {FundingReceived[]} fundingReceived
  * @param {number} [currentFiscalYearFundingId] - The id of the current fiscal year funding. optional
@@ -40,7 +40,7 @@ export default function useCanFunding(
     isBudgetTeamMember,
     isEditMode,
     toggleEditMode,
-    setWelcomeModal,
+    resetWelcomeModal,
     receivedFunding,
     fundingReceived,
     currentFiscalYearFundingId
@@ -367,7 +367,7 @@ export default function useCanFunding(
         setShowModal(false);
         setFundingReceivedForm(initialFundingReceivedForm);
         toggleEditMode();
-        setWelcomeModal();
+        resetWelcomeModal();
         setModalProps({
             heading: "",
             actionButtonText: "",

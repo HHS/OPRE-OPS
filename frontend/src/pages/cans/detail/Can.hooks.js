@@ -110,10 +110,10 @@ export default function useCan() {
         }
     };
 
-    const resetModal = () => {
+    const resetWelcomeModal = () => {
         setIsEditMode({
-            detailPage: false,
-            fundingPage: false
+            ...isEditMode,
+            fundingPage: false // only used on the funding page
         });
         setModalProps(initialModalProps);
     };
@@ -154,6 +154,6 @@ export default function useCan() {
         toggleDetailPageEditMode,
         toggleFundingPageEditMode,
         isEditMode,
-        resetModal
+        resetWelcomeModal
     };
 }
