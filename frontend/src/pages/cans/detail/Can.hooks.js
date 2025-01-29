@@ -93,7 +93,7 @@ export default function useCan() {
     );
 
     const toggleEditMode = () => {
-        if (isFundingPage && CANFunding?.total_funding === "0") {
+        if (isFundingPage && CANFunding?.total_funding === 0) {
             setModalProps({
                 heading: `Welcome to FY ${fiscalYear}! The new fiscal year started on October 1, ${fiscalYear - 1} and it's time to add the FY budget for this CAN.  Data from the previous fiscal year can no longer be edited, but can be viewed by changing the FY dropdown on the CAN details page.`,
                 actionButtonText: "Edit CAN",
@@ -135,12 +135,12 @@ export default function useCan() {
         teamLeaders: can?.portfolio?.team_leaders ?? [],
         portfolioName: can?.portfolio?.name,
         portfolioId: can?.portfolio_id ?? -1,
-        totalFunding: CANFunding?.total_funding ?? "0",
-        plannedFunding: CANFunding?.planned_funding ?? "0",
-        obligatedFunding: CANFunding?.obligated_funding ?? "0",
-        inExecutionFunding: CANFunding?.in_execution_funding ?? "0",
-        inDraftFunding: CANFunding?.in_draft_funding ?? "0",
-        receivedFunding: CANFunding?.received_funding ?? "0",
+        totalFunding: CANFunding?.total_funding ?? 0,
+        plannedFunding: CANFunding?.planned_funding ?? 0,
+        obligatedFunding: CANFunding?.obligated_funding ?? 0,
+        inExecutionFunding: CANFunding?.in_execution_funding ?? 0,
+        inDraftFunding: CANFunding?.in_draft_funding ?? 0,
+        receivedFunding: CANFunding?.received_funding ?? 0,
         carryForwardFunding: previousFYfundingSummary?.available_funding ?? 0,
         subTitle: can?.nick_name ?? "",
         projectTypesCount,
