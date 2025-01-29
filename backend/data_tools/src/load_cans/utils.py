@@ -151,10 +151,10 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         # Set the created_on and updated_on fields based on the fiscal year
         if existing_can:
             can.created_on = existing_can.created_on
-            can.updated_on = datetime(data.FISCAL_YEAR, 10, 1)
+            can.updated_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
         else:
-            can.created_on = datetime(data.FISCAL_YEAR, 10, 1)
-            can.updated_on = datetime(data.FISCAL_YEAR, 10, 1)
+            can.created_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
+            can.updated_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
 
         try:
             validate_fund_code(data)
@@ -235,8 +235,8 @@ def get_or_create_funding_details(data: CANData, sys_user: User, session: Sessio
             funding_partner=funding_partner,
             created_by=sys_user.id,
             updated_by=sys_user.id,
-            created_on=datetime(data.FISCAL_YEAR, 10, 1),
-            updated_on=datetime(data.FISCAL_YEAR, 10, 1),
+            created_on=datetime(data.FISCAL_YEAR - 1, 10, 1),
+            updated_on=datetime(data.FISCAL_YEAR - 1, 10, 1),
         )
         return funding_details
     else:
