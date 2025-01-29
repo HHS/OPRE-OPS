@@ -1235,7 +1235,7 @@ const canData = [
 ];
 
 const canFundingCardData = {
-    available_funding: "14300000.00",
+    available_funding: 14300000.0,
     cans: [
         {
             can: {
@@ -1273,19 +1273,19 @@ const canFundingCardData = {
             expiration_date: "09/01/2024"
         }
     ],
-    carry_forward_funding: "14300000.00",
-    expected_funding: "5000000.00",
+    carry_forward_funding: 14300000.0,
+    expected_funding: 5000000.0,
     in_draft_funding: 0,
-    in_execution_funding: "2000000.00",
+    in_execution_funding: 2000000.0,
     new_funding: 0,
     obligated_funding: 0,
-    planned_funding: "7700000.00",
-    received_funding: "19000000.00",
-    total_funding: "24000000.00"
+    planned_funding: 7700000.0,
+    received_funding: 19000000.0,
+    total_funding: 24000000.0
 };
 
 const canFundingCardData2 = {
-    available_funding: "1979500.00",
+    available_funding: 1979500.0,
     cans: [
         {
             can: {
@@ -1323,17 +1323,17 @@ const canFundingCardData2 = {
             expiration_date: "09/01/2023"
         }
     ],
-    carry_forward_funding: "1979500.00",
-    expected_funding: "520000.00",
+    carry_forward_funding: 1979500.0,
+    expected_funding: 520000.0,
     in_execution_funding: 0,
-    obligated_funding: "500.00",
-    planned_funding: "300000.00",
-    received_funding: "1760000.00",
-    total_funding: "2280000.00"
+    obligated_funding: 500.0,
+    planned_funding: 300000.0,
+    received_funding: 1760000.0,
+    total_funding: 2280000.0
 };
 
 const canFundingCard_G994426 = {
-    available_funding: "37000000.00",
+    available_funding: 37000000.0,
     cans: [
         {
             can: {
@@ -1371,13 +1371,13 @@ const canFundingCard_G994426 = {
             expiration_date: "09/01/2024"
         }
     ],
-    carry_forward_funding: "37000000.00",
-    expected_funding: "16000000.00",
-    in_execution_funding: "2000000.00",
+    carry_forward_funding: 37000000.0,
+    expected_funding: 16000000.0,
+    in_execution_funding: 2000000.0,
     obligated_funding: 0,
-    planned_funding: "1000000.00",
-    received_funding: "24000000.00",
-    total_funding: "40000000.00"
+    planned_funding: 1000000.0,
+    received_funding: 24000000.0,
+    total_funding: 40000000.0
 };
 
 const selectedBudgetLinesToAmount = [

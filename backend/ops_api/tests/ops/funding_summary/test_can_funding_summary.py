@@ -55,9 +55,9 @@ def test_can_get_can_funding_summary_cost_share_transfer(auth_client: FlaskClien
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 1
-    assert response.json["expected_funding"] == "0.0"
-    assert response.json["received_funding"] == "200000.0"
-    assert response.json["total_funding"] == "200000.0"
+    assert response.json["expected_funding"] == 0.0
+    assert response.json["received_funding"] == 200000.0
+    assert response.json["total_funding"] == 200000.0
 
 
 def test_can_get_can_funding_summary_invalid_transfer(auth_client: FlaskClient):
@@ -85,16 +85,16 @@ def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
-    assert response.json["available_funding"] == "0.0"
-    assert response.json["carry_forward_funding"] == "0.0"
-    assert response.json["expected_funding"] == "0.0"
-    assert response.json["in_draft_funding"] == "0.0"
-    assert response.json["in_execution_funding"] == "0.0"
-    assert response.json["new_funding"] == "0.0"
-    assert response.json["obligated_funding"] == "0.0"
-    assert response.json["planned_funding"] == "0.0"
-    assert response.json["received_funding"] == "0.0"
-    assert response.json["total_funding"] == "0.0"
+    assert response.json["available_funding"] == 0.0
+    assert response.json["carry_forward_funding"] == 0.0
+    assert response.json["expected_funding"] == 0.0
+    assert response.json["in_draft_funding"] == 0.0
+    assert response.json["in_execution_funding"] == 0.0
+    assert response.json["new_funding"] == 0.0
+    assert response.json["obligated_funding"] == 0.0
+    assert response.json["planned_funding"] == 0.0
+    assert response.json["received_funding"] == 0.0
+    assert response.json["total_funding"] == 0.0
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -292,7 +292,7 @@ def test_can_get_can_funding_summary(auth_client: FlaskClient, test_can: CAN) ->
     assert response.status_code == 200
     assert response.json["cans"][0]["can"]["id"] == test_can.id
     assert "new_funding" in response.json
-    assert isinstance(response.json["new_funding"], str)
+    assert isinstance(response.json["new_funding"], float)
     assert "expiration_date" in response.json["cans"][0]
     assert "carry_forward_label" in response.json["cans"][0]
 
@@ -308,9 +308,9 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert response.status_code == 200
     assert len(response.json["cans"]) == 2
 
-    assert available_funding == "3340000.00"
-    assert carry_forward_funding == "3340000.00"
-    assert response.json["new_funding"] == "1340000.0"
+    assert available_funding == 3340000.00
+    assert carry_forward_funding == 3340000.00
+    assert response.json["new_funding"] == 1340000.0
 
 
 def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
@@ -330,9 +330,9 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 6
-    assert response.json["expected_funding"] == "4520000.0"
-    assert response.json["received_funding"] == "8760000.0"
-    assert response.json["total_funding"] == "13280000.0"
+    assert response.json["expected_funding"] == 4520000.0
+    assert response.json["received_funding"] == 8760000.0
+    assert response.json["total_funding"] == 13280000.0
 
 
 def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
@@ -351,7 +351,7 @@ def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, t
     assert response.status_code == 200
     assert len(response.json["cans"]) == 0
     assert "new_funding" in response.json
-    assert response.json["obligated_funding"] == "0.0"
+    assert response.json["obligated_funding"] == 0.0
 
 
 def test_get_nested_attribute_existing_attribute():
@@ -488,7 +488,7 @@ def test_aggregate_funding_summaries():
                     "expiration_date": "10/01/2026",
                 }
             ],
-            "carry_forward_funding": 30000,
+            "carry_forward_funding": 150000,
             "received_funding": 100000,
             "expected_funding": 180000 - 100000,
             "in_draft_funding": 0,
@@ -503,7 +503,7 @@ def test_aggregate_funding_summaries():
     result = aggregate_funding_summaries(funding_sums)
 
     assert result == {
-        "available_funding": "250000.0",
+        "available_funding": Decimal("250000"),
         "cans": [
             {
                 "can": {"amount": 50000, "description": "Grant for educational projects", "id": 1, "obligate_by": 2025},
@@ -521,15 +521,15 @@ def test_aggregate_funding_summaries():
                 "expiration_date": "10/01/2026",
             },
         ],
-        "carry_forward_funding": "50000.0",
-        "expected_funding": "130000.0",
-        "in_draft_funding": "0.0",
-        "in_execution_funding": "130000.0",
-        "new_funding": "300000.0",
-        "obligated_funding": "80000.0",
-        "planned_funding": "280000.0",
-        "received_funding": "175000.0",
-        "total_funding": "305000.0",
+        "carry_forward_funding": Decimal("170000"),
+        "expected_funding": Decimal("130000"),
+        "in_draft_funding": Decimal("0"),
+        "in_execution_funding": Decimal("130000"),
+        "new_funding": Decimal("300000"),
+        "obligated_funding": Decimal("80000"),
+        "planned_funding": Decimal("280000"),
+        "received_funding": Decimal("175000"),
+        "total_funding": Decimal("305000"),
     }
 
 
