@@ -36,8 +36,8 @@ import useCanFunding from "./CanFunding.hooks.js";
  * @property {FundingDetails} [funding]
  * @property {FundingBudget[]} fundingBudgets
  * @property {number} fiscalYear
- * @property {string} totalFunding
- * @property {string} receivedFunding
+ * @property {number} totalFunding
+ * @property {number} receivedFunding
  * @property {FundingReceived[]} fundingReceived data for table
  * @property {boolean} isBudgetTeamMember
  * @property {boolean} isEditMode
@@ -260,7 +260,7 @@ const CanFunding = ({
                             </div>
                             <ReceivedFundingCard
                                 title={`FY ${fiscalYear} Funding Received YTD`}
-                                totalReceived={totalReceived.toString() || "0"}
+                                totalReceived={totalReceived || 0}
                                 totalFunding={budgetForm.submittedAmount}
                             />
                         </div>

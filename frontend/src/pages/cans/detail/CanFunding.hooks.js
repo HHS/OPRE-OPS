@@ -22,13 +22,13 @@ import cryptoRandomString from "crypto-random-string";
  * @description - Custom hook for the CAN Funding component.
  * @param {number} canId
  * @param {string} canNumber
- * @param {string} totalFunding
+ * @param {number} totalFunding
  * @param {number} fiscalYear
  * @param {boolean} isBudgetTeamMember
  * @param {boolean} isEditMode
  * @param {() => void} toggleEditMode
  * @param {() => void} setWelcomeModal
- * @param {string} receivedFunding
+ * @param {number} receivedFunding
  * @param {FundingReceived[]} fundingReceived
  * @param {number} [currentFiscalYearFundingId] - The id of the current fiscal year funding. optional
  */
@@ -48,7 +48,7 @@ export default function useCanFunding(
     const currentFiscalYear = getCurrentFiscalYear();
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
     const [showModal, setShowModal] = React.useState(false);
-    const [totalReceived, setTotalReceived] = React.useState(parseFloat(receivedFunding || "0"));
+    const [totalReceived, setTotalReceived] = React.useState(receivedFunding || 0);
     const [enteredFundingReceived, setEnteredFundingReceived] = React.useState([...fundingReceived]);
     const [deletedFundingReceivedIds, setDeletedFundingReceivedIds] = React.useState([]);
     const [modalProps, setModalProps] = React.useState({
@@ -59,15 +59,15 @@ export default function useCanFunding(
     });
 
     const [budgetForm, setBudgetForm] = React.useState({
-        enteredAmount: "",
-        submittedAmount: "",
+        enteredAmount: 0,
+        submittedAmount: 0,
         isSubmitted: false
     });
 
     const initialFundingReceivedForm = {
-        enteredAmount: "",
-        originalAmount: "",
-        submittedAmount: "",
+        enteredAmount: 0,
+        originalAmount: 0,
+        submittedAmount: 0,
         enteredNotes: "",
         submittedNotes: "",
         isSubmitted: false,
@@ -269,8 +269,8 @@ export default function useCanFunding(
         // Then update the form state
         const nextForm = {
             ...fundingReceivedForm,
-            enteredAmount: "",
-            originalAmount: "",
+            enteredAmount: 0,
+            originalAmount: 0,
             submittedAmount: fundingReceivedForm.enteredAmount,
             enteredNotes: "",
             submittedNotes: fundingReceivedForm.enteredNotes,
@@ -354,7 +354,7 @@ export default function useCanFunding(
             actionButtonText: "Cancel Edits",
             secondaryButtonText: "Continue Editing",
             handleConfirm: () => {
-                setTotalReceived(parseFloat(receivedFunding || "0"));
+                setTotalReceived(receivedFunding || 0);
                 cleanUp();
             }
         });
@@ -363,7 +363,7 @@ export default function useCanFunding(
     const cleanUp = () => {
         setDeletedFundingReceivedIds([]);
         setEnteredFundingReceived([...fundingReceived]);
-        setBudgetForm({ enteredAmount: "", submittedAmount: totalFunding, isSubmitted: false });
+        setBudgetForm({ enteredAmount: 0, submittedAmount: totalFunding, isSubmitted: false });
         setShowModal(false);
         setFundingReceivedForm(initialFundingReceivedForm);
         toggleEditMode();
