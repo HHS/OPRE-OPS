@@ -2255,7 +2255,7 @@
       event_details: {
         "request.json": {
           can_id: 500,
-          funding: 1000,
+          funding: 250000,
           fiscal_year: 2025,
         },
         "request.values": {},
@@ -2300,24 +2300,25 @@
           },
           notes: null,
           can_id: 500,
-          funding: 1000.0,
-          created_by: 520,
+          funding: 250000.0,
+          created_by: 516,
           created_on: "2025-01-16T20:52:13.607111Z",
-          updated_by: 520,
+          updated_by: 516,
           updated_on: "2025-01-16T20:52:13.607111Z",
           fiscal_year: 2025,
           display_name: "CANFundingReceived#526",
           created_by_user: {
-            id: 520,
-            full_name: "System Owner",
+            id: 516,
+            full_name: "Steve Tekell",
           },
           updated_by_user: {
-            id: 520,
-            full_name: "System Owner",
+            id: 516,
+            full_name: "Steve Tekell",
           },
         },
       },
       created_on: "2025-01-13T21:43:53.928887Z",
+      created_by: 516
     },
     {
       // 22

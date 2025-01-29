@@ -696,8 +696,8 @@
     { // 21
       can_id: 500,
       ops_event_id: 21,
-      history_title: "CAN Received Created",
-      history_message: "CAN received created by Director Dave",
+      history_title: "Funding Received Added",
+      history_message: "Steve Tekell added funding received to funding ID 526 in the amount of $250,000.00",
       timestamp: "2025-01-01T00:11:00.000000Z",
       history_type: "CAN_RECEIVED_CREATED"
     },

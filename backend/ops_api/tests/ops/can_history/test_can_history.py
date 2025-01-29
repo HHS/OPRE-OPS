@@ -198,6 +198,27 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_create_create_can_funding_received(loaded_db):
+    funding_received_created_event = loaded_db.get(OpsEvent, 21)
+    can_history_trigger(funding_received_created_event, loaded_db)
+    can_history_list = loaded_db.query(CANHistory).all()
+    can_history_count = len(can_history_list)
+    new_can_history_item = can_history_list[can_history_count - 1]
+
+    assert new_can_history_item.history_type == CANHistoryType.CAN_RECEIVED_CREATED
+    assert new_can_history_item.history_title == "Funding Received Added"
+    assert (
+        new_can_history_item.history_message
+        == "Steve Tekell added funding received to funding ID 526 in the amount of $250,000.00"
+    )
+    assert (
+        new_can_history_item.can_id
+        == funding_received_created_event.event_details["new_can_funding_received"]["can_id"]
+    )
+    assert new_can_history_item.timestamp == funding_received_created_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_create_can_history_delete_can_funding_received(loaded_db):
     funding_received_deleted_event = loaded_db.get(OpsEvent, 25)
     can_history_trigger(funding_received_deleted_event, loaded_db)

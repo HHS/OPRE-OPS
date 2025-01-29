@@ -1,4 +1,3 @@
-import locale
 from datetime import datetime, timezone
 
 from loguru import logger
@@ -11,7 +10,6 @@ def can_history_trigger(
     event: OpsEvent,
     session: Session,
 ):
-    locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
     # Do not attempt to insert events into CAN History for failed or unknown status events
     if event.event_status == OpsEventStatus.FAILED or event.event_status == OpsEventStatus.UNKNOWN:
         return
@@ -45,6 +43,18 @@ def can_history_trigger(
                     history_message=f"{creator_name} entered a {current_fiscal_year} budget of {budget}",
                     timestamp=event.created_on,
                     history_type=CANHistoryType.CAN_FUNDING_CREATED,
+                )
+                session.add(history_event)
+            case OpsEventType.CREATE_CAN_FUNDING_RECEIVED:
+                funding = "${:,.2f}".format(event.event_details["new_can_funding_received"]["funding"])
+                creator_name = f"{event_user.first_name} {event_user.last_name}"
+                history_event = CANHistory(
+                    can_id=event.event_details["new_can_funding_received"]["can_id"],
+                    ops_event_id=event.id,
+                    history_title="Funding Received Added",
+                    history_message=f"{creator_name} added funding received to funding ID {event.event_details['new_can_funding_received']['id']} in the amount of {funding}",
+                    timestamp=event.created_on,
+                    history_type=CANHistoryType.CAN_RECEIVED_CREATED,
                 )
                 session.add(history_event)
             case OpsEventType.DELETE_CAN_FUNDING_RECEIVED:
