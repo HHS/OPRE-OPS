@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="16" height="16"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="16" height="16" fill="white"></rect>
+<g clip-path="url(#clip0_14935_132830)">
+<path opacity="0.7" d="M16 2.00985H7.24078V4.73727H16V2.00985Z" fill="#356B91"></path>
+<path d="M15.9821 6.63629H4.05211V9.36371H15.9821V6.63629Z" fill="#356B91"></path>
+<path d="M16 11.2627H0V13.9902H16V11.2627Z" fill="#264A63"></path>
+</g>
+<defs>
+<clipPath id="SvgjsClipPath1001">
+<rect width="16" height="12" fill="white" transform="translate(0 2)"></rect>
+</clipPath>
+</defs>
+</svg><style>@media (prefers-color-scheme: light) { :root { filter: none; } }
+@media (prefers-color-scheme: dark) { :root { filter: none; } }
+</style></svg>

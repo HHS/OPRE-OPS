@@ -2,10 +2,10 @@ from datetime import datetime
 from typing import List, Optional, override
 
 from flask import Response, current_app, request
-from marshmallow import Schema, fields
 from marshmallow_enum import EnumField
 from sqlalchemy import select
 
+from marshmallow import Schema, fields
 from models import (
     CAN,
     AdministrativeAndSupportProject,
@@ -35,9 +35,9 @@ class TeamLeaders(Schema):
 
 
 class RequestBody(Schema):
-    project_type: ProjectType = EnumField(ProjectType)
-    title: str = fields.String()
-    short_title: str = fields.String()
+    project_type: ProjectType = EnumField(ProjectType, required=True)
+    title: str = fields.String(required=True)
+    short_title: str = fields.String(required=True)
     description: Optional[str] = fields.String(allow_none=True)
     url: Optional[str] = fields.String(allow_none=True)
     team_leaders: Optional[list[TeamLeaders]] = fields.List(

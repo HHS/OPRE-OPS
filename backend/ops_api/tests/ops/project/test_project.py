@@ -166,7 +166,7 @@ def test_post_projects_bad_team_leaders(auth_client):
         "origination_date": "2023-01-01",
         "methodologies": ["FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
         "populations": ["POPULATION_1", "POPULATION_2"],
-        "team_leaders": [{"id": 100000}, {"id": 2}, {"id": 3}],
+        "team_leaders": [{"id": 100000}, {"id": 502}, {"id": 503}],
     }
     response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 400
@@ -182,7 +182,7 @@ def test_post_projects_missing_title(auth_client):
         "origination_date": "2023-01-01",
         "methodologies": ["FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
         "populations": ["POPULATION_1", "POPULATION_2"],
-        "team_leaders": [{"id": 100000}, {"id": 2}, {"id": 3}],
+        "team_leaders": [{"id": 502}, {"id": 503}],
     }
     response = auth_client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 400
@@ -199,7 +199,7 @@ def test_post_projects_auth_required(client):
         "origination_date": "2023-01-01",
         "methodologies": ["SURVEY", "FIELD_RESEARCH", "PARTICIPANT_OBSERVATION"],
         "populations": ["POPULATION_1", "POPULATION_2"],
-        "team_leaders": [{"id": 1}, {"id": 2}, {"id": 3}],
+        "team_leaders": [{"id": 501}, {"id": 502}, {"id": 503}],
     }
     response = client.post(url_for("api.projects-group"), json=data)
     assert response.status_code == 401

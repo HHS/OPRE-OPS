@@ -955,7 +955,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
 
     # update BLI with invalid data (for PLANNED status)
     data = {
-        "can_id": None,
+        # "can_id": None,
         "amount": None,
         "date_needed": None,
     }

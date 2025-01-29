@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 from models import CANFundingBudget
 from ops.services.can_funding_budget import CANFundingBudgetService
+from ops_api.tests.utils import DummyContextManager
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -43,16 +44,26 @@ def test_funding_budget_service_get_by_id(test_can_funding_budget):
 
 # Testing CANFundingBudget Creation
 @pytest.mark.usefixtures("app_ctx")
-def test_funding_budget_post_creates_funding_budget(budget_team_auth_client, mocker, loaded_db):
+def test_funding_budget_post_creates_funding_budget(budget_team_auth_client, mocker, test_budget_team_user):
     input_data = {"can_id": 500, "fiscal_year": 2024, "budget": 123456, "notes": "This is a note"}
 
-    mock_output_data = CANFundingBudget(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
+    mock_output_data = CANFundingBudget(
+        can_id=500, fiscal_year=2024, budget=123456, notes="This is a note", created_by=test_budget_team_user.id
+    )
     mocker_create_funding_budget = mocker.patch(
         "ops_api.ops.services.can_funding_budget.CANFundingBudgetService.create"
     )
     mocker_create_funding_budget.return_value = mock_output_data
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.post("/api/v1/can-funding-budgets/", json=input_data)
 
+    assert context_manager.metadata["new_can_funding_budget"] is not None
+    assert context_manager.metadata["new_can_funding_budget"]["budget"] == mock_output_data.budget
+    assert context_manager.metadata["new_can_funding_budget"]["created_by"] == mock_output_data.created_by
+    assert context_manager.metadata["new_can_funding_budget"]["can_id"] == mock_output_data.can_id
     assert response.status_code == 201
     mocker_create_funding_budget.assert_called_once_with(input_data)
     assert response.json["id"] == mock_output_data.id
@@ -89,6 +100,15 @@ def test_service_create_funding_budget(loaded_db):
 
     loaded_db.delete(new_budget)
     loaded_db.commit()
+
+
+def test_funding_budget_post_400_missing_budget(budget_team_auth_client):
+    response = budget_team_auth_client.post(
+        "/api/v1/can-funding-budgets/", json={"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"}
+    )
+
+    assert response.status_code == 400
+    assert response.json["budget"][0] == "Missing data for required field."
 
 
 # Testing updating CANs by PATCH
