@@ -109,17 +109,17 @@ export type FundingReceived = {
 };
 
 export type FundingSummary = {
-    available_funding: string;
+    available_funding: number;
     cans: FundingSummaryCAN[];
-    carry_forward_funding: string;
-    expected_funding: string;
-    in_draft_funding: string;
-    in_execution_funding: string;
-    new_funding: string;
-    obligated_funding: string;
-    planned_funding: string;
-    received_funding: string;
-    total_funding: string;
+    carry_forward_funding: number;
+    expected_funding: number;
+    in_draft_funding: number;
+    in_execution_funding: number;
+    new_funding: number;
+    obligated_funding: number;
+    planned_funding: number;
+    received_funding: number;
+    total_funding: number;
 };
 
 export type FundingSummaryCAN = {
