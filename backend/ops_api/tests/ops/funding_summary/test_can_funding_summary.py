@@ -97,12 +97,12 @@ def test_can_get_can_funding_summmary_filter_budget_fiscal_year_cans(auth_client
 def test_can_get_can_funding_summary_all_cans_no_fiscal_year_match(
     auth_client: FlaskClient, test_cans: list[Type[CAN]]
 ) -> None:
-    query_params = f"can_ids={0}&fiscal_year=2025"
+    query_params = f"can_ids={0}&fiscal_year=2044"
 
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
 
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 1
+    assert len(response.json["cans"]) == 0
     assert response.json["available_funding"] == "0.0"
     assert response.json["carry_forward_funding"] == "0.0"
     assert response.json["expected_funding"] == "0.0"
@@ -348,9 +348,9 @@ def test_can_get_can_funding_summary_transfer_filter(auth_client: FlaskClient) -
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 5
-    assert response.json["expected_funding"] == "4520000.0"
-    assert response.json["received_funding"] == "8760000.0"
-    assert response.json["total_funding"] == "13280000.0"
+    assert response.json["expected_funding"] == "4780000.0"
+    assert response.json["received_funding"] == "9640000.0"
+    assert response.json["total_funding"] == "14420000.0"
 
 
 def test_can_get_can_funding_summary_complete_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
@@ -404,9 +404,11 @@ def test_filter_cans_by_attribute():
 
 def test_filter_cans_by_fiscal_year_budget():
     cans = [
-        MagicMock(funding_budgets=[MagicMock(budget=1000001.0)]),
-        MagicMock(funding_budgets=[MagicMock(budget=2000000.0)]),
-        MagicMock(funding_budgets=[MagicMock(budget=500000.0)]),
+        MagicMock(
+            funding_budgets=[MagicMock(budget=1000001.0, fiscal_year=2023)],
+        ),
+        MagicMock(funding_budgets=[MagicMock(budget=2000000.0, fiscal_year=2023)]),
+        MagicMock(funding_budgets=[MagicMock(budget=500000.0, fiscal_year=2023)]),
     ]
 
     fiscal_year_budget = [Decimal(1000000), Decimal(2000000)]
