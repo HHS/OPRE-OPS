@@ -28,7 +28,7 @@ sqlalchemy-continuum = "==1.4.2"
 
 
 [dev-packages]
-black = {extras = ["d"], version = "==24.10.0"}
+black = {extras = ["d"], version = "==25.1.0"}
 flake8 = "==7.1.1"
 flake8-black = "==0.3.6"
 ipython = "==8.31.0"
