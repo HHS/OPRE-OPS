@@ -151,7 +151,7 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         # Set the created_on and updated_on fields based on the fiscal year
         if existing_can:
             can.created_on = existing_can.created_on
-            can.updated_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
+            can.updated_on = datetime.now()
         else:
             can.created_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
             can.updated_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
