@@ -1,9 +1,10 @@
 """Agreement models."""
 
+from datetime import date
 from enum import Enum, auto
 from typing import List, Optional
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Text, select
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, Text, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 
@@ -25,7 +26,7 @@ class ContractCategory(Enum):
 class AgreementType(Enum):
     CONTRACT = auto()
     GRANT = auto()
-    DIRECT_ALLOCATION = auto()
+    DIRECT_OBLIGATION = auto()
     IAA = auto()
     IAA_AA = auto()
     MISCELLANEOUS = auto()
@@ -120,6 +121,9 @@ class Agreement(BaseModel):
     procurement_shop = relationship("ProcurementShop", back_populates="agreements")
     notes: Mapped[str] = mapped_column(Text, default="")
 
+    start_date: Mapped[Optional[date]] = mapped_column(Date)
+    end_date: Mapped[Optional[date]] = mapped_column(Date)
+
     @BaseModel.display_name.getter
     def display_name(self):
         return self.name
@@ -205,6 +209,8 @@ class ContractAgreement(Agreement):
     contract_category: Mapped[Optional[ContractCategory]] = mapped_column(
         ENUM(ContractCategory)
     )
+    psc_contract_specialist: Mapped[Optional[str]] = mapped_column(String)
+    cotr_id: Mapped[Optional[User]] = mapped_column(ForeignKey("ops_user.id"))
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.CONTRACT,
@@ -264,7 +270,7 @@ class DirectAgreement(Agreement):
     payee: Mapped[str] = mapped_column(String)
 
     __mapper_args__ = {
-        "polymorphic_identity": AgreementType.DIRECT_ALLOCATION,
+        "polymorphic_identity": AgreementType.DIRECT_OBLIGATION,
     }
 
 
