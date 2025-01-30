@@ -47,7 +47,7 @@ class CANFundingBudgetItemAPI(BaseItemAPI):
             meta.metadata.update({"funding_budget_updates": updates})
             return make_response_with_headers(serialized_can_funding_budget)
 
-    @is_authorized(PermissionType.PATCH, Permission.CAN)
+    @is_authorized(PermissionType.PUT, Permission.CAN)
     def put(self, id: int) -> Response:
         """
         Update a CANFundingBudget
@@ -57,10 +57,18 @@ class CANFundingBudgetItemAPI(BaseItemAPI):
             schema = CreateUpdateFundingBudgetSchema()
             serialized_request = schema.load(request_data)
 
+            old_funding_budget = self.service.get(id)
+            serialized_old_funding_budget = schema.dump(old_funding_budget)
             updated_funding_budget = self.service.update(serialized_request, id)
-            serialized_funding_budget = schema.dump(updated_funding_budget)
-            meta.metadata.update({"updated_can_funding_budget": serialized_funding_budget})
-            return make_response_with_headers(serialized_funding_budget)
+            serialized_can_funding_budget = schema.dump(updated_funding_budget)
+            updates = generate_events_update(
+                serialized_old_funding_budget,
+                serialized_can_funding_budget,
+                updated_funding_budget.can_id,
+                updated_funding_budget.updated_by,
+            )
+            meta.metadata.update({"funding_budget_updates": updates})
+            return make_response_with_headers(serialized_can_funding_budget)
 
     @is_authorized(PermissionType.DELETE, Permission.CAN)
     def delete(self, id: int) -> Response:
