@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy import select
 
-from models import CANHistory, CANHistoryType, OpsEvent
+from models import CANHistory, CANHistoryType, OpsEvent, Portfolio
 from ops.services.can_history import CANHistoryService
 from ops.services.can_messages import can_history_trigger
 
@@ -243,7 +243,6 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
 @pytest.mark.usefixtures("app_ctx")
 def test_update_can_can_history(loaded_db):
     update_can_event = loaded_db.get(OpsEvent, 30)
-    # can_history_count_before = len(loaded_db.query(CANHistory).all())
     can_history_trigger(update_can_event, loaded_db)
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 30)).scalars().all()
@@ -258,3 +257,58 @@ def test_update_can_can_history(loaded_db):
     assert description_can_history_event.history_title == "Description Edited"
     assert description_can_history_event.history_message == "Steve Tekell edited the description"
     assert description_can_history_event.history_type == CANHistoryType.CAN_DESCRIPTION_EDITED
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_can_funding_budget_can_history(loaded_db):
+    update_can_event = loaded_db.get(OpsEvent, 22)
+    can_history_trigger(update_can_event, loaded_db)
+    can_funding_budget_updates = (
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 22)).scalars().all()
+    )
+    assert len(can_funding_budget_updates) == 2
+
+    funding_budget_history_event = can_funding_budget_updates[1]
+    assert funding_budget_history_event.history_title == "FY 2025 Budget Edited"
+    assert (
+        funding_budget_history_event.history_message
+        == "Steve Tekell edited the FY 2025 budget from $1,000,000.00 to $1,140,000.00"
+    )
+    assert funding_budget_history_event.history_type == CANHistoryType.CAN_FUNDING_EDITED
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_can_funding_received_can_history(loaded_db):
+    update_can_event = loaded_db.get(OpsEvent, 23)
+    can_history_trigger(update_can_event, loaded_db)
+    can_funding_received_updates = (
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 23)).scalars().all()
+    )
+    assert len(can_funding_received_updates) == 2
+
+    funding_received_history_event = can_funding_received_updates[1]
+    assert funding_received_history_event.history_title == "Funding Received Edited"
+    assert (
+        funding_received_history_event.history_message
+        == "Steve Tekell edited funding received for funding ID 500 from $880,000.00 to $1,000,000.00"
+    )
+    assert funding_received_history_event.history_type == CANHistoryType.CAN_RECEIVED_EDITED
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_can_portfolio_can_history(loaded_db):
+    update_can_event = loaded_db.get(OpsEvent, 32)
+    can_history_trigger(update_can_event, loaded_db)
+    can_update_history_events = (
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 32)).scalars().all()
+    )
+    assert len(can_update_history_events) == 1
+    portfolio_1 = loaded_db.get(Portfolio, 1)
+    portfolio_6 = loaded_db.get(Portfolio, 6)
+    nickname_can_history_event = can_update_history_events[0]
+    assert nickname_can_history_event.history_title == "CAN Portfolio Edited"
+    assert (
+        nickname_can_history_event.history_message
+        == f"CAN portfolio changed from {portfolio_1.name} to {portfolio_6.name} during FY 2025 data import"
+    )
+    assert nickname_can_history_event.history_type == CANHistoryType.CAN_PORTFOLIO_EDITED

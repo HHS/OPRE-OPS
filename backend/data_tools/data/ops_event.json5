@@ -2324,13 +2324,80 @@
       // 22
       event_type: "UPDATE_CAN_FUNDING_BUDGET",
       event_status: "SUCCESS",
-      event_details: '{"message": "Hello World"}',
+      event_details: {
+        "request.json": {
+          budget: 1140000,
+        },
+        "request.values": {},
+        "request.headers": {
+          Host: "localhost:8080",
+          Accept: "*/*",
+          Connection: "keep-alive",
+          "User-Agent": "PostmanRuntime/7.43.0",
+          "Content-Type": "application/json",
+          Authorization: "Bearer token",
+          "Cache-Control": "no-cache",
+          "Postman-Token": "4b43ad52-5e26-4740-82f8-c9026ed72c2d",
+          "Content-Length": "25",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+        "request.remote_addr": "192.168.127.1",
+        "request.remote_user": null,
+        funding_budget_updates: {
+          can_id: 500,
+          changes: {
+            budget: {
+              new_value: 1140000.0,
+              old_value: 1000000.0,
+            },
+          },
+          updated_by: 516,
+        },
+      },
+      created_by: 516,
+      created_on: "2025-01-29T19:52:53.928887Z",
     },
     {
       // 23
       event_type: "UPDATE_CAN_FUNDING_RECEIVED",
       event_status: "SUCCESS",
-      event_details: '{"message": "Hello World"}',
+      event_details: {
+        "request.json": {
+          funding: 1000000,
+        },
+        "request.values": {},
+        "request.headers": {
+          Host: "localhost:8080",
+          Accept: "*/*",
+          Connection: "keep-alive",
+          "User-Agent": "PostmanRuntime/7.43.0",
+          "Content-Type": "application/json",
+          Authorization: "Bearer token",
+          "Cache-Control": "no-cache",
+          "Postman-Token": "32e4d304-65f7-47ad-a360-e567e1ee65a8",
+          "Content-Length": "26",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+        "request.remote_addr": "192.168.127.1",
+        "request.remote_user": null,
+        funding_received_updates: {
+          can_id: 500,
+          funding_id: 500,
+          changes: {
+            funding: {
+              new_value: 1000000.0,
+              old_value: 880000.0,
+            },
+            updated_on: {
+              new_value: "2025-01-30T22:15:49.218657Z",
+              old_value: "2025-01-30T22:15:18.096851Z",
+            },
+          },
+          updated_by: 516,
+        },
+      },
+      created_by: 516,
+      created_on: "2025-01-29T19:52:53.928887Z",
     },
     {
       // 24
@@ -2651,7 +2718,7 @@
           Connection: "keep-alive",
           "User-Agent": "PostmanRuntime/7.43.0",
           "Content-Type": "application/json",
-          Authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzM4MTc5NDk3LCJqdGkiOiI2ZTg3NWVjZC01ZTk5LTRlM2ItOWNiZi1kOTZhM2M1ZmE3ZmUiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzM4MTc5NDk3LCJjc3JmIjoiYTMzNTJjM2ItNDdlNS00YjU2LWI1ODItMTUzM2U3MDRkZTA0IiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzM4MTgxMjk3LCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.AujRcq_RfMgUU_QBwgFGq5zshMDZz2lII0-Bn6eufTC1RIyyFz69-p8U-gkeMo9WILR2_MIcX9gHdpj9Yv0rHZJXsFW4pf74Gvn_8Vxbyw80VnIuHX2wxW0HLRfcsugJTbfsRBNam5oxQ471DwWHSWv3AO2FHCIBDyvG8VhlV-2ASkFyahcg4VMsPceEYellkO14XWZgGOJnUarmkk14AXgharj1CQvqYm2-FD7VSoysfwNoB-salLM2kekX1eD8mVV_7SrmOsoEFlMSZ5DZi18I-K_kRTdwu31F0PEtM9igWBYu4fMNsFWdz9u1J9-R3t3alo_rlTfjDICR1z9A0w",
+          Authorization: "Bearer token",
           "Cache-Control": "no-cache",
           "Postman-Token": "04d64712-da26-4518-ae65-6f848a2f5143",
           "Content-Length": "102",
@@ -2688,7 +2755,7 @@
           Connection: "keep-alive",
           "User-Agent": "PostmanRuntime/7.43.0",
           "Content-Type": "application/json",
-          Authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNzM4MTc5NDk3LCJqdGkiOiI2ZTg3NWVjZC01ZTk5LTRlM2ItOWNiZi1kOTZhM2M1ZmE3ZmUiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiMDAwMDAwMDAtMDAwMC0xMTExLWExMTEtMDAwMDAwMDAwMDE4IiwibmJmIjoxNzM4MTc5NDk3LCJjc3JmIjoiYTMzNTJjM2ItNDdlNS00YjU2LWI1ODItMTUzM2U3MDRkZTA0IiwiYXVkIjoiaHR0cHM6Ly9vcHJlLW9wcy1mcm9udGVuZC1kZXYiLCJpc3MiOiJodHRwczovL29wcmUtb3BzLWJhY2tlbmQtZGV2IiwiZXhwIjoxNzM4MTgxMjk3LCJyb2xlcyI6WyJTWVNURU1fT1dORVIiXX0.AujRcq_RfMgUU_QBwgFGq5zshMDZz2lII0-Bn6eufTC1RIyyFz69-p8U-gkeMo9WILR2_MIcX9gHdpj9Yv0rHZJXsFW4pf74Gvn_8Vxbyw80VnIuHX2wxW0HLRfcsugJTbfsRBNam5oxQ471DwWHSWv3AO2FHCIBDyvG8VhlV-2ASkFyahcg4VMsPceEYellkO14XWZgGOJnUarmkk14AXgharj1CQvqYm2-FD7VSoysfwNoB-salLM2kekX1eD8mVV_7SrmOsoEFlMSZ5DZi18I-K_kRTdwu31F0PEtM9igWBYu4fMNsFWdz9u1J9-R3t3alo_rlTfjDICR1z9A0w",
+          Authorization: "Bearer token",
           "Cache-Control": "no-cache",
           "Postman-Token": "04d64712-da26-4518-ae65-6f848a2f5143",
           "Content-Length": "102",
@@ -2699,6 +2766,43 @@
       },
       created_by: 516,
       created_on: "2025-01-29T19:43:53.928887Z",
+    },
+    {
+      // 32
+      event_type: "UPDATE_CAN",
+      event_status: "SUCCESS",
+      event_details: {
+        can_updates: {
+          can_id: 500,
+          changes: {
+            portfolio_id: {
+              new_value: 6,
+              old_value: 1,
+            },
+          },
+          updated_by: 516,
+        },
+        "request.json": {
+          portfolio_id: 6,
+        },
+        "request.values": {},
+        "request.headers": {
+          Host: "localhost:8080",
+          Accept: "*/*",
+          Connection: "keep-alive",
+          "User-Agent": "PostmanRuntime/7.43.0",
+          "Content-Type": "application/json",
+          Authorization: "Bearer token",
+          "Cache-Control": "no-cache",
+          "Postman-Token": "3a2d7d8b-3f35-4ce2-8983-dfdafc1ee97f",
+          "Content-Length": "25",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+        "request.remote_addr": "192.168.127.1",
+        "request.remote_user": null,
+      },
+      created_by: 516,
+      created_on: "2025-01-29T19:44:53.928887Z",
     },
   ],
 }

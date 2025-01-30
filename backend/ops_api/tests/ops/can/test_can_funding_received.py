@@ -29,14 +29,12 @@ def test_funding_received_get_by_id(auth_client, mocker, test_can):
     mocker_get_can.return_value = test_can
     response = auth_client.get(f"/api/v1/can-funding-received/{test_can.id}")
     assert response.status_code == 200
-    # assert response.json["number"] == "G99HRF2"
 
 
 def test_funding_received_service_get_by_id(test_can):
     service = CANFundingReceivedService()
     can = service.get(test_can.id)
     assert test_can.id == can.id
-    # assert test_can.number == can.number
 
 
 # Testing CANFundingReceived Creation
@@ -115,14 +113,29 @@ def test_funding_received_patch(budget_team_auth_client, mocker):
         "notes": "Fake test update",
     }
 
-    funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="This is a note")
+    old_funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="This is a note")
+    funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="Fake test update")
+
     mocker_update_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.update"
     )
-    funding_received.notes = update_data["notes"]
+    mocker_get_funding_received = mocker.patch(
+        "ops_api.ops.services.can_funding_received.CANFundingReceivedService.get"
+    )
+    mocker_get_funding_received.return_value = old_funding_received
     mocker_update_funding_received.return_value = funding_received
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.patch(f"/api/v1/can-funding-received/{test_funding_id}", json=update_data)
 
+    assert context_manager.metadata["funding_received_updates"]["changes"] is not None
+    changes = context_manager.metadata["funding_received_updates"]["changes"]
+    assert len(changes.keys()) == 1
+    # assert that new data we expect is on the context manager
+    assert changes["notes"]["new_value"] == update_data["notes"]
+    assert changes["notes"]["old_value"] == old_funding_received.notes
     assert response.status_code == 200
     mocker_update_funding_received.assert_called_once_with(update_data, test_funding_id)
     assert response.json["funding"] == funding_received.funding
@@ -188,15 +201,29 @@ def test_funding_received_put(budget_team_auth_client, mocker):
         "funding": 234567,
     }
 
-    funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="This is a note")
+    old_funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="This is a note")
+    funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=234567)
 
     mocker_update_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.update"
     )
-    funding_received.funding = update_data["funding"]
+    mocker_get_funding_received = mocker.patch(
+        "ops_api.ops.services.can_funding_received.CANFundingReceivedService.get"
+    )
+    mocker_get_funding_received.return_value = old_funding_received
     mocker_update_funding_received.return_value = funding_received
+    context_manager = DummyContextManager()
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__enter__")
+    mocker_ops_event_ctxt_mgr.return_value = context_manager
+    mocker_ops_event_ctxt_mgr = mocker.patch("ops_api.ops.utils.events.OpsEventHandler.__exit__")
     response = budget_team_auth_client.put(f"/api/v1/can-funding-received/{test_funding_received_id}", json=update_data)
 
+    assert context_manager.metadata["funding_received_updates"]["changes"] is not None
+    changes = context_manager.metadata["funding_received_updates"]["changes"]
+    assert len(changes.keys()) == 1
+    # assert that new data we expect is on the context manager
+    assert changes["funding"]["new_value"] == update_data["funding"]
+    assert changes["funding"]["old_value"] == old_funding_received.funding
     update_data["notes"] = None
     assert response.status_code == 200
     mocker_update_funding_received.assert_called_once_with(update_data, test_funding_received_id)
