@@ -87,7 +87,7 @@ export default function useCanFunding(
     const activeUserFullName = useSelector((state) => state.auth?.activeUser?.full_name) || "";
 
     React.useEffect(() => {
-        setBudgetForm({ ...budgetForm, submittedAmount: totalFunding });
+        setBudgetForm({ ...budgetForm, enteredAmount: totalFunding, submittedAmount: totalFunding });
     }, [totalFunding]);
 
     React.useEffect(() => {
@@ -141,7 +141,7 @@ export default function useCanFunding(
         };
 
         const handleFundingBudget = async () => {
-            if (+payload.budget > 0) {
+            if (+payload.budget >= 0) {
                 if (currentFiscalYearFundingId) {
                     // PATCH for existing CAN Funding
                     await updateCanFundingBudget({
@@ -231,7 +231,7 @@ export default function useCanFunding(
 
         const nextForm = {
             ...budgetForm,
-            enteredAmount: "",
+            enteredAmount: 0,
             submittedAmount: budgetForm.enteredAmount,
             isSubmitted: true
         };

@@ -46,16 +46,17 @@ const CANBudgetForm = ({
                         runValidate("budget-amount", value);
                     }}
                     setEnteredAmount={setBudgetAmount}
-                    value={budgetAmount || ""}
+                    value={budgetAmount}
                     messages={res.getErrors("budget-amount")}
                     className={cn("budget-amount")}
                     placeholder={`$${totalFunding}`}
+                    allowNegative={false}
+                    isNumericString={true}
                 />
             </div>
             <button
                 id="add-fy-budget"
                 className="usa-button usa-button--outline margin-top-4"
-                disabled={!budgetAmount}
                 data-cy="add-fy-budget"
             >
                 <svg
