@@ -22,7 +22,7 @@ export const Menu = () => {
                 />
             </button>
             <ul className="usa-nav__primary usa-accordion">
-                {isAuthorized && import.meta.env.MODE === "development" (
+                {isAuthorized && (import.meta.env.MODE === "development") && (
                     <li className="usa-nav__primary-item">
                         <Link to="/portfolios/">Portfolios</Link>
                     </li>
