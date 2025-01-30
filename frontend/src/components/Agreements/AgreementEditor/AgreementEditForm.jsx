@@ -33,6 +33,8 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
+import ResearchTypeComboBox from "../ResearchTypeComboBox";
+import SpecialTopicComboBox from "../SpecialTopicComboBox";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -82,6 +84,8 @@ export const AgreementEditForm = ({
     const setAgreementNotes = useUpdateAgreement("notes");
     const setContractType = useUpdateAgreement("contract_type");
     const setServiceReqType = useUpdateAgreement("service_requirement_type");
+    const setResearchTypes = useUpdateAgreement("research_types");
+    const setSpecialPopulations = useUpdateAgreement("special_populations");
 
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});
@@ -109,7 +113,9 @@ export const AgreementEditForm = ({
         agreement_reason: agreementReason,
         team_members: selectedTeamMembers,
         contract_type: contractType,
-        service_requirement_type: serviceReqType
+        service_requirement_type: serviceReqType,
+        research_types: researchTypes,
+        special_populations: specialPopulations
     } = agreement;
 
     const {
@@ -415,7 +421,6 @@ export const AgreementEditForm = ({
                     onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
                 />
             </div>
-
             <div className="display-flex margin-top-3">
                 <AgreementReasonSelect
                     name="agreement_reason"
@@ -450,7 +455,28 @@ export const AgreementEditForm = ({
                     />
                 </fieldset>
             </div>
-
+            <div
+                className="margin-top-3"
+                style={{ maxWidth: "30rem" }}
+            >
+                <ResearchTypeComboBox
+                    researchTypes={researchTypes}
+                    setResearchTypes={setResearchTypes}
+                    messages={res.getErrors("research_types")}
+                    onChange={(name, value) => {
+                        runValidate(name, value);
+                    }}
+                />
+            </div>
+            <div
+                className="margin-top-3"
+                style={{ maxWidth: "30rem" }}
+            >
+                <SpecialTopicComboBox
+                    specialPopulations={specialPopulations}
+                    setSpecialPopulations={setSpecialPopulations}
+                />
+            </div>
             <div className="display-flex margin-top-3">
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}

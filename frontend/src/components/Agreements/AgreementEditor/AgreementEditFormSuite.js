@@ -37,6 +37,9 @@ const suite = create((data = {}, fieldName) => {
         enforce(data.contract_type).notEquals("-Select an option-");
         enforce(data.contract_type).isNotEmpty();
     });
+    test("research_types", "This is required information", () => {
+        enforce(data.research_types).lengthNotEquals(0);
+    });
     test("team-members", "This is required information", () => {
         enforce(data.team_members).lengthNotEquals(0);
     });
