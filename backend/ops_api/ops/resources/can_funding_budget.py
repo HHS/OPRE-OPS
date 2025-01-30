@@ -1,4 +1,3 @@
-from deepdiff import DeepDiff, parse_path
 from flask import Response, request
 from flask_jwt_extended import jwt_required
 
@@ -9,7 +8,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import CreateUpdateFundingBudgetSchema, FundingBudgetSchema
 from ops_api.ops.services.can_funding_budget import CANFundingBudgetService
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -39,19 +38,12 @@ class CANFundingBudgetItemAPI(BaseItemAPI):
             serialized_old_funding_budget = schema.dump(old_funding_budget)
             updated_funding_budget = self.service.update(serialized_request, id)
             serialized_can_funding_budget = schema.dump(updated_funding_budget)
-            deep_diff = DeepDiff(serialized_old_funding_budget, serialized_can_funding_budget)
-
-            values_changed = deep_diff["values_changed"]
-            # Convert from deepdiff format of "root['value_changed']" to just 'value_changed' as the key in the object
-            dict_of_changes = {}
-            for key in values_changed.keys():
-                if len(parse_path(key)) == 1:
-                    dict_of_changes[parse_path(key)[0]] = values_changed[key]
-
-            updates = {}
-            updates["can_id"] = id
-            updates["updated_by"] = updated_funding_budget.updated_by
-            updates["changes"] = dict_of_changes
+            updates = generate_events_update(
+                serialized_old_funding_budget,
+                serialized_can_funding_budget,
+                updated_funding_budget.can_id,
+                updated_funding_budget.updated_by,
+            )
             meta.metadata.update({"funding_budget_updates": updates})
             return make_response_with_headers(serialized_can_funding_budget)
 

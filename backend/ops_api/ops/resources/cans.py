@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import desert
-from deepdiff import DeepDiff, parse_path
 from flask import Response, current_app, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import select
@@ -16,7 +15,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import CANSchema, CreateUpdateCANRequestSchema, GetCANListRequestSchema
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -51,19 +50,7 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            deep_diff = DeepDiff(old_serialized_can, serialized_can)
-
-            values_changed = deep_diff["values_changed"]
-            # Convert from deepdiff format of "root['value_changed']" to just 'value_changed' as the key in the object
-            dict_of_changes = {}
-            for key in values_changed.keys():
-                if len(parse_path(key)) == 1:
-                    dict_of_changes[parse_path(key)[0]] = values_changed[key]
-
-            updates = {}
-            updates["can_id"] = id
-            updates["updated_by"] = updated_can.updated_by
-            updates["changes"] = dict_of_changes
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
@@ -82,19 +69,7 @@ class CANItemAPI(BaseItemAPI):
             old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            deep_diff = DeepDiff(old_serialized_can, serialized_can)
-
-            values_changed = deep_diff["values_changed"]
-            # Convert from deepdiff format of "root['value_changed']" to just 'value_changed' as the key in the object
-            dict_of_changes = {}
-            for key in values_changed.keys():
-                if len(parse_path(key)) == 1:
-                    dict_of_changes[parse_path(key)[0]] = values_changed[key]
-
-            updates = {}
-            updates["can_id"] = id
-            updates["updated_by"] = updated_can.updated_by
-            updates["changes"] = dict_of_changes
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
             meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
