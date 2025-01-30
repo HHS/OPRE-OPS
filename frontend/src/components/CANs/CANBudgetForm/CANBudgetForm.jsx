@@ -4,8 +4,8 @@ import icons from "../../../uswds/img/sprite.svg";
 /**
  * @typedef {Object} CANBudgetFormProps
  * @property {boolean} showCarryForwardCard
- * @property {string} totalFunding
- * @property {string} budgetAmount
+ * @property {number} totalFunding
+ * @property {number} budgetAmount
  * @property {(arg: string) => string} cn
  * @property {Object} res
  * @property {number} fiscalYear
@@ -46,7 +46,7 @@ const CANBudgetForm = ({
                         runValidate("budget-amount", value);
                     }}
                     setEnteredAmount={setBudgetAmount}
-                    value={budgetAmount}
+                    value={budgetAmount || 0}
                     messages={res.getErrors("budget-amount")}
                     className={cn("budget-amount")}
                     placeholder={`$${totalFunding}`}
