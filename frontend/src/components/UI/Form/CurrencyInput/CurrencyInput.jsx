@@ -25,12 +25,13 @@ const CurrencyInput = ({
     value,
     className,
     setEnteredAmount,
-    placeholder = "$"
+    placeholder = "$",
+    ...rest
 }) => {
     return (
         <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
-                className={`usa-label ${messages.length ? "usa-label--error" : null} `}
+                className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
                 htmlFor={name}
             >
                 {label}
@@ -50,13 +51,16 @@ const CurrencyInput = ({
                 className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                 thousandSeparator={true}
                 decimalScale={2}
-                renderText={(value) => value}
                 placeholder={placeholder}
                 onValueChange={(values) => {
                     const { floatValue } = values;
-                    setEnteredAmount(floatValue);
+                    // Explicitly check if floatValue is a number (including 0)
+                    if (setEnteredAmount) {
+                        setEnteredAmount(typeof floatValue === "number" ? floatValue : null);
+                    }
                 }}
                 onChange={handleChange}
+                {...rest}
             />
         </div>
     );

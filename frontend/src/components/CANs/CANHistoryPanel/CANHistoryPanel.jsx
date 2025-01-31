@@ -23,7 +23,7 @@ const CanHistoryPanel = ({ canId }) => {
      * @typedef {import('../../CANs/CANTypes').CanHistoryItem} CanHistoryItem
      * @type {[CanHistoryItem[], React.Dispatch<React.SetStateAction<CanHistoryItem[]>>]}
      */
-    const [cantHistory, setCanHistory] = useState(initialHistory);
+    const [canHistory, setCanHistory] = useState(initialHistory);
 
     const {
         data: canHistoryItems,
@@ -38,7 +38,7 @@ const CanHistoryPanel = ({ canId }) => {
 
     useEffect(() => {
         if (canHistoryItems && canHistoryItems.length > 0) {
-            setCanHistory([...cantHistory, ...canHistoryItems]);
+            setCanHistory([...canHistory, ...canHistoryItems]);
         }
         if (!isLoading && canHistoryItems && canHistoryItems.length === 0) {
             setStopped(true);
@@ -55,10 +55,13 @@ const CanHistoryPanel = ({ canId }) => {
         }
         return Promise.resolve();
     };
+    const sortedCanHistory = canHistory.sort((a, b) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
 
     return (
         <>
-            {cantHistory.length > 0 ? (
+            {canHistory.length > 0 ? (
                 <div
                     className="overflow-y-scroll force-show-scrollbars"
                     style={{ height: "15rem" }}
@@ -73,7 +76,7 @@ const CanHistoryPanel = ({ canId }) => {
                         className="usa-list--unstyled"
                         data-cy="can-history-list"
                     >
-                        {cantHistory.map((item) => (
+                        {sortedCanHistory.map((item) => (
                             <LogItem
                                 key={item.id}
                                 title={item.history_title}

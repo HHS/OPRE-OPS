@@ -22,11 +22,11 @@ import { calculatePercent } from "../../../helpers/utils";
  * @property {ItemCount[]} [projectTypesCount]
  * @property {ItemCount[]} [budgetLineTypesCount]
  * @property {ItemCount[]} [agreementTypesCount]
- * @property {string} plannedFunding
- * @property {string} inExecutionFunding
- * @property {string} inDraftFunding
- * @property {string} obligatedFunding
- * @property {string} totalFunding
+ * @property {number} plannedFunding
+ * @property {number} inExecutionFunding
+ * @property {number} inDraftFunding
+ * @property {number} obligatedFunding
+ * @property {number} totalFunding
  */
 
 /**
