@@ -72,14 +72,14 @@ def can_history_trigger(
                         can_id=event.event_details["funding_budget_updates"]["can_id"],
                         ops_event_id=event.id,
                         history_title=f"{current_fiscal_year} Budget Edited",
-                        history_message=f"{event_user.first_name} {event_user.last_name} edited the {current_fiscal_year} budget from {old_budget} to {new_budget}",
+                        history_message=f"{event_user.full_name} edited the {current_fiscal_year} budget from {old_budget} to {new_budget}",
                         timestamp=event.created_on,
                         history_type=CANHistoryType.CAN_FUNDING_EDITED,
                     )
                     session.add(history_event)
             case OpsEventType.CREATE_CAN_FUNDING_RECEIVED:
                 funding = "${:,.2f}".format(event.event_details["new_can_funding_received"]["funding"])
-                creator_name = f"{event_user.first_name} {event_user.last_name}"
+                creator_name = f"{event_user.full_name}"
                 history_event = CANHistory(
                     can_id=event.event_details["new_can_funding_received"]["can_id"],
                     ops_event_id=event.id,
@@ -106,7 +106,7 @@ def can_history_trigger(
                     session.add(history_event)
             case OpsEventType.DELETE_CAN_FUNDING_RECEIVED:
                 funding = "${:,.2f}".format(event.event_details["deleted_can_funding_received"]["funding"])
-                creator_name = f"{event_user.first_name} {event_user.last_name}"
+                creator_name = f"{event_user.full_name}"
                 history_event = CANHistory(
                     can_id=event.event_details["deleted_can_funding_received"]["can_id"],
                     ops_event_id=event.id,
@@ -150,7 +150,7 @@ def create_can_update_history_event(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="Nickname Edited",
-                history_message=f"{updated_by_user.first_name} {updated_by_user.last_name} edited the nickname from {old_value} to {new_value}",
+                history_message=f"{updated_by_user.full_name} edited the nickname from {old_value} to {new_value}",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_NICKNAME_EDITED,
             )
@@ -159,7 +159,7 @@ def create_can_update_history_event(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="Description Edited",
-                history_message=f"{updated_by_user.first_name} {updated_by_user.last_name} edited the description",
+                history_message=f"{updated_by_user.full_name} edited the description",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_DESCRIPTION_EDITED,
             )
@@ -176,7 +176,5 @@ def create_can_update_history_event(
                 history_type=CANHistoryType.CAN_PORTFOLIO_EDITED,
             )
         case _:
-            logger.info(
-                f"{property_name} edited by {updated_by_user.first_name} {updated_by_user.last_name} from {old_value} to {new_value}"
-            )
+            logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
             return None

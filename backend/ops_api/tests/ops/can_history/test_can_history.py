@@ -180,9 +180,9 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
     )
     assert new_can_history_item.timestamp == funding_budget_created_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    funding_budget_created_event_2 = loaded_db.get(OpsEvent, 29)
+    funding_budget_created_event_2 = loaded_db.get(OpsEvent, 25)
     can_history_trigger(funding_budget_created_event_2, loaded_db)
-    history_list = loaded_db.query(CANHistory).where(CANHistory.ops_event_id == 29).all()
+    history_list = loaded_db.query(CANHistory).where(CANHistory.ops_event_id == 25).all()
     history_count = len(history_list)
     new_can_history_item_2 = history_list[history_count - 1]
 
@@ -221,7 +221,7 @@ def test_create_create_can_funding_received(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_create_can_history_delete_can_funding_received(loaded_db):
-    funding_received_deleted_event = loaded_db.get(OpsEvent, 25)
+    funding_received_deleted_event = loaded_db.get(OpsEvent, 24)
     can_history_trigger(funding_received_deleted_event, loaded_db)
     can_history_list = loaded_db.query(CANHistory).all()
     can_history_count = len(can_history_list)
@@ -242,10 +242,10 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_update_can_can_history(loaded_db):
-    update_can_event = loaded_db.get(OpsEvent, 30)
+    update_can_event = loaded_db.get(OpsEvent, 26)
     can_history_trigger(update_can_event, loaded_db)
     can_update_history_events = (
-        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 30)).scalars().all()
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 26)).scalars().all()
     )
     assert len(can_update_history_events) == 2
 
@@ -297,10 +297,10 @@ def test_update_can_funding_received_can_history(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_update_can_portfolio_can_history(loaded_db):
-    update_can_event = loaded_db.get(OpsEvent, 32)
+    update_can_event = loaded_db.get(OpsEvent, 27)
     can_history_trigger(update_can_event, loaded_db)
     can_update_history_events = (
-        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 32)).scalars().all()
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 27)).scalars().all()
     )
     assert len(can_update_history_events) == 1
     portfolio_1 = loaded_db.get(Portfolio, 1)

@@ -719,43 +719,11 @@
     },
     { // 24
       can_id: 500,
-      ops_event_id: 24,
-      history_title: "CAN Funding Deleted",
-      history_message: "CAN funding deleted by Director Dave",
-      timestamp: "2025-01-01T00:12:00.000000Z",
-      history_type: "CAN_FUNDING_DELETED"
-    },
-    { // 25
-      can_id: 500,
       ops_event_id: 25,
       history_title: "Funding Received Deleted",
       history_message: "Steve Tekell deleted funding received for funding ID 526 in the amount of $1000.00",
       timestamp: "2025-01-01T00:12:30.000000Z",
       history_type: "CAN_RECEIVED_DELETED"
-    },
-    { // 26
-      can_id: 500,
-      ops_event_id: 26,
-      history_title: "CAN Carry Forward Calculated",
-      history_message: "CAN carry forward amount calculated",
-      timestamp: "2025-01-01T00:13:00.000000Z",
-      history_type: "CAN_CARRY_FORWARD_CALCULATED"
-    },
-    { // 27
-      can_id: 500,
-      ops_event_id: 27,
-      history_title: "FY 2025 Budget Entered",
-      history_message: "Steve Tekell entered a FY 2025 budget of $20,000.00",
-      timestamp: "2025-01-01T00:14:00.000000Z",
-      history_type: "CAN_FUNDING_CREATED"
-    },
-    { // 28
-      can_id: 500,
-      ops_event_id: 28,
-      history_title: "CAN Funding Deleted",
-      history_message: "CAN funding deleted by Director Dave",
-      timestamp: "2025-01-01T00:15:00.000000Z",
-      history_type: "CAN_FUNDING_DELETED"
     },
   ]
 }
