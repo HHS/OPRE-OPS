@@ -1,9 +1,6 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-{/*TODO: remove flag once portfolio UI updates are ready */}
-if (import.meta.env.DEV) {
-
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/portfolios/1");
@@ -15,7 +12,8 @@ if (import.meta.env.DEV) {
         cy.checkA11y(null, null, terminalLog);
     });
 
-    it("loads", () => {
+    // TODO: take away the skips when we're ready to show portfolios again
+    it.skip("loads", () => {
         cy.visit("/portfolios/1");
         cy.get("h1").should("contain", "Child Welfare Research");
         cy.get("h2").should("contain", "Division of Child and Family Development");
@@ -39,18 +37,18 @@ if (import.meta.env.DEV) {
         cy.get("span").should("contain", "Carry-Forward");
     });
 
-    it("loads the Portfolio Budget Details component", () => {
+    it.skip("loads the Portfolio Budget Details component", () => {
         cy.get("#fiscal-year-select").select("2021");
         cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
         cy.get("section").should("contain", "G99IA14");
     });
 
-    it("expands the description when one clicks read more", () => {
+    it.skip("expands the description when one clicks read more", () => {
         cy.contains("read more").click();
         cy.get("a").should("contain", "See more on the website");
     });
 
-    it("shows the Portfolio Projects and Spending tab", () => {
+    it.skip("shows the Portfolio Projects and Spending tab", () => {
         cy.visit("/portfolios/1/research-projects/");
         cy.get("#fiscal-year-select").select("2023");
         // summary cards

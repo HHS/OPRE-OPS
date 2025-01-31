@@ -1,9 +1,7 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-{/*TODO: remove flag once portfolio UI updates are ready */}
-if (import.meta.env.DEV) {
-
+    // TODO: take away the skips when we're ready to show portfolios again
     beforeEach(() => {
         testLogin("system-owner");
         cy.visit("/portfolios");
@@ -14,12 +12,12 @@ if (import.meta.env.DEV) {
         cy.checkA11y(null, null, terminalLog);
     });
 
-    it("loads", () => {
+    it.skip("loads", () => {
         cy.get("h1").should("have.text", "Portfolios");
         cy.get('a[href="/portfolios/1"]').should("exist");
     });
 
-    it("clicking on a Portfolio takes you to the detail page", () => {
+    it.skip("clicking on a Portfolio takes you to the detail page", () => {
         const portfolioName = "Healthy Marriage & Responsible Fatherhood";
 
         cy.contains(portfolioName).click();
@@ -27,5 +25,3 @@ if (import.meta.env.DEV) {
         cy.url().should("include", "/portfolios/6");
         cy.get("h1").should("contain", portfolioName);
     });
-
-}
