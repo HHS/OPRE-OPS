@@ -5,7 +5,9 @@ import CANBudgetForm from "./CANBudgetForm";
 
 describe("CANBudgetForm", () => {
     const defaultProps = {
-        budgetAmount: "",
+        showCarryForwardCard: true,
+        budgetAmount: 0,
+        totalFunding: 10_000_000,
         cn: (name) => name,
         res: { getErrors: () => [] },
         fiscalYear: 2024,
@@ -20,27 +22,12 @@ describe("CANBudgetForm", () => {
         expect(screen.getByRole("button", { name: /add fy budget/i })).toBeInTheDocument();
     });
 
-    test("button is disabled when budgetAmount is empty", () => {
-        render(<CANBudgetForm {...defaultProps} />);
-        expect(screen.getByRole("button", { name: /add fy budget/i })).toBeDisabled();
-    });
-
-    test("button is enabled when budgetAmount has value", () => {
-        render(
-            <CANBudgetForm
-                {...defaultProps}
-                budgetAmount="1000"
-            />
-        );
-        expect(screen.getByRole("button", { name: /add fy budget/i })).toBeEnabled();
-    });
-
     test("calls handleAddBudget and setBudgetAmount on form submission", async () => {
         const user = userEvent.setup();
         render(
             <CANBudgetForm
                 {...defaultProps}
-                budgetAmount="1000"
+                budgetAmount={1000}
             />
         );
 

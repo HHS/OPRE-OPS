@@ -36,8 +36,8 @@ import useCanFunding from "./CanFunding.hooks.js";
  * @property {FundingDetails} [funding]
  * @property {FundingBudget[]} fundingBudgets
  * @property {number} fiscalYear
- * @property {string} totalFunding
- * @property {string} receivedFunding
+ * @property {number} totalFunding
+ * @property {number} receivedFunding
  * @property {FundingReceived[]} fundingReceived data for table
  * @property {boolean} isBudgetTeamMember
  * @property {boolean} isEditMode
@@ -45,7 +45,7 @@ import useCanFunding from "./CanFunding.hooks.js";
  * @property {() => void} deleteFundingReceived
  * @property {string} carryForwardFunding,
  * @property {welcomeModal} welcomeModal
- * @property {() => void} setWelcomeModal
+ * @property {() => void} resetWelcomeModal
  */
 
 /**
@@ -68,7 +68,7 @@ const CanFunding = ({
     toggleEditMode,
     carryForwardFunding,
     welcomeModal,
-    setWelcomeModal
+    resetWelcomeModal
 }) => {
     const {
         handleAddBudget,
@@ -101,7 +101,7 @@ const CanFunding = ({
         isBudgetTeamMember,
         isEditMode,
         toggleEditMode,
-        setWelcomeModal,
+        resetWelcomeModal,
         receivedFunding,
         fundingReceived,
         currentFiscalYearFundingId
@@ -118,7 +118,7 @@ const CanFunding = ({
             {+totalFunding === 0 && welcomeModal.showModal && (
                 <ConfirmationModal
                     heading={welcomeModal.heading}
-                    setShowModal={setWelcomeModal}
+                    setShowModal={resetWelcomeModal}
                     actionButtonText={welcomeModal.actionButtonText}
                     handleConfirm={welcomeModal.handleConfirm}
                 />
@@ -260,7 +260,7 @@ const CanFunding = ({
                             </div>
                             <ReceivedFundingCard
                                 title={`FY ${fiscalYear} Funding Received YTD`}
-                                totalReceived={totalReceived.toString() || "0"}
+                                totalReceived={totalReceived || 0}
                                 totalFunding={budgetForm.submittedAmount}
                             />
                         </div>

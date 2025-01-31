@@ -1,12 +1,24 @@
 from csv import DictReader
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List, Optional
 
 from loguru import logger
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from models import CAN, CANFundingDetails, CANFundingSource, CANMethodOfTransfer, Portfolio, User
+from models import (
+    CAN,
+    CANFundingDetails,
+    CANFundingSource,
+    CANMethodOfTransfer,
+    OpsEvent,
+    OpsEventStatus,
+    OpsEventType,
+    Portfolio,
+    User,
+    can_history_trigger_func,
+)
 
 
 @dataclass
@@ -15,6 +27,7 @@ class CANData:
     Dataclass to represent a CAN data row.
     """
 
+    FISCAL_YEAR: int
     CAN_NBR: str
     FUND: str
     PORTFOLIO: str
@@ -33,9 +46,10 @@ class CANData:
     FUNDING_PARTNER: Optional[str] = field(default=None)
 
     def __post_init__(self):
-        if not self.CAN_NBR:
-            raise ValueError("CAN_NBR is required.")
+        if not self.FISCAL_YEAR or not self.CAN_NBR:
+            raise ValueError("FISCAL_YEAR and CAN_NBR are required.")
 
+        self.FISCAL_YEAR = int(self.FISCAL_YEAR)
         self.SYS_CAN_ID = int(self.SYS_CAN_ID) if self.SYS_CAN_ID else None
         self.CAN_NBR = str(self.CAN_NBR)
         self.CAN_DESCRIPTION = str(self.CAN_DESCRIPTION) if self.CAN_DESCRIPTION else None
@@ -75,6 +89,7 @@ def validate_data(data: CANData) -> bool:
     """
     return all(
         [
+            data.FISCAL_YEAR is not None,
             data.CAN_NBR is not None,
             data.PORTFOLIO is not None,
             data.FUNDING_SOURCE is not None,
@@ -126,9 +141,20 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
             description=data.CAN_DESCRIPTION,
             nick_name=data.NICK_NAME,
             created_by=sys_user.id,
+            updated_by=sys_user.id,
         )
 
         can.portfolio = portfolio
+
+        existing_can = session.get(CAN, data.SYS_CAN_ID)
+
+        # Set the created_on and updated_on fields based on the fiscal year
+        if existing_can:
+            can.created_on = existing_can.created_on
+            can.updated_on = datetime.now()
+        else:
+            can.created_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
+            can.updated_on = datetime(data.FISCAL_YEAR - 1, 10, 1)
 
         try:
             validate_fund_code(data)
@@ -138,6 +164,20 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
 
         session.merge(can)
         session.commit()
+
+        # Handle CAN History: Create new OPS Event for new CAN
+        # TODO: When the CAN History feature is complete handle update events here as well.
+
+        event = OpsEvent(
+            event_type=OpsEventType.CREATE_NEW_CAN,
+            event_status=OpsEventStatus.SUCCESS,
+            event_details={"new_can": can.to_dict()},
+            created_by=sys_user.id,
+        )
+        session.add(event)
+        session.commit()
+
+        can_history_trigger_func(event, session)
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e
@@ -194,6 +234,9 @@ def get_or_create_funding_details(data: CANData, sys_user: User, session: Sessio
             funding_source=funding_source,
             funding_partner=funding_partner,
             created_by=sys_user.id,
+            updated_by=sys_user.id,
+            created_on=datetime(data.FISCAL_YEAR - 1, 10, 1),
+            updated_on=datetime(data.FISCAL_YEAR - 1, 10, 1),
         )
         return funding_details
     else:

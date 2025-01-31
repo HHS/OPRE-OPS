@@ -26,7 +26,7 @@ const Can = () => {
         description,
         nickname,
         modalProps,
-        resetModal,
+        resetWelcomeModal,
         fundingDetails,
         fundingBudgets,
         fundingReceivedByFiscalYear,
@@ -47,7 +47,8 @@ const Can = () => {
         isBudgetTeam,
         carryForwardFunding,
         isEditMode,
-        toggleEditMode
+        toggleDetailPageEditMode,
+        toggleFundingPageEditMode
     } = useCan();
 
     if (isLoading || CANFundingLoading) {
@@ -67,7 +68,7 @@ const Can = () => {
 
             <section className="display-flex flex-justify margin-top-3">
                 <CanDetailTabs canId={canId} />
-                {!isEditMode && (
+                {!isEditMode.detailPage && !isEditMode.fundingPage && (
                     <CANFiscalYearSelect
                         fiscalYear={fiscalYear}
                         setSelectedFiscalYear={setSelectedFiscalYear}
@@ -89,8 +90,8 @@ const Can = () => {
                             teamLeaders={teamLeaders ?? []}
                             fiscalYear={fiscalYear}
                             isBudgetTeamMember={isBudgetTeam}
-                            isEditMode={isEditMode}
-                            toggleEditMode={toggleEditMode}
+                            isEditMode={isEditMode.detailPage}
+                            toggleEditMode={toggleDetailPageEditMode}
                         />
                     }
                 />
@@ -118,7 +119,7 @@ const Can = () => {
                             canId={canId}
                             canNumber={canNumber}
                             welcomeModal={modalProps}
-                            setWelcomeModal={resetModal}
+                            resetWelcomeModal={resetWelcomeModal}
                             currentFiscalYearFundingId={currentFiscalYearFundingId}
                             funding={fundingDetails}
                             fundingBudgets={fundingBudgets}
@@ -127,8 +128,8 @@ const Can = () => {
                             totalFunding={totalFunding}
                             fundingReceived={fundingReceivedByFiscalYear}
                             isBudgetTeamMember={isBudgetTeam}
-                            isEditMode={isEditMode}
-                            toggleEditMode={toggleEditMode}
+                            isEditMode={isEditMode.fundingPage}
+                            toggleEditMode={toggleFundingPageEditMode}
                             carryForwardFunding={carryForwardFunding}
                         />
                     }

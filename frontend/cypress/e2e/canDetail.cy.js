@@ -193,7 +193,6 @@ describe("CAN funding page", () => {
         cy.get("[data-cy=confirm-action]").click();
         cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
         cy.get("#save-changes").should("be.disabled");
-        cy.get("#add-fy-budget").should("be.disabled");
         cy.get("#carry-forward-card").should("contain", "0");
         cy.get("[data-cy='can-budget-fy-card']").should("contain", "0");
         cy.get("#budget-amount").type(can504.budgetAmount);

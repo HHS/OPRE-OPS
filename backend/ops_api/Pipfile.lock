@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a3fefd5c63528e29d34b74695eca342232590e1992ef1addd886b6296ee0a5c6"
+            "sha256": "5c94b3a2640c810780c41a0eda1c519e4a9912291fe2d3447b1f18bf96cbc733"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -70,12 +70,12 @@
         },
         "azure-storage-blob": {
             "hashes": [
-                "sha256:4f0bb4592ea79a2d986063696514c781c9e62be240f09f6397986e01755bc071",
-                "sha256:eaaaa1507c8c363d6e1d1342bd549938fdf1adec9b1ada8658c8f5bf3aea844e"
+                "sha256:052b2a1ea41725ba12e2f4f17be85a54df1129e13ea0321f5a2fcc851cbf47d4",
+                "sha256:77fb823fdbac7f3c11f7d86a5892e2f85e161e8440a7489babe2195bf248f09e"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==12.24.0"
+            "version": "==12.24.1"
         },
         "blinker": {
             "hashes": [
