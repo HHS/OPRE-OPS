@@ -143,7 +143,10 @@ const useApproveAgreement = () => {
     const budgetLinesInReview =
         agreement?.budget_line_items?.filter(
             /** @param {BudgetLine} bli */
-            (bli) => bli.in_review && (bli.can?.portfolio?.division.division_director_id === userId || bli.can?.portfolio?.division.deputy_division_director_id === userId)
+            (bli) =>
+                bli.in_review &&
+                (bli.can?.portfolio?.division.division_director_id === userId ||
+                    bli.can?.portfolio?.division.deputy_division_director_id === userId)
         ) || [];
     /**
      * @type {ChangeRequest[]} changeRequestsInReview
@@ -212,6 +215,12 @@ const useApproveAgreement = () => {
     const hasPermissionToViewPage =
         userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
 
+    console.log({
+        hasPermissionToViewPage,
+        userIsDivisionDirector,
+        agreementHasBLIsUnderReview,
+        doesAgreementBelongToDivisionDirector
+    });
 
     const relevantMessages = React.useMemo(() => {
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {
@@ -250,7 +259,10 @@ const useApproveAgreement = () => {
             let updatedBudgetLine = { ...budgetLine };
 
             // Check if budget line belongs to approver's division
-            if (budgetLine.can?.portfolio.division.division_director_id !== userId && budgetLine.can?.portfolio.division.deputy_division_director_id !== userId) {
+            if (
+                budgetLine.can?.portfolio.division.division_director_id !== userId &&
+                budgetLine.can?.portfolio.division.deputy_division_director_id !== userId
+            ) {
                 return budgetLine; // Return original budget line unchanged if not in approver's division
             }
 
@@ -258,10 +270,10 @@ const useApproveAgreement = () => {
                 budgetLine.change_requests_in_review.forEach((changeRequest) => {
                     // Only apply changes based on the changeRequestType and if they belong to the approver's division
                     if (
-                        ((changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && changeRequest.has_budget_change) ||
-                            (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
-                                changeRequest.has_status_change &&
-                                changeRequest.requested_change_data.status === statusChangeTo))
+                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET && changeRequest.has_budget_change) ||
+                        (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.STATUS &&
+                            changeRequest.has_status_change &&
+                            changeRequest.requested_change_data.status === statusChangeTo)
                     ) {
                         Object.assign(updatedBudgetLine, changeRequest.requested_change_data);
 
