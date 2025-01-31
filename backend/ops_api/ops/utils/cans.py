@@ -161,23 +161,41 @@ def filter_by_attribute(cans: list[CAN], attribute_search: str, attribute_list) 
     return [can for can in cans if get_nested_attribute(can, attribute_search) in attribute_list]
 
 
-def filter_by_fiscal_year_budget(cans: list[CAN], fiscal_year_budget: list[int]) -> list[CAN]:
+def filter_by_fiscal_year_budget(cans: list[CAN], budgets: list[Decimal], budget_fiscal_year: int) -> list[CAN]:
     """
     Filters the list of cans based on the fiscal year budget's minimum and maximum values.
     """
-    return [
-        can
-        for can in cans
-        if any(fiscal_year_budget[0] <= budget.budget <= fiscal_year_budget[1] for budget in can.funding_budgets)
-    ]
+    if budget_fiscal_year:
+        return [
+            can
+            for can in cans
+            if any(
+                budgets[0] <= budget.budget <= budgets[1]
+                for budget in can.funding_budgets
+                if budget.fiscal_year == budget_fiscal_year
+            )
+        ]
+    else:
+        return [can for can in cans if any(budgets[0] <= budget.budget <= budgets[1] for budget in can.funding_budgets)]
 
 
-def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None, portfolio=None, fy_budget=None):
+def get_filtered_cans(
+    cans: list[CAN], fiscal_year=None, active_period=None, transfer=None, portfolio=None, fy_budget=None
+):
     """
     Returns a filtered list of CANs for the given list of CANs based on the provided attributes.
     """
+
+    # filter cans by budget fiscal year
+    cans_filtered_by_fiscal_year = set()
     if fiscal_year:
-        cans = filter_by_attribute(cans, "funding_details.fiscal_year", [fiscal_year])
+        for can in cans:
+            for each in can.funding_budgets:
+                if each.fiscal_year == fiscal_year:
+                    cans_filtered_by_fiscal_year.add(can)
+
+        cans = [can for can in cans_filtered_by_fiscal_year]
+
     if active_period:
         cans = filter_by_attribute(cans, "active_period", active_period)
     if transfer:
@@ -185,7 +203,7 @@ def get_filtered_cans(cans, fiscal_year=None, active_period=None, transfer=None,
     if portfolio:
         cans = filter_by_attribute(cans, "portfolio.abbreviation", portfolio)
     if fy_budget:
-        cans = filter_by_fiscal_year_budget(cans, fy_budget)
+        cans = filter_by_fiscal_year_budget(cans, fy_budget, fiscal_year)
     return cans
 
 

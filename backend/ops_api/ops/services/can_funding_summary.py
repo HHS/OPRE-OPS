@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import List, Optional
 
 from flask import Response
@@ -70,13 +71,16 @@ class CANFundingSummaryService:
             "active_period": request.args.getlist("active_period", type=int),
             "transfer": request.args.getlist("transfer"),
             "portfolio": request.args.getlist("portfolio"),
-            "fy_budget": request.args.getlist("fy_budget", type=int),
+            "fy_budget": request.args.getlist("fy_budget"),
         }
 
         # Remove duplicates for all keys except fiscal_year and fy_budget
         for key in query_params:
             if key not in ["fiscal_year", "fy_budget"]:
                 query_params[key] = list(set(query_params[key]))
+
+        # Cast fy_budget to decimals
+        query_params["fy_budget"] = [Decimal(b) for b in query_params["fy_budget"]]
 
         schema = GetCANFundingSummaryRequestSchema()
         return schema.load(query_params)

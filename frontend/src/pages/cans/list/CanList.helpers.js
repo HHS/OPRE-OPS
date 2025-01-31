@@ -11,9 +11,10 @@ import { USER_ROLES } from "../../../components/Users/User.constants";
  * @param {boolean} myCANsUrl - The URL parameter to filter by "my-CANs".
  * @param {import("../../../components/Users/UserTypes").User} activeUser - The active user.
  * @param {Filters} filters - The filters to apply.
+ * @param {number} fiscalYear - The fiscal year to filter by.
  * @returns {CAN[]} - The sorted array of CANs.
  */
-export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
+export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYear) => {
     if (!cans || cans.length === 0) {
         return [];
     }
@@ -33,7 +34,7 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
         }
         // Filter based on team members
         // TODO: add project officers per #2884
-        if (roles.includes(USER_ROLES.USER)) {
+        if (roles.includes(USER_ROLES.VIEWER_EDITOR)) {
             return can.budget_line_items?.some((bli) => bli.team_members.some((member) => member.id === userId));
         }
 
@@ -42,7 +43,7 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters) => {
     });
 
     // NOTE: Filter by filter prop
-    filteredCANs = applyAdditionalFilters(filteredCANs, filters);
+    filteredCANs = applyAdditionalFilters(filteredCANs, filters, fiscalYear);
 
     return sortCANs(filteredCANs);
 };
@@ -68,9 +69,10 @@ const sortCANs = (cans) => {
  * @description Applies additional filters to the CANs.
  * @param {CAN[]} cans - The array of CANs to filter.
  * @param {Filters} filters - The filters to apply.
+ * @param {number} fiscalYear - The fiscal year that is applied to the filter.
  * @returns {CAN[]} - The filtered array of CANs.
  */
-const applyAdditionalFilters = (cans, filters) => {
+const applyAdditionalFilters = (cans, filters, fiscalYear) => {
     let filteredCANs = cans;
 
     // Filter by active period
@@ -99,12 +101,16 @@ const applyAdditionalFilters = (cans, filters) => {
     if (filters.budget && filters.budget.length > 0) {
         filteredCANs = filteredCANs.filter((can) => {
             // Skip CANs with no funding budgets or only null budgets
-            const validBudgets = can.funding_budgets?.filter((b) => b.budget !== null);
+            const validBudgets = can.funding_budgets?.filter((b) => b.budget !== null && b.fiscal_year === fiscalYear);
             if (validBudgets?.length === 0) return false;
 
             // Check if any valid budget falls within range
             return validBudgets?.some(
-                (budget) => budget.budget >= filters.budget[0] && budget.budget <= filters.budget[1]
+                (budget) =>
+                    budget.budget !== undefined &&
+                    filters.budget &&
+                    budget.budget >= filters.budget[0] &&
+                    budget.budget <= filters.budget[1]
             );
         });
     }
@@ -152,17 +158,30 @@ export const getPortfolioOptions = (cans) => {
         });
 };
 
-export const getSortedFYBudgets = (cans) => {
+/**
+ * @description Returns a sorted array of unique fiscal year budgets from the CANs list
+ * @param {CAN[]} cans - The array of CANs to filter.
+ * @param {number} fiscalYear - The fiscal year to filter by.
+ * @returns {number[]} - The sorted array of budgets.
+ */
+export const getSortedFYBudgets = (cans, fiscalYear) => {
     if (!cans || cans.length === 0) {
         return [];
     }
 
-    const funding_budgets = cans.reduce((acc, can) => {
-        acc.add(can.funding_budgets);
-        return acc;
-    }, new Set());
+    const budgets = cans.flatMap((can) =>
+        (can.funding_budgets || [])
+            .filter((budget) => budget.fiscal_year === fiscalYear && budget.budget != null)
+            .map((budget) => budget.budget)
+    );
 
-    return Array.from(funding_budgets)
-        .flatMap((itemArray) => itemArray.map((item) => item.budget))
-        .sort((a, b) => a - b);
+    const uniqueBudgets = [...new Set(budgets)].filter((budget) => budget !== undefined).sort((a, b) => a - b);
+
+    // If there's only one budget value, create a range by adding a slightly larger value
+    if (uniqueBudgets.length === 1) {
+        const singleValue = uniqueBudgets[0] ?? 0;
+        return [singleValue, singleValue * 1.1]; // Add 10% to create a range
+    }
+
+    return uniqueBudgets;
 };
