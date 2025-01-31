@@ -2,7 +2,7 @@
 import { terminalLog, testLogin } from "./utils";
 
 {/*TODO: remove flag once portfolio UI updates are ready */}
-if (import.meta.env.MODE === "development") {
+if (import.meta.env.DEV) {
 
     beforeEach(() => {
         testLogin("system-owner");
