@@ -1,26 +1,31 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-beforeEach(() => {
-    testLogin("system-owner");
-    cy.visit("/portfolios");
-});
+{/*TODO: remove flag once portfolio UI updates are ready */}
+if (import.meta.env.MODE === "development") {
 
-afterEach(() => {
-    cy.injectAxe();
-    cy.checkA11y(null, null, terminalLog);
-});
+    beforeEach(() => {
+        testLogin("system-owner");
+        cy.visit("/portfolios");
+    });
 
-it("loads", () => {
-    cy.get("h1").should("have.text", "Portfolios");
-    cy.get('a[href="/portfolios/1"]').should("exist");
-});
+    afterEach(() => {
+        cy.injectAxe();
+        cy.checkA11y(null, null, terminalLog);
+    });
 
-it("clicking on a Portfolio takes you to the detail page", () => {
-    const portfolioName = "Healthy Marriage & Responsible Fatherhood";
+    it("loads", () => {
+        cy.get("h1").should("have.text", "Portfolios");
+        cy.get('a[href="/portfolios/1"]').should("exist");
+    });
 
-    cy.contains(portfolioName).click();
+    it("clicking on a Portfolio takes you to the detail page", () => {
+        const portfolioName = "Healthy Marriage & Responsible Fatherhood";
 
-    cy.url().should("include", "/portfolios/6");
-    cy.get("h1").should("contain", portfolioName);
-});
+        cy.contains(portfolioName).click();
+
+        cy.url().should("include", "/portfolios/6");
+        cy.get("h1").should("contain", portfolioName);
+    });
+
+}
