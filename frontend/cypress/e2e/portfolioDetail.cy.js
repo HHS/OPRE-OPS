@@ -60,5 +60,3 @@ import { terminalLog, testLogin } from "./utils";
         cy.get("h2").should("contain", "Research Projects");
         cy.get("h2").should("contain", "Administrative & Support Projects");
     });
-
-}
