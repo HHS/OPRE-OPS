@@ -479,11 +479,11 @@
         },
         "marshmallow": {
             "hashes": [
-                "sha256:1287bca04e6a5f4094822ac153c03da5e214a0a60bcd557b140f3e66991b8ca1",
-                "sha256:eb36762a1cc76d7abf831e18a3a1b26d3d481bbc74581b8e532a3d3a8115e1cb"
+                "sha256:3350409f20a70a7e4e11a27661187b77cdcaeb20abca41c1454fe33636bea09c",
+                "sha256:e6d8affb6cb61d39d26402096dc0aee12d5a26d490a121f118d2e81dc0719dc6"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==3.26.0"
+            "version": "==3.26.1"
         },
         "marshmallow-dataclass": {
             "hashes": [
@@ -582,11 +582,11 @@
         },
         "orderly-set": {
             "hashes": [
-                "sha256:571ed97c5a5fca7ddeb6b2d26c19aca896b0ed91f334d9c109edd2f265fb3017",
-                "sha256:d357cedcf67f4ebff0d4cbd5b0997e98eeb65dd24fdf5c990a501ae9e82c7d34"
+                "sha256:80b3d8fdd3d39004d9aad389eaa0eab02c71f0a0511ba3a6d54a935a6c6a0acc",
+                "sha256:c2c0bfe604f5d3d9b24e8262a06feb612594f37aa3845650548befd7772945d1"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==5.2.3"
+            "version": "==5.3.0"
         },
         "packaging": {
             "hashes": [
@@ -772,7 +772,7 @@
                 "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
                 "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==1.17.0"
         },
         "sqlalchemy": {
@@ -983,7 +983,6 @@
                 "sha256:ffa336210cf9cd8ed117011085817d00abe4c08f99968deef0013ea283547204",
                 "sha256:ffb3dc385f6bb1568aa974fe65da84723210e5d9707e360e9ecb51f59406cd2e"
             ],
-            "markers": "python_version >= '3.9'",
             "version": "==3.11.11"
         },
         "aiosignal": {
@@ -1654,7 +1653,7 @@
                 "sha256:5e1ec10440b000c3f818006033372939e693a9ec0176f446d9303e4db88489a6",
                 "sha256:83d41144a82d6b8541127bf212dd76c7f01baff680b498ce8a4d052a7a5bce4c"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1'",
             "version": "==0.6.4"
         },
         "parso": {
@@ -1892,7 +1891,7 @@
                 "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
                 "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
             "version": "==1.17.0"
         },
         "stack-data": {
