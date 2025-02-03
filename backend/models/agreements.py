@@ -123,6 +123,7 @@ class Agreement(BaseModel):
 
     start_date: Mapped[Optional[date]] = mapped_column(Date)
     end_date: Mapped[Optional[date]] = mapped_column(Date)
+    maps_sys_id: Mapped[Optional[int]] = mapped_column(Integer)
 
     @BaseModel.display_name.getter
     def display_name(self):
