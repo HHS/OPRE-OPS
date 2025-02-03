@@ -259,7 +259,7 @@ const router = createBrowserRouter(
                     element={<UploadDocument />}
                 />
                 <Route
-                    path="/help-center"
+                    path="/help-center/*"
                     element={<HelpCenter />}
                 />
             </Route>
