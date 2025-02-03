@@ -1,7 +1,7 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { CheckAuth } from "../../Auth/auth";
-import { useSelector } from "react-redux";
 
 export const Menu = () => {
     const isAuthorized = CheckAuth();
@@ -22,7 +22,7 @@ export const Menu = () => {
                 />
             </button>
             <ul className="usa-nav__primary usa-accordion">
-                {isAuthorized && (import.meta.env.MODE === "development") && (
+                {isAuthorized && import.meta.env.MODE === "development" && (
                     <li className="usa-nav__primary-item">
                         <Link to="/portfolios/">Portfolios</Link>
                     </li>

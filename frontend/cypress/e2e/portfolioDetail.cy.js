@@ -1,19 +1,20 @@
 /// <reference types="cypress" />
 import { terminalLog, testLogin } from "./utils";
 
-    beforeEach(() => {
-        testLogin("system-owner");
-        cy.visit("/portfolios/1");
-        cy.get("#fiscal-year-select").select("2023");
-    });
+beforeEach(() => {
+    testLogin("system-owner");
+    cy.visit("/portfolios/1");
+    cy.get("#fiscal-year-select").select("2023");
+});
 
-    afterEach(() => {
-        cy.injectAxe();
-        cy.checkA11y(null, null, terminalLog);
-    });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
 
-    // TODO: take away the skips when we're ready to show portfolios again
-    it.skip("loads", () => {
+// TODO: take away the skips when we're ready to show portfolios again
+describe.skip("Portfolio Detail Page", () => {
+    it("loads", () => {
         cy.visit("/portfolios/1");
         cy.get("h1").should("contain", "Child Welfare Research");
         cy.get("h2").should("contain", "Division of Child and Family Development");
@@ -37,18 +38,18 @@ import { terminalLog, testLogin } from "./utils";
         cy.get("span").should("contain", "Carry-Forward");
     });
 
-    it.skip("loads the Portfolio Budget Details component", () => {
+    it("loads the Portfolio Budget Details component", () => {
         cy.get("#fiscal-year-select").select("2021");
         cy.get("h2").should("contain", "Portfolio Budget Details by CAN");
         cy.get("section").should("contain", "G99IA14");
     });
 
-    it.skip("expands the description when one clicks read more", () => {
+    it("expands the description when one clicks read more", () => {
         cy.contains("read more").click();
         cy.get("a").should("contain", "See more on the website");
     });
 
-    it.skip("shows the Portfolio Projects and Spending tab", () => {
+    it("shows the Portfolio Projects and Spending tab", () => {
         cy.visit("/portfolios/1/research-projects/");
         cy.get("#fiscal-year-select").select("2023");
         // summary cards
@@ -60,3 +61,4 @@ import { terminalLog, testLogin } from "./utils";
         cy.get("h2").should("contain", "Research Projects");
         cy.get("h2").should("contain", "Administrative & Support Projects");
     });
+});
