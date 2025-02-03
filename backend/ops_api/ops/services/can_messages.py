@@ -33,6 +33,7 @@ def can_history_trigger(
                 )
                 session.add(history_event)
             case OpsEventType.UPDATE_CAN:
+                # Handle CAN Updates
                 change_dict = event.event_details["can_updates"]["changes"]
                 for key in change_dict.keys():
                     history_event = create_can_update_history_event(
