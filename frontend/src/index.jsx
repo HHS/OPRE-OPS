@@ -231,29 +231,24 @@ const router = createBrowserRouter(
                         )
                     }}
                 />
-                {/*TODO: remove flag once CANS are ready */}
-                {import.meta.env.DEV && (
-                    <>
-                        <Route
-                            path="/cans"
-                            element={<CanList />}
-                        />
-                        <Route
-                            path="/cans/:id/*"
-                            element={<Can />}
-                            handle={{
-                                crumb: () => (
-                                    <Link
-                                        to="/cans"
-                                        className="text-primary"
-                                    >
-                                        CANs
-                                    </Link>
-                                )
-                            }}
-                        />
-                    </>
-                )}
+                <Route
+                    path="/cans"
+                    element={<CanList />}
+                />
+                <Route
+                    path="/cans/:id/*"
+                    element={<Can />}
+                    handle={{
+                        crumb: () => (
+                            <Link
+                                to="/cans"
+                                className="text-primary"
+                            >
+                                CANs
+                            </Link>
+                        )
+                    }}
+                />
                 <Route
                     path="/user-admin"
                     element={<UserAdmin />}
