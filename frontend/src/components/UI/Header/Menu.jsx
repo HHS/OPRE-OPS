@@ -40,6 +40,9 @@ export const Menu = () => {
                 <li className="usa-nav__primary-item">
                     <Link to="/budget-lines">Budget Lines</Link>
                 </li>
+                <li className="usa-nav__primary-item">
+                    <Link to="/help-center">Help Center</Link>
+                </li>
                 {isUserAdmin && (
                     <li className="usa-nav__primary-item">
                         <Link to="/user-admin">User Admin</Link>
