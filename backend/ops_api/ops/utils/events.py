@@ -79,12 +79,13 @@ class OpsEventHandler:
 def generate_events_update(old_serialized_obj, new_serialized_obj, can_id, updated_by_id):
     deep_diff = DeepDiff(old_serialized_obj, new_serialized_obj)
 
-    values_changed = deep_diff["values_changed"]
-    # Convert from deepdiff format of "root['value_changed']" to just 'value_changed' as the key in the object
     dict_of_changes = {}
-    for key in values_changed.keys():
-        if len(parse_path(key)) == 1:
-            dict_of_changes[parse_path(key)[0]] = values_changed[key]
+    if "values_changed" in deep_diff:
+        values_changed = deep_diff["values_changed"]
+        # Convert from deepdiff format of "root['value_changed']" to just 'value_changed' as the key in the object
+        for key in values_changed.keys():
+            if len(parse_path(key)) == 1:
+                dict_of_changes[parse_path(key)[0]] = values_changed[key]
 
     updates = {}
     updates["can_id"] = can_id
