@@ -7,8 +7,8 @@ import Tag from "../../Tag";
 /**
  * @typedef {Object} BudgetCardProps
  * @property {string} title - The title of the card.
- * @property {string} totalReceived - The total received.
- * @property {string} totalFunding - The total funding.
+ * @property {number} totalReceived - The total received.
+ * @property {number} totalFunding - The total funding.
  * @property {string} [tagText] - The text for the tag.
  * @property {string} [helperText] - The helper text.
  */

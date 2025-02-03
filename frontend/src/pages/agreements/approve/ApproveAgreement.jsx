@@ -16,7 +16,7 @@ import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { findDescription, findPeriodEnd, findPeriodStart } from "../../../helpers/servicesComponent.helpers";
 import { convertCodeForDisplay } from "../../../helpers/utils";
 import { document } from "../../../tests/data";
-import ErrorPage from "../../ErrorPage";
+// import ErrorPage from "../../ErrorPage";
 import useApproveAgreement from "./ApproveAgreement.hooks";
 
 const ApproveAgreement = () => {
@@ -34,7 +34,7 @@ const ApproveAgreement = () => {
         groupedUpdatedBudgetLinesByServicesComponent,
         handleApproveChangeRequests,
         handleCancel,
-        hasPermissionToViewPage,
+        // hasPermissionToViewPage,
         isLoadingAgreement,
         modalProps,
         notes,
@@ -52,9 +52,9 @@ const ApproveAgreement = () => {
         urlChangeToStatus
     } = useApproveAgreement();
 
-    if (!hasPermissionToViewPage) {
-        return <ErrorPage />;
-    }
+    // if (!hasPermissionToViewPage) {
+    //     return <ErrorPage />;
+    // }
     if (isLoadingAgreement) {
         return <div>Loading...</div>;
     }
