@@ -73,61 +73,58 @@ const CanList = () => {
         return <ErrorPage />;
     }
 
-    // TODO: remove flag once CANS are ready
     return (
-        import.meta.env.DEV && (
-            <App breadCrumbName="CANs">
-                <TablePageLayout
-                    title="CANs"
-                    subtitle={myCANsUrl ? "My CANs" : "All CANs"}
-                    details={
-                        myCANsUrl
-                            ? "This is a list of CANs from agreements you are listed as a team member on. Please select filter options to see CANs by Portfolio, Fiscal Year, or other criteria."
-                            : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
-                    }
-                    TabsSection={<CANTags />}
-                    TableSection={
-                        <CANTable
-                            cans={sortedCANs}
-                            fiscalYear={fiscalYear}
-                        />
-                    }
-                    FilterButton={
-                        <CANFilterButton
-                            filters={filters}
-                            setFilters={setFilters}
-                            portfolioOptions={portfolioOptions}
-                            fyBudgetRange={[minFYBudget, maxFYBudget]}
-                            disabled={filteredCANsByFiscalYear.length === 0}
-                        />
-                    }
-                    FYSelect={
-                        <CANFiscalYearSelect
-                            fiscalYear={fiscalYear}
-                            setSelectedFiscalYear={setSelectedFiscalYear}
-                        />
-                    }
-                    FilterTags={
-                        <CANFilterTags
-                            filters={filters}
-                            setFilters={setFilters}
-                            fyBudgetRange={[minFYBudget, maxFYBudget]}
-                        />
-                    }
-                    SummaryCardsSection={
-                        <CANSummaryCards
-                            fiscalYear={fiscalYear}
-                            totalBudget={fundingSummaryData?.total_funding}
-                            newFunding={fundingSummaryData?.new_funding}
-                            carryForward={fundingSummaryData?.carry_forward_funding}
-                            plannedFunding={fundingSummaryData?.planned_funding}
-                            obligatedFunding={fundingSummaryData?.obligated_funding}
-                            inExecutionFunding={fundingSummaryData?.in_execution_funding}
-                        />
-                    }
-                />
-            </App>
-        )
+        <App breadCrumbName="CANs">
+            <TablePageLayout
+                title="CANs"
+                subtitle={myCANsUrl ? "My CANs" : "All CANs"}
+                details={
+                    myCANsUrl
+                        ? "This is a list of CANs from agreements you are listed as a team member on. Please select filter options to see CANs by Portfolio, Fiscal Year, or other criteria."
+                        : "This is a list of all CANs across OPRE that are or were active within the selected Fiscal Year."
+                }
+                TabsSection={<CANTags />}
+                TableSection={
+                    <CANTable
+                        cans={sortedCANs}
+                        fiscalYear={fiscalYear}
+                    />
+                }
+                FilterButton={
+                    <CANFilterButton
+                        filters={filters}
+                        setFilters={setFilters}
+                        portfolioOptions={portfolioOptions}
+                        fyBudgetRange={[minFYBudget, maxFYBudget]}
+                        disabled={filteredCANsByFiscalYear.length === 0}
+                    />
+                }
+                FYSelect={
+                    <CANFiscalYearSelect
+                        fiscalYear={fiscalYear}
+                        setSelectedFiscalYear={setSelectedFiscalYear}
+                    />
+                }
+                FilterTags={
+                    <CANFilterTags
+                        filters={filters}
+                        setFilters={setFilters}
+                        fyBudgetRange={[minFYBudget, maxFYBudget]}
+                    />
+                }
+                SummaryCardsSection={
+                    <CANSummaryCards
+                        fiscalYear={fiscalYear}
+                        totalBudget={fundingSummaryData?.total_funding}
+                        newFunding={fundingSummaryData?.new_funding}
+                        carryForward={fundingSummaryData?.carry_forward_funding}
+                        plannedFunding={fundingSummaryData?.planned_funding}
+                        obligatedFunding={fundingSummaryData?.obligated_funding}
+                        inExecutionFunding={fundingSummaryData?.in_execution_funding}
+                    />
+                }
+            />
+        </App>
     );
 };
 

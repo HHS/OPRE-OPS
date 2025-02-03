@@ -27,12 +27,12 @@
         },
         "alembic-postgresql-enum": {
             "hashes": [
-                "sha256:4917dbd99e3ced777169301b2bc294dd6927668867e7017b27d090d0cbf0c876",
-                "sha256:84e4da63b8849af5f06e966ba2b32678813d8cc1841fb17c37b73155358cdb9b"
+                "sha256:1774bfa008fedef2db2199702497df6342488d35206ef7964e9ea4ea333d5662",
+                "sha256:3761a1fc695e86f8ea8e083fefb119c3bdb8709874d7eca4ec7736085d2e693a"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.7' and python_version < '4.0'",
-            "version": "==1.5.0"
+            "version": "==1.6.0"
         },
         "attrs": {
             "hashes": [
@@ -1324,12 +1324,12 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:46ec58f8d3d076a61d128fe517a51eb730e3aaf0c184ea8c17d16e366660c6a6",
-                "sha256:b6a2274606bec6166405ff05e54932ed6e5cfecaca1fc05f2cacde7bb074d70b"
+                "sha256:be2c91895b0b9ea7ba49d33b23e2040c352b33eb6a519cca7ce6e0c743444251",
+                "sha256:cae85b0c61eff1fc48b0a8002de5958b6528fa9c8defb1894da63f42613708aa"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==8.31.0"
+            "version": "==8.32.0"
         },
         "isort": {
             "hashes": [

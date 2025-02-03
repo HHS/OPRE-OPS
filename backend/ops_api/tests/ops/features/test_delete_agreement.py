@@ -178,7 +178,7 @@ def direct_agreement(loaded_db, test_project):
     direct_agreement = DirectAgreement(
         name="Feature Test Direct",
         payee="Somebody who needs money",
-        agreement_type=AgreementType.DIRECT_ALLOCATION,
+        agreement_type=AgreementType.DIRECT_OBLIGATION,
         project_id=test_project.id,
         created_by=503,
     )

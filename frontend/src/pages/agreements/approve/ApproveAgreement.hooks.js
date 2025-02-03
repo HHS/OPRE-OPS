@@ -84,6 +84,7 @@ const useApproveAgreement = () => {
         secondaryButtonText: "",
         handleConfirm: () => {}
     });
+    const [hasPermissionToViewPage, setHasPermissionToViewPage] = React.useState(false);
     // @ts-ignore
     const agreementId = +urlPathParams.id;
     const [searchParams] = useSearchParams();
@@ -199,28 +200,33 @@ const useApproveAgreement = () => {
     const userRoles = useSelector((state) => state.auth?.activeUser?.roles) ?? [];
     const userIsDivisionDirector = userRoles.includes("REVIEWER_APPROVER") ?? false;
 
-    const managingDivisionIds = agreement?.budget_line_items
-        ? agreement.budget_line_items.flatMap(
-              /** @param {BudgetLine} bli */
-              (bli) => bli.change_requests_in_review?.map((cr) => cr.managing_division_id) ?? []
-          )
-        : [];
+    const handlePermisssion = () => {
+        const managingDivisionIds = agreement?.budget_line_items
+            ? agreement.budget_line_items.flatMap(
+                  /** @param {BudgetLine} bli */
+                  (bli) => bli.change_requests_in_review?.map((cr) => cr.managing_division_id) ?? []
+              )
+            : [];
 
-    const doesAgreementBelongToDivisionDirector = managingDivisionIds.includes(userDivisionId) ?? false;
-    const agreementHasBLIsUnderReview =
-        agreement?.budget_line_items?.some(
-            /** @param {BudgetLine} bli */
-            (bli) => bli.in_review
-        ) ?? false;
-    const hasPermissionToViewPage =
-        userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
+        const doesAgreementBelongToDivisionDirector = managingDivisionIds.includes(userDivisionId) ?? false;
 
-    console.log({
-        hasPermissionToViewPage,
-        userIsDivisionDirector,
-        agreementHasBLIsUnderReview,
-        doesAgreementBelongToDivisionDirector
-    });
+        const agreementHasBLIsUnderReview =
+            agreement?.budget_line_items?.some(
+                /** @param {BudgetLine} bli */
+                (bli) => bli.in_review
+            ) ?? false;
+
+        const newHasPermissionToViewPage =
+            userIsDivisionDirector && agreementHasBLIsUnderReview && doesAgreementBelongToDivisionDirector;
+
+        setHasPermissionToViewPage(newHasPermissionToViewPage);
+    };
+
+    React.useEffect(() => {
+        if (isSuccessAgreement) {
+            handlePermisssion();
+        }
+    }, [agreement, isSuccessAgreement]);
 
     const relevantMessages = React.useMemo(() => {
         if (changeRequestType === CHANGE_REQUEST_SLUG_TYPES.BUDGET) {

@@ -6,7 +6,7 @@
       product_service_code_id: 1,
       agreement_reason: "NEW_REQ",
       project_officer_id: 500,
-      agreement_type: "DIRECT_ALLOCATION",
+      agreement_type: "DIRECT_OBLIGATION",
       project_id: 1000,
       awarding_entity_id: 3,
       created_by: 503,
@@ -86,6 +86,10 @@
       contract_type: "FIRM_FIXED_PRICE",
       contract_category: "RESEARCH",
       support_contacts: [],
+      start_date: "2043-06-13T14:00:00",
+      end_date: "2044-06-13T14:00:00",
+      psc_contract_specialist: "PSC Contract Specialist",
+      cotr_id: 520,
     },
     {
       name: "MIHOPE Check-In",
@@ -104,6 +108,10 @@
       contract_category: "SERVICE",
       support_contacts: [],
       service_requirement_type: "SEVERABLE",
+      start_date: "2043-06-13T14:00:00",
+      end_date: "2044-06-13T14:00:00",
+      psc_contract_specialist: "PSC Contract Specialist",
+      cotr_id: 520
     },
     {
       name: "MIHOPE Long-Term",
@@ -122,6 +130,10 @@
       support_contacts: [],
       contract_category: "SERVICE",
       service_requirement_type: "NON_SEVERABLE",
+      start_date: "2043-06-13T14:00:00",
+      end_date: "2044-06-13T14:00:00",
+      psc_contract_specialist: "",
+      cotr_id: 520
     },
     {
       name: "Interoperability Initiatives",
@@ -150,6 +162,10 @@
           id: 520,
         },
       ],
+      start_date: null,
+      end_date: null,
+      psc_contract_specialist: "",
+      cotr_id: null
     },
     {
       name: "Contract Workflow Test",
@@ -186,6 +202,10 @@
           id: 522,
         },
       ],
+      start_date: null,
+      end_date: null,
+      psc_contract_specialist: "",
+      cotr_id: null
     },
     {
       name: "Support Contract #1",
@@ -214,6 +234,10 @@
           id: 520,
         },
       ],
+      start_date: null,
+      end_date: null,
+      psc_contract_specialist: "",
+      cotr_id: null
     },
   ],
   clin: [

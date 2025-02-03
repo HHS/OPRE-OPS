@@ -87,7 +87,7 @@ def test_can_get_all(auth_client, mocker, test_can):
     mocker_get_can = mocker.patch("ops_api.ops.services.cans.CANService.get_list")
     mocker_get_can.return_value = [test_can]
     mock_simple_agreement = {
-        "agreement_type": "AgreementType.DIRECT_ALLOCATION",
+        "agreement_type": "AgreementType.DIRECT_OBLIGATION",
         "name": "DIRECT ALLOCATION #2: African American Child and Family Research Center",
         "awarding_entity_id": 3,
     }

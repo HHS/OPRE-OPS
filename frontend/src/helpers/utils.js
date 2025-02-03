@@ -96,7 +96,7 @@ export const codesToDisplayText = {
     agreementType: {
         CONTRACT: "Contract",
         GRANT: "Grant",
-        DIRECT_ALLOCATION: "Direct Allocation",
+        DIRECT_OBLIGATION: "Direct Obligation",
         IAA: "IAA",
         MISCELLANEOUS: "Misc"
     },
@@ -197,7 +197,7 @@ export const codesToDisplayText = {
     agreement: {
         "AgreementType.CONTRACT": "Contract",
         "AgreementType.GRANT": "Grant",
-        "AgreementType.DIRECT_ALLOCATION": "Direct Allocation",
+        "AgreementType.DIRECT_OBLIGATION": "Direct Obligation",
         "AgreementType.IAA": "IAA",
         "AgreementType.MISCELLANEOUS": "Misc"
     }
