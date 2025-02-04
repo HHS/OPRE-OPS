@@ -756,7 +756,9 @@
       can_id: 500,
       ops_event_id: 27,
       history_title: "CAN Portfolio Edited",
-      history_message: "CAN portfolio changed from Child Welfare Research to Healthy Marriage & Responsible Fatherhood during FY 2025 data import
+      history_message: "CAN portfolio changed from Child Welfare Research to Healthy Marriage & Responsible Fatherhood during FY 2025 data import",
+      timestamp: "2025-01-13T21:42:53.928887Z",
+      history_type: "CAN_PORTFOLIO_EDITED"
     },
     {
       // 29
