@@ -74,7 +74,7 @@ def can_history_trigger_func(
             # Handle CAN Updates
             change_dict = event.event_details["can_updates"]["changes"]
             for key in change_dict.keys():
-                history_event = create_can_update_history_event(
+                create_can_update_history_event(
                     key,
                     change_dict[key]["old_value"],
                     change_dict[key]["new_value"],
@@ -84,8 +84,6 @@ def can_history_trigger_func(
                     event.id,
                     session,
                 )
-                if history_event is not None:
-                    session.add(history_event)
         case OpsEventType.CREATE_CAN_FUNDING_BUDGET:
             current_fiscal_year = format_fiscal_year(event.event_details["new_can_funding_budget"]["created_on"])
             budget = "${:,.2f}".format(event.event_details["new_can_funding_budget"]["budget"])
@@ -183,35 +181,44 @@ def create_can_update_history_event(
     that has been designed for, it will instead be logged and None will be returned from the method."""
     match property_name:
         case "nick_name":
-            return CANHistory(
+            session.add(CANHistory(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="Nickname Edited",
                 history_message=f"{updated_by_user.full_name} edited the nickname from {old_value} to {new_value}",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_NICKNAME_EDITED,
-            )
+            ))
         case "description":
-            return CANHistory(
+            session.add(CANHistory(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="Description Edited",
                 history_message=f"{updated_by_user.full_name} edited the description",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_DESCRIPTION_EDITED,
-            )
+            ))
         case "portfolio_id":
             old_portfolio = session.get(Portfolio, old_value)
             new_portfolio = session.get(Portfolio, new_value)
             current_fiscal_year = format_fiscal_year(updated_on)
-            return CANHistory(
+            session.add(CANHistory(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="CAN Portfolio Edited",
                 history_message=f"CAN portfolio changed from {old_portfolio.name} to {new_portfolio.name} during {current_fiscal_year} data import",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_PORTFOLIO_EDITED,
-            )
+            ))
+            if old_portfolio.division_id != new_portfolio.division_id:
+                session.add(CANHistory(
+                can_id=can_id,
+                ops_event_id=ops_event_id,
+                history_title="CAN Division Edited",
+                history_message=f"CAN division changed from {old_portfolio.division.name} to {new_portfolio.division.name} during {current_fiscal_year} data import",
+                timestamp=updated_on,
+                history_type=CANHistoryType.CAN_DIVISION_EDITED,
+            ))
         case _:
             logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
             return None

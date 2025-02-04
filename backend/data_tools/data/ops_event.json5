@@ -2669,8 +2669,8 @@
           can_id: 500,
           changes: {
             portfolio_id: {
-              new_value: 6,
-              old_value: 1,
+              new_value: 1,
+              old_value: 4,
             },
           },
           updated_by: 516,
@@ -2795,6 +2795,43 @@
       },
       created_on: "2025-01-13T21:42:53.928887Z",
       created_by: 516,
+    },
+    {
+      // 29
+      event_type: "UPDATE_CAN",
+      event_status: "SUCCESS",
+      event_details: {
+        can_updates: {
+          can_id: 500,
+          changes: {
+            portfolio_id: {
+              new_value: 6,
+              old_value: 1,
+            },
+          },
+          updated_by: 516,
+        },
+        "request.json": {
+          portfolio_id: 6,
+        },
+        "request.values": {},
+        "request.headers": {
+          Host: "localhost:8080",
+          Accept: "*/*",
+          Connection: "keep-alive",
+          "User-Agent": "PostmanRuntime/7.43.0",
+          "Content-Type": "application/json",
+          Authorization: "Bearer token",
+          "Cache-Control": "no-cache",
+          "Postman-Token": "3a2d7d8b-3f35-4ce2-8983-dfdafc1ee97f",
+          "Content-Length": "25",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+        "request.remote_addr": "192.168.127.1",
+        "request.remote_user": null,
+      },
+      created_by: 516,
+      created_on: "2025-01-29T19:44:53.928887Z",
     },
   ],
 }

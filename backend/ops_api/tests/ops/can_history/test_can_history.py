@@ -296,19 +296,54 @@ def test_update_can_funding_received_can_history(loaded_db):
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_update_can_portfolio_can_history(loaded_db):
+def test_update_can_portfolio_can_history_regular_user(loaded_db):
     update_can_event = loaded_db.get(OpsEvent, 27)
     can_history_trigger(update_can_event, loaded_db)
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 27)).scalars().all()
     )
-    assert len(can_update_history_events) == 2
+    assert len(can_update_history_events) == 4
+    portfolio_4 = loaded_db.get(Portfolio, 4)
+    portfolio_1 = loaded_db.get(Portfolio, 1)
+    can_portfolio_event = can_update_history_events[2]
+    can_division_event = can_update_history_events[3]
+    assert can_portfolio_event.history_title == "CAN Portfolio Edited"
+    assert (
+        can_portfolio_event.history_message
+        == f"Steve Tekell changed the portfolio from {portfolio_4.name} to {portfolio_1.name}"
+    )
+    assert can_portfolio_event.history_type == CANHistoryType.CAN_PORTFOLIO_EDITED
+
+    assert can_division_event.history_title == "CAN Division Edited"
+    assert (
+        can_division_event.history_message
+        == f"Steve Tekell changed the division from {portfolio_4.division.name} to {portfolio_1.division.name}"
+    )
+    assert can_division_event.history_type == CANHistoryType.CAN_DIVISION_EDITED
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_can_portfolio_can_history_system_user(loaded_db):
+    update_can_event = loaded_db.get(OpsEvent, 27)
+    can_history_trigger(update_can_event, loaded_db)
+    can_update_history_events = (
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 27)).scalars().all()
+    )
+    assert len(can_update_history_events) == 3
     portfolio_1 = loaded_db.get(Portfolio, 1)
     portfolio_6 = loaded_db.get(Portfolio, 6)
-    nickname_can_history_event = can_update_history_events[0]
-    assert nickname_can_history_event.history_title == "CAN Portfolio Edited"
+    can_portfolio_event = can_update_history_events[1]
+    can_division_event = can_update_history_events[2]
+    assert can_portfolio_event.history_title == "CAN Portfolio Edited"
     assert (
-        nickname_can_history_event.history_message
+        can_portfolio_event.history_message
         == f"CAN portfolio changed from {portfolio_1.name} to {portfolio_6.name} during FY 2025 data import"
     )
-    assert nickname_can_history_event.history_type == CANHistoryType.CAN_PORTFOLIO_EDITED
+    assert can_portfolio_event.history_type == CANHistoryType.CAN_PORTFOLIO_EDITED
+
+    assert can_division_event.history_title == "CAN Division Edited"
+    assert (
+        can_division_event.history_message
+        == f"CAN division changed from {portfolio_1.division.name} to {portfolio_6.division.name} during FY 2025 data import"
+    )
+    assert can_division_event.history_type == CANHistoryType.CAN_DIVISION_EDITED

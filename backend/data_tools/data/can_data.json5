@@ -756,18 +756,45 @@
       can_id: 500,
       ops_event_id: 27,
       history_title: "CAN Portfolio Edited",
-      history_message: "CAN portfolio changed from Child Welfare Research to Healthy Marriage & Responsible Fatherhood during FY 2025 data import",
+      history_message: "Steve Tekell changed portfolio from Welfare Research to Child Welfare Research",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_PORTFOLIO_EDITED"
     },
     {
       // 29
       can_id: 500,
+      ops_event_id: 27,
+      history_title: "CAN Division Edited",
+      history_message: "Steve Tekell changed division from Division of Economic Independence to Division of Child and Family Development",
+      timestamp: "2025-01-13T21:42:53.928887Z",
+      history_type: "CAN_DIVISION_EDITED"
+    },
+    {
+      // 30
+      can_id: 500,
       ops_event_id: 28,
       history_title: "FY 2025 Budget Entered",
       history_message: "Steve Tekell entered a FY 2025 budget of $10,000.00",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_FUNDING_CREATED"
-    }
+    },
+    {
+      // 31
+      can_id: 500,
+      ops_event_id: 29,
+      history_title: "CAN Portfolio Edited",
+      history_message: "Portfolio changed from Child Welfare Research to Healthy Marriage & Responsible Fatherhood during FY 2025 data import",
+      timestamp: "2025-01-13T21:42:53.928887Z",
+      history_type: "CAN_PORTFOLIO_EDITED"
+    },
+    {
+      // 32
+      can_id: 500,
+      ops_event_id: 29,
+      history_title: "CAN Division Edited",
+      history_message: "Division changed from Division of Child and Family Development to Division of Family Strengthening during FY 2025 data import",
+      timestamp: "2025-01-13T21:42:53.928887Z",
+      history_type: "CAN_DIVISION_EDITED"
+    },
   ]
 }
