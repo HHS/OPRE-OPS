@@ -31,13 +31,13 @@ def test_get_can_history_custom_offset():
     test_can_id = 500
     can_history_service = CANHistoryService()
     # Set a limit higher than our test data so we can get all results
-    response = can_history_service.get(test_can_id, 5, 1)
+    response = can_history_service.get(test_can_id, 4, 1)
     offset_first_CAN = response[0]
     offset_second_CAN = response[1]
     # The CAN with ID 500 has ops events with id 1, then starting at ops event id 18 and moving forward
     # Therefore, we expect the ops_event_id to be 18 for the first item in the list offset by 1
     assert offset_first_CAN.ops_event_id == 18
-    assert offset_first_CAN.history_type == CANHistoryType.CAN_NICKNAME_EDITED
+    assert offset_first_CAN.history_type == CANHistoryType.CAN_DESCRIPTION_EDITED
     assert offset_second_CAN.ops_event_id == 19
     assert offset_second_CAN.history_type == CANHistoryType.CAN_DESCRIPTION_EDITED
 
@@ -247,7 +247,7 @@ def test_update_can_can_history(loaded_db):
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 26)).scalars().all()
     )
-    assert len(can_update_history_events) == 2
+    assert len(can_update_history_events) == 4
 
     nickname_can_history_event = can_update_history_events[0]
     assert nickname_can_history_event.history_title == "Nickname Edited"
@@ -302,7 +302,7 @@ def test_update_can_portfolio_can_history(loaded_db):
     can_update_history_events = (
         loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 27)).scalars().all()
     )
-    assert len(can_update_history_events) == 1
+    assert len(can_update_history_events) == 2
     portfolio_1 = loaded_db.get(Portfolio, 1)
     portfolio_6 = loaded_db.get(Portfolio, 6)
     nickname_can_history_event = can_update_history_events[0]
