@@ -86,5 +86,8 @@ services:
       - "3000:3000"
     depends_on:
       - backend
-    volumes:
-      - ./frontend/src:/home/app/src
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /home/app/src
