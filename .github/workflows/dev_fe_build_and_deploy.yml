@@ -40,6 +40,14 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Update yaml file to provide revision suffix
+        uses: fjogeleit/yaml-update-action@b75e8a929eb61bff6b67a6114943c9468f0bd933 # v0.16.0
+        with:
+          valueFile: '/.github/workflows/container-app-suffixes.yml'
+          propertyPath: 'template.revisionSuffix'
+          value: ${{ github.run_id }}-${{ github.run_number }}
+          commitChange: false
+
       - name: Log in to Azure
         uses: azure/login@a65d910e8af852a8061c627c456678983e180302 # v2.2.0
         with:
@@ -51,3 +59,4 @@ jobs:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}
+            yamlConfigPath: /.github/workflows/container-app-suffixes.yml
