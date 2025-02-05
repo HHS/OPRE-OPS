@@ -1,3 +1,4 @@
+import os
 from csv import DictReader
 from dataclasses import dataclass, field
 from datetime import date, datetime
@@ -23,9 +24,9 @@ class ContractData:
     CONTRACT_NBR: Optional[str] = field(default=None)
     TASK_ORDER_NBR: Optional[str] = field(default=None)
     PO_NBR: Optional[str] = field(default=None)
-    ACQUISITION_TYPE: Optional[str] = field(default=None)
+    ACQUISITION_TYPE: Optional[AcquisitionType] = field(default=None)
     PSC_CODE: Optional[str] = field(default=None)
-    CONTRACT_TYPE: Optional[str] = field(default=None)
+    CONTRACT_TYPE: Optional[ContractType] = field(default=None)
     CONTRACT_START_DATE: Optional[date] = field(default=None)
     CONTRACT_END_DATE: Optional[date] = field(default=None)
     PSC_CONTRACT_SPECIALIST: Optional[str] = field(default=None)
@@ -43,14 +44,16 @@ class ContractData:
         self.CONTRACT_NBR = self.CONTRACT_NBR.strip() if self.CONTRACT_NBR else None
         self.TASK_ORDER_NBR = self.TASK_ORDER_NBR.strip() if self.TASK_ORDER_NBR else None
         self.PO_NBR = self.PO_NBR.strip() if self.PO_NBR else None
-        self.ACQUISITION_TYPE = self.ACQUISITION_TYPE.strip() if self.ACQUISITION_TYPE else None
+        self.ACQUISITION_TYPE = AcquisitionType[self.ACQUISITION_TYPE.strip()] if self.ACQUISITION_TYPE else None
         self.PSC_CODE = self.PSC_CODE.strip() if self.PSC_CODE else None
-        self.CONTRACT_TYPE = self.CONTRACT_TYPE.strip() if self.CONTRACT_TYPE else None
+        self.CONTRACT_TYPE = ContractType[self.CONTRACT_TYPE.strip()] if self.CONTRACT_TYPE else None
         self.CONTRACT_START_DATE = (
-            datetime.strptime(self.CONTRACT_START_DATE, "%Y-%m-%d").date() if self.CONTRACT_START_DATE else None
+            datetime.strptime(self.CONTRACT_START_DATE, "%Y-%m-%d %H:%M:%S").date()
+            if self.CONTRACT_START_DATE
+            else None
         )
         self.CONTRACT_END_DATE = (
-            datetime.strptime(self.CONTRACT_END_DATE, "%Y-%m-%d").date() if self.CONTRACT_END_DATE else None
+            datetime.strptime(self.CONTRACT_END_DATE, "%Y-%m-%d %H:%M:%S").date() if self.CONTRACT_END_DATE else None
         )
         self.PSC_CONTRACT_SPECIALIST = self.PSC_CONTRACT_SPECIALIST.strip() if self.PSC_CONTRACT_SPECIALIST else None
         self.OPRE_COTR = int(self.OPRE_COTR) if self.OPRE_COTR else None
@@ -119,12 +122,12 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             vendor_id=data.SYS_VENDOR_ID,
             task_order_number=data.TASK_ORDER_NBR,
             po_number=data.PO_NBR,
-            acquisition_type=AcquisitionType[data.ACQUISITION_TYPE],
+            acquisition_type=data.ACQUISITION_TYPE,
             product_service_code_id=psc.id if psc else None,
             project_officer_id=data.OPRE_PROJECT_OFFICER,
             start_date=data.CONTRACT_START_DATE,
             end_date=data.CONTRACT_END_DATE,
-            contract_type=ContractType[data.CONTRACT_TYPE],
+            contract_type=data.CONTRACT_TYPE,
             psc_contract_specialist=data.PSC_CONTRACT_SPECIALIST,
             cotr_id=data.OPRE_COTR,
             created_by=sys_user.id,
@@ -141,8 +144,15 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             contract.id = existing_contract.id
             contract.created_on = existing_contract.created_on
 
+        logger.info(f"Created ContractAgreement model for {contract.to_dict()}")
+
         session.merge(contract)
-        session.commit()
+
+        if os.getenv("DRY_RUN"):
+            logger.info("Dry run enabled. Rolling back transaction.")
+            session.rollback()
+        else:
+            session.commit()
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e
