@@ -37,7 +37,7 @@ const CANFundingInfoCard = ({ funding, fiscalYear }) => {
                 <div className="grid-col">
                     <dl>
                         <TermTag
-                            term="FY"
+                            term="Appropriation FY"
                             description={funding.fiscal_year.toString()}
                         />
                         <TermTag
