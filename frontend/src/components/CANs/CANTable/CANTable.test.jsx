@@ -36,7 +36,6 @@ describe("CANTable", () => {
 
         expect(screen.getByText("CAN")).toBeInTheDocument();
         expect(screen.getByText("Portfolio")).toBeInTheDocument();
-        expect(screen.getByText("FY")).toBeInTheDocument();
         expect(screen.getByText("Active Period")).toBeInTheDocument();
         expect(screen.getByText("Obligate By")).toBeInTheDocument();
         expect(screen.getByText("Transfer")).toBeInTheDocument();

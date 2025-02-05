@@ -3221,12 +3221,12 @@ components:
           items:
             type: string
             enum:
-              - admin
+              - SYSTEM_OWNER
               - BUDGET_TEAM
-              - division-director
-              - unassigned
-              - user
+              - REVIEWER_APPROVER
               - USER_ADMIN
+              - VIEWER_EDITOR
+              - PROCUREMENT_TEAM
         last_name:
           type: string
         id:
