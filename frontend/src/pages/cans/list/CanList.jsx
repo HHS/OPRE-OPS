@@ -54,7 +54,7 @@ const CanList = () => {
 
         return canList.filter(
             /** @param {CAN} can */
-            (can) => (can.funding_budgets || []).some((budget) => budget.fiscal_year === fiscalYear)
+            (can) => !can.funding_budgets || (can.funding_budgets).some((budget) => budget.fiscal_year === fiscalYear)
         );
     }, [canList, fiscalYear]);
     const sortedCANs = sortAndFilterCANs(filteredCANsByFiscalYear, myCANsUrl, activeUser, filters, fiscalYear) || [];
