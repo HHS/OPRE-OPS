@@ -38,7 +38,7 @@ jobs:
       - name: Update yaml file to provide revision suffix
         uses: fjogeleit/yaml-update-action@b75e8a929eb61bff6b67a6114943c9468f0bd933 # v0.16.0
         with:
-          valueFile: './.github/workflows/container-app-suffixes.yml'
+          valueFile: './.github/container-app-suffixes.yml'
           propertyPath: 'template.revisionSuffix'
           value: ${{ github.run_id }}-${{ github.run_number }}
           commitChange: false
@@ -54,4 +54,4 @@ jobs:
             containerAppName: opre-ops-${{ env.ENVIRONMENT }}-app-${{ env.WORKING_DIR }}
             resourceGroup: opre-ops-${{ env.ENVIRONMENT }}-app-rg
             imageToDeploy: ghcr.io/hhs/opre-ops/ops-${{ env.WORKING_DIR }}:${{ env.ENVIRONMENT }}
-            yamlConfigPath: ./.github/workflows/container-app-suffixes.yml
+            yamlConfigPath: ./.github/container-app-suffixes.yml
