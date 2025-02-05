@@ -558,4 +558,4 @@ def test_aggregate_funding_summaries():
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 17
+    assert len(response.json["cans"]) == 19
