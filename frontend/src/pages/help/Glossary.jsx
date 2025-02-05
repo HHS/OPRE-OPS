@@ -1,7 +1,7 @@
 import ReactMarkdown from "react-markdown";
 
 const TableOfContents = ({ data }) => {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("");
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ%".split("");
     const existingLetters = new Set(data.map((item) => item.heading[0].toUpperCase()));
 
     return (
@@ -32,8 +32,8 @@ const TableOfContents = ({ data }) => {
 const Glossary = () => {
     // Sort data alphabetically, but put items starting with % at the end
     const sortedData = [...data].sort((a, b) => {
-        const aStartsWithPercent = a.heading.startsWith("#");
-        const bStartsWithPercent = b.heading.startsWith("#");
+        const aStartsWithPercent = a.heading.startsWith("%");
+        const bStartsWithPercent = b.heading.startsWith("%");
 
         if (aStartsWithPercent && !bStartsWithPercent) return 1;
         if (!aStartsWithPercent && bStartsWithPercent) return -1;
@@ -192,7 +192,7 @@ A list of CANs specific to each user:
     },
     { heading: "Spending ", content: `The sum of Budget Lines in Planned, Executing and Obligated Status` },
     {
-        heading: "# of Budget",
+        heading: "% of Budget",
         content: `The percent of a portfolio’s fiscal year budget that the budget line is spending`
     }
 ];
