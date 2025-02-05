@@ -23,12 +23,6 @@ const CANTableHead = () => {
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
                 >
-                    FY
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
                     Active Period
                 </th>
                 <th

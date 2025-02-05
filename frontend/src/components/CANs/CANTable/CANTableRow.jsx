@@ -69,7 +69,6 @@ const CANTableRow = ({
                 </Tooltip>
             </th>
             <td>{portfolio}</td>
-            <td>{fiscalYear}</td>
             <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
             <td>{convertCodeForDisplay("methodOfTransfer", transfer)}</td>
