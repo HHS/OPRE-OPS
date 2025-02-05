@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from models import OpsEvent, OpsEventStatus, OpsEventType, Portfolio, User
 from models.base import BaseModel
+from ops_api.ops.utils.users import get_sys_user
 
 
 class CANHistoryType(Enum):
@@ -179,6 +180,10 @@ def create_can_update_history_event(
 ):
     """A method that generates a CANHistory event for an updated property. In the case where the updated property is not one
     that has been designed for, it will instead be logged and None will be returned from the method."""
+
+    sys_user = get_sys_user(session)
+    updated_by_sys_user = sys_user.id == updated_by_sys_user.id
+
     match property_name:
         case "nick_name":
             session.add(CANHistory(
@@ -206,7 +211,7 @@ def create_can_update_history_event(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="CAN Portfolio Edited",
-                history_message=f"CAN portfolio changed from {old_portfolio.name} to {new_portfolio.name} during {current_fiscal_year} data import",
+                history_message=f"CAN portfolio changed from {old_portfolio.name} to {new_portfolio.name} during {current_fiscal_year} data import" if updated_by_sys_user else f"{updated_by_sys_user.full_name} changed the portfolio from {old_portfolio.name} to {new_portfolio.name}",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_PORTFOLIO_EDITED,
             ))
