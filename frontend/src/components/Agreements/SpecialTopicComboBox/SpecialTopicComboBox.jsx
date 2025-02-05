@@ -1,8 +1,10 @@
-import React from "react";
 import ComboBox from "../../UI/Form/ComboBox";
 
-function SpecialTopicComboBox({ legendClassName = "usa-label margin-top-0" }) {
-    const [selected, setSelected] = React.useState([]);
+function SpecialTopicComboBox({
+    specialPopulations,
+    setSpecialPopulations,
+    legendClassName = "usa-label margin-top-0"
+}) {
     const data = [
         {
             id: 1,
@@ -16,7 +18,7 @@ function SpecialTopicComboBox({ legendClassName = "usa-label margin-top-0" }) {
         },
         {
             id: 3,
-            title: "Indigenous/tribal/Native American populations",
+            title: "Indigenous/Tribal/Native American populations",
             status: "INDIGENOUS_TRIBAL_NATIVE_AMERICAN_POPULATIONS"
         },
         {
@@ -45,8 +47,8 @@ function SpecialTopicComboBox({ legendClassName = "usa-label margin-top-0" }) {
             </label>
             <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox
-                selectedData={selected}
-                setSelectedData={setSelected}
+                selectedData={specialPopulations}
+                setSelectedData={setSpecialPopulations}
                 namespace="research-type-combobox"
                 data={data}
                 defaultString="not implemented yet"
