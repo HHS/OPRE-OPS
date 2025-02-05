@@ -1,23 +1,77 @@
 import ReactMarkdown from "react-markdown";
 
+const TableOfContents = ({ data }) => {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#".split("");
+    const existingLetters = new Set(data.map((item) => item.heading[0].toUpperCase()));
+
+    return (
+        <div className="margin-bottom-4">
+            <div className="display-flex flex-wrap">
+                {alphabet.map((letter) => (
+                    <div
+                        key={letter}
+                        className="margin-right-1 margin-bottom-1"
+                    >
+                        {existingLetters.has(letter) ? (
+                            <a
+                                href={`#section-${letter}`}
+                                className="text-primary"
+                            >
+                                {letter}
+                            </a>
+                        ) : (
+                            <span className="text-gray-30">{letter}</span>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const Glossary = () => {
+    // Sort data alphabetically, but put items starting with % at the end
+    const sortedData = [...data].sort((a, b) => {
+        const aStartsWithPercent = a.heading.startsWith("#");
+        const bStartsWithPercent = b.heading.startsWith("#");
+
+        if (aStartsWithPercent && !bStartsWithPercent) return 1;
+        if (!aStartsWithPercent && bStartsWithPercent) return -1;
+        return a.heading.localeCompare(b.heading);
+    });
+
+    let currentLetter = "";
+
     return (
         <>
             <h1>Glossary</h1>
+            <TableOfContents data={sortedData} />
             <dl>
-                {data.map((item) => (
-                    <>
-                        <dt
-                            key={item.heading}
-                            className="text-primary text-bold"
-                        >
-                            {item.heading}
-                        </dt>
-                        <dd className="margin-left-0 line-height-body-3 margin-top-05 margin-bottom-3">
-                            <ReactMarkdown>{item.content}</ReactMarkdown>
-                        </dd>
-                    </>
-                ))}
+                {sortedData.map((item) => {
+                    const firstLetter = item.heading[0].toUpperCase();
+                    let letterHeader = null;
+                    if (firstLetter !== currentLetter) {
+                        currentLetter = firstLetter;
+                        letterHeader = (
+                            <h2
+                                id={`section-${firstLetter}`}
+                                className="margin-top-4 margin-bottom-2"
+                            >
+                                {firstLetter}
+                            </h2>
+                        );
+                    }
+
+                    return (
+                        <div key={item.heading}>
+                            {letterHeader}
+                            <dt className="text-primary text-bold">{item.heading}</dt>
+                            <dd className="margin-left-0 line-height-body-3 margin-top-05 margin-bottom-3">
+                                <ReactMarkdown>{item.content}</ReactMarkdown>
+                            </dd>
+                        </div>
+                    );
+                })}
             </dl>
         </>
     );
@@ -138,7 +192,7 @@ A list of CANs specific to each user:
     },
     { heading: "Spending ", content: `The sum of Budget Lines in Planned, Executing and Obligated Status` },
     {
-        heading: "% of Budget",
+        heading: "# of Budget",
         content: `The percent of a portfolio’s fiscal year budget that the budget line is spending`
     }
 ];
