@@ -69,6 +69,14 @@ describe("CAN List", () => {
         cy.get("[data-cy='line-graph-with-legend-card']").should("exist");
         cy.get("[data-cy='line-graph-with-legend-card']").contains("FY 2023 CANs Total Budget");
     });
+
+    it("test cans with no funding budgets", () => {
+        cy.get("#fiscal-year-select").select("2044");
+        cy.get("tbody").find("tr").should("have.length", 3);
+        cy.get("tbody").contains("G99XXX3").should("exist");
+        cy.get("tbody").contains("G1183CE").should("exist");
+        cy.get("tbody").contains("G996400").should("exist");
+    });
 });
 
 describe("CAN List Filtering", () => {
@@ -76,8 +84,10 @@ describe("CAN List Filtering", () => {
         cy.get("tbody").children().should("have.length.greaterThan", 2);
         cy.visit("/cans/?filter=my-cans");
         cy.get("#fiscal-year-select").select("2044");
-        // table should not exist
-        cy.get("tbody").should("not.exist");
+        // table should not exist and contain one row
+        cy.get("tbody").children().should("have.length", 1);
+        // table row should contain G996400
+        cy.get("tbody").contains("G996400").should("exist");
     });
 
     it("the filter button works as expected", () => {
@@ -177,6 +187,7 @@ describe("CAN List Filtering", () => {
         });
 
         cy.get("button").contains("Apply").click();
+
         cy.get("tbody").find("tr").should("have.length", 1);
         cy.get("[data-cy='line-graph-with-legend-card']").contains("$ 500,000.00");
     });
