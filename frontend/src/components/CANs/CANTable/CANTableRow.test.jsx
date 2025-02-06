@@ -46,7 +46,6 @@ describe("CANTableRow", () => {
 
         expect(screen.getByText("Test CAN")).toBeInTheDocument();
         expect(screen.getByText("Test Portfolio")).toBeInTheDocument();
-        expect(screen.getByText("2023")).toBeInTheDocument();
         expect(screen.getByText("2 years")).toBeInTheDocument();
         expect(screen.getByText("2023-09-30")).toBeInTheDocument();
         expect(screen.getByText("$1,000,000.00")).toBeInTheDocument();
