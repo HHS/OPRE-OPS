@@ -1,4 +1,7 @@
 const Feedback = () => {
+    {
+        /* TODO: add real contact info */
+    }
     return (
         <>
             <h2>We&rsquo;d love to hear from you!</h2>
@@ -12,8 +15,12 @@ const Feedback = () => {
             </p>
             <p>For immediate assistance:</p>
             <ul>
-                <li>Call (555) 555-5555</li>
-                <li>Email <a href="mailto:acf-ops-help@acf.org">acf-ops-help@acf.org</a> </li>
+                <li>
+                    Call <a href="tel:+15555555555">(555) 555-5555</a>
+                </li>
+                <li>
+                    Email <a href="mailto:acf-ops-help@acf.org">acf-ops-help@acf.org</a>
+                </li>
             </ul>
         </>
     );
