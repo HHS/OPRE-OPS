@@ -8,7 +8,6 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from models import OpsEvent, OpsEventStatus, OpsEventType, Portfolio, User
 from models.base import BaseModel
-from ops_api.ops.utils.users import get_sys_user
 
 
 class CANHistoryType(Enum):
@@ -49,6 +48,7 @@ class CANHistory(BaseModel):
 def can_history_trigger_func(
     event: OpsEvent,
     session: Session,
+    system_user: User,
 ):
     # Do not attempt to insert events into CAN History for failed or unknown status events
     if event.event_status == OpsEventStatus.FAILED or event.event_status == OpsEventStatus.UNKNOWN:
@@ -84,6 +84,7 @@ def can_history_trigger_func(
                     event.event_details["can_updates"]["can_id"],
                     event.id,
                     session,
+                    system_user
                 )
         case OpsEventType.CREATE_CAN_FUNDING_BUDGET:
             current_fiscal_year = format_fiscal_year(event.event_details["new_can_funding_budget"]["created_on"])
@@ -176,12 +177,11 @@ def format_fiscal_year(timestamp):
 
 
 def create_can_update_history_event(
-    property_name, old_value, new_value, updated_by_user, updated_on, can_id, ops_event_id, session
+    property_name, old_value, new_value, updated_by_user, updated_on, can_id, ops_event_id, session, sys_user
 ):
     """A method that generates a CANHistory event for an updated property. In the case where the updated property is not one
     that has been designed for, it will instead be logged and None will be returned from the method."""
 
-    sys_user = get_sys_user(session)
     updated_by_sys_user = sys_user.id == updated_by_sys_user.id
 
     match property_name:
