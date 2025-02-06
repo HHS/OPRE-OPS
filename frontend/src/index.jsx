@@ -63,10 +63,13 @@ const router = createBrowserRouter(
                 }
             >
                 {/* BEGIN PROTECTED ROUTES */}
+                {(import.meta.env.MODE === "development") && (
                 <Route
                     path="/portfolios"
                     element={<PortfolioList />}
                 />
+                )}
+                {(import.meta.env.MODE === "development") && (
                 <Route
                     path="/portfolios/:id"
                     element={<PortfolioDetail />}
@@ -104,6 +107,7 @@ const router = createBrowserRouter(
                         element={<PeopleAndTeams />}
                     />
                 </Route>
+                )}
                 <Route
                     path="/research-projects/:id/*"
                     element={<ResearchProjectDetail />}
