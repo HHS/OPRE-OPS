@@ -7,7 +7,7 @@ describe("Glossary Component", () => {
     it("renders the Glossary heading and table of contents", () => {
         render(<Glossary />);
         // Check main heading
-        expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Glossary");
+        expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Glossary");
         // Check that a Table of Contents link (e.g., letter "A") is present
         expect(screen.getByRole("link", { name: "A" })).toBeInTheDocument();
     });
@@ -19,6 +19,6 @@ describe("Glossary Component", () => {
         const letterLink = screen.getByRole("link", { name: "A" });
         await user.click(letterLink);
         // Check that the section header for "A" appears
-        expect(screen.getByRole("heading", { level: 2, name: "A" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 3, name: "A" })).toBeInTheDocument();
     });
 });

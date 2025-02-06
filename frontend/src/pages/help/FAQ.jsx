@@ -9,6 +9,7 @@ const FAQ = () => {
                 <Accordion
                     key={item.heading}
                     heading={item.heading}
+                    level={3}
                 >
                     <ReactMarkdown>{item.content}</ReactMarkdown>
                 </Accordion>

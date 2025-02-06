@@ -5,26 +5,24 @@ const TableOfContents = ({ data }) => {
     const existingLetters = new Set(data.map((item) => item.heading[0].toUpperCase()));
 
     return (
-        <div className="margin-bottom-4">
-            <div className="display-flex flex-wrap">
-                {alphabet.map((letter) => (
-                    <div
-                        key={letter}
-                        className="margin-right-1 margin-bottom-1"
-                    >
-                        {existingLetters.has(letter) ? (
-                            <a
-                                href={`#section-${letter}`}
-                                className="text-primary"
-                            >
-                                {letter}
-                            </a>
-                        ) : (
-                            <span className="text-gray-30">{letter}</span>
-                        )}
-                    </div>
-                ))}
-            </div>
+        <div className="display-flex flex-wrap margin-bottom-4">
+            {alphabet.map((letter) => (
+                <div
+                    key={letter}
+                    className="margin-right-1 margin-bottom-1"
+                >
+                    {existingLetters.has(letter) ? (
+                        <a
+                            href={`#section-${letter}`}
+                            className="text-primary"
+                        >
+                            {letter}
+                        </a>
+                    ) : (
+                        <span className="text-gray-30">{letter}</span>
+                    )}
+                </div>
+            ))}
         </div>
     );
 };
@@ -44,35 +42,37 @@ const Glossary = () => {
 
     return (
         <>
-            <h1>Glossary</h1>
+            <h2>Glossary</h2>
             <TableOfContents data={sortedData} />
-            <dl>
+            <div>
                 {sortedData.map((item) => {
                     const firstLetter = item.heading[0].toUpperCase();
                     let letterHeader = null;
                     if (firstLetter !== currentLetter) {
                         currentLetter = firstLetter;
                         letterHeader = (
-                            <h2
+                            <h3
                                 id={`section-${firstLetter}`}
                                 className="margin-top-4 margin-bottom-2"
                             >
                                 {firstLetter}
-                            </h2>
+                            </h3>
                         );
                     }
 
                     return (
-                        <div key={item.heading}>
+                        <section key={item.heading}>
                             {letterHeader}
-                            <dt className="text-primary text-bold">{item.heading}</dt>
-                            <dd className="margin-left-0 line-height-body-3 margin-top-05 margin-bottom-3">
-                                <ReactMarkdown>{item.content}</ReactMarkdown>
-                            </dd>
-                        </div>
+                            <dl>
+                                <dt className="text-primary text-bold">{item.heading}</dt>
+                                <dd className="margin-left-0 line-height-body-3 margin-top-05 margin-bottom-3">
+                                    <ReactMarkdown>{item.content}</ReactMarkdown>
+                                </dd>
+                            </dl>
+                        </section>
                     );
                 })}
-            </dl>
+            </div>
         </>
     );
 };

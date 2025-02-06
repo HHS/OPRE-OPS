@@ -15,7 +15,7 @@ const UserGuides = () => {
 
     return (
         <>
-            <h1>User Guide</h1>
+            <h2>User Guide</h2>
             <nav className="margin-y-2">
                 <h3>Table of Contents</h3>
                 <ul className="usa-list--unstyled">
