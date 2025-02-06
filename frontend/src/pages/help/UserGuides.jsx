@@ -1,7 +1,17 @@
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Accordion from "../../components/UI/Accordion";
 
 const UserGuides = () => {
+    const components = {
+        table: (props) => (
+            <table
+                className="usa-table"
+                {...props}
+            />
+        )
+    };
+
     return (
         <>
             <h1>User Guide</h1>
@@ -10,7 +20,12 @@ const UserGuides = () => {
                     key={item.heading}
                     heading={item.heading}
                 >
-                    <ReactMarkdown>{item.content}</ReactMarkdown>
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={components}
+                    >
+                        {item.content}
+                    </ReactMarkdown>
                 </Accordion>
             ))}
         </>
@@ -97,10 +112,10 @@ Individuals with a budget team role are able to:
 - Create and edit Projects
 - Create Agreements and edit them if a team member
 - Edit CAN details, budget, and funding received
-- Review and approve agreements for Pre-Award during the procurement process [not yet developed, - coming soon]
+- Review and approve agreements for Pre-Award during the procurement process [not yet developed, coming soon]
   - Review the final consensus memo
   - Submit the requisition and write a check for the total in executing status
-- Review and approve agreements for Award during the procurement process [not yet developed, - coming soon]
+- Review and approve agreements for Award during the procurement process [not yet developed, coming soon]
   - Ensure CLINs entered by CORs match the signed award
   - Review vendor information entered by CORs
   - Review award information entered by CORs
@@ -117,6 +132,60 @@ Individuals with a procurement team role are able to:
 - Create Agreements and edit them if a team member
 - View the status of procurement tasks across all agreements [not yet developed, coming soon]
 - Reset procurement steps, if needed [not yet developed, coming soon]
+        `
+    },
+    {
+        heading: "How is OPS organized?",
+        content: `
+**The portfolio, project, and agreement relationship**
+
+Each OPRE division has one or more portfolios. This is the first level of organization. Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements—contracts, grants, or IAAs. Currently, only contracts and IAAs are available, with grants coming soon.
+
+**The agreement lifecycle and budget line statuses**
+
+All new budget lines start in Draft Status.
+
+| BL Status | Meaning |
+|-----------|---------|
+| Draft              | In pre-planning, placeholders, and what-ifs; not yet solidified |
+| Planned            | Intended to happen; money set aside as planned (even if changes occur). The amount is subtracted from the available FY budget |
+| Executing          | In the procurement process; being formally committed |
+| Obligated          | Committed in the signed award and can be invoiced against to begin work |
+| In Review          | Pending edits or status change requests that need approval or decline |
+        `
+    },
+    {
+        heading: "How to view notifications",
+        content: `
+1. Click on the bell icon at the top right corner of the page
+1. Any notifications will appear on the right side of the page
+        `
+    },
+    {
+        heading: "How to create a project",
+        content: `
+1. Click Create on the top navigation bar, then click Project
+1. Fill out all of the required fields and click on the Create Project button. All data will be validated for completeness and required fields will need to be filled out before the project can be created.
+    - When you are done filling out the fields, click on the Create Project button
+1. This will send a notification to members of your portfolio to give them awareness
+        `
+    },
+    {
+        heading: "How to create an agreement",
+        content: `
+1. There are 2 ways to create a new agreement
+    - a. Click Agreements in the top navigation bar, then click Add Agreement on the right side of the page
+    - b. __OR__ click Create on the top navigation bar, then click Agreement
+1. Complete step 1 by selecting a project the agreement should be associated with and click the Continue button
+    - a. If the agreement needs to be associated with a project that is not listed, click the Add New Project button
+    - b. See How to create a project
+1. Complete step 2 by filling out the agreement details and click the Continue button
+    - a. Not all information is required, and can be filled out later if you need to skip something. However, all data will need to be filled out before a budget line can be changed from Draft to Planned Status
+    - b. You can click the Save Draft button to exit the create agreement process, save your data entry, and come back later, if needed
+    - c. Anyone you add as a Team Member will be able to edit the agreement
+        - Make sure you add yourself as a Team Member if you need to edit this agreement in the future
+        - Divisions Directors will be auto-added as Team Members for any agreement using CANs within their Division
+        - Team Leaders will be auto-added as Team Members for any agreement using CANs within their Portfolio
         `
     },
     {
