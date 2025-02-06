@@ -28,6 +28,7 @@ import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import UserDetail from "./pages/users/detail/UserDetail";
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
+import HelpCenter from "./pages/help/HelpCenter";
 
 //  USWDS
 import "./uswds/css/styles.css";
@@ -260,6 +261,10 @@ const router = createBrowserRouter(
                 <Route
                     path="/upload-document"
                     element={<UploadDocument />}
+                />
+                <Route
+                    path="/help-center/*"
+                    element={<HelpCenter />}
                 />
             </Route>
             {/* END PROTECTED ROUTES */}

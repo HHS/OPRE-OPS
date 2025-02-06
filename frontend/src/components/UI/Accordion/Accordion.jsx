@@ -1,18 +1,19 @@
 import React from "react";
-import PropTypes from "prop-types";
 import accordion from "@uswds/uswds/js/usa-accordion";
 /**
  * Renders an accordion component with a heading and content.
  * @component
  * @param {Object} props - The component props.
  * @param {string} props.heading - The heading text for the accordion.
- * @param {number} [props.level=4] - The heading level for the accordion. Defaults to 4.
  * @param {React.ReactNode} props.children - The content to display in the accordion.
+ * @param {number} [props.level=4] - The heading level for the accordion. Defaults to 4.
+ * @param {boolean} [props.isClosed]
  * @returns {JSX.Element} - The rendered accordion component.
  */
-const Accordion = ({ heading, level = 4, children }) => {
+const Accordion = ({ heading, children, level = 4, isClosed = false }) => {
     const accordionId = React.useId();
     const AccordionHeading = `h${level}`;
+    const [isOpen, setIsOpen] = React.useState(!isClosed);
 
     // Ensure accordion JS is loaded
     const accordionRef = React.useRef(null);
@@ -42,7 +43,7 @@ const Accordion = ({ heading, level = 4, children }) => {
 
     return (
         <div
-            className="usa-accordion padding-bottom-6"
+            className={`usa-accordion ${!isOpen ? "" : "padding-bottom-6"}`}
             style={{ lineHeight: "inherit" }}
             ref={accordionRef}
         >
@@ -50,8 +51,9 @@ const Accordion = ({ heading, level = 4, children }) => {
                 <button
                     type="button"
                     className="usa-accordion__button bg-brand-base-light-variant"
-                    aria-expanded={true}
+                    aria-expanded={!isClosed}
                     aria-controls={accordionId}
+                    onClick={() => setIsOpen(!isOpen)}
                 >
                     {heading}
                 </button>
@@ -59,17 +61,12 @@ const Accordion = ({ heading, level = 4, children }) => {
             <div
                 id={accordionId}
                 className="usa-accordion__content padding-x-0 overflow-visible"
+                hidden={isClosed}
             >
                 {children}
             </div>
         </div>
     );
-};
-
-Accordion.propTypes = {
-    heading: PropTypes.string.isRequired,
-    level: PropTypes.number,
-    children: PropTypes.node.isRequired
 };
 
 export default Accordion;
