@@ -81,7 +81,7 @@ We have a Docker Compose configuration that makes it easy to run the application
 To run the application using the vite development server (allows hot reloading)...
 
 ```shell
-docker compose up --build
+docker compose up --build --watch
 ```
 
 To run the application using the production server configuration...
