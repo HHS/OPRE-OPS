@@ -110,7 +110,7 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
     logger.debug(f"Creating models for {data}")
 
     psc = session.execute(
-        select(ProductServiceCode).where(ProductServiceCode.name == data.PSC_CODE)
+        select(ProductServiceCode).where(ProductServiceCode.naics == data.PSC_CODE)
     ).scalar_one_or_none()
 
     try:

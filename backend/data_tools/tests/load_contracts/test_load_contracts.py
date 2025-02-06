@@ -22,8 +22,8 @@ def test_create_contract_data():
     assert len(test_data) == 6
 
     assert create_contract_data(test_data[0]).SYS_CONTRACT_ID == 1
-    assert create_contract_data(test_data[0]).SYS_PROJECT_ID == 1
-    assert create_contract_data(test_data[0]).SYS_VENDOR_ID == 1
+    assert create_contract_data(test_data[0]).SYS_PROJECT_ID == 1000
+    assert create_contract_data(test_data[0]).SYS_VENDOR_ID == 100
     assert create_contract_data(test_data[0]).CONTRACT_NBR == "HHSXXXXXXX1"
     assert create_contract_data(test_data[0]).TASK_ORDER_NBR == "HHSYYYYYY1"
     assert create_contract_data(test_data[0]).PO_NBR == "HHSZZZZZ1"
@@ -33,8 +33,8 @@ def test_create_contract_data():
     assert create_contract_data(test_data[0]).CONTRACT_START_DATE == date(2000, 9, 30)
     assert create_contract_data(test_data[0]).CONTRACT_END_DATE == date(2010, 9, 30)
     assert create_contract_data(test_data[0]).PSC_CONTRACT_SPECIALIST == "John Doe"
-    assert create_contract_data(test_data[0]).OPRE_COTR == 1
-    assert create_contract_data(test_data[0]).OPRE_PROJECT_OFFICER == 1
+    assert create_contract_data(test_data[0]).OPRE_COTR == 500
+    assert create_contract_data(test_data[0]).OPRE_PROJECT_OFFICER == 500
 
 
 def test_validate_data():
@@ -65,8 +65,15 @@ def db_for_contracts(loaded_db):
         short_title="Test Project 2",
     )
 
+    project_1000 = ResearchProject(
+        id=1000,
+        title="Test Project 1000",
+        short_title="Test Project 1000",
+    )
+
     loaded_db.add(project_1)
     loaded_db.add(project_2)
+    loaded_db.add(project_1000)
     loaded_db.commit()
 
     vendor_1 = Vendor(
@@ -81,8 +88,15 @@ def db_for_contracts(loaded_db):
         duns="987654321",
     )
 
+    vendor_100 = Vendor(
+        id=100,
+        name="Test Vendor 100",
+        duns="123456789",
+    )
+
     loaded_db.add(vendor_1)
     loaded_db.add(vendor_2)
+    loaded_db.add(vendor_100)
     loaded_db.commit()
 
     user = User(
@@ -90,7 +104,13 @@ def db_for_contracts(loaded_db):
         email="test.user@localhost",
     )
 
+    user_500 = User(
+        id=500,
+        email="test.user@localhost",
+    )
+
     loaded_db.add(user)
+    loaded_db.add(user_500)
     loaded_db.commit()
 
     yield loaded_db
@@ -188,10 +208,10 @@ def test_main(db_for_contracts):
     assert contract_model.name == "Test Contract #1"
     assert contract_model.maps_sys_id == 1
     assert contract_model.contract_number == "HHSXXXXXXX1"
-    assert contract_model.vendor_id == 1
-    assert contract_model.vendor.name == "Test Vendor"
-    assert contract_model.project_id == 1
-    assert contract_model.project.title == "Test Project"
+    assert contract_model.vendor_id == 100
+    assert contract_model.vendor.name == "Test Vendor 100"
+    assert contract_model.project_id == 1000
+    assert contract_model.project.title == "Test Project 1000"
     assert contract_model.task_order_number == "HHSYYYYYY1"
     assert contract_model.po_number == "HHSZZZZZ1"
     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
@@ -199,7 +219,7 @@ def test_main(db_for_contracts):
     assert contract_model.start_date == date(2000, 9, 30)
     assert contract_model.end_date == date(2010, 9, 30)
     assert contract_model.psc_contract_specialist == "John Doe"
-    assert contract_model.cotr_id == 1
+    assert contract_model.cotr_id == 500
     assert contract_model.created_by == sys_user.id
     assert contract_model.updated_by == sys_user.id
     assert contract_model.created_on is not None
@@ -212,8 +232,8 @@ def test_main(db_for_contracts):
     assert contract_model.name == "Test Contract Without A Project"
     assert contract_model.maps_sys_id == 2
     assert contract_model.contract_number == "HHSXXXXXXX1"
-    assert contract_model.vendor_id == 1
-    assert contract_model.vendor.name == "Test Vendor"
+    assert contract_model.vendor_id == 100
+    assert contract_model.vendor.name == "Test Vendor 100"
     assert contract_model.project_id is None
     assert contract_model.task_order_number == "HHSYYYYYY1"
     assert contract_model.po_number == "HHSZZZZZ1"
@@ -222,7 +242,7 @@ def test_main(db_for_contracts):
     assert contract_model.start_date == date(2000, 9, 30)
     assert contract_model.end_date == date(2010, 9, 30)
     assert contract_model.psc_contract_specialist == "John Doe"
-    assert contract_model.cotr_id == 1
+    assert contract_model.cotr_id == 500
     assert contract_model.created_by == sys_user.id
     assert contract_model.updated_by == sys_user.id
     assert contract_model.created_on is not None
