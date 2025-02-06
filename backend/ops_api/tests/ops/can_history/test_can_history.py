@@ -324,16 +324,16 @@ def test_update_can_portfolio_can_history_regular_user(loaded_db):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_update_can_portfolio_can_history_system_user(loaded_db):
-    update_can_event = loaded_db.get(OpsEvent, 27)
+    update_can_event = loaded_db.get(OpsEvent, 29)
     can_history_trigger(update_can_event, loaded_db)
     can_update_history_events = (
-        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 27)).scalars().all()
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 29)).scalars().all()
     )
-    assert len(can_update_history_events) == 3
+    assert len(can_update_history_events) == 4
     portfolio_1 = loaded_db.get(Portfolio, 1)
     portfolio_6 = loaded_db.get(Portfolio, 6)
-    can_portfolio_event = can_update_history_events[1]
-    can_division_event = can_update_history_events[2]
+    can_portfolio_event = can_update_history_events[2]
+    can_division_event = can_update_history_events[3]
     assert can_portfolio_event.history_title == "CAN Portfolio Edited"
     assert (
         can_portfolio_event.history_message
