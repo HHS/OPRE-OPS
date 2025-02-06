@@ -198,7 +198,6 @@ yarn-error.log*
 #.flake8
 
 # Dev local only files
-backend/ops_api/django_config/static
 *.pem
 *.crt
 *.drawio.bkp
@@ -242,3 +241,6 @@ terraform.rc
 # Keys
 *.pub
 *.pem
+
+# Ignore Local directory
+data/
