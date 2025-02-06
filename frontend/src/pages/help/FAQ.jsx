@@ -4,16 +4,19 @@ import Accordion from "../../components/UI/Accordion";
 const FAQ = () => {
     return (
         <>
-            <h2>Frequently Asked Questions</h2>
-            {data.map((item) => (
-                <Accordion
-                    key={item.heading}
-                    heading={item.heading}
-                    level={3}
-                >
-                    <ReactMarkdown>{item.content}</ReactMarkdown>
-                </Accordion>
-            ))}
+            <h2 className="margin-bottom-4">Frequently Asked Questions</h2>
+            <section className="usa-prose">
+                {data.map((item) => (
+                    <Accordion
+                        key={item.heading}
+                        heading={item.heading}
+                        level={3}
+                        isClosed={true}
+                    >
+                        <ReactMarkdown>{item.content}</ReactMarkdown>
+                    </Accordion>
+                ))}
+            </section>
         </>
     );
 };

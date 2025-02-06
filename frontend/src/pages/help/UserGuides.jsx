@@ -15,7 +15,7 @@ const UserGuides = () => {
 
     return (
         <>
-            <h2>User Guide</h2>
+            <h2 className="margin-bottom-4">User Guide</h2>
             <nav className="margin-y-2">
                 <h3>Table of Contents</h3>
                 <ul className="usa-list--unstyled">
@@ -29,21 +29,26 @@ const UserGuides = () => {
                     ))}
                 </ul>
             </nav>
-            {data.map((item) => (
-                <div
-                    key={item.heading}
-                    id={toSlugCase(item.heading)}
-                >
-                    <Accordion heading={item.heading}>
-                        <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={components}
+            <section className="usa-prose">
+                {data.map((item) => (
+                    <div
+                        key={item.heading}
+                        id={toSlugCase(item.heading)}
+                    >
+                        <Accordion
+                            heading={item.heading}
+                            isClosed={true}
                         >
-                            {item.content}
-                        </ReactMarkdown>
-                    </Accordion>
-                </div>
-            ))}
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={components}
+                            >
+                                {item.content}
+                            </ReactMarkdown>
+                        </Accordion>
+                    </div>
+                ))}
+            </section>
         </>
     );
 };

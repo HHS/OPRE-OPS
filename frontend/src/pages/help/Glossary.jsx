@@ -5,11 +5,11 @@ const TableOfContents = ({ data }) => {
     const existingLetters = new Set(data.map((item) => item.heading[0].toUpperCase()));
 
     return (
-        <div className="display-flex flex-wrap margin-bottom-4">
+        <div className="display-flex flex-wrap margin-bottom-4 flex-justify-center">
             {alphabet.map((letter) => (
                 <div
                     key={letter}
-                    className="margin-right-1 margin-bottom-1"
+                    className="margin-right-3 margin-bottom-1"
                 >
                     {existingLetters.has(letter) ? (
                         <a
@@ -42,9 +42,9 @@ const Glossary = () => {
 
     return (
         <>
-            <h2>Glossary</h2>
+            <h2 className="margin-bottom-4">Glossary</h2>
             <TableOfContents data={sortedData} />
-            <div>
+            <section className="usa-prose">
                 {sortedData.map((item) => {
                     const firstLetter = item.heading[0].toUpperCase();
                     let letterHeader = null;
@@ -72,7 +72,7 @@ const Glossary = () => {
                         </section>
                     );
                 })}
-            </div>
+            </section>
         </>
     );
 };
@@ -104,7 +104,7 @@ The status of a budget line. These are the current statuses in OPS:
 
 - Draft - BL is just a placeholder or idea, not subtracted from the budget, can be edited freely without approval
 - Planned - BL is subtracted from the budget, planned to move forward but still can change, edits require a Division Director approval
-- Executing- BL is in the procurement process, in progress to be formally committed
+- Executing - BL is in the procurement process, in progress to be formally committed
 - Obligated - BL is committed in the signed award and can be invoiced against
 - In Review - BL has pending edits or a pending status change request
 - Planned MOD - BL is accounted for in the award, but will require a modification in order to be executed when the FY it is planned for approaches
@@ -194,6 +194,10 @@ A list of CANs specific to each user:
     {
         heading: "% of Budget",
         content: `The percent of a portfolio’s fiscal year budget that the budget line is spending`
+    },
+    {
+        heading: "Bravo",
+        content: `whatever this is`
     }
 ];
 
