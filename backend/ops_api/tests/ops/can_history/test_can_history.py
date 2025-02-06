@@ -43,6 +43,19 @@ def test_get_can_history_custom_offset():
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_get_can_history_custom_fiscal_year():
+    test_can_id = 516
+    can_history_service = CANHistoryService()
+    # Set a fiscal year which returns no cans
+    response = can_history_service.get(test_can_id, 5, 0, 2025)
+    assert len(response) == 0
+
+    # Set a fiscal year which returns one can
+    response_2 = can_history_service.get(test_can_id, 5, 0, 2026)
+    assert len(response_2) == 1
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_get_can_history_nonexistent_can():
     test_can_id = 300
     can_history_service = CANHistoryService()
@@ -65,6 +78,7 @@ def test_get_can_history_list_from_api(auth_client, mocker):
                 history_message="CAN Imported by Reed on Wednesdsay January 1st",
                 timestamp="2025-01-01T00:07:00.000000Z",
                 history_type=CANHistoryType.CAN_DATA_IMPORT,
+                fiscal_year=2025,
             )
         )
 
@@ -90,6 +104,7 @@ def test_get_can_history_list_from_api_with_params(auth_client, mocker):
                 history_message="CAN Imported by Reed on Wednesdsay January 1st",
                 timestamp="2025-01-01T00:07:00.000000Z",
                 history_type=CANHistoryType.CAN_DATA_IMPORT,
+                fiscal_year=2025,
             )
         )
 
@@ -149,6 +164,7 @@ def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
     assert new_can_history_item.history_title == "FY 2025 Data Import"
     assert new_can_history_item.history_message == "FY 2025 CAN Funding Information imported from CANBACs"
     assert new_can_history_item.timestamp == test_create_can_history_item.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+    assert new_can_history_item.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -347,3 +363,22 @@ def test_update_can_portfolio_can_history_system_user(loaded_db):
         == f"CAN division changed from {portfolio_1.division.name} to {portfolio_6.division.name} during FY 2025 data import"
     )
     assert can_division_event.history_type == CANHistoryType.CAN_DIVISION_EDITED
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_can_nickname_system_user(loaded_db):
+    update_can_event = loaded_db.get(OpsEvent, 30)
+    can_history_trigger(update_can_event, loaded_db)
+    can_update_history_events = (
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 30)).scalars().all()
+    )
+    assert len(can_update_history_events) == 2
+
+    nickname_event = can_update_history_events[1]
+
+    assert nickname_event.history_title == "Nickname Edited"
+    assert (
+        nickname_event.history_message
+        == "Nickname changed from Interagency Agreements to IAA-Incoming during FY 2025 data import"
+    )
+    assert nickname_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
