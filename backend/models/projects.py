@@ -64,7 +64,7 @@ class Project(BaseModel):
     )
     project_type: Mapped[ProjectType] = mapped_column(ENUM(ProjectType), nullable=False)
     title: Mapped[str] = mapped_column(String(), nullable=False)
-    short_title: Mapped[str] = mapped_column(String(), nullable=False, unique=True)
+    short_title: Mapped[Optional[str]] = mapped_column(String(), nullable=True)
     description: Mapped[str] = mapped_column(Text(), nullable=False, default="")
     url: Mapped[Optional[str]] = mapped_column(Text(), nullable=True)
 
