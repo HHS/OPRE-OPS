@@ -103,6 +103,18 @@
       fund_code: "QQXXXX20235DAD",
       method_of_transfer: "IDDA",
     },
+    {
+      // 18
+      fiscal_year: 2023,
+      fund_code: "0GXXXX20241DAD",
+      method_of_transfer: "DIRECT",
+    },
+    {
+      // 19
+      fiscal_year: 2023,
+      fund_code: "0GXXXX20241RAD",
+      method_of_transfer: "IDDA",
+    }
   ],
   can: [
     {
@@ -241,6 +253,22 @@
       portfolio_id: 3,
       funding_details_id: 17,
     },
+    {
+      // 517
+      number: "G1183CE",
+      description: "Central Common Expenses",
+      nick_name: "CCE",
+      portfolio_id: 9,
+      funding_details_id: 18,
+    },
+    {
+      // 518
+      number: "G996400",
+      description: "Head Start CDC Reimbursable",
+      nick_name: "HS CDC",
+      portfolio_id: 2,
+      funding_details_id: 19,
+    }
   ],
   can_funding_budget: [
     { // 1
