@@ -8,7 +8,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import CreateUpdateFundingReceivedSchema, FundingReceivedSchema
 from ops_api.ops.services.can_funding_received import CANFundingReceivedService
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -34,12 +34,22 @@ class CANFundingReceivedItemAPI(BaseItemAPI):
             schema = CreateUpdateFundingReceivedSchema(partial=True)
             serialized_request = schema.load(request_data)
 
+            output_schema = FundingReceivedSchema()
+            old_funding_received = self.can_service.get(id)
+            serialized_old_funding_received = output_schema.dump(old_funding_received)
             updated_funding_received = self.can_service.update(serialized_request, id)
-            serialized_can_funding_received = schema.dump(updated_funding_received)
-            meta.metadata.update({"updated_funding_received": serialized_can_funding_received})
-            return make_response_with_headers(serialized_can_funding_received)
+            serialized_funding_received = output_schema.dump(updated_funding_received)
+            updates = generate_events_update(
+                serialized_old_funding_received,
+                serialized_funding_received,
+                updated_funding_received.can_id,
+                updated_funding_received.updated_by,
+            )
+            updates["funding_id"] = id
+            meta.metadata.update({"funding_received_updates": updates})
+            return make_response_with_headers(serialized_funding_received)
 
-    @is_authorized(PermissionType.PATCH, Permission.CAN)
+    @is_authorized(PermissionType.PUT, Permission.CAN)
     def put(self, id: int) -> Response:
         """
         Update a CANFundingReceived
@@ -50,9 +60,17 @@ class CANFundingReceivedItemAPI(BaseItemAPI):
             serialized_request = schema.load(request_data)
 
             output_schema = FundingReceivedSchema()
+            old_funding_received = self.can_service.get(id)
+            serialized_old_funding_received = output_schema.dump(old_funding_received)
             updated_funding_received = self.can_service.update(serialized_request, id)
             serialized_funding_received = output_schema.dump(updated_funding_received)
-            meta.metadata.update({"updated_can_funding_received": serialized_funding_received})
+            updates = generate_events_update(
+                serialized_old_funding_received,
+                serialized_funding_received,
+                updated_funding_received.can_id,
+                updated_funding_received.updated_by,
+            )
+            meta.metadata.update({"funding_received_updates": updates})
             return make_response_with_headers(serialized_funding_received)
 
     @is_authorized(PermissionType.DELETE, Permission.CAN)

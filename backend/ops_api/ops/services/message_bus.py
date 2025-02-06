@@ -41,7 +41,6 @@ class MessageBus:
         logger.debug(f"Subscribing to {event_type} with callback {callback}")
         ops_signal = signal(event_type.name)
         ops_signal.connect(callback)
-        # self.known_callbacks.append({"signal":ops_signal, "callback": callback})
         self.known_callbacks.append({"event_name": event_type.name, "callback": callback})
 
     def publish(self, event_type: OpsEventType, event: OpsEvent):
@@ -60,8 +59,5 @@ class MessageBus:
         """
         Clean up all subscriptions and published events.
         """
-        for event_callback_pair in self.known_callbacks:
-            ops_signal = signal(event_callback_pair["event_name"])
-            ops_signal.disconnect(event_callback_pair["callback"])
         self.published_events.clear()
         self.known_callbacks.clear()

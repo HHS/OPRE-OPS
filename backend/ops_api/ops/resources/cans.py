@@ -15,7 +15,7 @@ from ops_api.ops.base_views import BaseItemAPI, BaseListAPI
 from ops_api.ops.schemas.cans import CANSchema, CreateUpdateCANRequestSchema, GetCANListRequestSchema
 from ops_api.ops.services.cans import CANService
 from ops_api.ops.utils.errors import error_simulator
-from ops_api.ops.utils.events import OpsEventHandler
+from ops_api.ops.utils.events import OpsEventHandler, generate_events_update
 from ops_api.ops.utils.response import make_response_with_headers
 
 
@@ -45,9 +45,13 @@ class CANItemAPI(BaseItemAPI):
             # Setting partial to true ignores any missing fields.
             schema = CreateUpdateCANRequestSchema(partial=True)
             serialized_request = schema.load(request_data)
+
+            old_can = self.can_service.get(id)
+            old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            meta.metadata.update({"updated_can": serialized_can})
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
+            meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
     @is_authorized(PermissionType.PATCH, Permission.CAN)
@@ -61,9 +65,12 @@ class CANItemAPI(BaseItemAPI):
             schema = CreateUpdateCANRequestSchema()
             serialized_request = schema.load(request_data)
 
+            old_can = self.can_service.get(id)
+            old_serialized_can = schema.dump(old_can)
             updated_can = self.can_service.update(serialized_request, id)
             serialized_can = schema.dump(updated_can)
-            meta.metadata.update({"updated_can": serialized_can})
+            updates = generate_events_update(old_serialized_can, serialized_can, id, updated_can.updated_by)
+            meta.metadata.update({"can_updates": updates})
             return make_response_with_headers(schema.dump(updated_can))
 
     @is_authorized(PermissionType.DELETE, Permission.CAN)

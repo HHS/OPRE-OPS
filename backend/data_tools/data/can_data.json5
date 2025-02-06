@@ -692,7 +692,7 @@
     { // 17
       can_id: 516,
       ops_event_id: 17,
-      history_title: "**FY 2026 Data Import**",
+      history_title: "FY 2026 Data Import",
       history_message: "FY 2026 CAN Funding Information imported from CANBACs",
       timestamp: "2025-10-02T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT"
@@ -700,16 +700,16 @@
     { // 18
       can_id: 500,
       ops_event_id: 18,
-      history_title: "Nickname Edited",
-      history_message: "CAN nickname edited by Director Dave to Test CAN",
+      history_title: "Description Edited",
+      history_message: "Steve Tekell edited the description",
       timestamp: "2025-01-01T00:08:00.000000Z",
-      history_type: "CAN_NICKNAME_EDITED"
+      history_type: "CAN_DESCRIPTION_EDITED"
     },
     { // 19
       can_id: 500,
       ops_event_id: 19,
       history_title: "Description Edited",
-      history_message: "CAN description edited by Director Dave to Healthy Marriages Responsible Fatherhood - OPRE",
+      history_message: "Steve Tekell edited the description",
       timestamp: "2025-01-01T00:09:00.000000Z",
       history_type: "CAN_DESCRIPTION_EDITED"
     },
@@ -724,36 +724,28 @@
     { // 21
       can_id: 500,
       ops_event_id: 21,
-      history_title: "CAN Received Created",
-      history_message: "CAN received created by Director Dave",
+      history_title: "Funding Received Added",
+      history_message: "Steve Tekell added funding received to funding ID 526 in the amount of $250,000.00",
       timestamp: "2025-01-01T00:11:00.000000Z",
       history_type: "CAN_RECEIVED_CREATED"
     },
     { // 22
       can_id: 500,
       ops_event_id: 22,
-      history_title: "CAN Funding Edited",
-      history_message: "CAN funding edit by Director Dave",
+      history_title: "FY 2025 Budget Edited",
+      history_message: "Steve Tekell edited the FY 2025 budget from $1,000,000.00 to $1,140,000.00",
       timestamp: "2025-01-01T00:11:30.000000Z",
       history_type: "CAN_FUNDING_EDITED"
     },
     { // 23
       can_id: 500,
       ops_event_id: 23,
-      history_title: "CAN Received Edited",
-      history_message: "CAN funding edit by Director Dave",
+      history_title: "Funding Received Edited",
+      history_message: "Steve Tekell edited funding received for funding ID 500 from $880,000.00 to $1,000,000.00",
       timestamp: "2025-01-01T00:12:00.000000Z",
       history_type: "CAN_RECEIVED_EDITED"
     },
     { // 24
-      can_id: 500,
-      ops_event_id: 24,
-      history_title: "CAN Funding Deleted",
-      history_message: "CAN funding deleted by Director Dave",
-      timestamp: "2025-01-01T00:12:00.000000Z",
-      history_type: "CAN_FUNDING_DELETED"
-    },
-    { // 25
       can_id: 500,
       ops_event_id: 25,
       history_title: "Funding Received Deleted",
@@ -761,29 +753,49 @@
       timestamp: "2025-01-01T00:12:30.000000Z",
       history_type: "CAN_RECEIVED_DELETED"
     },
-    { // 26
+    { // 25
       can_id: 500,
-      ops_event_id: 26,
-      history_title: "CAN Carry Forward Calculated",
-      history_message: "CAN carry forward amount calculated",
-      timestamp: "2025-01-01T00:13:00.000000Z",
-      history_type: "CAN_CARRY_FORWARD_CALCULATED"
-    },
-    { // 27
-      can_id: 500,
-      ops_event_id: 27,
+      ops_event_id: 25,
       history_title: "FY 2025 Budget Entered",
-      history_message: "Steve Tekell entered a FY 2025 budget of $20,000.00",
-      timestamp: "2025-01-01T00:14:00.000000Z",
+      history_message: "Steve Tekell entered a FY 2025 budget of $30,000.00",
+      timestamp: "2025-01-01T00:10:00.000000Z",
       history_type: "CAN_FUNDING_CREATED"
     },
-    { // 28
+    {
+      // 26
+      can_id: 500,
+      ops_event_id: 26,
+      history_title: "Nickname Edited",
+      history_message: "Steve Tekell edited the nickname from New CAN to HMRF-OPRE",
+      timestamp: "2025-01-29T18:43:53.928887Z",
+      history_type: "CAN_NICKNAME_EDITED"
+    },
+    {
+      // 27
+      can_id: 500,
+      ops_event_id: 26,
+      history_title: "Description Edited",
+      history_message: "Steve Tekell edited the description",
+      timestamp: "2025-01-29T18:43:53.928887Z",
+      history_type: "CAN_DESCRIPTION_EDITED"
+    },
+    {
+      // 28
+      can_id: 500,
+      ops_event_id: 27,
+      history_title: "CAN Portfolio Edited",
+      history_message: "CAN portfolio changed from Child Welfare Research to Healthy Marriage & Responsible Fatherhood during FY 2025 data import",
+      timestamp: "2025-01-13T21:42:53.928887Z",
+      history_type: "CAN_PORTFOLIO_EDITED"
+    },
+    {
+      // 29
       can_id: 500,
       ops_event_id: 28,
-      history_title: "CAN Funding Deleted",
-      history_message: "CAN funding deleted by Director Dave",
-      timestamp: "2025-01-01T00:15:00.000000Z",
-      history_type: "CAN_FUNDING_DELETED"
-    },
+      history_title: "FY 2025 Budget Entered",
+      history_message: "Steve Tekell entered a FY 2025 budget of $10,000.00",
+      timestamp: "2025-01-13T21:42:53.928887Z",
+      history_type: "CAN_FUNDING_CREATED"
+    }
   ]
 }
