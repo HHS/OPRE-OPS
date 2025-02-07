@@ -258,7 +258,6 @@ const CanFunding = ({
                                     cancelFundingReceived={cancelFundingReceived}
                                 />
                             </div>
-                            {/* TODO: bug is here */}
                             <ReceivedFundingCard
                                 title={`FY ${fiscalYear} Funding Received YTD`}
                                 totalReceived={totalReceived || 0}

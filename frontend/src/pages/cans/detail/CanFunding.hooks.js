@@ -49,7 +49,6 @@ export default function useCanFunding(
     const showButton = isBudgetTeamMember && fiscalYear === Number(currentFiscalYear) && !isEditMode;
     const [showModal, setShowModal] = React.useState(false);
     const [totalReceived, setTotalReceived] = React.useState(receivedFunding || 0);
-    // const [totalReceived, setTotalReceived] = React.useState();
     const [enteredFundingReceived, setEnteredFundingReceived] = React.useState([...fundingReceived]);
     const [deletedFundingReceivedIds, setDeletedFundingReceivedIds] = React.useState([]);
     const [modalProps, setModalProps] = React.useState({
