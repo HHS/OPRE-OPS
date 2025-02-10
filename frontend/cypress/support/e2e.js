@@ -13,10 +13,9 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-import "cypress-localstorage-commands";
 import "cypress-axe";
+import "cypress-localstorage-commands";
 import "./commands";
-import { login } from "../../src/components/Auth/authSlice";
 
 Cypress.Commands.add("login", () => {
     window.localStorage.setItem("access_token", "123");
