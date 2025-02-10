@@ -17,6 +17,8 @@ SQLALCHEMY_DATABASE_URI = (
     f"postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"  # noqa: B950
 )
 
+SQLALCHEMY_ECHO = False
+
 AUTHLIB_OAUTH_CLIENTS = {
     "hhsams": {
         "server_metadata_url": "https://sso.acf.hhs.gov/auth/realms/ACF-AMS/.well-known/openid-configuration",
