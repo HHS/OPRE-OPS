@@ -1,11 +1,37 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAccessToken } from "../components/Auth/auth";
+import { getAccessToken, isValidToken } from "../components/Auth/auth";
 
 const BACKEND_DOMAIN =
     window.__RUNTIME_CONFIG__?.REACT_APP_BACKEND_DOMAIN ||
     import.meta.env.VITE_BACKEND_DOMAIN ||
-    "https://localhost:8000"; // Default to localhost if not provided (e.g. in tests)
+    "https://localhost:8000";
 
+// Create a custom baseQuery that checks for authentication
+const baseQueryWithAuthCheck = async (args, api, extraOptions) => {
+    const token = getAccessToken();
+    const tokenValidity = isValidToken(token);
+
+    // If the token is missing or not valid, return an error without calling the backend
+    if (!token || !tokenValidity.isValid) {
+        return {
+            error: { status: 401, data: "User not authenticated" }
+        };
+    }
+
+    // Otherwise, create the base query with appropriate headers
+    const rawBaseQuery = fetchBaseQuery({
+        baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
+        prepareHeaders: (headers) => {
+            headers.set("Authorization", `Bearer ${token}`);
+            // If you need to send credentials (e.g., cookies)
+            headers.set("withCredentials", "true");
+            return headers;
+        }
+    });
+
+    // Call the raw base query and pass the arguments through
+    return rawBaseQuery(args, api, extraOptions);
+};
 export const opsApi = createApi({
     reducerPath: "opsApi",
     tagTypes: [
@@ -27,20 +53,7 @@ export const opsApi = createApi({
         "Documents",
         "Cans"
     ],
-    baseQuery: fetchBaseQuery({
-        baseUrl: `${BACKEND_DOMAIN}/api/v1/`,
-        prepareHeaders: (headers) => {
-            const access_token = getAccessToken();
-
-            if (access_token) {
-                headers.set("Authorization", `Bearer ${access_token}`);
-            }
-            // Include this line to enable credentials (cookies)
-            headers.set("withCredentials", "true");
-
-            return headers;
-        }
-    }),
+    baseQuery: baseQueryWithAuthCheck,
     endpoints: (builder) => ({
         getAgreements: builder.query({
             query: () => `/agreements/`,

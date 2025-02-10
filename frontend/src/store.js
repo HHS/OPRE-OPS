@@ -32,7 +32,11 @@ export const setupStore = (preloadedState = {}) => {
     return configureStore({
         reducer: rootReducer,
         middleware: (getDefaultMiddleware) =>
-            getDefaultMiddleware().concat(opsApi.middleware, opsAuthApi.middleware, errorMiddleware),
+            getDefaultMiddleware({
+                // Disable these checks in development
+                immutableStateInvariant: false,
+                serializableCheck: false
+            }).concat(opsApi.middleware, opsAuthApi.middleware, errorMiddleware),
         preloadedState
     });
 };
@@ -40,5 +44,9 @@ export const setupStore = (preloadedState = {}) => {
 export default configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(opsApi.middleware, opsAuthApi.middleware, errorMiddleware)
+        getDefaultMiddleware({
+            // Disable these checks in development
+            immutableStateInvariant: false,
+            serializableCheck: false
+        }).concat(opsApi.middleware, opsAuthApi.middleware, errorMiddleware)
 });

@@ -1,7 +1,7 @@
-import PropTypes from "prop-types";
 import * as React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import DefaultLayout from "./components/Layouts/DefaultLayout";
+import { setNavigate } from "./errorMiddleware";
 
 /**
  * DefaultLayout component
@@ -12,6 +12,12 @@ import DefaultLayout from "./components/Layouts/DefaultLayout";
  */
 function App({ children, breadCrumbName = "" }) {
     const { pathname } = useLocation();
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        // Wrap navigate to always use replace for auth-related navigation
+        setNavigate((path) => navigate(path, { replace: true }));
+    }, [navigate]);
 
     React.useEffect(() => {
         window.scrollTo(0, 0);
@@ -20,8 +26,4 @@ function App({ children, breadCrumbName = "" }) {
     return <DefaultLayout breadCrumbName={breadCrumbName}>{children}</DefaultLayout>;
 }
 
-App.propTypes = {
-    children: PropTypes.node.isRequired,
-    breadCrumbName: PropTypes.string
-};
 export default App;
