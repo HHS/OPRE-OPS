@@ -87,6 +87,10 @@ export default function useCanFunding(
     const activeUserFullName = useSelector((state) => state.auth?.activeUser?.full_name) || "";
 
     React.useEffect(() => {
+        setTotalReceived(receivedFunding);
+    }, [receivedFunding]);
+
+    React.useEffect(() => {
         setBudgetForm({ ...budgetForm, enteredAmount: totalFunding, submittedAmount: totalFunding });
     }, [totalFunding]);
 
