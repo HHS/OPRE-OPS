@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from enum import Enum, auto
 
 from loguru import logger
-from sqlalchemy import ForeignKey, Integer, Text
+from sqlalchemy import ForeignKey, Integer, Text, func
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
@@ -39,7 +39,7 @@ class CANHistory(BaseModel):
     ops_event_id: Mapped[int] = mapped_column(Integer, ForeignKey("ops_event.id"))
     history_title: Mapped[str]
     history_message: Mapped[str] = mapped_column(Text)
-    timestamp: Mapped[str]
+    timestamp: Mapped[datetime] = mapped_column(default=func.now())
     history_type: Mapped[CANHistoryType] = mapped_column(
         ENUM(CANHistoryType), nullable=True
     )
