@@ -83,7 +83,7 @@ def create_app() -> Flask:  # noqa: C901
     oauth = OAuth()
     oauth.init_app(app)
 
-    db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"))
+    db_session, engine = init_db(app.config)
     app.db_session = db_session
     app.engine = engine
 
