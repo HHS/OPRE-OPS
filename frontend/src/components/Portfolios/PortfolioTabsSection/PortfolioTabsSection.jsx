@@ -17,16 +17,12 @@ const PortfolioTabsSection = ({ portfolioId }) => {
 
     const paths = [
         {
-            name: "/budget-and-funding",
-            label: "Budget and Funding"
+            name: "/spending",
+            label: "Portfolio Spending"
         },
         {
-            name: "/research-projects",
-            label: "Projects and Spending"
-        },
-        {
-            name: "/people-and-teams",
-            label: "People and Teams"
+            name: "/funding",
+            label: "Portfolio Funding"
         }
     ];
 

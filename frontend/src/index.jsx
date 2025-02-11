@@ -2,11 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, createRoutesFromElements, Link, Navigate, Route, RouterProvider } from "react-router-dom";
-import store from "./store";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
-import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import ApproveAgreement from "./pages/agreements/approve";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
@@ -18,6 +16,7 @@ import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
 import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
 import ErrorPage from "./pages/ErrorPage";
+import HelpCenter from "./pages/help/HelpCenter";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
@@ -28,7 +27,7 @@ import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import UserDetail from "./pages/users/detail/UserDetail";
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
-import HelpCenter from "./pages/help/HelpCenter";
+import store from "./store";
 
 //  USWDS
 import "./uswds/css/styles.css";
@@ -95,8 +94,12 @@ const router = createBrowserRouter(
                             element={<Navigate to={"spending"} />}
                         />
                         <Route
+                            path="spending"
+                            element={<BudgetAndFunding/>}
+                        />
+                        <Route
                             path="funding"
-                            element={<BudgetAndFunding />}
+                            element={<ResearchProjects />}
                         />
                         {/* <Route
                             path="research-projects"
