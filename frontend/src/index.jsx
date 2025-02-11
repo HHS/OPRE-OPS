@@ -63,50 +63,50 @@ const router = createBrowserRouter(
                 }
             >
                 {/* BEGIN PROTECTED ROUTES */}
-                {(import.meta.env.MODE === "development") && (
-                <Route
-                    path="/portfolios"
-                    element={<PortfolioList />}
-                />
+                {import.meta.env.MODE === "development" && (
+                    <Route
+                        path="/portfolios"
+                        element={<PortfolioList />}
+                    />
                 )}
-                {(import.meta.env.MODE === "development") && (
-                <Route
-                    path="/portfolios/:id"
-                    element={<PortfolioDetail />}
-                    handle={{
-                        // you can put whatever you want on a route handle
-                        // here we use "crumb" and return some elements,
-                        // this is what we'll render in the breadcrumbs
-                        // for this route
-                        crumb: () => (
-                            <Link
-                                to="/portfolios"
-                                className="text-primary"
-                            >
-                                Portfolios
-                            </Link>
-                        )
-                    }}
-                >
-                    {/* Default to BudgetAndFunding */}
+                {import.meta.env.MODE === "development" && (
                     <Route
-                        exact
-                        path=""
-                        element={<Navigate to={"budget-and-funding"} />}
-                    />
-                    <Route
-                        path="budget-and-funding"
-                        element={<BudgetAndFunding />}
-                    />
-                    <Route
-                        path="research-projects"
-                        element={<ResearchProjects />}
-                    />
-                    <Route
-                        path="people-and-teams"
-                        element={<PeopleAndTeams />}
-                    />
-                </Route>
+                        path="/portfolios/:id"
+                        element={<PortfolioDetail />}
+                        handle={{
+                            // you can put whatever you want on a route handle
+                            // here we use "crumb" and return some elements,
+                            // this is what we'll render in the breadcrumbs
+                            // for this route
+                            crumb: () => (
+                                <Link
+                                    to="/portfolios"
+                                    className="text-primary"
+                                >
+                                    Portfolios
+                                </Link>
+                            )
+                        }}
+                    >
+                        {/* Default to Spending tab */}
+                        <Route
+                            exact
+                            path=""
+                            element={<Navigate to={"spending"} />}
+                        />
+                        <Route
+                            path="funding"
+                            element={<BudgetAndFunding />}
+                        />
+                        {/* <Route
+                            path="research-projects"
+                            element={<ResearchProjects />}
+                        />
+                        <Route
+                            path="people-and-teams"
+                            element={<PeopleAndTeams />}
+                        /> */}
+                    </Route>
                 )}
                 <Route
                     path="/research-projects/:id/*"
