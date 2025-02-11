@@ -302,13 +302,16 @@ export const opsApi = createApi({
             providesTags: ["Cans"]
         }),
         getNotificationsByUserId: builder.query({
-            query: ({ id, auth_header }) => {
-                if (!id) {
+            query: ({ id }) => {
+                // get the auth header from the context
+                const access_token = getAccessToken();
+
+                if (!id || !access_token) {
                     return { skip: true }; // Skip the query if id is undefined
                 }
                 return {
                     url: `/notifications/?oidc_id=${id}`,
-                    headers: { Authorization: auth_header }
+                    headers: { Authorization: `Bearer ${access_token}` }
                 };
             },
             providesTags: ["Notifications"]

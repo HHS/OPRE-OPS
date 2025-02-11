@@ -4,7 +4,6 @@ import { useDismissNotificationMutation, useGetNotificationsByUserIdQuery } from
 import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
-import { getAccessToken } from "../../Auth/auth";
 
 /**
  * @typedef {import("../../Users/UserTypes").User} User
@@ -23,20 +22,11 @@ import { getAccessToken } from "../../Auth/auth";
  */
 const NotificationCenter = ({ user }) => {
     const [showModal, setShowModal] = React.useState(false);
-    const access_token = getAccessToken();
-    let auth_header = "";
-    if (access_token) {
-        auth_header = `Bearer ${access_token}`;
-    }
 
     const [dismissNotification] = useDismissNotificationMutation();
 
-    const {
-        data: notifications,
-        error,
-        isLoading
-    } = useGetNotificationsByUserIdQuery(
-        { id: user?.oidc_id, auth_header: auth_header },
+    const { data: notifications, isLoading } = useGetNotificationsByUserIdQuery(
+        { id: user?.oidc_id },
         {
             pollingInterval: 60000
         }
@@ -44,9 +34,6 @@ const NotificationCenter = ({ user }) => {
 
     if (isLoading) {
         return <div>Loading...</div>;
-    }
-    if (error) {
-        return <div>Oops, an error occurred</div>;
     }
 
     const unreadNotifications = notifications
