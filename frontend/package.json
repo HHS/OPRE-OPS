@@ -82,9 +82,9 @@
         "vitest": "2.1.9"
     },
     "scripts": {
-        "start": "vite",
-        "start:debug": "vite --inspect=0.0.0.0:9229",
-        "build": "vite build",
+        "start": "bunx --bun vite",
+        "start:debug": "bunx --bun vite --inspect=0.0.0.0:9229",
+        "build": "bunx --bun vite build",
         "test": "vitest",
         "test:coverage": "vitest --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
