@@ -280,6 +280,17 @@ describe("CAN funding page", () => {
             .and("contain", "Received $2,000,000.00 of $5,000,000.00");
         cy.get("tbody").children().should("contain", "2025").and("contain", "$2,000,000.00").and("contain", "40%");
     });
+    it("shows correct total funding receieved when switching between fiscal years", () => {
+        // have to visit the cans page first to set the fiscal year and recreate the bug
+        cy.visit(`/cans`);
+        cy.get("#fiscal-year-select").select("2023");
+        cy.visit(`/cans/510/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("[data-cy=confirm-action]").click();
+        // budget-received-card should show $ 0
+        cy.get("[data-cy=budget-received-card]").should("contain", "$ 0");
+    });
     it("handle posting, patching, and deleting funding received", () => {
         // create a new funding received -- POST
         cy.visit(`/cans/${can504.number}/funding`);

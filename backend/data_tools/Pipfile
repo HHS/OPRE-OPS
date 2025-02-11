@@ -22,9 +22,10 @@ azure-keyvault-secrets = "==4.9.0"
 loguru = "==0.7.3"
 click = "==8.1.8"
 aiohttp = "==3.11.11"
+deepdiff = "*"
 
 [dev-packages]
-nox = "==2024.10.9"
+nox = "==2025.2.9"
 flake8 = "==7.1.1"
 flake8-black = "==0.3.6"
 flake8-import-order = "==0.18.2"
@@ -34,7 +35,7 @@ pytest = "==8.3.4"
 pytest-cov = "==6.0.0"
 pytest-mock = "==3.14.0"
 ipython = "==8.32.0"
-pytest-docker = {extras = ["docker-compose-v2"], version = "==3.1.1"}
+pytest-docker = {extras = ["docker-compose-v2"], version = "==3.2.0"}
 black = {extras = ["d"], version = "==25.1.0"}
 
 [requires]
