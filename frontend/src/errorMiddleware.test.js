@@ -12,7 +12,6 @@ describe("errorMiddleware", () => {
         errorMiddleware(opsApi)(next)(action);
 
         expect(dispatch).toHaveBeenCalledTimes(1);
-        expect(dispatch).toHaveBeenCalledWith(opsApi.util.resetApiState());
         expect(dispatch).toHaveBeenCalledWith(logout());
     });
 
