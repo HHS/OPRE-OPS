@@ -1,5 +1,4 @@
 import { isRejected } from "@reduxjs/toolkit";
-import { opsApi } from "./api/opsAPI.js";
 import { logout } from "./components/Auth/authSlice.js";
 import store from "./store.js";
 
@@ -9,7 +8,6 @@ export const innerIsRejected = (action) => isRejected(action) || action.type ===
 export const errorMiddleware = (api) => (next) => (action) => {
     if (innerIsRejected(action)) {
         if (action.payload?.status === 401) {
-            store.dispatch(opsApi.util.resetApiState());
             store.dispatch(logout());
         }
     }

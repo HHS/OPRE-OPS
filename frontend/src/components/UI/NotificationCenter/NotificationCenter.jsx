@@ -4,7 +4,6 @@ import { useDismissNotificationMutation, useGetNotificationsByUserIdQuery } from
 import icons from "../../../uswds/img/sprite.svg";
 import customStyles from "./NotificationCenter.module.css";
 import LogItem from "../LogItem";
-import { getAccessToken } from "../../Auth/auth";
 
 /**
  * @typedef {import("../../Users/UserTypes").User} User
@@ -23,20 +22,11 @@ import { getAccessToken } from "../../Auth/auth";
  */
 const NotificationCenter = ({ user }) => {
     const [showModal, setShowModal] = React.useState(false);
-    const access_token = getAccessToken();
-    let auth_header = "";
-    if (access_token) {
-        auth_header = `Bearer ${access_token}`;
-    }
 
     const [dismissNotification] = useDismissNotificationMutation();
 
-    const {
-        data: notifications,
-        error,
-        isLoading
-    } = useGetNotificationsByUserIdQuery(
-        { id: user?.oidc_id, auth_header: auth_header },
+    const { data: notifications, isLoading } = useGetNotificationsByUserIdQuery(
+        { id: user?.oidc_id },
         {
             pollingInterval: 60000
         }
@@ -45,12 +35,9 @@ const NotificationCenter = ({ user }) => {
     if (isLoading) {
         return <div>Loading...</div>;
     }
-    if (error) {
-        return <div>Oops, an error occurred</div>;
-    }
 
     const unreadNotifications = notifications
-        .filter((notification) => !notification.is_read)
+        ?.filter((notification) => !notification.is_read)
         .sort((a, b) => new Date(b.created_on) - new Date(a.created_on));
 
     Modal.setAppElement("#root");
@@ -62,7 +49,7 @@ const NotificationCenter = ({ user }) => {
                 onClick={() => setShowModal(true)}
                 id="notification-center-bell"
             >
-                {unreadNotifications.length > 0 ? (
+                {unreadNotifications?.length > 0 ? (
                     <use xlinkHref={`${icons}#notifications_active`}></use>
                 ) : (
                     <use xlinkHref={`${icons}#notifications_none`}></use>
@@ -96,7 +83,7 @@ const NotificationCenter = ({ user }) => {
                                 id={"clear-all-button"}
                                 className="usa-button usa-button--unstyled padding-right-2 text-no-underline display-flex align-items-center flex-align-center"
                                 onClick={() => {
-                                    unreadNotifications.map((notification) => dismissNotification(notification.id));
+                                    unreadNotifications?.map((notification) => dismissNotification(notification.id));
                                 }}
                             >
                                 <svg
@@ -108,12 +95,12 @@ const NotificationCenter = ({ user }) => {
                                 Clear All
                             </button>
                         </div>
-                        {unreadNotifications.length > 0 ? (
+                        {unreadNotifications?.length > 0 ? (
                             <ul
                                 className={customStyles.listStyle}
                                 data-cy="notification-center-list"
                             >
-                                {unreadNotifications.map((notification) => (
+                                {unreadNotifications?.map((notification) => (
                                     <LogItem
                                         key={notification.id}
                                         title={notification.title}
