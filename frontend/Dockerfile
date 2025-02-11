@@ -1,19 +1,17 @@
-FROM oven/bun@sha256:e68d616e9b4b689d57dd51c11b3dab3fd003330f7b7c59e1745cdc542a666d91
+# Use the official Bun image (using a tag version for consistency)
+FROM oven/bun:1 AS base
+WORKDIR /usr/src/app
 
-# hadolint ignore=DL3008
-RUN apt-get update && apt-get -y --no-install-recommends install unzip && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN useradd -ms /bin/bash app
-USER app
-WORKDIR /home/app
+# Stage to install only production dependencies
+FROM base AS prod-deps
+RUN mkdir -p /temp/prod
+COPY package.json bun.lockb /temp/prod/
+WORKDIR /temp/prod
+RUN bun install --frozen-lockfile --production
 
-COPY --chown=app:app ./package.json ./bun.lockb /home/app/
-
-RUN bun install --production --frozen-lockfile
-
-COPY --chown=app:app index.html /home/app/
-COPY --chown=app:app src /home/app/src
-COPY --chown=app:app public /home/app/public
-COPY --chown=app:app vite.config.mjs /home/app/
-COPY --chown=app:app eslint.config.js /home/app/
-
+# Production image – copy only production dependencies and source code (assumes your code is prebuilt)
+FROM base AS release
+COPY --from=prod-deps /temp/prod/node_modules ./node_modules
+COPY . .
+# If you have a build step that does not rely on devDependencies, run it here
 CMD ["bun", "start"]
