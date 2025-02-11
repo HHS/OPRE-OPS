@@ -18,5 +18,7 @@ class GetHistoryListQueryParametersSchema(Schema):
         unknown = EXCLUDE  # Exclude unknown fields
 
     can_id = fields.Integer(required=True)
+    fiscal_year = fields.Integer(default=0)
     limit = fields.Integer(default=10, validate=Range(min=1, error="Limit must be greater than 0"), allow_none=True)
     offset = fields.Integer(default=0, validate=Range(min=0, error="Limit must be greater than 0"), allow_none=True)
+    sort_asc = fields.Boolean(default=False)

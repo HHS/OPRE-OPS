@@ -882,7 +882,7 @@ paths:
       tags:
         - CAN History
       operationId: getAllCANHistory
-      summary: Get a list all CAN history objects
+      summary: Get a list all CAN history objects, sorted by their timestamps from newest to oldest
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - name: can_id
@@ -901,6 +901,17 @@ paths:
               type: integer
               default: 10
           example: 10
+        - name: fiscal_year
+          in: query
+          schema:
+            type: integer
+          example: 2025
+        - name: sort_asc
+          in: query
+          description: Optional parameter that sets whether to sort the results in ascending (oldest to newest) order
+          schema:
+            type: boolean
+          example: true
       description: Get CANHistory
       responses:
         "200":
