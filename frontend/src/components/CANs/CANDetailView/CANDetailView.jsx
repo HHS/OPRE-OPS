@@ -12,6 +12,7 @@ import CanHistoryPanel from "../CANHistoryPanel";
  * @property {string} divisionDirectorFullName
  * @property {string} divisionName
  * @property {number} canId
+ * @property {number} fiscalYear
  */
 /**
  * This component needs to wrapped in a <dl> element.
@@ -22,6 +23,7 @@ import CanHistoryPanel from "../CANHistoryPanel";
 const CANDetailView = ({
     canId,
     description,
+    fiscalYear,
     number,
     nickname,
     portfolioName,
@@ -47,7 +49,7 @@ const CANDetailView = ({
                 </dl>
                 <section data-cy="history">
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                    <CanHistoryPanel canId={canId} />
+                    <CanHistoryPanel canId={canId} fiscalYear={fiscalYear} />
                 </section>
             </div>
             {/* // NOTE: Right Column */}

@@ -6,13 +6,14 @@ import LogItem from "../../UI/LogItem";
 /**
  * @typedef {Object} CanHistoryPanelProps
  * @property {number} canId
+ * @property {number} fiscalYear
  */
 
 /**
  * @param {CanHistoryPanelProps} props
  */
 
-const CanHistoryPanel = ({ canId }) => {
+const CanHistoryPanel = ({ canId, fiscalYear }) => {
     const [offset, setOffset] = useState(0);
     const [stopped, setStopped] = useState(false);
     /**
@@ -32,6 +33,7 @@ const CanHistoryPanel = ({ canId }) => {
         isFetching
     } = useGetCanHistoryQuery({
         canId,
+        fiscalYear,
         limit: 5,
         offset: offset
     });

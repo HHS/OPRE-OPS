@@ -86,6 +86,7 @@ const CanDetail = ({
                 <CANDetailView
                     canId={canId}
                     description={description}
+                    fiscalYear={fiscalYear}
                     number={canNumber}
                     nickname={nickname}
                     portfolioName={portfolioName}
