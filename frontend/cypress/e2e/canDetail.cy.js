@@ -83,6 +83,40 @@ describe("CAN detail page", () => {
     it("handles history", () => {
         cy.visit("/cans/500/");
         checkCANHistory();
+
+        // test history logs for varying fiscal years
+        cy.visit("/cans/501/");
+        // select FY 2023 and confirm no history logs
+        cy.get("#fiscal-year-select").select("2023");
+        cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="history"]').should("contain", "No History");
+        // switch to select FY 2024 and confirm 1 history log
+        cy.get("#fiscal-year-select").select("2024");
+        cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="can-history-list"]').should("exist");
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').contains(
+            "Nickname Edited"
+        );
+        cy.get('[data-cy="log-item-message"]').contains(
+            "Nickname changed from IA to Interagency Agreement during FY 2024 data import"
+        );
+        // switch to select FY 2025 and confirm 2 history logs
+        cy.get("#fiscal-year-select").select("2025");
+        cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="can-history-list"]').should("exist");
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').contains(
+            "Nickname Edited"
+        );
+        cy.get('[data-cy="can-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]').contains(
+            "FY 2025 Data Import"
+        );
+        const expectedMessages = [
+            "Nickname changed from Interagency Agreement to IAA-Incoming during FY 2025 data import",
+            "FY 2025 CAN Funding Information imported from CANBACs"
+        ];
+        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        });
     });
 });
 
