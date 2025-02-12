@@ -161,7 +161,6 @@ describe("CAN spending page", () => {
     });
 });
 
-// TODO: Add tests to check for history logs for each budget and funding change after backend is implemented
 describe("CAN funding page", () => {
     it("shows the CAN Funding page", () => {
         cy.visit("/cans/504/funding");
