@@ -210,6 +210,19 @@ describe("CAN funding page", () => {
             .and("contain", "CAN Budget by FY")
             .and("contain", `FY ${currentFiscalYear}`)
             .and("contain", "$5,000,000.00");
+        // check can history for ADDING a budget
+        cy.visit(`/cans/${can504.number}`);
+        cy.get('[data-cy="can-history-list"]').should("exist");
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
+            .should("exist")
+            .contains(/FY 2025 Budget Entered/);
+        const expectedMessages = [
+            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "FY 2025 CAN Funding Information imported from CANBACs"
+        ];
+        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        });
     });
     it("handle funding received form", () => {
         cy.visit(`/cans/${can504.number}/funding`);
@@ -279,6 +292,20 @@ describe("CAN funding page", () => {
             .should("exist")
             .and("contain", "Received $2,000,000.00 of $5,000,000.00");
         cy.get("tbody").children().should("contain", "2025").and("contain", "$2,000,000.00").and("contain", "40%");
+        // check can history for ADDING a funding received event
+        cy.visit(`/cans/${can504.number}`);
+        cy.get('[data-cy="can-history-list"]').should("exist");
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
+            .should("exist")
+            .contains(/Funding Received Added/);
+        const expectedMessages = [
+            "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
+            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "FY 2025 CAN Funding Information imported from CANBACs"
+        ];
+        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        });
     });
     it("shows correct total funding receieved when switching between fiscal years", () => {
         // have to visit the cans page first to set the fiscal year and recreate the bug
@@ -315,6 +342,52 @@ describe("CAN funding page", () => {
         cy.get("tbody").children().should("have.length", 1);
         // save the changes
         cy.get("[data-cy=save-btn]").click();
+
+        // check can history for DELETING a funding received event
+        cy.visit(`/cans/${can504.number}`);
+        cy.get('[data-cy="can-history-list"]').should("exist");
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
+            .should("exist")
+            .contains(/Funding Received Deleted/);
+        const expectedMessages = [
+            "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
+            "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00",
+            "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
+            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "FY 2025 CAN Funding Information imported from CANBACs"
+        ];
+        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        });
+    });
+    it("handles history message when updating a funding received", () => {
+        cy.visit(`/cans/${can504.number}/funding`);
+        cy.get("#fiscal-year-select").select(currentFiscalYear);
+        cy.get("#edit").click();
+        cy.get("tbody").find("tr").first().trigger("mouseover");
+        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+        cy.get("#funding-received-amount").clear();
+        cy.get("#funding-received-amount").type("3_500_000");
+        cy.get("[data-cy=add-funding-received-btn]").click();
+        cy.get("[data-cy=save-btn]").click();
+
+        // check can history for UPDATING a funding received event
+        cy.visit(`/cans/${can504.number}`);
+        cy.get('[data-cy="can-history-list"]').should("exist");
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
+            .should("exist")
+            .contains(/Funding Received Edited/);
+        const expectedMessages = [
+            "Budget Team edited funding received for funding ID 526 from $2,000,000.00 to $3,500,000.00",
+            "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
+            "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00",
+            "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
+            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "FY 2025 CAN Funding Information imported from CANBACs"
+        ];
+        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        });
     });
 
     it("handles cancelling from budget form", () => {
