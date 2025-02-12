@@ -61,6 +61,25 @@ describe("CAN detail page", () => {
         cy.get("#description").clear();
         cy.get("#description").type(can502Description);
         cy.get("#save-changes").click();
+
+        // check can history for UPDATING the nickname and description
+        cy.visit(`/cans/502`);
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').each(
+            ($el, index) => {
+                const expectedTitles = ["Nickname Edited", "Description Edited"];
+                cy.wrap($el).should("exist").contains(expectedTitles[index]);
+            }
+        );
+        const expectedMessages = [
+            "Budget Team edited the nickname from Test Can Nickname to SSRD", // due to revert back to original values
+            "Budget Team edited the description", // due to revert back to original values
+            "Budget Team edited the nickname from SSRD to Test Can Nickname",
+            "Budget Team edited the description",
+            "FY 2025 CAN Funding Information imported from CANBACs"
+        ];
+        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        });
     });
     it("handles cancelling from CAN edit form", () => {
         cy.visit("/cans/502/");
