@@ -354,6 +354,19 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        getPortfolioCalcFunding: builder.query({
+            query: ({ portfolioId, fiscalYear, simulatedError }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (simulatedError) {
+                    queryParams.push(`simulatedError`);
+                }
+                return `/portfolios/${portfolioId}/calcFunding/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Portfolios"]
+        }),
         addBliPackage: builder.mutation({
             query: (body) => ({
                 url: `/bli-packages/`,
@@ -499,6 +512,7 @@ export const {
     useGetPortfoliosQuery,
     useGetPortfolioByIdQuery,
     useGetPortfolioCansByIdQuery,
+    useGetPortfolioCalcFundingQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,

@@ -1,7 +1,11 @@
 import { useSelector } from "react-redux";
 import { Outlet, useParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetPortfolioByIdQuery, useGetPortfolioCansByIdQuery } from "../../../api/opsAPI";
+import {
+    useGetPortfolioByIdQuery,
+    useGetPortfolioCalcFundingQuery,
+    useGetPortfolioCansByIdQuery
+} from "../../../api/opsAPI";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
@@ -13,10 +17,17 @@ const PortfolioDetail = () => {
     const selectedFiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
-    const { data: portfolioCans, isLoading } = useGetPortfolioCansByIdQuery({ portfolioId, year: fiscalYear });
+    const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
+        portfolioId,
+        year: fiscalYear
+    });
+    const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioCalcFundingQuery({
+        portfolioId,
+        fiscalYear
+    });
     const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
 
-    if (isLoading || portfolioIsLoading) {
+    if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading) {
         return <p>Loading...</p>;
     }
 
@@ -39,7 +50,7 @@ const PortfolioDetail = () => {
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />
                 </section>
-                <Outlet context={{ portfolioId, budgetLineIds }} />
+                <Outlet context={{ portfolioId, budgetLineIds, portfolioFunding }} />
             </div>
         </App>
     );

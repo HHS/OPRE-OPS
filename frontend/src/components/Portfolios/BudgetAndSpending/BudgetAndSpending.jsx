@@ -2,9 +2,11 @@ import { useOutletContext } from "react-router-dom";
 import { useGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
+import DebugCode from "../../DebugCode";
 
 const BudgetAndSpending = () => {
-    const { portfolioId, budgetLineIds } = useOutletContext();
+    // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
+    const { portfolioId, budgetLineIds, portfolioFunding } = useOutletContext();
     const budgetLineItemQueries = budgetLineIds.map((id) => useGetBudgetLineItemQuery(id));
 
     const isLoading = budgetLineItemQueries.some((query) => query.isLoading);
@@ -30,8 +32,9 @@ const BudgetAndSpending = () => {
             </section>
             <CANBudgetLineTable
                 budgetLines={budgetLineItems}
-                totalFunding={10_000_000}
+                totalFunding={portfolioFunding?.total_funding.amount}
             />
+            <DebugCode data={portfolioFunding} />
         </>
     );
 };
