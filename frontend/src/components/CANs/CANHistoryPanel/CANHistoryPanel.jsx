@@ -54,7 +54,7 @@ const CanHistoryPanel = ({ canId, fiscalYear }) => {
         if (isError) {
             setStopped(true);
         }
-    }, [canHistoryItems]);
+    }, [canHistoryItems, isLoading, isError]);
 
     const fetchMoreData = () => {
         if (stopped) return;
