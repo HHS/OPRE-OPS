@@ -88,13 +88,13 @@ describe("CAN detail page", () => {
         cy.visit("/cans/501/");
         // select FY 2023 and confirm no history logs
         cy.get("#fiscal-year-select").select("2023");
-        cy.wait(1000);
-        cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="can-history-container"]').should("not.exist");
         cy.get('[data-cy="can-history-list"]').should("not.exist");
         cy.get('[data-cy="history"]').should("contain", "No History");
         // switch to select FY 2024 and confirm 1 history log
         cy.get("#fiscal-year-select").select("2024");
         cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="history"]').should("exist");
         cy.get('[data-cy="can-history-list"]').should("exist");
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').contains(
             "Nickname Edited"
@@ -105,6 +105,7 @@ describe("CAN detail page", () => {
         // switch to select FY 2025 and confirm 2 history logs
         cy.get("#fiscal-year-select").select("2025");
         cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="history"]').should("exist");
         cy.get('[data-cy="can-history-list"]').should("exist");
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').contains(
             "Nickname Edited"
