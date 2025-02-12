@@ -5,7 +5,7 @@ import { createBrowserRouter, createRoutesFromElements, Link, Navigate, Route, R
 import store from "./store";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
-import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
+import BudgetAndSpending from "./components/Portfolios/BudgetAndSpending/BudgetAndSpending";
 import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
 import ApproveAgreement from "./pages/agreements/approve";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
@@ -97,7 +97,7 @@ const router = createBrowserRouter(
                         />
                         <Route
                             path="spending"
-                            element={<BudgetAndFunding />}
+                            element={<BudgetAndSpending />}
                         />
                         <Route
                             path="funding"
