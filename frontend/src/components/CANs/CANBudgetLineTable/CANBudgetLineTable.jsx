@@ -20,9 +20,7 @@ import PaginationNav from "../../UI/PaginationNav";
  * @returns  {JSX.Element} - The component JSX.
  */
 const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
-    // TODO: once in prod, change this to 25
-    //console.log({ budgetLines });
-    const ITEMS_PER_PAGE = 3;
+    const ITEMS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 3;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = [...budgetLines];
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
