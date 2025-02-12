@@ -1,78 +1,22 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Outlet, useParams } from "react-router-dom";
-import { getPortfolio, getPortfolioCans } from "./getPortfolio";
-import {
-    setPortfolio,
-    setPortfolioCans,
-    setPortfolioCansFundingDetails,
-    setSelectedFiscalYear
-} from "./portfolioSlice";
 import App from "../../../App";
-import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
+import { useGetPortfolioByIdQuery, useGetPortfolioCansByIdQuery } from "../../../api/opsAPI";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
-import { useGetPortfolioCansByIdQuery } from "../../../api/opsAPI";
+import { setSelectedFiscalYear } from "./portfolioSlice";
 
 const PortfolioDetail = () => {
-    const dispatch = useDispatch();
     const urlPathParams = useParams();
-    const portfolioId = parseInt(urlPathParams.id);
-    const portfolioCans = useSelector((state) => state.portfolio.portfolioCans);
+    const portfolioId = parseInt(urlPathParams.id || "0");
     const selectedFiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
-    const portfolio = useSelector((state) => state.portfolio.portfolio);
+    const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
+    const { data: portfolioCans, isLoading } = useGetPortfolioCansByIdQuery({ portfolioId, year: fiscalYear });
+    const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
 
-    const { data, isLoading } = useGetPortfolioCansByIdQuery({ portfolioId, year: fiscalYear });
-    const budgetLineIds = [...new Set(data?.flatMap((can) => can.budget_line_items))];
-
-    // Get initial Portfolio data (not dependent on fiscal year)
-    useEffect(() => {
-        const getPortfolioAndSetState = async () => {
-            const result = await getPortfolio(portfolioId);
-            dispatch(setPortfolio(result));
-        };
-
-        getPortfolioAndSetState().catch(console.error);
-
-        return () => {
-            dispatch(setPortfolio({}));
-        };
-    }, [dispatch, portfolioId]);
-
-    // Get CAN data for the Portfolio (dependent on fiscal year)
-    useEffect(() => {
-        const getPortfolioCansAndSetState = async () => {
-            const result = await getPortfolioCans(portfolioId, fiscalYear);
-            dispatch(setPortfolioCans(result));
-        };
-
-        getPortfolioCansAndSetState().catch(console.error);
-
-        return () => {
-            dispatch(setPortfolioCans([]));
-        };
-    }, [dispatch, portfolioId, selectedFiscalYear]);
-
-    // Get CAN Funding Data (dependent on fiscal year)
-    useEffect(() => {
-        const getPortfolioCansFundingDetailsAndSetState = async (data) => {
-            const result = await Promise.all(data.map(getPortfolioCansFundingDetails));
-            dispatch(setPortfolioCansFundingDetails(result));
-        };
-
-        const canData = portfolioCans.map((can) => ({ id: can.id, fiscalYear: fiscalYear }));
-
-        if (canData.length > 0) {
-            getPortfolioCansFundingDetailsAndSetState(canData).catch(console.error);
-        }
-        return () => {
-            dispatch(setPortfolioCansFundingDetails([]));
-        };
-    }, [dispatch, selectedFiscalYear, portfolioCans]);
-
-    if (isLoading) {
+    if (isLoading || portfolioIsLoading) {
         return <p>Loading...</p>;
     }
 
