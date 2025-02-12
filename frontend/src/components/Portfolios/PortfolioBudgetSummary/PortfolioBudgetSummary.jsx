@@ -30,7 +30,6 @@ const PortfolioBudgetSummary = ({ portfolioId }) => {
 
     return (
         <section>
-
             <div className="display-flex flex-justify">
                 <PortfolioFundingTotal portfolioId={portfolio.id} />
                 <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />

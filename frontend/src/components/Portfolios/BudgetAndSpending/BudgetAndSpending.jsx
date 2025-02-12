@@ -4,8 +4,7 @@ import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
 
 const BudgetAndSpending = () => {
-    const [portfolioId, canCards, budgetLineIds] = useOutletContext();
-    console.log({ canCards }); // remove this line after debugging
+    const { portfolioId, budgetLineIds } = useOutletContext();
     const budgetLineItemQueries = budgetLineIds.map((id) => useGetBudgetLineItemQuery(id));
 
     const isLoading = budgetLineItemQueries.some((query) => query.isLoading);

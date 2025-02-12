@@ -9,7 +9,6 @@ import {
     setSelectedFiscalYear
 } from "./portfolioSlice";
 import App from "../../../App";
-import CanCard from "../../../components/CANs/CanCard/CanCard";
 import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
@@ -73,16 +72,6 @@ const PortfolioDetail = () => {
         };
     }, [dispatch, selectedFiscalYear, portfolioCans]);
 
-    const canCards = portfolioCans.length
-        ? portfolioCans.map((can, i) => (
-              <CanCard
-                  can={can}
-                  fiscalYear={fiscalYear}
-                  key={i}
-              />
-          ))
-        : "";
-
     if (isLoading) {
         return <p>Loading...</p>;
     }
@@ -97,7 +86,6 @@ const PortfolioDetail = () => {
                     description={portfolio?.description}
                     teamLeaders={portfolio?.team_leaders}
                     urls={portfolio?.urls}
-                    backgroundColor={"bg-brand-neutral-lightest"}
                 />
                 <section className="display-flex flex-justify margin-top-3">
                     <PortfolioTabsSection portfolioId={portfolioId} />
@@ -107,7 +95,7 @@ const PortfolioDetail = () => {
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />
                 </section>
-                <Outlet context={[portfolioId, canCards, budgetLineIds]} />
+                <Outlet context={{ portfolioId, budgetLineIds }} />
             </div>
         </App>
     );
