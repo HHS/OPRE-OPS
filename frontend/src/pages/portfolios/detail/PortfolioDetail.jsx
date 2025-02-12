@@ -14,6 +14,7 @@ import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummar
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
+import { useGetPortfolioCansByIdQuery } from "../../../api/opsAPI";
 
 const PortfolioDetail = () => {
     const dispatch = useDispatch();
@@ -23,6 +24,9 @@ const PortfolioDetail = () => {
     const selectedFiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
     const fiscalYear = Number(selectedFiscalYear.value);
     const portfolio = useSelector((state) => state.portfolio.portfolio);
+
+    const { data, isLoading } = useGetPortfolioCansByIdQuery({ portfolioId, year: fiscalYear });
+    const budgetLineIds = [...new Set(data?.flatMap((can) => can.budget_line_items))];
 
     // Get initial Portfolio data (not dependent on fiscal year)
     useEffect(() => {
@@ -79,6 +83,10 @@ const PortfolioDetail = () => {
           ))
         : "";
 
+    if (isLoading) {
+        return <p>Loading...</p>;
+    }
+
     return (
         <App breadCrumbName={portfolio?.name}>
             <div>
@@ -99,7 +107,7 @@ const PortfolioDetail = () => {
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />
                 </section>
-                <Outlet context={[portfolioId, canCards]} />
+                <Outlet context={[portfolioId, canCards, budgetLineIds]} />
             </div>
         </App>
     );

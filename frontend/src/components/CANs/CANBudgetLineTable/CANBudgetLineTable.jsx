@@ -21,6 +21,7 @@ import PaginationNav from "../../UI/PaginationNav";
  */
 const CANBudgetLineTable = ({ budgetLines, totalFunding }) => {
     // TODO: once in prod, change this to 25
+    //console.log({ budgetLines });
     const ITEMS_PER_PAGE = 3;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = [...budgetLines];

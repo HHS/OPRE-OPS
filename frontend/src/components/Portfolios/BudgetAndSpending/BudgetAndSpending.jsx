@@ -1,8 +1,19 @@
-import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
 import { useOutletContext } from "react-router-dom";
+import { useGetBudgetLineItemQuery } from "../../../api/opsAPI";
+import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
+import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
 
 const BudgetAndSpending = () => {
-    const [portfolioId, canCards] = useOutletContext();
+    const [portfolioId, canCards, budgetLineIds] = useOutletContext();
+    console.log({ canCards }); // remove this line after debugging
+    const budgetLineItemQueries = budgetLineIds.map((id) => useGetBudgetLineItemQuery(id));
+
+    const isLoading = budgetLineItemQueries.some((query) => query.isLoading);
+    const budgetLineItems = budgetLineItemQueries.map((query) => query?.data);
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <>
@@ -12,14 +23,16 @@ const BudgetAndSpending = () => {
             </p>
             <PortfolioBudgetSummary portfolioId={portfolioId} />
             <section>
-                <h2>Portfolio Budget Details by CAN</h2>
+                <h2>Portfolio Budget Lines</h2>
                 <p>
-                    The list of CANs below are specific to this portfolio’s budget. It does not include funding from
-                    other CANs outside of this portfolio that might occur during cross-portfolio collaborations on
-                    research projects.
+                    This is a list of all budget lines allocating funding from this Portfolio’s CANs for the selected
+                    fiscal year.
                 </p>
-                {canCards.length ? canCards : <span>No CANs to display.</span>}
             </section>
+            <CANBudgetLineTable
+                budgetLines={budgetLineItems}
+                totalFunding={10_000_000}
+            />
         </>
     );
 };

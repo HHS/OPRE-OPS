@@ -340,6 +340,16 @@ export const opsApi = createApi({
             query: () => `/portfolios/`,
             providesTags: ["Portfolios"]
         }),
+        getPortfolioCansById: builder.query({
+            query: ({ portfolioId, year }) => {
+                const queryParams = [];
+                if (year) {
+                    queryParams.push(`year=${year}`);
+                }
+                return `/portfolios/${portfolioId}/cans/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Portfolios"]
+        }),
         addBliPackage: builder.mutation({
             query: (body) => ({
                 url: `/bli-packages/`,
@@ -483,6 +493,7 @@ export const {
     useGetNotificationsByUserIdAndAgreementIdQuery,
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
+    useGetPortfolioCansByIdQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,
