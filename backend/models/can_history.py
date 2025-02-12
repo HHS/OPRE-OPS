@@ -39,7 +39,7 @@ class CANHistory(BaseModel):
     ops_event_id: Mapped[int] = mapped_column(Integer, ForeignKey("ops_event.id"))
     history_title: Mapped[str]
     history_message: Mapped[str] = mapped_column(Text)
-    timestamp: Mapped[datetime] = mapped_column(default=func.now())
+    timestamp: Mapped[str]
     history_type: Mapped[CANHistoryType] = mapped_column(
         ENUM(CANHistoryType), nullable=True
     )
