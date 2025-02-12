@@ -2,9 +2,10 @@ from datetime import datetime, timezone
 from enum import Enum, auto
 
 from loguru import logger
-from sqlalchemy import ForeignKey, Integer, Text, func
+from sqlalchemy import ForeignKey, Integer, Text, select
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Mapped, Session, mapped_column, object_session
 
 from models import OpsEvent, OpsEventStatus, OpsEventType, Portfolio, User
 from models.base import BaseModel
@@ -43,8 +44,52 @@ class CANHistory(BaseModel):
     history_type: Mapped[CANHistoryType] = mapped_column(
         ENUM(CANHistoryType), nullable=True
     )
-    fiscal_year: Mapped[int]
 
+    @hybrid_property
+    def fiscal_year(self) -> int:
+        match self.history_type:
+            case CANHistoryType.CAN_DATA_IMPORT:
+                if object_session(self) is None:
+                    return False
+                event_details = object_session(self).scalar(
+                    select(OpsEvent.event_details).where(
+                        OpsEvent.id == self.ops_event_id
+                    )
+                )
+                return format_fiscal_year(event_details["new_can"]["created_on"])
+            case CANHistoryType.CAN_NICKNAME_EDITED:
+                return format_fiscal_year(self.timestamp)
+            case CANHistoryType.CAN_DESCRIPTION_EDITED:
+                return format_fiscal_year(self.timestamp)
+            case CANHistoryType.CAN_PORTFOLIO_EDITED:
+                return format_fiscal_year(self.timestamp)
+            case CANHistoryType.CAN_DIVISION_EDITED:
+                return format_fiscal_year(self.timestamp)
+            case CANHistoryType.CAN_FUNDING_CREATED:
+                if object_session(self) is None:
+                    return False
+                event_details = object_session(self).scalar(
+                    select(OpsEvent.event_details).where(
+                        OpsEvent.id == self.ops_event_id
+                    )
+                )
+                return format_fiscal_year(event_details["new_can_funding_budget"]["created_on"])
+            case CANHistoryType.CAN_FUNDING_EDITED:
+                return format_fiscal_year(self.timestamp)
+            case CANHistoryType.CAN_RECEIVED_CREATED:
+                if object_session(self) is None:
+                    return False
+                event_details = object_session(self).scalar(
+                    select(OpsEvent.event_details).where(
+                        OpsEvent.id == self.ops_event_id
+                    )
+                )
+                return format_fiscal_year(event_details["new_can_funding_received"]["created_on"])
+            case CANHistoryType.CAN_RECEIVED_EDITED:
+                return format_fiscal_year(self.timestamp)
+            case CANHistoryType.CAN_RECEIVED_DELETED:
+                return format_fiscal_year(self.timestamp)
+        return 0
 
 def can_history_trigger_func(
     event: OpsEvent,
@@ -70,7 +115,6 @@ def can_history_trigger_func(
                 history_message=f"FY {current_fiscal_year} CAN Funding Information imported from CANBACs",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_DATA_IMPORT,
-                fiscal_year=current_fiscal_year
             )
             session.add(history_event)
         case OpsEventType.UPDATE_CAN:
@@ -99,7 +143,6 @@ def can_history_trigger_func(
                 history_message=f"{creator_name} entered a FY {current_fiscal_year} budget of {budget}",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_FUNDING_CREATED,
-                fiscal_year= current_fiscal_year
             )
             session.add(history_event)
         case OpsEventType.UPDATE_CAN_FUNDING_BUDGET:
@@ -117,7 +160,6 @@ def can_history_trigger_func(
                     history_message=f"{event_user.full_name} edited the FY {current_fiscal_year} budget from {old_budget} to {new_budget}",
                     timestamp=event.created_on,
                     history_type=CANHistoryType.CAN_FUNDING_EDITED,
-                    fiscal_year=current_fiscal_year
                 )
                 session.add(history_event)
         case OpsEventType.CREATE_CAN_FUNDING_RECEIVED:
@@ -131,7 +173,6 @@ def can_history_trigger_func(
                 history_message=f"{creator_name} added funding received to funding ID {event.event_details['new_can_funding_received']['id']} in the amount of {funding}",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_RECEIVED_CREATED,
-                fiscal_year=current_fiscal_year
             )
             session.add(history_event)
         case OpsEventType.UPDATE_CAN_FUNDING_RECEIVED:
@@ -148,7 +189,6 @@ def can_history_trigger_func(
                     history_message=f"{event_user.full_name} edited funding received for funding ID {event.event_details['funding_received_updates']['funding_id']} from {old_funding} to {new_funding}",
                     timestamp=event.created_on,
                     history_type=CANHistoryType.CAN_RECEIVED_EDITED,
-                    fiscal_year=current_fiscal_year
                 )
                 session.add(history_event)
         case OpsEventType.DELETE_CAN_FUNDING_RECEIVED:
@@ -162,13 +202,12 @@ def can_history_trigger_func(
                 history_message=f"{creator_name} deleted funding received for funding ID {event.event_details['deleted_can_funding_received']['id']} in the amount of {funding}",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_RECEIVED_DELETED,
-                fiscal_year=current_fiscal_year
             )
             session.add(history_event)
     session.commit()
 
 
-def format_fiscal_year(timestamp):
+def format_fiscal_year(timestamp) ->:
     """Convert the timestamp to {Fiscal Year}. The fiscal year is calendar year + 1 if the timestamp is october or later.
     This method can take either an iso format timestamp string or a datetime object"""
     current_fiscal_year = 0
@@ -204,7 +243,6 @@ def create_can_update_history_event(
                 history_message=f"Nickname changed from {old_value} to {new_value} during FY {current_fiscal_year} data import" if updated_by_sys_user else f"{updated_by_user.full_name} edited the nickname from {old_value} to {new_value}",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_NICKNAME_EDITED,
-                fiscal_year=current_fiscal_year
             ))
         case "description":
             session.add(CANHistory(
@@ -214,7 +252,6 @@ def create_can_update_history_event(
                 history_message=f"{updated_by_user.full_name} edited the description",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_DESCRIPTION_EDITED,
-                fiscal_year=current_fiscal_year
             ))
         case "portfolio_id":
             old_portfolio = session.get(Portfolio, old_value)
@@ -226,7 +263,6 @@ def create_can_update_history_event(
                 history_message=f"CAN portfolio changed from {old_portfolio.name} to {new_portfolio.name} during FY {current_fiscal_year} data import" if updated_by_sys_user else f"{updated_by_user.full_name} changed the portfolio from {old_portfolio.name} to {new_portfolio.name}",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_PORTFOLIO_EDITED,
-                fiscal_year=current_fiscal_year
             ))
             if old_portfolio.division_id != new_portfolio.division_id:
                 session.add(CANHistory(
@@ -236,7 +272,6 @@ def create_can_update_history_event(
                 history_message=f"CAN division changed from {old_portfolio.division.name} to {new_portfolio.division.name} during FY {current_fiscal_year} data import" if updated_by_sys_user else f"{updated_by_user.full_name} changed the division from {old_portfolio.division.name} to {new_portfolio.division.name}",
                 timestamp=updated_on,
                 history_type=CANHistoryType.CAN_DIVISION_EDITED,
-                fiscal_year=current_fiscal_year
             ))
         case _:
             logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
