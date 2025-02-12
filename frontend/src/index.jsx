@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, createRoutesFromElements, Link, Navigate, Route, RouterProvider } from "react-router-dom";
+import store from "./store";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
@@ -27,7 +28,8 @@ import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import UserDetail from "./pages/users/detail/UserDetail";
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
-import store from "./store";
+
+// NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
 //  USWDS
 import "./uswds/css/styles.css";
@@ -95,7 +97,7 @@ const router = createBrowserRouter(
                         />
                         <Route
                             path="spending"
-                            element={<BudgetAndFunding/>}
+                            element={<BudgetAndFunding />}
                         />
                         <Route
                             path="funding"
