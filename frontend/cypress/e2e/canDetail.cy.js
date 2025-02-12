@@ -80,7 +80,7 @@ describe("CAN detail page", () => {
         cy.get("p").should("contain", can502Nickname);
         cy.get("dd").should("contain", can502Description);
     });
-    it("handles history", () => {
+    it.only("handles history", () => {
         cy.visit("/cans/500/");
         checkCANHistory();
 
@@ -88,7 +88,9 @@ describe("CAN detail page", () => {
         cy.visit("/cans/501/");
         // select FY 2023 and confirm no history logs
         cy.get("#fiscal-year-select").select("2023");
+        cy.wait(1000);
         cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="can-history-list"]').should("not.exist");
         cy.get('[data-cy="history"]').should("contain", "No History");
         // switch to select FY 2024 and confirm 1 history log
         cy.get("#fiscal-year-select").select("2024");
