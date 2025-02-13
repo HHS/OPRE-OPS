@@ -625,6 +625,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 2
@@ -635,6 +636,7 @@
       timestamp: "2025-01-01T00:07:00.000000Z",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 3
@@ -644,6 +646,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 4
@@ -653,6 +656,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 5
@@ -662,6 +666,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 6
@@ -671,6 +676,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 7
@@ -680,6 +686,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 8
@@ -689,6 +696,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 9
@@ -698,6 +706,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 10
@@ -707,6 +716,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 11
@@ -716,6 +726,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 12
@@ -725,6 +736,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 13
@@ -734,6 +746,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 14
@@ -743,6 +756,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 15
@@ -752,6 +766,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 16
@@ -761,6 +776,7 @@
       history_message: "FY 2025 CAN Funding Information imported from CANBACs",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2025
     },
     {
       // 17
@@ -770,6 +786,7 @@
       history_message: "FY 2026 CAN Funding Information imported from CANBACs",
       timestamp: "2025-10-02T21:42:53.928887Z",
       history_type: "CAN_DATA_IMPORT",
+      fiscal_year: 2026
     },
     {
       // 18
@@ -779,6 +796,7 @@
       history_message: "Steve Tekell edited the description",
       timestamp: "2025-01-01T00:08:00.000000Z",
       history_type: "CAN_DESCRIPTION_EDITED",
+      fiscal_year: 2025
     },
     {
       // 19
@@ -788,6 +806,7 @@
       history_message: "Steve Tekell edited the description",
       timestamp: "2025-01-01T00:09:00.000000Z",
       history_type: "CAN_DESCRIPTION_EDITED",
+      fiscal_year: 2025
     },
     {
       // 20
@@ -797,6 +816,7 @@
       history_message: "Steve Tekell entered a FY 2025 budget of $10,000.00",
       timestamp: "2025-01-01T00:10:00.000000Z",
       history_type: "CAN_FUNDING_CREATED",
+      fiscal_year: 2025
     },
     {
       // 21
@@ -806,6 +826,7 @@
       history_message: "Steve Tekell added funding received to funding ID 526 in the amount of $250,000.00",
       timestamp: "2025-01-01T00:11:00.000000Z",
       history_type: "CAN_RECEIVED_CREATED",
+      fiscal_year: 2025
     },
     {
       // 22
@@ -815,6 +836,7 @@
       history_message: "Steve Tekell edited the FY 2025 budget from $1,000,000.00 to $1,140,000.00",
       timestamp: "2025-01-01T00:11:30.000000Z",
       history_type: "CAN_FUNDING_EDITED",
+      fiscal_year: 2025
     },
     {
       // 23
@@ -824,6 +846,7 @@
       history_message: "Steve Tekell edited funding received for funding ID 500 from $880,000.00 to $1,000,000.00",
       timestamp: "2025-01-01T00:12:00.000000Z",
       history_type: "CAN_RECEIVED_EDITED",
+      fiscal_year: 2025
     },
     {
       // 24
@@ -833,6 +856,7 @@
       history_message: "Steve Tekell deleted funding received for funding ID 526 in the amount of $1000.00",
       timestamp: "2025-01-01T00:12:30.000000Z",
       history_type: "CAN_RECEIVED_DELETED",
+      fiscal_year: 2025
     },
     {
       // 25
@@ -842,6 +866,7 @@
       history_message: "Steve Tekell entered a FY 2025 budget of $30,000.00",
       timestamp: "2025-01-01T00:10:00.000000Z",
       history_type: "CAN_FUNDING_CREATED",
+      fiscal_year: 2025
     },
     {
       // 26
@@ -851,6 +876,7 @@
       history_message: "Steve Tekell edited the nickname from New CAN to HMRF-OPRE",
       timestamp: "2025-01-29T18:43:53.928887Z",
       history_type: "CAN_NICKNAME_EDITED",
+      fiscal_year: 2025
     },
     {
       // 27
@@ -860,6 +886,7 @@
       history_message: "Steve Tekell edited the description",
       timestamp: "2025-01-29T18:43:53.928887Z",
       history_type: "CAN_DESCRIPTION_EDITED",
+      fiscal_year: 2025
     },
     {
       // 28
@@ -869,6 +896,7 @@
       history_message: "Steve Tekell changed portfolio from Welfare Research to Child Welfare Research",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_PORTFOLIO_EDITED",
+      fiscal_year: 2025
     },
     {
       // 29
@@ -878,6 +906,7 @@
       history_message: "Steve Tekell changed division from Division of Economic Independence to Division of Child and Family Development",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DIVISION_EDITED",
+      fiscal_year: 2025
     },
     {
       // 30
@@ -887,6 +916,7 @@
       history_message: "Steve Tekell entered a FY 2025 budget of $10,000.00",
       timestamp: "2025-01-15T21:42:53.928887Z",
       history_type: "CAN_FUNDING_CREATED",
+      fiscal_year: 2025
     },
     {
       // 31
@@ -896,6 +926,7 @@
       history_message: "Portfolio changed from Child Welfare Research to Healthy Marriage & Responsible Fatherhood during FY 2025 data import",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_PORTFOLIO_EDITED",
+      fiscal_year: 2025
     },
     {
       // 32
@@ -905,6 +936,7 @@
       history_message: "Division changed from Division of Child and Family Development to Division of Family Strengthening during FY 2025 data import",
       timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_DIVISION_EDITED",
+      fiscal_year: 2025
     },
     {
       // 33
@@ -914,6 +946,7 @@
       history_message: "Nickname changed from Interagency Agreement to IAA-Incoming during FY 2025 data import",
       timestamp: "2025-02-04T21:42:53.928887Z",
       history_type: "CAN_NICKNAME_EDITED",
+      fiscal_year: 2025
     },
   ],
 }
