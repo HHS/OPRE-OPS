@@ -154,7 +154,7 @@ def db_service(docker_ip: str, docker_services: Services) -> Engine:
 
     connection_string = f"postgresql://postgres:local_password@{docker_ip}:5432/postgres"  # pragma: allowlist secret
     engine = create_engine(connection_string, echo=True, future=True)
-    docker_services.wait_until_responsive(timeout=40.0, pause=1.0, check=lambda: is_loaded(engine))
+    docker_services.wait_until_responsive(timeout=120.0, pause=1.0, check=lambda: is_loaded(engine))
     return engine
 
 

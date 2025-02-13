@@ -28,6 +28,7 @@ class ServicesComponent(BaseModel):
     period_duration - The duration of the Services Component (derived from period_start and period_end)
     display_title - The long name of the Services Component (e.g. "Optional Services Component 1")
     display_name - The short name of the Services Component (e.g. "OSC1")
+    sub_component - The sub-component of old MAPS Services Components (child of the number).
     """
 
     __tablename__ = "services_component"
@@ -37,8 +38,6 @@ class ServicesComponent(BaseModel):
         ),
     )
 
-    # start Identity at 4 to allow for the records load with IDs
-    # in agreements_and_blin_data.json5
     id: Mapped[int] = BaseModel.get_pk_column()
     number: Mapped[int] = mapped_column(Integer)
     optional: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -47,7 +46,7 @@ class ServicesComponent(BaseModel):
     period_start: Mapped[Optional[date]] = mapped_column(Date)
     period_end: Mapped[Optional[date]] = mapped_column(Date)
 
-    sub_component: Mapped[str] = mapped_column(String, nullable=True, default=None)
+    sub_component: Mapped[Optional[str]] = mapped_column(String)
 
     contract_agreement_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("contract_agreement.id", ondelete="CASCADE")

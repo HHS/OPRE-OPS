@@ -10,17 +10,10 @@ from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import Any, override
 
-from models import CAN
+from models import CAN, Agreement
 from models.base import BaseModel
 from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestStatus
 from models.portfolios import Portfolio
-
-
-class ModType(Enum):
-    ADMIN = auto()
-    AMOUNT_TBD = auto()
-    AS_IS = auto()
-    REPLACEMENT_AMOUNT_FINAL = auto()
 
 
 class BudgetLineItemStatus(Enum):
@@ -63,7 +56,6 @@ class BudgetLineItem(BaseModel):
     clin: Mapped[Optional["CLIN"]] = relationship("CLIN", backref="budget_line_items")
 
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
-    mod_type: Mapped[Optional[ModType]] = mapped_column(ENUM(ModType))
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         ENUM(BudgetLineItemStatus)
@@ -71,20 +63,39 @@ class BudgetLineItem(BaseModel):
 
     on_hold: Mapped[bool] = mapped_column(Boolean, default=False)
     certified: Mapped[bool] = mapped_column(Boolean, default=False)
-    closed: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    requisition_number: Mapped[Optional[int]] = mapped_column(Integer)
-    requisition_date: Mapped[Optional[date]] = mapped_column(Date)
+    closed: Mapped[bool] = mapped_column(Boolean, default=False)
+    closed_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("ops_user.id"))
+    closed_by_user: Mapped[Optional["User"]] = relationship(
+        "User", foreign_keys=[closed_by]
+    )
+    closed_date: Mapped[Optional[date]] = mapped_column(Date)
 
     is_under_current_resolution: Mapped[Optional[bool]] = mapped_column(
         Boolean, default=False
     )
 
     date_needed: Mapped[Optional[date]] = mapped_column(Date)
+    extend_pop_to: Mapped[Optional[date]] = mapped_column(Date)
+    start_date: Mapped[Optional[date]] = mapped_column(Date)
+    end_date: Mapped[Optional[date]] = mapped_column(Date)
 
     proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(
         Numeric(12, 5)
     )  # may need to be a different object, i.e. flat rate or percentage
+
+    invoice: Mapped[Optional["Invoice"]] = relationship("Invoice")
+    requisition: Mapped[Optional["Requisition"]] = relationship("Requisition")
+    object_class_code_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("object_class_code.id")
+    )
+    mod_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("agreement_mod.id")
+    )
+    doc_received: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
+    psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
+    psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
+    obligation_date: Mapped[Optional[date]] = mapped_column(Date)
 
     @BaseModel.display_name.getter
     def display_name(self):
@@ -154,3 +165,42 @@ class BudgetLineItem(BaseModel):
                 acting_change_request_id=self.acting_change_request_id,
             )
         return d
+
+
+class Invoice(BaseModel):
+    """Invoice model."""
+
+    __tablename__ = "invoice"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    budget_line_item_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("budget_line_item.id")
+    )
+    invoice_line_number: Mapped[Optional[int]] = mapped_column(Integer)
+
+
+class Requisition(BaseModel):
+    """Requisition model."""
+
+    __tablename__ = "requisition"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    budget_line_item_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("budget_line_item.id")
+    )
+    zero_number: Mapped[Optional[str]] = mapped_column(String)
+    zero_date: Mapped[Optional[date]] = mapped_column(Date)
+    number: Mapped[Optional[str]] = mapped_column(String)
+    date: Mapped[Optional[date]] = mapped_column(Date)
+    group: Mapped[Optional[int]] = mapped_column(Integer)
+    check: Mapped[Optional[str]] = mapped_column(String)
+
+
+class ObjectClassCode(BaseModel):
+    """Object class code model."""
+
+    __tablename__ = "object_class_code"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    code: Mapped[Optional[int]] = mapped_column(Integer)
+    description: Mapped[Optional[str]] = mapped_column(String)

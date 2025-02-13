@@ -1,0 +1,16 @@
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (1, 25205, 'IT (ADP) SVC', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (2, 21022, 'Conference - Non-Governme', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (3, 4145, 'Demonstration', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (4, 21101, 'Oversite Travel', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (5, 21000, 'Rest of travel', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (6, 26621, 'Supplies', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (7, 25101, 'Training?', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (8, 25308, 'IAA outside HHS', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (9, 25309, 'IAA within HHS', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (10, 25103, 'Contracts', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (11, 41401, 'Grants', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (12, 23110, 'Rental Payments', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (13, 23305, 'OIS TAP - FTS', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (14, 0, 'Based on Customer Agency', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (15, 1, 'Varies', current_timestamp, current_timestamp);
+INSERT INTO ops.object_class_code (id, code, description, created_on, updated_on) VALUES (16, 25408, 'Security', current_timestamp, current_timestamp);
