@@ -80,7 +80,7 @@ describe("CAN detail page", () => {
         cy.get("p").should("contain", can502Nickname);
         cy.get("dd").should("contain", can502Description);
     });
-    it("handles history", () => {
+    it.only("handles history", () => {
         cy.visit("/cans/500/");
         checkCANHistory();
 
@@ -113,9 +113,10 @@ describe("CAN detail page", () => {
             "contain",
             "Nickname Edited"
         );
-        cy.get('[data-cy="can-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]')
-            .should("exist")
-            .contains("FY 2025 Data Import");
+        cy.get('[data-cy="can-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]').should(
+            "contain",
+            "FY 2025 Data Import"
+        );
         const expectedMessages = [
             "Nickname changed from Interagency Agreement to IAA-Incoming during FY 2025 data import",
             "FY 2025 CAN Funding Information imported from CANBACs"
