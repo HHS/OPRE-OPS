@@ -60,14 +60,14 @@ export default function useCanFunding(
 
     const [budgetForm, setBudgetForm] = React.useState({
         enteredAmount: totalFunding,
-        submittedAmount: 0,
+        submittedAmount: 0.0,
         isSubmitted: false
     });
 
     const initialFundingReceivedForm = {
-        enteredAmount: 0,
-        originalAmount: 0,
-        submittedAmount: 0,
+        enteredAmount: 0.0,
+        originalAmount: 0.0,
+        submittedAmount: 0.0,
         enteredNotes: "",
         submittedNotes: "",
         isSubmitted: false,
@@ -273,8 +273,8 @@ export default function useCanFunding(
         // Then update the form state
         const nextForm = {
             ...fundingReceivedForm,
-            enteredAmount: 0,
-            originalAmount: 0,
+            enteredAmount: 0.0,
+            originalAmount: 0.0,
             submittedAmount: fundingReceivedForm.enteredAmount,
             enteredNotes: "",
             submittedNotes: fundingReceivedForm.enteredNotes,
