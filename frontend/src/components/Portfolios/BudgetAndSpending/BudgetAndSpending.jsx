@@ -6,7 +6,7 @@ import DebugCode from "../../DebugCode";
 
 const BudgetAndSpending = () => {
     // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
-    const { portfolioId, budgetLineIds, portfolioFunding } = useOutletContext();
+    const { fiscalYear, budgetLineIds, portfolioFunding } = useOutletContext();
     const budgetLineItemQueries = budgetLineIds.map((id) => useGetBudgetLineItemQuery(id));
 
     const isLoading = budgetLineItemQueries.some((query) => query.isLoading);
@@ -22,7 +22,10 @@ const BudgetAndSpending = () => {
             <p className="font-sans-sm">
                 The summary below shows the budget and spending for this Portfolio for the selected fiscal year.
             </p>
-            <PortfolioBudgetSummary portfolioId={portfolioId} />
+            <PortfolioBudgetSummary
+                fiscalYear={fiscalYear}
+                portfolioFunding={portfolioFunding}
+            />
             <section>
                 <h2>Portfolio Budget Lines</h2>
                 <p>

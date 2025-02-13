@@ -50,7 +50,7 @@ const PortfolioDetail = () => {
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />
                 </section>
-                <Outlet context={{ portfolioId, budgetLineIds, portfolioFunding }} />
+                <Outlet context={{ fiscalYear, budgetLineIds, portfolioFunding }} />
             </div>
         </App>
     );
