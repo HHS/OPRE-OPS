@@ -59,7 +59,7 @@ export default function useCanFunding(
     });
 
     const [budgetForm, setBudgetForm] = React.useState({
-        enteredAmount: 0,
+        enteredAmount: totalFunding,
         submittedAmount: 0,
         isSubmitted: false
     });
@@ -367,7 +367,7 @@ export default function useCanFunding(
     const cleanUp = () => {
         setDeletedFundingReceivedIds([]);
         setEnteredFundingReceived([...fundingReceived]);
-        setBudgetForm({ enteredAmount: 0, submittedAmount: totalFunding, isSubmitted: false });
+        setBudgetForm({ enteredAmount: totalFunding, submittedAmount: totalFunding, isSubmitted: false });
         setShowModal(false);
         setFundingReceivedForm(initialFundingReceivedForm);
         toggleEditMode();
@@ -391,6 +391,7 @@ export default function useCanFunding(
         suite(
             {
                 remainingAmount: +budgetForm.submittedAmount - totalReceived + +fundingReceivedForm.originalAmount,
+                receivedFunding,
                 ...{ [name]: value }
             },
             name

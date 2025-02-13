@@ -51,7 +51,7 @@ const CurrencyInput = ({
                 className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                 thousandSeparator={true}
                 decimalScale={2}
-                fixedDecimalScale={true}
+                // fixedDecimalScale={true}
                 placeholder={placeholder}
                 onValueChange={(values) => {
                     const { floatValue } = values;
