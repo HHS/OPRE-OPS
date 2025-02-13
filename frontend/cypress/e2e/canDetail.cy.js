@@ -110,6 +110,10 @@ describe("CAN detail page", () => {
         // cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').contains(
         //     "Nickname Edited"
         // );
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
+            "contain",
+            "Nickname Edited"
+        );
         // cy.get('[data-cy="can-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]').contains(
         //     "FY 2025 Data Import"
         // );
