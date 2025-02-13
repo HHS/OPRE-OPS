@@ -122,7 +122,7 @@ describe("CAN detail page", () => {
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("contain", expectedMessages[index]);
+            cy.wrap(logItem).should("have.text", expectedMessages[index]);
         });
     });
 });
