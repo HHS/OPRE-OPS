@@ -16,14 +16,6 @@ from models.change_requests import BudgetLineItemChangeRequest, ChangeRequestSta
 from models.portfolios import Portfolio
 
 
-class ModType(Enum):
-    NEW = auto()
-    ADMIN = auto()
-    AMOUNT_TBD = auto()
-    AS_IS = auto()
-    REPLACEMENT_AMOUNT_FINAL = auto()
-
-
 class BudgetLineItemStatus(Enum):
     def __str__(self):
         return str(self.value)
@@ -64,7 +56,6 @@ class BudgetLineItem(BaseModel):
     clin: Mapped[Optional["CLIN"]] = relationship("CLIN", backref="budget_line_items")
 
     amount: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
-    mod_type: Mapped[Optional[ModType]] = mapped_column(ENUM(ModType))
 
     status: Mapped[Optional[BudgetLineItemStatus]] = mapped_column(
         ENUM(BudgetLineItemStatus)
