@@ -298,7 +298,8 @@ const CanFunding = ({
                         disabled={
                             !budgetForm.isSubmitted &&
                             !fundingReceivedForm.isSubmitted &&
-                            !deletedFundingReceivedIds.length
+                            !deletedFundingReceivedIds.length &&
+                            !enteredFundingReceived.length
                         }
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
