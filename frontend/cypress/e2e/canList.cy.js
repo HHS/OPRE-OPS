@@ -24,6 +24,25 @@ describe("CAN List", () => {
         cy.get('a[href="/cans/510"]').should("exist");
     });
 
+    it("the available budget should match the table total", () => {
+        cy.get("#fiscal-year-select").select("2021");
+        // budget-summary-card-2021 should contain $ 30,200,000
+        cy.get("[data-cy='budget-summary-card-2021']").contains("$ 30,200,000");
+
+        const expectedValues = ["$200,000.00", "$10,000,000.00", "$10,000,000.00", "$10,000,000.00", "$0", "$0", "$0"];
+
+        cy.get("tbody tr").each(($row, index) => {
+            cy.wrap($row)
+                .find("td")
+                .eq(5) // Adjust index to the correct column containing the budget amount
+                .invoke("text")
+                .then((text) => {
+                    const cleanedText = text.trim(); // Remove extra spaces
+                    expect(cleanedText).to.equal(expectedValues[index]);
+                });
+        });
+    });
+
     it("clicking on a CAN takes you to the detail page", () => {
         // beforeEach has ran...
         const canNumber = "G99XXX4";
