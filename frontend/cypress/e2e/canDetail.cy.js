@@ -120,10 +120,12 @@ describe("CAN detail page", () => {
             "contain",
             "Nickname Edited"
         );
-        // const expectedMessagesTest = ["Nickname changed from IA to Interagency Agreement during FY 2024 data import"];
-        // cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-        //     cy.wrap(logItem).should("contain", expectedMessagesTest[index]);
-        // });
+        const expectedMessagesForFY2024 = [
+            "Nickname changed from IA to Interagency Agreement during FY 2024 data import"
+        ];
+        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+            cy.wrap(logItem).should("exist").contains(expectedMessagesForFY2024[index]);
+        });
         // switch to select FY 2025 and confirm 2 history logs
         cy.get("#fiscal-year-select").select("2025");
         cy.get('[data-cy="can-history-container"]').should("exist");
@@ -137,30 +139,15 @@ describe("CAN detail page", () => {
             "contain",
             "FY 2025 Data Import"
         );
-        // const expectedMessages = [
-        //     "Nickname changed from Interagency Agreement to IAA-Incoming during FY 2025 data import",
-        //     "FY 2025 CAN Funding Information imported from CANBACs"
-        // ];
-        // cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-        //     cy.wrap(logItem).should("have.text", expectedMessages[index]);
-        // });
-
-        // checkHistoryItem(
-        //     /Nickname Edited/,
-        //     "Nickname changed from IA to Interagency Agreement during FY 2024 data import"
-        // );
+        const expectedMessagesForFY2025 = [
+            "Nickname changed from Interagency Agreement to IAA-Incoming during FY 2025 data import",
+            "FY 2025 CAN Funding Information imported from CANBACs"
+        ];
+        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+            cy.wrap(logItem).should("exist").contains(expectedMessagesForFY2025[index]);
+        });
     });
 });
-
-// const checkHistoryItem = (titleRegex, expectedText) => {
-//     return cy
-//         .get('[data-cy="agreement-history-list"]')
-//         .contains('[data-cy="log-item-title"]', titleRegex)
-//         .closest("li")
-//         .within(() => {
-//             cy.get('[data-cy="log-item-children"]').should("exist").and("have.text", expectedText);
-//         });
-// };
 
 describe("CAN spending page", () => {
     it("shows the CAN Spending page", () => {
