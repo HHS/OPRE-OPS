@@ -14,6 +14,7 @@ import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
 import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
 import { isEmpty } from "lodash";
+import DebugCode from "../../../components/DebugCode";
 
 /**
  * Page for the CAN List.
@@ -35,11 +36,11 @@ const CanList = () => {
     });
     const { data: canList, isError, isLoading } = useGetCansQuery({});
 
-    const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
-    const transferTitles = filters.transfer.map((t) => {
+    const activePeriodIds = filters.activePeriod?.map((ap) => ap.id);
+    const transferTitles = filters.transfer?.map((t) => {
         return t.title.toUpperCase();
     });
-    const portfolioAbbreviations = filters.portfolio.map((p) => p.abbr);
+    const portfolioAbbreviations = filters.portfolio?.map((p) => p.abbr);
 
     const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({
         ids: [0],
@@ -127,6 +128,10 @@ const CanList = () => {
                         inExecutionFunding={fundingSummaryData?.in_execution_funding}
                     />
                 }
+            />
+            <DebugCode
+                title="filters from parent"
+                data={filters}
             />
         </App>
     );
