@@ -54,7 +54,6 @@ const CANFundingReceivedForm = ({
                     value={receivedFundingAmount || ""}
                     messages={res.getErrors("funding-received-amount")}
                     className={`${cn("funding-received-amount")} margin-top-0`}
-                    fixedDecimalScale={true}
                 />
                 <TextArea
                     maxLength={75}
