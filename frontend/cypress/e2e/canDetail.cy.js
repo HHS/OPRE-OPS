@@ -100,7 +100,7 @@ describe("CAN detail page", () => {
         cy.get("p").should("contain", can502Nickname);
         cy.get("dd").should("contain", can502Description);
     });
-    it.only("handles history", () => {
+    it("handles history", () => {
         cy.visit("/cans/500/");
         checkCANHistory();
 
