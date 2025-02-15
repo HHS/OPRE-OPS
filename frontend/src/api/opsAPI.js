@@ -289,13 +289,19 @@ export const opsApi = createApi({
             providesTags: ["Cans", "CanFunding"]
         }),
         getCanHistory: builder.query({
-            query: ({ canId, offset, limit }) => {
+            query: ({ canId, offset, limit, fiscalYear, sort }) => {
                 const queryParams = [];
                 if (limit) {
                     queryParams.push(`limit=${limit}`);
                 }
                 if (offset) {
                     queryParams.push(`offset=${offset}`);
+                }
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (sort) {
+                    queryParams.push(`sort_asc=${sort}`);
                 }
                 return `/can-history/?can_id=${canId}&${queryParams.join("&")}`;
             },

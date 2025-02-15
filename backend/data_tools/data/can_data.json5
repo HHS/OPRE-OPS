@@ -948,5 +948,15 @@
       history_type: "CAN_NICKNAME_EDITED",
       fiscal_year: 2025
     },
-  ],
+    {
+      // 34
+      can_id: 501,
+      ops_event_id: 31,
+      history_title: "Nickname Edited",
+      history_message: "Nickname changed from IA to Interagency Agreement during FY 2024 data import",
+      timestamp: "2024-02-04T21:42:53.928887Z",
+      history_type: "CAN_NICKNAME_EDITED",
+      fiscal_year: 2024
+    }
+  ]
 }
