@@ -58,8 +58,6 @@ const BudgetLineItemList = () => {
                         ? "This is a list of the budget lines you are listed as a Team Member on. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
                         : "This is a list of budget lines across all OPRE projects and agreements, including drafts. Please select filter options to see budget lines by Portfolio, Status, or Fiscal Year."
                 }
-                buttonText="Add Budget Lines"
-                buttonLink="/budget-lines/create"
                 TabsSection={<BLITags />}
                 FilterTags={
                     <BLIFilterTags

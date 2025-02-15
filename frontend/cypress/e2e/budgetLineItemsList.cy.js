@@ -32,11 +32,6 @@ it("budget line items link defaults to all-budget-line-items", () => {
     cy.get('a[href="/budget-lines"]').should("exist");
 });
 
-it("clicking the add budget lines button takes you to the create budget lines page", () => {
-    cy.get("a").contains("Add Budget Lines");
-    cy.get('a[href="/budget-lines/create"]').should("exist");
-});
-
 it("pagination on the bli table works as expected", () => {
     cy.visit("/budget-lines");
 
