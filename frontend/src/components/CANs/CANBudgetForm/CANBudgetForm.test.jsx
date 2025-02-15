@@ -19,7 +19,7 @@ describe("CANBudgetForm", () => {
     test("renders with required props", () => {
         render(<CANBudgetForm {...defaultProps} />);
         expect(screen.getByLabelText(/FY 2024 CAN Budget/i)).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /add fy budget/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /update fy budget/i })).toBeInTheDocument();
     });
 
     test("calls handleAddBudget and setBudgetAmount on form submission", async () => {
@@ -31,7 +31,7 @@ describe("CANBudgetForm", () => {
             />
         );
 
-        await user.click(screen.getByRole("button", { name: /add fy budget/i }));
+        await user.click(screen.getByRole("button", { name: /update fy budget/i }));
 
         expect(defaultProps.handleAddBudget).toHaveBeenCalled();
     });
