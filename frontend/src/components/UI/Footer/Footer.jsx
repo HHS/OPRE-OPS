@@ -1,6 +1,5 @@
 import AgencyInfo from "./AgencyInfo";
 import Identifier from "./Identifier";
-import NavFooter from "./NavFooter";
 
 const Footer = () => {
     const scrollToTop = () => {
@@ -18,9 +17,6 @@ const Footer = () => {
                 >
                     Return to top
                 </button>
-            </div>
-            <div className="usa-footer__primary-section bg-base-light">
-                <NavFooter />
             </div>
             <div className="usa-footer__secondary-section">
                 <AgencyInfo />
