@@ -16,7 +16,7 @@ def test_project_retrieve(loaded_db):
     assert project is not None
     assert project.title == "African American Child and Family Research Center"
     assert project.display_name == project.title
-    assert project.url == "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
+    assert project.url == "https://acf.gov/opre/project/african-american-child-and-family-research-center"
 
 
 def test_projects_get_all(auth_client, loaded_db):
