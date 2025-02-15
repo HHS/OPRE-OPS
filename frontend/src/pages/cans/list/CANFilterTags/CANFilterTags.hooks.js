@@ -53,13 +53,16 @@ export const useTagsList = (filters, fyBudgetRange) => {
                 } else {
                     setTagsList((prevState) => prevState.filter((t) => t.filter !== filterName));
                 }
-            } else if (Array.isArray(filters[filterKey])) {
-                const selectedTags = filters[filterKey].map((item) => ({
-                    tagText: item.title,
-                    filter: filterName
-                }));
-
-                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
+            } else {
+                if (Array.isArray(filters[filterKey])) {
+                    const selectedTags = filters[filterKey].map((item) => ({
+                        tagText: item.title,
+                        filter: filterName
+                    }));
+                    setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
+                }else{
+                    setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName)]);
+                }
             }
         },
         [filters, fyBudgetRange]

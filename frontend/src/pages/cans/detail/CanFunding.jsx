@@ -92,7 +92,9 @@ const CanFunding = ({
         populateFundingReceivedForm,
         cancelFundingReceived,
         deleteFundingReceived,
-        deletedFundingReceivedIds
+        deletedFundingReceivedIds,
+        budgetEnteredAmount,
+        fundingReceivedEnteredAmount
     } = useCanFunding(
         canId,
         canNumber,
@@ -218,7 +220,7 @@ const CanFunding = ({
                                     totalFunding={
                                         budgetForm.submittedAmount ? budgetForm.submittedAmount : totalFunding
                                     }
-                                    budgetAmount={budgetForm.enteredAmount}
+                                    budgetAmount={budgetEnteredAmount}
                                     cn={cn}
                                     res={res}
                                     fiscalYear={fiscalYear}
@@ -246,7 +248,7 @@ const CanFunding = ({
                                 style={{ minWidth: "46%" }}
                             >
                                 <CANFundingReceivedForm
-                                    receivedFundingAmount={fundingReceivedForm.enteredAmount}
+                                    receivedFundingAmount={fundingReceivedEnteredAmount}
                                     setReceivedFundingAmount={handleEnteredFundingReceivedAmount}
                                     handleSubmit={handleAddFundingReceived}
                                     isEditing={fundingReceivedForm.isEditing}
@@ -298,7 +300,8 @@ const CanFunding = ({
                         disabled={
                             !budgetForm.isSubmitted &&
                             !fundingReceivedForm.isSubmitted &&
-                            !deletedFundingReceivedIds.length
+                            !deletedFundingReceivedIds.length &&
+                            !enteredFundingReceived.length
                         }
                         data-cy="save-btn"
                         onClick={(e) => handleSubmit(e)}
