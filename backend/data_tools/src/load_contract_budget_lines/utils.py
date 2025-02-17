@@ -1,13 +1,15 @@
 import os
+import re
 from csv import DictReader
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import List, Optional
 
 from loguru import logger
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import BudgetLineItemStatus, ModType, User
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ModType, ServicesComponent, User
 
 
 @dataclass
@@ -155,27 +157,29 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
     logger.debug(f"Creating models for {data}")
 
     try:
-        # contract = ContractAgreement(
-        #     name=data.CONTRACT_NAME,
-        #     maps_sys_id=data.SYS_CONTRACT_ID,
-        #     contract_number=data.CONTRACT_NBR,
-        #     project_id=data.SYS_PROJECT_ID,
-        #     vendor_id=data.SYS_VENDOR_ID,
-        #     task_order_number=data.TASK_ORDER_NBR,
-        #     po_number=data.PO_NBR,
-        #     acquisition_type=data.ACQUISITION_TYPE,
-        #     product_service_code_id=psc.id if psc else None,
-        #     project_officer_id=data.OPRE_PROJECT_OFFICER,
-        #     start_date=data.CONTRACT_START_DATE,
-        #     end_date=data.CONTRACT_END_DATE,
-        #     contract_type=data.CONTRACT_TYPE,
-        #     psc_contract_specialist=data.PSC_CONTRACT_SPECIALIST,
-        #     cotr_id=data.OPRE_COTR,
-        #     created_by=sys_user.id,
-        #     updated_by=sys_user.id,
-        #     created_on=datetime.now(),
-        #     updated_on=datetime.now(),
-        # )
+        # Create BudgetLineItem model
+        contract = session.execute(
+            select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
+        ).scalar_one_or_none()
+
+        if not contract:
+            raise ValueError(f"ContractAgreement with SYS_CONTRACT_ID {data.SYS_CONTRACT_ID} not found.")
+
+        can = session.get(CAN, data.SYS_CAN_ID)
+
+        # regex_pattern = re.match(r"^(O)SC\s*(\d+)(\w+)$", data.CLIN_NAME)
+        # is_optional = True if regex_pattern.group(1) else False
+        # sc_label = regex_pattern.group(2) if regex_pattern.group(2) else None
+        # sub_component_label = data.CLIN_NAME if regex_pattern.group(3) else None
+
+        bli = BudgetLineItem(
+            id=data.SYS_BUDGET_ID,
+            line_description=data.LINE_DESCRIPTION,
+            comments=data.COMMENTS,
+            agreement_id=contract.id,
+            can_id=can.id if can else None,
+        )
+
         #
         # existing_contract = session.execute(
         #     select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
@@ -249,3 +253,30 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
 
     create_all_models(budget_line_item_data, sys_user, session)
     logger.info(f"Finished loading models.")
+
+
+def get_sc(label: str, contract: ContractAgreement, session: Session) -> ServicesComponent:
+    regex_pattern = re.match(r"^(O)SC\s*(\d+)(\w+)$", label)
+    is_optional = True if regex_pattern.group(1) else False
+    sc_label = regex_pattern.group(2) if regex_pattern.group(2) else None
+    sub_component_label = label if regex_pattern.group(3) else None
+
+    sc = session.execute(
+        select(ServicesComponent)
+        .where(ServicesComponent.number == sc_label)
+        .where(ServicesComponent.optional == is_optional)
+        .where(ServicesComponent.sub_component == sub_component_label)
+        .where(ServicesComponent.contract_agreement_id == contract.id)
+    ).scalar_one_or_none()
+
+    if not sc:
+        sc = ServicesComponent(
+            number=sc_label,
+            optional=is_optional,
+            sub_component=sub_component_label,
+            contract_agreement_id=contract.id,
+            description=label,
+        )
+        session.add(sc)
+
+    return sc
