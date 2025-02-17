@@ -1,7 +1,7 @@
 services:
 
   db:
-    image: "postgres:16"
+    image: postgres:16
     container_name: ops-db
     security_opt:
       - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
@@ -10,7 +10,7 @@ services:
     read_only: true  # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
     volumes:
-      - ./backend/data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
+      - ./backend/data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
     healthcheck:
@@ -18,6 +18,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: on-failure
 
   data-import:
     build:
@@ -33,6 +34,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: "no"
 
   disable-users:
     build:
@@ -48,6 +50,7 @@ services:
         condition: service_healthy
       data-import:
         condition: service_completed_successfully
+    restart: "no"
 
   backend:
     build:
@@ -73,6 +76,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+    restart: on-failure
 
   frontend:
     build:
@@ -91,3 +95,4 @@ services:
         - action: sync
           path: ./frontend/src
           target: /home/app/src
+    restart: on-failure
