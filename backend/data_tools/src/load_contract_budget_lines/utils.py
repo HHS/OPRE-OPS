@@ -255,15 +255,19 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
     logger.info(f"Finished loading models.")
 
 
-def get_sc(label: str, contract: ContractAgreement, session: Session) -> ServicesComponent:
-    regex_pattern = re.match(r"^(O)SC\s*(\d+)(\w+)$", label)
-    is_optional = True if regex_pattern.group(1) else False
-    sc_label = regex_pattern.group(2) if regex_pattern.group(2) else None
-    sub_component_label = label if regex_pattern.group(3) else None
+def get_sc(label: str, contract: ContractAgreement, session: Session) -> ServicesComponent | None:
+    regex_obj = re.match(r"^(O)?SC\s*(\d+)(\w*)$", label)
+
+    if not regex_obj or not contract:
+        return None
+
+    is_optional = True if regex_obj.group(1) else False
+    sc_number = int(regex_obj.group(2)) if regex_obj.group(2) else None
+    sub_component_label = label if regex_obj.group(3) else None
 
     sc = session.execute(
         select(ServicesComponent)
-        .where(ServicesComponent.number == sc_label)
+        .where(ServicesComponent.number == sc_number)
         .where(ServicesComponent.optional == is_optional)
         .where(ServicesComponent.sub_component == sub_component_label)
         .where(ServicesComponent.contract_agreement_id == contract.id)
@@ -271,7 +275,7 @@ def get_sc(label: str, contract: ContractAgreement, session: Session) -> Service
 
     if not sc:
         sc = ServicesComponent(
-            number=sc_label,
+            number=sc_number,
             optional=is_optional,
             sub_component=sub_component_label,
             contract_agreement_id=contract.id,

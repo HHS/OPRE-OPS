@@ -7,6 +7,7 @@ from data_tools.src.load_contract_budget_lines.utils import (
     BudgetLineItemData,
     create_budget_line_item_data,
     create_models,
+    get_sc,
     validate_data,
 )
 from sqlalchemy import and_, text
@@ -550,3 +551,39 @@ def test_create_models(db_for_test):
 #     assert history_record.event_type == OpsDBHistoryType.UPDATED
 #     assert history_record.row_key == str(contract_model.id)
 #     assert history_record.created_by == sys_user.id
+
+
+def test_get_sc_create_new(db_for_test):
+    contract = db_for_test.get(ContractAgreement, 1)
+    sc = get_sc("SC1", contract, db_for_test)
+    assert sc is not None
+    assert sc.number == 1
+    assert sc.sub_component is None
+    assert sc.optional is False
+
+
+def test_get_sc_create_new_optional(db_for_test):
+    contract = db_for_test.get(ContractAgreement, 1)
+    sc = get_sc("OSC1", contract, db_for_test)
+    assert sc is not None
+    assert sc.number == 1
+    assert sc.sub_component is None
+    assert sc.optional is True
+
+
+def test_get_sc_get_existing(db_for_test):
+    contract = db_for_test.get(ContractAgreement, 1)
+
+    existing_sc = ServicesComponent(
+        number=1,
+        contract_agreement_id=1,
+        optional=False,
+    )
+    db_for_test.add(existing_sc)
+    db_for_test.commit()
+
+    sc = get_sc("SC1", contract, db_for_test)
+    assert sc == existing_sc
+
+    db_for_test.delete(existing_sc)
+    db_for_test.commit()
