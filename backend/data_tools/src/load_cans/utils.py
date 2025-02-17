@@ -177,7 +177,7 @@ def create_models(data: CANData, sys_user: User, session: Session) -> None:
         session.add(event)
         session.commit()
 
-        can_history_trigger_func(event, session)
+        can_history_trigger_func(event, session, sys_user)
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e

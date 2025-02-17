@@ -83,7 +83,7 @@ def create_app() -> Flask:  # noqa: C901
     oauth = OAuth()
     oauth.init_app(app)
 
-    db_session, engine = init_db(app.config.get("SQLALCHEMY_DATABASE_URI"))
+    db_session, engine = init_db(app.config)
     app.db_session = db_session
     app.engine = engine
 
@@ -174,5 +174,9 @@ def before_request_function(app: Flask, request: request):
 
     request.message_bus = MessageBus()
     request.message_bus.subscribe(OpsEventType.CREATE_NEW_CAN, can_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_CAN, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_BUDGET, can_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_BUDGET, can_history_trigger)
+    request.message_bus.subscribe(OpsEventType.CREATE_CAN_FUNDING_RECEIVED, can_history_trigger)
+    request.message_bus.subscribe(OpsEventType.UPDATE_CAN_FUNDING_RECEIVED, can_history_trigger)
     request.message_bus.subscribe(OpsEventType.DELETE_CAN_FUNDING_RECEIVED, can_history_trigger)

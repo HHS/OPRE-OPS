@@ -1,7 +1,8 @@
-services:
+version: "3.9"
 
+services:
   db:
-    image: "postgres:16"
+    image: postgres:16
     container_name: ops-db
     security_opt:
       - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
@@ -10,7 +11,7 @@ services:
     read_only: true  # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
     volumes:
-      - ./backend/data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d
+      - ./backend/data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
     healthcheck:
@@ -18,6 +19,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: on-failure
 
   data-import:
     build:
@@ -29,13 +31,11 @@ services:
       - SQLALCHEMY_DATABASE_URI=postgresql://ops:ops@db:5432/postgres
     command: /bin/sh -c "./data_tools/scripts/import_test_data.sh"
     volumes:
-      # See below for an explanation of this volume. The same reasoning applies,
-      # but in this case it's so we can run new migrations immediately without
-      # having to rebuild the migration container.
       - ./backend/ops_api:/home/app/ops_api
     depends_on:
       db:
         condition: service_healthy
+    restart: "no"
 
   disable-users:
     build:
@@ -51,6 +51,7 @@ services:
         condition: service_healthy
       data-import:
         condition: service_completed_successfully
+    restart: "no"
 
   backend:
     build:
@@ -72,10 +73,11 @@ services:
       data-import:
         condition: service_completed_successfully
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 10s
       timeout: 10s
       retries: 10
+    restart: on-failure
 
   frontend:
     build:
@@ -94,3 +96,4 @@ services:
         - action: sync
           path: ./frontend/src
           target: /home/app/src
+    restart: on-failure

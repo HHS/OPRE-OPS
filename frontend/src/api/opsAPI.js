@@ -289,7 +289,7 @@ export const opsApi = createApi({
             providesTags: ["Cans", "CanFunding"]
         }),
         getCanHistory: builder.query({
-            query: ({ canId, offset, limit }) => {
+            query: ({ canId, offset, limit, fiscalYear, sort }) => {
                 const queryParams = [];
                 if (limit) {
                     queryParams.push(`limit=${limit}`);
@@ -297,18 +297,27 @@ export const opsApi = createApi({
                 if (offset) {
                     queryParams.push(`offset=${offset}`);
                 }
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (sort) {
+                    queryParams.push(`sort_asc=${sort}`);
+                }
                 return `/can-history/?can_id=${canId}&${queryParams.join("&")}`;
             },
             providesTags: ["Cans"]
         }),
         getNotificationsByUserId: builder.query({
-            query: ({ id, auth_header }) => {
-                if (!id) {
+            query: ({ id }) => {
+                // get the auth header from the context
+                const access_token = getAccessToken();
+
+                if (!id || !access_token) {
                     return { skip: true }; // Skip the query if id is undefined
                 }
                 return {
                     url: `/notifications/?oidc_id=${id}`,
-                    headers: { Authorization: auth_header }
+                    headers: { Authorization: `Bearer ${access_token}` }
                 };
             },
             providesTags: ["Notifications"]

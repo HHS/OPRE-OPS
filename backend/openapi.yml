@@ -882,7 +882,7 @@ paths:
       tags:
         - CAN History
       operationId: getAllCANHistory
-      summary: Get a list all CAN history objects
+      summary: Get a list all CAN history objects, sorted by their timestamps from newest to oldest
       parameters:
         - $ref: "#/components/parameters/simulatedError"
         - name: can_id
@@ -901,6 +901,17 @@ paths:
               type: integer
               default: 10
           example: 10
+        - name: fiscal_year
+          in: query
+          schema:
+            type: integer
+          example: 2025
+        - name: sort_asc
+          in: query
+          description: Optional parameter that sets whether to sort the results in ascending (oldest to newest) order
+          schema:
+            type: boolean
+          example: true
       description: Get CANHistory
       responses:
         "200":
@@ -3347,7 +3358,7 @@ components:
         url:
           type: string
           example: >-
-            https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center
+            https://acf.gov/opre/project/african-american-child-and-family-research-center
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -4278,7 +4289,7 @@ components:
               {
                   "id": 1,
                   "portfolio_id": 1,
-                  "url": "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
+                  "url": "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
               }
           ],
           "created_on": "2023-04-06T20:33:38.292475",
@@ -4343,7 +4354,7 @@ components:
                 }
             ],
             "title": "African American Child and Family Research Center",
-            "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
+            "url": "https://acf.gov/opre/project/african-american-child-and-family-research-center"
           }
         ]
     AGREEMENTS:
