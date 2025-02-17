@@ -16,8 +16,8 @@ const can502Description = "Social Science Research and Development";
 const can504 = {
     number: 504,
     nickname: "G994426",
-    budgetAmount: "5_000_000",
-    updatedBudgetAmount: "8_000_000"
+    budgetAmount: "5_000_000.55",
+    updatedBudgetAmount: "8_000_000.88"
 };
 
 const currentFiscalYear = getCurrentFiscalYear();
@@ -219,16 +219,16 @@ describe("CAN funding page", () => {
         cy.get("#budget-amount").type(can504.budgetAmount);
         cy.get(".usa-error-message").should("not.exist");
         cy.get("#add-fy-budget").click();
-        cy.get("[data-cy='can-budget-fy-card']").should("contain", "5,000,000.00");
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", "$ 5,000,000.55");
         cy.get("#save-changes").should("be.enabled");
         cy.get("#save-changes").click();
         cy.get(".usa-alert__body").should("contain", `The CAN ${can504.nickname} has been successfully updated.`);
-        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "Received $0.00 of $5,000,000.00");
+        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "Received $0.00 of $5,000,000.55");
         cy.get("[data-cy=can-budget-fy-card]")
             .should("exist")
             .and("contain", "CAN Budget by FY")
             .and("contain", `FY ${currentFiscalYear}`)
-            .and("contain", "$5,000,000.00");
+            .and("contain", "$5,000,000.55");
         // check can history for ADDING a budget
         cy.visit(`/cans/${can504.number}`);
         cy.get('[data-cy="can-history-list"]').should("exist");
@@ -236,7 +236,7 @@ describe("CAN funding page", () => {
             .should("exist")
             .contains(/FY 2025 Budget Entered/);
         const expectedMessages = [
-            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
@@ -258,8 +258,8 @@ describe("CAN funding page", () => {
             .should("exist")
             .contains(/FY 2025 Budget Edited/);
         const expectedMessages = [
-            "Budget Team edited the FY 2025 budget from $5,000,000.00 to $8,000,000.00",
-            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
+            "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
@@ -332,7 +332,7 @@ describe("CAN funding page", () => {
         // check that table and card are updated
         cy.get("[data-cy=budget-received-card]")
             .should("exist")
-            .and("contain", "Received $2,000,000.00 of $8,000,000.00");
+            .and("contain", "Received $2,000,000.00 of $8,000,000.88");
         cy.get("tbody").children().should("contain", "2025").and("contain", "$2,000,000.00").and("contain", "25%");
 
         // check can history for ADDING a funding received event
@@ -343,15 +343,15 @@ describe("CAN funding page", () => {
             .contains(/Funding Received Added/);
         const expectedMessages = [
             "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
-            "Budget Team edited the FY 2025 budget from $5,000,000.00 to $8,000,000.00",
-            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
+            "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
             cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
         });
     });
-    it("shows correct total funding receieved when switching between fiscal years", () => {
+    it("shows correct total funding received when switching between fiscal years", () => {
         // have to visit the cans page first to set the fiscal year and recreate the bug
         cy.visit(`/cans`);
         cy.get("#fiscal-year-select").select("2023");
@@ -397,8 +397,8 @@ describe("CAN funding page", () => {
             "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
-            "Budget Team edited the FY 2025 budget from $5,000,000.00 to $8,000,000.00",
-            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
+            "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
@@ -427,8 +427,8 @@ describe("CAN funding page", () => {
             "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
-            "Budget Team edited the FY 2025 budget from $5,000,000.00 to $8,000,000.00",
-            "Budget Team entered a FY 2025 budget of $5,000,000.00",
+            "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
+            "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
@@ -440,10 +440,11 @@ describe("CAN funding page", () => {
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
         cy.get("#carry-forward-card").should("contain", "$ 10,000,000.00");
-        cy.get("[data-cy='can-budget-fy-card']").should("contain", "8,000,000.00");
-        cy.get("#budget-amount").type("6_000_000");
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", "8,000,000.88");
+        cy.get("#budget-amount").clear();
+        cy.get("#budget-amount").type("6_000_000.66");
         cy.get("#add-fy-budget").click();
-        cy.get("[data-cy='can-budget-fy-card']").should("contain", "6,000,000.00");
+        cy.get("[data-cy='can-budget-fy-card']").should("contain", "6,000,000.66");
         cy.get("#save-changes").should("be.enabled");
         // test funding received form
         cy.get("#funding-received-amount").type("1_000_000");
@@ -458,12 +459,12 @@ describe("CAN funding page", () => {
         cy.get("[data-cy='confirm-action']").click();
         cy.get("[data-cy=budget-received-card]")
             .should("exist")
-            .and("contain", "Received $3,500,000.00 of $8,000,000.00");
+            .and("contain", "Received $3,500,000.00 of $8,000,000.88");
         cy.get("[data-cy=can-budget-fy-card]")
             .should("exist")
             .and("contain", "CAN Budget by FY")
             .and("contain", `FY ${currentFiscalYear}`)
-            .and("contain", "$8,000,000.00");
+            .and("contain", "$8,000,000.88");
         // check table has one row
         cy.get("tbody").children().should("have.length", 1);
     });
