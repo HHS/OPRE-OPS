@@ -17,8 +17,7 @@ import styles from "./style.module.css";
  * @returns {JSX.Element}
  */
 const CANTable = ({ cans, fiscalYear }) => {
-    // TODO: once in prod, change this to 25
-    const CANS_PER_PAGE = 10;
+    const CANS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 10;
     const [currentPage, setCurrentPage] = React.useState(1);
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
@@ -39,7 +38,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                             name={can.display_name ?? NO_DATA}
                             nickname={can.nick_name ?? NO_DATA}
                             portfolio={can.portfolio.abbreviation}
-                            fiscalYear={can.funding_details?.fiscal_year ?? NO_DATA}
+                            fiscalYear={fiscalYear}
                             activePeriod={can.active_period ?? 0}
                             obligateBy={formatObligateBy(can.obligate_by)}
                             transfer={can.funding_details?.method_of_transfer ?? NO_DATA}
