@@ -2,9 +2,10 @@ from datetime import datetime, timezone
 from enum import Enum, auto
 
 from loguru import logger
-from sqlalchemy import ForeignKey, Integer, Text, func
+from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Mapped, Session, mapped_column, object_session
 
 from models import OpsEvent, OpsEventStatus, OpsEventType, Portfolio, User
 from models.base import BaseModel
@@ -39,7 +40,7 @@ class CANHistory(BaseModel):
     ops_event_id: Mapped[int] = mapped_column(Integer, ForeignKey("ops_event.id"))
     history_title: Mapped[str]
     history_message: Mapped[str] = mapped_column(Text)
-    timestamp: Mapped[datetime] = mapped_column(default=func.now())
+    timestamp: Mapped[str]
     history_type: Mapped[CANHistoryType] = mapped_column(
         ENUM(CANHistoryType), nullable=True
     )
@@ -70,7 +71,7 @@ def can_history_trigger_func(
                 history_message=f"FY {current_fiscal_year} CAN Funding Information imported from CANBACs",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_DATA_IMPORT,
-                fiscal_year=current_fiscal_year
+                fiscal_year = current_fiscal_year
             )
             session.add(history_event)
         case OpsEventType.UPDATE_CAN:
@@ -99,7 +100,7 @@ def can_history_trigger_func(
                 history_message=f"{creator_name} entered a FY {current_fiscal_year} budget of {budget}",
                 timestamp=event.created_on,
                 history_type=CANHistoryType.CAN_FUNDING_CREATED,
-                fiscal_year= current_fiscal_year
+                fiscal_year=current_fiscal_year
             )
             session.add(history_event)
         case OpsEventType.UPDATE_CAN_FUNDING_BUDGET:
@@ -168,7 +169,7 @@ def can_history_trigger_func(
     session.commit()
 
 
-def format_fiscal_year(timestamp):
+def format_fiscal_year(timestamp) -> int:
     """Convert the timestamp to {Fiscal Year}. The fiscal year is calendar year + 1 if the timestamp is october or later.
     This method can take either an iso format timestamp string or a datetime object"""
     current_fiscal_year = 0

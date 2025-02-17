@@ -48,7 +48,7 @@ const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="https://www.acf.hhs.gov/accessibility"
+                                href="https://acf.gov/accessibility"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 Accessibility support
@@ -56,7 +56,7 @@ const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="http://www.acf.hhs.gov/"
+                                href="http://acf.gov/"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 acf.gov
@@ -64,7 +64,7 @@ const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="https://www.acf.hhs.gov/disclaimers"
+                                href="https://acf.gov/disclaimers"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 Disclaimers
@@ -72,7 +72,7 @@ const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="https://www.acf.hhs.gov/foia"
+                                href="https://acf.gov/foia"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 FOIA requests
@@ -80,7 +80,7 @@ const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="https://www.acf.hhs.gov/about/acf-policies/no-fear-act"
+                                href="https://acf.gov/about/acf-policies/no-fear-act"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 No FEAR Act data
@@ -88,7 +88,7 @@ const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="https://www.acf.hhs.gov/opre"
+                                href="https://acf.gov/opre"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 OPRE
@@ -96,7 +96,7 @@ const Identifier = () => {
                         </li>
                         <li className="usa-identifier__required-links-item">
                             <a
-                                href="https://www.acf.hhs.gov/privacy-policy"
+                                href="https://acf.gov/privacy-policy"
                                 className="usa-identifier__required-link usa-link"
                             >
                                 Privacy policy
