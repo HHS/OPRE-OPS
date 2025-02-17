@@ -449,6 +449,12 @@ describe("CAN funding page", () => {
         // test funding received form
         cy.get("#funding-received-amount").type("1_000_000");
         cy.get("[data-cy=add-funding-received-btn]").click();
+        // edit from table
+        cy.get("tbody").find("tr").first().trigger("mouseover");
+        cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
+        // cancel the edit and check save button status
+        cy.get("[cancel-funding-received-btn]").click();
+        cy.get("#save-changes").should("be.enabled");
         // cancel changes
         cy.get("[data-cy=cancel-button]").should("be.enabled");
         cy.get("[data-cy=cancel-button]").click();
