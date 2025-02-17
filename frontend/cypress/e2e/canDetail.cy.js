@@ -453,7 +453,7 @@ describe("CAN funding page", () => {
         cy.get("tbody").find("tr").first().trigger("mouseover");
         cy.get("tbody").find("tr").first().find('[data-cy="edit-row"]').click();
         // cancel the edit and check save button status
-        cy.get("[cancel-funding-received-btn]").click();
+        cy.get("[data-cy=cancel-funding-received-btn]").click();
         cy.get("#save-changes").should("be.enabled");
         // cancel changes
         cy.get("[data-cy=cancel-button]").should("be.enabled");
