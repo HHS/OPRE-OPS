@@ -1,6 +1,5 @@
-import CurrencyInput from "../../UI/Form/CurrencyInput";
 import icons from "../../../uswds/img/sprite.svg";
-import DebugCode from "../../DebugCode/index.js";
+import CurrencyInput from "../../UI/Form/CurrencyInput";
 
 /**
  * @typedef {Object} CANBudgetFormProps
@@ -39,7 +38,6 @@ const CANBudgetForm = ({
                 handleAddBudget(e);
             }}
         >
-            <DebugCode data={{ totalFunding, budgetAmount }} />
             <div style={{ width: "383px", marginTop: `${showCarryForwardCard ? "0" : "-24px"}` }}>
                 <CurrencyInput
                     name="budget-amount"

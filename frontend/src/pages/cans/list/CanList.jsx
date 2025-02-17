@@ -1,3 +1,4 @@
+import { isEmpty } from "lodash";
 import React from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
@@ -13,8 +14,6 @@ import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
 import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
-import { isEmpty } from "lodash";
-import DebugCode from "../../../components/DebugCode";
 
 /**
  * Page for the CAN List.
@@ -128,10 +127,6 @@ const CanList = () => {
                         inExecutionFunding={fundingSummaryData?.in_execution_funding}
                     />
                 }
-            />
-            <DebugCode
-                title="filters from parent"
-                data={filters}
             />
         </App>
     );
