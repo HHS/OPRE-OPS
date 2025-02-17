@@ -33,6 +33,7 @@ export const AgreementSelect = ({
     };
 
     const AgreementSummaryCard = () => {
+        // eslint-disable-next-line react-compiler/react-compiler
         const projectOfficerName = useGetUserFullNameFromId(selectedAgreement?.projectOfficer);
 
         return (

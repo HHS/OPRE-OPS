@@ -9,6 +9,7 @@ import pluginReactRefresh from "eslint-plugin-react-refresh";
 import pluginJsxConfig from "eslint-plugin-react/configs/jsx-runtime.js";
 import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
 import pluginTestingLibrary from "eslint-plugin-testing-library";
+import reactCompiler from "eslint-plugin-react-compiler";
 import globals from "globals";
 
 export default [
@@ -39,7 +40,8 @@ export default [
     {
         plugins: {
             "react-refresh": pluginReactRefresh,
-            "eslint-plugin-prettier": pluginPrettierConfig
+            "eslint-plugin-prettier": pluginPrettierConfig,
+            "react-compiler": reactCompiler
         },
         settings: {
             react: {
@@ -53,7 +55,8 @@ export default [
             "react/react-in-jsx-scope": "off",
             "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
             // 1 warns instead of errors and we can ignore children props
-            "react/prop-types": [1, { ignore: ["children"], skipUndeclared: true }]
+            "react/prop-types": [1, { ignore: ["children"], skipUndeclared: true }],
+            "react-compiler/react-compiler": "error"
         }
     },
     {

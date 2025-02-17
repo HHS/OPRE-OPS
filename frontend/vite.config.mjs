@@ -9,7 +9,9 @@ export default defineConfig(({ mode }) => {
     // Load env file based on `mode` in the current working directory.
     // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
     const { VITE_BACKEND_DOMAIN } = loadEnv(mode, process.cwd(), "");
-
+    const ReactCompilerConfig = {
+        target: "18"
+    };
     return {
         build: {
             outDir: "build"
@@ -34,7 +36,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             react({
                 babel: {
-                    plugins: ["babel-plugin-macros"]
+                    plugins: [["babel-plugin-react-compiler", ReactCompilerConfig], "babel-plugin-macros"]
                 }
             }),
             viteJsconfigPaths(),

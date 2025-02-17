@@ -1,13 +1,12 @@
-import React from "react";
-import PropTypes from "prop-types";
-import CurrencyFormat from "react-currency-format";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import CurrencyFormat from "react-currency-format";
+import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
 import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
-import Tag from "../../UI/Tag/Tag";
 import RoundedBox from "../../UI/RoundedBox";
-import { calculatePercent, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import Tag from "../../UI/Tag/Tag";
 import styles from "./styles.module.css";
 
 /**
@@ -114,13 +113,6 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             </div>
         );
     };
-    LegendItem.propTypes = {
-        id: PropTypes.number.isRequired,
-        label: PropTypes.string.isRequired,
-        value: PropTypes.number.isRequired,
-        color: PropTypes.string.isRequired,
-        percent: PropTypes.string.isRequired
-    };
 
     return (
         <RoundedBox dataCy="bli-status-summary-card">
@@ -163,10 +155,6 @@ const BLIStatusSummaryCard = ({ budgetLines }) => {
             </div>
         </RoundedBox>
     );
-};
-
-BLIStatusSummaryCard.propTypes = {
-    budgetLines: PropTypes.array.isRequired
 };
 
 export default BLIStatusSummaryCard;

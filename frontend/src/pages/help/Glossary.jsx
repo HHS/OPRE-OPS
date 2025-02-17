@@ -49,6 +49,7 @@ const Glossary = () => {
                     const firstLetter = item.heading[0].toUpperCase();
                     let letterHeader = null;
                     if (firstLetter !== currentLetter) {
+                        // eslint-disable-next-line react-compiler/react-compiler
                         currentLetter = firstLetter;
                         letterHeader = (
                             <h3

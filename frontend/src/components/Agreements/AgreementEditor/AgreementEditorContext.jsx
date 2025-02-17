@@ -2,8 +2,6 @@ import { useReducer } from "react";
 import { defaultState, editAgreementReducer, initialState } from "./AgreementEditorContext.hooks";
 import { AgreementEditorContext, EditAgreementDispatchContext } from "./contexts";
 
-let modifiedInitialState = { ...initialState };
-
 /**
  * Provides a context for creating an agreement.
  * @component
@@ -14,6 +12,7 @@ let modifiedInitialState = { ...initialState };
  * @returns {JSX.Element} The AgreementEditorContext provider.
  */
 export function EditAgreementProvider({ agreement, projectOfficer, children }) {
+    let modifiedInitialState = { ...initialState };
     if (agreement) {
         modifiedInitialState.agreement = { ...agreement };
         modifiedInitialState.selected_project = agreement.project;
