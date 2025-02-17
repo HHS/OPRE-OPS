@@ -3,14 +3,16 @@ import { useGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
 import DebugCode from "../../DebugCode";
+import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 
 const BudgetAndSpending = () => {
     // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
-    const { fiscalYear, budgetLineIds, projectIds, portfolioFunding } = useOutletContext();
+    const { fiscalYear, budgetLineIds, projectTypesCount, portfolioFunding } = useOutletContext();
     const budgetLineItemQueries = budgetLineIds.map((id) => useGetBudgetLineItemQuery(id));
 
     const isLoading = budgetLineItemQueries.some((query) => query.isLoading);
     const budgetLineItems = budgetLineItemQueries.map((query) => query?.data);
+    const budgetLineTypesCount = getTypesCounts(budgetLineItems ?? [], "status");
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -25,6 +27,8 @@ const BudgetAndSpending = () => {
             <PortfolioBudgetSummary
                 fiscalYear={fiscalYear}
                 portfolioFunding={portfolioFunding}
+                projectTypesCount={projectTypesCount}
+                budgetLineTypesCount={budgetLineTypesCount}
             />
             <section>
                 <h2>Portfolio Budget Lines</h2>
