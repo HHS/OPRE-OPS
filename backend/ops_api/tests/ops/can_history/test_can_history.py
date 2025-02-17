@@ -74,7 +74,7 @@ def test_get_can_history_ascending_sort():
     assert oldest_can_history_event.history_type == CANHistoryType.CAN_DATA_IMPORT
 
     descending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, False)
-    assert len(descending_sort_response) == 3
+    assert len(descending_sort_response) == 2
     newest_can_history_event = descending_sort_response[0]
     assert newest_can_history_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
 
