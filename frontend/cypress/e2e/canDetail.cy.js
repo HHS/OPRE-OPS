@@ -103,6 +103,36 @@ describe("CAN detail page", () => {
     it("handles history", () => {
         cy.visit("/cans/500/");
         checkCANHistory();
+
+        // test history logs for varying fiscal years
+        cy.visit("/cans/501/");
+        // select FY 2023 and confirm no history logs
+        cy.get("#fiscal-year-select").select("2023");
+        cy.get('[data-cy="can-history-container"]').should("not.exist");
+        cy.get('[data-cy="can-history-list"]').should("not.exist");
+        cy.get('[data-cy="history"]').should("contain", "No History");
+        // switch to select FY 2024 and confirm 1 history log
+        cy.get("#fiscal-year-select").select("2024");
+        cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="history"]').should("exist");
+        cy.get('[data-cy="can-history-list"]').should("exist");
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
+            "contain",
+            "Nickname Edited"
+        );
+        // switch to select FY 2025 and confirm 2 history logs
+        cy.get("#fiscal-year-select").select("2025");
+        cy.get('[data-cy="can-history-container"]').should("exist");
+        cy.get('[data-cy="history"]').should("exist");
+        cy.get('[data-cy="can-history-list"]').should("exist");
+        cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]').should(
+            "contain",
+            "Nickname Edited"
+        );
+        cy.get('[data-cy="can-history-list"] > :nth-child(2) > .flex-justify > [data-cy="log-item-title"]').should(
+            "contain",
+            "FY 2025 Data Import"
+        );
     });
 });
 
