@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
@@ -13,7 +12,7 @@ import { displayActivePeriod } from "./CANTableRow.helpers";
  * @param {Object} props
  * @param {number} props.activePeriod - Active Period in years
  * @param {number} props.canId - CAN ID
- * @param {number|"TBD"} props.fiscalYear - Fiscal Year
+ * @param {number} props.fiscalYear - Selected Fiscal Year
  * @param {number} props.fyBudget - Fiscal Year Budget
  * @param {string} props.name - CAN name
  * @param {string} props.nickname - CAN nickname
@@ -98,18 +97,6 @@ const CANTableRow = ({
             </td>
         </tr>
     );
-};
-
-CANTableRow.propTypes = {
-    activePeriod: PropTypes.number.isRequired,
-    canId: PropTypes.number.isRequired,
-    fiscalYear: PropTypes.number.isRequired,
-    fyBudget: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    nickname: PropTypes.string.isRequired,
-    obligateBy: PropTypes.string.isRequired,
-    portfolio: PropTypes.string.isRequired,
-    transfer: PropTypes.string.isRequired
 };
 
 export default CANTableRow;

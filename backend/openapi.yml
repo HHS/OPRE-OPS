@@ -3358,7 +3358,7 @@ components:
         url:
           type: string
           example: >-
-            https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center
+            https://acf.gov/opre/project/african-american-child-and-family-research-center
         created_on:
           $ref: "#/components/parameters/created_on"
         updated_on:
@@ -4289,7 +4289,7 @@ components:
               {
                   "id": 1,
                   "portfolio_id": 1,
-                  "url": "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
+                  "url": "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
               }
           ],
           "created_on": "2023-04-06T20:33:38.292475",
@@ -4354,7 +4354,7 @@ components:
                 }
             ],
             "title": "African American Child and Family Research Center",
-            "url": "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
+            "url": "https://acf.gov/opre/project/african-american-child-and-family-research-center"
           }
         ]
     AGREEMENTS:
