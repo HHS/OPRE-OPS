@@ -115,7 +115,7 @@ const agreementHistoryData = [
                 team_leaders: [],
                 title: "Annual Performance Plans and Reports",
                 updated_on: "2023-08-24T16:18:48.654514",
-                url: "https://www.acf.hhs.gov/opre/project/acf-annual-performance-plans-and-reports-2000-2012"
+                url: "https://acf.gov/opre/project/acf-annual-performance-plans-and-reports-2000-2012"
             },
             project_id: 3,
             support_contacts: [],

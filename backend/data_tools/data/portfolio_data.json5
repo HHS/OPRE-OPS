@@ -297,37 +297,37 @@
     {
       id: 1,
       portfolio_id: 1,
-      url: "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
+      url: "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care",
     },
     {
       id: 2,
       portfolio_id: 2,
-      url: "https://www.acf.hhs.gov/opre/topic/head-start",
+      url: "https://acf.gov/opre/topic/head-start",
     },
     {
       id: 3,
       portfolio_id: 3,
-      url: "https://www.acf.hhs.gov/opre/topic/child-care",
+      url: "https://acf.gov/opre/topic/child-care",
     },
     {
       id: 4,
       portfolio_id: 4,
-      url: "https://www.acf.hhs.gov/opre/topic/self-sufficiency-welfare-employment",
+      url: "https://acf.gov/opre/topic/self-sufficiency-welfare-employment",
     },
     {
       id: 5,
       portfolio_id: 5,
-      url: "https://www.acf.hhs.gov/opre/topic/youth-services",
+      url: "https://acf.gov/opre/topic/youth-services",
     },
     {
       id: 6,
       portfolio_id: 6,
-      url: "https://www.acf.hhs.gov/opre/topic/strengthening-families-healthy-marriage-responsible-fatherhood",
+      url: "https://acf.gov/opre/topic/strengthening-families-healthy-marriage-responsible-fatherhood",
     },
     {
       id: 7,
       portfolio_id: 7,
-      url: "https://www.acf.hhs.gov/opre/topic/home-visiting",
+      url: "https://acf.gov/opre/topic/home-visiting",
     },
   ],
 }
