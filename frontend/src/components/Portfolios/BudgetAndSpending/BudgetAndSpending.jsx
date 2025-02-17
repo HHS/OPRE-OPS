@@ -6,7 +6,7 @@ import DebugCode from "../../DebugCode";
 
 const BudgetAndSpending = () => {
     // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
-    const { fiscalYear, budgetLineIds, portfolioFunding } = useOutletContext();
+    const { fiscalYear, budgetLineIds, projectIds, portfolioFunding } = useOutletContext();
     const budgetLineItemQueries = budgetLineIds.map((id) => useGetBudgetLineItemQuery(id));
 
     const isLoading = budgetLineItemQueries.some((query) => query.isLoading);
@@ -37,7 +37,7 @@ const BudgetAndSpending = () => {
                 budgetLines={budgetLineItems}
                 totalFunding={portfolioFunding?.total_funding.amount}
             />
-            <DebugCode data={portfolioFunding} />
+            <DebugCode title="spending page" data={budgetLineItemQueries} />
         </>
     );
 };

@@ -4,12 +4,14 @@ import App from "../../../App";
 import {
     useGetPortfolioByIdQuery,
     useGetPortfolioCalcFundingQuery,
-    useGetPortfolioCansByIdQuery
+    useGetPortfolioCansByIdQuery,
+    useGetResearchProjectsByPortfolioQuery
 } from "../../../api/opsAPI";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
 import { setSelectedFiscalYear } from "./portfolioSlice";
+import DebugCode from "../../../components/DebugCode";
 
 const PortfolioDetail = () => {
     const urlPathParams = useParams();
@@ -26,6 +28,8 @@ const PortfolioDetail = () => {
         fiscalYear
     });
     const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
+    const projectIds = [...new Set(portfolioCans?.flatMap((can) => can.projects))];
+    const projects = useGetResearchProjectsByPortfolioQuery({fiscal_year: fiscalYear, portfolio_id:portfolioId});
 
     if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading) {
         return <p>Loading...</p>;
@@ -50,8 +54,9 @@ const PortfolioDetail = () => {
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />
                 </section>
-                <Outlet context={{ fiscalYear, budgetLineIds, portfolioFunding }} />
+                <Outlet context={{ fiscalYear, budgetLineIds, projectIds, portfolioFunding }} />
             </div>
+            <DebugCode data={{projects}} />
         </App>
     );
 };

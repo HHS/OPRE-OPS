@@ -132,6 +132,22 @@ export const opsApi = createApi({
             query: () => `/research-projects/`,
             providesTags: ["ResearchProjects"]
         }),
+        getResearchProjectsByPortfolio: builder.query({
+            query: ({fiscal_year,portfolio_id,search}) => {
+                const queryParams = [];
+                if (fiscal_year) {
+                    queryParams.push(`fiscal_year=${fiscal_year}`);
+                }
+                if (portfolio_id) {
+                    queryParams.push(`portfolio_id=${portfolio_id}`);
+                }
+                if (search) {
+                    queryParams.push(`search=${search}`);
+                }
+                return `/research-projects/?${queryParams.join("&")}`;
+            },
+            providesTags: ["ResearchProjects"]
+        }),
         addResearchProjects: builder.mutation({
             query: (body) => ({
                 url: `/research-projects/`,
@@ -485,6 +501,7 @@ export const {
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetResearchProjectsQuery,
+    useGetResearchProjectsByPortfolioQuery,
     useAddResearchProjectsMutation,
     useUpdateBudgetLineItemStatusMutation,
     useGetAgreementTypesQuery,
