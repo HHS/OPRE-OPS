@@ -59,17 +59,24 @@ export default defineConfig(({ mode }) => {
         test: {
             globals: true,
             environment: "jsdom",
-            setupFiles: "./src/tests/setupTests.js",
+            setupFiles: ["./src/tests/setupTests.js"],
+            files: ["**/*.test.{jsx,js,tsx,ts}", "**/*.spec.{jsx,js,tsx,ts}"],
+            exclude: ["src/uswds/**", "node_modules/**"],
             coverage: {
                 provider: "istanbul",
                 reporters: ["default", "html"],
+                include: ["src/**/*.{jsx,js,tsx,ts}"],
                 exclude: [
+                    "**/*.test.{jsx,js,tsx,ts}",
+                    "**/*.spec.{jsx,js,tsx,ts}",
+                    "**/tests/**",
                     "**/uswds/**",
                     "**/node_modules/**",
                     "**/dist/**",
                     "**/cypress/**",
                     "**/.{idea,git,cache,output,temp}/**",
-                    "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*"
+                    "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+                    "**/*.d.ts"
                 ]
             }
         },
@@ -79,7 +86,7 @@ export default defineConfig(({ mode }) => {
         esbuild: {
             loader: "jsx",
             include: /src\/.*\.jsx?$/,
-            exclude: []
+            exclude: [/\.d\.ts$/]
         }
     };
 });
