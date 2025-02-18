@@ -1,14 +1,12 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:16
     container_name: ops-db
     security_opt:
-      - no-new-privileges:true
+      - no-new-privileges:true  # Resolve semgrep https://sg.run/0n8q
     environment:
       - POSTGRES_PASSWORD=local_password
-    read_only: true
+    read_only: true  # Resolve semgrep https://sg.run/e4JE
     tmpfs: /var/run/postgresql/
     volumes:
       - ./backend/data_tools/ops_db_sql_init:/docker-entrypoint-initdb.d:ro
@@ -91,6 +89,9 @@ services:
       - "3000:3000"
     depends_on:
       - backend
-    volumes:
-      - ./frontend/src:/home/app/src
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /home/app/src
     restart: on-failure

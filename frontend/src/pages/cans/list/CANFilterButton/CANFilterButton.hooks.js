@@ -41,13 +41,13 @@ export const useCANFilterButton = (filters, setFilters, fyBudgetRange) => {
     }, [fyBudgetRange, filters.budget]);
 
     const applyFilter = () => {
-        if(budget === fyBudgetRange) {
+        if (budget === fyBudgetRange) {
             setFilters((prevState) => {
                 return {
                     ...prevState,
                     activePeriod: activePeriod,
                     transfer: transfer,
-                    portfolio: portfolio,
+                    portfolio: portfolio
                 };
             });
         } else {
