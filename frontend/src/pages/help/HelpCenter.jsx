@@ -5,7 +5,7 @@ import Tabs from "../../components/UI/Tabs";
 import FAQ from "./FAQ";
 import Feedback from "./Feedback";
 import Glossary from "./Glossary";
-import UserGuides from "./UserGuides";
+import HowToGuides from "./HowToGuides";
 
 const HelpCenter = () => {
     return (
@@ -20,7 +20,7 @@ const HelpCenter = () => {
             <Routes>
                 <Route
                     path=""
-                    element={<UserGuides />}
+                    element={<HowToGuides />}
                 />
                 <Route
                     path="faq"
@@ -42,7 +42,7 @@ const HelpCenter = () => {
 const HelpTabs = () => {
     const paths = [
         {
-            label: "User Guides",
+            label: "How-to Guides",
             pathName: "/help-center/"
         },
         {

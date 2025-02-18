@@ -3,7 +3,7 @@ import remarkGfm from "remark-gfm";
 import Accordion from "../../components/UI/Accordion";
 import { toSlugCase } from "../../helpers/utils";
 
-const UserGuides = () => {
+const HowToGuides = () => {
     const components = {
         table: (props) => (
             <table
@@ -15,7 +15,7 @@ const UserGuides = () => {
 
     return (
         <>
-            <h2 className="margin-bottom-4">User Guide</h2>
+            <h2 className="margin-bottom-4">How-to Guides</h2>
             <nav className="margin-y-2">
                 <h3>Table of Contents</h3>
                 <ul className="usa-list--unstyled">
@@ -413,4 +413,4 @@ Funding received means funding received to OPRE towards a CANs FY budget
     }
 ];
 
-export default UserGuides;
+export default HowToGuides;
