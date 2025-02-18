@@ -7,7 +7,7 @@ describe("How-to Guides Page", () => {
     it("renders header and table of contents", () => {
         render(<HowToGuides />);
         // Check header
-        expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("User Guide");
+        expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("How-to Guides");
         // Check a TOC link exists
         expect(screen.getByRole("link", { name: /What is OPS\?/i })).toBeInTheDocument();
     });
