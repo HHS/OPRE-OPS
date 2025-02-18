@@ -894,7 +894,7 @@
       ops_event_id: 27,
       history_title: "CAN Portfolio Edited",
       history_message: "Steve Tekell changed portfolio from Welfare Research to Child Welfare Research",
-      timestamp: "2025-01-1T21:42:53.928887Z",
+      timestamp: "2025-01-13T21:42:53.928887Z",
       history_type: "CAN_PORTFOLIO_EDITED",
       fiscal_year: 2025
     },
@@ -948,5 +948,15 @@
       history_type: "CAN_NICKNAME_EDITED",
       fiscal_year: 2025
     },
-  ],
+    {
+      // 34
+      can_id: 501,
+      ops_event_id: 31,
+      history_title: "Nickname Edited",
+      history_message: "Nickname changed from IA to Interagency Agreement during FY 2024 data import",
+      timestamp: "2024-02-04T21:42:53.928887Z",
+      history_type: "CAN_NICKNAME_EDITED",
+      fiscal_year: 2024
+    }
+  ]
 }

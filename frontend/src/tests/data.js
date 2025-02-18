@@ -1110,7 +1110,7 @@ export const cans = [
                     updated_by: null,
                     updated_by_user: null,
                     updated_on: "2024-09-17T18:12:16.802256Z",
-                    url: "https://www.acf.hhs.gov/opre/topic/strengthening-families-healthy-marriage-responsible-fatherhood"
+                    url: "https://acf.gov/opre/topic/strengthening-families-healthy-marriage-responsible-fatherhood"
                 }
             ]
         },
@@ -1462,7 +1462,7 @@ export const cans = [
                     updated_by: null,
                     updated_by_user: null,
                     updated_on: "2024-09-17T18:12:16.760426Z",
-                    url: "https://www.acf.hhs.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
+                    url: "https://acf.gov/opre/topic/overview/abuse-neglect-adoption-foster-care"
                 }
             ]
         },

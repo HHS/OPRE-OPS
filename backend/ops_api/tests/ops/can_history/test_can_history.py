@@ -2,8 +2,8 @@ import pytest
 from sqlalchemy import select
 
 from models import CANHistory, CANHistoryType, OpsEvent, Portfolio
-from ops.services.can_history import CANHistoryService
-from ops.services.can_messages import can_history_trigger
+from ops_api.ops.services.can_history import CANHistoryService
+from ops_api.ops.services.can_messages import can_history_trigger
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -70,13 +70,13 @@ def test_get_can_history_ascending_sort():
     can_history_service = CANHistoryService()
     ascending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, True)
     oldest_can_history_event = ascending_sort_response[0]
-    assert len(ascending_sort_response) == 2
+    assert len(ascending_sort_response) == 3
     assert oldest_can_history_event.history_type == CANHistoryType.CAN_DATA_IMPORT
 
     descending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, False)
-    assert len(descending_sort_response) == 2
+    assert len(descending_sort_response) == 3
     newest_can_history_event = descending_sort_response[0]
-    assert newest_can_history_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
+    assert newest_can_history_event.history_type == CANHistoryType.CAN_FUNDING_CREATED
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -200,7 +200,7 @@ def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
     assert new_can_history_item.history_type == CANHistoryType.CAN_DATA_IMPORT
     assert new_can_history_item.history_title == "FY 2025 Data Import"
     assert new_can_history_item.history_message == "FY 2025 CAN Funding Information imported from CANBACs"
-    assert new_can_history_item.timestamp == test_create_can_history_item.created_on
+    assert new_can_history_item.timestamp == test_create_can_history_item.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     assert new_can_history_item.fiscal_year == 2025
 
 
@@ -215,6 +215,7 @@ def test_create_can_can_history_next_fiscal_year(loaded_db):
     assert new_can_history_item.history_type == CANHistoryType.CAN_DATA_IMPORT
     assert new_can_history_item.history_title == "FY 2026 Data Import"
     assert new_can_history_item.history_message == "FY 2026 CAN Funding Information imported from CANBACs"
+    assert new_can_history_item.fiscal_year == 2026
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -231,7 +232,8 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
     assert (
         new_can_history_item.can_id == funding_budget_created_event.event_details["new_can_funding_budget"]["can"]["id"]
     )
-    assert new_can_history_item.timestamp == funding_budget_created_event.created_on
+    assert new_can_history_item.timestamp == funding_budget_created_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+    assert new_can_history_item.fiscal_year == 2025
 
     funding_budget_created_event_2 = loaded_db.get(OpsEvent, 25)
     can_history_trigger(funding_budget_created_event_2, loaded_db)
@@ -246,7 +248,10 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
         new_can_history_item_2.can_id
         == funding_budget_created_event_2.event_details["new_can_funding_budget"]["can"]["id"]
     )
-    assert new_can_history_item_2.timestamp == funding_budget_created_event_2.created_on
+    assert new_can_history_item_2.timestamp == funding_budget_created_event_2.created_on.strftime(
+        "%Y-%m-%d %H:%M:%S.%f"
+    )
+    assert new_can_history_item_2.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -267,7 +272,8 @@ def test_create_create_can_funding_received(loaded_db):
         new_can_history_item.can_id
         == funding_received_created_event.event_details["new_can_funding_received"]["can_id"]
     )
-    assert new_can_history_item.timestamp == funding_received_created_event.created_on
+    assert new_can_history_item.timestamp == funding_received_created_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+    assert new_can_history_item.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -288,7 +294,8 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
         new_can_history_item.can_id
         == funding_received_deleted_event.event_details["deleted_can_funding_received"]["can_id"]
     )
-    assert new_can_history_item.timestamp == funding_received_deleted_event.created_on
+    assert new_can_history_item.timestamp == funding_received_deleted_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+    assert new_can_history_item.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -304,10 +311,12 @@ def test_update_can_can_history(loaded_db):
     assert nickname_can_history_event.history_title == "Nickname Edited"
     assert nickname_can_history_event.history_message == "Steve Tekell edited the nickname from New CAN to HMRF-OPRE"
     assert nickname_can_history_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
+    assert nickname_can_history_event.fiscal_year == 2025
     description_can_history_event = can_update_history_events[1]
     assert description_can_history_event.history_title == "Description Edited"
     assert description_can_history_event.history_message == "Steve Tekell edited the description"
     assert description_can_history_event.history_type == CANHistoryType.CAN_DESCRIPTION_EDITED
+    assert description_can_history_event.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -326,6 +335,7 @@ def test_update_can_funding_budget_can_history(loaded_db):
         == "Steve Tekell edited the FY 2025 budget from $1,000,000.00 to $1,140,000.00"
     )
     assert funding_budget_history_event.history_type == CANHistoryType.CAN_FUNDING_EDITED
+    assert funding_budget_history_event.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -344,6 +354,7 @@ def test_update_can_funding_received_can_history(loaded_db):
         == "Steve Tekell edited funding received for funding ID 500 from $880,000.00 to $1,000,000.00"
     )
     assert funding_received_history_event.history_type == CANHistoryType.CAN_RECEIVED_EDITED
+    assert funding_received_history_event.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -364,6 +375,7 @@ def test_update_can_portfolio_can_history_regular_user(loaded_db):
         == f"Steve Tekell changed the portfolio from {portfolio_4.name} to {portfolio_1.name}"
     )
     assert can_portfolio_event.history_type == CANHistoryType.CAN_PORTFOLIO_EDITED
+    assert can_portfolio_event.fiscal_year == 2025
 
     assert can_division_event.history_title == "CAN Division Edited"
     assert (
@@ -371,6 +383,7 @@ def test_update_can_portfolio_can_history_regular_user(loaded_db):
         == f"Steve Tekell changed the division from {portfolio_4.division.name} to {portfolio_1.division.name}"
     )
     assert can_division_event.history_type == CANHistoryType.CAN_DIVISION_EDITED
+    assert can_division_event.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -391,6 +404,7 @@ def test_update_can_portfolio_can_history_system_user(loaded_db):
         == f"CAN portfolio changed from {portfolio_1.name} to {portfolio_6.name} during FY 2025 data import"
     )
     assert can_portfolio_event.history_type == CANHistoryType.CAN_PORTFOLIO_EDITED
+    assert can_portfolio_event.fiscal_year == 2025
 
     assert can_division_event.history_title == "CAN Division Edited"
     assert (
@@ -398,6 +412,7 @@ def test_update_can_portfolio_can_history_system_user(loaded_db):
         == f"CAN division changed from {portfolio_1.division.name} to {portfolio_6.division.name} during FY 2025 data import"
     )
     assert can_division_event.history_type == CANHistoryType.CAN_DIVISION_EDITED
+    assert can_division_event.fiscal_year == 2025
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -417,3 +432,4 @@ def test_update_can_nickname_system_user(loaded_db):
         == "Nickname changed from Interagency Agreements to IAA-Incoming during FY 2025 data import"
     )
     assert nickname_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
+    assert nickname_event.fiscal_year == 2025

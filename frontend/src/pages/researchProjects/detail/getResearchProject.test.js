@@ -15,7 +15,7 @@ test("successfully gets the Research Project from the backend", async () => {
             portfolio_id: 1,
             short_title: "",
             title: "African American Child and Family Research Center",
-            url: "https://www.acf.hhs.gov/opre/project/african-american-child-and-family-research-center"
+            url: "https://acf.gov/opre/project/african-american-child-and-family-research-center"
         }
     ];
 

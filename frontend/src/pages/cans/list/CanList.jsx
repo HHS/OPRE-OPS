@@ -1,3 +1,4 @@
+import { isEmpty } from "lodash";
 import React from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
@@ -13,7 +14,6 @@ import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
 import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
-import { isEmpty } from "lodash";
 
 /**
  * Page for the CAN List.
@@ -35,11 +35,11 @@ const CanList = () => {
     });
     const { data: canList, isError, isLoading } = useGetCansQuery({});
 
-    const activePeriodIds = filters.activePeriod.map((ap) => ap.id);
-    const transferTitles = filters.transfer.map((t) => {
+    const activePeriodIds = filters.activePeriod?.map((ap) => ap.id);
+    const transferTitles = filters.transfer?.map((t) => {
         return t.title.toUpperCase();
     });
-    const portfolioAbbreviations = filters.portfolio.map((p) => p.abbr);
+    const portfolioAbbreviations = filters.portfolio?.map((p) => p.abbr);
 
     const { data: fundingSummaryData, isLoading: fundingSummaryIsLoading } = useGetCanFundingSummaryQuery({
         ids: [0],

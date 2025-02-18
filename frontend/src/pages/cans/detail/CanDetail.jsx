@@ -92,6 +92,7 @@ const CanDetail = ({
                     teamLeaders={teamLeaders}
                     divisionDirectorFullName={divisionDirectorFullName}
                     divisionName={divisionName}
+                    fiscalYear={fiscalYear}
                 />
             )}
         </article>
