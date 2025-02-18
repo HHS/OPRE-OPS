@@ -14,7 +14,7 @@ describe("Help Center", () => {
     it("renders the User Guide", () => {
         cy.visit("/help-center");
         cy.get("h1").contains("Help Center");
-        cy.get("h2").contains("User Guide");
+        cy.get("h2").contains("How-to Guide");
         cy.get("h3").contains("Table of Contents");
         // click on How to edit a budget line from nav and check url to have slug
         cy.get("a").contains("How to edit a budget line").click();
