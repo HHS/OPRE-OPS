@@ -2,8 +2,8 @@ import pytest
 from sqlalchemy import select
 
 from models import CANHistory, CANHistoryType, OpsEvent, Portfolio
-from ops.services.can_history import CANHistoryService
-from ops.services.can_messages import can_history_trigger
+from ops_api.ops.services.can_history import CANHistoryService
+from ops_api.ops.services.can_messages import can_history_trigger
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -70,13 +70,13 @@ def test_get_can_history_ascending_sort():
     can_history_service = CANHistoryService()
     ascending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, True)
     oldest_can_history_event = ascending_sort_response[0]
-    assert len(ascending_sort_response) == 2
+    assert len(ascending_sort_response) == 3
     assert oldest_can_history_event.history_type == CANHistoryType.CAN_DATA_IMPORT
 
     descending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, False)
-    assert len(descending_sort_response) == 2
+    assert len(descending_sort_response) == 3
     newest_can_history_event = descending_sort_response[0]
-    assert newest_can_history_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
+    assert newest_can_history_event.history_type == CANHistoryType.CAN_FUNDING_CREATED
 
 
 @pytest.mark.usefixtures("app_ctx")

@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import select
 
 from models import CANFundingBudget
-from ops.services.can_funding_budget import CANFundingBudgetService
+from ops_api.ops.services.can_funding_budget import CANFundingBudgetService
 from ops_api.tests.utils import DummyContextManager
 
 
@@ -111,14 +111,25 @@ def test_funding_budget_post_400_missing_budget(budget_team_auth_client):
     assert response.json["budget"][0] == "Missing data for required field."
 
 
+def test_funding_budget_post_with_cents(budget_team_auth_client):
+    budget_with_cents = 34500.23
+
+    create_resp = budget_team_auth_client.post(
+        "/api/v1/can-funding-budgets/",
+        json={"can_id": 501, "fiscal_year": 2025, "budget": budget_with_cents, "notes": "Test Note"},
+    )
+    assert create_resp.status_code == 201
+    assert create_resp.json["budget"] == budget_with_cents
+
+
 # Testing updating CANs by PATCH
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_budget_patch(budget_team_auth_client, mocker):
     test_budget_id = 600
-    update_data = {"notes": "Fake test update", "budget": 123456}
+    update_data = {"notes": "Fake test update", "budget": 123456.67}
 
-    funding_budget = CANFundingBudget(can_id=500, fiscal_year=2024, budget=123456, notes="This is a note")
-    old_funding_budget = CANFundingBudget(can_id=500, fiscal_year=2024, budget=100000, notes="This is a note")
+    funding_budget = CANFundingBudget(can_id=500, fiscal_year=2024, budget=123456.67, notes="This is a note")
+    old_funding_budget = CANFundingBudget(can_id=500, fiscal_year=2024, budget=100000.00, notes="This is a note")
 
     mocker_update_funding_budget = mocker.patch(
         "ops_api.ops.services.can_funding_budget.CANFundingBudgetService.update"

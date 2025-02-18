@@ -32,6 +32,14 @@ class AgreementType(Enum):
     MISCELLANEOUS = auto()
 
 
+class ModType(Enum):
+    NEW = auto()
+    ADMIN = auto()
+    AMOUNT_TBD = auto()
+    AS_IS = auto()
+    REPLACEMENT_AMOUNT_FINAL = auto()
+
+
 class AgreementReason(Enum):
     NEW_REQ = auto()
     RECOMPETE = auto()  ## recompete is brand new contract related to same work
@@ -203,7 +211,6 @@ class ContractAgreement(Agreement):
         secondary=contract_support_contacts,
         back_populates="contracts",
     )
-    invoice_line_nbr: Mapped[Optional[int]] = mapped_column(Integer)
     service_requirement_type: Mapped[Optional[ServiceRequirementType]] = mapped_column(
         ENUM(ServiceRequirementType)
     )
@@ -289,3 +296,16 @@ class AgreementOpsDbHistory(BaseModel):
         "OpsDBHistory",
         passive_deletes=True,
     )
+
+
+class AgreementMod(BaseModel):
+    """Agreement Modification Model"""
+
+    __tablename__ = "agreement_mod"
+
+    id: Mapped[int] = BaseModel.get_pk_column()
+    agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"))
+    agreement: Mapped[Agreement] = relationship("Agreement")
+    mod_type: Mapped[Optional[ModType]] = mapped_column(ENUM(ModType))
+    number: Mapped[str] = mapped_column(String)
+    mod_date: Mapped[date] = mapped_column(Date)
