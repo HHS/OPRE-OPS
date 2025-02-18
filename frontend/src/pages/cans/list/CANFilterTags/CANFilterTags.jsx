@@ -31,5 +31,4 @@ const CANFilterTags = ({ filters, setFilters, fyBudgetRange }) => {
         </FilterTagsWrapper>
     );
 };
-
 export default CANFilterTags;

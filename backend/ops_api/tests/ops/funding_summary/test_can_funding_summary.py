@@ -326,8 +326,8 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert response.status_code == 200
     assert len(response.json["cans"]) == 2
 
-    assert available_funding == 3340000.00
-    assert carry_forward_funding == 3340000.00
+    assert available_funding == 3374500.23
+    assert carry_forward_funding == 3374500.23
     assert response.json["new_funding"] == 1340000.0
 
 

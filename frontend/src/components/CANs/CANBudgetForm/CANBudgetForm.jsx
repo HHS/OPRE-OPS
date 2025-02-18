@@ -1,5 +1,5 @@
-import CurrencyInput from "../../UI/Form/CurrencyInput";
 import icons from "../../../uswds/img/sprite.svg";
+import CurrencyInput from "../../UI/Form/CurrencyInput";
 
 /**
  * @typedef {Object} CANBudgetFormProps
@@ -30,7 +30,7 @@ const CANBudgetForm = ({
     runValidate,
     setBudgetAmount
 }) => {
-    const fillColor = budgetAmount ? "#005ea2" : "#757575";
+    const buttonText = totalFunding ? "Update FY Budget" : "Add FY Budget";
 
     return (
         <form
@@ -46,12 +46,9 @@ const CANBudgetForm = ({
                         runValidate("budget-amount", value);
                     }}
                     setEnteredAmount={setBudgetAmount}
-                    value={budgetAmount || 0}
+                    value={budgetAmount || ""}
                     messages={res.getErrors("budget-amount")}
                     className={cn("budget-amount")}
-                    placeholder={`$${totalFunding}`}
-                    allowNegative={false}
-                    isNumericString={true}
                 />
             </div>
             <button
@@ -61,11 +58,11 @@ const CANBudgetForm = ({
             >
                 <svg
                     className="height-2 width-2 margin-right-05 cursor-pointer"
-                    style={{ fill: fillColor }}
+                    style={{ fill: "#005ea2" }}
                 >
                     <use xlinkHref={`${icons}#add`}></use>
                 </svg>
-                Add FY Budget
+                {buttonText}
             </button>
         </form>
     );
