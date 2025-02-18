@@ -63,7 +63,7 @@ const BudgetAndSpending = () => {
                 projectTypesCount={projectTypesCount}
                 budgetLineTypesCount={budgetLineTypesCount}
                 agreementTypesCount={agreementTypesCount}
-                inDraftFunding = {inDraftFunding}
+                inDraftFunding={inDraftFunding}
             />
             <section>
                 <h2>Portfolio Budget Lines</h2>
@@ -78,7 +78,7 @@ const BudgetAndSpending = () => {
             />
             <DebugCode
                 title="spending page"
-                data={{}}
+                data={{ portfolioFunding }}
             />
         </>
     );

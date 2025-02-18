@@ -6,7 +6,7 @@ import store from "./store";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import BudgetAndSpending from "./components/Portfolios/BudgetAndSpending/BudgetAndSpending";
-import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
+import PortfolioFunding from "./components/Portfolios/Funding/PortfolioFunding";
 import ApproveAgreement from "./pages/agreements/approve";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Agreement from "./pages/agreements/details/Agreement";
@@ -101,7 +101,7 @@ const router = createBrowserRouter(
                         />
                         <Route
                             path="funding"
-                            element={<ResearchProjects />}
+                            element={<PortfolioFunding />}
                         />
                         {/* <Route
                             path="research-projects"

@@ -7,7 +7,7 @@ import userSlice from "./pages/users/detail/userSlice";
 import userEditSlice from "./pages/users/edit/userSlice";
 import portfolioSlice from "./pages/portfolios/detail/portfolioSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
-import ResearchProjectFundingSlice from "./components/Portfolios/ResearchProjects/ResearchProjectFundingSlice";
+import ResearchProjectFundingSlice from "./components/Portfolios/Funding/ResearchProjectFundingSlice";
 import alertSlice from "./components/UI/Alert/alertSlice";
 import { opsApi } from "./api/opsAPI";
 import { errorMiddleware } from "./errorMiddleware.js";

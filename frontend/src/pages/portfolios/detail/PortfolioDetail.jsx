@@ -70,7 +70,16 @@ const PortfolioDetail = () => {
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />
                 </section>
-                <Outlet context={{ fiscalYear, budgetLineIds, projectTypesCount, portfolioFunding, inDraftFunding }} />
+                <Outlet
+                    context={{
+                        fiscalYear,
+                        budgetLineIds,
+                        projectTypesCount,
+                        portfolioFunding,
+                        inDraftFunding,
+                        canIds
+                    }}
+                />
             </div>
             <DebugCode
                 title="detail page"
