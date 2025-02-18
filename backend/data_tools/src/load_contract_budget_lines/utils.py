@@ -167,10 +167,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
 
         can = session.get(CAN, data.SYS_CAN_ID)
 
-        # regex_pattern = re.match(r"^(O)SC\s*(\d+)(\w+)$", data.CLIN_NAME)
-        # is_optional = True if regex_pattern.group(1) else False
-        # sc_label = regex_pattern.group(2) if regex_pattern.group(2) else None
-        # sub_component_label = data.CLIN_NAME if regex_pattern.group(3) else None
+        sc = get_sc(data, session)
 
         bli = BudgetLineItem(
             id=data.SYS_BUDGET_ID,
@@ -178,6 +175,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             comments=data.COMMENTS,
             agreement_id=contract.id,
             can_id=can.id if can else None,
+            services_component_id=sc.id if sc else None,
         )
 
         #
@@ -255,22 +253,35 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
     logger.info(f"Finished loading models.")
 
 
-def get_sc(label: str, contract: ContractAgreement, session: Session) -> ServicesComponent | None:
-    regex_obj = re.match(r"^(O)?SC\s*(\d+)(\w*)$", label)
+def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | None:
+    """
+    Get the ServicesComponent model for the given BudgetLineItemData instance.
+    """
+    regex_obj = re.match(r"^(O|OT|OY|OS|OP)?(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*)$", data.CLIN_NAME or "")
+
+    # Test that the contract exists
+    contract = session.get(ContractAgreement, data.SYS_CONTRACT_ID)
 
     if not regex_obj or not contract:
         return None
 
     is_optional = True if regex_obj.group(1) else False
     sc_number = int(regex_obj.group(2)) if regex_obj.group(2) else None
-    sub_component_label = label if regex_obj.group(3) else None
+    sub_component_label = data.CLIN_NAME if regex_obj.group(3) else None
+
+    # check for any trailing alpha characters for the sub_component_label
+    if not sub_component_label:
+        try:
+            sub_component_label = data.CLIN_NAME if regex_obj.group(4) else None
+        except IndexError:
+            sub_component_label = None
 
     sc = session.execute(
         select(ServicesComponent)
         .where(ServicesComponent.number == sc_number)
         .where(ServicesComponent.optional == is_optional)
         .where(ServicesComponent.sub_component == sub_component_label)
-        .where(ServicesComponent.contract_agreement_id == contract.id)
+        .where(ServicesComponent.contract_agreement_id == data.SYS_CONTRACT_ID)
     ).scalar_one_or_none()
 
     if not sc:
@@ -278,9 +289,8 @@ def get_sc(label: str, contract: ContractAgreement, session: Session) -> Service
             number=sc_number,
             optional=is_optional,
             sub_component=sub_component_label,
-            contract_agreement_id=contract.id,
-            description=label,
+            contract_agreement_id=data.SYS_CONTRACT_ID,
+            description=data.CLIN_NAME,
         )
-        session.add(sc)
 
     return sc

@@ -554,17 +554,40 @@ def test_create_models(db_for_test):
 
 
 def test_get_sc_create_new(db_for_test):
-    contract = db_for_test.get(ContractAgreement, 1)
-    sc = get_sc("SC1", contract, db_for_test)
+    """
+    Test creating a new ServicesComponent for the BLI.
+    """
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="SC1",
+        ),
+        db_for_test,
+    )
     assert sc is not None
     assert sc.number == 1
     assert sc.sub_component is None
     assert sc.optional is False
 
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="OSC1",
+        ),
+        db_for_test,
+    )
+    assert sc is not None
+    assert sc.number == 1
+    assert sc.sub_component is None
+    assert sc.optional is True
 
-def test_get_sc_create_new_optional(db_for_test):
-    contract = db_for_test.get(ContractAgreement, 1)
-    sc = get_sc("OSC1", contract, db_for_test)
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="OY1",
+        ),
+        db_for_test,
+    )
     assert sc is not None
     assert sc.number == 1
     assert sc.sub_component is None
@@ -572,8 +595,9 @@ def test_get_sc_create_new_optional(db_for_test):
 
 
 def test_get_sc_get_existing(db_for_test):
-    contract = db_for_test.get(ContractAgreement, 1)
-
+    """
+    Test getting an existing ServicesComponent for the BLI.
+    """
     existing_sc = ServicesComponent(
         number=1,
         contract_agreement_id=1,
@@ -582,8 +606,123 @@ def test_get_sc_get_existing(db_for_test):
     db_for_test.add(existing_sc)
     db_for_test.commit()
 
-    sc = get_sc("SC1", contract, db_for_test)
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="SC1",
+        ),
+        db_for_test,
+    )
+    assert sc == existing_sc
+
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="SC 1",
+        ),
+        db_for_test,
+    )
     assert sc == existing_sc
 
     db_for_test.delete(existing_sc)
     db_for_test.commit()
+
+
+def test_get_sc_get_existing_optional(db_for_test):
+    """
+    Test getting an existing ServicesComponent for the BLI.
+    """
+    existing_sc = ServicesComponent(
+        number=1,
+        contract_agreement_id=1,
+        optional=True,
+    )
+    db_for_test.add(existing_sc)
+    db_for_test.commit()
+
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="OSC1",
+        ),
+        db_for_test,
+    )
+    assert sc == existing_sc
+
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="OY 1",
+        ),
+        db_for_test,
+    )
+    assert sc == existing_sc
+
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="OT1",
+        ),
+        db_for_test,
+    )
+    assert sc == existing_sc
+
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="OS 1",
+        ),
+        db_for_test,
+    )
+    assert sc == existing_sc
+
+    db_for_test.delete(existing_sc)
+    db_for_test.commit()
+
+
+def test_get_sc_create_none(db_for_test):
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME=None,
+        ),
+        db_for_test,
+    )
+    assert sc is None
+
+
+def test_get_sc_get_existing_sub_component(db_for_test):
+    existing_sc = ServicesComponent(
+        number=1,
+        contract_agreement_id=1,
+        optional=False,
+        sub_component="SC 1A",
+    )
+    db_for_test.add(existing_sc)
+    db_for_test.commit()
+
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="SC 1A",
+        ),
+        db_for_test,
+    )
+    assert sc == existing_sc
+
+    db_for_test.delete(existing_sc)
+    db_for_test.commit()
+
+
+def test_get_sc_get_new_sub_component(db_for_test):
+    sc = get_sc(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            CLIN_NAME="SC 12.1.1",
+        ),
+        db_for_test,
+    )
+    assert sc is not None
+    assert sc.number == 12
+    assert sc.sub_component == "SC 12.1.1"
+    assert sc.optional is False
