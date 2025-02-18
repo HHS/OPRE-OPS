@@ -9,7 +9,17 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ModType, ServicesComponent, User
+from models import (
+    CAN,
+    CLIN,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    Invoice,
+    ModType,
+    ServicesComponent,
+    User,
+)
 
 
 @dataclass
@@ -168,6 +178,8 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         can = session.get(CAN, data.SYS_CAN_ID)
 
         sc = get_sc(data, session)
+        clin = get_clin(data, session)
+        invoice = get_invoice(data, session)
 
         bli = BudgetLineItem(
             id=data.SYS_BUDGET_ID,
@@ -175,7 +187,21 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             comments=data.COMMENTS,
             agreement_id=contract.id,
             can_id=can.id if can else None,
-            services_component_id=sc.id if sc else None,
+            # services_component_id=sc.id if sc else None,
+            services_component=sc,
+            clin=clin,
+            amount=data.AMOUNT,
+            status=data.STATUS,
+            on_hold=data.ON_HOLD,
+            certified=data.CERTIFIED,
+            closed=data.CLOSED,
+            closed_by=data.CLOSED_BY,
+            closed_date=data.CLOSE_DATE,
+            date_needed=data.DATE_NEEDED,
+            extend_pop_to=data.EXTEND_POP_TO,
+            start_date=data.PERF_START_DATE,
+            end_date=data.PERF_END_DATE,
+            proc_shop_fee_percentage=data.OVERWRITE_PSC_FEE_RATE,
         )
 
         #
@@ -294,3 +320,38 @@ def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | No
         )
 
     return sc
+
+
+def get_clin(data: BudgetLineItemData, session: Session) -> CLIN | None:
+    clin = session.get(CLIN, data.SYS_CLIN_ID)
+
+    if not clin:
+        clin = CLIN(
+            id=data.SYS_CLIN_ID,
+            number=int(data.CLIN),
+            name=data.CLIN_NAME,
+            contract_agreement_id=data.SYS_CONTRACT_ID,
+            pop_start_date=data.POP_START_DATE,
+            pop_end_date=data.POP_END_DATE,
+        )
+
+    return clin
+
+
+def get_invoice(data: BudgetLineItemData, session: Session) -> Invoice | None:
+    if not data.INVOICE_LINE_NBR:
+        return None
+
+    invoice = session.execute(
+        select(Invoice)
+        .where(Invoice.invoice_line_number == data.INVOICE_LINE_NBR)
+        .where(Invoice.budget_line_item_id == data.SYS_BUDGET_ID)
+    ).scalar_one_or_none()
+
+    if not invoice:
+        invoice = Invoice(
+            invoice_line_number=data.INVOICE_LINE_NBR,
+            budget_line_item_id=data.SYS_BUDGET_ID,
+        )
+
+    return invoice

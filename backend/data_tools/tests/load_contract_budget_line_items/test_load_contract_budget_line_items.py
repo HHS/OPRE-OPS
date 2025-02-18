@@ -7,6 +7,8 @@ from data_tools.src.load_contract_budget_lines.utils import (
     BudgetLineItemData,
     create_budget_line_item_data,
     create_models,
+    get_clin,
+    get_invoice,
     get_sc,
     validate_data,
 )
@@ -726,3 +728,104 @@ def test_get_sc_get_new_sub_component(db_for_test):
     assert sc.number == 12
     assert sc.sub_component == "SC 12.1.1"
     assert sc.optional is False
+
+
+def test_get_clin_new(db_for_test):
+    clin = get_clin(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_CLIN_ID=1,
+            CLIN="1",
+            CLIN_NAME="SC1",
+            POP_START_DATE="2024-10-01",
+            POP_END_DATE="2025-09-30",
+        ),
+        db_for_test,
+    )
+    assert clin is not None
+    assert clin.id == 1
+    assert clin.number == 1
+    assert clin.name == "SC1"
+    assert clin.pop_start_date == date(2024, 10, 1)
+    assert clin.pop_end_date == date(2025, 9, 30)
+
+
+def test_get_clin_existing(db_for_test):
+    existing_clin = CLIN(
+        id=1,
+        number=1,
+        contract_agreement_id=db_for_test.get(ContractAgreement, 1).id,
+    )
+
+    db_for_test.add(existing_clin)
+    db_for_test.commit()
+
+    clin = get_clin(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_CLIN_ID=1,
+            CLIN="1",
+            CLIN_NAME="SC1",
+            POP_START_DATE="2024-10-01",
+            POP_END_DATE="2025-09-30",
+        ),
+        db_for_test,
+    )
+    assert clin == existing_clin
+
+    db_for_test.delete(existing_clin)
+    db_for_test.commit()
+
+
+def test_get_invoice_new(db_for_test):
+    invoice = get_invoice(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_BUDGET_ID=1,
+        ),
+        db_for_test,
+    )
+    assert invoice is not None
+    assert invoice.invoice_line_number == 1
+    assert invoice.budget_line_item_id == 1
+
+
+def test_get_invoice_existing(db_for_test):
+    bli = BudgetLineItem(
+        id=1,
+        agreement_id=1,
+    )
+
+    existing_invoice = Invoice(
+        invoice_line_number=1,
+        budget_line_item_id=1,
+    )
+
+    db_for_test.add(bli)
+    db_for_test.add(existing_invoice)
+    db_for_test.commit()
+
+    invoice = get_invoice(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_BUDGET_ID=1,
+            INVOICE_LINE_NBR=1,
+        ),
+        db_for_test,
+    )
+    assert invoice == existing_invoice
+
+    db_for_test.delete(existing_invoice)
+    db_for_test.delete(bli)
+    db_for_test.commit()
+
+
+def test_get_invoice_none(db_for_test):
+    invoice = get_invoice(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_BUDGET_ID=1,
+        ),
+        db_for_test,
+    )
+    assert invoice is None
