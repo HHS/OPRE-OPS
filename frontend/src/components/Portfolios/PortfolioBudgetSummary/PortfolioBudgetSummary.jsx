@@ -15,8 +15,10 @@ import DonutGraphWithLegendCard from "../../UI/Cards/DonutGraphWithLegendCard";
  * @property {number} portfolioFunding.obligated_funding.amount
  * @property {Object} portfolioFunding.planned_funding
  * @property {number} portfolioFunding.planned_funding.amount
+ * @property {number} inDraftFunding
  * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} projectTypesCount
  * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} budgetLineTypesCount
+ * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} agreementTypesCount
  */
 
 /**
@@ -25,7 +27,7 @@ import DonutGraphWithLegendCard from "../../UI/Cards/DonutGraphWithLegendCard";
  * @returns {JSX.Element}
  */
 
-const PortfolioBudgetSummary = ({ fiscalYear, portfolioFunding, projectTypesCount, budgetLineTypesCount }) => {
+const PortfolioBudgetSummary = ({ fiscalYear, portfolioFunding, projectTypesCount, budgetLineTypesCount, agreementTypesCount, inDraftFunding }) => {
     const {
         total_funding: { amount: totalFunding },
         in_execution_funding: { amount: inExecutionFunding },
@@ -34,10 +36,6 @@ const PortfolioBudgetSummary = ({ fiscalYear, portfolioFunding, projectTypesCoun
     } = portfolioFunding;
 
     const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
-    
-    // TODO: Implement these
-    const inDraftFunding = 0;
-    const agreementTypesCount = [];
 
     const graphData = [
         {

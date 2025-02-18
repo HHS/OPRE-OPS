@@ -515,6 +515,7 @@ export const {
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsQuery,
     useGetBudgetLineItemQuery,
+    useLazyGetBudgetLineItemQuery,
     useUpdateBudgetLineItemMutation,
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,

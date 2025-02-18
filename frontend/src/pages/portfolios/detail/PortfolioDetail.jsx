@@ -2,12 +2,11 @@ import { useSelector } from "react-redux";
 import { Outlet, useParams } from "react-router-dom";
 import App from "../../../App";
 import {
+    useGetCanFundingSummaryQuery,
     useGetPortfolioByIdQuery,
     useGetPortfolioCalcFundingQuery,
     useGetPortfolioCansByIdQuery,
-    useGetProjectsByPortfolioQuery,
-    useGetProjectsQuery,
-    useGetResearchProjectsByPortfolioQuery
+    useGetProjectsByPortfolioQuery
 } from "../../../api/opsAPI";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
@@ -17,6 +16,9 @@ import DebugCode from "../../../components/DebugCode";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
 
 const PortfolioDetail = () => {
+    /**
+     * @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
+     */
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id || "0");
     const selectedFiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
@@ -31,9 +33,19 @@ const PortfolioDetail = () => {
         fiscalYear
     });
     const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
-    
-    const {data: projects} = useGetProjectsByPortfolioQuery({fiscal_year: fiscalYear, portfolio_id:portfolioId});
+
+    const { data: projects } = useGetProjectsByPortfolioQuery({ fiscal_year: fiscalYear, portfolio_id: portfolioId });
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
+
+    const canIds = portfolioCans?.map((can) => can.id) ?? [];
+    /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
+    const { data: CANFunding } = useGetCanFundingSummaryQuery({
+        ids: canIds,
+        fiscalYear: fiscalYear,
+        refetchOnMountOrArgChange: true
+    });
+
+    const inDraftFunding = CANFunding?.in_draft_funding ?? 0;
 
     if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading) {
         return <p>Loading...</p>;
@@ -58,9 +70,12 @@ const PortfolioDetail = () => {
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />
                 </section>
-                <Outlet context={{ fiscalYear, budgetLineIds, projectTypesCount, portfolioFunding }} />
+                <Outlet context={{ fiscalYear, budgetLineIds, projectTypesCount, portfolioFunding, inDraftFunding }} />
             </div>
-            <DebugCode title="detail page" data={{projectTypesCount}} />
+            <DebugCode
+                title="detail page"
+                data={{ CANFunding }}
+            />
         </App>
     );
 };

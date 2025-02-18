@@ -1,18 +1,51 @@
 import { useOutletContext } from "react-router-dom";
-import { useGetBudgetLineItemQuery } from "../../../api/opsAPI";
+import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
 import DebugCode from "../../DebugCode";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
+import { useEffect } from "react";
+import React from "react";
 
 const BudgetAndSpending = () => {
+    const [budgetLineItems, setBudgetLineItems] = React.useState([]);
+    const [budgetLineTypesCount, setBudgetLineTypesCount] = React.useState([]);
+    const [agreementTypesCount, setAgreementTypesCount] = React.useState([]);
     // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
-    const { fiscalYear, budgetLineIds, projectTypesCount, portfolioFunding } = useOutletContext();
-    const budgetLineItemQueries = budgetLineIds.map((id) => useGetBudgetLineItemQuery(id));
+    const { fiscalYear, budgetLineIds, projectTypesCount, portfolioFunding, inDraftFunding } = useOutletContext();
+    // Lazy query hook
+    const [trigger, { isLoading }] = useLazyGetBudgetLineItemQuery();
 
-    const isLoading = budgetLineItemQueries.some((query) => query.isLoading);
-    const budgetLineItems = budgetLineItemQueries.map((query) => query?.data);
-    const budgetLineTypesCount = getTypesCounts(budgetLineItems ?? [], "status");
+    const fetchBudgetLineItems = async () => {
+        const promises = budgetLineIds.map((id) => {
+            return trigger(id).unwrap();
+        });
+
+        try {
+            const budgetLineItems = await Promise.all(promises);
+            setBudgetLineItems(budgetLineItems);
+            const newBudgetLineTypesCount = getTypesCounts(budgetLineItems ?? [], "status");
+            setBudgetLineTypesCount(newBudgetLineTypesCount);
+            const budgetLinesAgreements = budgetLineItems?.map((item) => item.agreement) ?? [];
+            const uniqueBudgetLineAgreements =
+                budgetLinesAgreements?.reduce((acc, item) => {
+                    if (!acc.some((existingItem) => existingItem.name === item.name)) {
+                        acc.push(item);
+                    }
+                    return acc;
+                }, []) ?? [];
+            const newAgreementTypesCount = getTypesCounts(uniqueBudgetLineAgreements ?? [], "agreement_type");
+            setAgreementTypesCount(newAgreementTypesCount);
+        } catch (error) {
+            console.error("Failed to fetch budgetLineItems:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (budgetLineIds.length) {
+            fetchBudgetLineItems();
+        }
+    }, [budgetLineIds]);
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -29,6 +62,8 @@ const BudgetAndSpending = () => {
                 portfolioFunding={portfolioFunding}
                 projectTypesCount={projectTypesCount}
                 budgetLineTypesCount={budgetLineTypesCount}
+                agreementTypesCount={agreementTypesCount}
+                inDraftFunding = {inDraftFunding}
             />
             <section>
                 <h2>Portfolio Budget Lines</h2>
@@ -41,7 +76,10 @@ const BudgetAndSpending = () => {
                 budgetLines={budgetLineItems}
                 totalFunding={portfolioFunding?.total_funding.amount}
             />
-            <DebugCode title="spending page" data={budgetLineItemQueries} />
+            <DebugCode
+                title="spending page"
+                data={{}}
+            />
         </>
     );
 };
