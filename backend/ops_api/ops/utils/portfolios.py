@@ -69,6 +69,10 @@ def get_total_funding(
         fiscal_year=fiscal_year,
     )
 
+    draft_funding = _get_budget_line_item_total_by_status(
+        portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.DRAFT
+    )
+
     planned_funding = _get_budget_line_item_total_by_status(
         portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.PLANNED
     )
@@ -102,6 +106,10 @@ def get_total_funding(
         "carry_forward_funding": {
             "amount": float(carry_forward_funding),
             "percent": "Carry-Forward",
+        },
+        "draft_funding": {
+            "amount": float(draft_funding),
+            "percent": get_percentage(total_funding, draft_funding),
         },
         "planned_funding": {
             "amount": float(planned_funding),

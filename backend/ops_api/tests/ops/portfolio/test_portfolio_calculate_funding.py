@@ -143,6 +143,21 @@ def test_get_carry_forward_total(db_loaded_with_data_for_total_fiscal_year_fundi
 
 
 @pytest.mark.usefixtures("app_ctx")
+def test_get_budget_line_item_total_draft(
+    db_loaded_with_data_for_total_fiscal_year_funding,
+):
+    # get Portfolio for test
+    stmt = select(Portfolio).where(Portfolio.name == "UNIT TEST PORTFOLIO")
+    portfolio = db_loaded_with_data_for_total_fiscal_year_funding.execute(stmt).scalar()
+
+    result = _get_budget_line_item_total_by_status(portfolio.id, 2023, BudgetLineItemStatus.DRAFT)
+    assert result == Decimal(4), "$4 Planned"
+
+    result = _get_budget_line_item_total_by_status(1000, 2023, BudgetLineItemStatus.DRAFT)
+    assert result == Decimal(0), "No Portfolio"
+
+
+@pytest.mark.usefixtures("app_ctx")
 def test_get_budget_line_item_total_planned(
     db_loaded_with_data_for_total_fiscal_year_funding,
 ):

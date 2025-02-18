@@ -77,6 +77,7 @@ def test_get_portfolio_funding_summary(auth_client, db_loaded_with_data_for_tota
         "in_execution_funding": {"amount": 0.0, "percent": "0.0"},
         "obligated_funding": {"amount": 0.0, "percent": "0.0"},
         "planned_funding": {"amount": 0.0, "percent": "0.0"},
+        "draft_funding": {"amount": 0.0, "percent": "0.0"},
         "total_funding": {"amount": 20000000.0, "percent": "Total"},
     }
 
@@ -94,5 +95,6 @@ def test_get_portfolio_funding_summary_2023(auth_client, db_loaded_with_data_for
         "in_execution_funding": {"amount": 2.0, "percent": "0.0"},
         "obligated_funding": {"amount": 3.0, "percent": "0.0"},
         "planned_funding": {"amount": 1.0, "percent": "0.0"},
+        "draft_funding": {"amount": 4.0, "percent": "0.0"},
         "total_funding": {"amount": 20000000.0, "percent": "Total"},
     }
