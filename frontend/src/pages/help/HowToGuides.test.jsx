@@ -8,8 +8,6 @@ describe("How-to Guides Page", () => {
         render(<HowToGuides />);
         // Check header
         expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("How-to Guides");
-        // Check a TOC link exists
-        expect(screen.getByRole("link", { name: /What is OPS\?/i })).toBeInTheDocument();
     });
 
     it("expands accordion on click", async () => {

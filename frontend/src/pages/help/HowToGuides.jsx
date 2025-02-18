@@ -16,19 +16,6 @@ const HowToGuides = () => {
     return (
         <>
             <h2 className="margin-bottom-4">How-to Guides</h2>
-            <nav className="margin-y-2">
-                <h3>Table of Contents</h3>
-                <ul className="usa-list--unstyled">
-                    {data.map((item) => (
-                        <li
-                            key={item.heading}
-                            className="margin-y-05"
-                        >
-                            <a href={`#${toSlugCase(item.heading)}`}>{item.heading}</a>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
             <section className="usa-prose">
                 {data.map((item) => (
                     <div
