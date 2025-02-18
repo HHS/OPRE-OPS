@@ -44,7 +44,6 @@ export default function useCan() {
         refetchOnMountOrArgChange: true
     });
 
-
     const { data: previousFYfundingSummary } = useGetCanFundingSummaryQuery({
         ids: [canId],
         fiscalYear: fiscalYear - 1
