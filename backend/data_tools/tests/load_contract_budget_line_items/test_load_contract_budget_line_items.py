@@ -135,23 +135,17 @@ def db_for_test(loaded_db):
 
 @pytest.fixture()
 def db_for_test_with_data(db_for_test):
-    division = db_for_test.get(Division, 1)
+    division = Division(
+        id=1,
+        name="Test Division",
+        abbreviation="TD",
+    )
 
-    if not division:
-        division = Division(
-            id=1,
-            name="Test Division",
-            abbreviation="TD",
-        )
-
-    portfolio = db_for_test.get(Portfolio, 1)
-
-    if not portfolio:
-        portfolio = Portfolio(
-            id=1,
-            name="Test Portfolio",
-            division_id=1,
-        )
+    portfolio = Portfolio(
+        id=1,
+        name="Test Portfolio",
+        division_id=1,
+    )
 
     can = CAN(
         id=1,
@@ -198,7 +192,7 @@ def db_for_test_with_data(db_for_test):
     db_for_test.commit()
 
 
-def test_create_models(db_for_test, db_for_test_with_data):
+def test_create_models(db_for_test_with_data):
     data = BudgetLineItemData(
         SYS_CONTRACT_ID=1,
         SYS_BUDGET_ID=1,
@@ -239,9 +233,9 @@ def test_create_models(db_for_test, db_for_test_with_data):
         email="system.admin@localhost",
     )
 
-    create_models(data, sys_user, db_for_test)
+    create_models(data, sys_user, db_for_test_with_data)
 
-    bli_model = db_for_test.execute(
+    bli_model = db_for_test_with_data.execute(
         select(BudgetLineItem).join(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
     ).scalar()
 
@@ -305,7 +299,7 @@ def test_create_models(db_for_test, db_for_test_with_data):
     assert bli_model.fiscal_year == 2025
 
 
-def test_main(db_for_test, db_for_test_with_data):
+def test_main(db_for_test_with_data):
     result = CliRunner().invoke(
         main,
         [
@@ -318,17 +312,17 @@ def test_main(db_for_test, db_for_test_with_data):
 
     assert result.exit_code == 0
 
-    sys_user = get_or_create_sys_user(db_for_test)
+    sys_user = get_or_create_sys_user(db_for_test_with_data)
 
-    # make sure the data was loaded
-    bli_model = db_for_test.get(BudgetLineItem, 1)
+    # make sure the data was loadeddb_for_test_with_data
+    bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
 
     assert bli_model.id == 1
     assert bli_model.agreement_id == 1
     assert bli_model.line_description == "Line Description #1"
     assert bli_model.comments == "Comment #1"
     assert bli_model.can_id == 1
-    # assert bli_model.services_component.id == 1
+    assert bli_model.services_component.id == 1
     assert bli_model.services_component.number == 1
     assert bli_model.services_component.optional is False
     assert bli_model.services_component.description == "SC1"
@@ -354,9 +348,9 @@ def test_main(db_for_test, db_for_test_with_data):
     assert bli_model.start_date == date(2024, 10, 1)
     assert bli_model.end_date == date(2025, 9, 30)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
-    # assert bli_model.invoice.id == 1
+    assert bli_model.invoice.id == 1
     assert bli_model.invoice.invoice_line_number == 1
-    # assert bli_model.requisition.id == 1
+    assert bli_model.requisition.id == 1
     assert bli_model.requisition.zero_number == "1"
     assert bli_model.requisition.zero_date == date(2025, 1, 11)
     assert bli_model.requisition.number == "1"
@@ -366,7 +360,7 @@ def test_main(db_for_test, db_for_test_with_data):
     assert bli_model.object_class_code.id == 1
     assert bli_model.object_class_code.code == 25103
     assert bli_model.object_class_code.description == "Test Object Class Code"
-    # assert bli_model.mod.id == 1
+    assert bli_model.mod.id == 1
     assert bli_model.mod.number == "0000"
     assert bli_model.mod.mod_type == ModType.NEW
     assert bli_model.mod.agreement_id == 1
@@ -383,12 +377,14 @@ def test_main(db_for_test, db_for_test_with_data):
     assert bli_model.fiscal_year == 2025
 
     history_objs = (
-        db_for_test.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem")).scalars().all()
+        db_for_test_with_data.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem"))
+        .scalars()
+        .all()
     )
     assert len(history_objs) == 1
 
     bli_1_history = (
-        db_for_test.execute(
+        db_for_test_with_data.execute(
             select(OpsDBHistory).where(
                 and_(OpsDBHistory.row_key == str(bli_model.id), OpsDBHistory.class_name == "BudgetLineItem")
             )
@@ -397,12 +393,6 @@ def test_main(db_for_test, db_for_test_with_data):
         .all()
     )
     assert len(bli_1_history) == 1
-
-    # db_for_test.delete(object_class_code)
-    # db_for_test.delete(division)
-    # db_for_test.delete(portfolio)
-    # db_for_test.delete(can)
-    # db_for_test.commit()
 
 
 # def test_main(db_for_contracts):
