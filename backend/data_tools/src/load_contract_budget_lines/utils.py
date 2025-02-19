@@ -214,21 +214,23 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             invoice=invoice,
             requisition=requisition,
             object_class_code_id=object_class_code.id if object_class_code else None,
-            mod_id=mod.id if mod else None,
+            mod=mod,
+            doc_received=data.DOC_RECEIVED,
+            psc_fee_doc_number=data.PSC_FEE_DOC_NBR,
+            psc_fee_pymt_ref_nbr=data.PSC_FEE_PYMT_REF_NBR,
+            obligation_date=data.OBLIGATION_DATE,
         )
 
-        #
-        # existing_contract = session.execute(
-        #     select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
-        # ).scalar_one_or_none()
-        #
-        # if existing_contract:
-        #     contract.id = existing_contract.id
-        #     contract.created_on = existing_contract.created_on
-        #
-        # logger.info(f"Created ContractAgreement model for {contract.to_dict()}")
-        #
-        # session.merge(contract)
+        existing_bli = session.get(BudgetLineItem, data.SYS_BUDGET_ID)
+
+        if existing_bli:
+            bli.id = existing_bli.id
+            bli.created_on = existing_bli.created_on
+            bli.created_by = existing_bli.created_by
+
+        logger.info(f"Created BudgetLineItem model for {bli.to_dict()}")
+
+        session.merge(bli)
 
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
@@ -330,7 +332,12 @@ def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | No
             sub_component=sub_component_label,
             contract_agreement_id=data.SYS_CONTRACT_ID,
             description=data.CLIN_NAME,
+            period_start=data.POP_START_DATE,
+            period_end=data.POP_END_DATE,
         )
+    else:
+        sc.period_start = data.POP_START_DATE
+        sc.period_end = data.POP_END_DATE
 
     return sc
 

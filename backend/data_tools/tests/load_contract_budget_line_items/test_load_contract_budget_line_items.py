@@ -107,16 +107,22 @@ def db_for_test(loaded_db):
     yield loaded_db
     loaded_db.rollback()
 
+    loaded_db.execute(text("DELETE FROM requisition"))
+    loaded_db.execute(text("DELETE FROM requisition_version"))
+    loaded_db.execute(text("DELETE FROM invoice"))
+    loaded_db.execute(text("DELETE FROM invoice_version"))
+    loaded_db.execute(text("DELETE FROM budget_line_item"))
+    loaded_db.execute(text("DELETE FROM budget_line_item_version"))
+    loaded_db.execute(text("DELETE FROM agreement_mod"))
+    loaded_db.execute(text("DELETE FROM agreement_mod_version"))
+    loaded_db.execute(text("DELETE FROM can"))
+    loaded_db.execute(text("DELETE FROM can_version"))
+    loaded_db.execute(text("DELETE FROM services_component"))
+    loaded_db.execute(text("DELETE FROM services_component_version"))
     loaded_db.execute(text("DELETE FROM contract_agreement"))
     loaded_db.execute(text("DELETE FROM contract_agreement_version"))
     loaded_db.execute(text("DELETE FROM agreement"))
     loaded_db.execute(text("DELETE FROM agreement_version"))
-    loaded_db.execute(text("DELETE FROM vendor"))
-    loaded_db.execute(text("DELETE FROM vendor_version"))
-    loaded_db.execute(text("DELETE FROM research_project"))
-    loaded_db.execute(text("DELETE FROM research_project_version"))
-    loaded_db.execute(text("DELETE FROM project"))
-    loaded_db.execute(text("DELETE FROM project_version"))
     loaded_db.execute(text("DELETE FROM ops_user"))
     loaded_db.execute(text("DELETE FROM ops_user_version"))
     loaded_db.execute(text("DELETE FROM ops_db_history"))
@@ -125,6 +131,36 @@ def db_for_test(loaded_db):
 
 
 def test_create_models(db_for_test):
+    division = Division(
+        id=1,
+        name="Test Division",
+        abbreviation="TD",
+    )
+
+    portfolio = Portfolio(
+        id=1,
+        name="Test Portfolio",
+        division_id=1,
+    )
+
+    can = CAN(
+        id=1,
+        number="Test CAN",
+        portfolio_id=1,
+    )
+
+    object_class_code = ObjectClassCode(
+        id=1,
+        code="25103",
+        description="Test Object Class Code",
+    )
+
+    db_for_test.add(object_class_code)
+    db_for_test.add(division)
+    db_for_test.add(portfolio)
+    db_for_test.add(can)
+    db_for_test.commit()
+
     data = BudgetLineItemData(
         SYS_CONTRACT_ID=1,
         SYS_BUDGET_ID=1,
@@ -136,6 +172,7 @@ def test_create_models(db_for_test):
         PSC_FEE_DOC_NBR="1",
         PSC_FEE_PYMT_REF_NBR="1",
         EXTEND_POP_TO="2025-10-02",
+        ZERO_REQUISITION_NBR="1",
         ZERO_REQUISITION_DATE="2025-01-11",
         REQUISITION_DATE="2025-01-12",
         OBLIGATION_DATE="2024-11-12",
@@ -155,6 +192,9 @@ def test_create_models(db_for_test):
         COMMENTS="Comment #1",
         CLIN_NAME="SC1",
         CLIN="1",
+        INVOICE_LINE_NBR="1",
+        REQUISITION_GROUP="1",
+        REQUISITION_CHECK="Yes",
     )
 
     sys_user = User(
@@ -168,6 +208,63 @@ def test_create_models(db_for_test):
     ).scalar()
 
     assert bli_model.id == 1
+    assert bli_model.agreement_id == 1
+    assert bli_model.line_description == "Line Description #1"
+    assert bli_model.comments == "Comment #1"
+    assert bli_model.can_id == 1
+    assert bli_model.services_component.id == 1
+    assert bli_model.services_component.number == 1
+    assert bli_model.services_component.optional is False
+    assert bli_model.services_component.description == "SC1"
+    assert bli_model.services_component.period_start == date(2024, 10, 1)
+    assert bli_model.services_component.period_end == date(2025, 9, 30)
+    assert bli_model.services_component.sub_component is None
+    assert bli_model.clin.id == 1
+    assert bli_model.clin.number == 1
+    assert bli_model.clin.name == "SC1"
+    assert bli_model.clin.pop_start_date == date(2024, 10, 1)
+    assert bli_model.clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.amount == Decimal("123.45")
+    assert bli_model.status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.on_hold is False
+    assert bli_model.certified is True
+    assert bli_model.closed is False
+    assert bli_model.closed_by is None
+    assert bli_model.closed_by_user is None
+    assert bli_model.closed_date is None
+    assert bli_model.is_under_current_resolution is False
+    assert bli_model.date_needed == date(2025, 9, 30)
+    assert bli_model.extend_pop_to == date(2025, 10, 2)
+    assert bli_model.start_date == date(2024, 10, 1)
+    assert bli_model.end_date == date(2025, 9, 30)
+    assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
+    assert bli_model.invoice.id == 1
+    assert bli_model.invoice.invoice_line_number == 1
+    assert bli_model.requisition.id == 1
+    assert bli_model.requisition.zero_number == "1"
+    assert bli_model.requisition.zero_date == date(2025, 1, 11)
+    assert bli_model.requisition.number == "1"
+    assert bli_model.requisition.date == date(2025, 1, 12)
+    assert bli_model.requisition.group == 1
+    assert bli_model.requisition.check == "Yes"
+    assert bli_model.object_class_code.id == 1
+    assert bli_model.object_class_code.code == 25103
+    assert bli_model.object_class_code.description == "Test Object Class Code"
+    assert bli_model.mod.id == 1
+    assert bli_model.mod.number == "0000"
+    assert bli_model.mod.mod_type == ModType.NEW
+    assert bli_model.mod.agreement_id == 1
+    assert bli_model.doc_received is False
+    assert bli_model.psc_fee_doc_number == "1"
+    assert bli_model.psc_fee_pymt_ref_nbr == "1"
+    assert bli_model.obligation_date == date(2024, 11, 12)
+    assert bli_model.created_by == sys_user.id
+    assert bli_model.updated_by == sys_user.id
+    assert bli_model.created_on is not None
+    assert bli_model.updated_on is not None
+    assert bli_model.display_name == "BL 1"
+    assert bli_model.portfolio_id == 1
+    assert bli_model.fiscal_year == 2025
 
 
 # def test_main(db_for_contracts):
@@ -784,6 +881,7 @@ def test_get_invoice_new(db_for_test):
         BudgetLineItemData(
             SYS_CONTRACT_ID=1,
             SYS_BUDGET_ID=1,
+            INVOICE_LINE_NBR=1,
         ),
         db_for_test,
     )
