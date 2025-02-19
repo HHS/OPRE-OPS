@@ -19,6 +19,5 @@
         "target": "ESNext",
         "types": ["vite/client", "vite-plugin-svgr/client", "vite-plugin-babel-macros", "vitest/globals"]
     },
-    "display": "Recommended",
-    "include": ["src", "src/setupTests.js"]
+    "display": "Recommended"
 }

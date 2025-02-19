@@ -89,7 +89,7 @@
         "start:debug": "bunx --bun vite --inspect=0.0.0.0:9229",
         "build": "bunx --bun vite build",
         "test": "vitest",
-        "test:coverage": "vitest --coverage",
+        "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:e2e:interactive": "cypress open --config-file ./cypress.config.js",
         "test:e2e": "cypress run --config-file ./cypress.config.js --headless",

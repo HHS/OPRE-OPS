@@ -51,6 +51,8 @@ export default function useCanFunding(
     const [totalReceived, setTotalReceived] = React.useState(receivedFunding || 0);
     const [enteredFundingReceived, setEnteredFundingReceived] = React.useState([...fundingReceived]);
     const [deletedFundingReceivedIds, setDeletedFundingReceivedIds] = React.useState([]);
+    const [budgetEnteredAmount, setBudgetEnteredAmount] = React.useState(totalFunding);
+    const [fundingReceivedEnteredAmount, setFundingReceivedEnteredAmount] = React.useState("");
     const [modalProps, setModalProps] = React.useState({
         heading: "",
         actionButtonText: "",
@@ -59,15 +61,13 @@ export default function useCanFunding(
     });
 
     const [budgetForm, setBudgetForm] = React.useState({
-        enteredAmount: 0,
-        submittedAmount: 0,
+        submittedAmount: 0.0,
         isSubmitted: false
     });
 
     const initialFundingReceivedForm = {
-        enteredAmount: 0,
-        originalAmount: 0,
-        submittedAmount: 0,
+        originalAmount: 0.0,
+        submittedAmount: 0.0,
         enteredNotes: "",
         submittedNotes: "",
         isSubmitted: false,
@@ -91,7 +91,8 @@ export default function useCanFunding(
     }, [receivedFunding]);
 
     React.useEffect(() => {
-        setBudgetForm({ ...budgetForm, enteredAmount: totalFunding, submittedAmount: totalFunding });
+        setBudgetForm({ ...budgetForm, submittedAmount: totalFunding });
+        setBudgetEnteredAmount(totalFunding);
     }, [totalFunding]);
 
     React.useEffect(() => {
@@ -100,20 +101,12 @@ export default function useCanFunding(
 
     /** @param {string} value */
     const handleEnteredBudgetAmount = (value) => {
-        const nextForm = {
-            ...budgetForm,
-            enteredAmount: value
-        };
-        setBudgetForm(nextForm);
+        setBudgetEnteredAmount(+value);
     };
 
     /** @param {string} value */
     const handleEnteredFundingReceivedAmount = (value) => {
-        const nextForm = {
-            ...fundingReceivedForm,
-            enteredAmount: value
-        };
-        setFundingReceivedForm(nextForm);
+        setFundingReceivedEnteredAmount(value);
     };
 
     /** @param {string} value */
@@ -235,11 +228,11 @@ export default function useCanFunding(
 
         const nextForm = {
             ...budgetForm,
-            enteredAmount: 0,
-            submittedAmount: budgetForm.enteredAmount,
+            submittedAmount: budgetEnteredAmount,
             isSubmitted: true
         };
         setBudgetForm(nextForm);
+        setBudgetEnteredAmount("");
     };
 
     /** @param {React.FormEvent<HTMLFormElement>} e */
@@ -257,7 +250,7 @@ export default function useCanFunding(
                 full_name: activeUserFullName
             },
             notes: fundingReceivedForm.enteredNotes,
-            funding: +fundingReceivedForm.enteredAmount,
+            funding: fundingReceivedEnteredAmount,
             fiscal_year: fiscalYear
         };
 
@@ -266,16 +259,15 @@ export default function useCanFunding(
             editFundingReceived(newFundingReceived);
         } else {
             // Add the new funding received
-            setTotalReceived((currentTotal) => currentTotal + +fundingReceivedForm.enteredAmount);
+            setTotalReceived((currentTotal) => currentTotal + +fundingReceivedEnteredAmount);
             setEnteredFundingReceived([...enteredFundingReceived, newFundingReceived]);
         }
 
         // Then update the form state
         const nextForm = {
             ...fundingReceivedForm,
-            enteredAmount: 0,
-            originalAmount: 0,
-            submittedAmount: fundingReceivedForm.enteredAmount,
+            originalAmount: 0.0,
+            submittedAmount: fundingReceivedEnteredAmount,
             enteredNotes: "",
             submittedNotes: fundingReceivedForm.enteredNotes,
             isSubmitted: true,
@@ -284,6 +276,7 @@ export default function useCanFunding(
             tempId: null
         };
         setFundingReceivedForm(nextForm);
+        setFundingReceivedEnteredAmount("");
     };
 
     /** @param {FundingReceived} newFundingReceived */
@@ -301,7 +294,7 @@ export default function useCanFunding(
             // set matchingFundingReceivedFunding to 0 if matchingFundingReceived is undefined
             matchingFundingReceived && matchingFundingReceived.funding ? +matchingFundingReceived.funding : 0;
         setTotalReceived(
-            (currentTotal) => currentTotal - matchingFundingReceivedFunding + +fundingReceivedForm.enteredAmount
+            (currentTotal) => currentTotal - matchingFundingReceivedFunding + +fundingReceivedEnteredAmount
         );
 
         const updatedFundingReceived = enteredFundingReceived.map((fundingEntry) => {
@@ -322,6 +315,7 @@ export default function useCanFunding(
     const cancelFundingReceived = (e) => {
         e.preventDefault();
         setFundingReceivedForm(initialFundingReceivedForm);
+        setFundingReceivedEnteredAmount("");
         suite.reset();
     };
 
@@ -367,9 +361,11 @@ export default function useCanFunding(
     const cleanUp = () => {
         setDeletedFundingReceivedIds([]);
         setEnteredFundingReceived([...fundingReceived]);
-        setBudgetForm({ enteredAmount: 0, submittedAmount: totalFunding, isSubmitted: false });
+        setBudgetForm({ submittedAmount: totalFunding, isSubmitted: false });
+        setBudgetEnteredAmount(totalFunding);
         setShowModal(false);
         setFundingReceivedForm(initialFundingReceivedForm);
+        setFundingReceivedEnteredAmount("");
         toggleEditMode();
         resetWelcomeModal();
         setModalProps({
@@ -391,6 +387,7 @@ export default function useCanFunding(
         suite(
             {
                 remainingAmount: +budgetForm.submittedAmount - totalReceived + +fundingReceivedForm.originalAmount,
+                receivedFunding,
                 ...{ [name]: value }
             },
             name
@@ -417,7 +414,6 @@ export default function useCanFunding(
 
         const { funding, notes } = matchingFundingReceived;
         const nextForm = {
-            enteredAmount: funding,
             enteredNotes: notes,
             originalAmount: funding,
             isEditing: true,
@@ -426,6 +422,7 @@ export default function useCanFunding(
         };
 
         setFundingReceivedForm(nextForm);
+        setFundingReceivedEnteredAmount(funding);
     };
 
     return {
@@ -450,6 +447,8 @@ export default function useCanFunding(
         populateFundingReceivedForm,
         cancelFundingReceived,
         deleteFundingReceived,
-        deletedFundingReceivedIds
+        deletedFundingReceivedIds,
+        budgetEnteredAmount,
+        fundingReceivedEnteredAmount
     };
 }

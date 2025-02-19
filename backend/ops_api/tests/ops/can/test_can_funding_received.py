@@ -1,9 +1,13 @@
+from decimal import Decimal
+
 import pytest
 from sqlalchemy import select
 
 from models import CANFundingReceived
-from ops.services.can_funding_received import CANFundingReceivedService
+from ops_api.ops.services.can_funding_received import CANFundingReceivedService
 from ops_api.tests.utils import DummyContextManager
+
+input_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456.12, "notes": "Test Note"}
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -40,7 +44,7 @@ def test_funding_received_service_get_by_id(test_can):
 # Testing CANFundingReceived Creation
 def test_funding_received_post_400_missing_funding(budget_team_auth_client):
     response = budget_team_auth_client.post(
-        "/api/v1/can-funding-received/", json={"can_id": 500, "fiscal_year": 2024, "notes": "This is a note"}
+        "/api/v1/can-funding-received/", json={"can_id": 500, "fiscal_year": 2024, "notes": "Test Note"}
     )
 
     assert response.status_code == 400
@@ -50,8 +54,7 @@ def test_funding_received_post_400_missing_funding(budget_team_auth_client):
 # Testing CANFundingReceived Creation
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_received_post_creates_funding_received(budget_team_auth_client, mocker, loaded_db):
-    input_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "This is a note"}
-    mock_output_data = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="This is a note")
+    mock_output_data = CANFundingReceived(can_id=500, fiscal_year=2024, funding=Decimal("123456.12"), notes="Test Note")
     mocker_create_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.create"
     )
@@ -65,27 +68,23 @@ def test_funding_received_post_creates_funding_received(budget_team_auth_client,
     assert response.status_code == 201
     assert context_manager.metadata["new_can_funding_received"] is not None
     assert context_manager.metadata["new_can_funding_received"]["can_id"] == mock_output_data.can_id
-    assert context_manager.metadata["new_can_funding_received"]["funding"] == mock_output_data.funding
+    assert context_manager.metadata["new_can_funding_received"]["funding"] == float(mock_output_data.funding)
     assert context_manager.metadata["new_can_funding_received"]["id"] == mock_output_data.id
-    mocker_create_funding_received.assert_called_once_with(input_data)
     mocker_create_funding_received.assert_called_once_with(input_data)
     assert response.json["id"] == mock_output_data.id
     assert response.json["can_id"] == mock_output_data.can_id
     assert response.json["fiscal_year"] == mock_output_data.fiscal_year
-    assert response.json["funding"] == mock_output_data.funding
+    assert response.json["funding"] == float(mock_output_data.funding)
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_basic_user_cannot_post_funding_received(basic_user_auth_client):
-    input_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "This is a note"}
     response = basic_user_auth_client.post("/api/v1/can-funding-received/", json=input_data)
 
     assert response.status_code == 403
 
 
 def test_service_create_funding_received(loaded_db):
-    input_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "This is a note"}
-
     service = CANFundingReceivedService()
 
     new_funding = service.create(input_data)
@@ -96,7 +95,7 @@ def test_service_create_funding_received(loaded_db):
 
     assert funding_received is not None
     assert funding_received.can_id == 500
-    assert funding_received.notes == "This is a note"
+    assert funding_received.notes == "Test Note"
     assert funding_received.fiscal_year == 2024
     assert funding_received.id == new_funding.id
     assert funding_received == new_funding
@@ -113,7 +112,7 @@ def test_funding_received_patch(budget_team_auth_client, mocker):
         "notes": "Fake test update",
     }
 
-    old_funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="This is a note")
+    old_funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="Test Note")
     funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="Fake test update")
 
     mocker_update_funding_received = mocker.patch(
@@ -169,7 +168,7 @@ def test_service_patch_funding_received(loaded_db):
         "notes": "Test Test Test",
     }
 
-    input_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "This is a note"}
+    input_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "Test Note"}
 
     funding_received_service = CANFundingReceivedService()
 
@@ -198,11 +197,13 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     update_data = {
         "can_id": 500,
         "fiscal_year": 2024,
-        "funding": 234567,
+        "funding": 234567.89,
     }
 
-    old_funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=123456, notes="This is a note")
-    funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=234567)
+    old_funding_received = CANFundingReceived(
+        can_id=500, fiscal_year=2024, funding=Decimal("123456.12"), notes="Test Note"
+    )
+    funding_received = CANFundingReceived(can_id=500, fiscal_year=2024, funding=Decimal("234567.89"))
 
     mocker_update_funding_received = mocker.patch(
         "ops_api.ops.services.can_funding_received.CANFundingReceivedService.update"
@@ -223,11 +224,11 @@ def test_funding_received_put(budget_team_auth_client, mocker):
     assert len(changes.keys()) == 1
     # assert that new data we expect is on the context manager
     assert changes["funding"]["new_value"] == update_data["funding"]
-    assert changes["funding"]["old_value"] == old_funding_received.funding
+    assert changes["funding"]["old_value"] == float(old_funding_received.funding)
     update_data["notes"] = None
     assert response.status_code == 200
     mocker_update_funding_received.assert_called_once_with(update_data, test_funding_received_id)
-    assert response.json["funding"] == funding_received.funding
+    assert response.json["funding"] == float(funding_received.funding)
     assert response.json["can_id"] == funding_received.can_id
 
 
@@ -244,21 +245,18 @@ def test_basic_user_cannot_put_funding_received(basic_user_auth_client):
 @pytest.mark.usefixtures("app_ctx")
 def test_funding_received_put_404(budget_team_auth_client):
     test_funding_received_id = 600
-    update_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "Test test test"}
 
-    response = budget_team_auth_client.put(f"/api/v1/can-funding-received/{test_funding_received_id}", json=update_data)
+    response = budget_team_auth_client.put(f"/api/v1/can-funding-received/{test_funding_received_id}", json=input_data)
 
     assert response.status_code == 404
 
 
 def test_service_update_funding_received_with_nones(loaded_db):
-    update_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": None}
-
-    test_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "Test Notes"}
+    update_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456.12, "notes": None}
 
     funding_received_service = CANFundingReceivedService()
 
-    new_funding_received = funding_received_service.create(test_data)
+    new_funding_received = funding_received_service.create(input_data)
 
     updated_funding_received = funding_received_service.update(update_data, new_funding_received.id)
 
@@ -273,8 +271,8 @@ def test_service_update_funding_received_with_nones(loaded_db):
     assert updated_funding_received.notes is None
     assert funding_received.fiscal_year == 2024
     assert updated_funding_received.fiscal_year == 2024
-    assert funding_received.funding == 123456
-    assert updated_funding_received.funding == 123456
+    assert funding_received.funding == Decimal("123456.12")
+    assert updated_funding_received.funding == Decimal("123456.12")
 
     loaded_db.delete(new_funding_received)
     loaded_db.commit()
@@ -291,8 +289,8 @@ def test_funding_received_delete(budget_team_auth_client, mocker, test_budget_te
     funding_received = CANFundingReceived(
         can_id=test_funding_received_id,
         fiscal_year=2024,
-        funding=123456,
-        notes="This is a note",
+        funding=Decimal("123456.12"),
+        notes="Test Note",
         created_by=test_budget_team_user.id,
     )
     mocker_delete_funding_received.return_value = funding_received
@@ -305,7 +303,7 @@ def test_funding_received_delete(budget_team_auth_client, mocker, test_budget_te
 
     assert context_manager.metadata["deleted_can_funding_received"] is not None
     assert context_manager.metadata["deleted_can_funding_received"]["can_id"] == test_funding_received_id
-    assert context_manager.metadata["deleted_can_funding_received"]["funding"] == funding_received.funding
+    assert context_manager.metadata["deleted_can_funding_received"]["funding"] == float(funding_received.funding)
     assert context_manager.metadata["deleted_can_funding_received"]["created_by"] == test_budget_team_user.id
 
     assert response.status_code == 200
@@ -333,11 +331,9 @@ def test_basic_user_cannot_delete_cans(basic_user_auth_client, mocker):
 
 
 def test_service_delete_can(loaded_db):
-    test_data = {"can_id": 500, "fiscal_year": 2024, "funding": 123456, "notes": "Test Notes"}
-
     funding_received_service = CANFundingReceivedService()
 
-    new_funding_received = funding_received_service.create(test_data)
+    new_funding_received = funding_received_service.create(input_data)
 
     funding_received_service.delete(new_funding_received.id)
 

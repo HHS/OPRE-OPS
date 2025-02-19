@@ -2,8 +2,8 @@ import pytest
 from sqlalchemy import select
 
 from models import CANHistory, CANHistoryType, OpsEvent, Portfolio
-from ops.services.can_history import CANHistoryService
-from ops.services.can_messages import can_history_trigger
+from ops_api.ops.services.can_history import CANHistoryService
+from ops_api.ops.services.can_messages import can_history_trigger
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -70,13 +70,13 @@ def test_get_can_history_ascending_sort():
     can_history_service = CANHistoryService()
     ascending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, True)
     oldest_can_history_event = ascending_sort_response[0]
-    assert len(ascending_sort_response) == 2
+    assert len(ascending_sort_response) == 3
     assert oldest_can_history_event.history_type == CANHistoryType.CAN_DATA_IMPORT
 
     descending_sort_response = can_history_service.get(test_can_id, 10, 0, 2025, False)
-    assert len(descending_sort_response) == 2
+    assert len(descending_sort_response) == 3
     newest_can_history_event = descending_sort_response[0]
-    assert newest_can_history_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
+    assert newest_can_history_event.history_type == CANHistoryType.CAN_FUNDING_CREATED
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -193,7 +193,7 @@ def test_create_can_can_history_event(loaded_db, test_create_can_history_item):
     after_can_history_count = len(can_history_list)
     assert after_can_history_count == before_can_history_count + 1
 
-    new_can_history_item = can_history_list[0]
+    new_can_history_item = can_history_list[after_can_history_count - 1]
     event_details = test_create_can_history_item.event_details
     assert new_can_history_item.can_id == event_details["new_can"]["id"]
     assert new_can_history_item.ops_event_id == test_create_can_history_item.id
@@ -232,7 +232,7 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
     assert (
         new_can_history_item.can_id == funding_budget_created_event.event_details["new_can_funding_budget"]["can"]["id"]
     )
-    assert new_can_history_item.timestamp == funding_budget_created_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+    assert new_can_history_item.timestamp == funding_budget_created_event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     assert new_can_history_item.fiscal_year == 2025
 
     funding_budget_created_event_2 = loaded_db.get(OpsEvent, 25)
@@ -249,7 +249,7 @@ def test_create_can_history_create_can_funding_budget(loaded_db):
         == funding_budget_created_event_2.event_details["new_can_funding_budget"]["can"]["id"]
     )
     assert new_can_history_item_2.timestamp == funding_budget_created_event_2.created_on.strftime(
-        "%Y-%m-%d %H:%M:%S.%f"
+        "%Y-%m-%dT%H:%M:%S.%fZ"
     )
     assert new_can_history_item_2.fiscal_year == 2025
 
@@ -272,7 +272,7 @@ def test_create_create_can_funding_received(loaded_db):
         new_can_history_item.can_id
         == funding_received_created_event.event_details["new_can_funding_received"]["can_id"]
     )
-    assert new_can_history_item.timestamp == funding_received_created_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+    assert new_can_history_item.timestamp == funding_received_created_event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     assert new_can_history_item.fiscal_year == 2025
 
 
@@ -294,7 +294,7 @@ def test_create_can_history_delete_can_funding_received(loaded_db):
         new_can_history_item.can_id
         == funding_received_deleted_event.event_details["deleted_can_funding_received"]["can_id"]
     )
-    assert new_can_history_item.timestamp == funding_received_deleted_event.created_on.strftime("%Y-%m-%d %H:%M:%S.%f")
+    assert new_can_history_item.timestamp == funding_received_deleted_event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     assert new_can_history_item.fiscal_year == 2025
 
 
@@ -433,3 +433,15 @@ def test_update_can_nickname_system_user(loaded_db):
     )
     assert nickname_event.history_type == CANHistoryType.CAN_NICKNAME_EDITED
     assert nickname_event.fiscal_year == 2025
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_update_no_duplicate_messages(loaded_db):
+    update_can_event = loaded_db.get(OpsEvent, 30)
+    can_history_trigger(update_can_event, loaded_db)
+    # trigger can history call a second time, which is occasionally possible during normal run of the test
+    can_history_trigger(update_can_event, loaded_db)
+    can_update_history_events = (
+        loaded_db.execute(select(CANHistory).where(CANHistory.ops_event_id == 30)).scalars().all()
+    )
+    assert len(can_update_history_events) == 2
