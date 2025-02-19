@@ -24,7 +24,7 @@ def test_create_budget_line_data():
     test_data = list(csv.DictReader(open("./test_csv/contract_budget_lines.tsv"), dialect="excel-tab"))
 
     # Check record count
-    assert len(test_data) == 1
+    assert len(test_data) == 3
     record = test_data[0]
 
     # Create contract data object
@@ -74,9 +74,9 @@ def test_create_budget_line_data():
 
 def test_validate_data():
     test_data = list(csv.DictReader(open("./test_csv/contract_budget_lines.tsv"), dialect="excel-tab"))
-    assert len(test_data) == 1
+    assert len(test_data) == 3
     count = sum(1 for data in test_data if validate_data(create_budget_line_item_data(data)))
-    assert count == 1
+    assert count == 3
 
 
 def test_create_models_no_contract_id():
@@ -386,7 +386,7 @@ def test_main(db_for_test_with_data):
         .scalars()
         .all()
     )
-    assert len(history_objs) == 1
+    assert len(history_objs) == 3
 
     bli_1_history = (
         db_for_test_with_data.execute(
