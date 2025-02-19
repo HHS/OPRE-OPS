@@ -3,6 +3,7 @@ import csv
 import pytest
 from click.testing import CliRunner
 from data_tools.src.common.utils import get_or_create_sys_user
+from data_tools.src.load_contract_budget_lines.main import main
 from data_tools.src.load_contract_budget_lines.utils import (
     BudgetLineItemData,
     create_budget_line_item_data,
@@ -107,6 +108,8 @@ def db_for_test(loaded_db):
     yield loaded_db
     loaded_db.rollback()
 
+    loaded_db.execute(text("DELETE FROM object_class_code"))
+    loaded_db.execute(text("DELETE FROM object_class_code_version"))
     loaded_db.execute(text("DELETE FROM requisition"))
     loaded_db.execute(text("DELETE FROM requisition_version"))
     loaded_db.execute(text("DELETE FROM invoice"))
@@ -130,18 +133,25 @@ def db_for_test(loaded_db):
     loaded_db.commit()
 
 
-def test_create_models(db_for_test):
-    division = Division(
-        id=1,
-        name="Test Division",
-        abbreviation="TD",
-    )
+@pytest.fixture()
+def db_for_test_with_data(db_for_test):
+    division = db_for_test.get(Division, 1)
 
-    portfolio = Portfolio(
-        id=1,
-        name="Test Portfolio",
-        division_id=1,
-    )
+    if not division:
+        division = Division(
+            id=1,
+            name="Test Division",
+            abbreviation="TD",
+        )
+
+    portfolio = db_for_test.get(Portfolio, 1)
+
+    if not portfolio:
+        portfolio = Portfolio(
+            id=1,
+            name="Test Portfolio",
+            division_id=1,
+        )
 
     can = CAN(
         id=1,
@@ -161,6 +171,34 @@ def test_create_models(db_for_test):
     db_for_test.add(can)
     db_for_test.commit()
 
+    yield db_for_test
+
+    db_for_test.rollback()
+
+    db_for_test.execute(text("DELETE FROM requisition"))
+    db_for_test.execute(text("DELETE FROM requisition_version"))
+    db_for_test.execute(text("DELETE FROM invoice"))
+    db_for_test.execute(text("DELETE FROM invoice_version"))
+    db_for_test.execute(text("DELETE FROM budget_line_item"))
+    db_for_test.execute(text("DELETE FROM budget_line_item_version"))
+    db_for_test.execute(text("DELETE FROM agreement_mod"))
+    db_for_test.execute(text("DELETE FROM agreement_mod_version"))
+    db_for_test.execute(text("DELETE FROM can"))
+    db_for_test.execute(text("DELETE FROM can_version"))
+    db_for_test.execute(text("DELETE FROM services_component"))
+    db_for_test.execute(text("DELETE FROM services_component_version"))
+    db_for_test.execute(text("DELETE FROM contract_agreement"))
+    db_for_test.execute(text("DELETE FROM contract_agreement_version"))
+    db_for_test.execute(text("DELETE FROM agreement"))
+    db_for_test.execute(text("DELETE FROM agreement_version"))
+    db_for_test.execute(text("DELETE FROM ops_user"))
+    db_for_test.execute(text("DELETE FROM ops_user_version"))
+    db_for_test.execute(text("DELETE FROM ops_db_history"))
+    db_for_test.execute(text("DELETE FROM ops_db_history_version"))
+    db_for_test.commit()
+
+
+def test_create_models(db_for_test, db_for_test_with_data):
     data = BudgetLineItemData(
         SYS_CONTRACT_ID=1,
         SYS_BUDGET_ID=1,
@@ -265,6 +303,106 @@ def test_create_models(db_for_test):
     assert bli_model.display_name == "BL 1"
     assert bli_model.portfolio_id == 1
     assert bli_model.fiscal_year == 2025
+
+
+def test_main(db_for_test, db_for_test_with_data):
+    result = CliRunner().invoke(
+        main,
+        [
+            "--env",
+            "pytest_data_tools",
+            "--input-csv",
+            "./test_csv/contract_budget_lines.tsv",
+        ],
+    )
+
+    assert result.exit_code == 0
+
+    sys_user = get_or_create_sys_user(db_for_test)
+
+    # make sure the data was loaded
+    bli_model = db_for_test.get(BudgetLineItem, 1)
+
+    assert bli_model.id == 1
+    assert bli_model.agreement_id == 1
+    assert bli_model.line_description == "Line Description #1"
+    assert bli_model.comments == "Comment #1"
+    assert bli_model.can_id == 1
+    # assert bli_model.services_component.id == 1
+    assert bli_model.services_component.number == 1
+    assert bli_model.services_component.optional is False
+    assert bli_model.services_component.description == "SC1"
+    assert bli_model.services_component.period_start == date(2024, 10, 1)
+    assert bli_model.services_component.period_end == date(2025, 9, 30)
+    assert bli_model.services_component.sub_component is None
+    assert bli_model.clin.id == 1
+    assert bli_model.clin.number == 1
+    assert bli_model.clin.name == "SC1"
+    assert bli_model.clin.pop_start_date == date(2024, 10, 1)
+    assert bli_model.clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.amount == Decimal("123.45")
+    assert bli_model.status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.on_hold is False
+    assert bli_model.certified is True
+    assert bli_model.closed is False
+    assert bli_model.closed_by is None
+    assert bli_model.closed_by_user is None
+    assert bli_model.closed_date is None
+    assert bli_model.is_under_current_resolution is False
+    assert bli_model.date_needed == date(2025, 9, 30)
+    assert bli_model.extend_pop_to == date(2025, 10, 2)
+    assert bli_model.start_date == date(2024, 10, 1)
+    assert bli_model.end_date == date(2025, 9, 30)
+    assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
+    # assert bli_model.invoice.id == 1
+    assert bli_model.invoice.invoice_line_number == 1
+    # assert bli_model.requisition.id == 1
+    assert bli_model.requisition.zero_number == "1"
+    assert bli_model.requisition.zero_date == date(2025, 1, 11)
+    assert bli_model.requisition.number == "1"
+    assert bli_model.requisition.date == date(2025, 1, 12)
+    assert bli_model.requisition.group == 1
+    assert bli_model.requisition.check == "1"
+    assert bli_model.object_class_code.id == 1
+    assert bli_model.object_class_code.code == 25103
+    assert bli_model.object_class_code.description == "Test Object Class Code"
+    # assert bli_model.mod.id == 1
+    assert bli_model.mod.number == "0000"
+    assert bli_model.mod.mod_type == ModType.NEW
+    assert bli_model.mod.agreement_id == 1
+    assert bli_model.doc_received is True
+    assert bli_model.psc_fee_doc_number == "1"
+    assert bli_model.psc_fee_pymt_ref_nbr == "1"
+    assert bli_model.obligation_date == date(2024, 11, 12)
+    assert bli_model.created_by == sys_user.id
+    assert bli_model.updated_by == sys_user.id
+    assert bli_model.created_on is not None
+    assert bli_model.updated_on is not None
+    assert bli_model.display_name == "BL 1"
+    assert bli_model.portfolio_id == 1
+    assert bli_model.fiscal_year == 2025
+
+    history_objs = (
+        db_for_test.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem")).scalars().all()
+    )
+    assert len(history_objs) == 1
+
+    bli_1_history = (
+        db_for_test.execute(
+            select(OpsDBHistory).where(
+                and_(OpsDBHistory.row_key == str(bli_model.id), OpsDBHistory.class_name == "BudgetLineItem")
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert len(bli_1_history) == 1
+
+    # db_for_test.delete(object_class_code)
+    # db_for_test.delete(division)
+    # db_for_test.delete(portfolio)
+    # db_for_test.delete(can)
+    # db_for_test.commit()
 
 
 # def test_main(db_for_contracts):
