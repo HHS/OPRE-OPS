@@ -118,6 +118,8 @@ def db_for_test(loaded_db):
     loaded_db.execute(text("DELETE FROM budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM agreement_mod"))
     loaded_db.execute(text("DELETE FROM agreement_mod_version"))
+    loaded_db.execute(text("DELETE FROM can_history"))
+    loaded_db.execute(text("DELETE FROM can_history_version"))
     loaded_db.execute(text("DELETE FROM can"))
     loaded_db.execute(text("DELETE FROM can_version"))
     loaded_db.execute(text("DELETE FROM services_component"))
@@ -135,17 +137,23 @@ def db_for_test(loaded_db):
 
 @pytest.fixture()
 def db_for_test_with_data(db_for_test):
-    division = Division(
-        id=1,
-        name="Test Division",
-        abbreviation="TD",
-    )
+    division = db_for_test.get(Division, 1)
 
-    portfolio = Portfolio(
-        id=1,
-        name="Test Portfolio",
-        division_id=1,
-    )
+    if not division:
+        division = Division(
+            id=1,
+            name="Test Division",
+            abbreviation="TD",
+        )
+
+    portfolio = db_for_test.get(Portfolio, 1)
+
+    if not portfolio:
+        portfolio = Portfolio(
+            id=1,
+            name="Test Portfolio",
+            division_id=1,
+        )
 
     can = CAN(
         id=1,
@@ -177,6 +185,8 @@ def db_for_test_with_data(db_for_test):
     db_for_test.execute(text("DELETE FROM budget_line_item_version"))
     db_for_test.execute(text("DELETE FROM agreement_mod"))
     db_for_test.execute(text("DELETE FROM agreement_mod_version"))
+    db_for_test.execute(text("DELETE FROM can_history"))
+    db_for_test.execute(text("DELETE FROM can_history_version"))
     db_for_test.execute(text("DELETE FROM can"))
     db_for_test.execute(text("DELETE FROM can_version"))
     db_for_test.execute(text("DELETE FROM services_component"))
@@ -314,7 +324,6 @@ def test_main(db_for_test_with_data):
 
     sys_user = get_or_create_sys_user(db_for_test_with_data)
 
-    # make sure the data was loadeddb_for_test_with_data
     bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
 
     assert bli_model.id == 1
@@ -322,7 +331,6 @@ def test_main(db_for_test_with_data):
     assert bli_model.line_description == "Line Description #1"
     assert bli_model.comments == "Comment #1"
     assert bli_model.can_id == 1
-    assert bli_model.services_component.id == 1
     assert bli_model.services_component.number == 1
     assert bli_model.services_component.optional is False
     assert bli_model.services_component.description == "SC1"
@@ -348,9 +356,7 @@ def test_main(db_for_test_with_data):
     assert bli_model.start_date == date(2024, 10, 1)
     assert bli_model.end_date == date(2025, 9, 30)
     assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
-    assert bli_model.invoice.id == 1
     assert bli_model.invoice.invoice_line_number == 1
-    assert bli_model.requisition.id == 1
     assert bli_model.requisition.zero_number == "1"
     assert bli_model.requisition.zero_date == date(2025, 1, 11)
     assert bli_model.requisition.number == "1"
@@ -360,7 +366,6 @@ def test_main(db_for_test_with_data):
     assert bli_model.object_class_code.id == 1
     assert bli_model.object_class_code.code == 25103
     assert bli_model.object_class_code.description == "Test Object Class Code"
-    assert bli_model.mod.id == 1
     assert bli_model.mod.number == "0000"
     assert bli_model.mod.mod_type == ModType.NEW
     assert bli_model.mod.agreement_id == 1
@@ -395,393 +400,395 @@ def test_main(db_for_test_with_data):
     assert len(bli_1_history) == 1
 
 
-# def test_main(db_for_contracts):
-#     result = CliRunner().invoke(
-#         main,
-#         [
-#             "--env",
-#             "pytest_data_tools",
-#             "--input-csv",
-#             "test_csv/contracts.tsv",
-#         ],
-#     )
-#
-#     assert result.exit_code == 0
-#
-#     sys_user = User(
-#         email="system.admin@localhost",
-#     )
-#
-#     # make sure the data was loaded
-#     contract_model = db_for_contracts.execute(
-#         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-#     ).scalar()
-#
-#     assert contract_model.name == "Test Contract #1"
-#     assert contract_model.maps_sys_id == 1
-#     assert contract_model.contract_number == "HHSXXXXXXX1"
-#     assert contract_model.vendor_id == 100
-#     assert contract_model.vendor.name == "Test Vendor 100"
-#     assert contract_model.project_id == 1000
-#     assert contract_model.project.title == "Test Project 1000"
-#     assert contract_model.task_order_number == "HHSYYYYYY1"
-#     assert contract_model.po_number == "HHSZZZZZ1"
-#     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.start_date == date(2000, 9, 30)
-#     assert contract_model.end_date == date(2010, 9, 30)
-#     assert contract_model.psc_contract_specialist == "John Doe"
-#     assert contract_model.cotr_id == 500
-#     assert contract_model.created_by == sys_user.id
-#     assert contract_model.updated_by == sys_user.id
-#     assert contract_model.created_on is not None
-#     assert contract_model.updated_on is not None
-#
-#     contract_model = db_for_contracts.execute(
-#         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 2)
-#     ).scalar()
-#
-#     assert contract_model.name == "Test Contract Without A Project"
-#     assert contract_model.maps_sys_id == 2
-#     assert contract_model.contract_number == "HHSXXXXXXX1"
-#     assert contract_model.vendor_id == 100
-#     assert contract_model.vendor.name == "Test Vendor 100"
-#     assert contract_model.project_id is None
-#     assert contract_model.task_order_number == "HHSYYYYYY1"
-#     assert contract_model.po_number == "HHSZZZZZ1"
-#     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.start_date == date(2000, 9, 30)
-#     assert contract_model.end_date == date(2010, 9, 30)
-#     assert contract_model.psc_contract_specialist == "John Doe"
-#     assert contract_model.cotr_id == 500
-#     assert contract_model.created_by == sys_user.id
-#     assert contract_model.updated_by == sys_user.id
-#     assert contract_model.created_on is not None
-#     assert contract_model.updated_on is not None
-#
-#     history_objs = (
-#         db_for_contracts.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "ContractAgreement"))
-#         .scalars()
-#         .all()
-#     )
-#     assert len(history_objs) == 6
-#
-#     contract_1_history = (
-#         db_for_contracts.execute(
-#             select(OpsDBHistory).where(
-#                 and_(OpsDBHistory.row_key == str(contract_model.id), OpsDBHistory.class_name == "ContractAgreement")
-#             )
-#         )
-#         .scalars()
-#         .all()
-#     )
-#     assert len(contract_1_history) == 1
 #
 #
-# def test_create_models_upsert(db_for_contracts):
-#     sys_user = get_or_create_sys_user(db_for_contracts)
+# # def test_main(db_for_contracts):
+# #     result = CliRunner().invoke(
+# #         main,
+# #         [
+# #             "--env",
+# #             "pytest_data_tools",
+# #             "--input-csv",
+# #             "test_csv/contracts.tsv",
+# #         ],
+# #     )
+# #
+# #     assert result.exit_code == 0
+# #
+# #     sys_user = User(
+# #         email="system.admin@localhost",
+# #     )
+# #
+# #     # make sure the data was loaded
+# #     contract_model = db_for_contracts.execute(
+# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
+# #     ).scalar()
+# #
+# #     assert contract_model.name == "Test Contract #1"
+# #     assert contract_model.maps_sys_id == 1
+# #     assert contract_model.contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.vendor_id == 100
+# #     assert contract_model.vendor.name == "Test Vendor 100"
+# #     assert contract_model.project_id == 1000
+# #     assert contract_model.project.title == "Test Project 1000"
+# #     assert contract_model.task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.po_number == "HHSZZZZZ1"
+# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.start_date == date(2000, 9, 30)
+# #     assert contract_model.end_date == date(2010, 9, 30)
+# #     assert contract_model.psc_contract_specialist == "John Doe"
+# #     assert contract_model.cotr_id == 500
+# #     assert contract_model.created_by == sys_user.id
+# #     assert contract_model.updated_by == sys_user.id
+# #     assert contract_model.created_on is not None
+# #     assert contract_model.updated_on is not None
+# #
+# #     contract_model = db_for_contracts.execute(
+# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 2)
+# #     ).scalar()
+# #
+# #     assert contract_model.name == "Test Contract Without A Project"
+# #     assert contract_model.maps_sys_id == 2
+# #     assert contract_model.contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.vendor_id == 100
+# #     assert contract_model.vendor.name == "Test Vendor 100"
+# #     assert contract_model.project_id is None
+# #     assert contract_model.task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.po_number == "HHSZZZZZ1"
+# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.start_date == date(2000, 9, 30)
+# #     assert contract_model.end_date == date(2010, 9, 30)
+# #     assert contract_model.psc_contract_specialist == "John Doe"
+# #     assert contract_model.cotr_id == 500
+# #     assert contract_model.created_by == sys_user.id
+# #     assert contract_model.updated_by == sys_user.id
+# #     assert contract_model.created_on is not None
+# #     assert contract_model.updated_on is not None
+# #
+# #     history_objs = (
+# #         db_for_contracts.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "ContractAgreement"))
+# #         .scalars()
+# #         .all()
+# #     )
+# #     assert len(history_objs) == 6
+# #
+# #     contract_1_history = (
+# #         db_for_contracts.execute(
+# #             select(OpsDBHistory).where(
+# #                 and_(OpsDBHistory.row_key == str(contract_model.id), OpsDBHistory.class_name == "ContractAgreement")
+# #             )
+# #         )
+# #         .scalars()
+# #         .all()
+# #     )
+# #     assert len(contract_1_history) == 1
+# #
+# #
+# # def test_create_models_upsert(db_for_contracts):
+# #     sys_user = get_or_create_sys_user(db_for_contracts)
+# #
+# #     data_1 = ContractData(
+# #         CONTRACT_NAME="Test Contract",
+# #         SYS_CONTRACT_ID=1,
+# #         SYS_PROJECT_ID=1,
+# #         SYS_VENDOR_ID=1,
+# #         CONTRACT_NBR="HHSXXXXXXX1",
+# #         TASK_ORDER_NBR="HHSYYYYYY1",
+# #         PO_NBR="HHSZZZZZ1",
+# #         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
+# #         PSC_CODE="541690",
+# #         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
+# #         CONTRACT_START_DATE="2000-09-30 00:00:00",
+# #         CONTRACT_END_DATE="2010-09-30 00:00:00",
+# #         PSC_CONTRACT_SPECIALIST="John Doe",
+# #         OPRE_COTR=1,
+# #         OPRE_PROJECT_OFFICER=1,
+# #     )
+# #
+# #     data_2 = ContractData(
+# #         CONTRACT_NAME="Test Contract Updated",
+# #         SYS_CONTRACT_ID=1,
+# #         SYS_PROJECT_ID=1,
+# #         SYS_VENDOR_ID=1,
+# #         CONTRACT_NBR="HHSXXXXXXX1",
+# #         TASK_ORDER_NBR="HHSYYYYYY1",
+# #         PO_NBR="HHSZZZZZ1",
+# #         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
+# #         PSC_CODE="541690",
+# #         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
+# #         CONTRACT_START_DATE="2000-09-30 00:00:00",
+# #         CONTRACT_END_DATE="2010-09-30 00:00:00",
+# #         PSC_CONTRACT_SPECIALIST="John Doe",
+# #         OPRE_COTR=1,
+# #         OPRE_PROJECT_OFFICER=1,
+# #     )
+# #
+# #     data_3 = ContractData(
+# #         CONTRACT_NAME="Test Contract Updated",
+# #         SYS_CONTRACT_ID=1,
+# #         SYS_PROJECT_ID=2,
+# #         SYS_VENDOR_ID=1,
+# #         CONTRACT_NBR="HHSXXXXXXX1",
+# #         TASK_ORDER_NBR="HHSYYYYYY1",
+# #         PO_NBR="HHSZZZZZ1",
+# #         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
+# #         PSC_CODE="541690",
+# #         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
+# #         CONTRACT_START_DATE="2000-09-30 00:00:00",
+# #         CONTRACT_END_DATE="2010-09-30 00:00:00",
+# #         PSC_CONTRACT_SPECIALIST="John Doe",
+# #         OPRE_COTR=1,
+# #         OPRE_PROJECT_OFFICER=1,
+# #     )
+# #
+# #     data_4 = ContractData(
+# #         CONTRACT_NAME="Test Contract Updated",
+# #         SYS_CONTRACT_ID=1,
+# #         SYS_PROJECT_ID=2,
+# #         SYS_VENDOR_ID=2,
+# #         CONTRACT_NBR="HHSXXXXXXX1",
+# #         TASK_ORDER_NBR="HHSYYYYYY1",
+# #         PO_NBR="HHSZZZZZ1",
+# #         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
+# #         PSC_CODE="541690",
+# #         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
+# #         CONTRACT_START_DATE="2000-09-30 00:00:00",
+# #         CONTRACT_END_DATE="2010-09-30 00:00:00",
+# #         PSC_CONTRACT_SPECIALIST="John Doe",
+# #         OPRE_COTR=1,
+# #         OPRE_PROJECT_OFFICER=1,
+# #     )
+# #
+# #     create_models(data_1, sys_user, db_for_contracts)
+# #
+# #     # make sure the data was loaded
+# #     contract_model = db_for_contracts.execute(
+# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
+# #     ).scalar()
+# #
+# #     assert contract_model.name == "Test Contract"
+# #     assert contract_model.maps_sys_id == 1
+# #     assert contract_model.contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.vendor_id == 1
+# #     assert contract_model.vendor.name == "Test Vendor"
+# #     assert contract_model.project_id == 1
+# #     assert contract_model.project.title == "Test Project"
+# #     assert contract_model.task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.po_number == "HHSZZZZZ1"
+# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.start_date == date(2000, 9, 30)
+# #     assert contract_model.end_date == date(2010, 9, 30)
+# #     assert contract_model.psc_contract_specialist == "John Doe"
+# #     assert contract_model.cotr_id == 1
+# #     assert contract_model.created_by == sys_user.id
+# #     assert contract_model.updated_by == sys_user.id
+# #     assert contract_model.created_on is not None
+# #     assert contract_model.updated_on is not None
+# #
+# #     # make sure the version records were created
+# #     assert contract_model.versions[0].name == "Test Contract"
+# #     assert contract_model.versions[0].contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.versions[0].vendor_id == 1
+# #     assert contract_model.versions[0].project_id == 1
+# #     assert contract_model.versions[0].task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.versions[0].po_number == "HHSZZZZZ1"
+# #     assert contract_model.versions[0].acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.versions[0].contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.versions[0].start_date == date(2000, 9, 30)
+# #     assert contract_model.versions[0].end_date == date(2010, 9, 30)
+# #     assert contract_model.versions[0].psc_contract_specialist == "John Doe"
+# #     assert contract_model.versions[0].cotr_id == 1
+# #     assert contract_model.versions[0].created_by == sys_user.id
+# #     assert contract_model.versions[0].updated_by == sys_user.id
+# #     assert contract_model.versions[0].created_on is not None
+# #     assert contract_model.versions[0].updated_on is not None
+# #
+# #     # make sure the history records are created
+# #     history_record = db_for_contracts.execute(
+# #         select(OpsDBHistory)
+# #         .where(OpsDBHistory.class_name == "ContractAgreement")
+# #         .order_by(OpsDBHistory.created_on.desc())
+# #     ).scalar()
+# #     assert history_record is not None
+# #     assert history_record.event_type == OpsDBHistoryType.NEW
+# #     assert history_record.row_key == str(contract_model.id)
+# #     assert history_record.created_by == sys_user.id
+# #
+# #     # upsert the same data - change the Contract Name
+# #     create_models(data_2, sys_user, db_for_contracts)
+# #
+# #     # make sure the data was loaded
+# #     contract_model = db_for_contracts.execute(
+# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
+# #     ).scalar()
+# #
+# #     assert contract_model.name == "Test Contract Updated"
+# #     assert contract_model.maps_sys_id == 1
+# #     assert contract_model.contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.vendor_id == 1
+# #     assert contract_model.vendor.name == "Test Vendor"
+# #     assert contract_model.project_id == 1
+# #     assert contract_model.project.title == "Test Project"
+# #     assert contract_model.task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.po_number == "HHSZZZZZ1"
+# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.start_date == date(2000, 9, 30)
+# #     assert contract_model.end_date == date(2010, 9, 30)
+# #     assert contract_model.psc_contract_specialist == "John Doe"
+# #     assert contract_model.cotr_id == 1
+# #     assert contract_model.created_by == sys_user.id
+# #     assert contract_model.updated_by == sys_user.id
+# #     assert contract_model.created_on is not None
+# #     assert contract_model.updated_on is not None
+# #
+# #     # make sure the version records were created
+# #     assert contract_model.versions[1].name == "Test Contract Updated"
+# #     assert contract_model.versions[1].contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.versions[1].vendor_id == 1
+# #     assert contract_model.versions[1].project_id == 1
+# #     assert contract_model.versions[1].task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.versions[1].po_number == "HHSZZZZZ1"
+# #     assert contract_model.versions[1].acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.versions[1].contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.versions[1].start_date == date(2000, 9, 30)
+# #     assert contract_model.versions[1].end_date == date(2010, 9, 30)
+# #     assert contract_model.versions[1].psc_contract_specialist == "John Doe"
+# #     assert contract_model.versions[1].cotr_id == 1
+# #     assert contract_model.versions[1].created_by == sys_user.id
+# #     assert contract_model.versions[1].updated_by == sys_user.id
+# #     assert contract_model.versions[1].created_on is not None
+# #     assert contract_model.versions[1].updated_on is not None
+# #
+# #     # make sure the history records are created
+# #     history_record = db_for_contracts.execute(
+# #         select(OpsDBHistory)
+# #         .where(OpsDBHistory.class_name == "ContractAgreement")
+# #         .order_by(OpsDBHistory.created_on.desc())
+# #     ).scalar()
+# #     assert history_record is not None
+# #     assert history_record.event_type == OpsDBHistoryType.UPDATED
+# #     assert history_record.row_key == str(contract_model.id)
+# #     assert history_record.created_by == sys_user.id
+# #
+# #     # upsert the same data - change the Project ID
+# #     create_models(data_3, sys_user, db_for_contracts)
+# #
+# #     # make sure the data was loaded
+# #     contract_model = db_for_contracts.execute(
+# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
+# #     ).scalar()
+# #
+# #     assert contract_model.name == "Test Contract Updated"
+# #     assert contract_model.maps_sys_id == 1
+# #     assert contract_model.contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.vendor_id == 1
+# #     assert contract_model.vendor.name == "Test Vendor"
+# #     assert contract_model.project_id == 2
+# #     assert contract_model.project.title == "Test Project 2"
+# #     assert contract_model.task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.po_number == "HHSZZZZZ1"
+# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.start_date == date(2000, 9, 30)
+# #     assert contract_model.end_date == date(2010, 9, 30)
+# #     assert contract_model.psc_contract_specialist == "John Doe"
+# #     assert contract_model.cotr_id == 1
+# #     assert contract_model.created_by == sys_user.id
+# #     assert contract_model.updated_by == sys_user.id
+# #     assert contract_model.created_on is not None
+# #     assert contract_model.updated_on is not None
+# #
+# #     # make sure the version records were created
+# #     assert contract_model.versions[2].name == "Test Contract Updated"
+# #     assert contract_model.versions[2].contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.versions[2].vendor_id == 1
+# #     assert contract_model.versions[2].project_id == 2
+# #     assert contract_model.versions[2].task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.versions[2].po_number == "HHSZZZZZ1"
+# #     assert contract_model.versions[2].acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.versions[2].contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.versions[2].start_date == date(2000, 9, 30)
+# #     assert contract_model.versions[2].end_date == date(2010, 9, 30)
+# #     assert contract_model.versions[2].psc_contract_specialist == "John Doe"
+# #     assert contract_model.versions[2].cotr_id == 1
+# #     assert contract_model.versions[2].created_by == sys_user.id
+# #     assert contract_model.versions[2].updated_by == sys_user.id
+# #     assert contract_model.versions[2].created_on is not None
+# #     assert contract_model.versions[2].updated_on is not None
+# #
+# #     # make sure the history records are created
+# #     history_record = db_for_contracts.execute(
+# #         select(OpsDBHistory)
+# #         .where(OpsDBHistory.class_name == "ContractAgreement")
+# #         .order_by(OpsDBHistory.created_on.desc())
+# #     ).scalar()
+# #     assert history_record is not None
+# #     assert history_record.event_type == OpsDBHistoryType.UPDATED
+# #     assert history_record.row_key == str(contract_model.id)
+# #     assert history_record.created_by == sys_user.id
+# #
+# #     # upsert the same data - change the Vendor ID
+# #     create_models(data_4, sys_user, db_for_contracts)
+# #
+# #     # make sure the data was loaded
+# #     contract_model = db_for_contracts.execute(
+# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
+# #     ).scalar()
+# #
+# #     assert contract_model.name == "Test Contract Updated"
+# #     assert contract_model.maps_sys_id == 1
+# #     assert contract_model.contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.vendor_id == 2
+# #     assert contract_model.vendor.name == "Test Vendor 2"
+# #     assert contract_model.project_id == 2
+# #     assert contract_model.project.title == "Test Project 2"
+# #     assert contract_model.task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.po_number == "HHSZZZZZ1"
+# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.start_date == date(2000, 9, 30)
+# #     assert contract_model.end_date == date(2010, 9, 30)
+# #     assert contract_model.psc_contract_specialist == "John Doe"
+# #     assert contract_model.cotr_id == 1
+# #     assert contract_model.created_by == sys_user.id
+# #     assert contract_model.updated_by == sys_user.id
+# #     assert contract_model.created_on is not None
+# #     assert contract_model.updated_on is not None
+# #
+# #     # make sure the version records were created
+# #     assert contract_model.versions[3].name == "Test Contract Updated"
+# #     assert contract_model.versions[3].contract_number == "HHSXXXXXXX1"
+# #     assert contract_model.versions[3].vendor_id == 2
+# #     assert contract_model.versions[3].project_id == 2
+# #     assert contract_model.versions[3].task_order_number == "HHSYYYYYY1"
+# #     assert contract_model.versions[3].po_number == "HHSZZZZZ1"
+# #     assert contract_model.versions[3].acquisition_type == AcquisitionType.FULL_AND_OPEN
+# #     assert contract_model.versions[3].contract_type == ContractType.TIME_AND_MATERIALS
+# #     assert contract_model.versions[3].start_date == date(2000, 9, 30)
+# #     assert contract_model.versions[3].end_date == date(2010, 9, 30)
+# #     assert contract_model.versions[3].psc_contract_specialist == "John Doe"
+# #     assert contract_model.versions[3].cotr_id == 1
+# #     assert contract_model.versions[3].created_by == sys_user.id
+# #     assert contract_model.versions[3].updated_by == sys_user.id
+# #     assert contract_model.versions[3].created_on is not None
+# #     assert contract_model.versions[3].updated_on is not None
+# #
+# #     # make sure the history records are created
+# #     history_record = db_for_contracts.execute(
+# #         select(OpsDBHistory)
+# #         .where(OpsDBHistory.class_name == "ContractAgreement")
+# #         .order_by(OpsDBHistory.created_on.desc())
+# #     ).scalar()
+# #     assert history_record is not None
+# #     assert history_record.event_type == OpsDBHistoryType.UPDATED
+# #     assert history_record.row_key == str(contract_model.id)
+# #     assert history_record.created_by == sys_user.id
 #
-#     data_1 = ContractData(
-#         CONTRACT_NAME="Test Contract",
-#         SYS_CONTRACT_ID=1,
-#         SYS_PROJECT_ID=1,
-#         SYS_VENDOR_ID=1,
-#         CONTRACT_NBR="HHSXXXXXXX1",
-#         TASK_ORDER_NBR="HHSYYYYYY1",
-#         PO_NBR="HHSZZZZZ1",
-#         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-#         PSC_CODE="541690",
-#         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-#         CONTRACT_START_DATE="2000-09-30 00:00:00",
-#         CONTRACT_END_DATE="2010-09-30 00:00:00",
-#         PSC_CONTRACT_SPECIALIST="John Doe",
-#         OPRE_COTR=1,
-#         OPRE_PROJECT_OFFICER=1,
-#     )
 #
-#     data_2 = ContractData(
-#         CONTRACT_NAME="Test Contract Updated",
-#         SYS_CONTRACT_ID=1,
-#         SYS_PROJECT_ID=1,
-#         SYS_VENDOR_ID=1,
-#         CONTRACT_NBR="HHSXXXXXXX1",
-#         TASK_ORDER_NBR="HHSYYYYYY1",
-#         PO_NBR="HHSZZZZZ1",
-#         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-#         PSC_CODE="541690",
-#         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-#         CONTRACT_START_DATE="2000-09-30 00:00:00",
-#         CONTRACT_END_DATE="2010-09-30 00:00:00",
-#         PSC_CONTRACT_SPECIALIST="John Doe",
-#         OPRE_COTR=1,
-#         OPRE_PROJECT_OFFICER=1,
-#     )
-#
-#     data_3 = ContractData(
-#         CONTRACT_NAME="Test Contract Updated",
-#         SYS_CONTRACT_ID=1,
-#         SYS_PROJECT_ID=2,
-#         SYS_VENDOR_ID=1,
-#         CONTRACT_NBR="HHSXXXXXXX1",
-#         TASK_ORDER_NBR="HHSYYYYYY1",
-#         PO_NBR="HHSZZZZZ1",
-#         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-#         PSC_CODE="541690",
-#         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-#         CONTRACT_START_DATE="2000-09-30 00:00:00",
-#         CONTRACT_END_DATE="2010-09-30 00:00:00",
-#         PSC_CONTRACT_SPECIALIST="John Doe",
-#         OPRE_COTR=1,
-#         OPRE_PROJECT_OFFICER=1,
-#     )
-#
-#     data_4 = ContractData(
-#         CONTRACT_NAME="Test Contract Updated",
-#         SYS_CONTRACT_ID=1,
-#         SYS_PROJECT_ID=2,
-#         SYS_VENDOR_ID=2,
-#         CONTRACT_NBR="HHSXXXXXXX1",
-#         TASK_ORDER_NBR="HHSYYYYYY1",
-#         PO_NBR="HHSZZZZZ1",
-#         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-#         PSC_CODE="541690",
-#         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-#         CONTRACT_START_DATE="2000-09-30 00:00:00",
-#         CONTRACT_END_DATE="2010-09-30 00:00:00",
-#         PSC_CONTRACT_SPECIALIST="John Doe",
-#         OPRE_COTR=1,
-#         OPRE_PROJECT_OFFICER=1,
-#     )
-#
-#     create_models(data_1, sys_user, db_for_contracts)
-#
-#     # make sure the data was loaded
-#     contract_model = db_for_contracts.execute(
-#         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-#     ).scalar()
-#
-#     assert contract_model.name == "Test Contract"
-#     assert contract_model.maps_sys_id == 1
-#     assert contract_model.contract_number == "HHSXXXXXXX1"
-#     assert contract_model.vendor_id == 1
-#     assert contract_model.vendor.name == "Test Vendor"
-#     assert contract_model.project_id == 1
-#     assert contract_model.project.title == "Test Project"
-#     assert contract_model.task_order_number == "HHSYYYYYY1"
-#     assert contract_model.po_number == "HHSZZZZZ1"
-#     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.start_date == date(2000, 9, 30)
-#     assert contract_model.end_date == date(2010, 9, 30)
-#     assert contract_model.psc_contract_specialist == "John Doe"
-#     assert contract_model.cotr_id == 1
-#     assert contract_model.created_by == sys_user.id
-#     assert contract_model.updated_by == sys_user.id
-#     assert contract_model.created_on is not None
-#     assert contract_model.updated_on is not None
-#
-#     # make sure the version records were created
-#     assert contract_model.versions[0].name == "Test Contract"
-#     assert contract_model.versions[0].contract_number == "HHSXXXXXXX1"
-#     assert contract_model.versions[0].vendor_id == 1
-#     assert contract_model.versions[0].project_id == 1
-#     assert contract_model.versions[0].task_order_number == "HHSYYYYYY1"
-#     assert contract_model.versions[0].po_number == "HHSZZZZZ1"
-#     assert contract_model.versions[0].acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.versions[0].contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.versions[0].start_date == date(2000, 9, 30)
-#     assert contract_model.versions[0].end_date == date(2010, 9, 30)
-#     assert contract_model.versions[0].psc_contract_specialist == "John Doe"
-#     assert contract_model.versions[0].cotr_id == 1
-#     assert contract_model.versions[0].created_by == sys_user.id
-#     assert contract_model.versions[0].updated_by == sys_user.id
-#     assert contract_model.versions[0].created_on is not None
-#     assert contract_model.versions[0].updated_on is not None
-#
-#     # make sure the history records are created
-#     history_record = db_for_contracts.execute(
-#         select(OpsDBHistory)
-#         .where(OpsDBHistory.class_name == "ContractAgreement")
-#         .order_by(OpsDBHistory.created_on.desc())
-#     ).scalar()
-#     assert history_record is not None
-#     assert history_record.event_type == OpsDBHistoryType.NEW
-#     assert history_record.row_key == str(contract_model.id)
-#     assert history_record.created_by == sys_user.id
-#
-#     # upsert the same data - change the Contract Name
-#     create_models(data_2, sys_user, db_for_contracts)
-#
-#     # make sure the data was loaded
-#     contract_model = db_for_contracts.execute(
-#         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-#     ).scalar()
-#
-#     assert contract_model.name == "Test Contract Updated"
-#     assert contract_model.maps_sys_id == 1
-#     assert contract_model.contract_number == "HHSXXXXXXX1"
-#     assert contract_model.vendor_id == 1
-#     assert contract_model.vendor.name == "Test Vendor"
-#     assert contract_model.project_id == 1
-#     assert contract_model.project.title == "Test Project"
-#     assert contract_model.task_order_number == "HHSYYYYYY1"
-#     assert contract_model.po_number == "HHSZZZZZ1"
-#     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.start_date == date(2000, 9, 30)
-#     assert contract_model.end_date == date(2010, 9, 30)
-#     assert contract_model.psc_contract_specialist == "John Doe"
-#     assert contract_model.cotr_id == 1
-#     assert contract_model.created_by == sys_user.id
-#     assert contract_model.updated_by == sys_user.id
-#     assert contract_model.created_on is not None
-#     assert contract_model.updated_on is not None
-#
-#     # make sure the version records were created
-#     assert contract_model.versions[1].name == "Test Contract Updated"
-#     assert contract_model.versions[1].contract_number == "HHSXXXXXXX1"
-#     assert contract_model.versions[1].vendor_id == 1
-#     assert contract_model.versions[1].project_id == 1
-#     assert contract_model.versions[1].task_order_number == "HHSYYYYYY1"
-#     assert contract_model.versions[1].po_number == "HHSZZZZZ1"
-#     assert contract_model.versions[1].acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.versions[1].contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.versions[1].start_date == date(2000, 9, 30)
-#     assert contract_model.versions[1].end_date == date(2010, 9, 30)
-#     assert contract_model.versions[1].psc_contract_specialist == "John Doe"
-#     assert contract_model.versions[1].cotr_id == 1
-#     assert contract_model.versions[1].created_by == sys_user.id
-#     assert contract_model.versions[1].updated_by == sys_user.id
-#     assert contract_model.versions[1].created_on is not None
-#     assert contract_model.versions[1].updated_on is not None
-#
-#     # make sure the history records are created
-#     history_record = db_for_contracts.execute(
-#         select(OpsDBHistory)
-#         .where(OpsDBHistory.class_name == "ContractAgreement")
-#         .order_by(OpsDBHistory.created_on.desc())
-#     ).scalar()
-#     assert history_record is not None
-#     assert history_record.event_type == OpsDBHistoryType.UPDATED
-#     assert history_record.row_key == str(contract_model.id)
-#     assert history_record.created_by == sys_user.id
-#
-#     # upsert the same data - change the Project ID
-#     create_models(data_3, sys_user, db_for_contracts)
-#
-#     # make sure the data was loaded
-#     contract_model = db_for_contracts.execute(
-#         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-#     ).scalar()
-#
-#     assert contract_model.name == "Test Contract Updated"
-#     assert contract_model.maps_sys_id == 1
-#     assert contract_model.contract_number == "HHSXXXXXXX1"
-#     assert contract_model.vendor_id == 1
-#     assert contract_model.vendor.name == "Test Vendor"
-#     assert contract_model.project_id == 2
-#     assert contract_model.project.title == "Test Project 2"
-#     assert contract_model.task_order_number == "HHSYYYYYY1"
-#     assert contract_model.po_number == "HHSZZZZZ1"
-#     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.start_date == date(2000, 9, 30)
-#     assert contract_model.end_date == date(2010, 9, 30)
-#     assert contract_model.psc_contract_specialist == "John Doe"
-#     assert contract_model.cotr_id == 1
-#     assert contract_model.created_by == sys_user.id
-#     assert contract_model.updated_by == sys_user.id
-#     assert contract_model.created_on is not None
-#     assert contract_model.updated_on is not None
-#
-#     # make sure the version records were created
-#     assert contract_model.versions[2].name == "Test Contract Updated"
-#     assert contract_model.versions[2].contract_number == "HHSXXXXXXX1"
-#     assert contract_model.versions[2].vendor_id == 1
-#     assert contract_model.versions[2].project_id == 2
-#     assert contract_model.versions[2].task_order_number == "HHSYYYYYY1"
-#     assert contract_model.versions[2].po_number == "HHSZZZZZ1"
-#     assert contract_model.versions[2].acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.versions[2].contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.versions[2].start_date == date(2000, 9, 30)
-#     assert contract_model.versions[2].end_date == date(2010, 9, 30)
-#     assert contract_model.versions[2].psc_contract_specialist == "John Doe"
-#     assert contract_model.versions[2].cotr_id == 1
-#     assert contract_model.versions[2].created_by == sys_user.id
-#     assert contract_model.versions[2].updated_by == sys_user.id
-#     assert contract_model.versions[2].created_on is not None
-#     assert contract_model.versions[2].updated_on is not None
-#
-#     # make sure the history records are created
-#     history_record = db_for_contracts.execute(
-#         select(OpsDBHistory)
-#         .where(OpsDBHistory.class_name == "ContractAgreement")
-#         .order_by(OpsDBHistory.created_on.desc())
-#     ).scalar()
-#     assert history_record is not None
-#     assert history_record.event_type == OpsDBHistoryType.UPDATED
-#     assert history_record.row_key == str(contract_model.id)
-#     assert history_record.created_by == sys_user.id
-#
-#     # upsert the same data - change the Vendor ID
-#     create_models(data_4, sys_user, db_for_contracts)
-#
-#     # make sure the data was loaded
-#     contract_model = db_for_contracts.execute(
-#         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-#     ).scalar()
-#
-#     assert contract_model.name == "Test Contract Updated"
-#     assert contract_model.maps_sys_id == 1
-#     assert contract_model.contract_number == "HHSXXXXXXX1"
-#     assert contract_model.vendor_id == 2
-#     assert contract_model.vendor.name == "Test Vendor 2"
-#     assert contract_model.project_id == 2
-#     assert contract_model.project.title == "Test Project 2"
-#     assert contract_model.task_order_number == "HHSYYYYYY1"
-#     assert contract_model.po_number == "HHSZZZZZ1"
-#     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.start_date == date(2000, 9, 30)
-#     assert contract_model.end_date == date(2010, 9, 30)
-#     assert contract_model.psc_contract_specialist == "John Doe"
-#     assert contract_model.cotr_id == 1
-#     assert contract_model.created_by == sys_user.id
-#     assert contract_model.updated_by == sys_user.id
-#     assert contract_model.created_on is not None
-#     assert contract_model.updated_on is not None
-#
-#     # make sure the version records were created
-#     assert contract_model.versions[3].name == "Test Contract Updated"
-#     assert contract_model.versions[3].contract_number == "HHSXXXXXXX1"
-#     assert contract_model.versions[3].vendor_id == 2
-#     assert contract_model.versions[3].project_id == 2
-#     assert contract_model.versions[3].task_order_number == "HHSYYYYYY1"
-#     assert contract_model.versions[3].po_number == "HHSZZZZZ1"
-#     assert contract_model.versions[3].acquisition_type == AcquisitionType.FULL_AND_OPEN
-#     assert contract_model.versions[3].contract_type == ContractType.TIME_AND_MATERIALS
-#     assert contract_model.versions[3].start_date == date(2000, 9, 30)
-#     assert contract_model.versions[3].end_date == date(2010, 9, 30)
-#     assert contract_model.versions[3].psc_contract_specialist == "John Doe"
-#     assert contract_model.versions[3].cotr_id == 1
-#     assert contract_model.versions[3].created_by == sys_user.id
-#     assert contract_model.versions[3].updated_by == sys_user.id
-#     assert contract_model.versions[3].created_on is not None
-#     assert contract_model.versions[3].updated_on is not None
-#
-#     # make sure the history records are created
-#     history_record = db_for_contracts.execute(
-#         select(OpsDBHistory)
-#         .where(OpsDBHistory.class_name == "ContractAgreement")
-#         .order_by(OpsDBHistory.created_on.desc())
-#     ).scalar()
-#     assert history_record is not None
-#     assert history_record.event_type == OpsDBHistoryType.UPDATED
-#     assert history_record.row_key == str(contract_model.id)
-#     assert history_record.created_by == sys_user.id
-
-
 def test_get_sc_create_new(db_for_test):
     """
     Test creating a new ServicesComponent for the BLI.
@@ -1134,10 +1141,8 @@ def test_get_mod_new(db_for_test):
 
 
 def test_get_mod_existing(db_for_test):
-    bli = BudgetLineItem(
-        id=1,
-        agreement_id=1,
-    )
+    bli = BudgetLineItem(id=1, agreement_id=1)
+
     existing_mod = AgreementMod(
         number="0000",
         mod_type=ModType.NEW,
