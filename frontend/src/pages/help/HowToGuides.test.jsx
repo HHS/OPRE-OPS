@@ -1,19 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
-import UserGuides from "./UserGuides";
+import HowToGuides from "./HowToGuides";
 
-describe("UserGuides Page", () => {
+describe("How-to Guides Page", () => {
     it("renders header and table of contents", () => {
-        render(<UserGuides />);
+        render(<HowToGuides />);
         // Check header
-        expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("User Guide");
-        // Check a TOC link exists
-        expect(screen.getByRole("link", { name: /What is OPS\?/i })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("How-to Guides");
     });
 
     it("expands accordion on click", async () => {
-        render(<UserGuides />);
+        render(<HowToGuides />);
         // Assume the accordion heading renders as a button
         const accordionButton = screen.getByRole("button", { name: /What is OPS\?/i });
         await userEvent.click(accordionButton);

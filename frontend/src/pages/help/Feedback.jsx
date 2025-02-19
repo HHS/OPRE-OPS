@@ -14,15 +14,6 @@ const Feedback = () => {
                     Click the link here to get started:{" "}
                     <a href="ops-feedback@formsgoogle.com">ops-feedback@formsgoogle.com</a>
                 </p>
-                <p>For immediate assistance:</p>
-                <ul>
-                    <li>
-                        Call <a href="tel:+15555555555">(555) 555-5555</a>
-                    </li>
-                    <li>
-                        Email <a href="mailto:acf-ops-help@acf.org">acf-ops-help@acf.org</a>
-                    </li>
-                </ul>
             </section>
         </>
     );
