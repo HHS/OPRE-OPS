@@ -1,3 +1,4 @@
+import icons from "../../../uswds/img/sprite.svg";
 import CurrencyInput from "../../UI/Form/CurrencyInput";
 
 /**
@@ -55,6 +56,14 @@ const CANBudgetForm = ({
                 className="usa-button usa-button--outline margin-top-4"
                 data-cy="add-fy-budget"
             >
+                {!totalFunding ? (
+                    <svg
+                        className="height-2 width-2 margin-right-05 cursor-pointer"
+                        style={{ fill: "#005ea2" }}
+                    >
+                    <use xlinkHref={`${icons}#add`}></use>
+                    </svg>
+                ) : null}
                 {buttonText}
             </button>
         </form>
