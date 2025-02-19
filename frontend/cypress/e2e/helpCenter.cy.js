@@ -14,7 +14,7 @@ describe("Help Center", () => {
     it("renders the How-to Guide", () => {
         cy.visit("/help-center");
         cy.get("h1").contains("Help Center");
-        cy.get("h2").contains("How-to Guide");
+        cy.get("h2").contains("How-to Guides");
     });
     it("renders the FAQ", () => {
         cy.visit("/help-center/faq");
