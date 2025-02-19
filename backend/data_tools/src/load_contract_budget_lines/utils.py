@@ -88,7 +88,7 @@ class BudgetLineItemData:
         )
         self.OBJECT_CLASS_CODE = int(self.OBJECT_CLASS_CODE) if self.OBJECT_CLASS_CODE else None
         self.MOD_NBR = str(self.MOD_NBR) if self.MOD_NBR else None
-        self.DOC_RECEIVED = bool(self.DOC_RECEIVED) if self.DOC_RECEIVED else None
+        self.DOC_RECEIVED = bool(self.DOC_RECEIVED) if self.DOC_RECEIVED is not None else None
         self.PSC_FEE_DOC_NBR = str(self.PSC_FEE_DOC_NBR) if self.PSC_FEE_DOC_NBR else None
         self.PSC_FEE_PYMT_REF_NBR = str(self.PSC_FEE_PYMT_REF_NBR) if self.PSC_FEE_PYMT_REF_NBR else None
         self.OBLIGATION_DATE = (
@@ -196,7 +196,6 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             comments=data.COMMENTS,
             agreement_id=contract.id,
             can_id=can.id if can else None,
-            # services_component_id=sc.id if sc else None,
             services_component=sc,
             clin=clin,
             amount=data.AMOUNT,

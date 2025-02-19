@@ -400,395 +400,487 @@ def test_main(db_for_test_with_data):
     assert len(bli_1_history) == 1
 
 
-#
-#
-# # def test_main(db_for_contracts):
-# #     result = CliRunner().invoke(
-# #         main,
-# #         [
-# #             "--env",
-# #             "pytest_data_tools",
-# #             "--input-csv",
-# #             "test_csv/contracts.tsv",
-# #         ],
-# #     )
-# #
-# #     assert result.exit_code == 0
-# #
-# #     sys_user = User(
-# #         email="system.admin@localhost",
-# #     )
-# #
-# #     # make sure the data was loaded
-# #     contract_model = db_for_contracts.execute(
-# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-# #     ).scalar()
-# #
-# #     assert contract_model.name == "Test Contract #1"
-# #     assert contract_model.maps_sys_id == 1
-# #     assert contract_model.contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.vendor_id == 100
-# #     assert contract_model.vendor.name == "Test Vendor 100"
-# #     assert contract_model.project_id == 1000
-# #     assert contract_model.project.title == "Test Project 1000"
-# #     assert contract_model.task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.po_number == "HHSZZZZZ1"
-# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.start_date == date(2000, 9, 30)
-# #     assert contract_model.end_date == date(2010, 9, 30)
-# #     assert contract_model.psc_contract_specialist == "John Doe"
-# #     assert contract_model.cotr_id == 500
-# #     assert contract_model.created_by == sys_user.id
-# #     assert contract_model.updated_by == sys_user.id
-# #     assert contract_model.created_on is not None
-# #     assert contract_model.updated_on is not None
-# #
-# #     contract_model = db_for_contracts.execute(
-# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 2)
-# #     ).scalar()
-# #
-# #     assert contract_model.name == "Test Contract Without A Project"
-# #     assert contract_model.maps_sys_id == 2
-# #     assert contract_model.contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.vendor_id == 100
-# #     assert contract_model.vendor.name == "Test Vendor 100"
-# #     assert contract_model.project_id is None
-# #     assert contract_model.task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.po_number == "HHSZZZZZ1"
-# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.start_date == date(2000, 9, 30)
-# #     assert contract_model.end_date == date(2010, 9, 30)
-# #     assert contract_model.psc_contract_specialist == "John Doe"
-# #     assert contract_model.cotr_id == 500
-# #     assert contract_model.created_by == sys_user.id
-# #     assert contract_model.updated_by == sys_user.id
-# #     assert contract_model.created_on is not None
-# #     assert contract_model.updated_on is not None
-# #
-# #     history_objs = (
-# #         db_for_contracts.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "ContractAgreement"))
-# #         .scalars()
-# #         .all()
-# #     )
-# #     assert len(history_objs) == 6
-# #
-# #     contract_1_history = (
-# #         db_for_contracts.execute(
-# #             select(OpsDBHistory).where(
-# #                 and_(OpsDBHistory.row_key == str(contract_model.id), OpsDBHistory.class_name == "ContractAgreement")
-# #             )
-# #         )
-# #         .scalars()
-# #         .all()
-# #     )
-# #     assert len(contract_1_history) == 1
-# #
-# #
-# # def test_create_models_upsert(db_for_contracts):
-# #     sys_user = get_or_create_sys_user(db_for_contracts)
-# #
-# #     data_1 = ContractData(
-# #         CONTRACT_NAME="Test Contract",
-# #         SYS_CONTRACT_ID=1,
-# #         SYS_PROJECT_ID=1,
-# #         SYS_VENDOR_ID=1,
-# #         CONTRACT_NBR="HHSXXXXXXX1",
-# #         TASK_ORDER_NBR="HHSYYYYYY1",
-# #         PO_NBR="HHSZZZZZ1",
-# #         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-# #         PSC_CODE="541690",
-# #         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-# #         CONTRACT_START_DATE="2000-09-30 00:00:00",
-# #         CONTRACT_END_DATE="2010-09-30 00:00:00",
-# #         PSC_CONTRACT_SPECIALIST="John Doe",
-# #         OPRE_COTR=1,
-# #         OPRE_PROJECT_OFFICER=1,
-# #     )
-# #
-# #     data_2 = ContractData(
-# #         CONTRACT_NAME="Test Contract Updated",
-# #         SYS_CONTRACT_ID=1,
-# #         SYS_PROJECT_ID=1,
-# #         SYS_VENDOR_ID=1,
-# #         CONTRACT_NBR="HHSXXXXXXX1",
-# #         TASK_ORDER_NBR="HHSYYYYYY1",
-# #         PO_NBR="HHSZZZZZ1",
-# #         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-# #         PSC_CODE="541690",
-# #         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-# #         CONTRACT_START_DATE="2000-09-30 00:00:00",
-# #         CONTRACT_END_DATE="2010-09-30 00:00:00",
-# #         PSC_CONTRACT_SPECIALIST="John Doe",
-# #         OPRE_COTR=1,
-# #         OPRE_PROJECT_OFFICER=1,
-# #     )
-# #
-# #     data_3 = ContractData(
-# #         CONTRACT_NAME="Test Contract Updated",
-# #         SYS_CONTRACT_ID=1,
-# #         SYS_PROJECT_ID=2,
-# #         SYS_VENDOR_ID=1,
-# #         CONTRACT_NBR="HHSXXXXXXX1",
-# #         TASK_ORDER_NBR="HHSYYYYYY1",
-# #         PO_NBR="HHSZZZZZ1",
-# #         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-# #         PSC_CODE="541690",
-# #         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-# #         CONTRACT_START_DATE="2000-09-30 00:00:00",
-# #         CONTRACT_END_DATE="2010-09-30 00:00:00",
-# #         PSC_CONTRACT_SPECIALIST="John Doe",
-# #         OPRE_COTR=1,
-# #         OPRE_PROJECT_OFFICER=1,
-# #     )
-# #
-# #     data_4 = ContractData(
-# #         CONTRACT_NAME="Test Contract Updated",
-# #         SYS_CONTRACT_ID=1,
-# #         SYS_PROJECT_ID=2,
-# #         SYS_VENDOR_ID=2,
-# #         CONTRACT_NBR="HHSXXXXXXX1",
-# #         TASK_ORDER_NBR="HHSYYYYYY1",
-# #         PO_NBR="HHSZZZZZ1",
-# #         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-# #         PSC_CODE="541690",
-# #         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-# #         CONTRACT_START_DATE="2000-09-30 00:00:00",
-# #         CONTRACT_END_DATE="2010-09-30 00:00:00",
-# #         PSC_CONTRACT_SPECIALIST="John Doe",
-# #         OPRE_COTR=1,
-# #         OPRE_PROJECT_OFFICER=1,
-# #     )
-# #
-# #     create_models(data_1, sys_user, db_for_contracts)
-# #
-# #     # make sure the data was loaded
-# #     contract_model = db_for_contracts.execute(
-# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-# #     ).scalar()
-# #
-# #     assert contract_model.name == "Test Contract"
-# #     assert contract_model.maps_sys_id == 1
-# #     assert contract_model.contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.vendor_id == 1
-# #     assert contract_model.vendor.name == "Test Vendor"
-# #     assert contract_model.project_id == 1
-# #     assert contract_model.project.title == "Test Project"
-# #     assert contract_model.task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.po_number == "HHSZZZZZ1"
-# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.start_date == date(2000, 9, 30)
-# #     assert contract_model.end_date == date(2010, 9, 30)
-# #     assert contract_model.psc_contract_specialist == "John Doe"
-# #     assert contract_model.cotr_id == 1
-# #     assert contract_model.created_by == sys_user.id
-# #     assert contract_model.updated_by == sys_user.id
-# #     assert contract_model.created_on is not None
-# #     assert contract_model.updated_on is not None
-# #
-# #     # make sure the version records were created
-# #     assert contract_model.versions[0].name == "Test Contract"
-# #     assert contract_model.versions[0].contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.versions[0].vendor_id == 1
-# #     assert contract_model.versions[0].project_id == 1
-# #     assert contract_model.versions[0].task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.versions[0].po_number == "HHSZZZZZ1"
-# #     assert contract_model.versions[0].acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.versions[0].contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.versions[0].start_date == date(2000, 9, 30)
-# #     assert contract_model.versions[0].end_date == date(2010, 9, 30)
-# #     assert contract_model.versions[0].psc_contract_specialist == "John Doe"
-# #     assert contract_model.versions[0].cotr_id == 1
-# #     assert contract_model.versions[0].created_by == sys_user.id
-# #     assert contract_model.versions[0].updated_by == sys_user.id
-# #     assert contract_model.versions[0].created_on is not None
-# #     assert contract_model.versions[0].updated_on is not None
-# #
-# #     # make sure the history records are created
-# #     history_record = db_for_contracts.execute(
-# #         select(OpsDBHistory)
-# #         .where(OpsDBHistory.class_name == "ContractAgreement")
-# #         .order_by(OpsDBHistory.created_on.desc())
-# #     ).scalar()
-# #     assert history_record is not None
-# #     assert history_record.event_type == OpsDBHistoryType.NEW
-# #     assert history_record.row_key == str(contract_model.id)
-# #     assert history_record.created_by == sys_user.id
-# #
-# #     # upsert the same data - change the Contract Name
-# #     create_models(data_2, sys_user, db_for_contracts)
-# #
-# #     # make sure the data was loaded
-# #     contract_model = db_for_contracts.execute(
-# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-# #     ).scalar()
-# #
-# #     assert contract_model.name == "Test Contract Updated"
-# #     assert contract_model.maps_sys_id == 1
-# #     assert contract_model.contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.vendor_id == 1
-# #     assert contract_model.vendor.name == "Test Vendor"
-# #     assert contract_model.project_id == 1
-# #     assert contract_model.project.title == "Test Project"
-# #     assert contract_model.task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.po_number == "HHSZZZZZ1"
-# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.start_date == date(2000, 9, 30)
-# #     assert contract_model.end_date == date(2010, 9, 30)
-# #     assert contract_model.psc_contract_specialist == "John Doe"
-# #     assert contract_model.cotr_id == 1
-# #     assert contract_model.created_by == sys_user.id
-# #     assert contract_model.updated_by == sys_user.id
-# #     assert contract_model.created_on is not None
-# #     assert contract_model.updated_on is not None
-# #
-# #     # make sure the version records were created
-# #     assert contract_model.versions[1].name == "Test Contract Updated"
-# #     assert contract_model.versions[1].contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.versions[1].vendor_id == 1
-# #     assert contract_model.versions[1].project_id == 1
-# #     assert contract_model.versions[1].task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.versions[1].po_number == "HHSZZZZZ1"
-# #     assert contract_model.versions[1].acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.versions[1].contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.versions[1].start_date == date(2000, 9, 30)
-# #     assert contract_model.versions[1].end_date == date(2010, 9, 30)
-# #     assert contract_model.versions[1].psc_contract_specialist == "John Doe"
-# #     assert contract_model.versions[1].cotr_id == 1
-# #     assert contract_model.versions[1].created_by == sys_user.id
-# #     assert contract_model.versions[1].updated_by == sys_user.id
-# #     assert contract_model.versions[1].created_on is not None
-# #     assert contract_model.versions[1].updated_on is not None
-# #
-# #     # make sure the history records are created
-# #     history_record = db_for_contracts.execute(
-# #         select(OpsDBHistory)
-# #         .where(OpsDBHistory.class_name == "ContractAgreement")
-# #         .order_by(OpsDBHistory.created_on.desc())
-# #     ).scalar()
-# #     assert history_record is not None
-# #     assert history_record.event_type == OpsDBHistoryType.UPDATED
-# #     assert history_record.row_key == str(contract_model.id)
-# #     assert history_record.created_by == sys_user.id
-# #
-# #     # upsert the same data - change the Project ID
-# #     create_models(data_3, sys_user, db_for_contracts)
-# #
-# #     # make sure the data was loaded
-# #     contract_model = db_for_contracts.execute(
-# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-# #     ).scalar()
-# #
-# #     assert contract_model.name == "Test Contract Updated"
-# #     assert contract_model.maps_sys_id == 1
-# #     assert contract_model.contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.vendor_id == 1
-# #     assert contract_model.vendor.name == "Test Vendor"
-# #     assert contract_model.project_id == 2
-# #     assert contract_model.project.title == "Test Project 2"
-# #     assert contract_model.task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.po_number == "HHSZZZZZ1"
-# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.start_date == date(2000, 9, 30)
-# #     assert contract_model.end_date == date(2010, 9, 30)
-# #     assert contract_model.psc_contract_specialist == "John Doe"
-# #     assert contract_model.cotr_id == 1
-# #     assert contract_model.created_by == sys_user.id
-# #     assert contract_model.updated_by == sys_user.id
-# #     assert contract_model.created_on is not None
-# #     assert contract_model.updated_on is not None
-# #
-# #     # make sure the version records were created
-# #     assert contract_model.versions[2].name == "Test Contract Updated"
-# #     assert contract_model.versions[2].contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.versions[2].vendor_id == 1
-# #     assert contract_model.versions[2].project_id == 2
-# #     assert contract_model.versions[2].task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.versions[2].po_number == "HHSZZZZZ1"
-# #     assert contract_model.versions[2].acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.versions[2].contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.versions[2].start_date == date(2000, 9, 30)
-# #     assert contract_model.versions[2].end_date == date(2010, 9, 30)
-# #     assert contract_model.versions[2].psc_contract_specialist == "John Doe"
-# #     assert contract_model.versions[2].cotr_id == 1
-# #     assert contract_model.versions[2].created_by == sys_user.id
-# #     assert contract_model.versions[2].updated_by == sys_user.id
-# #     assert contract_model.versions[2].created_on is not None
-# #     assert contract_model.versions[2].updated_on is not None
-# #
-# #     # make sure the history records are created
-# #     history_record = db_for_contracts.execute(
-# #         select(OpsDBHistory)
-# #         .where(OpsDBHistory.class_name == "ContractAgreement")
-# #         .order_by(OpsDBHistory.created_on.desc())
-# #     ).scalar()
-# #     assert history_record is not None
-# #     assert history_record.event_type == OpsDBHistoryType.UPDATED
-# #     assert history_record.row_key == str(contract_model.id)
-# #     assert history_record.created_by == sys_user.id
-# #
-# #     # upsert the same data - change the Vendor ID
-# #     create_models(data_4, sys_user, db_for_contracts)
-# #
-# #     # make sure the data was loaded
-# #     contract_model = db_for_contracts.execute(
-# #         select(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
-# #     ).scalar()
-# #
-# #     assert contract_model.name == "Test Contract Updated"
-# #     assert contract_model.maps_sys_id == 1
-# #     assert contract_model.contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.vendor_id == 2
-# #     assert contract_model.vendor.name == "Test Vendor 2"
-# #     assert contract_model.project_id == 2
-# #     assert contract_model.project.title == "Test Project 2"
-# #     assert contract_model.task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.po_number == "HHSZZZZZ1"
-# #     assert contract_model.acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.start_date == date(2000, 9, 30)
-# #     assert contract_model.end_date == date(2010, 9, 30)
-# #     assert contract_model.psc_contract_specialist == "John Doe"
-# #     assert contract_model.cotr_id == 1
-# #     assert contract_model.created_by == sys_user.id
-# #     assert contract_model.updated_by == sys_user.id
-# #     assert contract_model.created_on is not None
-# #     assert contract_model.updated_on is not None
-# #
-# #     # make sure the version records were created
-# #     assert contract_model.versions[3].name == "Test Contract Updated"
-# #     assert contract_model.versions[3].contract_number == "HHSXXXXXXX1"
-# #     assert contract_model.versions[3].vendor_id == 2
-# #     assert contract_model.versions[3].project_id == 2
-# #     assert contract_model.versions[3].task_order_number == "HHSYYYYYY1"
-# #     assert contract_model.versions[3].po_number == "HHSZZZZZ1"
-# #     assert contract_model.versions[3].acquisition_type == AcquisitionType.FULL_AND_OPEN
-# #     assert contract_model.versions[3].contract_type == ContractType.TIME_AND_MATERIALS
-# #     assert contract_model.versions[3].start_date == date(2000, 9, 30)
-# #     assert contract_model.versions[3].end_date == date(2010, 9, 30)
-# #     assert contract_model.versions[3].psc_contract_specialist == "John Doe"
-# #     assert contract_model.versions[3].cotr_id == 1
-# #     assert contract_model.versions[3].created_by == sys_user.id
-# #     assert contract_model.versions[3].updated_by == sys_user.id
-# #     assert contract_model.versions[3].created_on is not None
-# #     assert contract_model.versions[3].updated_on is not None
-# #
-# #     # make sure the history records are created
-# #     history_record = db_for_contracts.execute(
-# #         select(OpsDBHistory)
-# #         .where(OpsDBHistory.class_name == "ContractAgreement")
-# #         .order_by(OpsDBHistory.created_on.desc())
-# #     ).scalar()
-# #     assert history_record is not None
-# #     assert history_record.event_type == OpsDBHistoryType.UPDATED
-# #     assert history_record.row_key == str(contract_model.id)
-# #     assert history_record.created_by == sys_user.id
-#
-#
+def test_create_models_upsert(db_for_test_with_data):
+    sys_user = get_or_create_sys_user(db_for_test_with_data)
+
+    data_1 = BudgetLineItemData(
+        SYS_CONTRACT_ID=1,
+        SYS_BUDGET_ID=1,
+        SYS_TYPE_OF_MODE_ID=ModType.NEW.value,
+        SYS_CAN_ID=1,
+        SYS_CLIN_ID=1,
+        REQUISITION_NBR="1",
+        MOD_NBR="0000",
+        PSC_FEE_DOC_NBR="1",
+        PSC_FEE_PYMT_REF_NBR="1",
+        EXTEND_POP_TO="2025-10-02",
+        ZERO_REQUISITION_NBR="1",
+        ZERO_REQUISITION_DATE="2025-01-11",
+        REQUISITION_DATE="2025-01-12",
+        OBLIGATION_DATE="2024-11-12",
+        PERF_START_DATE="2024-10-01",
+        PERF_END_DATE="2025-09-30",
+        DATE_NEEDED="2025-09-30",
+        POP_START_DATE="2024-10-01",
+        POP_END_DATE="2025-09-30",
+        CERTIFIED=True,
+        CLOSED=False,
+        STATUS=BudgetLineItemStatus.OBLIGATED.name,
+        ON_HOLD=False,
+        OBJECT_CLASS_CODE=25103,
+        AMOUNT=123.45,
+        OVERWRITE_PSC_FEE_RATE=0.01,
+        LINE_DESCRIPTION="Line Description #1",
+        COMMENTS="Comment #1",
+        CLIN_NAME="SC1",
+        CLIN="1",
+        INVOICE_LINE_NBR="1",
+        REQUISITION_GROUP="1",
+        REQUISITION_CHECK="Yes",
+        DOC_RECEIVED=False,
+    )
+
+    # update the line description
+    data_2 = BudgetLineItemData(
+        SYS_CONTRACT_ID=1,
+        SYS_BUDGET_ID=1,
+        SYS_TYPE_OF_MODE_ID=ModType.NEW.value,
+        SYS_CAN_ID=1,
+        SYS_CLIN_ID=1,
+        REQUISITION_NBR="1",
+        MOD_NBR="0000",
+        PSC_FEE_DOC_NBR="1",
+        PSC_FEE_PYMT_REF_NBR="1",
+        EXTEND_POP_TO="2025-10-02",
+        ZERO_REQUISITION_NBR="1",
+        ZERO_REQUISITION_DATE="2025-01-11",
+        REQUISITION_DATE="2025-01-12",
+        OBLIGATION_DATE="2024-11-12",
+        PERF_START_DATE="2024-10-01",
+        PERF_END_DATE="2025-09-30",
+        DATE_NEEDED="2025-09-30",
+        POP_START_DATE="2024-10-01",
+        POP_END_DATE="2025-09-30",
+        CERTIFIED=True,
+        CLOSED=False,
+        STATUS=BudgetLineItemStatus.OBLIGATED.name,
+        ON_HOLD=False,
+        OBJECT_CLASS_CODE=25103,
+        AMOUNT=123.45,
+        OVERWRITE_PSC_FEE_RATE=0.01,
+        LINE_DESCRIPTION="Line Description #1 Updated",
+        COMMENTS="Comment #1",
+        CLIN_NAME="SC1",
+        CLIN="1",
+        INVOICE_LINE_NBR="1",
+        REQUISITION_GROUP="1",
+        REQUISITION_CHECK="Yes",
+        DOC_RECEIVED=False,
+    )
+
+    # update the sc
+    data_3 = BudgetLineItemData(
+        SYS_CONTRACT_ID=1,
+        SYS_BUDGET_ID=1,
+        SYS_TYPE_OF_MODE_ID=ModType.NEW.value,
+        SYS_CAN_ID=1,
+        SYS_CLIN_ID=1,
+        REQUISITION_NBR="1",
+        MOD_NBR="0000",
+        PSC_FEE_DOC_NBR="1",
+        PSC_FEE_PYMT_REF_NBR="1",
+        EXTEND_POP_TO="2025-10-02",
+        ZERO_REQUISITION_NBR="1",
+        ZERO_REQUISITION_DATE="2025-01-11",
+        REQUISITION_DATE="2025-01-12",
+        OBLIGATION_DATE="2024-11-12",
+        PERF_START_DATE="2024-10-01",
+        PERF_END_DATE="2025-09-30",
+        DATE_NEEDED="2025-09-30",
+        POP_START_DATE="2024-10-01",
+        POP_END_DATE="2025-09-30",
+        CERTIFIED=True,
+        CLOSED=False,
+        STATUS=BudgetLineItemStatus.OBLIGATED.name,
+        ON_HOLD=False,
+        OBJECT_CLASS_CODE=25103,
+        AMOUNT=123.45,
+        OVERWRITE_PSC_FEE_RATE=0.01,
+        LINE_DESCRIPTION="Line Description #1 Updated",
+        COMMENTS="Comment #1",
+        CLIN_NAME="OSC 2",
+        CLIN="1",
+        INVOICE_LINE_NBR="1",
+        REQUISITION_GROUP="1",
+        REQUISITION_CHECK="Yes",
+        DOC_RECEIVED=False,
+    )
+
+    create_models(data_1, sys_user, db_for_test_with_data)
+
+    # make sure the data was loaded
+    bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
+
+    assert bli_model.id == 1
+    assert bli_model.agreement_id == 1
+    assert bli_model.line_description == "Line Description #1"
+    assert bli_model.comments == "Comment #1"
+    assert bli_model.can_id == 1
+    assert bli_model.services_component.number == 1
+    assert bli_model.services_component.optional is False
+    assert bli_model.services_component.description == "SC1"
+    assert bli_model.services_component.period_start == date(2024, 10, 1)
+    assert bli_model.services_component.period_end == date(2025, 9, 30)
+    assert bli_model.services_component.sub_component is None
+    assert bli_model.clin.id == 1
+    assert bli_model.clin.number == 1
+    assert bli_model.clin.name == "SC1"
+    assert bli_model.clin.pop_start_date == date(2024, 10, 1)
+    assert bli_model.clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.amount == Decimal("123.45")
+    assert bli_model.status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.on_hold is False
+    assert bli_model.certified is True
+    assert bli_model.closed is False
+    assert bli_model.closed_by is None
+    assert bli_model.closed_by_user is None
+    assert bli_model.closed_date is None
+    assert bli_model.is_under_current_resolution is False
+    assert bli_model.date_needed == date(2025, 9, 30)
+    assert bli_model.extend_pop_to == date(2025, 10, 2)
+    assert bli_model.start_date == date(2024, 10, 1)
+    assert bli_model.end_date == date(2025, 9, 30)
+    assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
+    assert bli_model.invoice.invoice_line_number == 1
+    assert bli_model.requisition.zero_number == "1"
+    assert bli_model.requisition.zero_date == date(2025, 1, 11)
+    assert bli_model.requisition.number == "1"
+    assert bli_model.requisition.date == date(2025, 1, 12)
+    assert bli_model.requisition.group == 1
+    assert bli_model.requisition.check == "Yes"
+    assert bli_model.object_class_code.id == 1
+    assert bli_model.object_class_code.code == 25103
+    assert bli_model.object_class_code.description == "Test Object Class Code"
+    assert bli_model.mod.number == "0000"
+    assert bli_model.mod.mod_type == ModType.NEW
+    assert bli_model.mod.agreement_id == 1
+    assert bli_model.doc_received is False
+    assert bli_model.psc_fee_doc_number == "1"
+    assert bli_model.psc_fee_pymt_ref_nbr == "1"
+    assert bli_model.obligation_date == date(2024, 11, 12)
+    assert bli_model.created_by == sys_user.id
+    assert bli_model.updated_by == sys_user.id
+    assert bli_model.created_on is not None
+    assert bli_model.updated_on is not None
+    assert bli_model.display_name == "BL 1"
+    assert bli_model.portfolio_id == 1
+    assert bli_model.fiscal_year == 2025
+
+    # make sure the version records were created
+    assert bli_model.versions[0].agreement_id == 1
+    assert bli_model.versions[0].line_description == "Line Description #1"
+    assert bli_model.versions[0].comments == "Comment #1"
+    assert bli_model.versions[0].can_id == 1
+    assert bli_model.versions[0].services_component.number == 1
+    assert bli_model.versions[0].services_component.optional is False
+    assert bli_model.versions[0].services_component.description == "SC1"
+    assert bli_model.versions[0].services_component.period_start == date(2024, 10, 1)
+    assert bli_model.versions[0].services_component.period_end == date(2025, 9, 30)
+    assert bli_model.versions[0].services_component.sub_component is None
+    assert bli_model.versions[0].clin.id == 1
+    assert bli_model.versions[0].clin.number == 1
+    assert bli_model.versions[0].clin.name == "SC1"
+    assert bli_model.versions[0].clin.pop_start_date == date(2024, 10, 1)
+    assert bli_model.versions[0].clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.versions[0].amount == Decimal("123.45")
+    assert bli_model.versions[0].status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.versions[0].on_hold is False
+    assert bli_model.versions[0].certified is True
+    assert bli_model.versions[0].closed is False
+    assert bli_model.versions[0].closed_by is None
+    assert bli_model.versions[0].closed_by_user is None
+    assert bli_model.versions[0].closed_date is None
+    assert bli_model.versions[0].is_under_current_resolution is False
+    assert bli_model.versions[0].date_needed == date(2025, 9, 30)
+    assert bli_model.versions[0].extend_pop_to == date(2025, 10, 2)
+    assert bli_model.versions[0].start_date == date(2024, 10, 1)
+    assert bli_model.versions[0].end_date == date(2025, 9, 30)
+    assert bli_model.versions[0].proc_shop_fee_percentage == Decimal("0.01")
+    assert bli_model.versions[0].invoice.invoice_line_number == 1
+    assert bli_model.versions[0].requisition.zero_number == "1"
+    assert bli_model.versions[0].requisition.zero_date == date(2025, 1, 11)
+    assert bli_model.versions[0].requisition.number == "1"
+    assert bli_model.versions[0].requisition.date == date(2025, 1, 12)
+    assert bli_model.versions[0].requisition.group == 1
+    assert bli_model.versions[0].requisition.check == "Yes"
+    assert bli_model.versions[0].object_class_code.id == 1
+    assert bli_model.versions[0].object_class_code.code == 25103
+    assert bli_model.versions[0].object_class_code.description == "Test Object Class Code"
+    assert bli_model.versions[0].mod.number == "0000"
+    assert bli_model.versions[0].mod.mod_type == ModType.NEW
+    assert bli_model.versions[0].mod.agreement_id == 1
+    assert bli_model.versions[0].doc_received is False
+    assert bli_model.versions[0].psc_fee_doc_number == "1"
+    assert bli_model.versions[0].psc_fee_pymt_ref_nbr == "1"
+    assert bli_model.versions[0].obligation_date == date(2024, 11, 12)
+    assert bli_model.versions[0].created_by == sys_user.id
+    assert bli_model.versions[0].updated_by == sys_user.id
+    assert bli_model.versions[0].created_on is not None
+    assert bli_model.versions[0].updated_on is not None
+
+    # make sure the history records are created
+    history_record = db_for_test_with_data.execute(
+        select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem").order_by(OpsDBHistory.created_on.desc())
+    ).scalar()
+    assert history_record is not None
+    assert history_record.event_type == OpsDBHistoryType.NEW
+    assert history_record.row_key == str(bli_model.id)
+    assert history_record.created_by == sys_user.id
+
+    # upsert the same data - change the line description
+    create_models(data_2, sys_user, db_for_test_with_data)
+
+    # make sure the data was loaded
+    bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
+
+    assert bli_model.id == 1
+    assert bli_model.agreement_id == 1
+    assert bli_model.line_description == "Line Description #1 Updated"
+    assert bli_model.comments == "Comment #1"
+    assert bli_model.can_id == 1
+    assert bli_model.services_component.number == 1
+    assert bli_model.services_component.optional is False
+    assert bli_model.services_component.description == "SC1"
+    assert bli_model.services_component.period_start == date(2024, 10, 1)
+    assert bli_model.services_component.period_end == date(2025, 9, 30)
+    assert bli_model.services_component.sub_component is None
+    assert bli_model.clin.id == 1
+    assert bli_model.clin.number == 1
+    assert bli_model.clin.name == "SC1"
+    assert bli_model.clin.pop_start_date == date(2024, 10, 1)
+    assert bli_model.clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.amount == Decimal("123.45")
+    assert bli_model.status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.on_hold is False
+    assert bli_model.certified is True
+    assert bli_model.closed is False
+    assert bli_model.closed_by is None
+    assert bli_model.closed_by_user is None
+    assert bli_model.closed_date is None
+    assert bli_model.is_under_current_resolution is False
+    assert bli_model.date_needed == date(2025, 9, 30)
+    assert bli_model.extend_pop_to == date(2025, 10, 2)
+    assert bli_model.start_date == date(2024, 10, 1)
+    assert bli_model.end_date == date(2025, 9, 30)
+    assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
+    assert bli_model.invoice.invoice_line_number == 1
+    assert bli_model.requisition.zero_number == "1"
+    assert bli_model.requisition.zero_date == date(2025, 1, 11)
+    assert bli_model.requisition.number == "1"
+    assert bli_model.requisition.date == date(2025, 1, 12)
+    assert bli_model.requisition.group == 1
+    assert bli_model.requisition.check == "Yes"
+    assert bli_model.object_class_code.id == 1
+    assert bli_model.object_class_code.code == 25103
+    assert bli_model.object_class_code.description == "Test Object Class Code"
+    assert bli_model.mod.number == "0000"
+    assert bli_model.mod.mod_type == ModType.NEW
+    assert bli_model.mod.agreement_id == 1
+    assert bli_model.doc_received is False
+    assert bli_model.psc_fee_doc_number == "1"
+    assert bli_model.psc_fee_pymt_ref_nbr == "1"
+    assert bli_model.obligation_date == date(2024, 11, 12)
+    assert bli_model.created_by == sys_user.id
+    assert bli_model.updated_by == sys_user.id
+    assert bli_model.created_on is not None
+    assert bli_model.updated_on is not None
+    assert bli_model.display_name == "BL 1"
+    assert bli_model.portfolio_id == 1
+    assert bli_model.fiscal_year == 2025
+
+    # make sure the version records were created
+    assert bli_model.versions[1].agreement_id == 1
+    assert bli_model.versions[1].line_description == "Line Description #1 Updated"
+    assert bli_model.versions[1].comments == "Comment #1"
+    assert bli_model.versions[1].can_id == 1
+    assert bli_model.versions[1].services_component.number == 1
+    assert bli_model.versions[1].services_component.optional is False
+    assert bli_model.versions[1].services_component.description == "SC1"
+    assert bli_model.versions[1].services_component.period_start == date(2024, 10, 1)
+    assert bli_model.versions[1].services_component.period_end == date(2025, 9, 30)
+    assert bli_model.versions[1].services_component.sub_component is None
+    assert bli_model.versions[1].clin.id == 1
+    assert bli_model.versions[1].clin.number == 1
+    assert bli_model.versions[1].clin.name == "SC1"
+    assert bli_model.versions[1].clin.pop_start_date == date(2024, 10, 1)
+    assert bli_model.versions[1].clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.versions[1].amount == Decimal("123.45")
+    assert bli_model.versions[1].status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.versions[1].on_hold is False
+    assert bli_model.versions[1].certified is True
+    assert bli_model.versions[1].closed is False
+    assert bli_model.versions[1].closed_by is None
+    assert bli_model.versions[1].closed_by_user is None
+    assert bli_model.versions[1].closed_date is None
+    assert bli_model.versions[1].is_under_current_resolution is False
+    assert bli_model.versions[1].date_needed == date(2025, 9, 30)
+    assert bli_model.versions[1].extend_pop_to == date(2025, 10, 2)
+    assert bli_model.versions[1].start_date == date(2024, 10, 1)
+    assert bli_model.versions[1].end_date == date(2025, 9, 30)
+    assert bli_model.versions[1].proc_shop_fee_percentage == Decimal("0.01")
+    assert bli_model.versions[1].invoice.invoice_line_number == 1
+    assert bli_model.versions[1].requisition.zero_number == "1"
+    assert bli_model.versions[1].requisition.zero_date == date(2025, 1, 11)
+    assert bli_model.versions[1].requisition.number == "1"
+    assert bli_model.versions[1].requisition.date == date(2025, 1, 12)
+    assert bli_model.versions[1].requisition.group == 1
+    assert bli_model.versions[1].requisition.check == "Yes"
+    assert bli_model.versions[1].object_class_code.id == 1
+    assert bli_model.versions[1].object_class_code.code == 25103
+    assert bli_model.versions[1].object_class_code.description == "Test Object Class Code"
+    assert bli_model.versions[1].mod.number == "0000"
+    assert bli_model.versions[1].mod.mod_type == ModType.NEW
+    assert bli_model.versions[1].mod.agreement_id == 1
+    assert bli_model.versions[1].doc_received is False
+    assert bli_model.versions[1].psc_fee_doc_number == "1"
+    assert bli_model.versions[1].psc_fee_pymt_ref_nbr == "1"
+    assert bli_model.versions[1].obligation_date == date(2024, 11, 12)
+    assert bli_model.versions[1].created_by == sys_user.id
+    assert bli_model.versions[1].updated_by == sys_user.id
+    assert bli_model.versions[1].created_on is not None
+    assert bli_model.versions[1].updated_on is not None
+
+    # make sure the history records are created
+    history_record = db_for_test_with_data.execute(
+        select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem").order_by(OpsDBHistory.created_on.desc())
+    ).scalar()
+    assert history_record is not None
+    assert history_record.event_type == OpsDBHistoryType.UPDATED
+    assert history_record.row_key == str(bli_model.id)
+    assert history_record.created_by == sys_user.id
+
+    # upsert the same data - change the sc
+    create_models(data_3, sys_user, db_for_test_with_data)
+
+    # make sure the data was loaded
+    bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
+
+    assert bli_model.id == 1
+    assert bli_model.agreement_id == 1
+    assert bli_model.line_description == "Line Description #1 Updated"
+    assert bli_model.comments == "Comment #1"
+    assert bli_model.can_id == 1
+    assert bli_model.services_component.number == 2
+    assert bli_model.services_component.optional is True
+    assert bli_model.services_component.description == "OSC 2"
+    assert bli_model.services_component.period_start == date(2024, 10, 1)
+    assert bli_model.services_component.period_end == date(2025, 9, 30)
+    assert bli_model.services_component.sub_component is None
+    assert bli_model.clin.id == 1
+    assert bli_model.clin.number == 1
+    assert bli_model.clin.name == "SC1"
+    assert bli_model.clin.pop_start_date == date(2024, 10, 1)
+    assert bli_model.clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.amount == Decimal("123.45")
+    assert bli_model.status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.on_hold is False
+    assert bli_model.certified is True
+    assert bli_model.closed is False
+    assert bli_model.closed_by is None
+    assert bli_model.closed_by_user is None
+    assert bli_model.closed_date is None
+    assert bli_model.is_under_current_resolution is False
+    assert bli_model.date_needed == date(2025, 9, 30)
+    assert bli_model.extend_pop_to == date(2025, 10, 2)
+    assert bli_model.start_date == date(2024, 10, 1)
+    assert bli_model.end_date == date(2025, 9, 30)
+    assert bli_model.proc_shop_fee_percentage == Decimal("0.01")
+    assert bli_model.invoice.invoice_line_number == 1
+    assert bli_model.requisition.zero_number == "1"
+    assert bli_model.requisition.zero_date == date(2025, 1, 11)
+    assert bli_model.requisition.number == "1"
+    assert bli_model.requisition.date == date(2025, 1, 12)
+    assert bli_model.requisition.group == 1
+    assert bli_model.requisition.check == "Yes"
+    assert bli_model.object_class_code.id == 1
+    assert bli_model.object_class_code.code == 25103
+    assert bli_model.object_class_code.description == "Test Object Class Code"
+    assert bli_model.mod.number == "0000"
+    assert bli_model.mod.mod_type == ModType.NEW
+    assert bli_model.mod.agreement_id == 1
+    assert bli_model.doc_received is False
+    assert bli_model.psc_fee_doc_number == "1"
+    assert bli_model.psc_fee_pymt_ref_nbr == "1"
+    assert bli_model.obligation_date == date(2024, 11, 12)
+    assert bli_model.created_by == sys_user.id
+    assert bli_model.updated_by == sys_user.id
+    assert bli_model.created_on is not None
+    assert bli_model.updated_on is not None
+    assert bli_model.display_name == "BL 1"
+    assert bli_model.portfolio_id == 1
+    assert bli_model.fiscal_year == 2025
+
+    # make sure the version records were created
+    assert bli_model.versions[2].agreement_id == 1
+    assert bli_model.versions[2].line_description == "Line Description #1 Updated"
+    assert bli_model.versions[2].comments == "Comment #1"
+    assert bli_model.versions[2].can_id == 1
+    assert bli_model.versions[2].services_component.number == 2
+    assert bli_model.versions[2].services_component.optional is True
+    assert bli_model.versions[2].services_component.description == "OSC 2"
+    assert bli_model.versions[2].services_component.period_start == date(2024, 10, 1)
+    assert bli_model.versions[2].services_component.period_end == date(2025, 9, 30)
+    assert bli_model.versions[2].services_component.sub_component is None
+    assert bli_model.versions[2].clin.id == 1
+    assert bli_model.versions[2].clin.number == 1
+    assert bli_model.versions[2].clin.name == "SC1"
+    assert bli_model.versions[2].clin.pop_start_date == date(2024, 10, 1)
+    assert bli_model.versions[2].clin.pop_end_date == date(2025, 9, 30)
+    assert bli_model.versions[2].amount == Decimal("123.45")
+    assert bli_model.versions[2].status == BudgetLineItemStatus.OBLIGATED
+    assert bli_model.versions[2].on_hold is False
+    assert bli_model.versions[2].certified is True
+    assert bli_model.versions[2].closed is False
+    assert bli_model.versions[2].closed_by is None
+    assert bli_model.versions[2].closed_by_user is None
+    assert bli_model.versions[2].closed_date is None
+    assert bli_model.versions[2].is_under_current_resolution is False
+    assert bli_model.versions[2].date_needed == date(2025, 9, 30)
+    assert bli_model.versions[2].extend_pop_to == date(2025, 10, 2)
+    assert bli_model.versions[2].start_date == date(2024, 10, 1)
+    assert bli_model.versions[2].end_date == date(2025, 9, 30)
+    assert bli_model.versions[2].proc_shop_fee_percentage == Decimal("0.01")
+    assert bli_model.versions[2].invoice.invoice_line_number == 1
+    assert bli_model.versions[2].requisition.zero_number == "1"
+    assert bli_model.versions[2].requisition.zero_date == date(2025, 1, 11)
+    assert bli_model.versions[2].requisition.number == "1"
+    assert bli_model.versions[2].requisition.date == date(2025, 1, 12)
+    assert bli_model.versions[2].requisition.group == 1
+    assert bli_model.versions[2].requisition.check == "Yes"
+    assert bli_model.versions[2].object_class_code.id == 1
+    assert bli_model.versions[2].object_class_code.code == 25103
+    assert bli_model.versions[2].object_class_code.description == "Test Object Class Code"
+    assert bli_model.versions[2].mod.number == "0000"
+    assert bli_model.versions[2].mod.mod_type == ModType.NEW
+    assert bli_model.versions[2].mod.agreement_id == 1
+    assert bli_model.versions[2].doc_received is False
+    assert bli_model.versions[2].psc_fee_doc_number == "1"
+    assert bli_model.versions[2].psc_fee_pymt_ref_nbr == "1"
+    assert bli_model.versions[2].obligation_date == date(2024, 11, 12)
+    assert bli_model.versions[2].created_by == sys_user.id
+    assert bli_model.versions[2].updated_by == sys_user.id
+    assert bli_model.versions[2].created_on is not None
+    assert bli_model.versions[2].updated_on is not None
+
+    # make sure the history records are created
+    history_record = db_for_test_with_data.execute(
+        select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem").order_by(OpsDBHistory.created_on.desc())
+    ).scalar()
+    assert history_record is not None
+    assert history_record.event_type == OpsDBHistoryType.UPDATED
+    assert history_record.row_key == str(bli_model.id)
+    assert history_record.created_by == sys_user.id
+
 def test_get_sc_create_new(db_for_test):
     """
     Test creating a new ServicesComponent for the BLI.
