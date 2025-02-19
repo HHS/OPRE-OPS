@@ -881,6 +881,7 @@ def test_create_models_upsert(db_for_test_with_data):
     assert history_record.row_key == str(bli_model.id)
     assert history_record.created_by == sys_user.id
 
+
 def test_get_sc_create_new(db_for_test):
     """
     Test creating a new ServicesComponent for the BLI.

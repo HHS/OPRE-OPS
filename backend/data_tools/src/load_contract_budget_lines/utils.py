@@ -218,6 +218,8 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             psc_fee_doc_number=data.PSC_FEE_DOC_NBR,
             psc_fee_pymt_ref_nbr=data.PSC_FEE_PYMT_REF_NBR,
             obligation_date=data.OBLIGATION_DATE,
+            created_by=sys_user.id,
+            updated_by=sys_user.id,
         )
 
         existing_bli = session.get(BudgetLineItem, data.SYS_BUDGET_ID)
