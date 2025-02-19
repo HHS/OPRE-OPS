@@ -4,16 +4,16 @@ import App from "../../../App";
 import {
     useGetCanFundingSummaryQuery,
     useGetPortfolioByIdQuery,
-    useGetPortfolioCalcFundingQuery,
     useGetPortfolioCansByIdQuery,
+    useGetPortfolioFundingSummaryQuery,
     useGetProjectsByPortfolioQuery
 } from "../../../api/opsAPI";
+import DebugCode from "../../../components/DebugCode";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
-import { setSelectedFiscalYear } from "./portfolioSlice";
-import DebugCode from "../../../components/DebugCode";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
+import { setSelectedFiscalYear } from "./portfolioSlice";
 
 const PortfolioDetail = () => {
     /**
@@ -28,7 +28,7 @@ const PortfolioDetail = () => {
         portfolioId,
         year: fiscalYear
     });
-    const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioCalcFundingQuery({
+    const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioFundingSummaryQuery({
         portfolioId,
         fiscalYear
     });
@@ -82,8 +82,8 @@ const PortfolioDetail = () => {
                 />
             </div>
             <DebugCode
-                title="detail page"
-                data={{ CANFunding }}
+                title="portfolioFunding from detail page"
+                data={portfolioFunding}
             />
         </App>
     );

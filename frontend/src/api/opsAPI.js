@@ -137,7 +137,7 @@ export const opsApi = createApi({
             providesTags: ["ResearchProjects"]
         }),
         getProjectsByPortfolio: builder.query({
-            query: ({fiscal_year,portfolio_id,search}) => {
+            query: ({ fiscal_year, portfolio_id, search }) => {
                 const queryParams = [];
                 if (fiscal_year) {
                     queryParams.push(`fiscal_year=${fiscal_year}`);
@@ -153,7 +153,7 @@ export const opsApi = createApi({
             providesTags: ["ResearchProjects"]
         }),
         getResearchProjectsByPortfolio: builder.query({
-            query: ({fiscal_year,portfolio_id,search}) => {
+            query: ({ fiscal_year, portfolio_id, search }) => {
                 const queryParams = [];
                 if (fiscal_year) {
                     queryParams.push(`fiscal_year=${fiscal_year}`);
@@ -396,6 +396,7 @@ export const opsApi = createApi({
             },
             providesTags: ["Portfolios"]
         }),
+        // NOTE: This endpoint will be deprecated in the future and replaced by getPortfolioFundingSummary
         getPortfolioCalcFunding: builder.query({
             query: ({ portfolioId, fiscalYear, simulatedError }) => {
                 const queryParams = [];
@@ -406,6 +407,19 @@ export const opsApi = createApi({
                     queryParams.push(`simulatedError`);
                 }
                 return `/portfolios/${portfolioId}/calcFunding/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Portfolios"]
+        }),
+        getPortfolioFundingSummary: builder.query({
+            query: ({ portfolioId, fiscalYear, simulatedError }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (simulatedError) {
+                    queryParams.push(`simulatedError`);
+                }
+                return `/portfolio-funding-summary/${portfolioId}?${queryParams.join("&")}`;
             },
             providesTags: ["Portfolios"]
         }),
@@ -559,6 +573,7 @@ export const {
     useGetPortfolioByIdQuery,
     useGetPortfolioCansByIdQuery,
     useGetPortfolioCalcFundingQuery,
+    useGetPortfolioFundingSummaryQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,

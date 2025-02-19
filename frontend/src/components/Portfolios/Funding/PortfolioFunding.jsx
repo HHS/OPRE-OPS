@@ -1,7 +1,6 @@
 import { useOutletContext } from "react-router-dom";
 
 import CanCard from "../../CANs/CanCard/CanCard";
-import DebugCode from "../../DebugCode";
 
 const PortfolioFunding = () => {
     const { fiscalYear, canIds } = useOutletContext();
@@ -14,15 +13,13 @@ const PortfolioFunding = () => {
                     The summary below shows the funding for this Portfolio’s CANs for the selected fiscal year.
                 </p>
 
-                {/* <div className="display-flex flex-justify">
-                    <ResearchBudgetVsSpending portfolioId={portfolioId} />
-                    <ProjectsAndAgreements
-                        portfolioId={portfolioId}
-                        numberOfProjects={numberOfProjects}
-                        numOfResearchProjects={filteredResearchProjects.length}
-                        numOfAdminAndSupportProjects={filteredAdminAndSupportProjects.length}
-                    />
-                </div> */}
+                <div className="display-flex flex-justify">
+                    {/*
+                    TODO: add cards here
+                    PortfolioFundingTotal on left side
+                    CANBudgetByFYCard on right side
+                    */}
+                </div>
             </section>
             <section>
                 <h2 className="font-sans-lg">Portfolio Budget by CAN </h2>
@@ -39,10 +36,6 @@ const PortfolioFunding = () => {
                     />
                 ))}
             </section>
-            <DebugCode
-                title="Portfolio Funding"
-                data={{ canIds }}
-            />
         </>
     );
 };

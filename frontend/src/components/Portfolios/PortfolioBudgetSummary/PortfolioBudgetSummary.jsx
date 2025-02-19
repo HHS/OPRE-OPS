@@ -1,7 +1,7 @@
 import { calculatePercent } from "../../../helpers/utils";
 import BigBudgetCard from "../../UI/Cards/BudgetCard/BigBudgetCard";
-import ProjectAgreementBLICard from "../../UI/Cards/ProjectAgreementBLICard";
 import DonutGraphWithLegendCard from "../../UI/Cards/DonutGraphWithLegendCard";
+import ProjectAgreementBLICard from "../../UI/Cards/ProjectAgreementBLICard";
 
 /**
  * @typedef {Object} PortfolioBudgetSummaryProps
@@ -27,7 +27,22 @@ import DonutGraphWithLegendCard from "../../UI/Cards/DonutGraphWithLegendCard";
  * @returns {JSX.Element}
  */
 
-const PortfolioBudgetSummary = ({ fiscalYear, portfolioFunding, projectTypesCount, budgetLineTypesCount, agreementTypesCount, inDraftFunding }) => {
+const PortfolioBudgetSummary = ({
+    fiscalYear,
+    portfolioFunding,
+    projectTypesCount,
+    budgetLineTypesCount,
+    agreementTypesCount,
+    inDraftFunding
+}) => {
+    // NOTE: TEST DATA to test chart
+    // portfolioFunding = {
+    //     total_funding: { amount: 10_000_000 },
+    //     in_execution_funding: { amount: 1_000_000 },
+    //     obligated_funding: { amount: 2_000_000 },
+    //     planned_funding: { amount: 3_000_000 }
+    // };
+
     const {
         total_funding: { amount: totalFunding },
         in_execution_funding: { amount: inExecutionFunding },

@@ -1,11 +1,9 @@
+import React, { useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
+import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
-import DebugCode from "../../DebugCode";
-import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
-import { useEffect } from "react";
-import React from "react";
 
 const BudgetAndSpending = () => {
     const [budgetLineItems, setBudgetLineItems] = React.useState([]);
@@ -75,10 +73,6 @@ const BudgetAndSpending = () => {
             <CANBudgetLineTable
                 budgetLines={budgetLineItems}
                 totalFunding={portfolioFunding?.total_funding.amount}
-            />
-            <DebugCode
-                title="spending page"
-                data={{ portfolioFunding }}
             />
         </>
     );
