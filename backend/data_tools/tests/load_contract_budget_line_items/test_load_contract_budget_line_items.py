@@ -9,6 +9,8 @@ from data_tools.src.load_contract_budget_lines.utils import (
     create_models,
     get_clin,
     get_invoice,
+    get_mod,
+    get_requisition,
     get_sc,
     validate_data,
 )
@@ -829,3 +831,106 @@ def test_get_invoice_none(db_for_test):
         db_for_test,
     )
     assert invoice is None
+
+
+def test_get_requisition_new(db_for_test):
+    requisition = get_requisition(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_BUDGET_ID=1,
+            ZERO_REQUISITION_NBR="REQZ-FY24-0001",
+            ZERO_REQUISITION_DATE="2025-01-11",
+            REQUISITION_NBR="REQZ-FY24-0002",
+            REQUISITION_DATE="2025-01-12",
+            REQUISITION_GROUP="1",
+            REQUISITION_CHECK="Yes",
+        ),
+        db_for_test,
+    )
+    assert requisition is not None
+    assert requisition.zero_number == "REQZ-FY24-0001"
+    assert requisition.zero_date == date(2025, 1, 11)
+    assert requisition.number == "REQZ-FY24-0002"
+    assert requisition.date == date(2025, 1, 12)
+    assert requisition.group == 1
+    assert requisition.check == "Yes"
+
+
+def test_get_requisition_existing(db_for_test):
+    bli = BudgetLineItem(
+        id=1,
+        agreement_id=1,
+    )
+    existing_requisition = Requisition(
+        budget_line_item_id=1,
+        zero_number="REQZ-FY24-0001",
+        zero_date=date(2025, 1, 11),
+        number="REQZ-FY24-0002",
+        date=date(2025, 1, 12),
+        group=1,
+        check="Yes",
+    )
+    db_for_test.add(bli)
+    db_for_test.add(existing_requisition)
+    db_for_test.commit()
+
+    requisition = get_requisition(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_BUDGET_ID=1,
+            ZERO_REQUISITION_NBR="REQZ-FY24-0001",
+            REQUISITION_NBR="REQZ-FY24-0002",
+        ),
+        db_for_test,
+    )
+    assert requisition == existing_requisition
+
+    db_for_test.delete(existing_requisition)
+    db_for_test.delete(bli)
+    db_for_test.commit()
+
+
+def test_get_mod_new(db_for_test):
+    mod = get_mod(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_BUDGET_ID=1,
+            MOD_NBR="0000",
+            SYS_TYPE_OF_MODE_ID=ModType.NEW.value,
+        ),
+        db_for_test,
+    )
+    assert mod is not None
+    assert mod.number == "0000"
+    assert mod.mod_type == ModType.NEW
+    assert mod.agreement_id == 1
+    assert mod.mod_date is None
+
+
+def test_get_mod_existing(db_for_test):
+    bli = BudgetLineItem(
+        id=1,
+        agreement_id=1,
+    )
+    existing_mod = AgreementMod(
+        number="0000",
+        mod_type=ModType.NEW,
+        agreement_id=1,
+    )
+    db_for_test.add(bli)
+    db_for_test.add(existing_mod)
+    db_for_test.commit()
+
+    mod = get_mod(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_BUDGET_ID=1,
+            MOD_NBR="0000",
+        ),
+        db_for_test,
+    )
+    assert mod == existing_mod
+
+    db_for_test.delete(existing_mod)
+    db_for_test.delete(bli)
+    db_for_test.commit()

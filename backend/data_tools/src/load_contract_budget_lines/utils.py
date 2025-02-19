@@ -12,11 +12,14 @@ from sqlalchemy.orm import Session
 from models import (
     CAN,
     CLIN,
+    AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
     Invoice,
     ModType,
+    ObjectClassCode,
+    Requisition,
     ServicesComponent,
     User,
 )
@@ -175,11 +178,17 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         if not contract:
             raise ValueError(f"ContractAgreement with SYS_CONTRACT_ID {data.SYS_CONTRACT_ID} not found.")
 
+        object_class_code = session.execute(
+            select(ObjectClassCode).where(ObjectClassCode.code == data.OBJECT_CLASS_CODE)
+        ).scalar_one_or_none()
+
         can = session.get(CAN, data.SYS_CAN_ID)
 
         sc = get_sc(data, session)
         clin = get_clin(data, session)
         invoice = get_invoice(data, session)
+        requisition = get_requisition(data, session)
+        mod = get_mod(data, session)
 
         bli = BudgetLineItem(
             id=data.SYS_BUDGET_ID,
@@ -202,6 +211,10 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             start_date=data.PERF_START_DATE,
             end_date=data.PERF_END_DATE,
             proc_shop_fee_percentage=data.OVERWRITE_PSC_FEE_RATE,
+            invoice=invoice,
+            requisition=requisition,
+            object_class_code_id=object_class_code.id if object_class_code else None,
+            mod_id=mod.id if mod else None,
         )
 
         #
@@ -355,3 +368,39 @@ def get_invoice(data: BudgetLineItemData, session: Session) -> Invoice | None:
         )
 
     return invoice
+
+
+def get_requisition(data: BudgetLineItemData, session: Session) -> Requisition | None:
+    requisition = session.execute(
+        select(Requisition).where(Requisition.budget_line_item_id == data.SYS_BUDGET_ID)
+    ).scalar_one_or_none()
+
+    if not requisition:
+        requisition = Requisition(
+            budget_line_item_id=data.SYS_BUDGET_ID,
+            zero_number=data.ZERO_REQUISITION_NBR,
+            zero_date=data.ZERO_REQUISITION_DATE,
+            number=data.REQUISITION_NBR,
+            date=data.REQUISITION_DATE,
+            group=data.REQUISITION_GROUP,
+            check=data.REQUISITION_CHECK,
+        )
+
+    return requisition
+
+
+def get_mod(data: BudgetLineItemData, session: Session) -> AgreementMod | None:
+    mod = session.execute(
+        select(AgreementMod)
+        .where(AgreementMod.agreement_id == data.SYS_CONTRACT_ID)
+        .where(AgreementMod.number == data.MOD_NBR)
+    ).scalar_one_or_none()
+
+    if not mod:
+        mod = AgreementMod(
+            agreement_id=data.SYS_CONTRACT_ID,
+            number=data.MOD_NBR,
+            mod_type=data.SYS_TYPE_OF_MODE_ID,
+        )
+
+    return mod
