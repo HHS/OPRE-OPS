@@ -4,6 +4,7 @@ from models.base import BaseModel
 from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI
+from ops_api.ops.schemas.portfolio_funding_summary import RequestSchema
 from ops_api.ops.utils.portfolios import get_total_funding
 
 
@@ -18,7 +19,8 @@ class PortfolioCalculateFundingAPI(BaseItemAPI):
 
         /portfolios/<int:id>/calcFunding/
         """
-        fiscal_year = request.args.get("fiscal_year")
+        schema = RequestSchema()
+        data = schema.load(request.args)
         portfolio = self._get_item(id)
-        total_funding = get_total_funding(portfolio, fiscal_year)
+        total_funding = get_total_funding(portfolio, data.get("fiscal_year"))
         return jsonify(total_funding)
