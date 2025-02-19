@@ -1,7 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Accordion from "../../components/UI/Accordion";
-import { toSlugCase } from "../../helpers/utils";
 
 const HowToGuides = () => {
     const components = {
@@ -17,23 +16,20 @@ const HowToGuides = () => {
         <>
             <h2 className="margin-bottom-4">How-to Guides</h2>
             <section className="usa-prose">
-                {data.map((item) => (
-                    <div
-                        key={item.heading}
-                        id={toSlugCase(item.heading)}
+            {data.map((item) => (
+                <Accordion
+                    key={item.heading}
+                    heading={item.heading}
+                    level={3}
+                    isClosed={true}
+                >
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={components}
                     >
-                        <Accordion
-                            heading={item.heading}
-                            isClosed={true}
-                        >
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={components}
-                            >
-                                {item.content}
-                            </ReactMarkdown>
-                        </Accordion>
-                    </div>
+                        {item.content}
+                    </ReactMarkdown>
+                </Accordion>
                 ))}
             </section>
         </>
