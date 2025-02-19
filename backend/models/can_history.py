@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 from enum import Enum, auto
+from typing import List
 
 from loguru import logger
 from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped, Session, mapped_column, object_session
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from models import OpsEvent, OpsEventStatus, OpsEventType, Portfolio, User
 from models.base import BaseModel
@@ -60,7 +60,7 @@ def can_history_trigger_func(
     assert session is not None
 
     event_user = session.get(User, event.created_by)
-
+    history_events = []
     match event.event_type:
         case OpsEventType.CREATE_NEW_CAN:
             current_fiscal_year = format_fiscal_year(event.event_details["new_can"]["created_on"])
@@ -69,26 +69,27 @@ def can_history_trigger_func(
                 ops_event_id=event.id,
                 history_title=f"FY {current_fiscal_year} Data Import",
                 history_message=f"FY {current_fiscal_year} CAN Funding Information imported from CANBACs",
-                timestamp=event.created_on,
+                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=CANHistoryType.CAN_DATA_IMPORT,
                 fiscal_year = current_fiscal_year
             )
-            session.add(history_event)
+            history_events.append(history_event)
         case OpsEventType.UPDATE_CAN:
             # Handle CAN Updates
             change_dict = event.event_details["can_updates"]["changes"]
             for key in change_dict.keys():
-                create_can_update_history_event(
+                history_items = create_can_update_history_event(
                     key,
                     change_dict[key]["old_value"],
                     change_dict[key]["new_value"],
                     event_user,
-                    event.created_on,
+                    event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     event.event_details["can_updates"]["can_id"],
                     event.id,
                     session,
                     system_user
                 )
+                history_events.extend(history_items)
         case OpsEventType.CREATE_CAN_FUNDING_BUDGET:
             current_fiscal_year = format_fiscal_year(event.event_details["new_can_funding_budget"]["created_on"])
             budget = "${:,.2f}".format(event.event_details["new_can_funding_budget"]["budget"])
@@ -98,11 +99,11 @@ def can_history_trigger_func(
                 ops_event_id=event.id,
                 history_title=f"FY {current_fiscal_year} Budget Entered",
                 history_message=f"{creator_name} entered a FY {current_fiscal_year} budget of {budget}",
-                timestamp=event.created_on,
+                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=CANHistoryType.CAN_FUNDING_CREATED,
                 fiscal_year=current_fiscal_year
             )
-            session.add(history_event)
+            history_events.append(history_event)
         case OpsEventType.UPDATE_CAN_FUNDING_BUDGET:
             # fiscal year for edits will always be when the event was created. We're not importing old event history
             current_fiscal_year = format_fiscal_year(event.created_on)
@@ -116,11 +117,11 @@ def can_history_trigger_func(
                     ops_event_id=event.id,
                     history_title=f"FY {current_fiscal_year} Budget Edited",
                     history_message=f"{event_user.full_name} edited the FY {current_fiscal_year} budget from {old_budget} to {new_budget}",
-                    timestamp=event.created_on,
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=CANHistoryType.CAN_FUNDING_EDITED,
                     fiscal_year=current_fiscal_year
                 )
-                session.add(history_event)
+                history_events.append(history_event)
         case OpsEventType.CREATE_CAN_FUNDING_RECEIVED:
             funding = "${:,.2f}".format(event.event_details["new_can_funding_received"]["funding"])
             current_fiscal_year = format_fiscal_year(event.event_details["new_can_funding_received"]["created_on"])
@@ -130,11 +131,11 @@ def can_history_trigger_func(
                 ops_event_id=event.id,
                 history_title="Funding Received Added",
                 history_message=f"{creator_name} added funding received to funding ID {event.event_details['new_can_funding_received']['id']} in the amount of {funding}",
-                timestamp=event.created_on,
+                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=CANHistoryType.CAN_RECEIVED_CREATED,
                 fiscal_year=current_fiscal_year
             )
-            session.add(history_event)
+            history_events.append(history_event)
         case OpsEventType.UPDATE_CAN_FUNDING_RECEIVED:
             changes = event.event_details["funding_received_updates"]["changes"]
             current_fiscal_year = format_fiscal_year(event.created_on)
@@ -147,11 +148,11 @@ def can_history_trigger_func(
                     ops_event_id=event.id,
                     history_title="Funding Received Edited",
                     history_message=f"{event_user.full_name} edited funding received for funding ID {event.event_details['funding_received_updates']['funding_id']} from {old_funding} to {new_funding}",
-                    timestamp=event.created_on,
+                    timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     history_type=CANHistoryType.CAN_RECEIVED_EDITED,
                     fiscal_year=current_fiscal_year
                 )
-                session.add(history_event)
+                history_events.append(history_event)
         case OpsEventType.DELETE_CAN_FUNDING_RECEIVED:
             funding = "${:,.2f}".format(event.event_details["deleted_can_funding_received"]["funding"])
             current_fiscal_year = format_fiscal_year(event.event_details["deleted_can_funding_received"]["created_on"])
@@ -161,11 +162,12 @@ def can_history_trigger_func(
                 ops_event_id=event.id,
                 history_title="Funding Received Deleted",
                 history_message=f"{creator_name} deleted funding received for funding ID {event.event_details['deleted_can_funding_received']['id']} in the amount of {funding}",
-                timestamp=event.created_on,
+                timestamp=event.created_on.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 history_type=CANHistoryType.CAN_RECEIVED_DELETED,
                 fiscal_year=current_fiscal_year
             )
-            session.add(history_event)
+            history_events.append(history_event)
+    add_history_events(history_events, session)
     session.commit()
 
 
@@ -196,9 +198,10 @@ def create_can_update_history_event(
     updated_by_sys_user = sys_user.id == updated_by_user.id
 
     current_fiscal_year = format_fiscal_year(updated_on)
+    event_history = []
     match property_name:
         case "nick_name":
-            session.add(CANHistory(
+            event_history.append(CANHistory(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="Nickname Edited",
@@ -208,7 +211,7 @@ def create_can_update_history_event(
                 fiscal_year=current_fiscal_year
             ))
         case "description":
-            session.add(CANHistory(
+            event_history.append(CANHistory(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="Description Edited",
@@ -220,7 +223,7 @@ def create_can_update_history_event(
         case "portfolio_id":
             old_portfolio = session.get(Portfolio, old_value)
             new_portfolio = session.get(Portfolio, new_value)
-            session.add(CANHistory(
+            event_history.append(CANHistory(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="CAN Portfolio Edited",
@@ -230,7 +233,7 @@ def create_can_update_history_event(
                 fiscal_year=current_fiscal_year
             ))
             if old_portfolio.division_id != new_portfolio.division_id:
-                session.add(CANHistory(
+                event_history.append(CANHistory(
                 can_id=can_id,
                 ops_event_id=ops_event_id,
                 history_title="CAN Division Edited",
@@ -241,4 +244,20 @@ def create_can_update_history_event(
             ))
         case _:
             logger.info(f"{property_name} edited by {updated_by_user.full_name} from {old_value} to {new_value}")
-            return None
+
+    return event_history
+
+def add_history_events(events: List[CANHistory], session):
+    '''Add a list of CANHistory events to the database session. First check that there are not any matching events already in the database to prevent duplicates.'''
+    for event in events:
+        can_history_items = session.query(CANHistory).where(CANHistory.ops_event_id == event.ops_event_id).all()
+        duplicate_found = False
+        for item in can_history_items:
+            if item.timestamp == event.timestamp and item.history_type == event.history_type and item.history_message == event.history_message and item.fiscal_year == event.fiscal_year:
+                # enough fields match that we're willing to say this is a duplicate.
+                duplicate_found = True
+                break
+
+        # If no duplicate of the event was found, add it to the database session.
+        if not duplicate_found:
+            session.add(event)
