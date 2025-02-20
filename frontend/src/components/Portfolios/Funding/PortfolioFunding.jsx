@@ -79,7 +79,10 @@ const PortfolioFunding = () => {
                         data={data}
                         bigNumber={portfolioFunding.total_funding.amount}
                     />
-                    <Card title="Portfolio Budget by FY" dataCy="portfolio-budget-card">
+                    <Card
+                        title="Portfolio Budget by FY"
+                        dataCy="portfolio-budget-card"
+                    >
                         {chartData.map((item, i) => (
                             <LineBar
                                 key={`budget-fy-${item.FY}`}
@@ -100,13 +103,17 @@ const PortfolioFunding = () => {
                     means the funding has been received by OPRE. Spending equals the sum of Budget Lines in Planned,
                     Executing and Obligated Status.
                 </p>
-                {canIds.map((canId) => (
-                    <CanCard
-                        key={canId}
-                        canId={canId}
-                        fiscalYear={fiscalYear}
-                    />
-                ))}
+                {canIds.length === 0 ? (
+                    <p className="text-center">No CANs found for this Portfolio.</p>
+                ) : (
+                    canIds.map((canId) => (
+                        <CanCard
+                            key={canId}
+                            canId={canId}
+                            fiscalYear={fiscalYear}
+                        />
+                    ))
+                )}
             </section>
         </>
     );
