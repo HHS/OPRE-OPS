@@ -46,6 +46,7 @@ const PortfolioDetail = () => {
     });
 
     const inDraftFunding = CANFunding?.in_draft_funding ?? 0;
+    const newFunding = CANFunding?.new_funding ?? 0;
 
     if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading) {
         return <p>Loading...</p>;
@@ -77,13 +78,14 @@ const PortfolioDetail = () => {
                         projectTypesCount,
                         portfolioFunding,
                         inDraftFunding,
+                        newFunding,
                         canIds
                     }}
                 />
             </div>
             <DebugCode
                 title="portfolioFunding from detail page"
-                data={portfolioFunding}
+                data={{portfolioFunding}}
             />
         </App>
     );

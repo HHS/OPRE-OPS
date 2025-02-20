@@ -1,9 +1,70 @@
 import { useOutletContext } from "react-router-dom";
 
 import CanCard from "../../CANs/CanCard/CanCard";
+import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
+import { summaryCard } from "../../CANs/CANBudgetByFYCard/CANBudgetByFYCard.helpers";
+import Card from "../../UI/Cards/Card";
+import LineBar from "../../UI/DataViz/LineBar";
+import { calculatePercent } from "../../../helpers/utils";
 
 const PortfolioFunding = () => {
-    const { fiscalYear, canIds } = useOutletContext();
+    const { portfolioFunding, newFunding, fiscalYear, canIds } = useOutletContext();
+    const carryForward = portfolioFunding.carry_forward_funding.amount;
+    const totalBudget = portfolioFunding.total_funding.amount;
+
+    const data = [
+        {
+            id: 1,
+            label: "Previous FYs Carry-Forward",
+            value: carryForward,
+            color: "var(--portfolio-carry-forward)",
+            percent: `${calculatePercent(carryForward, totalBudget)}%`,
+            tagActiveStyle: "darkTextOnLightBlue"
+        },
+        {
+            id: 2,
+            label: `FY ${fiscalYear} New Funding`,
+            value: newFunding,
+            color: "var(--portfolio-new-funding)",
+            percent: `${calculatePercent(newFunding, totalBudget)}%`,
+            tagActiveStyle: "lightTextOnDarkBlue"
+        }
+    ];
+
+    // TODO: replace this with actual data
+    //const { chartData } = summaryCard(fundingBudgets);
+    const chartData = [
+        {
+            FY: "2025",
+            total: 1000000,
+            ratio: 1,
+            color: "var(--can-budget-by-fy-graph-1)"
+        },
+        {
+            FY: "2024",
+            total: 1000000,
+            ratio: 1,
+            color: "var(--can-budget-by-fy-graph-2)"
+        },
+        {
+            FY: "2023",
+            total: 1000000,
+            ratio: 1,
+            color: "var(--can-budget-by-fy-graph-3)"
+        },
+        {
+            FY: "2022",
+            total: 0,
+            ratio: 0,
+            color: "var(--can-budget-by-fy-graph-4)"
+        },
+        {
+            FY: "2021",
+            total: 0,
+            ratio: 0,
+            color: "var(--can-budget-by-fy-graph-5)"
+        }
+    ];
 
     return (
         <>
@@ -14,11 +75,23 @@ const PortfolioFunding = () => {
                 </p>
 
                 <div className="display-flex flex-justify">
-                    {/*
-                    TODO: add cards here
-                    PortfolioFundingTotal on left side
-                    CANBudgetByFYCard on right side
-                    */}
+                    <LineGraphWithLegendCard
+                        heading={`FY ${fiscalYear} Portfolio Total Budget`}
+                        data={data}
+                        bigNumber={portfolioFunding.total_funding.amount}
+                    />
+                    <Card title="Portfolio Budget by FY">
+                        {chartData.map((item, i) => (
+                            <LineBar
+                                key={`budget-fy-${item.FY}`}
+                                iterator={i}
+                                color={item.color}
+                                ratio={item.ratio}
+                                title={`FY ${item.FY}`}
+                                total={item.total}
+                            />
+                        ))}
+                    </Card>
                 </div>
             </section>
             <section>

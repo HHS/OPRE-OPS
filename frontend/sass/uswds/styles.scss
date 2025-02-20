@@ -70,6 +70,7 @@ html {
     --can-budget-by-fy-graph-4: #67d37f;
     --can-budget-by-fy-graph-5: #a1d0be;
     --portfolio-carry-forward: #BA99C6;
+    --portfolio-new-funding: #4C2A5C;
 }
 
 $themeColors: (
@@ -128,7 +129,8 @@ $themeColors: (
     "data-viz-budget-graph-1": var(--data-viz-budget-graph-1),
     "data-viz-budget-graph-2": var(--data-viz-budget-graph-2),
     "can-total-budget-2": var(--can-total-budget-2),
-    "portfolio-carry-forward": var(--portfolio-carry-forward)
+    "portfolio-carry-forward": var(--portfolio-carry-forward),
+    "portfolio-new-funding": var(--portfolio-new-funding)
 );
 
 @each $name, $color in $themeColors {
