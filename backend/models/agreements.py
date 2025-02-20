@@ -308,4 +308,4 @@ class AgreementMod(BaseModel):
     agreement: Mapped[Agreement] = relationship("Agreement")
     mod_type: Mapped[Optional[ModType]] = mapped_column(ENUM(ModType))
     number: Mapped[str] = mapped_column(String)
-    mod_date: Mapped[date] = mapped_column(Date)
+    mod_date: Mapped[Optional[date]] = mapped_column(Date)

@@ -89,9 +89,13 @@ class BudgetLineItem(BaseModel):
     object_class_code_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("object_class_code.id")
     )
+    object_class_code: Mapped[Optional["ObjectClassCode"]] = relationship(
+        "ObjectClassCode"
+    )
     mod_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("agreement_mod.id")
     )
+    mod: Mapped[Optional["AgreementMod"]] = relationship("AgreementMod")
     doc_received: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
     psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
     psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
