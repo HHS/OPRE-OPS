@@ -23,6 +23,7 @@ class TotalFunding(TypedDict):
     obligated_funding: FundingLineItem
     in_execution_funding: FundingLineItem
     available_funding: FundingLineItem
+    draft_funding: FundingLineItem
 
 
 def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
