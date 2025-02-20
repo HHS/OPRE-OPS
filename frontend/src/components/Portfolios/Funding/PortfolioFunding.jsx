@@ -35,33 +35,33 @@ const PortfolioFunding = () => {
     const chartData = [
         {
             FY: "2025",
-            total: 1000000,
-            ratio: 1,
-            color: "var(--can-budget-by-fy-graph-1)"
+            total: 5_000_000,
+            ratio: 5_000_000 / 5_000_000,
+            color: "var(--portfolio-budget-graph-1)"
         },
         {
             FY: "2024",
-            total: 1000000,
-            ratio: 1,
-            color: "var(--can-budget-by-fy-graph-2)"
+            total: 4_000_000,
+            ratio: 4_000_000 / 5_000_000,
+            color: "var(--portfolio-budget-graph-2)"
         },
         {
             FY: "2023",
-            total: 1000000,
-            ratio: 1,
-            color: "var(--can-budget-by-fy-graph-3)"
+            total: 3_000_000,
+            ratio: 3_000_000 / 5_000_000,
+            color: "var(--portfolio-budget-graph-3)"
         },
         {
             FY: "2022",
-            total: 0,
-            ratio: 0,
-            color: "var(--can-budget-by-fy-graph-4)"
+            total: 2_000_000,
+            ratio: 2_000_000 / 5_000_000,
+            color: "var(--portfolio-budget-graph-4)"
         },
         {
             FY: "2021",
-            total: 0,
-            ratio: 0,
-            color: "var(--can-budget-by-fy-graph-5)"
+            total: 1_000_000,
+            ratio: 1_000_000 / 5_000_000,
+            color: "var(--portfolio-budget-graph-5)"
         }
     ];
 
