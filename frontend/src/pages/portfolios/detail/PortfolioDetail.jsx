@@ -8,7 +8,6 @@ import {
     useGetPortfolioFundingSummaryQuery,
     useGetProjectsByPortfolioQuery
 } from "../../../api/opsAPI";
-import DebugCode from "../../../components/DebugCode";
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
@@ -83,10 +82,6 @@ const PortfolioDetail = () => {
                     }}
                 />
             </div>
-            <DebugCode
-                title="portfolioFunding from detail page"
-                data={{portfolioFunding}}
-            />
         </App>
     );
 };

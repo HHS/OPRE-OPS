@@ -79,7 +79,7 @@ const PortfolioFunding = () => {
                         data={data}
                         bigNumber={portfolioFunding.total_funding.amount}
                     />
-                    <Card title="Portfolio Budget by FY">
+                    <Card title="Portfolio Budget by FY" dataCy="portfolio-budget-card">
                         {chartData.map((item, i) => (
                             <LineBar
                                 key={`budget-fy-${item.FY}`}

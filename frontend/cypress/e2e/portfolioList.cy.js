@@ -11,7 +11,6 @@ afterEach(() => {
     cy.checkA11y(null, null, terminalLog);
 });
 
-// TODO: take away the skips when we're ready to show portfolios again
 describe.skip("Portfolio List Page", () => {
     it("loads", () => {
         cy.get("h1").should("have.text", "Portfolios");
@@ -23,7 +22,7 @@ describe.skip("Portfolio List Page", () => {
 
         cy.contains(portfolioName).click();
 
-        cy.url().should("include", "/portfolios/6");
+        cy.url().should("include", "/portfolios/6/spending");
         cy.get("h1").should("contain", portfolioName);
     });
 });

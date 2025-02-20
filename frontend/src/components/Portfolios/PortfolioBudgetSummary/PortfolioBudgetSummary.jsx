@@ -35,14 +35,6 @@ const PortfolioBudgetSummary = ({
     agreementTypesCount,
     inDraftFunding
 }) => {
-    // NOTE: TEST DATA to test chart
-    // portfolioFunding = {
-    //     total_funding: { amount: 10_000_000 },
-    //     in_execution_funding: { amount: 1_000_000 },
-    //     obligated_funding: { amount: 2_000_000 },
-    //     planned_funding: { amount: 3_000_000 }
-    // };
-
     const {
         total_funding: { amount: totalFunding },
         in_execution_funding: { amount: inExecutionFunding },

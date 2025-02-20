@@ -62,120 +62,121 @@ const CanCard = ({ canId, fiscalYear }) => {
     }
 
     return (
-        <>
-            <div className={style.container}>
-                <dl className={`margin-0 ${style.leftMarginContainer}`}>
-                    <div>
-                        <dt className="margin-0 text-base-dark">CAN</dt>
-                        <dd className="text-semibold margin-0">{can.display_name}</dd>
-                    </div>
-                    <div className="margin-y-2">
-                        <dt className="margin-0 text-base-dark">Nickname</dt>
-                        <dd className="text-semibold margin-0">{can.nick_name}</dd>
-                    </div>
-                    <div className="margin-y-2">
-                        <dt className="margin-0 text-base-dark">Active Period</dt>
-                        <dd className="text-semibold margin-0">
-                            {can.active_period} {can.active_period > 1 ? "years" : "year"}
-                        </dd>
-                    </div>
-                    <div className="margin-y-2">
-                        <dt className="margin-0 text-base-dark">Obligate By</dt>
-                        <dd className="text-semibold margin-0">{formatDateNeeded(obligateBy.toDateString())}</dd>
-                    </div>
-                </dl>
-                <div className={style.rightContainer}>
-                    <div className="display-flex flex-justify flex-align-center">
-                        <p className="margin-0 font-12px text-base-dark">{`FY ${fiscalYear} CAN Budget`}</p>
-                        {can.active_period === 1 || fiscalYear !== appropriationYear ? (
-                            <Tag
-                                text={`FY ${fiscalYear} New Funding`}
-                                className="bg-brand-data-viz-secondary-20 text-white"
-                            />
-                        ) : (
-                            <Tag
-                                text="Previous FYs Carry-Forward"
-                                className="bg-brand-portfolio-carry-forward"
-                            />
-                        )}
-                    </div>
-
-                    <CurrencyFormat
-                        className="text-bold"
-                        style={{ fontSize: "20px" }}
-                        value={canFundingData?.total_funding ?? 0}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$"}
-                        decimalScale={canFundingData?.total_funding === 0 ? 0 : 2}
-                        fixedDecimalScale
-                    />
-                    <section
-                        id="received-expected-chart"
-                        className="margin-top-3"
-                    >
-                        <div className="display-flex flex-justify font-12px margin-bottom-05">
-                            <div>
-                                <CurrencyFormat
-                                    value={canFundingData?.received_funding ?? 0}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={canFundingData?.received_funding === 0 ? 0 : 2}
-                                    fixedDecimalScale
-                                />
-                                {" Received"}
-                            </div>
-                            <div>
-                                <CurrencyFormat
-                                    value={canFundingData?.expected_funding ?? 0}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={canFundingData?.expected_funding === 0 ? 0 : 2}
-                                    fixedDecimalScale
-                                />
-                                {" Expected"}
-                            </div>
-                        </div>
-                        <ReverseLineGraph data={receivedExpectedData} />
-                    </section>
-                    <section
-                        id="spending-available-chart"
-                        className="margin-top-3"
-                    >
-                        <div className="display-flex flex-justify font-12px margin-bottom-05">
-                            <div>
-                                <CurrencyFormat
-                                    value={spendingAmount ?? 0}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={spendingAmount === 0 ? 0 : 2}
-                                    fixedDecimalScale
-                                />
-                                {" Spending"}
-                            </div>
-                            <div>
-                                <CurrencyFormat
-                                    value={canFundingData?.available_funding ?? 0}
-                                    displayType={"text"}
-                                    thousandSeparator={true}
-                                    prefix={"$"}
-                                    decimalScale={canFundingData?.available_funding === 0 ? 0 : 2}
-                                    fixedDecimalScale
-                                />
-                                {" Available"}
-                            </div>
-                        </div>
-                        <LineGraph
-                            data={spendingAvailableData}
-                            isStriped={true}
-                        />
-                    </section>
+        <div
+            data-cy={`can-card-${can.display_name}`}
+            className={style.container}
+        >
+            <dl className={`margin-0 ${style.leftMarginContainer}`}>
+                <div>
+                    <dt className="margin-0 text-base-dark">CAN</dt>
+                    <dd className="text-semibold margin-0">{can.display_name}</dd>
                 </div>
+                <div className="margin-y-2">
+                    <dt className="margin-0 text-base-dark">Nickname</dt>
+                    <dd className="text-semibold margin-0">{can.nick_name}</dd>
+                </div>
+                <div className="margin-y-2">
+                    <dt className="margin-0 text-base-dark">Active Period</dt>
+                    <dd className="text-semibold margin-0">
+                        {can.active_period} {can.active_period > 1 ? "years" : "year"}
+                    </dd>
+                </div>
+                <div className="margin-y-2">
+                    <dt className="margin-0 text-base-dark">Obligate By</dt>
+                    <dd className="text-semibold margin-0">{formatDateNeeded(obligateBy.toDateString())}</dd>
+                </div>
+            </dl>
+            <div className={style.rightContainer}>
+                <div className="display-flex flex-justify flex-align-center">
+                    <p className="margin-0 font-12px text-base-dark">{`FY ${fiscalYear} CAN Budget`}</p>
+                    {can.active_period === 1 || fiscalYear !== appropriationYear ? (
+                        <Tag
+                            text={`FY ${fiscalYear} New Funding`}
+                            className="bg-brand-data-viz-secondary-20 text-white"
+                        />
+                    ) : (
+                        <Tag
+                            text="Previous FYs Carry-Forward"
+                            className="bg-brand-portfolio-carry-forward"
+                        />
+                    )}
+                </div>
+
+                <CurrencyFormat
+                    className="text-bold"
+                    style={{ fontSize: "20px" }}
+                    value={canFundingData?.total_funding ?? 0}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={canFundingData?.total_funding === 0 ? 0 : 2}
+                    fixedDecimalScale
+                />
+                <section
+                    id="received-expected-chart"
+                    className="margin-top-3"
+                >
+                    <div className="display-flex flex-justify font-12px margin-bottom-05">
+                        <div>
+                            <CurrencyFormat
+                                value={canFundingData?.received_funding ?? 0}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={canFundingData?.received_funding === 0 ? 0 : 2}
+                                fixedDecimalScale
+                            />{" "}
+                            <span>Received</span>
+                        </div>
+                        <div>
+                            <CurrencyFormat
+                                value={canFundingData?.expected_funding ?? 0}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={canFundingData?.expected_funding === 0 ? 0 : 2}
+                                fixedDecimalScale
+                            />{" "}
+                            <span>Expected</span>
+                        </div>
+                    </div>
+                    <ReverseLineGraph data={receivedExpectedData} />
+                </section>
+                <section
+                    id="spending-available-chart"
+                    className="margin-top-3"
+                >
+                    <div className="display-flex flex-justify font-12px margin-bottom-05">
+                        <div>
+                            <CurrencyFormat
+                                value={spendingAmount ?? 0}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={spendingAmount === 0 ? 0 : 2}
+                                fixedDecimalScale
+                            />{" "}
+                            <span>Spending</span>
+                        </div>
+                        <div>
+                            <CurrencyFormat
+                                value={canFundingData?.available_funding ?? 0}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={canFundingData?.available_funding === 0 ? 0 : 2}
+                                fixedDecimalScale
+                            />{" "}
+                            <span>Available</span>
+                        </div>
+                    </div>
+                    <LineGraph
+                        data={spendingAvailableData}
+                        isStriped={true}
+                    />
+                </section>
             </div>
-        </>
+        </div>
     );
 };
 
