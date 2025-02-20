@@ -18,7 +18,7 @@ const PortfolioFunding = () => {
             value: carryForward,
             color: "var(--portfolio-carry-forward)",
             percent: `${calculatePercent(carryForward, totalBudget)}%`,
-            tagActiveStyle: "darkTextOnLightBlue"
+            tagActiveStyle: "portfolioCarryForward"
         },
         {
             id: 2,
@@ -26,7 +26,7 @@ const PortfolioFunding = () => {
             value: newFunding,
             color: "var(--portfolio-new-funding)",
             percent: `${calculatePercent(newFunding, totalBudget)}%`,
-            tagActiveStyle: "lightTextOnDarkBlue"
+            tagActiveStyle: "portfolioNewFunding"
         }
     ];
 
