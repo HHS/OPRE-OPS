@@ -1,9 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Accordion from "../../components/UI/Accordion";
-import { toSlugCase } from "../../helpers/utils";
 
-const UserGuides = () => {
+const HowToGuides = () => {
     const components = {
         table: (props) => (
             <table
@@ -15,38 +14,22 @@ const UserGuides = () => {
 
     return (
         <>
-            <h2 className="margin-bottom-4">User Guide</h2>
-            <nav className="margin-y-2">
-                <h3>Table of Contents</h3>
-                <ul className="usa-list--unstyled">
-                    {data.map((item) => (
-                        <li
-                            key={item.heading}
-                            className="margin-y-05"
-                        >
-                            <a href={`#${toSlugCase(item.heading)}`}>{item.heading}</a>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
+            <h2 className="margin-bottom-4">How-to Guides</h2>
             <section className="usa-prose">
-                {data.map((item) => (
-                    <div
-                        key={item.heading}
-                        id={toSlugCase(item.heading)}
+            {data.map((item) => (
+                <Accordion
+                    key={item.heading}
+                    heading={item.heading}
+                    level={3}
+                    isClosed={true}
+                >
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={components}
                     >
-                        <Accordion
-                            heading={item.heading}
-                            isClosed={true}
-                        >
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={components}
-                            >
-                                {item.content}
-                            </ReactMarkdown>
-                        </Accordion>
-                    </div>
+                        {item.content}
+                    </ReactMarkdown>
+                </Accordion>
                 ))}
             </section>
         </>
@@ -413,4 +396,4 @@ Funding received means funding received to OPRE towards a CANs FY budget
     }
 ];
 
-export default UserGuides;
+export default HowToGuides;
