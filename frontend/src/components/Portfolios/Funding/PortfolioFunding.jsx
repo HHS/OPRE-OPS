@@ -2,7 +2,6 @@ import { useOutletContext } from "react-router-dom";
 
 import CanCard from "../../CANs/CanCard/CanCard";
 import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
-import { summaryCard } from "../../CANs/CANBudgetByFYCard/CANBudgetByFYCard.helpers";
 import Card from "../../UI/Cards/Card";
 import LineBar from "../../UI/DataViz/LineBar";
 import { calculatePercent } from "../../../helpers/utils";
