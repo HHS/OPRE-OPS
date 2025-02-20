@@ -3281,20 +3281,20 @@ components:
       type: object
       properties:
         total_funding:
-          $ref: "#/components/schemas/PortfolioFunding"
+          $ref: "#/components/schemas/FundingLineItem"
         carry_forward_funding:
-          $ref: "#/components/schemas/PortfolioFunding"
+          $ref: "#/components/schemas/FundingLineItem"
         draft_funding:
-          $ref: "#/components/schemas/PortfolioFunding"
+          $ref: "#/components/schemas/FundingLineItem"
         planned_funding:
-          $ref: "#/components/schemas/PortfolioFunding"
+          $ref: "#/components/schemas/FundingLineItem"
         obligated_funding:
-          $ref: "#/components/schemas/PortfolioFunding"
+          $ref: "#/components/schemas/FundingLineItem"
         in_execution_funding:
-          $ref: "#/components/schemas/PortfolioFunding"
+          $ref: "#/components/schemas/FundingLineItem"
         available_funding:
-          $ref: "#/components/schemas/PortfolioFunding"
-    PortfolioFunding:
+          $ref: "#/components/schemas/FundingLineItem"
+    FundingLineItem:
       description: Portfolio funding object
       type: object
       properties:
