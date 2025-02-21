@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
-import { useGetResearchProjectsQuery } from "../../../api/opsAPI";
-import AgreementTypeSelect from "../../../components/Agreements/AgreementTypeSelect";
-import ProcurementShopSelect from "../../../components/Agreements/ProcurementShopSelect";
-import ProjectComboBox from "../../../components/Projects/ProjectComboBox";
-import ProjectOfficerComboBox from "../../../components/Agreements/ProjectOfficerComboBox";
-import FilterButton from "../../../components/UI/FilterButton/FilterButton";
-import setFilterList from "../../../components/UI/FilterButton/utils";
+import { useGetResearchProjectsQuery } from "../../../../api/opsAPI";
+import AgreementTypeSelect from "../../../../components/Agreements/AgreementTypeSelect";
+import ProcurementShopSelect from "../../../../components/Agreements/ProcurementShopSelect";
+import ProjectComboBox from "../../../../components/Projects/ProjectComboBox";
+import ProjectOfficerComboBox from "../../../../components/Agreements/ProjectOfficerComboBox";
+import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
+import setFilterList from "../../../../components/UI/FilterButton/utils";
 
 /**
  * A filter for agreements.
