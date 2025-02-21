@@ -3,7 +3,7 @@ import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
     testLogin("system-owner");
-    cy.visit("/portfolios/1").wait(2000);
+    cy.visit("/portfolios/1/spending").wait(1000);
     cy.get("#fiscal-year-select").select("2021");
 });
 
