@@ -45,6 +45,10 @@ const BudgetAndSpending = () => {
         }
     }, [budgetLineIds]);
 
+    useEffect(() => {
+        setBudgetLineItems([]);
+    }, [fiscalYear]);
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
