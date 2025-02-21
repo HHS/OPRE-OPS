@@ -73,6 +73,7 @@ const BudgetAndSpending = () => {
             <CANBudgetLineTable
                 budgetLines={budgetLineItems}
                 totalFunding={portfolioFunding?.total_funding.amount}
+                tableType="portfolio"
             />
         </>
     );
