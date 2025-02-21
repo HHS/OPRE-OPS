@@ -91,8 +91,7 @@ const BLIRow = ({
 
     const TableRowData = (
         <>
-            <th
-                scope="row"
+            <td
                 className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
@@ -106,7 +105,7 @@ const BLIRow = ({
                 ) : (
                     BLILabel(budgetLine)
                 )}
-            </th>
+            </td>
             <td
                 className={`${futureDateErrorClass(
                     formatDateNeeded(budgetLine?.date_needed || ""),

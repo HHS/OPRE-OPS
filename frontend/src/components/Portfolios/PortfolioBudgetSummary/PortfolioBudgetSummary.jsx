@@ -1,43 +1,99 @@
-import PortfolioFundingTotal from "../PortfolioSummaryCards/PortfolioFundingTotal";
-import PortfolioFundingByBudgetStatus from "../PortfolioFundingByBudgetStatus/PortfolioFundingByBudgetStatus";
-import { useDispatch, useSelector } from "react-redux";
-import { defaultPortfolioBudget, setPortfolio, setPortfolioBudget } from "./portfolioBudgetSummarySlice";
-import { useEffect } from "react";
-import { getPortfolioAndSetState, getPortfolioFundingAndSetState } from "./util";
+import { calculatePercent } from "../../../helpers/utils";
+import BigBudgetCard from "../../UI/Cards/BudgetCard/BigBudgetCard";
+import DonutGraphWithLegendCard from "../../UI/Cards/DonutGraphWithLegendCard";
+import ProjectAgreementBLICard from "../../UI/Cards/ProjectAgreementBLICard";
 
-const PortfolioBudgetSummary = ({ portfolioId }) => {
-    const portfolio = useSelector((state) => state.portfolioBudgetSummary.portfolio);
-    const fiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
-    const dispatch = useDispatch();
+/**
+ * @typedef {Object} PortfolioBudgetSummaryProps
+ * @property {number} fiscalYear
+ * @property {Object} portfolioFunding
+ * @property {Object} portfolioFunding.total_funding
+ * @property {number} portfolioFunding.total_funding.amount
+ * @property {Object} portfolioFunding.in_execution_funding
+ * @property {number} portfolioFunding.in_execution_funding.amount
+ * @property {Object} portfolioFunding.obligated_funding
+ * @property {number} portfolioFunding.obligated_funding.amount
+ * @property {Object} portfolioFunding.planned_funding
+ * @property {number} portfolioFunding.planned_funding.amount
+ * @property {number} inDraftFunding
+ * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} projectTypesCount
+ * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} budgetLineTypesCount
+ * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} agreementTypesCount
+ */
 
-    // fetch initial Portfolio details
-    useEffect(() => {
-        dispatch(getPortfolioAndSetState(portfolioId));
+/**
+ * @component
+ * @param {PortfolioBudgetSummaryProps} props
+ * @returns {JSX.Element}
+ */
 
-        return () => {
-            dispatch(setPortfolio({}));
-        };
-    }, [dispatch, portfolioId]);
+const PortfolioBudgetSummary = ({
+    fiscalYear,
+    portfolioFunding,
+    projectTypesCount,
+    budgetLineTypesCount,
+    agreementTypesCount,
+    inDraftFunding
+}) => {
+    const {
+        total_funding: { amount: totalFunding },
+        in_execution_funding: { amount: inExecutionFunding },
+        obligated_funding: { amount: obligatedFunding },
+        planned_funding: { amount: plannedFunding }
+    } = portfolioFunding;
 
-    // calculate current total funding for Portfolio
-    useEffect(() => {
-        dispatch(getPortfolioFundingAndSetState(portfolioId, fiscalYear.value));
+    const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
 
-        return () => {
-            dispatch(setPortfolioBudget(defaultPortfolioBudget));
-        };
-    }, [dispatch, portfolioId, fiscalYear]);
+    const graphData = [
+        {
+            id: 1,
+            label: "Draft",
+            value: Math.round(inDraftFunding) || 0,
+            color: "var(--neutral-lighter)",
+            percent: `${calculatePercent(inDraftFunding, totalFunding)}%`
+        },
+        {
+            id: 2,
+            label: "Planned",
+            value: Math.round(plannedFunding) || 0,
+            color: "var(--data-viz-bl-by-status-2)",
+            percent: `${calculatePercent(plannedFunding, totalFunding)}%`
+        },
+        {
+            id: 3,
+            label: "Executing",
+            value: Math.round(inExecutionFunding) || 0,
+            color: "var(--data-viz-bl-by-status-3)",
+            percent: `${calculatePercent(inExecutionFunding, totalFunding)}%`
+        },
+        {
+            id: 4,
+            label: "Obligated",
+            value: Math.round(obligatedFunding) || 0,
+            color: "var(--data-viz-bl-by-status-4)",
+            percent: `${calculatePercent(obligatedFunding, totalFunding)}%`
+        }
+    ];
 
     return (
         <section>
-            <h2 className="font-sans-lg">Portfolio Budget Summary</h2>
-            <p className="font-sans-sm">
-                The graph below shows a summary of the total budget for this portfolio, not including additional funding
-                from other portfolios.
-            </p>
-            <div className="display-flex flex-justify">
-                <PortfolioFundingTotal portfolioId={portfolio.id} />
-                <PortfolioFundingByBudgetStatus portfolioId={portfolio.id} />
+            <BigBudgetCard
+                title={`FY ${fiscalYear} Available CAN Budget *`}
+                totalSpending={totalSpending}
+                totalFunding={totalFunding}
+            />
+            <div className="display-flex flex-justify margin-top-2">
+                <ProjectAgreementBLICard
+                    fiscalYear={fiscalYear}
+                    projects={projectTypesCount}
+                    budgetLines={budgetLineTypesCount}
+                    agreements={agreementTypesCount}
+                />
+                <DonutGraphWithLegendCard
+                    data={graphData}
+                    title={`FY ${fiscalYear} Budget Lines by Status`}
+                    totalFunding={totalFunding}
+                />
             </div>
         </section>
     );

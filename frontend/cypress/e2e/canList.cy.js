@@ -34,7 +34,7 @@ describe("CAN List", () => {
         cy.get("tbody tr").each(($row, index) => {
             cy.wrap($row)
                 .find("td")
-                .eq(5) // Adjust index to the correct column containing the budget amount
+                .eq(6) // Adjust index to the correct column containing the budget amount
                 .invoke("text")
                 .then((text) => {
                     const cleanedText = text.trim(); // Remove extra spaces
@@ -254,7 +254,7 @@ describe("CAN List Filtering", () => {
         cy.get("tbody").find("tr").should("have.length", 8);
         cy.get("[data-cy='line-graph-with-legend-card']").contains("$ 8,200,000.00");
     });
-    it("mult-delete should not break the app", () => {
+    it("multi-delete should not break the app", () => {
         cy.get("button").contains("Filter").click();
         // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(".can-active-period-combobox__control")

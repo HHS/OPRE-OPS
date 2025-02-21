@@ -1,7 +1,7 @@
 import store from "../../../store";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
-import BudgetAndFunding from "./BudgetAndFunding";
+import BudgetAndSpending from "./BudgetAndSpending";
 import CanCard from "../../CANs/CanCard/CanCard";
 import { vi } from "vitest";
 
@@ -20,7 +20,7 @@ window.ResizeObserver =
 it.skip("renders without crashing", () => {
     render(
         <Provider store={store}>
-            <BudgetAndFunding
+            <BudgetAndSpending
                 portfolioId={1}
                 canCards={[
                     <CanCard
