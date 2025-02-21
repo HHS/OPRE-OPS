@@ -64,45 +64,44 @@ const router = createBrowserRouter(
                 }
             >
                 {/* BEGIN PROTECTED ROUTES */}
-                {import.meta.env.MODE === "development" && (
+
+                <Route
+                    path="/portfolios"
+                    element={<PortfolioList />}
+                />
+
+                <Route
+                    path="/portfolios/:id"
+                    element={<PortfolioDetail />}
+                    handle={{
+                        // you can put whatever you want on a route handle
+                        // here we use "crumb" and return some elements,
+                        // this is what we'll render in the breadcrumbs
+                        // for this route
+                        crumb: () => (
+                            <Link
+                                to="/portfolios"
+                                className="text-primary"
+                            >
+                                Portfolios
+                            </Link>
+                        )
+                    }}
+                >
+                    {/* Default to Spending tab */}
                     <Route
-                        path="/portfolios"
-                        element={<PortfolioList />}
+                        path=""
+                        element={<Navigate to={"spending"} />}
                     />
-                )}
-                {import.meta.env.MODE === "development" && (
                     <Route
-                        path="/portfolios/:id"
-                        element={<PortfolioDetail />}
-                        handle={{
-                            // you can put whatever you want on a route handle
-                            // here we use "crumb" and return some elements,
-                            // this is what we'll render in the breadcrumbs
-                            // for this route
-                            crumb: () => (
-                                <Link
-                                    to="/portfolios"
-                                    className="text-primary"
-                                >
-                                    Portfolios
-                                </Link>
-                            )
-                        }}
-                    >
-                        {/* Default to Spending tab */}
-                        <Route
-                            path=""
-                            element={<Navigate to={"spending"} />}
-                        />
-                        <Route
-                            path="spending"
-                            element={<BudgetAndSpending />}
-                        />
-                        <Route
-                            path="funding"
-                            element={<PortfolioFunding />}
-                        />
-                        {/* <Route
+                        path="spending"
+                        element={<BudgetAndSpending />}
+                    />
+                    <Route
+                        path="funding"
+                        element={<PortfolioFunding />}
+                    />
+                    {/* <Route
                             path="research-projects"
                             element={<ResearchProjects />}
                         />
@@ -110,8 +109,8 @@ const router = createBrowserRouter(
                             path="people-and-teams"
                             element={<PeopleAndTeams />}
                         /> */}
-                    </Route>
-                )}
+                </Route>
+
                 <Route
                     path="/research-projects/:id/*"
                     element={<ResearchProjectDetail />}
