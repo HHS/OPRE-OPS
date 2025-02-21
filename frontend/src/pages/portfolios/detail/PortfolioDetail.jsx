@@ -72,6 +72,7 @@ const PortfolioDetail = () => {
                 </section>
                 <Outlet
                     context={{
+                        portfolioId,
                         fiscalYear,
                         budgetLineIds,
                         projectTypesCount,

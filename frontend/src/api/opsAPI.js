@@ -574,6 +574,7 @@ export const {
     useGetPortfolioCansByIdQuery,
     useGetPortfolioCalcFundingQuery,
     useGetPortfolioFundingSummaryQuery,
+    useLazyGetPortfolioFundingSummaryQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,

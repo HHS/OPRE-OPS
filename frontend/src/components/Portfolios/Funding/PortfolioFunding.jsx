@@ -1,15 +1,40 @@
 import { useOutletContext } from "react-router-dom";
-
 import CanCard from "../../CANs/CanCard/CanCard";
 import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
 import Card from "../../UI/Cards/Card";
 import LineBar from "../../UI/DataViz/LineBar";
-import { calculatePercent } from "../../../helpers/utils";
+import { calculatePercent, getCurrentFiscalYear } from "../../../helpers/utils";
+import { useLazyGetPortfolioFundingSummaryQuery } from "../../../api/opsAPI";
+import React, { useEffect } from "react";
 
 const PortfolioFunding = () => {
-    const { portfolioFunding, newFunding, fiscalYear, canIds } = useOutletContext();
+    const [fyBudgetChartData, setFyBudgetChartData] = React.useState([]);
+    const { portfolioId, portfolioFunding, newFunding, fiscalYear, canIds } = useOutletContext();
     const carryForward = portfolioFunding.carry_forward_funding.amount;
     const totalBudget = portfolioFunding.total_funding.amount;
+    const currentFiscalYear = getCurrentFiscalYear();
+
+    const [trigger] = useLazyGetPortfolioFundingSummaryQuery();
+    const fetchPortfolioFunding = async () => {
+        const lastFiveYears = Array.from({ length: 5 }, (_, i) => +currentFiscalYear - i);
+        const promises = lastFiveYears.map((year) => {
+            return trigger({ portfolioId, fiscalYear: year }).unwrap();
+        });
+
+        try {
+            const portfolioFundingSummaries = await Promise.all(promises);
+            const newFyBudgetChartData = portfolioFundingSummaries.map((summary) => summary?.total_funding.amount);
+            setFyBudgetChartData(newFyBudgetChartData);
+        } catch (error) {
+            console.error("Failed to fetch portfolio funding:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (portfolioId) {
+            fetchPortfolioFunding();
+        }
+    }, [portfolioId]);
 
     const data = [
         {
@@ -30,37 +55,36 @@ const PortfolioFunding = () => {
         }
     ];
 
-    // TODO: replace this with actual data
-    //const { chartData } = summaryCard(fundingBudgets);
+    const maxBudget = Math.max(...fyBudgetChartData);
     const chartData = [
         {
-            FY: "2025",
-            total: 5_000_000,
-            ratio: 5_000_000 / 5_000_000,
+            FY: `${+currentFiscalYear}`,
+            total: fyBudgetChartData[0],
+            ratio: fyBudgetChartData[0] / maxBudget,
             color: "var(--portfolio-budget-graph-1)"
         },
         {
-            FY: "2024",
-            total: 4_000_000,
-            ratio: 4_000_000 / 5_000_000,
+            FY: `${+currentFiscalYear - 1}`,
+            total: fyBudgetChartData[1],
+            ratio: fyBudgetChartData[1] / maxBudget,
             color: "var(--portfolio-budget-graph-2)"
         },
         {
-            FY: "2023",
-            total: 3_000_000,
-            ratio: 3_000_000 / 5_000_000,
+            FY: `${+currentFiscalYear - 2}`,
+            total: fyBudgetChartData[2],
+            ratio: fyBudgetChartData[2] / maxBudget,
             color: "var(--portfolio-budget-graph-3)"
         },
         {
-            FY: "2022",
-            total: 2_000_000,
-            ratio: 2_000_000 / 5_000_000,
+            FY: `${+currentFiscalYear - 3}`,
+            total: fyBudgetChartData[3],
+            ratio: fyBudgetChartData[3] / maxBudget,
             color: "var(--portfolio-budget-graph-4)"
         },
         {
-            FY: "2021",
-            total: 1_000_000,
-            ratio: 1_000_000 / 5_000_000,
+            FY: `${+currentFiscalYear - 4}`,
+            total: fyBudgetChartData[4],
+            ratio: fyBudgetChartData[4] / maxBudget,
             color: "var(--portfolio-budget-graph-5)"
         }
     ];
