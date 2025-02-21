@@ -91,7 +91,6 @@ const router = createBrowserRouter(
                     >
                         {/* Default to Spending tab */}
                         <Route
-                            exact
                             path=""
                             element={<Navigate to={"spending"} />}
                         />
