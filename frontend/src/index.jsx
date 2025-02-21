@@ -101,14 +101,6 @@ const router = createBrowserRouter(
                         path="funding"
                         element={<PortfolioFunding />}
                     />
-                    {/* <Route
-                            path="research-projects"
-                            element={<ResearchProjects />}
-                        />
-                        <Route
-                            path="people-and-teams"
-                            element={<PeopleAndTeams />}
-                        /> */}
                 </Route>
 
                 <Route
