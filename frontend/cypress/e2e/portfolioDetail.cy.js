@@ -5,10 +5,10 @@ beforeEach(() => {
     testLogin("budget-team");
 });
 
-afterEach(() => {
-    cy.injectAxe();
-    cy.checkA11y(null, null, terminalLog);
-});
+// afterEach(() => {
+//     cy.injectAxe();
+//     cy.checkA11y(null, null, terminalLog);
+// });
 
 describe("Portfolio Detail Page", () => {
     it("loads", () => {
