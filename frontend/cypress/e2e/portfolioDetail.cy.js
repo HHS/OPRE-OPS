@@ -2,9 +2,7 @@
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
-    testLogin("system-owner");
-    cy.visit("/portfolios/1/spending").wait(1000);
-    cy.get("#fiscal-year-select").select("2021");
+    testLogin("budget-team");
 });
 
 afterEach(() => {
@@ -14,15 +12,21 @@ afterEach(() => {
 
 describe("Portfolio Detail Page", () => {
     it("loads", () => {
+        cy.visit("/portfolios/1/spending");
+        cy.get("#fiscal-year-select").select("2021");
         cy.get("h1").should("contain", "Child Welfare Research");
         cy.get("h2").should("contain", "Division of Child and Family Development");
         cy.get("dt").should("contain", "Team Leader");
         cy.get("dd").should("contain", "Chris Fortunato");
         cy.get("div.margin-top-1 > .text-base-dark").should("contain", "Portfolio Description");
         cy.get("p").should("contain", "The promotion of children’s safety, permanence, and well-being");
+        cy.contains("read more").click();
+        cy.get("a").should("contain", "See more on the website");
     });
 
     it("loads the Portfolio spending component", () => {
+        cy.visit("/portfolios/1/spending");
+        cy.get("#fiscal-year-select").select("2021");
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $0 of $10,200,000");
         cy.get("#project-agreement-bli-card")
@@ -36,11 +40,6 @@ describe("Portfolio Detail Page", () => {
         // table should exist and have one row
         cy.get("table").should("exist");
         cy.get("tbody").children().should("have.length", 3);
-    });
-
-    it("expands the description when one clicks read more", () => {
-        cy.contains("read more").click();
-        cy.get("a").should("contain", "See more on the website");
     });
 
     it("shows the Portfolio Funding tab", () => {
