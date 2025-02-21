@@ -5,14 +5,14 @@ beforeEach(() => {
     testLogin("budget-team");
 });
 
-// afterEach(() => {
-//     cy.injectAxe();
-//     cy.checkA11y(null, null, terminalLog);
-// });
+afterEach(() => {
+    cy.injectAxe();
+    cy.checkA11y(null, null, terminalLog);
+});
 
 describe("Portfolio Detail Page", () => {
     it("loads", () => {
-        cy.visit("/portfolios/1/spending");
+        cy.visit("/portfolios/1/spending").wait(1000);
         cy.get("#fiscal-year-select").select("2021");
         cy.get("h1").should("contain", "Child Welfare Research");
         cy.get("h2").should("contain", "Division of Child and Family Development");
@@ -25,7 +25,7 @@ describe("Portfolio Detail Page", () => {
     });
 
     it("loads the Portfolio spending component", () => {
-        cy.visit("/portfolios/1/spending");
+        cy.visit("/portfolios/1/spending").wait(1000);
         cy.get("#fiscal-year-select").select("2021");
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $0 of $10,200,000");
@@ -43,7 +43,7 @@ describe("Portfolio Detail Page", () => {
     });
 
     it("shows the Portfolio Funding tab", () => {
-        cy.visit("/portfolios/1/funding");
+        cy.visit("/portfolios/1/funding").wait(1000);
         cy.get("#fiscal-year-select").select("2021");
         cy.get("h2").should("contain", "Portfolio Funding Summary");
         // summary cards
