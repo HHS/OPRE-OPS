@@ -132,6 +132,42 @@ export const opsApi = createApi({
             query: () => `/research-projects/`,
             providesTags: ["ResearchProjects"]
         }),
+        getProjects: builder.query({
+            query: () => `/projects/`,
+            providesTags: ["ResearchProjects"]
+        }),
+        getProjectsByPortfolio: builder.query({
+            query: ({ fiscal_year, portfolio_id, search }) => {
+                const queryParams = [];
+                if (fiscal_year) {
+                    queryParams.push(`fiscal_year=${fiscal_year}`);
+                }
+                if (portfolio_id) {
+                    queryParams.push(`portfolio_id=${portfolio_id}`);
+                }
+                if (search) {
+                    queryParams.push(`search=${search}`);
+                }
+                return `/projects/?${queryParams.join("&")}`;
+            },
+            providesTags: ["ResearchProjects"]
+        }),
+        getResearchProjectsByPortfolio: builder.query({
+            query: ({ fiscal_year, portfolio_id, search }) => {
+                const queryParams = [];
+                if (fiscal_year) {
+                    queryParams.push(`fiscal_year=${fiscal_year}`);
+                }
+                if (portfolio_id) {
+                    queryParams.push(`portfolio_id=${portfolio_id}`);
+                }
+                if (search) {
+                    queryParams.push(`search=${search}`);
+                }
+                return `/research-projects/?${queryParams.join("&")}`;
+            },
+            providesTags: ["ResearchProjects"]
+        }),
         addResearchProjects: builder.mutation({
             query: (body) => ({
                 url: `/research-projects/`,
@@ -346,6 +382,47 @@ export const opsApi = createApi({
             query: () => `/portfolios/`,
             providesTags: ["Portfolios"]
         }),
+        getPortfolioById: builder.query({
+            query: (id) => `/portfolios/${id}`,
+            providesTags: ["Portfolios"]
+        }),
+        getPortfolioCansById: builder.query({
+            query: ({ portfolioId, year }) => {
+                const queryParams = [];
+                if (year) {
+                    queryParams.push(`year=${year}`);
+                }
+                return `/portfolios/${portfolioId}/cans/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Portfolios"]
+        }),
+        // NOTE: This endpoint will be deprecated in the future and replaced by getPortfolioFundingSummary
+        getPortfolioCalcFunding: builder.query({
+            query: ({ portfolioId, fiscalYear, simulatedError }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (simulatedError) {
+                    queryParams.push(`simulatedError`);
+                }
+                return `/portfolios/${portfolioId}/calcFunding/?${queryParams.join("&")}`;
+            },
+            providesTags: ["Portfolios"]
+        }),
+        getPortfolioFundingSummary: builder.query({
+            query: ({ portfolioId, fiscalYear, simulatedError }) => {
+                const queryParams = [];
+                if (fiscalYear) {
+                    queryParams.push(`fiscal_year=${fiscalYear}`);
+                }
+                if (simulatedError) {
+                    queryParams.push(`simulatedError`);
+                }
+                return `/portfolio-funding-summary/${portfolioId}?${queryParams.join("&")}`;
+            },
+            providesTags: ["Portfolios"]
+        }),
         addBliPackage: builder.mutation({
             query: (body) => ({
                 url: `/bli-packages/`,
@@ -458,12 +535,16 @@ export const {
     useAddBudgetLineItemMutation,
     useGetBudgetLineItemsQuery,
     useGetBudgetLineItemQuery,
+    useLazyGetBudgetLineItemQuery,
     useUpdateBudgetLineItemMutation,
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
+    useGetProjectsQuery,
+    useGetProjectsByPortfolioQuery,
     useGetResearchProjectsQuery,
+    useGetResearchProjectsByPortfolioQuery,
     useAddResearchProjectsMutation,
     useUpdateBudgetLineItemStatusMutation,
     useGetAgreementTypesQuery,
@@ -489,6 +570,11 @@ export const {
     useGetNotificationsByUserIdAndAgreementIdQuery,
     useDismissNotificationMutation,
     useGetPortfoliosQuery,
+    useGetPortfolioByIdQuery,
+    useGetPortfolioCansByIdQuery,
+    useGetPortfolioCalcFundingQuery,
+    useGetPortfolioFundingSummaryQuery,
+    useLazyGetPortfolioFundingSummaryQuery,
     useAddBliPackageMutation,
     useGetAzureSasTokenQuery,
     useAddServicesComponentMutation,

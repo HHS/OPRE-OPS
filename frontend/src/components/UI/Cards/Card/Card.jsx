@@ -1,7 +1,7 @@
 import RoundedBox from "../../RoundedBox";
 
 /**
- * @typedef {Object & React.HTMLAttributes<HTMLDivElement>} CardProps
+ * @typedef {Object} CardProps
  * @property {string} [title] - The title of the card.
  * @property {string} [dataCy] - The data-cy attribute to add to the card.
  * @property {Object} [style] - The style object to apply to the card.

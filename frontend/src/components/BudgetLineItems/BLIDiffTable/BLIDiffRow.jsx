@@ -45,7 +45,8 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
     const isBudgetLineInReview = budgetLine?.in_review;
     const canDivisionDirectorId = budgetLine?.can?.portfolio?.division.division_director_id;
     const canDeputyDivisionDirectorId = budgetLine?.can?.portfolio?.division.deputy_division_director_id;
-    const isActionable = (canDivisionDirectorId === userId || canDeputyDivisionDirectorId  === userId) || !isBudgetLineInReview;
+    const isActionable =
+        canDivisionDirectorId === userId || canDeputyDivisionDirectorId === userId || !isBudgetLineInReview;
     const title = "This budget line has pending edits with a different Division:";
     const lockedMessage = useChangeRequestsForTooltip(budgetLine, title);
     const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount || 0, budgetLine?.proc_shop_fee_percentage);
@@ -74,13 +75,12 @@ const BLIDiffRow = ({ budgetLine, changeType, statusChangeTo = "" }) => {
 
     const TableRowData = (
         <>
-            <th
+            <td
                 className={`${borderExpandedStyles}`}
-                scope="row"
                 style={bgExpandedStyles}
             >
                 {BLILabel(budgetLine)}
-            </th>
+            </td>
             <td
                 className={`${addDiffClass(
                     changeRequestTypes.includes(KEY_NAMES.DATE_NEEDED)

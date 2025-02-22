@@ -69,6 +69,13 @@ html {
     --can-budget-by-fy-graph-3: #3db27d;
     --can-budget-by-fy-graph-4: #67d37f;
     --can-budget-by-fy-graph-5: #a1d0be;
+    --portfolio-carry-forward: #ba99c6;
+    --portfolio-new-funding: #4c2a5c;
+    --portfolio-budget-graph-1: #123373;
+    --portfolio-budget-graph-2: #24589d;
+    --portfolio-budget-graph-3: #0050d8;
+    --portfolio-budget-graph-4: #748fba;
+    --portfolio-budget-graph-5: #79b1e5;
 }
 
 $themeColors: (
@@ -126,7 +133,14 @@ $themeColors: (
     "data-viz-bl-by-status-4": var(--data-viz-bl-by-status-4),
     "data-viz-budget-graph-1": var(--data-viz-budget-graph-1),
     "data-viz-budget-graph-2": var(--data-viz-budget-graph-2),
-    "can-total-budget-2": var(--can-total-budget-2)
+    "can-total-budget-2": var(--can-total-budget-2),
+    "portfolio-carry-forward": var(--portfolio-carry-forward),
+    "portfolio-new-funding": var(--portfolio-new-funding),
+    "portfolio-budget-graph-1": var(--portfolio-budget-graph-1),
+    "portfolio-budget-graph-2": var(--portfolio-budget-graph-2),
+    "portfolio-budget-graph-3": var(--portfolio-budget-graph-3),
+    "portfolio-budget-graph-4": var(--portfolio-budget-graph-4),
+    "portfolio-budget-graph-5": var(--portfolio-budget-graph-5)
 );
 
 @each $name, $color in $themeColors {

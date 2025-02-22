@@ -1,198 +1,183 @@
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
 import CurrencyFormat from "react-currency-format";
-import { getPortfolioCansFundingDetails } from "../../../api/getCanFundingSummary";
-import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
-import CustomLayerComponent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent/CustomLayerComponent";
-import ResponsiveDonutWithInnerPercent from "../../UI/DataViz/ResponsiveDonutWithInnerPercent";
-import Tag from "../../UI/Tag/Tag";
-import CANFundingYTD from "../CANFundingYTD/CANFundingYTD";
+import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { formatDateNeeded } from "../../../helpers/utils";
+import LineGraph from "../../UI/DataViz/LineGraph";
+import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
+import Tag from "../../UI/Tag";
 import style from "./styles.module.css";
 
 /**
  * @component CanCard
  * @description Displays the CAN card
  * @param {Object} props - The props
- * @param {Object} props.can - The CAN object
+ * @param {number} props.canId - The CAN id
  * @param {number} props.fiscalYear - The fiscal year
  * @returns {JSX.Element} - The CAN card
  */
-const CanCard = ({ can, fiscalYear }) => {
-    /* Styling */
-    const sectionClasses = `${style.container}`;
-    const leftMarginClasses = `padding-y-205 ${style.leftMarginContainer}`;
+const CanCard = ({ canId, fiscalYear }) => {
+    const { data: canFundingData, isLoading } = useGetCanFundingSummaryQuery({
+        ids: [canId],
+        fiscalYear: fiscalYear,
+        refetchOnMountOrArgChange: true
+    });
 
-    /* State */
-    const [canFundingData, setCanFundingDataLocal] = useState({});
-    const [canLocalData, setCanLocalData] = useState({});
-    const [percent, setPercent] = useState("");
-    const [hoverId, setHoverId] = useState("");
+    const can = canFundingData?.cans[0].can;
+    const expirationDate = new Date(canFundingData?.cans[0].expiration_date);
+    const obligateBy = new Date(expirationDate);
+    obligateBy.setDate(obligateBy.getDate() - 1);
 
-    const data = [
+    const appropriationYear = obligateBy.getFullYear() - can?.active_period;
+
+    const receivedExpectedData = [
         {
             id: 1,
-            label: "Available",
-            value: canFundingData.available_funding || 0,
-            color: "var(--data-viz-primary-5)",
-            percent: `${calculatePercent(+canFundingData?.available_funding, +canFundingData?.total_funding)}%`
+            value: canFundingData?.received_funding,
+            color: "var(--data-viz-budget-graph-1)"
         },
         {
             id: 2,
-            label: "Planned",
-            value: canFundingData.planned_funding || 0,
-            color: "var(--data-viz-bl-by-status-2)",
-            percent: `${calculatePercent(+canFundingData?.planned_funding, +canFundingData?.total_funding)}%`
-        },
-        {
-            id: 3,
-            label: "Executing",
-            value: canFundingData.in_execution_funding || 0,
-            color: "var(--data-viz-bl-by-status-3)",
-            percent: `${calculatePercent(+canFundingData?.in_execution_funding, +canFundingData?.total_funding)}%`
-        },
-        {
-            id: 4,
-            label: "Obligated",
-            value: canFundingData.obligated_funding || 0,
-            color: "var(--data-viz-bl-by-status-4)",
-            percent: `${calculatePercent(+canFundingData?.obligated_funding, +canFundingData?.total_funding)}%`
+            value: canFundingData?.total_funding,
+            color: "var(--data-viz-budget-graph-2)"
         }
     ];
-    useEffect(() => {
-        const getCanTotalFundingandSetState = async () => {
-            const results = await getPortfolioCansFundingDetails({ id: can.id, fiscalYear: fiscalYear });
-            setCanFundingDataLocal(results);
-            setCanLocalData(results.cans[0]);
-        };
 
-        getCanTotalFundingandSetState().catch(console.error);
+    const spendingAmount =
+        canFundingData?.planned_funding + canFundingData?.in_execution_funding + canFundingData?.obligated_funding;
 
-        return () => {
-            setCanFundingDataLocal({});
-            setCanLocalData({});
-        };
-    }, [can.id, fiscalYear]);
+    const spendingAvailableData = [
+        {
+            id: 1,
+            value: spendingAmount,
+            color: "var(--data-viz-budget-graph-2)"
+        },
+        {
+            id: 2,
+            value: canFundingData?.total_funding,
+            color: "var(--data-viz-budget-graph-1)"
+        }
+    ];
 
-    const LegendItem = ({ id, label, value, color, percent }) => {
-        const isGraphActive = hoverId === id;
-        return (
-            <div className="grid-row margin-top-2">
-                <div className="grid-col-5">
-                    <div className="display-flex flex-align-center">
-                        <FontAwesomeIcon
-                            icon={faCircle}
-                            className={`height-1 width-1 margin-right-05`}
-                            style={{ color: color }}
-                        />
-                        <span className={isGraphActive ? "fake-bold" : undefined}>{label}</span>
-                    </div>
-                </div>
-                <div className="grid-col-6">
-                    <CurrencyFormat
-                        value={value}
-                        displayType={"text"}
-                        thousandSeparator={true}
-                        prefix={"$ "}
-                        renderText={(value) => <span className={isGraphActive ? "fake-bold" : undefined}>{value}</span>}
-                    />
-                </div>
-                <div className="grid-col-1">
-                    <Tag
-                        tagStyle="darkTextLightBackground"
-                        text={percent}
-                        label={label}
-                        active={isGraphActive}
-                    />
-                </div>
-            </div>
-        );
-    };
+    if (isLoading) {
+        return <p>Loading...</p>;
+    }
 
     return (
-        <div className={sectionClasses}>
-            <dl className={`margin-0 ${leftMarginClasses}`}>
+        <div
+            data-cy={`can-card-${can.display_name}`}
+            className={style.container}
+        >
+            <dl className={`margin-0 ${style.leftMarginContainer}`}>
                 <div>
                     <dt className="margin-0 text-base-dark">CAN</dt>
-                    <dd className="text-semibold margin-0">{can.number}</dd>
+                    <dd className="text-semibold margin-0">{can.display_name}</dd>
                 </div>
-                <div className="margin-y-3">
-                    <dt className="margin-0 text-base-dark">Description</dt>
+                <div className="margin-y-2">
+                    <dt className="margin-0 text-base-dark">Nickname</dt>
                     <dd className="text-semibold margin-0">{can.nick_name}</dd>
                 </div>
-                <div className="margin-y-3">
-                    <dt className="margin-0 text-base-dark">Appropriation</dt>
+                <div className="margin-y-2">
+                    <dt className="margin-0 text-base-dark">Active Period</dt>
                     <dd className="text-semibold margin-0">
-                        {formatDateNeeded(new Date(can.funding_details?.fiscal_year, 9, 1)) || "---"} (
-                        {can.active_period} {can.active_period > 1 ? "years" : "year"})
+                        {can.active_period} {can.active_period > 1 ? "years" : "year"}
                     </dd>
                 </div>
-                <div className="margin-y-3">
-                    <dt className="margin-0 text-base-dark">Expiration</dt>
-                    <dd className="text-semibold margin-0">{canLocalData?.expiration_date || "---"}</dd>
+                <div className="margin-y-2">
+                    <dt className="margin-0 text-base-dark">Obligate By</dt>
+                    <dd className="text-semibold margin-0">{formatDateNeeded(obligateBy.toDateString())}</dd>
                 </div>
             </dl>
-            <div className={`grid-row  padding-y-205 padding-left-205 padding-right-05 ${style.rightContainer}`}>
-                {/*NOTE: LEFT SIDE */}
-                <div className="grid-col-5">
-                    <h3 className="font-sans-3xs text-normal text-base-dark">FY {fiscalYear} CAN Total Funding</h3>
-                    <CANFundingYTD
-                        className="margin-top-5"
-                        total_funding={canFundingData?.total_funding}
-                        received_funding={canFundingData?.received_funding}
-                        expected_funding={canFundingData?.expected_funding}
-                        carry_forward_funding={canFundingData?.carry_forward_funding}
-                        carry_forward_label={canLocalData?.carry_forward_label}
-                    />
+            <div className={style.rightContainer}>
+                <div className="display-flex flex-justify flex-align-center">
+                    <p className="margin-0 font-12px text-base-dark">{`FY ${fiscalYear} CAN Budget`}</p>
+                    {can.active_period === 1 || fiscalYear !== appropriationYear ? (
+                        <Tag
+                            text={`FY ${fiscalYear} New Funding`}
+                            className="bg-brand-data-viz-secondary-20 text-white"
+                        />
+                    ) : (
+                        <Tag
+                            text="Previous FYs Carry-Forward"
+                            className="bg-brand-portfolio-carry-forward"
+                        />
+                    )}
                 </div>
-                {/* NOTE: RIGHT SIDE */}
-                <div className="grid-col margin-left-5">
-                    <h3 className="font-sans-3xs text-normal text-base-dark margin-bottom-4">
-                        FY {fiscalYear} CAN Budget Status
-                    </h3>
-                    <div className="display-flex flex-justify">
-                        <div className="maxw-card-lg font-12px">
-                            {data.map((canFundItem) => (
-                                <LegendItem
-                                    key={canFundItem.id}
-                                    id={canFundItem.id}
-                                    label={canFundItem.label}
-                                    value={canFundItem.value}
-                                    color={canFundItem.color}
-                                    percent={canFundItem.percent}
-                                />
-                            ))}
-                        </div>
 
-                        <div
-                            id={`can-graph-${can.id}`}
-                            className="width-card height-card margin-right-2 margin-top-neg-1"
-                            aria-label="This is a Donut Chart that displays the percent by budget line status in the center."
-                            role="img"
-                            title="Donut Chart"
-                        >
-                            <ResponsiveDonutWithInnerPercent
-                                data={data}
-                                width={150}
-                                height={150}
-                                margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
-                                setPercent={setPercent}
-                                setHoverId={setHoverId}
-                                CustomLayerComponent={CustomLayerComponent(percent)}
-                                container_id={`can-graph-${can.id}`}
-                            />
+                <CurrencyFormat
+                    className="text-bold"
+                    style={{ fontSize: "20px" }}
+                    value={canFundingData?.total_funding ?? 0}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={canFundingData?.total_funding === 0 ? 0 : 2}
+                    fixedDecimalScale
+                />
+                <section
+                    id="received-expected-chart"
+                    className="margin-top-3"
+                >
+                    <div className="display-flex flex-justify font-12px margin-bottom-05">
+                        <div>
+                            <CurrencyFormat
+                                value={canFundingData?.received_funding ?? 0}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={canFundingData?.received_funding === 0 ? 0 : 2}
+                                fixedDecimalScale
+                            />{" "}
+                            <span>Received</span>
+                        </div>
+                        <div>
+                            <CurrencyFormat
+                                value={canFundingData?.expected_funding ?? 0}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={canFundingData?.expected_funding === 0 ? 0 : 2}
+                                fixedDecimalScale
+                            />{" "}
+                            <span>Expected</span>
                         </div>
                     </div>
-                </div>
+                    <ReverseLineGraph data={receivedExpectedData} />
+                </section>
+                <section
+                    id="spending-available-chart"
+                    className="margin-top-3"
+                >
+                    <div className="display-flex flex-justify font-12px margin-bottom-05">
+                        <div>
+                            <CurrencyFormat
+                                value={spendingAmount ?? 0}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={spendingAmount === 0 ? 0 : 2}
+                                fixedDecimalScale
+                            />{" "}
+                            <span>Spending</span>
+                        </div>
+                        <div>
+                            <CurrencyFormat
+                                value={canFundingData?.available_funding ?? 0}
+                                displayType={"text"}
+                                thousandSeparator={true}
+                                prefix={"$"}
+                                decimalScale={canFundingData?.available_funding === 0 ? 0 : 2}
+                                fixedDecimalScale
+                            />{" "}
+                            <span>Available</span>
+                        </div>
+                    </div>
+                    <LineGraph
+                        data={spendingAvailableData}
+                        isStriped={true}
+                    />
+                </section>
             </div>
         </div>
     );
 };
 
 export default CanCard;
-
-CanCard.propTypes = {
-    can: PropTypes.object.isRequired,
-    fiscalYear: PropTypes.number.isRequired
-};

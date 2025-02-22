@@ -31,6 +31,8 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                         className={`height-1 width-1 margin-right-05`}
                         style={{ color: color }}
                         data-testid="legend-icon"
+                        title="Legend Icon"
+                        aria-label="Legend Icon"
                     />
 
                     <span
@@ -41,7 +43,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     </span>
                 </div>
             </div>
-            <div >
+            <div>
                 <CurrencyFormat
                     value={value}
                     displayType={"text"}

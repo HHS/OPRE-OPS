@@ -102,13 +102,12 @@ const CANFundingReceivedTableRow = ({
      */
     const TableRowData = ({ rowId, fiscalYear, funding = 0, totalFunding }) => (
         <>
-            <th
-                scope="row"
+            <td
                 className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
                 {rowId}
-            </th>
+            </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}

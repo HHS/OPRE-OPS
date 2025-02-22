@@ -5,9 +5,8 @@ import { createBrowserRouter, createRoutesFromElements, Link, Navigate, Route, R
 import store from "./store";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
-import BudgetAndFunding from "./components/Portfolios/BudgetAndFunding/BudgetAndFunding";
-import PeopleAndTeams from "./components/Portfolios/PeopleAndTeams/PeopleAndTeams";
-import ResearchProjects from "./components/Portfolios/ResearchProjects/ResearchProjects";
+import BudgetAndSpending from "./components/Portfolios/BudgetAndSpending/BudgetAndSpending";
+import PortfolioFunding from "./components/Portfolios/Funding/PortfolioFunding";
 import ApproveAgreement from "./pages/agreements/approve";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Agreement from "./pages/agreements/details/Agreement";
@@ -18,6 +17,7 @@ import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
 import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
 import ErrorPage from "./pages/ErrorPage";
+import HelpCenter from "./pages/help/HelpCenter";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
@@ -28,7 +28,8 @@ import UserAdmin from "./pages/users/admin/UserAdmin.jsx";
 import UserDetail from "./pages/users/detail/UserDetail";
 import EditUser from "./pages/users/edit/EditUser";
 import VersionPage from "./pages/version/VersionPage";
-import HelpCenter from "./pages/help/HelpCenter";
+
+// NOTE: store muse be imported after react-router-dom to avoid access lexical declaration 'opsApi' before initialization
 
 //  USWDS
 import "./uswds/css/styles.css";
@@ -63,13 +64,12 @@ const router = createBrowserRouter(
                 }
             >
                 {/* BEGIN PROTECTED ROUTES */}
-                {(import.meta.env.MODE === "development") && (
+
                 <Route
                     path="/portfolios"
                     element={<PortfolioList />}
                 />
-                )}
-                {(import.meta.env.MODE === "development") && (
+
                 <Route
                     path="/portfolios/:id"
                     element={<PortfolioDetail />}
@@ -88,26 +88,21 @@ const router = createBrowserRouter(
                         )
                     }}
                 >
-                    {/* Default to BudgetAndFunding */}
+                    {/* Default to Spending tab */}
                     <Route
-                        exact
                         path=""
-                        element={<Navigate to={"budget-and-funding"} />}
+                        element={<Navigate to={"spending"} />}
                     />
                     <Route
-                        path="budget-and-funding"
-                        element={<BudgetAndFunding />}
+                        path="spending"
+                        element={<BudgetAndSpending />}
                     />
                     <Route
-                        path="research-projects"
-                        element={<ResearchProjects />}
-                    />
-                    <Route
-                        path="people-and-teams"
-                        element={<PeopleAndTeams />}
+                        path="funding"
+                        element={<PortfolioFunding />}
                     />
                 </Route>
-                )}
+
                 <Route
                     path="/research-projects/:id/*"
                     element={<ResearchProjectDetail />}
