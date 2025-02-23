@@ -277,7 +277,7 @@ export const ReviewAgreement = () => {
                     data-cy="edit-agreement-btn"
                     title={!isAgreementEditable ? "Agreement is not editable" : ""}
                     onClick={() => {
-                        navigate(`/agreements/edit/${agreement?.id}?mode=review`);
+                        navigate(`/agreements/resolve/${agreement?.id}`);
                     }}
                     disabled={!isAgreementEditable}
                 >

@@ -14,6 +14,7 @@ import {
     BLI_STATUS,
     BLILabel,
     budgetLinesTotal,
+    cleanBudgetLineItemForApi,
     getNonDRAFTBudgetLines,
     groupByServicesComponent
 } from "../../../helpers/budgetLines.helpers";
@@ -550,30 +551,6 @@ const useCreateBLIsAndSCs = (
         });
     };
 
-    const cleanBudgetLineItemForApi = (data) => {
-        const cleanData = { ...data };
-        if (data.services_component_id === 0) {
-            cleanData.services_component_id = null;
-        }
-        if (cleanData.date_needed === "--") {
-            cleanData.date_needed = null;
-        }
-        const budgetLineId = cleanData.id;
-        delete cleanData.created_by;
-        delete cleanData.created_on;
-        delete cleanData.updated_on;
-        delete cleanData.can;
-        delete cleanData.id;
-        delete cleanData.in_review;
-        delete cleanData.canDisplayName;
-        delete cleanData.versions;
-        delete cleanData.clin;
-        delete cleanData.agreement;
-        delete cleanData.financialSnapshotChanged;
-
-        return { id: budgetLineId, data: cleanData };
-    };
-
     /**
      * Set the budget line for editing by its ID
      * @param {string} budgetLineId - The ID of the budget line to edit
@@ -720,8 +697,8 @@ const useCreateBLIsAndSCs = (
         handleDuplicateBudgetLine,
         isEditing,
         budgetLineBeingEdited,
-        budgetLinePageErrorsExist,
         pageErrors,
+        budgetLinePageErrorsExist,
         showModal,
         setShowModal,
         modalProps,

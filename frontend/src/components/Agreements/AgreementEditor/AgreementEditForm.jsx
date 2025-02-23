@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import classnames from "vest/classnames";
-
 import {
     useAddAgreementMutation,
     useDeleteAgreementMutation,
@@ -10,6 +9,7 @@ import {
     useUpdateAgreementMutation
 } from "../../../api/opsAPI";
 import { formatTeamMember } from "../../../api/postAgreements";
+import { cleanAgreementForApi } from "../../../helpers/agreement.helpers";
 import useAlert from "../../../hooks/use-alert.hooks";
 import useHasStateChanged from "../../../hooks/useHasStateChanged.hooks";
 import ContractTypeSelect from "../../ServicesComponents/ContractTypeSelect";
@@ -176,12 +176,6 @@ export const AgreementEditForm = ({
         });
     };
 
-    const cleanAgreementForApi = (data) => {
-        // eslint-disable-next-line no-unused-vars
-        const { id, budget_line_items, services_components, created_by, created_on, updated_on, ...cleanData } = data;
-        return { id: id, cleanData: cleanData };
-    };
-
     const saveAgreement = async () => {
         const data = {
             ...agreement,
@@ -338,12 +332,6 @@ export const AgreementEditForm = ({
                     runValidate(name, value);
                 }}
             />
-            <h2 className="font-sans-lg margin-top-3">Agreement Details</h2>
-            <p className="margin-top-1">
-                Tell us a little more about this agreement. Make sure you complete the required information in order to
-                proceed. For everything else you can skip the parts you do not know or come back to edit the information
-                later.
-            </p>
             <Input
                 name="name"
                 label="Agreement Title"
@@ -415,7 +403,6 @@ export const AgreementEditForm = ({
                     onChangeSelectedProcurementShop={handleOnChangeSelectedProcurementShop}
                 />
             </div>
-
             <div className="display-flex margin-top-3">
                 <AgreementReasonSelect
                     name="agreement_reason"
@@ -450,7 +437,6 @@ export const AgreementEditForm = ({
                     />
                 </fieldset>
             </div>
-
             <div className="display-flex margin-top-3">
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
@@ -474,7 +460,6 @@ export const AgreementEditForm = ({
                     overrideStyles={{ width: "14.375rem" }}
                 />
             </div>
-
             <h3 className="font-sans-sm text-semibold">Team Members Added</h3>
             <TeamMemberList
                 selectedTeamMembers={selectedTeamMembers}
