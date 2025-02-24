@@ -23,7 +23,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
     const isGraphActive = activeId === id;
 
     return (
-        <div className="display-flex flex-justify margin-top-2 font-12px">
+        <div className="display-flex flex-justify margin-top-2 font-12px flex-align-center">
             <div>
                 <div className="display-flex flex-align-center">
                     <FontAwesomeIcon

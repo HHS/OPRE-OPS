@@ -28,7 +28,7 @@ const Tag = ({
     isLegend = false,
     ...rest
 }) => {
-    let tagClasses = "font-12px height-205 radius-md",
+    let tagClasses = "font-12px height-205 radius-md text-center",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
     // Can also pass in className prop to override
@@ -129,7 +129,7 @@ const Tag = ({
      */
     const handleLegendStyles = (isLegend) => {
         if (isLegend) {
-            return { width: "40px", padding: ".25em .5em", display: "inline-block", textAlign: "center" };
+            return { width: "40px", padding: ".25em .5em", display: "inline-block" };
         } else {
             return {
                 width: "fit-content", // Ensures the tag's width adapts to its content
