@@ -5,6 +5,7 @@ import LineGraph from "../../UI/DataViz/LineGraph";
 import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
 import style from "./styles.module.css";
+import { Link } from "react-router-dom";
 
 /**
  * @component CanCard
@@ -67,24 +68,29 @@ const CanCard = ({ canId, fiscalYear }) => {
             className={style.container}
         >
             <dl className={`margin-0 ${style.leftMarginContainer}`}>
-                <div>
-                    <dt className="margin-0 text-base-dark">CAN</dt>
-                    <dd className="text-semibold margin-0">{can.display_name}</dd>
-                </div>
-                <div className="margin-y-2">
-                    <dt className="margin-0 text-base-dark">Nickname</dt>
-                    <dd className="text-semibold margin-0">{can.nick_name}</dd>
-                </div>
-                <div className="margin-y-2">
-                    <dt className="margin-0 text-base-dark">Active Period</dt>
-                    <dd className="text-semibold margin-0">
-                        {can.active_period} {can.active_period > 1 ? "years" : "year"}
-                    </dd>
-                </div>
-                <div className="margin-y-2">
-                    <dt className="margin-0 text-base-dark">Obligate By</dt>
-                    <dd className="text-semibold margin-0">{formatDateNeeded(obligateBy.toDateString())}</dd>
-                </div>
+                <Link
+                    to={`/cans/${can.id}`}
+                    className="text-no-underline text-ink"
+                >
+                    <div>
+                        <dt className="margin-0 text-base-dark">CAN</dt>
+                        <dd className="text-semibold margin-0">{can.display_name}</dd>
+                    </div>
+                    <div className="margin-y-2">
+                        <dt className="margin-0 text-base-dark">Nickname</dt>
+                        <dd className="text-semibold margin-0">{can.nick_name}</dd>
+                    </div>
+                    <div className="margin-y-2">
+                        <dt className="margin-0 text-base-dark">Active Period</dt>
+                        <dd className="text-semibold margin-0">
+                            {can.active_period} {can.active_period > 1 ? "years" : "year"}
+                        </dd>
+                    </div>
+                    <div className="margin-y-2">
+                        <dt className="margin-0 text-base-dark">Obligate By</dt>
+                        <dd className="text-semibold margin-0">{formatDateNeeded(obligateBy.toDateString())}</dd>
+                    </div>
+                </Link>
             </dl>
             <div className={style.rightContainer}>
                 <div className="display-flex flex-justify flex-align-center">
