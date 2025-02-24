@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import AuthSection from "../../Auth/AuthSection";
 import { Menu } from "./Menu";
-import { Search } from "./Search";
 import logo from "./OPRE_Logo.png";
 
 const Header = () => {
@@ -47,9 +46,8 @@ const Header = () => {
             >
                 <div className="usa-nav__inner bg-white">
                     <Menu />
-                    <div className="usa-nav__secondary">
+                    <div className="usa-nav__secondary margin-bottom-5">
                         <AuthSection />
-                        <Search />
                     </div>
                 </div>
             </nav>

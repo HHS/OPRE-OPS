@@ -1,10 +1,11 @@
 """Agreement models."""
 
+import decimal
 from datetime import date
 from enum import Enum, auto
 from typing import List, Optional
 
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Table, Text, select
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, Numeric, String, Table, Text, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 
@@ -232,7 +233,10 @@ class GrantAgreement(Agreement):
     __tablename__ = "grant_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
-    foa: Mapped[str]
+    foa: Mapped[Optional[str]] = mapped_column(String)
+    total_funding: Mapped[Optional[decimal]] = mapped_column(Numeric(12, 2))
+    number_of_years: Mapped[Optional[int]] = mapped_column(Integer)
+    number_of_grants: Mapped[Optional[int]] = mapped_column(Integer)
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.GRANT,

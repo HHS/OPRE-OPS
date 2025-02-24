@@ -68,19 +68,19 @@ const CANBudgetSummary = () => {
                 </thead>
                 <tbody>
                     <tr>
-                        <th scope="row">Total FY {fiscalYear || constants.notFilledInText} Funding</th>
+                        <td>Total FY {fiscalYear || constants.notFilledInText} Funding</td>
                         {totalFiscalYearFundingTableData}
                     </tr>
                     <tr>
-                        <th scope="row">Funded YTD</th>
+                        <td>Funded YTD</td>
                         {amountAvailableTableData}
                     </tr>
                     <tr>
-                        <th scope="row">Pending funds</th>
+                        <td>Pending funds</td>
                         {pendingFundsTableData}
                     </tr>
                     <tr>
-                        <th scope="row">Potential additional funding</th>
+                        <td>Potential additional funding</td>
                         <td>{canFiscalYear?.potential_additional_funding || constants.notFilledInText}</td>
                     </tr>
                 </tbody>

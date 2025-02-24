@@ -66,13 +66,12 @@ const AllBLIRow = ({
 
     const TableRowData = (
         <>
-            <th
-                scope="row"
+            <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
                 {budgetLine.id}
-            </th>
+            </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
