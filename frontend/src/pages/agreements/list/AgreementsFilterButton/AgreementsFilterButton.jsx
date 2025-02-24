@@ -3,7 +3,6 @@ import Modal from "react-modal";
 import customStyles from "./AgreementsFilterButton.module.css";
 import { useGetResearchProjectsQuery } from "../../../../api/opsAPI";
 import AgreementTypeSelect from "../../../../components/Agreements/AgreementTypeSelect";
-import ProcurementShopSelect from "../../../../components/Agreements/ProcurementShopSelect";
 import ProjectComboBox from "../../../../components/Projects/ProjectComboBox";
 import ProjectOfficerComboBox from "../../../../components/Agreements/ProjectOfficerComboBox";
 import FilterButton from "../../../../components/UI/FilterButton/FilterButton";
@@ -21,7 +20,6 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const [project, setProject] = React.useState({});
     const [po, setPO] = React.useState({});
     const [agreementType, setAgreementType] = React.useState("");
-    const [procurementShop, setProcurementShop] = React.useState({});
     const [bliStatus, setBliStatus] = React.useState({
         draft: true,
         planned: true,
@@ -44,17 +42,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         setProject(filters.projects ? filters.projects[0] : {});
     }, [filters.projects]);
 
-    useEffect(() => {
-        setPO(filters.projectOfficers ? filters.projectOfficers[0] : {});
-    }, [filters.projectOfficers]);
 
     useEffect(() => {
         setAgreementType(filters.types ? filters.types[0] : {});
     }, [filters.types]);
-
-    useEffect(() => {
-        setProcurementShop(filters.procurementShops ? filters.procurementShops[0] : {});
-    }, [filters.procurementShops]);
 
     useEffect(() => {
         setBliStatus(filters.budgetLineStatus);
@@ -75,9 +66,6 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
         });
         setFilters((prevState) => {
             return setFilterList(prevState, "types", agreementType);
-        });
-        setFilters((prevState) => {
-            return setFilterList(prevState, "procurementShops", procurementShop);
         });
         setFilters((prevState) => {
             return {
@@ -130,92 +118,10 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
     const checkboxStyles = `display-flex flex-align-center ${customStyles.modalBackgroundColor}`;
     const checkboxInputStyles = "usa-checkbox__input height-3 width-3";
     const checkboxLabelStyles = "usa-checkbox__label margin-top-0";
-    const radioInputStyles = "usa-radio__input height-3 width-3";
-    const radioLabelStyles = "usa-radio__label margin-top-0";
 
     const fieldsetList = [
         <fieldset
             key="field1"
-            className={fieldStyles}
-        >
-            <legend className={legendStyles}>Upcoming Need By Date</legend>
-            <div className="display-flex">
-                <div className={`padding-right-5 ${customStyles.modalBackgroundColor}`}>
-                    <div className="display-flex flex-align-center padding-bottom-1">
-                        <input
-                            className={radioInputStyles}
-                            id="next-30-days"
-                            type="radio"
-                            name="upcoming-need-by-date"
-                            tabIndex={0}
-                            onChange={() => setNeedBy("next-30-days")}
-                            checked={needBy === "next-30-days"}
-                        />
-                        <label
-                            className={radioLabelStyles}
-                            htmlFor="next-30-days"
-                        >
-                            Next 30 days
-                        </label>
-                    </div>
-                    <div className="display-flex flex-align-center">
-                        <input
-                            className={radioInputStyles}
-                            id="current-fy"
-                            type="radio"
-                            name="upcoming-need-by-date"
-                            tabIndex={0}
-                            onChange={() => setNeedBy("current-fy")}
-                            checked={needBy === "current-fy"}
-                        />
-                        <label
-                            className={radioLabelStyles}
-                            htmlFor="current-fy"
-                        >
-                            Current FY
-                        </label>
-                    </div>
-                </div>
-                <div className="">
-                    <div className="display-flex flex-align-center padding-bottom-1">
-                        <input
-                            className={radioInputStyles}
-                            id="next-6-months"
-                            type="radio"
-                            name="upcoming-need-by-date"
-                            tabIndex={0}
-                            onChange={() => setNeedBy("next-6-months")}
-                            checked={needBy === "next-6-months"}
-                        />
-                        <label
-                            className={radioLabelStyles}
-                            htmlFor="next-6-months"
-                        >
-                            Next 6 months
-                        </label>
-                    </div>
-                    <div className="display-flex flex-align-center">
-                        <input
-                            className={radioInputStyles}
-                            id="all-time"
-                            type="radio"
-                            name="upcoming-need-by-date"
-                            tabIndex={0}
-                            onChange={() => setNeedBy("all-time")}
-                            checked={needBy === "all-time"}
-                        />
-                        <label
-                            className={radioLabelStyles}
-                            htmlFor="all-time"
-                        >
-                            All time
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </fieldset>,
-        <fieldset
-            key="field2"
             className={fieldStyles}
         >
             <ProjectComboBox
@@ -228,7 +134,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             />
         </fieldset>,
         <fieldset
-            key="field3"
+            key="field2"
             className="usa-fieldset"
         >
             <ProjectOfficerComboBox
@@ -240,7 +146,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             />
         </fieldset>,
         <fieldset
-            key="field4"
+            key="field3"
             className={`margin-top-105 ${fieldStyles}`}
             style={{ width: "22.7rem" }}
         >
@@ -257,21 +163,7 @@ export const AgreementsFilterButton = ({ filters, setFilters }) => {
             />
         </fieldset>,
         <fieldset
-            key="field5"
-            className={fieldStyles}
-            style={{ width: "22.7rem" }}
-        >
-            <ProcurementShopSelect
-                selectedProcurementShop={procurementShop}
-                onChangeSelectedProcurementShop={setProcurementShop}
-                legendClassname={legendStyles}
-                defaultString={"All Shops"}
-                defaultToGCS={false}
-                isFilter={true}
-            />
-        </fieldset>,
-        <fieldset
-            key="field6"
+            key="field4"
             className={fieldStyles}
         >
             <legend className={legendStyles}>Budget Line Status</legend>

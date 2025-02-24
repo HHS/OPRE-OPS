@@ -26,6 +26,7 @@ export const FilterButton = ({ applyFilter, resetFilter, fieldsetList, disabled 
 
     Modal.setAppElement("#root");
 
+    console.log('Hello I am here');
     return (
         <div
             className={customStyles.container}

@@ -8,6 +8,7 @@ const Home = () => {
                 {!import.meta.env.PROD ? (
                     <RoundedBox className="margin-top-4 text-center">
                         <h1>This is a non-production OPS environment</h1>
+                        <p>This is a test statement to check HMR. test test</p>
                         <p>⚠️This environment is not authorized for certain production datasets. Additionally, this environment may be updated regularly.</p>
                     </RoundedBox>
                 ) : (
