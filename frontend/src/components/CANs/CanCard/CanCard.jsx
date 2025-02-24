@@ -67,31 +67,23 @@ const CanCard = ({ canId, fiscalYear }) => {
             data-cy={`can-card-${can.display_name}`}
             className={style.container}
         >
-            <dl className={`margin-0 ${style.leftMarginContainer}`}>
-                <Link
-                    to={`/cans/${can.id}`}
-                    className="text-no-underline text-ink"
-                >
-                    <div>
-                        <dt className="margin-0 text-base-dark">CAN</dt>
-                        <dd className="text-semibold margin-0">{can.display_name}</dd>
-                    </div>
-                    <div className="margin-y-2">
-                        <dt className="margin-0 text-base-dark">Nickname</dt>
-                        <dd className="text-semibold margin-0">{can.nick_name}</dd>
-                    </div>
-                    <div className="margin-y-2">
-                        <dt className="margin-0 text-base-dark">Active Period</dt>
-                        <dd className="text-semibold margin-0">
-                            {can.active_period} {can.active_period > 1 ? "years" : "year"}
-                        </dd>
-                    </div>
-                    <div className="margin-y-2">
-                        <dt className="margin-0 text-base-dark">Obligate By</dt>
-                        <dd className="text-semibold margin-0">{formatDateNeeded(obligateBy.toDateString())}</dd>
-                    </div>
-                </Link>
-            </dl>
+            <Link
+                to={`/cans/${can.id}`}
+                className="text-no-underline text-ink"
+            >
+                <dl className={`margin-0 ${style.leftMarginContainer}`}>
+                    <dt className="margin-0 text-base-dark">CAN</dt>
+                    <dd className="text-semibold margin-0 margin-bottom-2">{can.display_name}</dd>
+                    <dt className="margin-0 text-base-dark">Nickname</dt>
+                    <dd className="text-semibold margin-0 margin-bottom-2">{can.nick_name}</dd>
+                    <dt className="margin-0 text-base-dark">Active Period</dt>
+                    <dd className="text-semibold margin-0 margin-bottom-2">
+                        {can.active_period} {can.active_period > 1 ? "years" : "year"}
+                    </dd>
+                    <dt className="margin-0 text-base-dark">Obligate By</dt>
+                    <dd className="text-semibold margin-0">{formatDateNeeded(obligateBy.toDateString())}</dd>
+                </dl>
+            </Link>
             <div className={style.rightContainer}>
                 <div className="display-flex flex-justify flex-align-center">
                     <p className="margin-0 font-12px text-base-dark">{`FY ${fiscalYear} CAN Budget`}</p>
