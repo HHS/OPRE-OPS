@@ -40,14 +40,15 @@ const BudgetAndSpending = () => {
     };
 
     useEffect(() => {
-        if (budgetLineIds.length) {
+        // Reset states when fiscal year changes
+        setBudgetLineItems([]);
+        setBudgetLineTypesCount([]);
+        setAgreementTypesCount([]);
+
+        if (budgetLineIds?.length) {
             fetchBudgetLineItems();
         }
-    }, [budgetLineIds]);
-
-    useEffect(() => {
-        setBudgetLineItems([]);
-    }, [fiscalYear]);
+    }, [budgetLineIds, fiscalYear]);
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -70,8 +71,8 @@ const BudgetAndSpending = () => {
             <section>
                 <h2>Portfolio Budget Lines</h2>
                 <p>
-                    This is a list of all budget lines allocating funding from this Portfolio’s CANs for the selected
-                    fiscal year.
+                    This is a list of all budget lines allocating funding from this Portfolio&apos;s CANs for the
+                    selected fiscal year.
                 </p>
             </section>
             <CANBudgetLineTable

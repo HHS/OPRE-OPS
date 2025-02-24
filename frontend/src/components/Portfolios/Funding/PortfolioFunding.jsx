@@ -34,7 +34,7 @@ const PortfolioFunding = () => {
         if (portfolioId) {
             fetchPortfolioFunding();
         }
-    }, [portfolioId]);
+    }, [portfolioId, fiscalYear]);
 
     const data = [
         {

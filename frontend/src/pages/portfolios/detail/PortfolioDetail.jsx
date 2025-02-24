@@ -25,11 +25,13 @@ const PortfolioDetail = () => {
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
     const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
         portfolioId,
-        year: fiscalYear
+        year: fiscalYear,
+        refetchOnMountOrArgChange: true
     });
     const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioFundingSummaryQuery({
         portfolioId,
-        fiscalYear
+        fiscalYear,
+        refetchOnMountOrArgChange: true
     });
     const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
 
