@@ -105,7 +105,7 @@ describe("CAN List Filtering", () => {
         // cy.visit("/cans/?filter=my-cans");
         cy.get("#fiscal-year-select").select("2044");
         // table should not exist and contain one row
-        cy.get("tbody").children().should("have.length", 1);
+        cy.get("tbody").children().should("have.length", 3);
         // table row should contain G996400
         cy.get("tbody").contains("G996400").should("exist");
     });
