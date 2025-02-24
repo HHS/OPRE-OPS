@@ -54,7 +54,7 @@ const CANTableRow = ({
 
     return (
         <tr>
-            <th scope="row">
+            <td>
                 <Tooltip
                     label={nickname}
                     position="right"
@@ -66,7 +66,7 @@ const CANTableRow = ({
                         {name}
                     </Link>
                 </Tooltip>
-            </th>
+            </td>
             <td>{portfolio}</td>
             <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>

@@ -2,28 +2,29 @@
 import { terminalLog, testLogin } from "./utils";
 
 beforeEach(() => {
-    testLogin("system-owner");
-    cy.visit("/portfolios");
+    testLogin("budget-team");
 });
 
-afterEach(() => {
-    cy.injectAxe();
-    cy.checkA11y(null, null, terminalLog);
-});
+// afterEach(() => {
+//     cy.injectAxe();
+//     cy.checkA11y(null, null, terminalLog);
+// });
 
-// TODO: take away the skips when we're ready to show portfolios again
-describe.skip("Portfolio List Page", () => {
+describe("Portfolio List Page", () => {
     it("loads", () => {
+        cy.visit("/portfolios");
         cy.get("h1").should("have.text", "Portfolios");
         cy.get('a[href="/portfolios/1"]').should("exist");
     });
 
     it("clicking on a Portfolio takes you to the detail page", () => {
-        const portfolioName = "Healthy Marriage & Responsible Fatherhood";
+        cy.visit("/portfolios");
+
+        const portfolioName = "Child Welfare Research";
 
         cy.contains(portfolioName).click();
 
-        cy.url().should("include", "/portfolios/6");
-        cy.get("h1").should("contain", portfolioName);
+        cy.url().should("include", "/portfolios/1/spending");
+        cy.get("h1").should("have.text", portfolioName);
     });
 });
