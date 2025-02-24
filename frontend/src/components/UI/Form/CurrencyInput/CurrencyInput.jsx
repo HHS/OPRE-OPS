@@ -3,7 +3,7 @@ import CurrencyFormat from "react-currency-format";
 
 /**
  * A form input component for currency values.
- *
+ * @description best used with  state that is not in object form, but as a string or number.
  * @param {Object} props - The component props.
  * @param {string} props.name - The name of the input field.
  * @param {string} [props.label] - The label to display for the input field (optional).
