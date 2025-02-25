@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import { Outlet, useParams } from "react-router-dom";
 import App from "../../../App";
 import {
@@ -12,16 +11,18 @@ import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSe
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
-import { setSelectedFiscalYear } from "./portfolioSlice";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
+import React from "react";
 
 const PortfolioDetail = () => {
     /**
      * @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
      */
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear(new Date()));
+    const fiscalYear = Number(selectedFiscalYear);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id || "0");
-    const selectedFiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
-    const fiscalYear = Number(selectedFiscalYear.value);
+
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
     const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
         portfolioId,

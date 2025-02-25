@@ -22,7 +22,7 @@ import Tag from "../../Tag";
  * @param {ProjectAgreementBLICardProps} props
  * @returns {JSX.Element} - The Project Agreement BLI Card.
  */
-const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines }) => {
+const   ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines }) => {
     const projectHeading = `FY ${fiscalYear} Projects`;
     const budgetLinesHeading = `FY ${fiscalYear} Budget Lines`;
     const agreementsHeading = `FY ${fiscalYear} Agreements`;

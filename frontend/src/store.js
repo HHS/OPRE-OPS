@@ -1,11 +1,9 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import canDetailSlice from "./pages/cans/detail/canDetailSlice";
 import portfolioListSlice from "./pages/portfolios/list/portfolioListSlice";
-import portfolioBudgetSummarySlice from "./components/Portfolios/PortfolioBudgetSummary/portfolioBudgetSummarySlice";
 import authSlice from "./components/Auth/authSlice";
 import userSlice from "./pages/users/detail/userSlice";
 import userEditSlice from "./pages/users/edit/userSlice";
-import portfolioSlice from "./pages/portfolios/detail/portfolioSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
 import ResearchProjectFundingSlice from "./components/Portfolios/Funding/ResearchProjectFundingSlice";
 import alertSlice from "./components/UI/Alert/alertSlice";
@@ -18,9 +16,7 @@ const rootReducer = combineReducers({
     [opsAuthApi.reducerPath]: opsAuthApi.reducer,
     canDetail: canDetailSlice,
     portfolioList: portfolioListSlice,
-    portfolioBudgetSummary: portfolioBudgetSummarySlice,
     auth: authSlice,
-    portfolio: portfolioSlice,
     userDetail: userSlice,
     userDetailEdit: userEditSlice,
     researchProject: researchProjectSlice,
