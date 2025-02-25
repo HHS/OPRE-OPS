@@ -29,6 +29,10 @@ export default defineConfig(({ mode }) => {
             },
             watch: {
                 usePolling: true
+            },
+            logger: {
+                logLevel: "info",
+                clearScreen: false
             }
         },
         plugins: [

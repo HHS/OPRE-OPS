@@ -91,6 +91,12 @@ const Tag = ({
                 case "lightTextOnDarkBlue":
                     activeClass += " bg-brand-can-total-budget-2 text-white fake-bold";
                     break;
+                case "portfolioCarryForward":
+                    activeClass += " bg-brand-portfolio-carry-forward fake-bold";
+                    break;
+                case "portfolioNewFunding":
+                    activeClass += " bg-brand-portfolio-new-funding text-white fake-bold";
+                    break;
                 default:
                     break;
             }

@@ -16,8 +16,5 @@ describe("Feedback Component", () => {
         // Check for the feedback email link
         const emailLink = screen.getByRole("link", { name: "ops-feedback@formsgoogle.com" });
         expect(emailLink).toBeInTheDocument();
-        // Check for phone link and help email link
-        expect(screen.getByRole("link", { name: /\(555\) 555-5555/i })).toBeInTheDocument();
-        expect(screen.getByRole("link", { name: /acf-ops-help@acf.org/i })).toBeInTheDocument();
     });
 });

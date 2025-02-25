@@ -125,8 +125,7 @@ export const AgreementTableRow = ({ agreement }) => {
 
     const TableRowData = (
         <>
-            <th
-                scope="row"
+            <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
@@ -136,7 +135,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 >
                     <TextClip text={agreementName} />
                 </Link>
-            </th>
+            </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}

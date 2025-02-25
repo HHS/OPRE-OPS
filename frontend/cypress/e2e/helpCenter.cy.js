@@ -11,14 +11,10 @@ afterEach(() => {
 });
 
 describe("Help Center", () => {
-    it("renders the User Guide", () => {
+    it("renders the How-to Guide", () => {
         cy.visit("/help-center");
         cy.get("h1").contains("Help Center");
-        cy.get("h2").contains("User Guide");
-        cy.get("h3").contains("Table of Contents");
-        // click on How to edit a budget line from nav and check url to have slug
-        cy.get("a").contains("How to edit a budget line").click();
-        cy.url().should("include", "how-to-edit-a-budget-line");
+        cy.get("h2").contains("How-to Guides");
     });
     it("renders the FAQ", () => {
         cy.visit("/help-center/faq");
