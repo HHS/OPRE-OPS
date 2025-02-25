@@ -3,9 +3,9 @@ import { useOutletContext } from "react-router-dom";
 import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
-import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
+import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
 
-const BudgetAndSpending = () => {
+const PortfolioSpending = () => {
     const [budgetLineItems, setBudgetLineItems] = React.useState([]);
     const [budgetLineTypesCount, setBudgetLineTypesCount] = React.useState([]);
     const [agreementTypesCount, setAgreementTypesCount] = React.useState([]);
@@ -84,4 +84,4 @@ const BudgetAndSpending = () => {
     );
 };
 
-export default BudgetAndSpending;
+export default PortfolioSpending;

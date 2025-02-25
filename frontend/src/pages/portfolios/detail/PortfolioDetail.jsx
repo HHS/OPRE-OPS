@@ -35,7 +35,11 @@ const PortfolioDetail = () => {
     });
     const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
 
-    const { data: projects } = useGetProjectsByPortfolioQuery({ fiscal_year: fiscalYear, portfolio_id: portfolioId });
+    const { data: projects } = useGetProjectsByPortfolioQuery({
+        fiscal_year: fiscalYear,
+        portfolio_id: portfolioId,
+        refetchOnMountOrArgChange: true
+    });
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
 
     const canIds = portfolioCans?.map((can) => can.id) ?? [];
