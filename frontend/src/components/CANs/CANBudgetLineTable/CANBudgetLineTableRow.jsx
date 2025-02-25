@@ -75,13 +75,12 @@ const CANBudgetLineTableRow = ({
 
     const TableRowData = (
         <>
-            <th
-                scope="row"
+            <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
                 {blId}
-            </th>
+            </td>
             <td
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}

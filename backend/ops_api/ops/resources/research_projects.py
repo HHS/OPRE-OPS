@@ -12,7 +12,7 @@ from models import (
     Agreement,
     BaseModel,
     BudgetLineItem,
-    CANFundingDetails,
+    CANFundingBudget,
     MethodologyType,
     OpsEventType,
     PopulationType,
@@ -71,6 +71,7 @@ class ResearchProjectResponse(Schema):
     team_leaders: Optional[list[TeamLeaders]] = fields.List(fields.Nested(TeamLeaders), default=[])
     created_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
     updated_on: datetime = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ")
+    project_type: ProjectType = fields.Enum(ProjectType)
 
 
 class ResearchProjectItemAPI(BaseItemAPI):
@@ -104,7 +105,7 @@ class ResearchProjectListAPI(BaseListAPI):
             .join(Agreement, isouter=True)
             .join(BudgetLineItem, isouter=True)
             .join(CAN, isouter=True)
-            .join(CANFundingDetails, isouter=True)
+            .join(CANFundingBudget, isouter=True)
         )
 
         query_helper = QueryHelper(stmt)
@@ -113,7 +114,7 @@ class ResearchProjectListAPI(BaseListAPI):
             query_helper.add_column_equals(CAN.portfolio_id, portfolio_id)
 
         if fiscal_year:
-            query_helper.add_column_equals(CANFundingDetails.fiscal_year, fiscal_year)
+            query_helper.add_column_equals(CANFundingBudget.fiscal_year, fiscal_year)
 
         if search is not None and len(search) == 0:
             query_helper.return_none()
