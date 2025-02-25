@@ -215,42 +215,6 @@ def test_create_models_upsert(db_for_grants):
         NUMBER_OF_YEARS=1,
         NUMBER_OF_GRANTS=1,
     )
-    #
-    # data_3 = ContractData(
-    #     CONTRACT_NAME="Test Contract Updated",
-    #     SYS_CONTRACT_ID=1,
-    #     SYS_PROJECT_ID=2,
-    #     SYS_VENDOR_ID=1,
-    #     CONTRACT_NBR="HHSXXXXXXX1",
-    #     TASK_ORDER_NBR="HHSYYYYYY1",
-    #     PO_NBR="HHSZZZZZ1",
-    #     ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-    #     PSC_CODE="541690",
-    #     CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-    #     CONTRACT_START_DATE="2000-09-30 00:00:00",
-    #     CONTRACT_END_DATE="2010-09-30 00:00:00",
-    #     PSC_CONTRACT_SPECIALIST="John Doe",
-    #     OPRE_COTR=1,
-    #     OPRE_PROJECT_OFFICER=1,
-    # )
-    #
-    # data_4 = ContractData(
-    #     CONTRACT_NAME="Test Contract Updated",
-    #     SYS_CONTRACT_ID=1,
-    #     SYS_PROJECT_ID=2,
-    #     SYS_VENDOR_ID=2,
-    #     CONTRACT_NBR="HHSXXXXXXX1",
-    #     TASK_ORDER_NBR="HHSYYYYYY1",
-    #     PO_NBR="HHSZZZZZ1",
-    #     ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
-    #     PSC_CODE="541690",
-    #     CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-    #     CONTRACT_START_DATE="2000-09-30 00:00:00",
-    #     CONTRACT_END_DATE="2010-09-30 00:00:00",
-    #     PSC_CONTRACT_SPECIALIST="John Doe",
-    #     OPRE_COTR=1,
-    #     OPRE_PROJECT_OFFICER=1,
-    # )
 
     create_models(data_1, sys_user, db_for_grants)
 
