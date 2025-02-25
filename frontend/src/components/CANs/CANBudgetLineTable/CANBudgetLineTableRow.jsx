@@ -11,7 +11,8 @@ import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
     expandedRowBGColor,
-    removeBorderBottomIfExpanded
+    removeBorderBottomIfExpanded,
+    truncateTextIfNotExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
@@ -67,6 +68,7 @@ const CANBudgetLineTableRow = ({
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
+    const truncateTextStyles = truncateTextIfNotExpanded(isExpanded);
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
     const feeTotal = totalBudgetLineFeeAmount(amount, fee);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
@@ -82,7 +84,7 @@ const CANBudgetLineTableRow = ({
                 {blId}
             </td>
             <td
-                className={borderExpandedStyles}
+                className={`${borderExpandedStyles} ${truncateTextStyles}`}
                 style={bgExpandedStyles}
             >
                 {agreementName}
