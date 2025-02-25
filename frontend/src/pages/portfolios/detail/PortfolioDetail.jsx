@@ -13,6 +13,7 @@ import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
 import { setSelectedFiscalYear } from "./portfolioSlice";
+import DebugCode from "../../../components/DebugCode";
 
 const PortfolioDetail = () => {
     /**
@@ -25,7 +26,7 @@ const PortfolioDetail = () => {
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
     const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
         portfolioId,
-        year: fiscalYear,
+        // year: fiscalYear, // disabling fiscalYear for now pending completion of #3531
         refetchOnMountOrArgChange: true
     });
     const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioFundingSummaryQuery({
@@ -89,6 +90,7 @@ const PortfolioDetail = () => {
                     }}
                 />
             </div>
+            <DebugCode data={{ budgetLineIds, portfolioCans }} />
         </App>
     );
 };

@@ -4,6 +4,7 @@ import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
+import DebugCode from "../../DebugCode";
 
 const PortfolioSpending = () => {
     const [budgetLineItems, setBudgetLineItems] = React.useState([]);
@@ -20,11 +21,12 @@ const PortfolioSpending = () => {
         });
 
         try {
-            const budgetLineItems = await Promise.all(promises);
-            setBudgetLineItems(budgetLineItems);
-            const newBudgetLineTypesCount = getTypesCounts(budgetLineItems ?? [], "status");
+            const budgetLineItemsData = await Promise.all(promises);
+            const filteredBudgetLineItems = budgetLineItemsData.filter((item) => item.fiscal_year === fiscalYear);
+            setBudgetLineItems(filteredBudgetLineItems);
+            const newBudgetLineTypesCount = getTypesCounts(filteredBudgetLineItems ?? [], "status");
             setBudgetLineTypesCount(newBudgetLineTypesCount);
-            const budgetLinesAgreements = budgetLineItems?.map((item) => item.agreement) ?? [];
+            const budgetLinesAgreements = filteredBudgetLineItems?.map((item) => item.agreement) ?? [];
             const uniqueBudgetLineAgreements =
                 budgetLinesAgreements?.reduce((acc, item) => {
                     if (!acc.some((existingItem) => existingItem.name === item.name)) {
@@ -80,6 +82,7 @@ const PortfolioSpending = () => {
                 totalFunding={portfolioFunding?.total_funding.amount}
                 tableType="portfolio"
             />
+            <DebugCode title="spending tab" data={{budgetLineItems}} />
         </>
     );
 };
