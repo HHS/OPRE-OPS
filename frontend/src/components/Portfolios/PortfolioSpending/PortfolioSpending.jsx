@@ -4,7 +4,6 @@ import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
 import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
-import DebugCode from "../../DebugCode";
 
 const PortfolioSpending = () => {
     const [budgetLineItems, setBudgetLineItems] = React.useState([]);
@@ -82,7 +81,6 @@ const PortfolioSpending = () => {
                 totalFunding={portfolioFunding?.total_funding.amount}
                 tableType="portfolio"
             />
-            <DebugCode title="spending tab" data={{budgetLineItems}} />
         </>
     );
 };

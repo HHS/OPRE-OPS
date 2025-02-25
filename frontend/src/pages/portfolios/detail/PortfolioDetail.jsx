@@ -13,7 +13,6 @@ import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
 import { setSelectedFiscalYear } from "./portfolioSlice";
-import DebugCode from "../../../components/DebugCode";
 
 const PortfolioDetail = () => {
     /**
@@ -90,7 +89,6 @@ const PortfolioDetail = () => {
                     }}
                 />
             </div>
-            <DebugCode data={{ budgetLineIds, portfolioCans }} />
         </App>
     );
 };
