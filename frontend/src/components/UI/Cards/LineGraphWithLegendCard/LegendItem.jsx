@@ -68,7 +68,6 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     active={isGraphActive}
                     tagStyleActive={tagStyleActive}
                     dataTestId="legend-tag"
-                    isLegend={true}
                 />
             </div>
         </div>
