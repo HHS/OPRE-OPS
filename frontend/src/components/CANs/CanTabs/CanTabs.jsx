@@ -16,10 +16,6 @@ const CANTags = () => {
         {
             name: "",
             label: "All CANs"
-        },
-        {
-            name: "?filter=my-cans",
-            label: "My CANs"
         }
     ];
 
