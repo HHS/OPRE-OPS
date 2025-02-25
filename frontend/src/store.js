@@ -5,7 +5,6 @@ import authSlice from "./components/Auth/authSlice";
 import userSlice from "./pages/users/detail/userSlice";
 import userEditSlice from "./pages/users/edit/userSlice";
 import researchProjectSlice from "./pages/researchProjects/detail/researchProjectSlice";
-import ResearchProjectFundingSlice from "./components/Portfolios/Funding/ResearchProjectFundingSlice";
 import alertSlice from "./components/UI/Alert/alertSlice";
 import { opsApi } from "./api/opsAPI";
 import { errorMiddleware } from "./errorMiddleware.js";
@@ -20,7 +19,6 @@ const rootReducer = combineReducers({
     userDetail: userSlice,
     userDetailEdit: userEditSlice,
     researchProject: researchProjectSlice,
-    researchProjectFunding: ResearchProjectFundingSlice,
     alert: alertSlice
 });
 
