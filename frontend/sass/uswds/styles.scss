@@ -219,11 +219,3 @@ $themeColors: (
 [class^="usa-date-picker__"]:not([disabled]) {
     text-align: center;
 }
-
-// Truncate table row over long text 
-.table-row-text {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 230px;
-}
