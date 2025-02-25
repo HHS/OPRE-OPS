@@ -6,18 +6,18 @@ import {
     totalBudgetLineAmountPlusFees,
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
+import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
     changeBgColorIfExpanded,
     expandedRowBGColor,
-    removeBorderBottomIfExpanded,
-    truncateTextIfNotExpanded
+    removeBorderBottomIfExpanded
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
-import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
-import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
+import TextClip from "../../UI/Text/TextClip";
 
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
@@ -68,7 +68,6 @@ const CANBudgetLineTableRow = ({
     const { isExpanded, setIsRowActive, setIsExpanded } = useTableRow();
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
-    const truncateTextStyles = truncateTextIfNotExpanded(isExpanded);
     const budgetLineCreatorName = useGetUserFullNameFromId(creatorId);
     const feeTotal = totalBudgetLineFeeAmount(amount, fee);
     const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(amount, feeTotal);
@@ -84,10 +83,14 @@ const CANBudgetLineTableRow = ({
                 {blId}
             </td>
             <td
-                className={`${borderExpandedStyles} ${truncateTextStyles}`}
+                className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {agreementName}
+                <TextClip
+                    text={agreementName}
+                    tooltipThreshold={30}
+                    maxLines={1}
+                />
             </td>
             <td
                 className={borderExpandedStyles}
