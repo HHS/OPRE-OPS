@@ -76,7 +76,10 @@ const AllBLIRow = ({
                 className={borderExpandedStyles}
                 style={bgExpandedStyles}
             >
-                <TextClip text={budgetLine.agreement_name} />
+                <TextClip
+                    text={budgetLine.agreement_name}
+                    maxLines={1}
+                />
             </td>
             <td
                 className={borderExpandedStyles}

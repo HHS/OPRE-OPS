@@ -25,15 +25,21 @@ const PortfolioDetail = () => {
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
     const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
         portfolioId,
-        year: fiscalYear
+        // year: fiscalYear, // disabling fiscalYear for now pending completion of #3531
+        refetchOnMountOrArgChange: true
     });
     const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioFundingSummaryQuery({
         portfolioId,
-        fiscalYear
+        fiscalYear,
+        refetchOnMountOrArgChange: true
     });
     const budgetLineIds = [...new Set(portfolioCans?.flatMap((can) => can.budget_line_items))];
 
-    const { data: projects } = useGetProjectsByPortfolioQuery({ fiscal_year: fiscalYear, portfolio_id: portfolioId });
+    const { data: projects } = useGetProjectsByPortfolioQuery({
+        fiscal_year: fiscalYear,
+        portfolio_id: portfolioId,
+        refetchOnMountOrArgChange: true
+    });
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
 
     const canIds = portfolioCans?.map((can) => can.id) ?? [];
