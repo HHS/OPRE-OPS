@@ -11,7 +11,7 @@ const { tooltip } = USWDS;
  * @param {object} props - The component props.
  * @param {string} [props.text] - The text
  * @param {number} [props.maxLines] - optional (default 2), the number of lines to display, default is 2
- * @param {number} [props.tooltipThreshold] - optional (default 50), minimum character length to add the enhanced tooltip
+ * @param {number} [props.tooltipThreshold] - optional (default 40), minimum character length to add the enhanced tooltip
  * @returns {JSX.Element} - The rendered component
  **/
 const TextClip = ({ text, maxLines = 2, tooltipThreshold = 40 }) => {
