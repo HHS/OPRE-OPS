@@ -90,7 +90,9 @@ export const CreateBLIsAndSCs = ({
         handleSave,
         budgetLinesForCards,
         tempBudgetLines,
-        isBudgetLineNotDraft
+        isBudgetLineNotDraft,
+        budgetFormSuite,
+        datePickerSuite
     } = useCreateBLIsAndSCs(
         isEditMode,
         isReviewMode,
@@ -204,6 +206,8 @@ export const CreateBLIsAndSCs = ({
                     isEditMode={isEditMode}
                     agreementId={selectedAgreement.id}
                     isBudgetLineNotDraft={isBudgetLineNotDraft}
+                    budgetFormSuite={budgetFormSuite}
+                    datePickerSuite={datePickerSuite}
                 />
             )}
 
