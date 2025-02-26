@@ -9,9 +9,7 @@ import LineBar from "../../UI/DataViz/LineBar";
 
 const PortfolioFunding = () => {
     const [fyBudgetChartData, setFyBudgetChartData] = React.useState([]);
-    const { portfolioId, portfolioFunding, newFunding, fiscalYear, canIds } = useOutletContext();
-    const carryForward = portfolioFunding.carry_forward_funding.amount;
-    const totalBudget = portfolioFunding.total_funding.amount;
+    const { portfolioId, newFunding, fiscalYear, canIds, carryForward, totalFunding } = useOutletContext();
 
     const [trigger] = useLazyGetPortfolioFundingSummaryQuery();
     const fetchPortfolioFunding = async () => {
@@ -42,7 +40,7 @@ const PortfolioFunding = () => {
             label: "Previous FYs Carry-Forward",
             value: carryForward,
             color: "var(--portfolio-carry-forward)",
-            percent: `${calculatePercent(carryForward, totalBudget)}%`,
+            percent: `${calculatePercent(carryForward, totalFunding)}%`,
             tagActiveStyle: "portfolioCarryForward"
         },
         {
@@ -50,7 +48,7 @@ const PortfolioFunding = () => {
             label: `FY ${fiscalYear} New Funding`,
             value: newFunding,
             color: "var(--portfolio-new-funding)",
-            percent: `${calculatePercent(newFunding, totalBudget)}%`,
+            percent: `${calculatePercent(newFunding, totalFunding)}%`,
             tagActiveStyle: "portfolioNewFunding"
         }
     ];
@@ -101,7 +99,7 @@ const PortfolioFunding = () => {
                     <LineGraphWithLegendCard
                         heading={`FY ${fiscalYear} Portfolio Total Budget`}
                         data={data}
-                        bigNumber={portfolioFunding.total_funding.amount}
+                        bigNumber={totalFunding}
                     />
                     <Card
                         title="Portfolio Budget by FY"
