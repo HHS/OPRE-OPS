@@ -22,7 +22,7 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
             <select
                 id="fiscal-year-select"
                 className="usa-select margin-left-1"
-                style={{ width: "5rem" }}
+                style={{ width: "5.125rem" }}
                 onChange={(e) => handleChangeFiscalYear(e.target.value)}
                 value={fiscalYear}
             >

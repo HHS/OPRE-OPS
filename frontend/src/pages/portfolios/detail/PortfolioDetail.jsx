@@ -26,7 +26,7 @@ const PortfolioDetail = () => {
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
     const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
         portfolioId,
-        // year: fiscalYear, // disabling fiscalYear for now pending completion of #3531
+        // year: fiscalYear, // TODO: disabling fiscalYear for now pending completion of #3531
         refetchOnMountOrArgChange: true
     });
     const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioFundingSummaryQuery({
@@ -72,7 +72,6 @@ const PortfolioDetail = () => {
                 <section className="display-flex flex-justify margin-top-3">
                     <PortfolioTabsSection portfolioId={portfolioId} />
                     <FiscalYear
-                        className="margin-left-auto"
                         fiscalYear={fiscalYear}
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />
