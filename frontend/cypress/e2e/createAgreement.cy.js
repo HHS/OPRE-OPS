@@ -108,18 +108,15 @@ it.only("can create an SEVERABLE agreement", () => {
     cy.get("#allServicesComponentSelect").select("Base Period 1");
     cy.get("#need-by-date").type("10/1/25");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
-    cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").should("be.disabled");
     cy.get(".usa-error-message").should("exist");
     cy.get(".usa-error-message").should("contain", "Date must be MM/DD/YYYY");
-    // cy.get("#need-by-date").clear();
-    // cy.pause()
-    // cy.get("#need-by-date").blur()
+    cy.get("#need-by-date").clear();
     cy.get("#need-by-date").type("01/01/2030");
-    cy.pause();
+    cy.get("#enteredAmount").type("1000000");
     cy.get("#add-budget-line").click();
-    cy.pause();
+
     // add check for BLI Summary card
     cy.get("[data-cy='blis-by-fy-card']").contains("FY 2030");
     cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
