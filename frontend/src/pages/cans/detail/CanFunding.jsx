@@ -173,7 +173,10 @@ const CanFunding = ({
                             totalReceived={receivedFunding}
                             totalFunding={totalFunding}
                         />
-                        <CANBudgetByFYCard fundingBudgets={fundingBudgets} />
+                        <CANBudgetByFYCard
+                            fundingBudgets={fundingBudgets}
+                            fiscalYear={fiscalYear}
+                        />
                     </div>
                     <div className="margin-top-05">
                         <p className="font-12px text-base-dark margin-0">

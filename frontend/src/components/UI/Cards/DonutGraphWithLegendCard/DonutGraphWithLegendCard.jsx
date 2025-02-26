@@ -19,7 +19,6 @@ import styles from "./styles.module.css";
  * @typedef {Object} DonutGraphWithLegendCardProps
  * @property {Data[]} data - The array of data items.
  * @property {string} title - The title for the card
- * @property {number} totalFunding - The total funding.
  */
 
 /**
@@ -27,7 +26,7 @@ import styles from "./styles.module.css";
  * @param {DonutGraphWithLegendCardProps} props
  * @returns {JSX.Element}
  */
-const DonutGraphWithLegendCard = ({ data, title, totalFunding }) => {
+const DonutGraphWithLegendCard = ({ data, title }) => {
     const [percent, setPercent] = React.useState("");
     const [hoverId, setHoverId] = React.useState(-1);
     const id = crypto.randomUUID();
@@ -36,7 +35,7 @@ const DonutGraphWithLegendCard = ({ data, title, totalFunding }) => {
         <RoundedBox id="donut-graph-with-legend-card">
             <h3 className="margin-0 margin-bottom-3 font-12px text-base-dark text-normal">{title}</h3>
             <div className="display-flex flex-justify">
-                <div className={totalFunding > 0 ? `${styles.widthLegend} font-12px` : "width-card-lg font-12px"}>
+                <div className={`${styles.widthLegend} font-12px`}>
                     {data.map((item) => (
                         <LegendItem
                             key={item.id}
