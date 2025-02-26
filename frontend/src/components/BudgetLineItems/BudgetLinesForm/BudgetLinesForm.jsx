@@ -100,7 +100,7 @@ export const BudgetLinesForm = ({
 
     const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
     const isFormNotValid =
-        (isEditMode && dateRes.hasErrors()) ||
+        dateRes.hasErrors() ||
         (isReviewMode && (res.hasErrors() || !isFormComplete)) ||
         (isEditMode && isBudgetLineNotDraft && res.hasErrors());
 
@@ -148,11 +148,11 @@ export const BudgetLinesForm = ({
                     value={needByDate}
                     onChange={(e) => {
                         setNeedByDate(e.target.value);
-                        if (isEditMode) {
-                            validateDatePicker("needByDate", e.target.value);
-                        }
                         if (isReviewMode) {
                             runValidate("needByDate", e.target.value);
+                        } else {
+                            // Run validateDatePicker for creating and editing
+                            validateDatePicker("needByDate", e.target.value);
                         }
                     }}
                 />
