@@ -18,7 +18,7 @@ const PortfolioDetail = () => {
     /**
      * @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
      */
-    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear(new Date()));
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id || "0");
