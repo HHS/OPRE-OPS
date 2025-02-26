@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import { Outlet, useParams } from "react-router-dom";
 import App from "../../../App";
 import {
@@ -12,20 +11,22 @@ import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSe
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
 import { getTypesCounts } from "../../cans/detail/Can.helpers";
-import { setSelectedFiscalYear } from "./portfolioSlice";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
+import React from "react";
 
 const PortfolioDetail = () => {
     /**
      * @typedef {import("../../../components/CANs/CANTypes").FundingSummary} FundingSummary
      */
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const fiscalYear = Number(selectedFiscalYear);
     const urlPathParams = useParams();
     const portfolioId = parseInt(urlPathParams.id || "0");
-    const selectedFiscalYear = useSelector((state) => state.portfolio.selectedFiscalYear);
-    const fiscalYear = Number(selectedFiscalYear.value);
+
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
     const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
         portfolioId,
-        // year: fiscalYear, // disabling fiscalYear for now pending completion of #3531
+        // year: fiscalYear, // TODO: disabling fiscalYear for now pending completion of #3531
         refetchOnMountOrArgChange: true
     });
     const { data: portfolioFunding, isLoading: portfolioFundingLoading } = useGetPortfolioFundingSummaryQuery({
@@ -71,7 +72,6 @@ const PortfolioDetail = () => {
                 <section className="display-flex flex-justify margin-top-3">
                     <PortfolioTabsSection portfolioId={portfolioId} />
                     <FiscalYear
-                        className="margin-left-auto"
                         fiscalYear={fiscalYear}
                         handleChangeFiscalYear={setSelectedFiscalYear}
                     />

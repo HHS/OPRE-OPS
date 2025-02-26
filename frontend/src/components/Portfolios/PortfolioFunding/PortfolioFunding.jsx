@@ -1,11 +1,11 @@
-import { useOutletContext } from "react-router-dom";
-import CanCard from "../../CANs/CanCard/CanCard";
-import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
-import Card from "../../UI/Cards/Card";
-import LineBar from "../../UI/DataViz/LineBar";
-import { calculatePercent } from "../../../helpers/utils";
-import { useLazyGetPortfolioFundingSummaryQuery } from "../../../api/opsAPI";
 import React, { useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
+import { useLazyGetPortfolioFundingSummaryQuery } from "../../../api/opsAPI";
+import { calculatePercent } from "../../../helpers/utils";
+import CanCard from "../../CANs/CanCard/CanCard";
+import Card from "../../UI/Cards/Card";
+import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
+import LineBar from "../../UI/DataViz/LineBar";
 
 const PortfolioFunding = () => {
     const [fyBudgetChartData, setFyBudgetChartData] = React.useState([]);
