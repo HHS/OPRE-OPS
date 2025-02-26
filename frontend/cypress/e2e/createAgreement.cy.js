@@ -25,7 +25,7 @@ it("project type select has some projects", () => {
     cy.get("#project-combobox-input").type("{esc}");
 });
 
-it.only("can create an SEVERABLE agreement", () => {
+it("can create an SEVERABLE agreement", () => {
     cy.intercept("POST", "**/agreements").as("postAgreement");
 
     // Step One - Select a Project
@@ -239,16 +239,16 @@ it("can create an NON-SEVERABLE agreement", () => {
     cy.get("#servicesComponentSelect").select("2");
     cy.get("#optional-services-component").should("not.be.disabled");
     cy.get("#servicesComponentSelect").select("1");
-    cy.get("#pop-start-date").type("01/01/2024");
-    cy.get("#pop-end-date").type("01/01/2025");
+    cy.get("#pop-start-date").type("01/01/2030");
+    cy.get("#pop-end-date").type("01/01/2031");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Services Component 1");
     //create a new optional services component
     cy.get("#servicesComponentSelect").select("2");
     cy.get(".usa-checkbox").click();
-    cy.get("#pop-start-date").type("01/01/2024");
-    cy.get("#pop-end-date").type("01/01/2025");
+    cy.get("#pop-start-date").type("01/01/2030");
+    cy.get("#pop-end-date").type("01/01/2031");
     cy.get("#description").type("This is a description.");
     cy.get("[data-cy='add-services-component-btn']").click();
     cy.get("h2").should("contain", "Optional Services Component 2");
@@ -267,27 +267,27 @@ it("can create an NON-SEVERABLE agreement", () => {
         cy.get("option").should("contain", "OSC2");
     });
     cy.get("#allServicesComponentSelect").select("SC1");
-    cy.get("#need-by-date").type("01/01/2024");
+    cy.get("#need-by-date").type("01/01/2030");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("1000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
 
     // add check for BLI Summary card
-    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2024");
+    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2030");
     cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
     cy.get("[data-cy='currency-summary-card']").contains("$1,000,000.00");
 
     cy.get("#allServicesComponentSelect").select("SC1");
-    cy.get("#need-by-date").type("01/01/2025");
+    cy.get("#need-by-date").type("01/01/2031");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("2000000");
     cy.get("#enteredComments").type("Something something note something.");
     cy.get("#add-budget-line").click();
 
     // add check for BLI Summary card
-    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2024");
-    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2025");
+    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2030");
+    cy.get("[data-cy='blis-by-fy-card']").contains("FY 2031");
     cy.get("[data-cy='blis-by-fy-card']").contains("$1,000,000.00");
     cy.get("[data-cy='blis-by-fy-card']").contains("$2,000,000.00");
     cy.get("[data-cy='currency-summary-card']").contains("$3,000,000.00");
@@ -298,7 +298,7 @@ it("can create an NON-SEVERABLE agreement", () => {
     // sc1 table should contain 2 rows
     cy.get("@sc1").next().find(".usa-table").find("tbody").find("tr").should("have.length", 2);
     cy.get("#allServicesComponentSelect").select("OSC2");
-    cy.get("#need-by-date").type("01/01/2026");
+    cy.get("#need-by-date").type("01/01/2032");
     cy.get("#can-combobox-input").type("G99MVT3{enter}");
     cy.get("#enteredAmount").type("3000000");
     cy.get("#enteredComments").type("Something something note something.");
