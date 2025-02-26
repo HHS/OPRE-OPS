@@ -5,7 +5,7 @@ import FiscalYear from "../../../../components/UI/FiscalYear";
  * @component
  * @param {Object} props
  * @param {number} props.fiscalYear
- * @param {Function} props.setSelectedFiscalYear
+ * @param { () => void } props.setSelectedFiscalYear
  * @returns  {JSX.Element} - The component JSX.
  */
 const CANFiscalYearSelect = ({ fiscalYear, setSelectedFiscalYear }) => {

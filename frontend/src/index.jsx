@@ -6,7 +6,7 @@ import store from "./store";
 import UploadDocument from "./components/Agreements/Documents/UploadDocument.jsx";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute/ProtectedRoute";
 import PortfolioSpending from "./components/Portfolios/PortfolioSpending";
-import PortfolioFunding from "./components/Portfolios/Funding/PortfolioFunding";
+import PortfolioFunding from "./components/Portfolios/PortfolioFunding";
 import ApproveAgreement from "./pages/agreements/approve";
 import CreateAgreement from "./pages/agreements/CreateAgreement";
 import Agreement from "./pages/agreements/details/Agreement";
