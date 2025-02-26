@@ -9,8 +9,8 @@ import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
-import AgreementsFilterButton from "./AgreementsFilterButton";
-import AgreementsFilterTags from "./AgreementsFilterTags";
+import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
+import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
 import sortAgreements from "./utils";
 
@@ -24,11 +24,8 @@ import sortAgreements from "./utils";
 const AgreementsList = () => {
     const [searchParams] = useSearchParams();
     const [filters, setFilters] = useState({
-        upcomingNeedByDate: "all-time",
-        projects: [],
-        projectOfficers: [],
-        types: [],
-        procurementShops: [],
+        portfolio: ["test"],
+        fiscalYear: ["FY 2023", "FY 2024", "FY2025"],
         budgetLineStatus: {
             draft: true,
             planned: true,
