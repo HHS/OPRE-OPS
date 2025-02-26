@@ -8,7 +8,6 @@ import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
-import { draftBudgetLineStatuses, getCurrentFiscalYear } from "../../../helpers/utils";
 import AgreementsFilterButton from "./AgreementsFilterButton/AgreementsFilterButton";
 import AgreementsFilterTags from "./AgreementsFilterTags/AgreementsFilterTags";
 import AgreementTabs from "./AgreementsTabs";
@@ -24,17 +23,11 @@ import sortAgreements from "./utils";
 const AgreementsList = () => {
     const [searchParams] = useSearchParams();
     const [filters, setFilters] = useState({
-        portfolio: ["test"],
-        fiscalYear: ["FY 2023", "FY 2024", "FY2025"],
-        budgetLineStatus: {
-            draft: true,
-            planned: true,
-            executing: true,
-            obligated: true
-        }
+        portfolio: [],
+        fiscalYear: [],
+        budgetLineStatus: []
     });
 
-    // TODO: Move logic to a custom hook './useAgreementsList.hooks.js'
     const {
         data: agreements,
         error: errorAgreement,
@@ -64,119 +57,80 @@ const AgreementsList = () => {
     /** @param{Agreement[]} agreements */
     let filteredAgreements = _.cloneDeep(agreements);
 
-    switch (filters.upcomingNeedByDate) {
-        case "next-30-days":
-            filteredAgreements = filteredAgreements.filter(
-                /** @param{Agreement} agreement */
-                (agreement) => {
-                    return agreement.budget_line_items.some((bli) => {
-                        return (
-                            bli.date_needed &&
-                            new Date(bli.date_needed) <= new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000)
-                        );
-                    });
-                }
-            );
-            break;
-        case "current-fy":
-            filteredAgreements = filteredAgreements.filter(
-                /** @param{Agreement} agreement */
-                (agreement) => {
-                    return agreement.budget_line_items.some((bli) => {
-                        const currentFY = Number(getCurrentFiscalYear(new Date()));
-                        const bliFY = new Date(bli.date_needed).getFullYear();
-                        return bli.date_needed && bliFY === currentFY;
-                    });
-                }
-            );
-            break;
-        case "next-6-months":
-            filteredAgreements = filteredAgreements.filter(
-                /** @param{Agreement} agreement */
-                (agreement) => {
-                    const now = new Date();
-                    const sixMonthsFromNow = new Date(now.setMonth(now.getMonth() + 6));
-                    return agreement.budget_line_items.some((bli) => {
-                        return bli.date_needed && new Date(bli.date_needed) <= sixMonthsFromNow;
-                    });
-                }
-            );
-            break;
-        case "all-time":
-            break;
-    }
 
-    // filter by projects
+    // filter by fiscal year
     filteredAgreements = filteredAgreements.filter(
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                filters.projects.length === 0 ||
-                filters.projects.some((project) => {
-                    return project.id === agreement.project_id;
+                filters.fiscalYear.length === 0 ||
+                filters.fiscalYear.some((fiscalYear) => {
+                    return agreement.budget_line_items?.some((bli) => { return bli.fiscal_year == fiscalYear.id});
                 })
             );
         }
     );
 
-    // filter by project officers
+    // filter by portfolios
     filteredAgreements = filteredAgreements.filter(
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                filters.projectOfficers.length === 0 ||
-                filters.projectOfficers.some((po) => {
-                    return po.id === agreement.project_officer_id;
+                filters.portfolio.length === 0 ||
+                filters.portfolio.some((portfolio) => {
+                    return agreement.budget_line_items?.some((bli) => { return bli.portfolio_id == portfolio.id})
                 })
             );
         }
     );
 
-    // filter by types
-    filteredAgreements = filteredAgreements.filter(
-        /** @param{Agreement} agreement */
-        (agreement) => {
-            return (
-                filters.types.length === 0 ||
-                filters.types.some((agreementType) => {
-                    return agreementType === agreement.agreement_type;
-                })
-            );
-        }
-    );
+    // // filter by types
+    // filteredAgreements = filteredAgreements.filter(
+    //     /** @param{Agreement} agreement */
+    //     (agreement) => {
+    //         return (
+    //             filters.types.length === 0 ||
+    //             filters.types.some((agreementType) => {
+    //                 return agreementType === agreement.agreement_type;
+    //             })
+    //         );
+    //     }
+    // );
 
-    // filter by procurement shops
-    filteredAgreements = filteredAgreements.filter(
-        /** @param{Agreement} agreement */
-        (agreement) => {
-            return (
-                filters.procurementShops.length === 0 ||
-                filters.procurementShops.some((procurementShop) => {
-                    return procurementShop.id === agreement.awarding_entity_id;
-                })
-            );
-        }
-    );
+    // // filter by procurement shops
+    // filteredAgreements = filteredAgreements.filter(
+    //     /** @param{Agreement} agreement */
+    //     (agreement) => {
+    //         return (
+    //             filters.procurementShops.length === 0 ||
+    //             filters.procurementShops.some((procurementShop) => {
+    //                 return procurementShop.id === agreement.awarding_entity_id;
+    //             })
+    //         );
+    //     }
+    // );
 
     // filter by budget line status
     filteredAgreements = filteredAgreements.filter(
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                (filters.budgetLineStatus.draft === true && agreement.budget_line_items.length === 0) ||
-                (filters.budgetLineStatus.draft === true &&
+                (filters.budgetLineStatus.length === 0) ||
+                (filters.budgetLineStatus.some((item) => { return item.status == "DRAFT"}) &&
+                    agreement.budget_line_items.length === 0) ||
+                (filters.budgetLineStatus.some((item) => { return item.status == "DRAFT"}) &&
                     agreement.budget_line_items.some((bli) => {
-                        return draftBudgetLineStatuses.includes(bli.status);
+                        return bli.status === BLI_STATUS.DRAFT;
                     })) ||
-                (filters.budgetLineStatus.planned === true &&
+                (filters.budgetLineStatus.some((item) => { return item.status == "PLANNED"}) &&
                     agreement.budget_line_items.some((bli) => {
                         return bli.status === BLI_STATUS.PLANNED;
                     })) ||
-                (filters.budgetLineStatus.executing === true &&
+                (filters.budgetLineStatus.some((item) => { return item.status == "IN_EXECUTION" }) &&
                     agreement.budget_line_items.some((bli) => {
                         return bli.status === BLI_STATUS.EXECUTING;
                     })) ||
-                (filters.budgetLineStatus.obligated === true &&
+                (filters.budgetLineStatus.some((item) => { return item.status == "OBLIGATED"}) &&
                     agreement.budget_line_items.some((bli) => {
                         return bli.status === BLI_STATUS.OBLIGATED;
                     }))

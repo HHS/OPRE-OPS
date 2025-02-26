@@ -1,14 +1,25 @@
 import { useState, useEffect, useCallback } from "react";
 /**
- * @typedef {Object} FilterItem
+ * @typedef {Object} FYFilterItem
  * @property {string} title
  */
 
 /**
+ * @typedef {Object} PortfolioFilterItem
+ * @property {string} name
+ */
+
+/**
+ * @typedef {Object} BLIFilterItem
+ * @property {string} title
+ * @property {string} status
+ */
+
+/**
  * @typedef {Object} Filters
- * @property {FilterItem[]} fiscalYear
- * @property {FilterItem[]} portfolio
- * @property {FilterItem[]} budgetLineStatus
+ * @property {FYFilterItem[]} fiscalYear
+ * @property {PortfolioFilterItem[]} portfolio
+ * @property {BLIFilterItem[]} budgetLineStatus
  */
 
 /**
@@ -31,14 +42,26 @@ export const useTagsList = (filters) => {
      */
     const updateTags = useCallback(
         (filterKey, filterName) => {
-            if (Array.isArray(filters[filterKey])) {
+            if(filterKey == "portfolio"){
+                const selectedTags = filters[filterKey].map((item) => ({
+                    tagText: item.name,
+                    filter: filterName
+                }));
+                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
+            }
+            else if(filterKey == "fiscalYear"){
+                const selectedTags = filters[filterKey].map((item) => ({
+                    tagText: "FY " + item.title,
+                    filter: filterName
+                }));
+                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
+            }
+            else{
                 const selectedTags = filters[filterKey].map((item) => ({
                     tagText: item.title,
                     filter: filterName
                 }));
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
-            }else{
-                setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName)]);
             }
         },
         [filters]
@@ -69,19 +92,19 @@ export const removeFilter = (tag, setFilters) => {
         case "fiscalYear":
             setFilters((prevState) => ({
                 ...prevState,
-                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => fiscalYear.title !== tag.tagText)
+                fiscalYear: prevState.fiscalYear.filter((fiscalYear) => "FY " + fiscalYear.title !== tag.tagText)
             }));
             break;
         case "portfolio":
             setFilters((prevState) => ({
                 ...prevState,
-                portfolio: prevState.portfolio.filter((portfolio) => portfolio.title !== tag.tagText)
+                portfolio: prevState.portfolio.filter((portfolio) => portfolio.name !== tag.tagText)
             }));
             break;
         case "budgetLineStatus":
             setFilters((prevState) => ({
                 ...prevState,
-                transfer: prevState.budgetLineStatus.filter((budgetLineStatus) => budgetLineStatus.title !== tag.tagText)
+                budgetLineStatus: prevState.budgetLineStatus.filter((budgetLineStatus) => budgetLineStatus.title !== tag.tagText)
             }));
             break;
         default:
