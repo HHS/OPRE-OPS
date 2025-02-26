@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 /**
  * Renders a hint indicating if the information is required.
  *
@@ -19,8 +18,4 @@ const IsRequiredHelper = ({ isRequired = false, isRequiredNoShow = false }) => {
     return null;
 };
 
-IsRequiredHelper.propTypes = {
-    isRequired: PropTypes.bool,
-    isRequiredNoShow: PropTypes.bool
-};
 export default IsRequiredHelper;

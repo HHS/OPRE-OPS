@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import React from "react";
 import EditModeTitle from "../../../pages/agreements/EditModeTitle";
 import AgreementBudgetLinesHeader from "../../Agreements/AgreementBudgetLinesHeader";
@@ -275,27 +274,6 @@ export const CreateBLIsAndSCs = ({
             </div>
         </>
     );
-};
-
-CreateBLIsAndSCs.propTypes = {
-    goToNext: PropTypes.func,
-    goBack: PropTypes.func,
-    formData: PropTypes.object,
-    wizardSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
-    currentStep: PropTypes.number.isRequired,
-    selectedResearchProject: PropTypes.object,
-    selectedAgreement: PropTypes.object,
-    selectedProcurementShop: PropTypes.object,
-    budgetLines: PropTypes.array,
-    continueBtnText: PropTypes.string.isRequired,
-    isEditMode: PropTypes.bool.isRequired,
-    canUserEditBudgetLines: PropTypes.bool,
-    setIsEditMode: PropTypes.func,
-    isReviewMode: PropTypes.bool.isRequired,
-    continueOverRide: PropTypes.func,
-    workflow: PropTypes.oneOf(["agreement", "none"]).isRequired,
-    includeDrafts: PropTypes.bool.isRequired,
-    setIncludeDrafts: PropTypes.func.isRequired
 };
 
 export default CreateBLIsAndSCs;

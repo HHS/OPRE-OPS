@@ -182,6 +182,7 @@ const useCreateBLIsAndSCs = (
 
             await handleDeletions();
 
+            suite.reset();
             resetForm();
             setIsEditMode(false);
             showSuccessMessage(isThereAnyBLIsFinancialSnapshotChanged);
@@ -709,6 +710,7 @@ const useCreateBLIsAndSCs = (
         setEnteredComments(null);
         setBudgetLineBeingEdited(null);
         resetQueryParams();
+        suite.reset();
     };
 
     return {

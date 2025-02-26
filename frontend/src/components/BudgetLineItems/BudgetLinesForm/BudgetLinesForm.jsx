@@ -1,15 +1,14 @@
-import React from "react";
-import PropTypes from "prop-types";
-import classnames from "vest/classnames";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
-import TextArea from "../../UI/Form/TextArea/TextArea";
-import CurrencyInput from "../../UI/Form/CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
+import CurrencyInput from "../../UI/Form/CurrencyInput";
+import TextArea from "../../UI/Form/TextArea/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
-import suite from "./suite";
 import datePickerSuite from "./datePickerSuite";
+import suite from "./suite";
 
 /**
  * A form for creating or editing a budget line.
@@ -189,8 +188,8 @@ export const BudgetLinesForm = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 datePickerSuite.reset();
-                                handleResetForm();
                                 suite.reset();
+                                handleResetForm();
                             }}
                         >
                             Cancel
@@ -221,27 +220,6 @@ export const BudgetLinesForm = ({
             </div>
         </form>
     );
-};
-
-BudgetLinesForm.propTypes = {
-    agreementId: PropTypes.number.isRequired,
-    selectedCan: PropTypes.object,
-    setSelectedCan: PropTypes.func.isRequired,
-    servicesComponentId: PropTypes.number,
-    setServicesComponentId: PropTypes.func.isRequired,
-    enteredAmount: PropTypes.number,
-    setEnteredAmount: PropTypes.func.isRequired,
-    enteredComments: PropTypes.string,
-    setEnteredComments: PropTypes.func.isRequired,
-    needByDate: PropTypes.string,
-    setNeedByDate: PropTypes.func.isRequired,
-    handleEditBLI: PropTypes.func,
-    handleAddBLI: PropTypes.func,
-    handleResetForm: PropTypes.func,
-    isEditing: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    isEditMode: PropTypes.bool,
-    isBudgetLineNotDraft: PropTypes.bool
 };
 
 export default BudgetLinesForm;
