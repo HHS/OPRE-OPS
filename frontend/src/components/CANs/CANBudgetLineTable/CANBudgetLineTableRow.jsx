@@ -6,6 +6,8 @@ import {
     totalBudgetLineAmountPlusFees,
     totalBudgetLineFeeAmount
 } from "../../../helpers/utils";
+import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
+import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import TableRowExpandable from "../../UI/TableRowExpandable";
 import {
@@ -15,8 +17,7 @@ import {
 } from "../../UI/TableRowExpandable/TableRowExpandable.helpers";
 import { useTableRow } from "../../UI/TableRowExpandable/TableRowExpandable.hooks";
 import TableTag from "../../UI/TableTag";
-import { useChangeRequestsForTooltip } from "../../../hooks/useChangeRequests.hooks";
-import { useGetAbbreviationForProcurementShopId } from "../../../hooks/lookup.hooks";
+import TextClip from "../../UI/Text/TextClip";
 
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
@@ -82,10 +83,14 @@ const CANBudgetLineTableRow = ({
                 {blId}
             </td>
             <td
-                className={borderExpandedStyles}
+                className={`${borderExpandedStyles}`}
                 style={bgExpandedStyles}
             >
-                {agreementName}
+                <TextClip
+                    text={agreementName}
+                    tooltipThreshold={30}
+                    maxLines={1}
+                />
             </td>
             <td
                 className={borderExpandedStyles}

@@ -7,7 +7,6 @@
  * @property {string} [label] - The label of the tag.
  * @property {string} [className] - Additional CSS classes.
  * @property {number} [dataTestId] - The data test id.
- * @property {boolean} [isLegend] - Used within a legend.
  * @property {Object} [rest] - Additional props.
  * @property {React.ReactNode} [children] - Child elements.
  */
@@ -17,18 +16,8 @@
  * @param {TagProps} props - The props.
  * @returns {JSX.Element} - The tag element.
  */
-const Tag = ({
-    tagStyle,
-    tagStyleActive,
-    text,
-    active = false,
-    label,
-    className,
-    children,
-    isLegend = false,
-    ...rest
-}) => {
-    let tagClasses = "font-12px height-205 radius-md",
+const Tag = ({ tagStyle, tagStyleActive, text, active = false, label, className, children, ...rest }) => {
+    let tagClasses = "font-12px height-205 radius-md text-center",
         activeClass = "";
     // OVERRIDES FOR DEFAULT CLASSES
     // Can also pass in className prop to override
@@ -124,24 +113,18 @@ const Tag = ({
     }
 
     /**
-     * @param {boolean} isLegend
+     * @description Handles the styles for the tag.
      * @returns {Object} - The styles for the tag.
      */
-    const handleLegendStyles = (isLegend) => {
-        if (isLegend) {
-            return { width: "40px", padding: ".25em .5em", display: "inline-block", textAlign: "center" };
-        } else {
-            return {
-                width: "fit-content", // Ensures the tag's width adapts to its content
-                padding: ".25em .5em" // Adds some space inside the tag for better readability}
-            };
-        }
-    };
+    const handleLegendStyles = () => ({
+        width: "fit-content", // Ensures the tag's width adapts to its content
+        padding: ".25em .5em" // Adds some space inside the tag for better readability
+    });
 
     return (
         <span
             className={`${tagClasses} ${activeClass} ${className}`}
-            style={handleLegendStyles(isLegend)}
+            style={handleLegendStyles()}
             data-testid={rest.dataTestId}
         >
             {text ? text : children}

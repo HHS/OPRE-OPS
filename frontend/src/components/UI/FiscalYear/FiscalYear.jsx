@@ -1,24 +1,13 @@
-import { useDispatch } from "react-redux";
 import constants from "../../../constants";
 
 /**
  * FiscalYear component for selecting a fiscal year
  * @param {Object} props - Component props
  * @param {number} props.fiscalYear - Current fiscal year selected
- * @param {Function} props.handleChangeFiscalYear - Function to handle fiscal year change
+ * @param {(e: string) => void} props.handleChangeFiscalYear - Function to handle fiscal year change
  * @returns {JSX.Element} FiscalYear component
  */
 const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
-    const dispatch = useDispatch();
-
-    /**
-     * Handles the change of fiscal year
-     * @param {React.ChangeEvent<HTMLSelectElement>} event - The change event
-     */
-    const onChangeFiscalYear = (event) => {
-        dispatch(handleChangeFiscalYear({ value: event.target.value }));
-    };
-
     return (
         <div
             className="display-flex flex-justify flex-align-center"
@@ -33,8 +22,8 @@ const FiscalYear = ({ fiscalYear, handleChangeFiscalYear }) => {
             <select
                 id="fiscal-year-select"
                 className="usa-select margin-left-1"
-                style={{ width: "5rem" }}
-                onChange={onChangeFiscalYear}
+                style={{ width: "5.125rem" }}
+                onChange={(e) => handleChangeFiscalYear(e.target.value)}
                 value={fiscalYear}
             >
                 {constants.fiscalYears.map((year) => {

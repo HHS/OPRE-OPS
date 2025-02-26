@@ -5,6 +5,7 @@ import LineGraph from "../../UI/DataViz/LineGraph";
 import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
 import style from "./styles.module.css";
+import { Link } from "react-router-dom";
 
 /**
  * @component CanCard
@@ -66,26 +67,23 @@ const CanCard = ({ canId, fiscalYear }) => {
             data-cy={`can-card-${can.display_name}`}
             className={style.container}
         >
-            <dl className={`margin-0 ${style.leftMarginContainer}`}>
-                <div>
+            <Link
+                to={`/cans/${can.id}`}
+                className="text-no-underline text-ink"
+            >
+                <dl className={`margin-0 ${style.leftMarginContainer}`}>
                     <dt className="margin-0 text-base-dark">CAN</dt>
-                    <dd className="text-semibold margin-0">{can.display_name}</dd>
-                </div>
-                <div className="margin-y-2">
+                    <dd className="text-semibold margin-0 margin-bottom-2">{can.display_name}</dd>
                     <dt className="margin-0 text-base-dark">Nickname</dt>
-                    <dd className="text-semibold margin-0">{can.nick_name}</dd>
-                </div>
-                <div className="margin-y-2">
+                    <dd className="text-semibold margin-0 margin-bottom-2">{can.nick_name}</dd>
                     <dt className="margin-0 text-base-dark">Active Period</dt>
-                    <dd className="text-semibold margin-0">
+                    <dd className="text-semibold margin-0 margin-bottom-2">
                         {can.active_period} {can.active_period > 1 ? "years" : "year"}
                     </dd>
-                </div>
-                <div className="margin-y-2">
                     <dt className="margin-0 text-base-dark">Obligate By</dt>
                     <dd className="text-semibold margin-0">{formatDateNeeded(obligateBy.toDateString())}</dd>
-                </div>
-            </dl>
+                </dl>
+            </Link>
             <div className={style.rightContainer}>
                 <div className="display-flex flex-justify flex-align-center">
                     <p className="margin-0 font-12px text-base-dark">{`FY ${fiscalYear} CAN Budget`}</p>

@@ -133,7 +133,10 @@ export const AgreementTableRow = ({ agreement }) => {
                     className="text-ink text-no-underline"
                     to={`/agreements/${agreement.id}`}
                 >
-                    <TextClip text={agreementName} />
+                    <TextClip
+                        text={agreementName}
+                        maxLines={1}
+                    />
                 </Link>
             </td>
             <td
@@ -143,6 +146,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 <TextClip
                     text={researchProjectName}
                     tooltipThreshold={30}
+                    maxLines={1}
                 />
             </td>
             <td

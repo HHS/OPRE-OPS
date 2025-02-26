@@ -1,5 +1,4 @@
 import constants from "../../../constants";
-import { getCurrentFiscalYear } from "../../../helpers/utils";
 /**
  *  @typedef {import("../../../components/CANs/CANTypes").FundingBudget} FundingBudget
  */
@@ -30,15 +29,19 @@ const getMaxFyTotal = (fyTotals) => {
     return Math.max(...fyTotals.map((o) => o.total));
 };
 
-const getLast5FiscalYears = () => {
-    const currentFY = getCurrentFiscalYear();
-    return Array.from({ length: 5 }, (_, i) => (currentFY - i).toString());
+/** @param {number} fiscalYear */
+const getLast5FiscalYears = (fiscalYear) => {
+    return Array.from({ length: 5 }, (_, i) => (fiscalYear - i).toString());
 };
 
-/** @param {FundingBudget[]} fundingBudgets */
-export const summaryCard = (fundingBudgets) => {
+/** 
+ * @param {FundingBudget[]} fundingBudgets 
+ * @param {string} fiscalYear 
+*/
+
+export const summaryCard = (fundingBudgets, fiscalYear) => {
     const fyTotalsMap = calculateFYTotalsMap(fundingBudgets);
-    const last5FYs = getLast5FiscalYears();
+    const last5FYs = getLast5FiscalYears(+fiscalYear);
 
     // Ensure all 5 years exist in the data
     const fyTotals = last5FYs.map((fy) => ({

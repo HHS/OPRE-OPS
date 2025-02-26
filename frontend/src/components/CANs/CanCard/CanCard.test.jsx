@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { BrowserRouter } from "react-router-dom";
 import CanCard from "./CanCard";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 
@@ -22,16 +23,19 @@ describe("CanCard", () => {
     beforeEach(() => {
         vi.mocked(useGetCanFundingSummaryQuery).mockReturnValue({
             data: mockCanFundingData,
-            isLoading: false
+            isLoading: false,
+            refetch: vi.fn()
         });
     });
 
     it("renders CanCard with correct information", async () => {
         render(
-            <CanCard
-                canId={mockCan.id}
-                fiscalYear={mockFiscalYear}
-            />
+            <BrowserRouter>
+                <CanCard
+                    canId={mockCan.id}
+                    fiscalYear={mockFiscalYear}
+                />
+            </BrowserRouter>
         );
 
         // Check basic CAN information

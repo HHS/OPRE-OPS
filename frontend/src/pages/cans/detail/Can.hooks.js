@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useGetCanByIdQuery, useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { USER_ROLES } from "../../../components/Users/User.constants";
 import { NO_DATA } from "../../../constants";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 import { getTypesCounts } from "./Can.helpers";
 
 export default function useCan() {
@@ -16,8 +17,8 @@ export default function useCan() {
     const activeUser = useSelector((state) => state.auth.activeUser);
     const userRoles = activeUser?.roles ?? [];
     const isBudgetTeam = userRoles.includes(USER_ROLES.BUDGET_TEAM);
-    const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
-    const fiscalYear = Number(selectedFiscalYear.value);
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const fiscalYear = Number(selectedFiscalYear);
     const canId = parseInt(urlPathParams.id ?? "-1");
     const initialModalProps = {
         heading: "",
@@ -126,6 +127,7 @@ export default function useCan() {
         isLoading,
         canId,
         fiscalYear,
+        setSelectedFiscalYear,
         CANFundingLoading,
         budgetLineItemsByFiscalYear,
         canNumber: can?.number ?? NO_DATA,
