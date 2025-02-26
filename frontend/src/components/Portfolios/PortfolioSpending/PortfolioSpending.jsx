@@ -79,6 +79,7 @@ const PortfolioSpending = () => {
             <CANBudgetLineTable
                 budgetLines={budgetLineItems}
                 totalFunding={portfolioFunding?.total_funding.amount}
+                fiscalYear={fiscalYear}
                 tableType="portfolio"
             />
         </>
