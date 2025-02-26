@@ -106,6 +106,7 @@ const CanSpending = ({
             <CANBudgetLineTable
                 budgetLines={budgetLines}
                 totalFunding={totalFunding}
+                fiscalYear={fiscalYear}
             />
         </article>
     );

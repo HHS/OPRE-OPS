@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useEffect } from "react";
 import { NO_DATA } from "../../../constants";
 import PaginationNav from "../../UI/PaginationNav";
 import { findFundingBudgetBudgetByFiscalYear, formatObligateBy } from "./CANTable.helpers";
@@ -21,6 +21,10 @@ const CANTable = ({ cans, fiscalYear }) => {
     const [currentPage, setCurrentPage] = React.useState(1);
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [fiscalYear]);
 
     if (cans.length === 0) {
         return <p className="text-center">No CANs found</p>;

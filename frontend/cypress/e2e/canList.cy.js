@@ -76,6 +76,16 @@ describe("CAN List", () => {
             .find("svg")
             .should("have.attr", "aria-hidden", "true");
 
+        // switch fiscal year to 2025
+        cy.get("#fiscal-year-select").select("2025");
+        cy.wait(500);
+        cy.get("tbody").find("tr").should("have.length", 4);
+
+        // switch fiscal year to 2023
+        cy.get("#fiscal-year-select").select("2023");
+        cy.wait(500);
+        cy.get("li").should("have.class", "usa-pagination__item").contains("2").click();
+
         // go back to the first page
         cy.get("li").should("have.class", "usa-pagination__item").contains("1").click();
         cy.get("button").should("have.class", "usa-current").contains("1");
