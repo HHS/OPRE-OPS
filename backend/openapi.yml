@@ -1129,6 +1129,65 @@ paths:
                         "purpose": ""
                       }
                     ]
+  /api/v1/portfolio-funding-summary/{portfolio_id}:
+    get:
+      tags:
+        - Portfolio Funding Summary
+      summary: Get the funding summary for a specific portfolio
+      operationId: getPortfolioFundingSummary
+      description: Retrieve the funding summary for a given portfolio by its ID.
+      parameters:
+        - $ref: "#/components/parameters/simulatedError"
+        - in: path
+          name: portfolio_id
+          description: Portfolio ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: fiscal_year
+          in: query
+          description: Fiscal year for which the funding summary is requested
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioFundingSummary"
+              example:
+                value:
+                  total_funding:
+                    amount: 1000000.00
+                    percent: "Total"
+                  carry_forward_funding:
+                    amount: 200000.00
+                    percent: "Carry-Forward"
+                  draft_funding:
+                    amount: 50000.00
+                    percent: "5"
+                  planned_funding:
+                    amount: 300000.00
+                    percent: "30"
+                  obligated_funding:
+                    amount: 400000.00
+                    percent: "40"
+                  in_execution_funding:
+                    amount: 100000.00
+                    percent: "10"
+                  available_funding:
+                    amount: 150000.00
+                    percent: "15"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Portfolio not found
+        "500":
+          description: Internal Server Error
   /api/v1/can-funding-summary:
     get:
       tags:
@@ -3217,6 +3276,32 @@ components:
         - id
         - portfolio_id
         - url
+    PortfolioFundingSummary:
+      description: Portfolio funding summary
+      type: object
+      properties:
+        total_funding:
+          $ref: "#/components/schemas/FundingLineItem"
+        carry_forward_funding:
+          $ref: "#/components/schemas/FundingLineItem"
+        draft_funding:
+          $ref: "#/components/schemas/FundingLineItem"
+        planned_funding:
+          $ref: "#/components/schemas/FundingLineItem"
+        obligated_funding:
+          $ref: "#/components/schemas/FundingLineItem"
+        in_execution_funding:
+          $ref: "#/components/schemas/FundingLineItem"
+        available_funding:
+          $ref: "#/components/schemas/FundingLineItem"
+    FundingLineItem:
+      description: Portfolio funding object
+      type: object
+      properties:
+        amount:
+          type: number
+        percentage:
+          type: string
     User:
       description: OPRE User Object
       type: object
