@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import Table from "../../UI/Table";
 import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CABBudgetLineTable.constants";
@@ -12,6 +12,7 @@ import PaginationNav from "../../UI/PaginationNav";
  * @typedef {Object} CANBudgetLineTableProps
  * @property {BudgetLine[]} budgetLines
  * @property {number} totalFunding
+ * @property {number} fiscalYear
  * @property {'portfolio' | 'can'} [tableType]
  */
 
@@ -20,11 +21,15 @@ import PaginationNav from "../../UI/PaginationNav";
  * @param {CANBudgetLineTableProps} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANBudgetLineTable = ({ budgetLines, totalFunding, tableType = "can" }) => {
+const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType = "can" }) => {
     const ITEMS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 3;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = [...budgetLines];
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [fiscalYear]);
 
     if (budgetLines.length === 0) {
         return <p className="text-center">No budget lines have been added to this CAN.</p>;
