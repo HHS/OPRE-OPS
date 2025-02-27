@@ -43,24 +43,24 @@ export const useTagsList = (filters) => {
     const updateTags = useCallback(
         (filterKey, filterName) => {
             if(filterKey == "portfolio"){
-                const selectedTags = filters[filterKey].map((item) => ({
+                const selectedTags = filters[filterKey]?.map((item) => ({
                     tagText: item.name,
                     filter: filterName
-                }));
+                })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             }
             else if(filterKey == "fiscalYear"){
-                const selectedTags = filters[filterKey].map((item) => ({
+                const selectedTags = filters[filterKey]?.map((item) => ({
                     tagText: "FY " + item.title,
                     filter: filterName
-                }));
+                })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             }
             else{
-                const selectedTags = filters[filterKey].map((item) => ({
+                const selectedTags = filters[filterKey]?.map((item) => ({
                     tagText: item.title,
                     filter: filterName
-                }));
+                })) ?? [];
                 setTagsList((prevState) => [...prevState.filter((t) => t.filter !== filterName), ...selectedTags]);
             }
         },

@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { isEmpty, groupBy } from "lodash";
 import FilterTags from "../../../../components/UI/FilterTags/FilterTags";
 import FilterTagsWrapper from "../../../../components/UI/FilterTags/FilterTagsWrapper";
 import { removeFilter, useTagsList } from "./AgreementsFilterTags.hooks"
@@ -12,11 +12,11 @@ import { removeFilter, useTagsList } from "./AgreementsFilterTags.hooks"
 export const AgreementsFilterTags = ({ filters, setFilters }) => {
     const tagsList = useTagsList(filters);
 
-    const tagsListByFilter = _.groupBy(tagsList, "filter");
+    const tagsListByFilter = groupBy(tagsList, "filter");
     const tagsListByFilterMerged = Object.values(tagsListByFilter).flat();
 
     return (
-        !_.isEmpty(tagsList) && (
+        !isEmpty(tagsList) && (
             <FilterTagsWrapper>
                 <FilterTags
                     removeFilter={(tag) => removeFilter(tag, setFilters)}

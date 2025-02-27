@@ -59,12 +59,12 @@ const AgreementsList = () => {
 
 
     // filter by fiscal year
-    filteredAgreements = filteredAgreements.filter(
+    filteredAgreements = filteredAgreements?.filter(
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                filters.fiscalYear.length === 0 ||
-                filters.fiscalYear.some((fiscalYear) => {
+                filters.fiscalYear == null || filters.fiscalYear?.length === 0 ||
+                filters.fiscalYear?.some((fiscalYear) => {
                     return agreement.budget_line_items?.some((bli) => { return bli.fiscal_year == fiscalYear.id});
                 })
             );
@@ -72,66 +72,40 @@ const AgreementsList = () => {
     );
 
     // filter by portfolios
-    filteredAgreements = filteredAgreements.filter(
+    filteredAgreements = filteredAgreements?.filter(
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                filters.portfolio.length === 0 ||
-                filters.portfolio.some((portfolio) => {
+                filters.portfolio == null || filters.portfolio?.length === 0 ||
+                filters.portfolio?.some((portfolio) => {
                     return agreement.budget_line_items?.some((bli) => { return bli.portfolio_id == portfolio.id})
                 })
             );
         }
     );
 
-    // // filter by types
-    // filteredAgreements = filteredAgreements.filter(
-    //     /** @param{Agreement} agreement */
-    //     (agreement) => {
-    //         return (
-    //             filters.types.length === 0 ||
-    //             filters.types.some((agreementType) => {
-    //                 return agreementType === agreement.agreement_type;
-    //             })
-    //         );
-    //     }
-    // );
-
-    // // filter by procurement shops
-    // filteredAgreements = filteredAgreements.filter(
-    //     /** @param{Agreement} agreement */
-    //     (agreement) => {
-    //         return (
-    //             filters.procurementShops.length === 0 ||
-    //             filters.procurementShops.some((procurementShop) => {
-    //                 return procurementShop.id === agreement.awarding_entity_id;
-    //             })
-    //         );
-    //     }
-    // );
-
     // filter by budget line status
-    filteredAgreements = filteredAgreements.filter(
+    filteredAgreements = filteredAgreements?.filter(
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                (filters.budgetLineStatus.length === 0) ||
-                (filters.budgetLineStatus.some((item) => { return item.status == "DRAFT"}) &&
-                    agreement.budget_line_items.length === 0) ||
-                (filters.budgetLineStatus.some((item) => { return item.status == "DRAFT"}) &&
-                    agreement.budget_line_items.some((bli) => {
+                filters.budgetLineStatus == null || filters.budgetLineStatus?.length === 0 ||
+                (filters.budgetLineStatus?.some((item) => { return item.status == "DRAFT"}) &&
+                    agreement.budget_line_items?.length === 0) ||
+                (filters.budgetLineStatus?.some((item) => { return item.status == "DRAFT"}) &&
+                    agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.DRAFT;
                     })) ||
-                (filters.budgetLineStatus.some((item) => { return item.status == "PLANNED"}) &&
-                    agreement.budget_line_items.some((bli) => {
+                (filters.budgetLineStatus?.some((item) => { return item.status == "PLANNED"}) &&
+                    agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.PLANNED;
                     })) ||
-                (filters.budgetLineStatus.some((item) => { return item.status == "IN_EXECUTION" }) &&
-                    agreement.budget_line_items.some((bli) => {
+                (filters.budgetLineStatus?.some((item) => { return item.status == "IN_EXECUTION" }) &&
+                    agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.EXECUTING;
                     })) ||
-                (filters.budgetLineStatus.some((item) => { return item.status == "OBLIGATED"}) &&
-                    agreement.budget_line_items.some((bli) => {
+                (filters.budgetLineStatus?.some((item) => { return item.status == "OBLIGATED"}) &&
+                    agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.OBLIGATED;
                     }))
             );
