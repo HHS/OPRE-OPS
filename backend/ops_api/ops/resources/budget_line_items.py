@@ -16,6 +16,7 @@ from models import (
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
+    ContractBudgetLineItem,
     Division,
     OpsEventType,
     Portfolio,
@@ -407,7 +408,10 @@ class BudgetLineItemsListAPI(BaseListAPI):
             data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
             data = convert_date_strings_to_dates(data)
 
-            new_bli = BudgetLineItem(**data)
+            if not data.get("budget_line_item_type"):
+                new_bli = ContractBudgetLineItem(**data)
+            else:
+                raise RuntimeError("Invalid BLI type.")
 
             current_app.db_session.add(new_bli)
             current_app.db_session.commit()
