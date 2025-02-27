@@ -4,7 +4,7 @@ const suite = create((data = {}, fieldName) => {
     only(fieldName);
 
     // Only validate the needbyDate field if it has a value since it is not required
-    if (data.needByDate.length === 0) {
+    if (data.needByDate?.length === 0) {
         return;
     }
     test("needByDate", "Date must be MM/DD/YYYY", () => {

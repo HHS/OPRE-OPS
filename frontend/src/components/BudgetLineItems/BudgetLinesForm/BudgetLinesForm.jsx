@@ -7,8 +7,6 @@ import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComp
 import CurrencyInput from "../../UI/Form/CurrencyInput";
 import TextArea from "../../UI/Form/TextArea/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
-// import datePickerSuite from "./datePickerSuite";
-// import suite from "./suite";
 
 /**
  * A form for creating or editing a budget line.
