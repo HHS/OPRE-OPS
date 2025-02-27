@@ -15,11 +15,11 @@ const { tooltip } = USWDS;
  * @returns {JSX.Element} - The rendered component
  **/
 const TextClip = ({ text, maxLines = 2, tooltipThreshold = 40 }) => {
-    const tooltipEnabled = text?.length > tooltipThreshold;
-    const tooltipRef = React.useRef();
+    const tooltipEnabled = text && text.length > tooltipThreshold;
+    const tooltipRef = React.useRef(null);
 
     React.useEffect(() => {
-        if (tooltipEnabled) {
+        if (tooltipEnabled && tooltipRef.current) {
             // initialize
             tooltip.on(tooltipRef.current);
             // remove event listeners when the component un-mounts.

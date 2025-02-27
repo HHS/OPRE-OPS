@@ -9,6 +9,7 @@ import { summaryCard } from "./CANBudgetByFYCard.helpers";
 /**
  * @typedef {Object} CANBudgetByFYCard
  * @property {FundingBudget[]} fundingBudgets
+ * @property {string} fiscalYear
  */
 
 /**
@@ -16,8 +17,8 @@ import { summaryCard } from "./CANBudgetByFYCard.helpers";
  * @param {CANBudgetByFYCard} props
  * @returns  {JSX.Element} - The component JSX.
  */
-const CANBudgetByFYCard = ({ fundingBudgets }) => {
-    const { chartData } = summaryCard(fundingBudgets);
+const CANBudgetByFYCard = ({ fundingBudgets, fiscalYear }) => {
+    const { chartData } = summaryCard(fundingBudgets, fiscalYear);
 
     return (
         <>

@@ -22,7 +22,7 @@ import Tag from "../../Tag";
  * @param {ProjectAgreementBLICardProps} props
  * @returns {JSX.Element} - The Project Agreement BLI Card.
  */
-const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines }) => {
+const   ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines }) => {
     const projectHeading = `FY ${fiscalYear} Projects`;
     const budgetLinesHeading = `FY ${fiscalYear} Budget Lines`;
     const agreementsHeading = `FY ${fiscalYear} Agreements`;
@@ -106,13 +106,23 @@ const ProjectAgreementBLICard = ({ fiscalYear, projects, agreements, budgetLines
                         <div className="display-flex flex-column grid-gap margin-top-1">
                             {budgetLines &&
                                 budgetLines.length > 0 &&
-                                budgetLines.map(({ type, count }, index) => (
-                                    <Tag
-                                        key={type}
-                                        className={`${tagStylesByType(type)} ${index > 0 ? "margin-top-1" : ""}`}
-                                        text={`${count} ${convertCodeForDisplay("budgetLineStatus", type)}`}
-                                    />
-                                ))}
+                                [...budgetLines]
+                                    .sort((a, b) => {
+                                        const order = [
+                                            BLI_STATUS.DRAFT,
+                                            BLI_STATUS.PLANNED,
+                                            BLI_STATUS.EXECUTING,
+                                            BLI_STATUS.OBLIGATED
+                                        ];
+                                        return order.indexOf(a.type) - order.indexOf(b.type);
+                                    })
+                                    .map(({ type, count }, index) => (
+                                        <Tag
+                                            key={type}
+                                            className={`${tagStylesByType(type)} ${index > 0 ? "margin-top-1" : ""}`}
+                                            text={`${count} ${convertCodeForDisplay("budgetLineStatus", type)}`}
+                                        />
+                                    ))}
                         </div>
                     </div>
                 </article>

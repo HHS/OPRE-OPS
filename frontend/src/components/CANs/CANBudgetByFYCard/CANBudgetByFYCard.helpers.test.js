@@ -15,7 +15,7 @@ describe("CANBudgetByFYCard helpers", () => {
 
     describe("summaryCard", () => {
         it("should calculate correct chart data for given funding budgets", () => {
-            const result = summaryCard(mockFundingBudgets);
+            const result = summaryCard(mockFundingBudgets, "2023");
 
             expect(result.chartData).toHaveLength(5); // Should always return 5 years
             expect(result.chartData).toEqual(
@@ -37,7 +37,7 @@ describe("CANBudgetByFYCard helpers", () => {
         });
 
         it("should handle empty funding budgets", () => {
-            const result = summaryCard([]);
+            const result = summaryCard([], "2023");
 
             expect(result.chartData).toHaveLength(5);
             result.chartData.forEach((item) => {
@@ -58,7 +58,7 @@ describe("CANBudgetByFYCard helpers", () => {
                 { fiscal_year: "2023", budget: 3000 }
             ];
 
-            const result = summaryCard(invalidBudgets);
+            const result = summaryCard(invalidBudgets, "2026");
 
             const fy2023Data = result.chartData.find((item) => item.FY === "2023");
             expect(fy2023Data.total).toBe(3000);
@@ -72,7 +72,7 @@ describe("CANBudgetByFYCard helpers", () => {
                 { fiscal_year: "2023", budget: 3000 }
             ];
 
-            const result = summaryCard(invalidBudgets);
+            const result = summaryCard(invalidBudgets, "2023");
 
             const fy2023Data = result.chartData.find((item) => item.FY === "2023");
             expect(fy2023Data.total).toBe(3000);

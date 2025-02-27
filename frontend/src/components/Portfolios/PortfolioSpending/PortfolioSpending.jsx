@@ -3,9 +3,9 @@ import { useOutletContext } from "react-router-dom";
 import { useLazyGetBudgetLineItemQuery } from "../../../api/opsAPI";
 import { getTypesCounts } from "../../../pages/cans/detail/Can.helpers";
 import CANBudgetLineTable from "../../CANs/CANBudgetLineTable";
-import PortfolioBudgetSummary from "../PortfolioBudgetSummary/PortfolioBudgetSummary";
+import PortfolioBudgetSummary from "../PortfolioBudgetSummary";
 
-const BudgetAndSpending = () => {
+const PortfolioSpending = () => {
     const [budgetLineItems, setBudgetLineItems] = React.useState([]);
     const [budgetLineTypesCount, setBudgetLineTypesCount] = React.useState([]);
     const [agreementTypesCount, setAgreementTypesCount] = React.useState([]);
@@ -20,11 +20,12 @@ const BudgetAndSpending = () => {
         });
 
         try {
-            const budgetLineItems = await Promise.all(promises);
-            setBudgetLineItems(budgetLineItems);
-            const newBudgetLineTypesCount = getTypesCounts(budgetLineItems ?? [], "status");
+            const budgetLineItemsData = await Promise.all(promises);
+            const filteredBudgetLineItems = budgetLineItemsData.filter((item) => item.fiscal_year === fiscalYear);
+            setBudgetLineItems(filteredBudgetLineItems);
+            const newBudgetLineTypesCount = getTypesCounts(filteredBudgetLineItems ?? [], "status");
             setBudgetLineTypesCount(newBudgetLineTypesCount);
-            const budgetLinesAgreements = budgetLineItems?.map((item) => item.agreement) ?? [];
+            const budgetLinesAgreements = filteredBudgetLineItems?.map((item) => item.agreement) ?? [];
             const uniqueBudgetLineAgreements =
                 budgetLinesAgreements?.reduce((acc, item) => {
                     if (!acc.some((existingItem) => existingItem.name === item.name)) {
@@ -40,14 +41,15 @@ const BudgetAndSpending = () => {
     };
 
     useEffect(() => {
-        if (budgetLineIds.length) {
+        // Reset states when fiscal year changes
+        setBudgetLineItems([]);
+        setBudgetLineTypesCount([]);
+        setAgreementTypesCount([]);
+
+        if (budgetLineIds?.length) {
             fetchBudgetLineItems();
         }
-    }, [budgetLineIds]);
-
-    useEffect(() => {
-        setBudgetLineItems([]);
-    }, [fiscalYear]);
+    }, [budgetLineIds, fiscalYear]);
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -70,8 +72,8 @@ const BudgetAndSpending = () => {
             <section>
                 <h2>Portfolio Budget Lines</h2>
                 <p>
-                    This is a list of all budget lines allocating funding from this Portfolio’s CANs for the selected
-                    fiscal year.
+                    This is a list of all budget lines allocating funding from this Portfolio&apos;s CANs for the
+                    selected fiscal year.
                 </p>
             </section>
             <CANBudgetLineTable
@@ -83,4 +85,4 @@ const BudgetAndSpending = () => {
     );
 };
 
-export default BudgetAndSpending;
+export default PortfolioSpending;
