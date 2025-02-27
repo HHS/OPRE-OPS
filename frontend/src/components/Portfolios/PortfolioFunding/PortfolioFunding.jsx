@@ -1,22 +1,19 @@
-import { useOutletContext } from "react-router-dom";
-import CanCard from "../../CANs/CanCard/CanCard";
-import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
-import Card from "../../UI/Cards/Card";
-import LineBar from "../../UI/DataViz/LineBar";
-import { calculatePercent, getCurrentFiscalYear } from "../../../helpers/utils";
-import { useLazyGetPortfolioFundingSummaryQuery } from "../../../api/opsAPI";
 import React, { useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
+import { useLazyGetPortfolioFundingSummaryQuery } from "../../../api/opsAPI";
+import { calculatePercent } from "../../../helpers/utils";
+import CanCard from "../../CANs/CanCard/CanCard";
+import Card from "../../UI/Cards/Card";
+import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
+import LineBar from "../../UI/DataViz/LineBar";
 
 const PortfolioFunding = () => {
     const [fyBudgetChartData, setFyBudgetChartData] = React.useState([]);
-    const { portfolioId, portfolioFunding, newFunding, fiscalYear, canIds } = useOutletContext();
-    const carryForward = portfolioFunding.carry_forward_funding.amount;
-    const totalBudget = portfolioFunding.total_funding.amount;
-    const currentFiscalYear = getCurrentFiscalYear();
+    const { portfolioId, newFunding, fiscalYear, canIds, carryForward, totalFunding } = useOutletContext();
 
     const [trigger] = useLazyGetPortfolioFundingSummaryQuery();
     const fetchPortfolioFunding = async () => {
-        const lastFiveYears = Array.from({ length: 5 }, (_, i) => +currentFiscalYear - i);
+        const lastFiveYears = Array.from({ length: 5 }, (_, i) => +fiscalYear - i);
         const promises = lastFiveYears.map((year) => {
             return trigger({ portfolioId, fiscalYear: year }).unwrap();
         });
@@ -31,10 +28,11 @@ const PortfolioFunding = () => {
     };
 
     useEffect(() => {
+        setFyBudgetChartData([]);
         if (portfolioId) {
             fetchPortfolioFunding();
         }
-    }, [portfolioId]);
+    }, [portfolioId, fiscalYear]);
 
     const data = [
         {
@@ -42,7 +40,7 @@ const PortfolioFunding = () => {
             label: "Previous FYs Carry-Forward",
             value: carryForward,
             color: "var(--portfolio-carry-forward)",
-            percent: `${calculatePercent(carryForward, totalBudget)}%`,
+            percent: `${calculatePercent(carryForward, totalFunding)}%`,
             tagActiveStyle: "portfolioCarryForward"
         },
         {
@@ -50,39 +48,39 @@ const PortfolioFunding = () => {
             label: `FY ${fiscalYear} New Funding`,
             value: newFunding,
             color: "var(--portfolio-new-funding)",
-            percent: `${calculatePercent(newFunding, totalBudget)}%`,
+            percent: `${calculatePercent(newFunding, totalFunding)}%`,
             tagActiveStyle: "portfolioNewFunding"
         }
     ];
 
-    const maxBudget = Math.max(...fyBudgetChartData);
+    const maxBudget = Math.max(...fyBudgetChartData) === 0 ? 1 : Math.max(...fyBudgetChartData);
     const chartData = [
         {
-            FY: `${+currentFiscalYear}`,
+            FY: `${+fiscalYear}`,
             total: fyBudgetChartData[0],
             ratio: fyBudgetChartData[0] / maxBudget,
             color: "var(--portfolio-budget-graph-1)"
         },
         {
-            FY: `${+currentFiscalYear - 1}`,
+            FY: `${+fiscalYear - 1}`,
             total: fyBudgetChartData[1],
             ratio: fyBudgetChartData[1] / maxBudget,
             color: "var(--portfolio-budget-graph-2)"
         },
         {
-            FY: `${+currentFiscalYear - 2}`,
+            FY: `${+fiscalYear - 2}`,
             total: fyBudgetChartData[2],
             ratio: fyBudgetChartData[2] / maxBudget,
             color: "var(--portfolio-budget-graph-3)"
         },
         {
-            FY: `${+currentFiscalYear - 3}`,
+            FY: `${+fiscalYear - 3}`,
             total: fyBudgetChartData[3],
             ratio: fyBudgetChartData[3] / maxBudget,
             color: "var(--portfolio-budget-graph-4)"
         },
         {
-            FY: `${+currentFiscalYear - 4}`,
+            FY: `${+fiscalYear - 4}`,
             total: fyBudgetChartData[4],
             ratio: fyBudgetChartData[4] / maxBudget,
             color: "var(--portfolio-budget-graph-5)"
@@ -101,7 +99,7 @@ const PortfolioFunding = () => {
                     <LineGraphWithLegendCard
                         heading={`FY ${fiscalYear} Portfolio Total Budget`}
                         data={data}
-                        bigNumber={portfolioFunding.total_funding.amount}
+                        bigNumber={totalFunding}
                     />
                     <Card
                         title="Portfolio Budget by FY"

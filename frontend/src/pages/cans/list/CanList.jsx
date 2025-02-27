@@ -8,7 +8,7 @@ import CANSummaryCards from "../../../components/CANs/CANSummaryCards";
 import CANTable from "../../../components/CANs/CANTable";
 import CANTags from "../../../components/CANs/CanTabs";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
-import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
+import { getCurrentFiscalYear } from "../../../helpers/utils";
 import ErrorPage from "../../ErrorPage";
 import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
@@ -25,8 +25,8 @@ const CanList = () => {
     const [searchParams] = useSearchParams();
     const myCANsUrl = searchParams.get("filter") === "my-cans";
     const activeUser = useSelector((state) => state.auth.activeUser);
-    const selectedFiscalYear = useSelector((state) => state.canDetail.selectedFiscalYear);
-    const fiscalYear = Number(selectedFiscalYear.value);
+    const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
+    const fiscalYear = Number(selectedFiscalYear);
     const [filters, setFilters] = React.useState({
         activePeriod: [],
         transfer: [],

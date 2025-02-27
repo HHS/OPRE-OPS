@@ -3,7 +3,6 @@ import App from "../../../App";
 import CanDetailTabs from "../../../components/CANs/CanDetailTabs/CanDetailTabs";
 import PageHeader from "../../../components/UI/PageHeader";
 import { NO_DATA } from "../../../constants";
-import { setSelectedFiscalYear } from "../../../pages/cans/detail/canDetailSlice";
 import CANFiscalYearSelect from "../list/CANFiscalYearSelect";
 import useCan from "./Can.hooks";
 import CanDetail from "./CanDetail";
@@ -20,6 +19,7 @@ const Can = () => {
         isLoading,
         canId,
         fiscalYear,
+        setSelectedFiscalYear,
         CANFundingLoading,
         budgetLineItemsByFiscalYear,
         canNumber,
