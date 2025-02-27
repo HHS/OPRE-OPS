@@ -4,7 +4,6 @@ import Table from "../../UI/Table";
 import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CABBudgetLineTable.constants";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 import PaginationNav from "../../UI/PaginationNav";
-import DebugCode from "../../DebugCode";
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
@@ -70,7 +69,6 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
                     itemsPerPage={ITEMS_PER_PAGE}
                 />
             )}
-            <DebugCode data={currentPage} />
         </>
     );
 };
