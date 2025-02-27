@@ -6,15 +6,10 @@ import ProjectAgreementBLICard from "../../UI/Cards/ProjectAgreementBLICard";
 /**
  * @typedef {Object} PortfolioBudgetSummaryProps
  * @property {number} fiscalYear
- * @property {Object} portfolioFunding
- * @property {Object} portfolioFunding.total_funding
- * @property {number} portfolioFunding.total_funding.amount
- * @property {Object} portfolioFunding.in_execution_funding
- * @property {number} portfolioFunding.in_execution_funding.amount
- * @property {Object} portfolioFunding.obligated_funding
- * @property {number} portfolioFunding.obligated_funding.amount
- * @property {Object} portfolioFunding.planned_funding
- * @property {number} portfolioFunding.planned_funding.amount
+ * @property {number} totalFunding
+ * @property {number} inExecutionFunding
+ * @property {number} obligatedFunding
+ * @property {number} plannedFunding
  * @property {number} inDraftFunding
  * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} projectTypesCount
  * @property {Array<import("../../UI/Cards/ProjectAgreementBLICard/ProjectAgreementBLICard").ItemCount>} budgetLineTypesCount
@@ -29,19 +24,15 @@ import ProjectAgreementBLICard from "../../UI/Cards/ProjectAgreementBLICard";
 
 const PortfolioBudgetSummary = ({
     fiscalYear,
-    portfolioFunding,
     projectTypesCount,
     budgetLineTypesCount,
     agreementTypesCount,
-    inDraftFunding
+    inDraftFunding,
+    totalFunding,
+    inExecutionFunding,
+    obligatedFunding,
+    plannedFunding
 }) => {
-    const {
-        total_funding: { amount: totalFunding },
-        in_execution_funding: { amount: inExecutionFunding },
-        obligated_funding: { amount: obligatedFunding },
-        planned_funding: { amount: plannedFunding }
-    } = portfolioFunding;
-
     const totalSpending = Number(plannedFunding) + Number(obligatedFunding) + Number(inExecutionFunding);
 
     const graphData = [
@@ -92,7 +83,6 @@ const PortfolioBudgetSummary = ({
                 <DonutGraphWithLegendCard
                     data={graphData}
                     title={`FY ${fiscalYear} Budget Lines by Status`}
-                    totalFunding={totalFunding}
                 />
             </div>
         </section>

@@ -10,10 +10,18 @@ const PortfolioSpending = () => {
     const [budgetLineTypesCount, setBudgetLineTypesCount] = React.useState([]);
     const [agreementTypesCount, setAgreementTypesCount] = React.useState([]);
     // NOTE: Portfolio 1 with FY 2021 is a good example to test this component
-    const { fiscalYear, budgetLineIds, projectTypesCount, portfolioFunding, inDraftFunding } = useOutletContext();
+    const {
+        fiscalYear,
+        budgetLineIds,
+        projectTypesCount,
+        inDraftFunding,
+        totalFunding,
+        inExecutionFunding,
+        obligatedFunding,
+        plannedFunding
+    } = useOutletContext();
     // Lazy query hook
     const [trigger, { isLoading }] = useLazyGetBudgetLineItemQuery();
-
     const fetchBudgetLineItems = async () => {
         const promises = budgetLineIds.map((id) => {
             return trigger(id).unwrap();
@@ -63,11 +71,14 @@ const PortfolioSpending = () => {
             </p>
             <PortfolioBudgetSummary
                 fiscalYear={fiscalYear}
-                portfolioFunding={portfolioFunding}
                 projectTypesCount={projectTypesCount}
                 budgetLineTypesCount={budgetLineTypesCount}
                 agreementTypesCount={agreementTypesCount}
                 inDraftFunding={inDraftFunding}
+                totalFunding={totalFunding}
+                inExecutionFunding={inExecutionFunding}
+                obligatedFunding={obligatedFunding}
+                plannedFunding={plannedFunding}
             />
             <section>
                 <h2>Portfolio Budget Lines</h2>
