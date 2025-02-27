@@ -175,8 +175,6 @@ describe("create agreement and test validations", () => {
             cy.get('[data-cy="error-item"]').should("exist");
             cy.get("tbody").children().as("table-rows").should("have.length", 2);
             cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-            cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
-            cy.get("@table-rows").eq(0).find("[data-cy='expand-row']").click();
             cy.get("[data-cy='edit-row']").click();
             cy.get(".usa-form-group--error").should("have.length", 3);
             cy.get('[data-cy="update-budget-line"]').should("be.disabled");
