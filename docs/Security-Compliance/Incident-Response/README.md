@@ -1,6 +1,6 @@
 # Incident Response (IR) Protocols for OPS
 
-This subdirectory contains documentation that describes our protocols for responding to OPS security incidents. OPS's overarching Incident Response control documentation can be found in the corresponding section [here](../Security-Controls/README.md)
+This subdirectory contains documentation that describes our protocols for responding to OPS security incidents. OPS's overarching Incident Response control documentation can be found in the corresponding section [here](../Security-Controls/ir/index.md). Those controls also reference the OPS Secutity Incident Response Plan (SIRP) which is hosted outside of this documentaiton.
 
 
 ## Table of Contents
