@@ -12,12 +12,16 @@ from werkzeug.exceptions import NotFound
 from models import (
     CAN,
     Agreement,
+    AgreementType,
     BaseModel,
     BudgetLineItem,
     BudgetLineItemChangeRequest,
     BudgetLineItemStatus,
     ContractBudgetLineItem,
+    DirectObligationBudgetLineItem,
     Division,
+    GrantBudgetLineItem,
+    IAABudgetLineItem,
     OpsEventType,
     Portfolio,
     User,
@@ -408,10 +412,24 @@ class BudgetLineItemsListAPI(BaseListAPI):
             data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
             data = convert_date_strings_to_dates(data)
 
-            if not data.get("budget_line_item_type"):
-                new_bli = ContractBudgetLineItem(**data)
-            else:
-                raise RuntimeError("Invalid BLI type.")
+            # if not data.get("budget_line_item_type"):
+            #     new_bli = ContractBudgetLineItem(**data)
+            # else:
+            #     raise RuntimeError("Invalid BLI type.")
+
+            agreement = current_app.db_session.get(Agreement, agreement_id)
+
+            match agreement.agreement_type:
+                case AgreementType.CONTRACT:
+                    new_bli = ContractBudgetLineItem(**data)
+                case AgreementType.GRANT:
+                    new_bli = GrantBudgetLineItem(**data)
+                case AgreementType.DIRECT_OBLIGATION:
+                    new_bli = DirectObligationBudgetLineItem(**data)
+                case AgreementType.IAA:
+                    new_bli = IAABudgetLineItem(**data)
+                case _:
+                    raise RuntimeError(f"Invalid bli type: {agreement.agreement_type}")
 
             current_app.db_session.add(new_bli)
             current_app.db_session.commit()
