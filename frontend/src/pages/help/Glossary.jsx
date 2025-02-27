@@ -107,7 +107,6 @@ The status of a budget line. These are the current statuses in OPS:
 - Executing - BL is in the procurement process, in progress to be formally committed
 - Obligated - BL is committed in the signed award and can be invoiced against
 - In Review - BL has pending edits or a pending status change request
-- Planned MOD - BL is accounted for in the award, but will require a modification in order to be executed when the FY it is planned for approaches
         `
     },
     { heading: "CAN", content: `Common Accounting Number` },
