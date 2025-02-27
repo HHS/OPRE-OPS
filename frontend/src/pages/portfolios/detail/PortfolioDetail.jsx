@@ -1,3 +1,4 @@
+import React from "react";
 import { Outlet, useParams } from "react-router-dom";
 import App from "../../../App";
 import {
@@ -10,9 +11,8 @@ import {
 import PortfolioTabsSection from "../../../components/Portfolios/PortfolioTabsSection";
 import FiscalYear from "../../../components/UI/FiscalYear/FiscalYear";
 import Hero from "../../../components/UI/Hero/Hero";
-import { getTypesCounts } from "../../cans/detail/Can.helpers";
 import { getCurrentFiscalYear } from "../../../helpers/utils";
-import React from "react";
+import { getTypesCounts } from "../../cans/detail/Can.helpers";
 
 const PortfolioDetail = () => {
     /**
@@ -43,16 +43,26 @@ const PortfolioDetail = () => {
     });
     const projectTypesCount = getTypesCounts(projects ?? [], "project_type");
 
-    const canIds = portfolioCans?.map((can) => can.id) ?? [];
+    /**
+     * Filter CANs by fiscal year and extract their IDs
+     * @type {number[]}
+     */
+    const canIds =
+        portfolioCans
+            ?.filter(
+                /** @param {{id: number, appropriation_date: number}} can */
+                (can) => can.appropriation_date === fiscalYear
+            )
+            .map(
+                /** @param {{id: number}} can */
+                (can) => can.id
+            ) ?? [];
     /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
     const { data: CANFunding } = useGetCanFundingSummaryQuery({
         ids: canIds,
         fiscalYear: fiscalYear,
         refetchOnMountOrArgChange: true
     });
-
-    const inDraftFunding = CANFunding?.in_draft_funding ?? 0;
-    const newFunding = CANFunding?.new_funding ?? 0;
 
     if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading) {
         return <p>Loading...</p>;
@@ -78,14 +88,18 @@ const PortfolioDetail = () => {
                 </section>
                 <Outlet
                     context={{
+                        canIds,
                         portfolioId,
                         fiscalYear,
                         budgetLineIds,
                         projectTypesCount,
-                        portfolioFunding,
-                        inDraftFunding,
-                        newFunding,
-                        canIds
+                        newFunding: CANFunding?.new_funding ?? 0, // TODO: update this upon completion of #3536
+                        carryForward: portfolioFunding?.carry_forward_funding.amount ?? 0,
+                        totalFunding: portfolioFunding?.total_funding?.amount ?? 0,
+                        inDraftFunding: portfolioFunding?.draft_funding?.amount ?? 0,
+                        inExecutionFunding: portfolioFunding?.in_execution_funding?.amount ?? 0,
+                        obligatedFunding: portfolioFunding?.obligated_funding?.amount ?? 0,
+                        plannedFunding: portfolioFunding?.planned_funding?.amount ?? 0
                     }}
                 />
             </div>
