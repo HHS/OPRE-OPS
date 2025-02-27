@@ -1,15 +1,12 @@
-import React from "react";
-import PropTypes from "prop-types";
-import classnames from "vest/classnames";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import classnames from "vest/classnames";
 import CanComboBox from "../../CANs/CanComboBox";
-import TextArea from "../../UI/Form/TextArea/TextArea";
-import CurrencyInput from "../../UI/Form/CurrencyInput";
 import AllServicesComponentSelect from "../../ServicesComponents/AllServicesComponentSelect";
+import CurrencyInput from "../../UI/Form/CurrencyInput";
+import TextArea from "../../UI/Form/TextArea/TextArea";
 import DatePicker from "../../UI/USWDS/DatePicker";
-import suite from "./suite";
-import datePickerSuite from "./datePickerSuite";
 
 /**
  * A form for creating or editing a budget line.
@@ -32,6 +29,8 @@ import datePickerSuite from "./datePickerSuite";
  * @param {boolean} props.isEditing - Whether the form is in edit mode.
  * @param {boolean} props.isReviewMode - Whether the form is in review mode.
  * @param {boolean} props.isEditMode - Whether the form is in edit mode.
+ * @param {Object} props.budgetFormSuite - The budget form suite.
+ * @param {Object} props.datePickerSuite - The date picker suite.
  * @param {boolean} props.isBudgetLineNotDraft - Whether the budget line is not in draft mode.
  * @returns {JSX.Element} - The rendered component.
  */
@@ -53,30 +52,65 @@ export const BudgetLinesForm = ({
     isEditing,
     isReviewMode,
     isEditMode,
+    budgetFormSuite,
+    datePickerSuite,
     isBudgetLineNotDraft = false
 }) => {
-    let res = suite.get();
+    let budgetFormRes = budgetFormSuite.get();
     let dateRes = datePickerSuite.get();
 
-    const cn = classnames(suite.get(), {
+    const budgetCn = classnames(budgetFormSuite.get(), {
         invalid: "usa-form-group--error",
         valid: "success",
         warning: "warning"
     });
+
+    const dateCn = classnames(datePickerSuite.get(), {
+        invalid: "usa-form-group--error",
+        valid: "success",
+        warning: "warning"
+    });
+
+    // Combined classnames for date picker that needs both validations
+    const combinedDateCn = (fieldName) => {
+        const budgetClass = budgetCn(fieldName);
+        const dateClass = dateCn(fieldName);
+
+        // If either has the error class, prioritize that
+        if (budgetClass.includes("usa-form-group--error") || dateClass.includes("usa-form-group--error")) {
+            return "usa-form-group--error";
+        }
+        // If either has warning, use that next
+        if (budgetClass.includes("warning") || dateClass.includes("warning")) {
+            return "warning";
+        }
+        // If both are valid, return success
+        if (budgetClass.includes("success") && dateClass.includes("success")) {
+            return "success";
+        }
+
+        // Default case
+        return "";
+    };
+
     const MemoizedDatePicker = React.memo(DatePicker);
 
     // validate all budget line fields if in review mode and is editing
     if ((isReviewMode && isEditing) || (isEditing && isBudgetLineNotDraft)) {
-        suite({
+        budgetFormSuite({
             servicesComponentId,
             selectedCan,
             enteredAmount,
             needByDate
         });
+
+        datePickerSuite({
+            needByDate
+        });
     }
 
-    const runValidate = (name, value) => {
-        suite(
+    const validateBudgetForm = (name, value) => {
+        budgetFormSuite(
             {
                 servicesComponentId,
                 selectedCan,
@@ -100,9 +134,9 @@ export const BudgetLinesForm = ({
 
     const isFormComplete = selectedCan && servicesComponentId && enteredAmount && needByDate;
     const isFormNotValid =
-        (isEditMode && dateRes.hasErrors()) ||
-        (isReviewMode && (res.hasErrors() || !isFormComplete)) ||
-        (isEditMode && isBudgetLineNotDraft && res.hasErrors());
+        dateRes.hasErrors() ||
+        (isReviewMode && (budgetFormRes.hasErrors() || !isFormComplete)) ||
+        (isEditMode && isBudgetLineNotDraft && budgetFormRes.hasErrors());
 
     return (
         <form className="grid-row grid-gap margin-y-3">
@@ -110,12 +144,12 @@ export const BudgetLinesForm = ({
                 <div className="usa-form-group">
                     <AllServicesComponentSelect
                         agreementId={agreementId}
-                        messages={res.getErrors("allServicesComponentSelect")}
-                        className={cn("allServicesComponentSelect")}
+                        messages={budgetFormRes.getErrors("allServicesComponentSelect")}
+                        className={budgetCn("allServicesComponentSelect")}
                         value={servicesComponentId || ""}
                         onChange={(name, value) => {
                             if (isReviewMode) {
-                                runValidate("allServicesComponentSelect", value);
+                                validateBudgetForm("allServicesComponentSelect", value);
                             }
                             setServicesComponentId(+value);
                         }}
@@ -125,13 +159,13 @@ export const BudgetLinesForm = ({
                     <CanComboBox
                         name="selectedCan"
                         label="CAN"
-                        messages={res.getErrors("selectedCan")}
-                        className={cn("selectedCan")}
+                        messages={budgetFormRes.getErrors("selectedCan")}
+                        className={budgetCn("selectedCan")}
                         selectedCan={selectedCan}
                         setSelectedCan={setSelectedCan}
                         onChange={(name, value) => {
                             if (isReviewMode) {
-                                runValidate(name, value);
+                                validateBudgetForm(name, value);
                             }
                         }}
                     />
@@ -143,29 +177,32 @@ export const BudgetLinesForm = ({
                     name="needByDate"
                     label="Obligate by Date"
                     hint="mm/dd/yyyy"
-                    messages={[...(res.getErrors("needByDate") || []), ...(dateRes.getErrors("needByDate") || [])]}
-                    className={cn("needByDate")}
+                    messages={[
+                        ...(budgetFormRes.getErrors("needByDate") || []),
+                        ...(dateRes.getErrors("needByDate") || [])
+                    ]}
+                    className={combinedDateCn("needByDate")}
                     value={needByDate}
                     onChange={(e) => {
                         setNeedByDate(e.target.value);
-                        if (isEditMode) {
-                            validateDatePicker("needByDate", e.target.value);
-                        }
                         if (isReviewMode) {
-                            runValidate("needByDate", e.target.value);
+                            validateBudgetForm("needByDate", e.target.value);
+                        } else {
+                            // Run validateDatePicker for creating and editing
+                            validateDatePicker("needByDate", e.target.value);
                         }
                     }}
                 />
                 <CurrencyInput
                     name="enteredAmount"
                     label="Amount"
-                    messages={res.getErrors("enteredAmount")}
-                    className={cn("enteredAmount")}
+                    messages={budgetFormRes.getErrors("enteredAmount")}
+                    className={budgetCn("enteredAmount")}
                     value={enteredAmount || ""}
                     setEnteredAmount={setEnteredAmount}
                     onChange={(name, value) => {
                         if (isReviewMode) {
-                            runValidate(name, value);
+                            validateBudgetForm(name, value);
                         }
                     }}
                 />
@@ -189,8 +226,8 @@ export const BudgetLinesForm = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 datePickerSuite.reset();
+                                budgetFormSuite.reset();
                                 handleResetForm();
-                                suite.reset();
                             }}
                         >
                             Cancel
@@ -221,27 +258,6 @@ export const BudgetLinesForm = ({
             </div>
         </form>
     );
-};
-
-BudgetLinesForm.propTypes = {
-    agreementId: PropTypes.number.isRequired,
-    selectedCan: PropTypes.object,
-    setSelectedCan: PropTypes.func.isRequired,
-    servicesComponentId: PropTypes.number,
-    setServicesComponentId: PropTypes.func.isRequired,
-    enteredAmount: PropTypes.number,
-    setEnteredAmount: PropTypes.func.isRequired,
-    enteredComments: PropTypes.string,
-    setEnteredComments: PropTypes.func.isRequired,
-    needByDate: PropTypes.string,
-    setNeedByDate: PropTypes.func.isRequired,
-    handleEditBLI: PropTypes.func,
-    handleAddBLI: PropTypes.func,
-    handleResetForm: PropTypes.func,
-    isEditing: PropTypes.bool,
-    isReviewMode: PropTypes.bool,
-    isEditMode: PropTypes.bool,
-    isBudgetLineNotDraft: PropTypes.bool
 };
 
 export default BudgetLinesForm;
