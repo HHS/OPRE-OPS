@@ -8,7 +8,7 @@ const sortAgreements = (agreements) => {
      *
      * @returns {Object[]} - Sorted array of agreements.
      *
-     * This function needs a little work to be consistent with how the "Next Budget Line" and "Next Need By" are calculated.
+     * This function needs a little work to be consistent with how the "Next Budget Line" and "Next Obligate By" are calculated.
      *
      * The sort order here is first including all agreements with BLIs that are not in DRAFT status, then sorting by date_needed.
      *
