@@ -1,6 +1,4 @@
 import PropTypes from "prop-types";
-import * as React from "react";
-import { useLocation } from "react-router-dom";
 import DefaultLayout from "./components/Layouts/DefaultLayout";
 
 /**
@@ -11,8 +9,6 @@ import DefaultLayout from "./components/Layouts/DefaultLayout";
  * @param {React.ReactNode} props.children - The child nodes to be rendered within the layout
  */
 function App({ children, breadCrumbName = "" }) {
-    const { pathname } = useLocation();
-
     return <DefaultLayout breadCrumbName={breadCrumbName}>{children}</DefaultLayout>;
 }
 
