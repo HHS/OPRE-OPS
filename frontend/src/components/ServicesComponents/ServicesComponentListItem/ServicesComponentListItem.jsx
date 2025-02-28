@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import ServicesComponentMetadata from "../ServicesComponentMetadata";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 /**
  * ServicesComponentListItem is a component that displays a single service component item.
  *
@@ -36,13 +37,6 @@ function ServicesComponentListItem({
     const isFirstServiceComponent = number === 1;
     const disabledMsg = "all agreements must start with an SC1 or Base Period";
 
-    const scrollToCenter = () => {
-        const element = document.getElementById("services-component-form");
-        if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-    };
-
     return (
         <div
             className="width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter border-2px radius-lg"
@@ -63,7 +57,7 @@ function ServicesComponentListItem({
                                 aria-label="Edit"
                                 onClick={() => {
                                     setFormDataById(id);
-                                    scrollToCenter();
+                                    scrollToCenter("services-component-form");
                                 }}
                             >
                                 <FontAwesomeIcon
