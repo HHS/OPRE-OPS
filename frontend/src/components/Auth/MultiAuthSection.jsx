@@ -6,6 +6,8 @@ import { useLoginMutation } from "../../api/opsAuthAPI";
 import ContainerModal from "../UI/Modals/ContainerModal";
 import { getAuthorizationCode, setActiveUser } from "./auth";
 import { login } from "./authSlice";
+import PacmanLoader from "react-spinners/PacmanLoader";
+
 
 /**
  * Component that handles multiple authentication methods
@@ -16,9 +18,10 @@ const MultiAuthSection = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [showModal, setShowModal] = useState(false);
+    const [isAuthenticating, setIsAuthenticating] = useState(false);
 
     // Get the RTK Query login mutation hook
-    const [loginMutation, { isLoading }] = useLoginMutation();
+    const [loginMutation] = useLoginMutation();
 
     /**
      * Handles the authentication code callback from the provider
@@ -26,15 +29,16 @@ const MultiAuthSection = () => {
      */
     const callBackend = useCallback(
         async (authCode) => {
-            console.log(`Received Authentication Code = ${authCode}`);
-            const activeProvider = localStorage.getItem("activeProvider");
-            if (!activeProvider) {
-                console.error("API Login Failed! No Active Provider");
-                navigate("/login");
-                return;
-            }
-
+            setIsAuthenticating(true);
             try {
+                console.log(`Received Authentication Code = ${authCode}`);
+                const activeProvider = localStorage.getItem("activeProvider");
+                if (!activeProvider) {
+                    console.error("API Login Failed! No Active Provider");
+                    navigate("/login");
+                    return;
+                }
+
                 // Use the RTK Query mutation instead of direct API call
                 const response = await loginMutation({
                     provider: activeProvider,
@@ -63,6 +67,8 @@ const MultiAuthSection = () => {
             } catch (error) {
                 console.error("Error logging in:", error);
                 navigate("/login");
+            } finally {
+                setIsAuthenticating(false);
             }
         },
         [dispatch, navigate, loginMutation, location]
@@ -110,9 +116,15 @@ const MultiAuthSection = () => {
      * Handles login with fake authentication (for development/testing)
      * @param {string} userType - The type of user to authenticate as
      */
-    const handleFakeAuthLogin = (userType) => {
-        localStorage.setItem("activeProvider", "fakeauth");
-        callBackend(userType).catch(console.error);
+    const handleFakeAuthLogin = async (userType) => {
+        setIsAuthenticating(true);
+        try {
+            localStorage.setItem("activeProvider", "fakeauth");
+            await callBackend(userType);
+        } catch (error) {
+            console.error(error);
+            setIsAuthenticating(false);
+        }
     };
 
     /**
@@ -120,6 +132,7 @@ const MultiAuthSection = () => {
      * @param {string} provider - The SSO provider to use
      */
     const handleSSOLogin = (provider) => {
+        setIsAuthenticating(true);
         localStorage.setItem("activeProvider", provider);
         const stateKey = localStorage.getItem("ops-state-key");
         if (stateKey) {
@@ -127,8 +140,22 @@ const MultiAuthSection = () => {
             window.location.href = authUrl.toString();
         } else {
             console.error("No state key found for SSO login");
+            setIsAuthenticating(false);
         }
     };
+
+    if (isAuthenticating) {
+        return (
+            <div className="bg-white padding-y-3 padding-x-5 border border-base-lighter">
+                <h1>Signing In...</h1>
+                <PacmanLoader
+                    size={25}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div>
+        );
+    }
 
     return (
         <>
@@ -144,9 +171,9 @@ const MultiAuthSection = () => {
                         <button
                             className="usa-button usa-button--outline width-full"
                             onClick={() => handleSSOLogin("logingov")}
-                            disabled={isLoading}
+                            disabled={isAuthenticating}
                         >
-                            {isLoading ? "Signing in..." : "Sign in with Login.gov"}
+                            {isAuthenticating ? "Signing in..." : "Sign in with Login.gov"}
                         </button>
                     </p>
                 )}
@@ -154,9 +181,9 @@ const MultiAuthSection = () => {
                     <button
                         className="usa-button usa-button--outline width-full"
                         onClick={() => handleSSOLogin("hhsams")}
-                        disabled={isLoading}
+                        disabled={isAuthenticating}
                     >
-                        {isLoading ? "Signing in..." : "Sign in with HHS AMS"}
+                        {isAuthenticating ? "Signing in..." : "Sign in with HHS AMS"}
                     </button>
                 </p>
                 {!import.meta.env.PROD && (
@@ -164,9 +191,9 @@ const MultiAuthSection = () => {
                         <button
                             className="usa-button usa-button--outline width-full"
                             onClick={() => setShowModal(true)}
-                            disabled={isLoading}
+                            disabled={isAuthenticating}
                         >
-                            {isLoading ? "Signing in..." : "Sign in with FakeAuth®"}
+                            {isAuthenticating ? "Signing in..." : "Sign in with FakeAuth®"}
                         </button>
                     </p>
                 )}
@@ -181,7 +208,7 @@ const MultiAuthSection = () => {
                                 <button
                                     className="usa-button usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("system_owner")}
-                                    disabled={isLoading}
+                                    disabled={isAuthenticating}
                                 >
                                     System Owner
                                 </button>
@@ -190,7 +217,7 @@ const MultiAuthSection = () => {
                                 <button
                                     className="usa-button usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("budget_team")}
-                                    disabled={isLoading}
+                                    disabled={isAuthenticating}
                                 >
                                     Budget Team Member
                                 </button>
@@ -199,7 +226,7 @@ const MultiAuthSection = () => {
                                 <button
                                     className="usa-button usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("procurement_team")}
-                                    disabled={isLoading}
+                                    disabled={isAuthenticating}
                                 >
                                     Procurement Team Member
                                 </button>
@@ -208,7 +235,7 @@ const MultiAuthSection = () => {
                                 <button
                                     className="usa-button usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("division_director")}
-                                    disabled={isLoading}
+                                    disabled={isAuthenticating}
                                 >
                                     Division Director
                                 </button>
@@ -217,7 +244,7 @@ const MultiAuthSection = () => {
                                 <button
                                     className="usa-button usa-button--outline width-full"
                                     onClick={() => handleFakeAuthLogin("basic_user")}
-                                    disabled={isLoading}
+                                    disabled={isAuthenticating}
                                 >
                                     User Demo
                                 </button>

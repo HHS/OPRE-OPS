@@ -12,11 +12,13 @@ import { useSelector } from "react-redux";
  * @returns {React.ReactElement} The protected route component
  */
 export const ProtectedRoute = ({ redirectPath = "/login", children }) => {
-    const isAuthorized = CheckAuth();
     const location = useLocation();
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
-    if (!isAuthorized || !isLoggedIn) {
+    // Only check auth if not already logged in according to Redux state
+    const isAuthorized = isLoggedIn ? true : CheckAuth();
+
+    if (!isAuthorized && !isLoggedIn) {
         // User is not authenticated, redirect to login with the current location in state
         // This allows redirecting back after successful login
         return (
