@@ -36,6 +36,13 @@ function ServicesComponentListItem({
     const isFirstServiceComponent = number === 1;
     const disabledMsg = "all agreements must start with an SC1 or Base Period";
 
+    const scrollToCenter = () => {
+        const element = document.getElementById("services-component-form");
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    };
+
     return (
         <div
             className="width-full flex-column padding-2 margin-top-4 bg-white hover:bg-base-lightest border-base-light hover:border-base-lighter border-2px radius-lg"
@@ -54,7 +61,10 @@ function ServicesComponentListItem({
                             <button
                                 id="edit"
                                 aria-label="Edit"
-                                onClick={() => setFormDataById(id)}
+                                onClick={() => {
+                                    setFormDataById(id);
+                                    scrollToCenter();
+                                }}
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}
