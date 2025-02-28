@@ -13,10 +13,6 @@ import DefaultLayout from "./components/Layouts/DefaultLayout";
 function App({ children, breadCrumbName = "" }) {
     const { pathname } = useLocation();
 
-    React.useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [pathname]);
-
     return <DefaultLayout breadCrumbName={breadCrumbName}>{children}</DefaultLayout>;
 }
 
