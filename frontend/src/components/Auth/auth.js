@@ -1,10 +1,8 @@
-import ApplicationContext from "../../applicationContext/ApplicationContext";
 import cryptoRandomString from "crypto-random-string";
 import { jwtDecode } from "jwt-decode";
 import { getUserByOidc } from "../../api/getUser";
+import ApplicationContext from "../../applicationContext/ApplicationContext";
 import { logout, setUserDetails } from "../Auth/authSlice";
-import { callBackend } from "../../helpers/backend";
-import store from "../../store";
 
 /**
  * Represents the status of a token.
@@ -65,23 +63,11 @@ export const logoutUser = async (stateToken) => {
 
 /**
  * Checks if the user is authenticated and authorized.
- * @todo Implement token signature validation
- * @todo Implement token claims validation
- * @todo Implement token expiration validation
- * @todo Implement Authorization checks.
  * @returns {boolean} Returns true if the user is authenticated and authorized, otherwise false.
  */
 export const CheckAuth = () => {
-    // TODO: We'll most likely want to include multiple checks here to determine if
-    // the user is correctly authenticated and authorized. Hook into the Auth service
-    // at some point.
-    // const isLoggedIn = useSelector((state) => state.auth.isLoggedIn) || false;
     const tokenExists = getAccessToken() !== null;
-    // TODO: Verify access_token's signature
-    // TODO: Verify access_token's claims
-    // TODO: Verify access_token's expiration - maybe perform a refresh()?
-    // TODO: Check Authorization
-    return tokenExists; // && payload;
+    return tokenExists;
 };
 
 /**
@@ -98,20 +84,28 @@ export const CheckAuth = () => {
  * setActiveUser(token, dispatch);
  */
 export async function setActiveUser(token, dispatch) {
-    // TODO: Vefiry the Token!
-    //const isValidToken = validateTooken(token);
-    const decodedJwt = jwtDecode(token);
-    const userId = decodedJwt["sub"];
-    const userDetails = await getUserByOidc(userId);
+    if (!token) {
+        console.error("No token provided to setActiveUser");
+        return;
+    }
 
-    if (userDetails.length !== 0) {
-        dispatch(setUserDetails(userDetails.pop()));
+    try {
+        const decodedJwt = jwtDecode(token);
+        const userId = decodedJwt["sub"];
+        const userDetails = await getUserByOidc(userId);
+
+        if (userDetails.length !== 0) {
+            dispatch(setUserDetails(userDetails.pop()));
+        }
+    } catch (error) {
+        console.error("Error setting active user:", error);
+        dispatch(logout());
     }
 }
 
 /**
  * Retrieves the access token.
- * @returns {string|null} The access token, or null if it is not found.
+ * @returns {string|null} The access token, or null if it is not found or invalid.
  *
  * @example
  * const accessToken = getAccessToken();
@@ -119,19 +113,12 @@ export async function setActiveUser(token, dispatch) {
 export const getAccessToken = () => {
     const token = localStorage.getItem("access_token");
     const validToken = isValidToken(token);
+
     if (validToken.isValid) {
         return token;
     } else if (validToken.msg === "EXPIRED") {
-        // lets try to get a new token
-        // is the refresh token still valid?
-        callBackend("/auth/refresh/", "POST", {}, null, true)
-            .then((response) => {
-                localStorage.setItem("access_token", response.access_token);
-                return response.access_token;
-            })
-            .catch(() => {
-                store.dispatch(logout());
-            });
+        // Token is expired, but we'll return null and let the RTK Query middleware handle refresh
+        return null;
     } else {
         return null;
     }
@@ -145,40 +132,39 @@ export const getAccessToken = () => {
  * const refreshToken = getRefreshToken();
  */
 export const getRefreshToken = () => {
-    const token = localStorage.getItem("refresh_token");
-    return token;
+    return localStorage.getItem("refresh_token");
 };
 
 /**
  * Checks if the access token is valid by decoding the JWT and comparing the expiration time with the current time.
- * @returns {boolean|str} Returns true if the access token is valid, false otherwise.
+ * @param {string} token - The token to validate
+ * @returns {TokenValidationStatus} Returns a TokenValidationStatus object with isValid and msg properties.
  */
 export const isValidToken = (token) => {
     if (!token) {
         return new TokenValidationStatus(false, "NOT_FOUND");
     }
 
-    const decodedJwt = jwtDecode(token);
+    try {
+        const decodedJwt = jwtDecode(token);
 
-    // Check expiration time
-    const exp = decodedJwt["exp"];
-    const now = Date.now() / 1000;
-    if (exp < now) {
-        return new TokenValidationStatus(false, "EXPIRED");
+        // Check expiration time
+        const exp = decodedJwt["exp"];
+        const now = Date.now() / 1000;
+        if (exp < now) {
+            return new TokenValidationStatus(false, "EXPIRED");
+        }
+
+        // Check issuer
+        const issuer = decodedJwt["iss"];
+        // TODO: Update this when we have a real issuer value
+        if (issuer !== "https://opre-ops-backend-dev") {
+            return new TokenValidationStatus(false, "ISSUER");
+        }
+
+        return new TokenValidationStatus(true, "VALID");
+    } catch (error) {
+        console.error("Error validating token:", error);
+        return new TokenValidationStatus(false, "INVALID");
     }
-
-    // TODO: Check signature
-    // const signature = decodedJwt["signature"];
-    // if (!verifySignature(token, signature)) {
-    //     throw new InvalidSignatureException("Token signature is invalid");
-    // }
-
-    // Check issuer
-    const issuer = decodedJwt["iss"];
-    // TODO: Update this when we have a real issuer value
-    if (issuer !== "https://opre-ops-backend-dev") {
-        return new TokenValidationStatus(false, "ISSUER");
-    }
-
-    return new TokenValidationStatus(true, "VALID");
 };
