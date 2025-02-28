@@ -90,21 +90,21 @@ const AgreementsList = () => {
         (agreement) => {
             return (
                 filters.budgetLineStatus == null || filters.budgetLineStatus?.length === 0 ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == "DRAFT"}) &&
+                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.DRAFT}) &&
                     agreement.budget_line_items?.length === 0) ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == "DRAFT"}) &&
+                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.DRAFT}) &&
                     agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.DRAFT;
                     })) ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == "PLANNED"}) &&
+                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.PLANNED}) &&
                     agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.PLANNED;
                     })) ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == "IN_EXECUTION" }) &&
+                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.EXECUTING}) &&
                     agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.EXECUTING;
                     })) ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == "OBLIGATED"}) &&
+                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.OBLIGATED}) &&
                     agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.OBLIGATED;
                     }))
