@@ -70,7 +70,7 @@
         "@vitest/coverage-istanbul": "3.0.7",
         "@vitest/ui": "3.0.7",
         "axe-core": "4.10.2",
-        "cypress": "14.0.0",
+        "cypress": "14.1.0",
         "cypress-axe": "1.6.0",
         "cypress-localstorage-commands": "2.2.7",
         "globals": "16.0.0",
