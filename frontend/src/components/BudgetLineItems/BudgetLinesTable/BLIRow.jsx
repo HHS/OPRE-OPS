@@ -83,7 +83,10 @@ const BLIRow = ({
             item={budgetLine}
             handleDeleteItem={handleDeleteBudgetLine}
             handleDuplicateItem={handleDuplicateBudgetLine}
-            handleSetItemForEditing={()=>{handleSetBudgetLineForEditing(); scrollToCenter("budget-line-form");}}
+            handleSetItemForEditing={() => {
+                handleSetBudgetLineForEditing(budgetLine?.id);
+                scrollToCenter("budget-line-form");
+            }}
             isItemEditable={isBudgetLineEditable}
             duplicateIcon={true}
             lockedMessage={lockedMessage}
