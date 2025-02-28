@@ -559,3 +559,32 @@ def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
     assert len(response.json["cans"]) == 19
+
+
+def test_new_funding_math(auth_client: FlaskClient) -> None:
+    expected_carry_forward_data = {
+        2027: 500000,
+        2026: 500000,
+        2025: 1000000,
+        2024: 20140000,
+        2023: 63780000,
+        2022: 37000000,
+        2021: 30200000,
+    }
+
+    expected_new_funding_data = {
+        2027: 0,
+        2026: 0,
+        2025: 0,
+        2024: 0,
+        2023: 14420000,
+        2022: 0,
+        2021: 0,
+    }
+
+    for year in expected_carry_forward_data.keys():
+        response = auth_client.get(f"/api/v1/can-funding-summary?can_ids=0&fiscal_year={year}")
+        assert response.status_code == 200
+        assert response.json["carry_forward_funding"] == expected_carry_forward_data[year]
+        assert response.json["new_funding"] == expected_new_funding_data[year]
+        assert response.json["total_funding"] == expected_carry_forward_data[year] + expected_new_funding_data[year]
