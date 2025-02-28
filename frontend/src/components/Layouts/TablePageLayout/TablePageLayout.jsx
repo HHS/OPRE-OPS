@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import icons from "../../../uswds/img/sprite.svg";
+import { divide } from "lodash";
 
 /**
  * The TablePageLayout component is a layout component that displays a title and subtitle
@@ -66,8 +67,8 @@ export const TablePageLayout = ({
                 {FilterButton}
             </div>
             {FilterTags}
-            {SummaryCardsSection && SummaryCardsSection}
-            {TableSection}
+            {SummaryCardsSection && <div className="margin-top-1">{SummaryCardsSection}</div>}
+            <div className="margin-top-4">{TableSection}</div>
             {children}
         </>
     );

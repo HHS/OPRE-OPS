@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import DefaultLayout from "./components/Layouts/DefaultLayout";
 
 /**
@@ -12,8 +11,4 @@ function App({ children, breadCrumbName = "" }) {
     return <DefaultLayout breadCrumbName={breadCrumbName}>{children}</DefaultLayout>;
 }
 
-App.propTypes = {
-    children: PropTypes.node.isRequired,
-    breadCrumbName: PropTypes.string
-};
 export default App;

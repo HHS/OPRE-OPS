@@ -32,7 +32,7 @@ const CANTable = ({ cans, fiscalYear }) => {
 
     return (
         <>
-            <table className={`usa-table usa-table--borderless width-full margin-top-5 ${styles.tableHover}`}>
+            <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
                 <CANTableHead />
                 <tbody>
                     {cansPerPage.map((can) => (
