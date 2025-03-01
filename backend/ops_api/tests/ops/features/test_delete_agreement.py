@@ -7,9 +7,9 @@ from sqlalchemy.orm.exc import StaleDataError
 
 from models import (
     AgreementType,
-    BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
+    ContractBudgetLineItem,
     ContractType,
     DirectAgreement,
     User,
@@ -118,7 +118,7 @@ def contract_with_draft_bli(loaded_db, test_user, test_admin_user, test_can, tes
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
-    draft_bli = BudgetLineItem(
+    draft_bli = ContractBudgetLineItem(
         agreement_id=contract_agreement.id,
         comments="blah bleh bleh blah",
         line_description="LI Draft",
@@ -152,7 +152,7 @@ def contract_with_planned_bli(loaded_db, test_user, test_admin_user, test_can, t
     loaded_db.add(contract_agreement)
     loaded_db.commit()
 
-    planned_bli = BudgetLineItem(
+    planned_bli = ContractBudgetLineItem(
         agreement_id=contract_agreement.id,
         comments="blah blah bleh blah",
         line_description="LI Planned",

@@ -16,6 +16,7 @@ from models import (
     BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
+    ContractBudgetLineItem,
     Invoice,
     ModType,
     ObjectClassCode,
@@ -190,7 +191,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         requisition = get_requisition(data, session)
         mod = get_mod(data, session)
 
-        bli = BudgetLineItem(
+        bli = ContractBudgetLineItem(
             id=data.SYS_BUDGET_ID,
             line_description=data.LINE_DESCRIPTION,
             comments=data.COMMENTS,

@@ -1,6 +1,14 @@
 import pytest
 
-from models import CAN, AgreementType, BudgetLineItem, ContractAgreement, GrantAgreement, ResearchProject
+from models import (
+    CAN,
+    AgreementType,
+    ContractAgreement,
+    ContractBudgetLineItem,
+    GrantAgreement,
+    GrantBudgetLineItem,
+    ResearchProject,
+)
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -91,10 +99,10 @@ def db_loaded_with_research_projects(app, loaded_db):
         loaded_db.add_all([agreement_1, agreement_2])
         loaded_db.commit()
 
-        blin_1 = BudgetLineItem(line_description="#1", amount=1.0, can_id=can_1.id, agreement_id=agreement_1.id)
-        blin_2 = BudgetLineItem(line_description="#2", amount=2.0, can_id=can_2.id, agreement_id=agreement_1.id)
-        blin_3 = BudgetLineItem(line_description="#3", amount=3.0, can_id=can_3.id, agreement_id=agreement_1.id)
-        blin_4 = BudgetLineItem(line_description="#4", amount=4.0, can_id=can_4.id, agreement_id=agreement_2.id)
+        blin_1 = ContractBudgetLineItem(line_description="#1", amount=1.0, can_id=can_1.id, agreement_id=agreement_1.id)
+        blin_2 = ContractBudgetLineItem(line_description="#2", amount=2.0, can_id=can_2.id, agreement_id=agreement_1.id)
+        blin_3 = ContractBudgetLineItem(line_description="#3", amount=3.0, can_id=can_3.id, agreement_id=agreement_1.id)
+        blin_4 = GrantBudgetLineItem(line_description="#4", amount=4.0, can_id=can_4.id, agreement_id=agreement_2.id)
 
         loaded_db.add_all([blin_1, blin_2, blin_3, blin_4])
         loaded_db.commit()
