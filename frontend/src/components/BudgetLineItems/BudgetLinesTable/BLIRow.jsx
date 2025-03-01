@@ -31,6 +31,7 @@ import TableTag from "../../UI/TableTag";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import ChangeIcons from "../ChangeIcons";
 import { addErrorClassIfNotFound, futureDateErrorClass } from "./BLIRow.helpers";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 /**
  * @typedef {import('../../../components/BudgetLineItems/BudgetLineTypes').BudgetLine} BudgetLine
  */
@@ -82,7 +83,10 @@ const BLIRow = ({
             item={budgetLine}
             handleDeleteItem={handleDeleteBudgetLine}
             handleDuplicateItem={handleDuplicateBudgetLine}
-            handleSetItemForEditing={handleSetBudgetLineForEditing}
+            handleSetItemForEditing={() => {
+                handleSetBudgetLineForEditing(budgetLine?.id);
+                scrollToCenter("budget-line-form");
+            }}
             isItemEditable={isBudgetLineEditable}
             duplicateIcon={true}
             lockedMessage={lockedMessage}

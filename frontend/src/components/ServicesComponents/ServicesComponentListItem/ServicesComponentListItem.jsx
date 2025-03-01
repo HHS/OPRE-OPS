@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import ServicesComponentMetadata from "../ServicesComponentMetadata";
 import Tooltip from "../../UI/USWDS/Tooltip";
+import { scrollToCenter } from "../../../helpers/scrollToCenter.helper";
 /**
  * ServicesComponentListItem is a component that displays a single service component item.
  *
@@ -54,7 +55,10 @@ function ServicesComponentListItem({
                             <button
                                 id="edit"
                                 aria-label="Edit"
-                                onClick={() => setFormDataById(id)}
+                                onClick={() => {
+                                    setFormDataById(id);
+                                    scrollToCenter("services-component-form");
+                                }}
                             >
                                 <FontAwesomeIcon
                                     icon={faPen}

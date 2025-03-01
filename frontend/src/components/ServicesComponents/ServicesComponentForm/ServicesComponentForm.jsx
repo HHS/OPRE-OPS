@@ -53,7 +53,7 @@ function ServicesComponentForm({
         : "Create the structure of the agreement using Services Components to describe the work being done. After you outline the Services Components, you will add Budget Lines to fund that work. When adding a new SC, a Services Component must be selected from the dropdown.";
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} id="services-component-form">
             <FormHeader
                 heading={heading}
                 details={details}
