@@ -6,7 +6,7 @@
     "type": "module",
     "dependencies": {
         "@azure/storage-blob": "12.26.0",
-        "@eslint/compat": "1.2.4",
+        "@eslint/compat": "1.2.7",
         "@eslint/js": "9.21.0",
         "@fortawesome/fontawesome-svg-core": "6.7.2",
         "@fortawesome/free-regular-svg-icons": "6.7.2",
@@ -22,15 +22,15 @@
         "clsx": "2.1.1",
         "crypto-random-string": "5.0.0",
         "eslint": "9.21.0",
-        "eslint-config-prettier": "10.0.1",
+        "eslint-config-prettier": "10.0.2",
         "eslint-plugin-cypress": "4.1.0",
         "eslint-plugin-import": "2.31.0",
         "eslint-plugin-jest": "28.11.0",
         "eslint-plugin-jsx-a11y": "6.10.2",
-        "eslint-plugin-prettier": "5.2.1",
-        "eslint-plugin-react": "7.37.3",
+        "eslint-plugin-prettier": "5.2.3",
+        "eslint-plugin-react": "7.37.4",
         "eslint-plugin-react-hooks": "5.1.0",
-        "eslint-plugin-react-refresh": "0.4.16",
+        "eslint-plugin-react-refresh": "0.4.19",
         "eslint-plugin-testing-library": "7.1.1",
         "jose": "5.10.0",
         "js-cookie": "3.0.5",
@@ -47,9 +47,9 @@
         "react-select": "5.10.0",
         "react-slider": "2.0.6",
         "remark-gfm": "4.0.1",
-        "sass": "1.85.0",
-        "sass-loader": "16.0.4",
-        "styled-components": "6.1.13",
+        "sass": "1.85.1",
+        "sass-loader": "16.0.5",
+        "styled-components": "6.1.15",
         "vest": "5.4.6",
         "vite": "6.2.0",
         "vite-jsconfig-paths": "2.0.1",
@@ -58,7 +58,7 @@
         "vite-plugin-svgr": "4.3.0"
     },
     "overrides": {
-        "rollup": "4.34.0"
+        "rollup": "4.34.9"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "6.6.3",
@@ -75,8 +75,8 @@
         "cypress-localstorage-commands": "2.2.7",
         "globals": "16.0.0",
         "history": "5.3.0",
-        "msw": "2.7.0",
-        "prettier": "3.5.0",
+        "msw": "2.7.3",
+        "prettier": "3.5.2",
         "redux-mock-store": "1.5.5",
         "semantic-release": "24.2.3",
         "vitest": "3.0.7"
