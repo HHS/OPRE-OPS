@@ -94,7 +94,10 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
             sum(
                 c.budget
                 for c in can.funding_budgets
-                if can.active_period == 1 or can.funding_details.fiscal_year == c.fiscal_year
+                if (
+                    can.funding_details
+                    and (can.active_period == 1 or (can.funding_details.fiscal_year == c.fiscal_year))
+                )
             )
             or 0
         )
@@ -108,7 +111,7 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
             sum(
                 c.budget
                 for c in can.funding_budgets
-                if can.active_period != 1 and (can.funding_details.fiscal_year != c.fiscal_year)
+                if can.funding_details and can.active_period != 1 and (can.funding_details.fiscal_year != c.fiscal_year)
             )
             or 0
         )
