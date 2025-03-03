@@ -61,7 +61,7 @@ it("renders without crashing", () => {
             </BrowserRouter>
         </Provider>
     );
-    expect(screen.getByText("Test Agreement")).toBeInTheDocument();
+    expect(screen.getAllByText("Test Agreement")[0]).toBeInTheDocument();
     expect(screen.getByText("Test Project")).toBeInTheDocument();
     expect(screen.getByText("Grant")).toBeInTheDocument();
     expect(screen.getAllByText("$315.00")).toHaveLength(2);

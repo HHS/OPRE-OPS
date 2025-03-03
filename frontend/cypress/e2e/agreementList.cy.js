@@ -26,7 +26,7 @@ it("Agreements list table has correct headers and first row", () => {
     cy.get("thead > tr > :nth-child(3)").should("have.text", "Type");
     cy.get("thead > tr > :nth-child(4)").should("have.text", "Agreement Total");
     cy.get("thead > tr > :nth-child(5)").should("have.text", "Next Budget Line");
-    cy.get("thead > tr > :nth-child(6)").should("have.text", "Next Need By");
+    cy.get("thead > tr > :nth-child(6)").should("have.text", "Next Obligate By");
 
     // select the row with data-testid="agreement-table-row-1"
     cy.get("[data-testid='agreement-table-row-1']").should("exist");
@@ -86,39 +86,36 @@ it("the filter button works as expected", () => {
     cy.get("button").contains("Filter").click();
 
     // set a number of filters
-    cy.get("input[id='current-fy']").click({ force: true });
-
     // get select element by name "project-react-select"
     // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get(".project-combobox__control")
+    cy.get(".fiscal-year-combobox__control")
         .click()
-        .get(".project-combobox__menu")
-        .find(".project-combobox__option")
+        .get(".fiscal-year-combobox__menu")
+        .find(".fiscal-year-combobox__option")
         .first()
         .click();
     // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get(".project-officer-combobox__control")
+    cy.get(".portfolios-combobox__control")
         .click()
-        .get(".project-officer-combobox__menu")
-        .find(".project-officer-combobox__option")
+        .get(".portfolios-combobox__menu")
+        .find(".portfolios-combobox__option")
         .first()
         .click();
-    cy.get("#agreement_type").select("CONTRACT");
-    cy.get("#procurement-shop-select").select("Product Service Center (PSC)");
-    cy.get("label").contains("Planned").click({ force: true });
-    cy.get("label").contains("Executing").click({ force: true });
-    cy.get("label").contains("Obligated").click({ force: true });
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".bli-status-combobox__control")
+        .click()
+        .get(".bli-status-combobox__menu")
+        .find(".bli-status-combobox__option")
+        .eq(1)
+        .click();
 
     // click the button that has text Apply
     cy.get("button").contains("Apply").click();
 
     // check that the correct tags are displayed
-    cy.get("div").contains("Upcoming Need By Date: Current FY").should("exist");
-    cy.get("div").contains("Project: Human Services Interoperability Support").should("exist");
-    cy.get("div").contains("Project Officer: Sheila Celentano").should("exist");
-    cy.get("div").contains("Type: Contract").should("exist");
-    cy.get("div").contains("Procurement Shop: Product Service Center").should("exist");
-    cy.get("div").contains("Budget Line Status: Draft").should("exist");
+    cy.get("div").contains("FY 2044").should("exist");
+    cy.get("div").contains("Child Welfare Research").should("exist");
+    cy.get("div").contains("Planned").should("exist");
 
     // check that the table is filtered correctly
     cy.get("div[id='agreements-table-zero-results']").should("exist");
@@ -129,12 +126,9 @@ it("the filter button works as expected", () => {
     cy.get("button").contains("Apply").click();
 
     // check that no tags are displayed
-    cy.get("div").contains("Upcoming Need By Date: Current FY").should("not.exist");
-    cy.get("div").contains("Project: Human Services Interoperability Support").should("not.exist");
-    cy.get("div").contains("Project Officer: Chris Fortunato").should("not.exist");
-    cy.get("div").contains("Type: Contract").should("not.exist");
-    cy.get("div").contains("Procurement Shop: Product Service Center").should("not.exist");
-    cy.get("div").contains("Budget Line Status: Draft").should("not.exist");
+    cy.get("div").contains("FY 2044").should("not.exist");
+    cy.get("div").contains("Child Welfare Research").should("not.exist");
+    cy.get("div").contains("Planned").should("not.exist");
 
     // check that the table is filtered correctly
     cy.get("div[id='agreements-table-zero-results']").should("not.exist");

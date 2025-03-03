@@ -1,7 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import PropTypes from "prop-types";
-import cx from "clsx";
 import datePicker from "@uswds/uswds/js/usa-date-picker";
+import cx from "clsx";
+import React, { useEffect, useRef } from "react";
 import IsRequiredHelper from "../../Form/IsRequiredHelper";
 
 /**
@@ -77,27 +76,28 @@ function DatePicker({
     };
 
     return (
-        <div className={cx("usa-form-group", { pending }, className)}>
+        <div className={cx("usa-form-group", pending && "pending", className)}>
             <label
                 htmlFor={id}
-                className={cx("usa-label", { "usa-label--error": messages.length })}
+                className={`usa-label ${messages.length ? "usa-label--error" : ""} `}
                 id={`${id}-label`}
             >
                 {label}
             </label>
-            {messages.length > 0 && (
+            {messages.length > 0 ? (
                 <span
                     className="usa-error-message"
                     role="alert"
                 >
                     {messages[0]}
                 </span>
+            ) : (
+                <IsRequiredHelper
+                    isRequired={isRequired}
+                    isRequiredNoShow={isRequiredNoShow}
+                />
             )}
-            <IsRequiredHelper
-                isRequired={isRequired}
-                isRequiredNoShow={isRequiredNoShow}
-            />
-            {hint && (
+            {hint && messages.length === 0 && (
                 <div
                     className="usa-hint"
                     id={`${id}-hint`}
@@ -112,7 +112,7 @@ function DatePicker({
             >
                 <input
                     ref={inputRef}
-                    className="usa-input"
+                    className={`usa-input ${messages.length ? "usa-input--error" : ""} `}
                     id={id}
                     name={name}
                     aria-labelledby={`${id}-label`}
@@ -127,21 +127,5 @@ function DatePicker({
 function getDateString(date) {
     return date instanceof Date ? date.toISOString().substring(0, 10) : date;
 }
-
-DatePicker.propTypes = {
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    hint: PropTypes.string,
-    className: PropTypes.string,
-    onChange: PropTypes.func.isRequired,
-    minDate: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]),
-    maxDate: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]),
-    value: PropTypes.string,
-    pending: PropTypes.bool,
-    messages: PropTypes.arrayOf(PropTypes.string),
-    isRequired: PropTypes.bool,
-    isRequiredNoShow: PropTypes.bool
-};
 
 export default React.memo(DatePicker);
