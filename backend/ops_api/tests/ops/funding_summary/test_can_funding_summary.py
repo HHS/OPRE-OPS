@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from flask.testing import FlaskClient
 
-from models.cans import CAN, CANMethodOfTransfer
+from models.cans import CAN, CANFundingBudget, CANMethodOfTransfer
 from ops_api.ops.utils.cans import (
     aggregate_funding_summaries,
     filter_by_attribute,
@@ -29,7 +29,7 @@ def mock_can():
     )
 
     funding_budgets = [
-        MagicMock(fiscal_year=2021, budget=Decimal("50000000.0")),  # This is a new_funding budget for FY 2021
+        MagicMock(fiscal_year=2021, budget=Decimal("50000000.00")),  # This is a new_funding budget for FY 2021
         MagicMock(fiscal_year=2023, budget=Decimal("594500.00")),  # This is a carry_forward budget for FY 2023
         MagicMock(fiscal_year=2024, budget=Decimal("614000.00")),  # This is a carry_forward budget for FY 2024
     ]
@@ -43,6 +43,25 @@ def mock_can():
         funding_budgets=funding_budgets,
         active_period=5,
         obligate_by=2026,
+    )
+
+    return can
+
+
+@pytest.fixture
+def mock_can_without_funding_details():
+    funding_budgets = [
+        CANFundingBudget(fiscal_year=2021, budget=Decimal("50000000.00")),  # This is a new_funding budget for FY 2021
+        CANFundingBudget(fiscal_year=2023, budget=Decimal("594500.00")),  # This is a carry_forward budget for FY 2023
+        CANFundingBudget(fiscal_year=2024, budget=Decimal("614000.00")),  # This is a carry_forward budget for FY 2024
+    ]
+
+    can = CAN(
+        id=500,
+        number="M14HRF1",
+        description="Healthy Marriages For Happy Kids - OPRE",
+        nick_name="HMFHK-OPRE",
+        funding_budgets=funding_budgets,
     )
 
     return can
@@ -604,7 +623,7 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
         2025: 1034500.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
         2024: 20140000,
         2023: 51140000,
-        2022: 20000000,
+        2022: 10000000,
         2021: 0,
     }
 
@@ -662,8 +681,26 @@ def assert_funding_summary(result, expected_cf, expected_nf, expected_tf):
 
 @pytest.mark.parametrize(
     "fiscal_year, expected_cf, expected_nf, expected_tf",
-    [(2021, 0, 50000000.0, 50000000.0), (2023, 594500.0, 0, 594500.0), (2024, 614000.0, 0, 614000.0)],
+    [
+        (2020, 0, 0, 0),
+        (2021, 0, 50000000.0, 50000000.0),
+        (2022, 0, 0, 0),
+        (2023, 594500.0, 0, 594500.0),
+        (2024, 614000.0, 0, 614000.0),
+        (2025, 0, 0, 0),
+    ],
 )
 def test_get_can_funding_summary(mock_can, fiscal_year, expected_cf, expected_nf, expected_tf):
     result = get_can_funding_summary(mock_can, fiscal_year)
+    assert_funding_summary(result, expected_cf, expected_nf, expected_tf)
+
+
+@pytest.mark.parametrize(
+    "fiscal_year, expected_cf, expected_nf, expected_tf",
+    [(2020, 0, 0, 0), (2021, 0, 0, 0), (2022, 0, 0, 0), (2023, 0, 0, 0), (2024, 0, 0, 0), (2025, 0, 0, 0)],
+)
+def test_get_can_funding_summary_with_no_funding_details(
+    mock_can_without_funding_details, fiscal_year, expected_cf, expected_nf, expected_tf
+):
+    result = get_can_funding_summary(mock_can_without_funding_details, fiscal_year)
     assert_funding_summary(result, expected_cf, expected_nf, expected_tf)

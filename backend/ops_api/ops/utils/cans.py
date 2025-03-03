@@ -55,8 +55,14 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
                 c.budget
                 for c in can.funding_budgets
                 if (
-                    c.fiscal_year == fiscal_year
-                    and (can.active_period == 1 or fiscal_year == can.funding_details.fiscal_year == c.fiscal_year)
+                    can.funding_details  # funding_details is required
+                    and c.fiscal_year == fiscal_year
+                    and (
+                        can.active_period == 1  # budgets for 1 Year CANS
+                        or (
+                            fiscal_year == can.funding_details.fiscal_year == c.fiscal_year
+                        )  # budgets for CANs that are in their appropriation year
+                    )
                 )
             )
             or 0
@@ -74,8 +80,9 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
                 c.budget
                 for c in can.funding_budgets
                 if c.fiscal_year == fiscal_year
+                and can.funding_details
                 and can.active_period != 1
-                and (fiscal_year != can.funding_details.fiscal_year)
+                and (fiscal_year > can.funding_details.fiscal_year)
             )
             or 0
         )
