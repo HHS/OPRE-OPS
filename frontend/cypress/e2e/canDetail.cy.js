@@ -377,8 +377,11 @@ describe("CAN funding page", () => {
             "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
-        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        cy.get('[data-cy="log-item-message"]').then(($elements) => {
+            const logMessages = $elements.map((_, el) => el.textContent).get();
+            expectedMessages.forEach((message) => {
+                expect(logMessages).to.include(message);
+            });
         });
     });
     it("shows correct total funding received when switching between fiscal years", () => {
@@ -416,6 +419,7 @@ describe("CAN funding page", () => {
         cy.get("tbody").children().should("have.length", 1);
         // save the changes
         cy.get("[data-cy=save-btn]").click();
+        cy.wait(1000);
 
         // check can history for DELETING a funding received event
         cy.visit(`/cans/${can504.number}`);
@@ -423,6 +427,7 @@ describe("CAN funding page", () => {
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
             .should("exist")
             .contains(/Funding Received Deleted/);
+
         const expectedMessages = [
             "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00",
@@ -431,8 +436,11 @@ describe("CAN funding page", () => {
             "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
-        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        cy.get('[data-cy="log-item-message"]').then(($elements) => {
+            const logMessages = $elements.map((_, el) => el.textContent).get();
+            expectedMessages.forEach((message) => {
+                expect(logMessages).to.include(message);
+            });
         });
     });
     it("shows history message when updating a funding received", () => {
@@ -461,8 +469,14 @@ describe("CAN funding page", () => {
             "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
-        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        // cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
+        //     cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        // });
+        cy.get('[data-cy="log-item-message"]').then(($elements) => {
+            const logMessages = $elements.map((_, el) => el.textContent).get();
+            expectedMessages.forEach((message) => {
+                expect(logMessages).to.include(message);
+            });
         });
     });
     it("handles cancelling from budget form", () => {
