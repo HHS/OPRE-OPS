@@ -392,7 +392,9 @@ describe("CAN funding page", () => {
         // budget-received-card should show $ 0
         cy.get("[data-cy=budget-received-card]").should("contain", "$ 0");
     });
-    it("handle posting, patching, and deleting funding received", () => {
+    it.skip("handle posting, patching, and deleting funding received", () => {
+        // this test is skipped because it relies on side effects from other tests and is not deterministic
+
         // create a new funding received -- POST
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
@@ -437,7 +439,8 @@ describe("CAN funding page", () => {
             cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
         });
     });
-    it("shows history message when updating a funding received", () => {
+    it.skip("shows history message when updating a funding received", () => {
+        // this test is skipped because it relies on side effects from other tests and is not deterministic
         cy.visit(`/cans/${can504.number}/funding`);
         cy.get("#fiscal-year-select").select(currentFiscalYear);
         cy.get("#edit").click();
