@@ -66,8 +66,8 @@ export const TablePageLayout = ({
                 {FilterButton}
             </div>
             {FilterTags}
-            {SummaryCardsSection && SummaryCardsSection}
-            {TableSection}
+            {SummaryCardsSection && <div className="margin-top-1">{SummaryCardsSection}</div>}
+            <div className="margin-top-4">{TableSection}</div>
             {children}
         </>
     );
