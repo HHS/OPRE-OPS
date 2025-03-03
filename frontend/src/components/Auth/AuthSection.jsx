@@ -1,26 +1,72 @@
-import { login, logout } from "./authSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import cryptoRandomString from "crypto-random-string";
-import { getAccessToken, getAuthorizationCode } from "./auth";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRightToBracket } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import cryptoRandomString from "crypto-random-string";
+import { useCallback, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useLoginMutation, useLogoutMutation, useRefreshTokenMutation } from "../../api/opsAuthAPI";
 import User from "../UI/Header/User";
-import { apiLogin, apiLogout } from "../../api/apiLogin";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
-import { setActiveUser } from "./auth";
+import { getAccessToken, getAuthorizationCode, getRefreshToken, isValidToken, setActiveUser } from "./auth";
+import { login, logout } from "./authSlice";
 
+/**
+ * Authentication section component that handles login/logout functionality
+ * @returns {React.ReactElement} The AuthSection component
+ */
 const AuthSection = () => {
-    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-    const activeUser = useSelector((state) => state.auth.activeUser);
+    /** @type {boolean} */
+    const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
+    /** @type {Object|null} */
+    const activeUser = useSelector((state) => state.auth?.activeUser);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [loginMutation] = useLoginMutation();
+    const [logoutMutation] = useLogoutMutation();
+    const [refreshTokenMutation] = useRefreshTokenMutation();
 
+    /**
+     * Handles token refresh
+     * @returns {Promise<boolean>} True if refresh was successful, false otherwise
+     */
+    const handleTokenRefresh = async () => {
+        try {
+            const refreshToken = getRefreshToken();
+            if (!refreshToken) {
+                return false;
+            }
+
+            const response = await refreshTokenMutation({
+                refresh_token: refreshToken
+            }).unwrap();
+            if (response.access_token) {
+                localStorage.setItem("access_token", response.access_token);
+                if (response.refresh_token) {
+                    localStorage.setItem("refresh_token", response.refresh_token);
+                }
+                await setActiveUser(response.access_token, dispatch);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("Error refreshing token:", error);
+            return false;
+        }
+    };
+
+    /**
+     * Handles the authentication code callback from the provider
+     * @param {string} authCode - The authorization code from the provider
+     */
     const callBackend = useCallback(
         async (authCode) => {
             try {
-                const response = await apiLogin(authCode);
+                const activeProvider = localStorage.getItem("activeProvider") || "logingov";
+                const response = await loginMutation({
+                    provider: activeProvider,
+                    code: authCode
+                }).unwrap();
+
                 if (response.access_token) {
                     localStorage.setItem("access_token", response.access_token);
                     localStorage.setItem("refresh_token", response.refresh_token);
@@ -35,20 +81,33 @@ const AuthSection = () => {
                 navigate("/login");
             }
         },
-        [activeUser, dispatch, navigate]
+        [activeUser, dispatch, navigate, loginMutation]
     );
 
     useEffect(() => {
         const currentJWT = getAccessToken();
+        const checkAndRefreshToken = async () => {
+            if (!currentJWT) {
+                navigate("/login");
+                return;
+            }
 
-        if (currentJWT) {
-            // TODO: we should validate the JWT here and set it on state if valid else logout
+            const tokenStatus = isValidToken(currentJWT);
+
+            if (!tokenStatus.isValid && tokenStatus.msg === "EXPIRED") {
+                const refreshSuccessful = await handleTokenRefresh();
+                if (!refreshSuccessful) {
+                    dispatch(logout());
+                    navigate("/login");
+                    return;
+                }
+            }
+
             dispatch(login());
-            if (!activeUser) setActiveUser(currentJWT, dispatch);
-            return;
-        } else {
-            navigate("/login");
-        }
+            if (!activeUser) await setActiveUser(currentJWT, dispatch);
+        };
+
+        checkAndRefreshToken();
 
         const localStateString = localStorage.getItem("ops-state-key");
 
@@ -68,7 +127,9 @@ const AuthSection = () => {
                 } else {
                     const authCode = queryParams.get("code");
                     console.log(`Received Authentication Code = ${authCode}`);
-                    callBackend(authCode).catch(console.error);
+                    if (authCode) {
+                        callBackend(authCode).catch(console.error);
+                    }
                 }
             }
         } else {
@@ -77,10 +138,22 @@ const AuthSection = () => {
         }
     }, [activeUser, callBackend, dispatch, navigate]);
 
+    /**
+     * Handles user logout
+     */
     const logoutHandler = async () => {
-        await apiLogout();
-        await dispatch(logout());
-        navigate("/login");
+        try {
+            // Use the RTK Query logout mutation
+            await logoutMutation().unwrap();
+            // The logout action is already dispatched in the onQueryStarted callback in opsAuthAPI.js
+            await dispatch(logout());
+            navigate("/login");
+        } catch (error) {
+            console.error("Error during logout:", error);
+            // Still attempt to logout locally even if the API call fails
+            await dispatch(logout());
+            navigate("/login");
+        }
         // TODO: ⬇ Logout from Auth Provider ⬇
         // const output = await logoutUser(localStorage.getItem("ops-state-key"));
         // console.log(output);
@@ -93,9 +166,12 @@ const AuthSection = () => {
                 <div>
                     <button
                         className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
-                        onClick={() =>
-                            (window.location.href = getAuthorizationCode(localStorage.getItem("ops-state-key")))
-                        }
+                        onClick={() => {
+                            const stateKey = localStorage.getItem("ops-state-key");
+                            if (stateKey) {
+                                window.location.href = getAuthorizationCode("logingov", stateKey).toString();
+                            }
+                        }}
                     >
                         <span className="margin-1">Sign-in</span>
                         <FontAwesomeIcon icon={faArrowRightToBracket} />
