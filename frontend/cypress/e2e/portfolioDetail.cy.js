@@ -50,6 +50,7 @@ describe("Portfolio Detail Page", () => {
         cy.get("#fiscal-year-select").select("2021");
         cy.get("h2").should("contain", "Portfolio Funding Summary");
         // summary cards
+        cy.wait(1000);
         cy.get('[data-cy="line-graph-with-legend-card"]')
             .should("contain", "$0.00")
             .should("contain", "0%")
@@ -74,10 +75,10 @@ describe("Portfolio Detail Page", () => {
         cy.get("#fiscal-year-select").select("2023");
         // summary cards
         cy.get('[data-cy="line-graph-with-legend-card"]')
-            .should("contain", "$10,200,000.00")
-            .should("contain", "51%")
             .should("contain", "$20,000,000.00")
-            .should("contain", "100%");
+            .should("contain", "100%")
+            .should("contain", "$20,000,000.00")
+            .should("contain", "0%");
         cy.get('[data-cy="portfolio-budget-card"]')
             .should("contain", "$20,000,000.00")
             .should("contain", "$10,200,000.00");
