@@ -51,9 +51,9 @@ def mock_can():
 @pytest.fixture
 def mock_can_without_funding_details():
     funding_budgets = [
-        CANFundingBudget(fiscal_year=2021, budget=Decimal("50000000.00")),  # This is a new_funding budget for FY 2021
-        CANFundingBudget(fiscal_year=2023, budget=Decimal("594500.00")),  # This is a carry_forward budget for FY 2023
-        CANFundingBudget(fiscal_year=2024, budget=Decimal("614000.00")),  # This is a carry_forward budget for FY 2024
+        CANFundingBudget(fiscal_year=2021, budget=Decimal("50000000.00")),
+        CANFundingBudget(fiscal_year=2023, budget=Decimal("594500.00")),
+        CANFundingBudget(fiscal_year=2024, budget=Decimal("614000.00")),
     ]
 
     can = CAN(
