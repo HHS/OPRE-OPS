@@ -417,6 +417,8 @@ describe("CAN funding page", () => {
         // save the changes
         cy.get("[data-cy=save-btn]").click();
 
+        cy.wait(1000); // wait for the history to be generated in the API
+
         // check can history for DELETING a funding received event
         cy.visit(`/cans/${can504.number}`);
         cy.get('[data-cy="can-history-list"]').should("exist");
@@ -445,6 +447,8 @@ describe("CAN funding page", () => {
         cy.get("#funding-received-amount").type("3_500_000");
         cy.get("[data-cy=add-funding-received-btn]").click();
         cy.get("[data-cy=save-btn]").click();
+
+        cy.wait(1000); // wait for the history to be generated in the API
 
         // check can history for UPDATING a funding received event
         cy.visit(`/cans/${can504.number}`);
