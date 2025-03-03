@@ -195,9 +195,13 @@ A list of CANs specific to each user:
         heading: "% of Budget",
         content: `The percent of a portfolio’s fiscal year budget that the budget line is spending`
     },
+     {
+        heading: "Contract Type",
+        content: `whatever this is`
+    },
     {
         heading: "Bravo",
-        content: `whatever this is`
+        content: `the method the government will use to pay the vendor for their services. Contract types may vary according to the degree and timing of the responsibility assumed by the contractor for the costs of performance; and the amount and nature of the profit incentive offered to the contractor for achieving or exceeding specified standards or goals. Source: [FAR]`
     }
 ];
 
