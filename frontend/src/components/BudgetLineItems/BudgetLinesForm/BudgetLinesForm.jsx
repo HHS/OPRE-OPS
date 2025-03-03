@@ -139,7 +139,7 @@ export const BudgetLinesForm = ({
         (isEditMode && isBudgetLineNotDraft && budgetFormRes.hasErrors());
 
     return (
-        <form className="grid-row grid-gap margin-y-3">
+        <form className="grid-row grid-gap margin-y-3" id="budget-line-form">
             <div className="grid-col-4 padding-top-3">
                 <div className="usa-form-group">
                     <AllServicesComponentSelect

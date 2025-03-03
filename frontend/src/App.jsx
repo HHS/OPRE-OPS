@@ -1,6 +1,3 @@
-import PropTypes from "prop-types";
-import * as React from "react";
-import { useLocation } from "react-router-dom";
 import DefaultLayout from "./components/Layouts/DefaultLayout";
 
 /**
@@ -11,17 +8,7 @@ import DefaultLayout from "./components/Layouts/DefaultLayout";
  * @param {React.ReactNode} props.children - The child nodes to be rendered within the layout
  */
 function App({ children, breadCrumbName = "" }) {
-    const { pathname } = useLocation();
-
-    React.useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [pathname]);
-
     return <DefaultLayout breadCrumbName={breadCrumbName}>{children}</DefaultLayout>;
 }
 
-App.propTypes = {
-    children: PropTypes.node.isRequired,
-    breadCrumbName: PropTypes.string
-};
 export default App;
