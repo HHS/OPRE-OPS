@@ -21,7 +21,7 @@ const Table = ({ children, tableHeadings, firstHeadingSlot }) => {
      *
      */
     const addWidthIfStatus = (heading) => {
-        if (heading === "Next Need By" || heading === "Status") {
+        if (heading === "Next Obligate By" || heading === "Status") {
             return { width: "6.25rem", whiteSpace: "nowrap" };
         }
         return { whiteSpace: "nowrap" };
