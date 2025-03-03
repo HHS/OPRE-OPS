@@ -43,41 +43,6 @@ def get_funding_by_budget_line_item_status(
         return sum([bli.amount for bli in can.budget_line_items if bli.status == status]) or 0
 
 
-def get_new_funding_by_funding_details(can: CAN) -> Optional[float]:
-    """
-    Return New Funding for the given CAN based on the FundingDetails object.
-    """
-    # Get the fiscal year on the can's FundingDetails object
-    fiscal_year = can.funding_details.fiscal_year
-
-    if not fiscal_year:
-        return None  # If the fiscal year is missing or empty, return None
-
-    # Filter the funding budgets that match the fiscal year
-    matching_budgets = [budget for budget in can.funding_budgets if budget.fiscal_year == fiscal_year]
-
-    # If no matching budgets exist, return None
-    if not matching_budgets:
-        return None  # If no budget exist for the fiscal year the can was created, return None
-
-    # Sum the budgets for the matching fiscal year, return 0 if there are no budgets
-    total_funding = sum(budget.budget for budget in matching_budgets) or 0
-
-    return total_funding or None  # Return the total, or None if it's zero
-
-
-def get_new_funding_by_fiscal_year(can: CAN, fiscal_year: Optional[int] = None) -> Optional[float]:
-    """
-    Return New Funding for the given CAN for the given fiscal year.
-    """
-    # check to see if the CAN has an active period of 1
-    if can.active_period == 1:
-        return sum([c.budget for c in can.funding_budgets if c.fiscal_year == fiscal_year]) or 0
-    else:
-        # Check to see if the CAN is in it first year
-        return get_new_funding_by_funding_details(can)
-
-
 def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanFundingSummary:
     """
     Return a CanFundingSummary dictionary funding summary for the given CAN.
@@ -87,7 +52,6 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
 
         total_funding = sum([c.budget for c in can.funding_budgets if c.fiscal_year == fiscal_year]) or 0
 
-        # new_funding = get_new_funding_by_fiscal_year(can, fiscal_year)
         new_funding = (
             sum([c.budget for c in can.funding_budgets if c.fiscal_year == fiscal_year and can.active_period == 1]) or 0
         )
@@ -107,7 +71,6 @@ def get_can_funding_summary(can: CAN, fiscal_year: Optional[int] = None) -> CanF
 
         total_funding = sum([c.budget for c in can.funding_budgets]) or 0
 
-        # new_funding = get_new_funding_by_funding_details(can)
         new_funding = sum([c.budget for c in can.funding_budgets if can.active_period == 1]) or 0
 
         planned_funding = get_funding_by_budget_line_item_status(can, BudgetLineItemStatus.PLANNED, None)
