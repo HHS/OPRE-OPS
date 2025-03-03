@@ -328,10 +328,10 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert response.status_code == 200
     assert len(response.json["cans"]) == 2
 
-    assert available_funding == 3340000.00
-    assert carry_forward_funding == 10200000.00
+    assert available_funding == 3374500.23
+    assert carry_forward_funding == 10234500.23
     assert new_funding == 1140000.00
-    assert total_funding == 11340000.00
+    assert total_funding == 11374500.23
     assert carry_forward_funding != available_funding
     assert total_funding == carry_forward_funding + new_funding
 
@@ -570,7 +570,7 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
     expected_carry_forward_data = {
         2027: 500000,
         2026: 500000,
-        2025: 1000000,
+        2025: 1034500.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
         2024: 20140000,
         2023: 63780000,
         2022: 37000000,
