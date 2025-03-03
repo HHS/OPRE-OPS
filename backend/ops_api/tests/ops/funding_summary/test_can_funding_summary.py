@@ -137,7 +137,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                     "expiration_date": 2024,
                     "funding_budgets": [
                         {
-                            "budget": "1140000.0",
+                            "budget": "1140000.0",  # This is a new_funding budget
                             "can": 500,
                             "can_id": 500,
                             "created_by": None,
@@ -231,7 +231,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                     "expiration_date": 2024,
                     "funding_budgets": [
                         {
-                            "budget": "1140000.0",
+                            "budget": "1140000.0",  # This is a new_funding budget
                             "can": 500,
                             "can_id": 500,
                             "created_by": None,
@@ -329,8 +329,8 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert len(response.json["cans"]) == 2
 
     assert available_funding == 3374500.23
-    assert carry_forward_funding == 10234500.23
-    assert new_funding == 1140000.00
+    assert carry_forward_funding == 10034500.23
+    assert new_funding == 1340000.00
     assert total_funding == 11374500.23
     assert carry_forward_funding != available_funding
     assert total_funding == carry_forward_funding + new_funding
@@ -572,9 +572,9 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
         2026: 500000,
         2025: 1034500.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
         2024: 20140000,
-        2023: 63780000,
-        2022: 37000000,
-        2021: 30200000,
+        2023: 51140000,
+        2022: 20000000,
+        2021: 0,
     }
 
     expected_new_funding_data = {
@@ -582,9 +582,9 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
         2026: 0,
         2025: 0,
         2024: 0,
-        2023: 14420000,
-        2022: 0,
-        2021: 0,
+        2023: 27060000,
+        2022: 17000000,
+        2021: 30200000,
     }
 
     for year in expected_carry_forward_data.keys():
@@ -607,7 +607,7 @@ def test_carry_forward_with_transfer_filter(auth_client: FlaskClient) -> None:
 def test_carry_forward_with_portfolio_filter(auth_client: FlaskClient) -> None:
     response = auth_client.get("/api/v1/can-funding-summary?can_ids=0&fiscal_year=2023&portfolio=HMRF")
     assert response.status_code == 200
-    assert response.json["carry_forward_funding"] == 21140000
-    assert response.json["new_funding"] == 13420000
+    assert response.json["carry_forward_funding"] == 11140000
+    assert response.json["new_funding"] == 23420000
     assert response.json["total_funding"] == 34560000
     assert response.json["total_funding"] == response.json["carry_forward_funding"] + response.json["new_funding"]
