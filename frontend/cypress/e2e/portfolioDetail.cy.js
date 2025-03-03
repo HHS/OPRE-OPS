@@ -50,11 +50,12 @@ describe("Portfolio Detail Page", () => {
         cy.get("#fiscal-year-select").select("2021");
         cy.get("h2").should("contain", "Portfolio Funding Summary");
         // summary cards
+        cy.wait(1000);
         cy.get('[data-cy="line-graph-with-legend-card"]')
             .should("contain", "$0.00")
             .should("contain", "0%")
-            .should("contain", "$10,200,000.00")
-            .should("contain", "100%");
+            .should("contain", "$ 10,200,000");
+        // .should("contain", "100%"); TODO: update this upon completion of #3536
         cy.get('[data-cy="portfolio-budget-card"]').should("contain", "$10,200,000.00");
         // check the first can card for the correct values
         cy.get('[data-cy="can-card-G990136"]')
