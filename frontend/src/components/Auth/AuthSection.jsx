@@ -4,10 +4,10 @@ import cryptoRandomString from "crypto-random-string";
 import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useLoginMutation, useLogoutMutation } from "../../api/opsAuthAPI";
+import { useLoginMutation, useLogoutMutation, useRefreshTokenMutation } from "../../api/opsAuthAPI";
 import User from "../UI/Header/User";
 import NotificationCenter from "../UI/NotificationCenter/NotificationCenter";
-import { getAccessToken, getAuthorizationCode, setActiveUser } from "./auth";
+import { getAccessToken, getAuthorizationCode, getRefreshToken, isValidToken, setActiveUser } from "./auth";
 import { login, logout } from "./authSlice";
 
 /**
@@ -15,7 +15,6 @@ import { login, logout } from "./authSlice";
  * @returns {React.ReactElement} The AuthSection component
  */
 const AuthSection = () => {
-    // Use type assertion in the selector to fix TypeScript errors
     /** @type {boolean} */
     const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
     /** @type {Object|null} */
@@ -24,6 +23,36 @@ const AuthSection = () => {
     const navigate = useNavigate();
     const [loginMutation] = useLoginMutation();
     const [logoutMutation] = useLogoutMutation();
+    const [refreshTokenMutation] = useRefreshTokenMutation();
+
+    /**
+     * Handles token refresh
+     * @returns {Promise<boolean>} True if refresh was successful, false otherwise
+     */
+    const handleTokenRefresh = async () => {
+        try {
+            const refreshToken = getRefreshToken();
+            if (!refreshToken) {
+                return false;
+            }
+
+            const response = await refreshTokenMutation({
+                refresh_token: refreshToken
+            }).unwrap();
+            if (response.access_token) {
+                localStorage.setItem("access_token", response.access_token);
+                if (response.refresh_token) {
+                    localStorage.setItem("refresh_token", response.refresh_token);
+                }
+                await setActiveUser(response.access_token, dispatch);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("Error refreshing token:", error);
+            return false;
+        }
+    };
 
     /**
      * Handles the authentication code callback from the provider
@@ -57,15 +86,28 @@ const AuthSection = () => {
 
     useEffect(() => {
         const currentJWT = getAccessToken();
+        const checkAndRefreshToken = async () => {
+            if (!currentJWT) {
+                navigate("/login");
+                return;
+            }
 
-        if (currentJWT) {
-            // TODO: we should validate the JWT here and set it on state if valid else logout
+            const tokenStatus = isValidToken(currentJWT);
+
+            if (!tokenStatus.isValid && tokenStatus.msg === "EXPIRED") {
+                const refreshSuccessful = await handleTokenRefresh();
+                if (!refreshSuccessful) {
+                    dispatch(logout());
+                    navigate("/login");
+                    return;
+                }
+            }
+
             dispatch(login());
-            if (!activeUser) setActiveUser(currentJWT, dispatch);
-            return;
-        } else {
-            navigate("/login");
-        }
+            if (!activeUser) await setActiveUser(currentJWT, dispatch);
+        };
+
+        checkAndRefreshToken();
 
         const localStateString = localStorage.getItem("ops-state-key");
 
