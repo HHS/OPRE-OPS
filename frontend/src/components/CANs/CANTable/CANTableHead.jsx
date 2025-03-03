@@ -1,7 +1,7 @@
 import Tooltip from "../../UI/USWDS/Tooltip";
 
 const CANTableHead = () => {
-    const availbleTooltip =
+    const availableTooltip =
         "$ Available is the remaining amount of the total budget that is available to plan from (Total FY Budget minus budget lines in Planned, Executing or Obligated Status)";
 
     return (
@@ -35,20 +35,20 @@ const CANTableHead = () => {
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
                 >
-                    Transfer
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
                     FY Budget
                 </th>
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
                 >
-                    <Tooltip label={availbleTooltip}>
-                        <span>$ Available</span>
+                    Funding Received
+                </th>
+                <th
+                    scope="col"
+                    style={{ whiteSpace: "nowrap" }}
+                >
+                    <Tooltip label={availableTooltip}>
+                        <span>Available Budget</span>
                     </Tooltip>
                 </th>
             </tr>

@@ -23,7 +23,9 @@ describe("CANTable", () => {
     useGetCanFundingSummaryQuery.mockReturnValue({
         data: {
             fundingSummary: {
-                available_funding: 1000
+                available_funding: 1000,
+                received_funding: 500,
+                total_funding: 1500
             }
         }
     });
@@ -38,9 +40,8 @@ describe("CANTable", () => {
         expect(screen.getByText("Portfolio")).toBeInTheDocument();
         expect(screen.getByText("Active Period")).toBeInTheDocument();
         expect(screen.getByText("Obligate By")).toBeInTheDocument();
-        expect(screen.getByText("Transfer")).toBeInTheDocument();
-        expect(screen.getByText("FY Budget")).toBeInTheDocument();
-        expect(screen.getByText("$ Available")).toBeInTheDocument();
+        expect(screen.getByText("Funding Received")).toBeInTheDocument();
+        expect(screen.getByText("Available Budget")).toBeInTheDocument();
     });
 
     it("renders the correct number of rows", () => {
