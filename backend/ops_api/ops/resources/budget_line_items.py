@@ -412,11 +412,6 @@ class BudgetLineItemsListAPI(BaseListAPI):
             data["status"] = BudgetLineItemStatus[data["status"]] if data.get("status") else None
             data = convert_date_strings_to_dates(data)
 
-            # if not data.get("budget_line_item_type"):
-            #     new_bli = ContractBudgetLineItem(**data)
-            # else:
-            #     raise RuntimeError("Invalid BLI type.")
-
             agreement = current_app.db_session.get(Agreement, agreement_id)
 
             match agreement.agreement_type:
