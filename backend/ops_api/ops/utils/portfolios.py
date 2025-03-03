@@ -24,6 +24,7 @@ class TotalFunding(TypedDict):
     in_execution_funding: FundingLineItem
     available_funding: FundingLineItem
     draft_funding: FundingLineItem
+    new_funding: FundingLineItem
 
 
 def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
@@ -43,10 +44,6 @@ def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decim
 
 def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
     return sum([b.budget for b in _get_all_budgets(portfolio_id, fiscal_year) if b.is_carry_forward]) or Decimal(0)
-
-
-# When is_carry_forward is true:
-# 1. The budgets are all in the first year of the CAN's life (can.funding_details.fiscal_year == can.funding_budgets.fiscal_year)
 
 
 def _get_budget_line_item_total_by_status(portfolio_id: int, fiscal_year: int, status: BudgetLineItemStatus) -> Decimal:
@@ -69,10 +66,10 @@ def get_total_funding(
         fiscal_year=fiscal_year,
     )
 
-    # carry_forward_funding = _get_carry_forward_total(
-    #     portfolio_id=portfolio.id,
-    #     fiscal_year=fiscal_year,
-    # )
+    carry_forward_funding = _get_carry_forward_total(
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+    )
 
     draft_funding = _get_budget_line_item_total_by_status(
         portfolio_id=portfolio.id, fiscal_year=fiscal_year, status=BudgetLineItemStatus.DRAFT
@@ -103,9 +100,7 @@ def get_total_funding(
 
     available_funding = total_funding - total_accounted_for
 
-    carry_forward_funding = total_funding - sum([planned_funding, obligated_funding, in_execution_funding]) or Decimal(
-        0
-    )
+    new_funding = 0
 
     return {
         "total_funding": {
@@ -135,6 +130,10 @@ def get_total_funding(
         "available_funding": {
             "amount": float(available_funding),
             "percent": get_percentage(total_funding, available_funding),
+        },
+        "new_funding": {
+            "amount": float(new_funding),
+            "percent": get_percentage(total_funding, new_funding),
         },
     }
 

@@ -2,7 +2,6 @@ import React from "react";
 import { Outlet, useParams } from "react-router-dom";
 import App from "../../../App";
 import {
-    useGetCanFundingSummaryQuery,
     useGetPortfolioByIdQuery,
     useGetPortfolioCansByIdQuery,
     useGetPortfolioFundingSummaryQuery,
@@ -58,11 +57,6 @@ const PortfolioDetail = () => {
                 (can) => can.id
             ) ?? [];
     /** @type {{data?: FundingSummary | undefined, isLoading: boolean}} */
-    const { data: CANFunding } = useGetCanFundingSummaryQuery({
-        ids: canIds,
-        fiscalYear: fiscalYear,
-        refetchOnMountOrArgChange: true
-    });
 
     if (portfolioCansLoading || portfolioIsLoading || portfolioFundingLoading) {
         return <p>Loading...</p>;
@@ -93,7 +87,7 @@ const PortfolioDetail = () => {
                         fiscalYear,
                         budgetLineIds,
                         projectTypesCount,
-                        newFunding: CANFunding?.new_funding ?? 0, // TODO: update this upon completion of #3536
+                        newFunding: portfolioFunding?.new_funding ?? 0, // TODO: update this upon completion of #3536
                         carryForward: portfolioFunding?.carry_forward_funding.amount ?? 0,
                         totalFunding: portfolioFunding?.total_funding?.amount ?? 0,
                         inDraftFunding: portfolioFunding?.draft_funding?.amount ?? 0,
