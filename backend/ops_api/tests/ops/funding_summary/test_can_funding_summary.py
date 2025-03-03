@@ -17,6 +17,37 @@ from ops_api.ops.utils.cans import (
 from ops_api.tests.utils import remove_keys
 
 
+@pytest.fixture
+def mock_can():
+    funding_details = MagicMock(
+        fiscal_year=2021,
+        fund_code="ABXXXX20215MBD",
+        funding_source="OPRE",
+        method_of_transfer="Reimbursable",
+        active_period=5,
+        obligate_by=2026,
+    )
+
+    funding_budgets = [
+        MagicMock(fiscal_year=2021, budget=Decimal("50000000.0")),  # This is a new_funding budget for FY 2021
+        MagicMock(fiscal_year=2023, budget=Decimal("594500.00")),  # This is a carry_forward budget for FY 2023
+        MagicMock(fiscal_year=2024, budget=Decimal("614000.00")),  # This is a carry_forward budget for FY 2024
+    ]
+
+    can = MagicMock(
+        id=500,
+        number="M14HRF1",
+        description="Healthy Marriages For Happy Kids - OPRE",
+        nick_name="HMFHK-OPRE",
+        funding_details=funding_details,
+        funding_budgets=funding_budgets,
+        active_period=5,
+        obligate_by=2026,
+    )
+
+    return can
+
+
 class DummyObject:
     def __init__(self):
         self.nested = DummyNestedObject()
@@ -611,3 +642,28 @@ def test_carry_forward_with_portfolio_filter(auth_client: FlaskClient) -> None:
     assert response.json["new_funding"] == 23420000
     assert response.json["total_funding"] == 34560000
     assert response.json["total_funding"] == response.json["carry_forward_funding"] + response.json["new_funding"]
+
+
+# Helper function to validate the funding results for a fiscal year
+def assert_funding_summary(result, expected_cf, expected_nf, expected_tf):
+    assert "carry_forward_funding" in result
+    assert "new_funding" in result
+    assert "total_funding" in result
+
+    cf = result["carry_forward_funding"]
+    nf = result["new_funding"]
+    tf = result["total_funding"]
+
+    assert cf == expected_cf
+    assert nf == expected_nf
+    assert tf == expected_tf
+    assert tf == cf + nf
+
+
+@pytest.mark.parametrize(
+    "fiscal_year, expected_cf, expected_nf, expected_tf",
+    [(2021, 0, 50000000.0, 50000000.0), (2023, 594500.0, 0, 594500.0), (2024, 614000.0, 0, 614000.0)],
+)
+def test_get_can_funding_summary(mock_can, fiscal_year, expected_cf, expected_nf, expected_tf):
+    result = get_can_funding_summary(mock_can, fiscal_year)
+    assert_funding_summary(result, expected_cf, expected_nf, expected_tf)
