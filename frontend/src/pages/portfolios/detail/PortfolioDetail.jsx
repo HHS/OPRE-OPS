@@ -50,8 +50,8 @@ const PortfolioDetail = () => {
     const canIds =
         portfolioCans
             ?.filter(
-                /** @param {{id: number, appropriation_date: number}} can */
-                (can) => can.appropriation_date === fiscalYear
+                /** @param {import("../../../components/CANs/CANTypes").CAN} can */
+                (can) => can.funding_budgets?.some((budget) => budget.fiscal_year === fiscalYear)
             )
             .map(
                 /** @param {{id: number}} can */
