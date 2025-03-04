@@ -40,7 +40,7 @@ const PortfolioFunding = () => {
             label: "Previous FYs Carry-Forward",
             value: carryForward,
             color: "var(--portfolio-carry-forward)",
-            percent: `${calculatePercent(carryForward, totalFunding)}%`,
+            percent: calculatePercent(carryForward, totalFunding),
             tagActiveStyle: "portfolioCarryForward"
         },
         {
@@ -48,7 +48,7 @@ const PortfolioFunding = () => {
             label: `FY ${fiscalYear} New Funding`,
             value: newFunding,
             color: "var(--portfolio-new-funding)",
-            percent: `${calculatePercent(newFunding, totalFunding)}%`,
+            percent: calculatePercent(newFunding, totalFunding),
             tagActiveStyle: "portfolioNewFunding"
         }
     ];

@@ -9,7 +9,7 @@ describe("LegendItem", () => {
         label: "Test Label",
         value: 1_000,
         color: "#000000",
-        percent: "10%",
+        percent: 10,
         tagStyleActive: "darkTextOnLightBlue"
     };
 

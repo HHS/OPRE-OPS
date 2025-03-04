@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import styles from "./styles.module.scss";
-import { calculateRatio } from "./util";
 
 /**
  * @typedef {Object} Data
@@ -24,18 +22,8 @@ import { calculateRatio } from "./util";
  * @returns {JSX.Element}
  */
 const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
-    // const [ratio, setRatio] = useState(1);
     const { color: leftColor, id: leftId, percent: leftPercent } = data[0];
     const { color: rightColor, id: rightId, percent: rightPercent } = data[1];
-
-    // useEffect(() => {
-    //     const calculatedRatio = calculateRatio({ received: leftValue, expected: rightValue });
-
-    //     // css/flex will throw a warning here if depending on the data calculatedRatio is NaN
-    //     if (calculatedRatio !== undefined && !Number.isNaN(calculatedRatio)) {
-    //         setRatio(calculatedRatio);
-    //     }
-    // }, [leftValue, rightValue]);
 
     return (
         <div className={styles.barBox}>
