@@ -13,7 +13,7 @@ describe("How-to Guides Page", () => {
     it("expands accordion on click", async () => {
         render(<HowToGuides />);
         // Assume the accordion heading renders as a button
-        const accordionButton = screen.getByRole("button", { name: /What is OPS\?/i });
+        const accordionButton = screen.getByRole("button", { name: /How to get started in OPS/i });
         await userEvent.click(accordionButton);
         // Check if accordion content is displayed after click
         expect(screen.getByText(/OPS stands for OPRE’s Portfolio Management System/i)).toBeInTheDocument();

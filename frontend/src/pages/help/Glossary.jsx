@@ -180,9 +180,8 @@ A list of CANs specific to each user:
         content: `
  A project is a body of work composed of agreements that share a common topic or theme. Types of projects in OPS include:
 
--  Research Projects- projects that support an OPRE research goal
-- Admin/Support Projects - projects that account for internal costs like rent or website development
- `
+- Research Projects- projects that support an OPRE research goal
+- Admin/Support Projects - projects that account for internal costs like rent or website development`
     },
     { heading: "Project Total", content: `The total of all agreements within a project` },
     { heading: "Previous FYs Carry-Forward", content: `Left-over or carry-forward money from a multi-year CAN` },
@@ -196,8 +195,173 @@ A list of CANs specific to each user:
         content: `The percent of a portfolio’s fiscal year budget that the budget line is spending`
     },
     {
-        heading: "Bravo",
-        content: `whatever this is`
+        heading: "Contract Type",
+        content: `The method the government will use to pay the vendor for their services. Contract types may vary according to the degree and timing of the responsibility assumed by the contractor for the costs of performance; and the amount and nature of the profit incentive offered to the contractor for achieving or exceeding specified standards or goals. Source: [FAR]`
+    },
+    {
+        heading: "Firm Fixed Price (FFP)",
+        content: `A contract type utilized when you can clearly outline the level of effort needed to complete the contract at the time of award. FFP is the preferred methodology by the government because maximum risk and full responsibility for all costs and resulting profit or loss falls on the contractor as opposed to the government.`
+    },
+    {
+        heading: "Time & Materials (T&M)",
+        content: `A contract type utilized when you have a cost-reimbursement type contract where you pay the vendor for all of their time and materials, every single labor hour expanded, every single material utilized. This is one of the least preferred government contract types because there is more risk to the government through undefined cost incurred to the government, which contract ceilings help to alleviate - only used for commercial contracts without auditing`
+    },
+    {
+        heading: "Cost Plus Fixed Fee (CPFF)",
+        content: `A contract type utilized in a cost-reimbursement type environment where the fee negotiated is at time of award for certain services to be completed successfully. This is utilized when we are unable to estimate the level of effort at time of award.`
+    },
+    {
+        heading: "Cost Plus Award Fee (CPAW)",
+        content: `A contract type utilized in a cost-reimbursement type environment where the fee negotiated is at time of award for certain services to be completed successfully in a performance based environment.`
+    },
+    {
+        heading: "Service Requirement Type",
+        content: `The format for services components on an agreement such as Severable or Non-Severable which determine how the contract will be completed`
+    },
+    {
+        heading: "Severable",
+        content: `A service requirement type where the contract can be cut-off or severed and value is still provided. In OPS, the services component format for this type is base period 1, option period 2, etc.`
+    },
+    {
+        heading: "Non-Severable",
+        content: `A service requirement type where there is no value if the contract gets severed so it must be completed in its entirety. The entire contract must be completed in order for value to be provided. In OPS, the services component format for this type is SC1, SC2, OSC3, etc.`
+    },
+    {
+        heading: "Product Service Code",
+        content: `A code used to describe products, services, and research and development (R&D) purchased by the federal government. These codes indicate “what” was bought for each contract action reported in the Federal Procurement Data System (FPDS)`
+    },
+    {
+        heading: "Other Scientific and Technical Consulting Services",
+        content: `A product service code used for research contracts`
+    },
+    {
+        heading: "Convention and Trade Shows",
+        content: `A product service code used for conferences, trade shows and meetings`
+    },
+    {
+        heading: "NAICS Code",
+        content: `A classification of services or supplies being bought. For example, some classifications have designations for small business criteria. NAICS stands for North American Industry Classification System.`
+    },
+    {
+        heading: "Program Support Code",
+        content: `A classification of services that will pre-populate the NAICS code in OPS`
+    },
+    {
+        heading: "Procurement Shop",
+        content: `A department or team within the government responsible for acquiring goods and services. In OPS, the Procurement Shops used by OPRE are:
+        - Office of Acquisition Management Services (OAMS) formerly known as Program Support Center (PSC)
+        - Government Contracting Services (GCS)
+        - National Institute of Health (NIH)
+        - Interior Business Center (IBC)
+        `
+    },
+    {
+        heading: "Program Support Center (PSC)",
+        content: `A procurement shop currently known as Office of Acquisition Management Services (OAMS) which is used for legacy OPRE procurements. Only modifications of legacy PSC contracts should be done at this shop.`
+    },
+    {
+        heading: "Office of Acquisition Management Services (OAMS)",
+        content: `A procurement shop formerly known as Program Support Center (PSC). Only modifications of legacy PSC contracts should be done at this shop.`
+    },
+    {
+        heading: "Government Contracting Services (GCS)",
+        content: `A procurement office that resides in ACF and is the main contracting office supporting OPRE. All new actions should utilize this shop unless told otherwise.`
+    },
+    {
+        heading: "National Institute of Health (NIH)",
+        content: `A procurement shop used for medical research`
+    },
+    {
+        heading: "Interior Business Center (IBC)",
+        content: `A procurement shop used for federal shared services that operates under a fee-for-service, full cost recovery business model, offering Acquisition, Financial Management and Human Resources systems and services to federal organizations.`
+    },
+    {
+        heading: "Reason for Agreement",
+        content: `The reason a new agreement is created. The options for Reason for Agreement in OPS include:
+        - New Requirement
+        - Recompete
+        - Logical Follow On
+        `
+    },
+    {
+        heading: "New Requirement",
+        content: `A reason for agreement used when there is not an already established project and a new award is the desired outcome of the project. This is used when a project has never been done before.`
+    },
+    {
+        heading: "Recompete",
+        content: `A reason for agreement used when a project’s period of performance is ending but the services are still needed. The Government would award the work for continued sources in a competitive environment.`
+    },
+    {
+        heading: "Logical Follow On",
+        content: `A reason for agreement used when a project’s period of performance is ending but the services are still needed. The Government would award the work for continued sources in a non-competitive environment to the incumbent vendor.`
+    },
+    {
+        heading: "Fee Rate",
+        content: `The fee rate applied to budget lines depending on which Procurement Shop the agreement is using.`
+    },
+    {
+        heading: "Appropriation FY",
+        content: `The fiscal year a CAN’s funding was appropriated from congress.`
+    },
+    {
+        heading: "Active Period",
+        content: `The amount of time a CAN is active and its funding can be obligated. For example, the funding in a 1 year CAN can be obligated for 1 FY and then it expires. Funding in a 5 Year CAN can be obligated for 5 FYs, and then it expires.`
+    },
+    {
+        heading: "Funding Method",
+        content: `The way a CAN is funded, direct or reimbursable`
+    },
+    {
+        heading: "Funding Type",
+        content: `Whether a CAN’s funding has been required by law (mandatory) or voted on (discretionary)`
+    },
+    {
+        heading: "Fund Code",
+        content: `A 14 digit code which is comprised of multiple codes that provide details for a CAN including funding and duration information.`
+    },
+    {
+        heading: "Allowance",
+        content: `A special functional classification designed to include an amount to cover possible requirements which remains undistributed until the contingency on which it is based occurs.`
+    },
+    {
+        heading: "Allotment",
+        content: `A unique code used to identify a specific allocation of funds within a budget, essentially signifying a designated portion of money earmarked for a particular program or project within the agency.`
+    },
+    {
+        heading: "Funding Source",
+        content: `Determines how a CAN is funded from congress:
+        - Direct = Congress direct to OPRE
+        - ACF = Congress to another office in ACF
+        - ACF MOU = Congress to another office in ACF with specific requirements on who the money has to go to/towards
+        - HHS = Congress to another agency internal to HHS
+        - Other = Congress to another agency external to HSS
+        `
+    },
+    {
+        heading: "Partner",
+        content: `Who OPRE is partnering with to utilize the funding in a CAN.`
+    },
+    {
+        heading: "Method of Transfer",
+        content: `How funding for a CAN is received, options in OPS include:
+        - Directly appropriated (Direct)
+        - Cost Sharing (from another office within ACF)
+        - Inter-Agency-Agreement (IAA) (from another agency in relation to contracts)
+        - Inter-Departmental-Delegation of Authority (IDDA) (from another agency in relation to grants)
+        - Other
+        `
+    },
+    {
+        heading: "Funding Received YTD",
+        content: `Funding that has been received by OPRE towards a CANs FY Budget. This means the money is in OPRE’s bank account, and checks can be written against the available funds.`
+    },
+    {
+        heading: "Research Project",
+        content: `A project at OPRE that is research-focused such as an explorative study or research report.`
+    },
+    {
+        heading: "Admin & Support Project",
+        content: `A project at OPRE that is administrative related such as rent or website development. These projects are typically shared costs across portfolios.`
     }
 ];
 
