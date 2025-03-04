@@ -210,11 +210,11 @@ A list of CANs specific to each user:
         heading: "Cost Plus Fixed Fee (CPFF)",
         content: `A contract type utilized in a cost-reimbursement type environment where the fee negotiated is at time of award for certain services to be completed successfully. This is utilized when we are unable to estimate the level of effort at time of award.`
     },
-     {
+    {
         heading: "Cost Plus Award Fee (CPAW)",
         content: `A contract type utilized in a cost-reimbursement type environment where the fee negotiated is at time of award for certain services to be completed successfully in a performance based environment.`
     },
-     {
+    {
         heading: "Service Requirement Type",
         content: `The format for services components on an agreement such as Severable or Non-Severable which determine how the contract will be completed`
     },
@@ -249,29 +249,29 @@ A list of CANs specific to each user:
     {
         heading: "Procurement Shop",
         content: `A department or team within the government responsible for acquiring goods and services. In OPS, the Procurement Shops used by OPRE are:
-        - Office of Acquisition Management Services (OAMS) formerly known as Program Support Center (PSC) 
+        - Office of Acquisition Management Services (OAMS) formerly known as Program Support Center (PSC)
         - Government Contracting Services (GCS)
         - National Institute of Health (NIH)
-        - Interior Business Center (IBC) 
+        - Interior Business Center (IBC)
         `
     },
     {
         heading: "Program Support Center (PSC)",
         content: `A procurement shop currently known as Office of Acquisition Management Services (OAMS) which is used for legacy OPRE procurements. Only modifications of legacy PSC contracts should be done at this shop.`
     },
-     {
+    {
         heading: "Office of Acquisition Management Services (OAMS)",
         content: `A procurement shop formerly known as Program Support Center (PSC). Only modifications of legacy PSC contracts should be done at this shop.`
     },
-     {
+    {
         heading: "Government Contracting Services (GCS)",
         content: `A procurement office that resides in ACF and is the main contracting office supporting OPRE. All new actions should utilize this shop unless told otherwise.`
     },
-     {
+    {
         heading: "National Institute of Health (NIH)",
         content: `A procurement shop used for medical research`
     },
-     {
+    {
         heading: "Interior Business Center (IBC)",
         content: `A procurement shop used for federal shared services that operates under a fee-for-service, full cost recovery business model, offering Acquisition, Financial Management and Human Resources systems and services to federal organizations.`
     },
@@ -283,7 +283,7 @@ A list of CANs specific to each user:
         - Logical Follow On
         `
     },
-     {
+    {
         heading: "New Requirement",
         content: `A reason for agreement used when there is not an already established project and a new award is the desired outcome of the project. This is used when a project has never been done before.`
     },
@@ -291,7 +291,7 @@ A list of CANs specific to each user:
         heading: "Recompete",
         content: `A reason for agreement used when a project’s period of performance is ending but the services are still needed. The Government would award the work for continued sources in a competitive environment.`
     },
-     {
+    {
         heading: "Logical Follow On",
         content: `A reason for agreement used when a project’s period of performance is ending but the services are still needed. The Government would award the work for continued sources in a non-competitive environment to the incumbent vendor.`
     },
@@ -332,7 +332,7 @@ A list of CANs specific to each user:
         content: `Determines how a CAN is funded from congress:
         - Direct = Congress direct to OPRE
         - ACF = Congress to another office in ACF
-        - ACF MOU = ​​Congress to another office in ACF with specific requirements on who the money has to go to/towards
+        - ACF MOU = Congress to another office in ACF with specific requirements on who the money has to go to/towards
         - HHS = Congress to another agency internal to HHS
         - Other = Congress to another agency external to HSS
         `
