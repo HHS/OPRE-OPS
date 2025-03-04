@@ -29,15 +29,18 @@ const CanCard = ({ canId, fiscalYear }) => {
 
     const appropriationYear = obligateBy.getFullYear() - can?.active_period;
 
+    const receivedPercent = calculatePercent(canFundingData?.received_funding, canFundingData?.total_funding);
     const receivedExpectedData = [
         {
             id: 1,
             value: canFundingData?.received_funding,
+            percent: receivedPercent,
             color: "var(--data-viz-budget-graph-1)"
         },
         {
             id: 2,
             value: canFundingData?.total_funding,
+            percent: 100 - receivedPercent,
             color: "var(--data-viz-budget-graph-2)"
         }
     ];
