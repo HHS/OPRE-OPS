@@ -1,6 +1,6 @@
 import CurrencyFormat from "react-currency-format";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
-import { formatDateNeeded } from "../../../helpers/utils";
+import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import LineGraph from "../../UI/DataViz/LineGraph";
 import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
@@ -45,7 +45,7 @@ const CanCard = ({ canId, fiscalYear }) => {
     const spendingAmount =
         canFundingData?.planned_funding + canFundingData?.in_execution_funding + canFundingData?.obligated_funding;
 
-    const spendingPercent = (spendingAmount / canFundingData?.total_funding) * 100;
+    const spendingPercent = calculatePercent(spendingAmount, canFundingData?.total_funding);
     const spendingAvailableData = [
         {
             id: 1,
