@@ -2,7 +2,6 @@ import React from "react";
 import LineGraph from "../../DataViz/LineGraph";
 import CurrencyCard from "../CurrencyCard";
 import LegendItem from "./LegendItem";
-import DebugCode from "../../../DebugCode";
 
 /**
  * @typedef {Object} LineGraphWithLegendCardProps
@@ -38,7 +37,7 @@ const LineGraphWithLegendCard = ({ data = [], bigNumber, heading }) => {
             >
                 <div
                     id={`line-graph-card-${reactId}`}
-                    className={`${bigNumber} > 0 ? margin-top-2 : margin-top-6`}
+                    className={`${bigNumber > 0 ? "margin-top-2" : "margin-top-6"}`}
                 >
                     {bigNumber > 0 && (
                         <LineGraph
@@ -60,7 +59,6 @@ const LineGraphWithLegendCard = ({ data = [], bigNumber, heading }) => {
                     />
                 ))}
             </CurrencyCard>
-            {/* <DebugCode data={data} /> */}
         </>
     );
 };

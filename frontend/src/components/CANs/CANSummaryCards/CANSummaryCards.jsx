@@ -1,5 +1,4 @@
 import { calculatePercent } from "../../../helpers/utils";
-import DebugCode from "../../DebugCode";
 import BudgetCard from "../../UI/Cards/BudgetCard";
 import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
 
@@ -62,7 +61,6 @@ const CANSummaryCards = ({
                     totalFunding={totalBudget}
                 />
             </div>
-            <DebugCode data={data} />
         </>
     );
 };
