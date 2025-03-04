@@ -502,7 +502,7 @@ describe("CAN funding page", () => {
         cy.get("[data-cy='confirm-action']").click();
         cy.get("[data-cy=budget-received-card]")
             .should("exist")
-            .and("contain", "Received $3,500,000.00 of $8,000,000.88");
+            .and("contain", "Received $2,000,000.00 of $8,000,000.88");
         cy.get("[data-cy=can-budget-fy-card]")
             .should("exist")
             .and("contain", "CAN Budget by FY")
