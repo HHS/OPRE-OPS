@@ -180,9 +180,8 @@ A list of CANs specific to each user:
         content: `
  A project is a body of work composed of agreements that share a common topic or theme. Types of projects in OPS include:
 
--  Research Projects- projects that support an OPRE research goal
-- Admin/Support Projects - projects that account for internal costs like rent or website development
- `
+- Research Projects- projects that support an OPRE research goal
+- Admin/Support Projects - projects that account for internal costs like rent or website development`
     },
     { heading: "Project Total", content: `The total of all agreements within a project` },
     { heading: "Previous FYs Carry-Forward", content: `Left-over or carry-forward money from a multi-year CAN` },
@@ -195,13 +194,25 @@ A list of CANs specific to each user:
         heading: "% of Budget",
         content: `The percent of a portfolio’s fiscal year budget that the budget line is spending`
     },
-     {
+    {
         heading: "Contract Type",
-        content: `whatever this is`
+        content: `The method the government will use to pay the vendor for their services. Contract types may vary according to the degree and timing of the responsibility assumed by the contractor for the costs of performance; and the amount and nature of the profit incentive offered to the contractor for achieving or exceeding specified standards or goals. Source: [FAR]`
+    },
+    {
+        heading: "Firm Fixed Price (FFP)",
+        content: `A contract type utilized when you can clearly outline the level of effort needed to complete the contract at the time of award. FFP is the preferred methodology by the government because maximum risk and full responsibility for all costs and resulting profit or loss falls on the contractor as opposed to the government.`
+    },
+    {
+        heading: "Time & Materials (T&M)",
+        content: `A contract type utilized when you have a cost-reimbursement type contract where you pay the vendor for all of their time and materials, every single labor hour expanded, every single material utilized. This is one of the least preferred government contract types because there is more risk to the government through undefined cost incurred to the government, which contract ceilings help to alleviate - only used for commercial contracts without auditing`
+    },
+    {
+        heading: "Cost Plus Fixed Fee (CPFF)",
+        content: `A contract type utilized in a cost-reimbursement type environment where the fee negotiated is at time of award for certain services to be completed successfully. This is utilized when we are unable to estimate the level of effort at time of award.`
     },
     {
         heading: "Bravo",
-        content: `the method the government will use to pay the vendor for their services. Contract types may vary according to the degree and timing of the responsibility assumed by the contractor for the costs of performance; and the amount and nature of the profit incentive offered to the contractor for achieving or exceeding specified standards or goals. Source: [FAR]`
+        content: `whatever this is`
     }
 ];
 
