@@ -24,6 +24,7 @@ class TotalFunding(TypedDict):
     in_execution_funding: FundingLineItem
     available_funding: FundingLineItem
     draft_funding: FundingLineItem
+    new_funding: FundingLineItem
 
 
 def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
@@ -99,6 +100,8 @@ def get_total_funding(
 
     available_funding = total_funding - total_accounted_for
 
+    new_funding = 0
+
     return {
         "total_funding": {
             "amount": float(total_funding),
@@ -127,6 +130,10 @@ def get_total_funding(
         "available_funding": {
             "amount": float(available_funding),
             "percent": get_percentage(total_funding, available_funding),
+        },
+        "new_funding": {
+            "amount": float(new_funding),
+            "percent": get_percentage(total_funding, new_funding),
         },
     }
 
