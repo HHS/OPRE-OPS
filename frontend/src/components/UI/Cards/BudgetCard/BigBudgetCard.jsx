@@ -69,12 +69,14 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                                 Over Budget
                             </Tag>
                         ) : (
-                            <Tag
-                                tagStyle={"budgetAvailable"}
-                                className="margin-left-1"
-                            >
-                                Available
-                            </Tag>
+                            !(totalSpending === 0 && totalFunding === 0) && (
+                                <Tag
+                                    tagStyle={"budgetAvailable"}
+                                    className="margin-left-1"
+                                >
+                                    Available
+                                </Tag>
+                            )
                         )}
                     </div>
 
@@ -103,11 +105,13 @@ const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
                     id="currency-summary-card"
                     className="margin-top-2"
                 >
-                    <LineGraph
-                        data={graphData}
-                        isStriped={true}
-                        overBudget={overBudget}
-                    />
+                    {!(totalSpending === 0 && totalFunding === 0) && (
+                        <LineGraph
+                            data={graphData}
+                            isStriped={true}
+                            overBudget={overBudget}
+                        />
+                    )}
                 </div>
             </RoundedBox>
             <p className="font-12px margin-0 text-base-dark">
