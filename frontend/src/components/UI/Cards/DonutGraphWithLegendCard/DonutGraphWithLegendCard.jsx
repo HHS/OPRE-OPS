@@ -11,7 +11,7 @@ import styles from "./styles.module.css";
  * @property {string} label - The label.
  * @property {number} value - The value.
  * @property {string} color - The color.
- * @property {string} percent - The percent.
+ * @property {number} percent - The percent.
  * @property {string} [tagStyleActive] - The tag style active.
  */
 

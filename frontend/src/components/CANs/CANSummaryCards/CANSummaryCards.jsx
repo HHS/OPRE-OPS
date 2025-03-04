@@ -34,7 +34,7 @@ const CANSummaryCards = ({
             label: "Previous FYs Carry-Forward",
             value: carryForward,
             color: "var(--feedback-info)",
-            percent: `${calculatePercent(carryForward, totalBudget)}%`,
+            percent: calculatePercent(carryForward, totalBudget),
             tagActiveStyle: "darkTextOnLightBlue"
         },
         {
@@ -42,24 +42,26 @@ const CANSummaryCards = ({
             label: `FY ${fiscalYear} New Funding`,
             value: newFunding,
             color: "var(--can-total-budget-2)",
-            percent: `${calculatePercent(newFunding, totalBudget)}%`,
+            percent: calculatePercent(newFunding, totalBudget),
             tagActiveStyle: "lightTextOnDarkBlue"
         }
     ];
     return (
-        <div className="display-flex flex-justify">
-            <LineGraphWithLegendCard
-                heading={`FY ${fiscalYear} CANs Total Budget`}
-                data={data}
-                bigNumber={totalBudget}
-            />
-            <BudgetCard
-                cardId={fiscalYear}
-                title={`FY ${fiscalYear} CANs Available Budget`}
-                totalSpending={totalSpending}
-                totalFunding={totalBudget}
-            />
-        </div>
+        <>
+            <div className="display-flex flex-justify">
+                <LineGraphWithLegendCard
+                    heading={`FY ${fiscalYear} CANs Total Budget`}
+                    data={data}
+                    bigNumber={totalBudget}
+                />
+                <BudgetCard
+                    cardId={fiscalYear}
+                    title={`FY ${fiscalYear} CANs Available Budget`}
+                    totalSpending={totalSpending}
+                    totalFunding={totalBudget}
+                />
+            </div>
+        </>
     );
 };
 

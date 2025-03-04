@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
 import styles from "./styles.module.scss";
-import { calculateRatio } from "./util";
 
 /**
  * @typedef {Object} Data
  * @property {number} id
  * @property {number} value
  * @property {string} color
+ * @property {number} percent
  */
 
 /**
@@ -23,25 +22,15 @@ import { calculateRatio } from "./util";
  * @returns {JSX.Element}
  */
 const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overBudget = false }) => {
-    const [ratio, setRatio] = useState(1);
-    const { color: leftColor, id: leftId, value: leftValue } = data[0];
-    const { color: rightColor, id: rightId, value: rightValue } = data[1];
-
-    useEffect(() => {
-        const calculatedRatio = calculateRatio({ received: leftValue, expected: rightValue });
-
-        // css/flex will throw a warning here if depending on the data calculatedRatio is NaN
-        if (calculatedRatio !== undefined && !Number.isNaN(calculatedRatio)) {
-            setRatio(calculatedRatio);
-        }
-    }, [leftValue, rightValue]);
+    const { color: leftColor, id: leftId, percent: leftPercent } = data[0];
+    const { color: rightColor, id: rightId, percent: rightPercent } = data[1];
 
     return (
         <div className={styles.barBox}>
             <div
-                className={`${styles.leftBar} ${styles.dottedBar}`}
+                className={`${styles.leftBar} ${styles.dottedBar} ${leftPercent >= 100 ? styles.leftBarFull : ""}`}
                 style={{
-                    flex: `0  1 ${ratio * 100}%`,
+                    flex: `0  1 ${leftPercent}%`,
                     backgroundColor: leftColor,
                     backgroundImage:
                         isStriped && !overBudget
@@ -59,7 +48,7 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
             />
 
             <div
-                className={`${styles.rightBar} ${ratio === 0 ? styles.rightBarFull : ""}`}
+                className={`${styles.rightBar} ${rightPercent >= 100 ? styles.rightBarFull : ""}`}
                 style={{
                     backgroundColor: rightColor,
                     backgroundImage:

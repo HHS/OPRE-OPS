@@ -1,6 +1,7 @@
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CurrencyFormat from "react-currency-format";
+import { calculatePercent } from "../../../../helpers/utils";
 import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSmallCents";
 import LineGraph from "../../DataViz/LineGraph";
 import RoundedBox from "../../RoundedBox";
@@ -21,15 +22,19 @@ import Tag from "../../Tag";
 const BigBudgetCard = ({ title, totalSpending, totalFunding }) => {
     const overBudget = totalSpending > totalFunding;
     const remainingBudget = totalFunding - totalSpending;
+    const spendingPercent = calculatePercent(totalSpending, totalFunding);
+
     const graphData = [
         {
             id: 1,
             value: totalSpending,
+            percent: spendingPercent,
             color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-2)"
         },
         {
             id: 2,
-            value: remainingBudget,
+            value: 50,
+            percent: 100 - spendingPercent,
             color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-1)"
         }
     ];
