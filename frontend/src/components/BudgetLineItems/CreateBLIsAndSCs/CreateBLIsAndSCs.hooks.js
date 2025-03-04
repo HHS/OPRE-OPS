@@ -337,13 +337,25 @@ const useCreateBLIsAndSCs = (
 
                     switch (field) {
                         case "amount":
-                            oldValue = renderField("BudgetLineItem", "amount", financialSnapshot.originalAmount);
-                            newValue = renderField("BudgetLineItem", "amount", tempChangeRequest.amount);
+                            oldValue = renderField(
+                                "ContractBudgetLineItem",
+                                "amount",
+                                financialSnapshot.originalAmount
+                            );
+                            newValue = renderField("ContractBudgetLineItem", "amount", tempChangeRequest.amount);
                             budgetChangeMessages.add(`${bliId} Amount: ${oldValue} to ${newValue}`);
                             break;
                         case "date_needed":
-                            oldValue = renderField("BudgetLine", "date_needed", financialSnapshot.originalDateNeeded);
-                            newValue = renderField("BudgetLine", "date_needed", tempChangeRequest.date_needed);
+                            oldValue = renderField(
+                                "ContractBudgetLineItem",
+                                "date_needed",
+                                financialSnapshot.originalDateNeeded
+                            );
+                            newValue = renderField(
+                                "ContractBudgetLineItem",
+                                "date_needed",
+                                tempChangeRequest.date_needed
+                            );
                             budgetChangeMessages.add(`${bliId} Obligate By Date: ${oldValue} to ${newValue}`);
                             break;
                         case "can_id":

@@ -129,11 +129,11 @@ export const codesToDisplayText = {
     },
     classNameLabels: {
         ContractAgreement: "Contract Agreement",
-        BudgetLineItem: "Budget Line"
+        ContractBudgetLineItem: "Budget Line"
     },
     baseClassNameLabels: {
         ContractAgreement: "Agreement",
-        BudgetLineItem: "Budget Line"
+        ContractBudgetLineItem: "Budget Line"
     },
     agreementPropertyLabels: {
         agreement_reason: "Reason for Creating the Agreement",

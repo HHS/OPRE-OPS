@@ -68,6 +68,8 @@ ALLOWED_TABLES = [
     "can_appropriation_details",
     "can_funding_received",
     "can_funding_budget",
+    "contract_budget_line_item",
+    "direct_obligation_budget_line_item",
 ]
 
 data = os.getenv("DATA")

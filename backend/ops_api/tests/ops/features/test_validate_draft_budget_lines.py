@@ -3,7 +3,15 @@ import datetime
 import pytest
 from pytest_bdd import given, scenario, then, when
 
-from models import AgreementReason, AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
+from models import (
+    AgreementReason,
+    AgreementType,
+    BudgetLineItem,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ContractBudgetLineItem,
+    ContractType,
+)
 
 
 @pytest.fixture(scope="function")
@@ -379,7 +387,7 @@ def valid_agreement(loaded_db, context, test_user, test_project):
 
 @when("I have a BLI in DRAFT status")
 def bli(loaded_db, context, test_user, test_can):
-    initial_bli_for_put = BudgetLineItem(
+    initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -390,7 +398,7 @@ def bli(loaded_db, context, test_user, test_can):
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
     )
-    initial_bli_for_patch = BudgetLineItem(
+    initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -411,7 +419,7 @@ def bli(loaded_db, context, test_user, test_can):
 
 @when("I have a BLI in DRAFT status without a Need By Date")
 def bli_without_need_by_date(loaded_db, context, test_user, test_can):
-    initial_bli_for_put = BudgetLineItem(
+    initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -421,7 +429,7 @@ def bli_without_need_by_date(loaded_db, context, test_user, test_can):
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
     )
-    initial_bli_for_patch = BudgetLineItem(
+    initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -441,7 +449,7 @@ def bli_without_need_by_date(loaded_db, context, test_user, test_can):
 
 @when("I have a BLI in DRAFT status with a Need By Date in the past or today")
 def bli_past_need_by_date(loaded_db, context, test_user, test_can):
-    initial_bli_for_put = BudgetLineItem(
+    initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -452,7 +460,7 @@ def bli_past_need_by_date(loaded_db, context, test_user, test_can):
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
     )
-    initial_bli_for_patch = BudgetLineItem(
+    initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -473,7 +481,7 @@ def bli_past_need_by_date(loaded_db, context, test_user, test_can):
 
 @when("I have a BLI in DRAFT status without a CAN")
 def bli_without_can(loaded_db, context, test_user):
-    initial_bli_for_put = BudgetLineItem(
+    initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -483,7 +491,7 @@ def bli_without_can(loaded_db, context, test_user):
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
     )
-    initial_bli_for_patch = BudgetLineItem(
+    initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -503,7 +511,7 @@ def bli_without_can(loaded_db, context, test_user):
 
 @when("I have a BLI in DRAFT status without an Amount")
 def bli_without_amount(loaded_db, context, test_user, test_can):
-    initial_bli_for_put = BudgetLineItem(
+    initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -513,7 +521,7 @@ def bli_without_amount(loaded_db, context, test_user, test_can):
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
     )
-    initial_bli_for_patch = BudgetLineItem(
+    initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -533,7 +541,7 @@ def bli_without_amount(loaded_db, context, test_user, test_can):
 
 @when("I have a BLI in DRAFT status with an Amount less than or equal to 0")
 def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, test_can):
-    initial_bli_for_put = BudgetLineItem(
+    initial_bli_for_put = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -544,7 +552,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, te
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
     )
-    initial_bli_for_patch = BudgetLineItem(
+    initial_bli_for_patch = ContractBudgetLineItem(
         agreement_id=context["agreement"].id,
         comments="blah blah",
         line_description="LI 1",
@@ -565,7 +573,7 @@ def bli_with_amount_less_than_or_equal_to_zero(loaded_db, context, test_user, te
 
 @when("I have a BLI in DRAFT status without an Agreement")
 def bli_without_agreement(loaded_db, context, test_user, test_can):
-    initial_bli_for_put = BudgetLineItem(
+    initial_bli_for_put = ContractBudgetLineItem(
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,
@@ -575,7 +583,7 @@ def bli_without_agreement(loaded_db, context, test_user, test_can):
         proc_shop_fee_percentage=1.23,
         created_by=test_user.id,
     )
-    initial_bli_for_patch = BudgetLineItem(
+    initial_bli_for_patch = ContractBudgetLineItem(
         comments="blah blah",
         line_description="LI 1",
         amount=100.12,

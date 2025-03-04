@@ -3,12 +3,12 @@ from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, OpsDBHistory, OpsDBHistoryType
+from models import CAN, BudgetLineItemStatus, GrantBudgetLineItem, OpsDBHistory, OpsDBHistoryType
 
 
 @pytest.mark.usefixtures("app_ctx")
 def test_bli_history(loaded_db: Session, test_can: CAN):
-    bli = BudgetLineItem(
+    bli = GrantBudgetLineItem(
         line_description="Grant Expendeture GA999",
         agreement_id=1,
         can_id=test_can.id,
@@ -20,7 +20,7 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
 
     stmt = select(OpsDBHistory).where(
         and_(OpsDBHistory.event_type == OpsDBHistoryType.NEW),
-        OpsDBHistory.class_name == "BudgetLineItem",  # type: ignore
+        OpsDBHistory.class_name == "GrantBudgetLineItem",  # type: ignore
     )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "Grant Expendeture GA999"
@@ -31,7 +31,7 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
 
     stmt = select(OpsDBHistory).where(
         and_(OpsDBHistory.event_type == OpsDBHistoryType.UPDATED),
-        OpsDBHistory.class_name == "BudgetLineItem",  # type: ignore
+        OpsDBHistory.class_name == "GrantBudgetLineItem",  # type: ignore
     )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
@@ -41,7 +41,7 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
 
     stmt = select(OpsDBHistory).where(
         and_(OpsDBHistory.event_type == OpsDBHistoryType.DELETED),
-        OpsDBHistory.class_name == "BudgetLineItem",  # type: ignore
+        OpsDBHistory.class_name == "GrantBudgetLineItem",  # type: ignore
     )
     result = loaded_db.scalars(stmt).all()
     assert result[0].event_details["line_description"] == "(UPDATED) Grant Expendeture GA999"
@@ -49,7 +49,7 @@ def test_bli_history(loaded_db: Session, test_can: CAN):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_bli_history_force_an_error(loaded_db):
-    bli = BudgetLineItem(
+    bli = GrantBudgetLineItem(
         line_description="Grant Expendeture GA999",
         agreement_id=1000000,
         can_id=1,
@@ -71,7 +71,7 @@ def test_history_expanded(loaded_db: Session, test_can: CAN):
     """test the new columns for class_name, row_key to query for history of specific record
     and verify the new changes column contains the changes
     """
-    bli = BudgetLineItem(
+    bli = GrantBudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=1,
         can_id=test_can.id,

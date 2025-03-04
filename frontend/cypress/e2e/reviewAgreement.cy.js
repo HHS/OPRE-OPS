@@ -94,7 +94,7 @@ describe("agreement change accordion", () => {
         // get content in review-card to see if it exists and contains planned, status and amount
         cy.get("[data-cy='review-card']").each(($card) => {
             cy.wrap($card).within(() => {
-                cy.contains(/15020|15021/);
+                cy.contains(/15008|15007/);
                 cy.contains(/planned/i);
                 cy.contains(/executing/i);
                 cy.contains(/status/i);

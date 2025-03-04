@@ -16,8 +16,10 @@ from models import (
     ChangeRequestStatus,
     ChangeRequestType,
     ContractAgreement,
+    ContractBudgetLineItem,
     ContractType,
     Division,
+    GrantBudgetLineItem,
     ServiceRequirementType,
 )
 from ops_api.ops.resources.agreement_history import find_agreement_histories
@@ -97,7 +99,7 @@ def test_budget_line_item_patch_with_budgets_change_requests(
     prev_hist_count = len(hists)
 
     #  create PLANNED BLI
-    bli = BudgetLineItem(
+    bli = GrantBudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=1,
         can_id=test_can.id,
@@ -331,7 +333,7 @@ def test_budget_line_item_patch_with_status_change_requests(
     prev_hist_count = len(response.json) if response.status_code == 200 else 0
 
     #  create DRAFT BLI with missing required fields
-    bli = BudgetLineItem(
+    bli = GrantBudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=agreement_id,
         status=BudgetLineItemStatus.DRAFT,
@@ -503,7 +505,7 @@ def test_status_change_request_creates_procurement_workflow(
     assert agreement.procurement_tracker_id is None
 
     # create DRAFT BLI
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         agreement_id=agreement_id,
         can_id=test_can.id,
         amount=123456.78,
