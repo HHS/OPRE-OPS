@@ -296,8 +296,72 @@ A list of CANs specific to each user:
         content: `A reason for agreement used when a project’s period of performance is ending but the services are still needed. The Government would award the work for continued sources in a non-competitive environment to the incumbent vendor.`
     },
     {
-        heading: "Bravo",
-        content: `whatever this is`
+        heading: "Fee Rate",
+        content: `The fee rate applied to budget lines depending on which Procurement Shop the agreement is using.`
+    },
+    {
+        heading: "Appropriation FY",
+        content: `The fiscal year a CAN’s funding was appropriated from congress.`
+    },
+    {
+        heading: "Active Period",
+        content: `The amount of time a CAN is active and its funding can be obligated. For example, the funding in a 1 year CAN can be obligated for 1 FY and then it expires. Funding in a 5 Year CAN can be obligated for 5 FYs, and then it expires.`
+    },
+    {
+        heading: "Funding Method",
+        content: `The way a CAN is funded, direct or reimbursable`
+    },
+    {
+        heading: "Funding Type",
+        content: `Whether a CAN’s funding has been required by law (mandatory) or voted on (discretionary)`
+    },
+    {
+        heading: "Fund Code",
+        content: `A 14 digit code which is comprised of multiple codes that provide details for a CAN including funding and duration information.`
+    },
+    {
+        heading: "Allowance",
+        content: `A special functional classification designed to include an amount to cover possible requirements which remains undistributed until the contingency on which it is based occurs.`
+    },
+    {
+        heading: "Allotment",
+        content: `A unique code used to identify a specific allocation of funds within a budget, essentially signifying a designated portion of money earmarked for a particular program or project within the agency.`
+    },
+    {
+        heading: "Funding Source",
+        content: `Determines how a CAN is funded from congress:
+        - Direct = Congress direct to OPRE
+        - ACF = Congress to another office in ACF
+        - ACF MOU = ​​Congress to another office in ACF with specific requirements on who the money has to go to/towards
+        - HHS = Congress to another agency internal to HHS
+        - Other = Congress to another agency external to HSS
+        `
+    },
+    {
+        heading: "Partner",
+        content: `Who OPRE is partnering with to utilize the funding in a CAN.`
+    },
+    {
+        heading: "Method of Transfer",
+        content: `How funding for a CAN is received, options in OPS include:
+        - Directly appropriated (Direct)
+        - Cost Sharing (from another office within ACF)
+        - Inter-Agency-Agreement (IAA) (from another agency in relation to contracts)
+        - Inter-Departmental-Delegation of Authority (IDDA) (from another agency in relation to grants)
+        - Other
+        `
+    },
+    {
+        heading: "Funding Received YTD",
+        content: `Funding that has been received by OPRE towards a CANs FY Budget. This means the money is in OPRE’s bank account, and checks can be written against the available funds.`
+    },
+    {
+        heading: "Research Project",
+        content: `A project at OPRE that is research-focused such as an explorative study or research report.`
+    },
+    {
+        heading: "Admin & Support Project",
+        content: `A project at OPRE that is administrative related such as rent or website development. These projects are typically shared costs across portfolios.`
     }
 ];
 
