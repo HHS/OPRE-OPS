@@ -36,12 +36,14 @@ const LineGraphWithLegendCard = ({ data = [], bigNumber, heading }) => {
         >
             <div
                 id={`line-graph-card-${reactId}`}
-                className="margin-top-2"
+                className={`${bigNumber} > 0 ? margin-top-2 : margin-top-6`}
             >
-                <LineGraph
-                    setActiveId={setActiveId}
-                    data={data}
-                />
+                {bigNumber > 0 && (
+                    <LineGraph
+                        setActiveId={setActiveId}
+                        data={data}
+                    />
+                )}
             </div>
             {data.map((item) => (
                 <LegendItem

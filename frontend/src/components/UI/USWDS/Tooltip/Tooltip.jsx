@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 import tooltip from "@uswds/uswds/js/usa-tooltip";
 
 /**
@@ -42,13 +41,6 @@ export const Tooltip = ({ label, position = "top", children, className }) => {
             {children}
         </span>
     );
-};
-
-Tooltip.propTypes = {
-    label: PropTypes.string.isRequired,
-    position: PropTypes.string,
-    children: PropTypes.node.isRequired,
-    className: PropTypes.string
 };
 
 export default Tooltip;

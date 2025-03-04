@@ -19,7 +19,7 @@ export const sortAndFilterCANs = (cans, myCANsUrl, activeUser, filters, fiscalYe
         return [];
     }
 
-    const { roles, id: userId, division: userDivisionId } = activeUser;
+    const { roles = [], id: userId, division: userDivisionId } = activeUser || {};
     // NOTE: Role-based filtering
     let filteredCANs = cans.filter((can) => {
         // Always include CAN if the user is not filtering by "my-CANs"

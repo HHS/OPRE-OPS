@@ -63,28 +63,30 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
                         Over Budget
                     </Tag>
                 ) : (
-                    <Tag tagStyle={"budgetAvailable"}>Available</Tag>
+                    totalFunding > 0 && <Tag tagStyle={"budgetAvailable"}>Available</Tag>
                 )}
             </div>
-            <div
-                id="currency-summary-card"
-                className="margin-top-2"
-            >
-                <LineGraph
-                    data={graphData}
-                    isStriped={true}
-                    overBudget={overBudget}
-                />
-            </div>
+            {totalFunding > 0 && (
+                <div
+                    id="currency-summary-card"
+                    className="margin-top-2"
+                >
+                    <LineGraph
+                        data={graphData}
+                        isStriped={true}
+                        overBudget={overBudget}
+                    />
+                </div>
+            )}
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
-                    Spending{" "}
+                    &#42;Spending{" "}
                     <CurrencyFormat
                         value={totalSpending ?? 0}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
-                        decimalScale={2}
+                        decimalScale={totalSpending > 0 ? 2 : 0}
                         fixedDecimalScale
                     />{" "}
                     of{" "}
@@ -94,11 +96,17 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
                         thousandSeparator={true}
                         prefix={"$"}
                         renderText={(totalFunding) => <span>{totalFunding}</span>}
-                        decimalScale={2}
+                        decimalScale={totalFunding > 0 ? 2 : 0}
                         fixedDecimalScale
                     />
                 </div>
             </div>
+            <p
+                className="margin-top-6 margin-bottom-0 font-12px text-base-dark text-normal"
+                style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
+            >
+                &#42;Spending is the sum of BLs in Planned, Executing and Obligated Status
+            </p>
         </RoundedBox>
     );
 };

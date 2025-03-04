@@ -2,7 +2,6 @@ import CurrencyFormat from "react-currency-format";
 import { Link } from "react-router-dom";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import { convertCodeForDisplay } from "../../../helpers/utils";
 import Tooltip from "../../UI/USWDS/Tooltip";
 import { displayActivePeriod } from "./CANTableRow.helpers";
 
@@ -13,30 +12,20 @@ import { displayActivePeriod } from "./CANTableRow.helpers";
  * @param {number} props.activePeriod - Active Period in years
  * @param {number} props.canId - CAN ID
  * @param {number} props.fiscalYear - Selected Fiscal Year
- * @param {number} props.fyBudget - Fiscal Year Budget
  * @param {string} props.name - CAN name
  * @param {string} props.nickname - CAN nickname
  * @param {string} props.obligateBy - Obligate By Date
  * @param {string} props.portfolio - Portfolio abbreviation
- * @param {string} props.transfer - Method of Transfer
  * @returns {JSX.Element}
  */
-const CANTableRow = ({
-    activePeriod,
-    canId,
-    fiscalYear,
-    fyBudget,
-    name,
-    nickname,
-    obligateBy,
-    portfolio,
-    transfer
-}) => {
+const CANTableRow = ({ activePeriod, canId, fiscalYear, name, nickname, obligateBy, portfolio }) => {
     const {
         data: fundingSummary,
         isError,
         isLoading
-    } = useGetCanFundingSummaryQuery({ ids: [canId], fiscalYear: fiscalYear });
+    } = useGetCanFundingSummaryQuery({ ids: [canId], fiscalYear: fiscalYear, refetchOnMountOrArgChange: true });
+    const totalFunding = fundingSummary?.total_funding ?? 0;
+    const fundingReceived = fundingSummary?.received_funding ?? 0;
     const availableFunds = fundingSummary?.available_funding ?? 0;
 
     if (isLoading)
@@ -70,17 +59,26 @@ const CANTableRow = ({
             <td>{portfolio}</td>
             <td>{displayActivePeriod(activePeriod)}</td>
             <td>{obligateBy}</td>
-            <td>{convertCodeForDisplay("methodOfTransfer", transfer)}</td>
-            {fyBudget === 0 ? (
+            <td>
+                <CurrencyFormat
+                    value={totalFunding}
+                    displayType={"text"}
+                    thousandSeparator={true}
+                    prefix={"$"}
+                    decimalScale={getDecimalScale(totalFunding)}
+                    fixedDecimalScale={true}
+                />
+            </td>
+            {fundingReceived === 0 ? (
                 <td>TBD</td>
             ) : (
                 <td>
                     <CurrencyFormat
-                        value={fyBudget}
+                        value={fundingReceived}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
-                        decimalScale={getDecimalScale(fyBudget)}
+                        decimalScale={getDecimalScale(fundingReceived)}
                         fixedDecimalScale={true}
                     />
                 </td>
