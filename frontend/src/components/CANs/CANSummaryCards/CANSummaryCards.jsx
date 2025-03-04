@@ -35,7 +35,7 @@ const CANSummaryCards = ({
             label: "Previous FYs Carry-Forward",
             value: carryForward,
             color: "var(--feedback-info)",
-            percent: `${calculatePercent(carryForward, totalBudget)}%`,
+            percent: calculatePercent(carryForward, totalBudget),
             tagActiveStyle: "darkTextOnLightBlue"
         },
         {
@@ -43,7 +43,7 @@ const CANSummaryCards = ({
             label: `FY ${fiscalYear} New Funding`,
             value: newFunding,
             color: "var(--can-total-budget-2)",
-            percent: `${calculatePercent(newFunding, totalBudget)}%`,
+            percent: calculatePercent(newFunding, totalBudget),
             tagActiveStyle: "lightTextOnDarkBlue"
         }
     ];

@@ -17,7 +17,7 @@ import DebugCode from "../../../DebugCode";
  * @property {string} label
  * @property {number} value
  * @property {string} color
- * @property {string} percent
+ * @property {number} percent
  * @property {string} tagActiveStyle
  */
 

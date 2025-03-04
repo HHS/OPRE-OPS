@@ -7,7 +7,7 @@ import { calculateRatio } from "./util";
  * @property {number} id
  * @property {number} value
  * @property {string} color
- * @property {string} percent  // "0%" or "100%"
+ * @property {number} percent
  */
 
 /**
@@ -40,9 +40,9 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
     return (
         <div className={styles.barBox}>
             <div
-                className={`${styles.leftBar} ${styles.dottedBar} ${leftPercent === "100%" ? styles.leftBarFull : ""}`}
+                className={`${styles.leftBar} ${styles.dottedBar} ${leftPercent >= 100 ? styles.leftBarFull : ""}`}
                 style={{
-                    flex: `0  1 ${leftPercent}`,
+                    flex: `0  1 ${leftPercent}%`,
                     backgroundColor: leftColor,
                     backgroundImage:
                         isStriped && !overBudget
@@ -60,7 +60,7 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
             />
 
             <div
-                className={`${styles.rightBar} ${rightPercent === "100%" ? styles.rightBarFull : ""}`}
+                className={`${styles.rightBar} ${rightPercent >= 100 ? styles.rightBarFull : ""}`}
                 style={{
                     backgroundColor: rightColor,
                     backgroundImage:

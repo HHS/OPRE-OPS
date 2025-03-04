@@ -6,7 +6,6 @@ import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
 import style from "./styles.module.css";
 import { Link } from "react-router-dom";
-import DebugCode from "../../DebugCode";
 
 /**
  * @component CanCard
@@ -44,23 +43,20 @@ const CanCard = ({ canId, fiscalYear }) => {
     ];
 
     const spendingAmount =
-        canFundingData?.planned_funding +
-        canFundingData?.in_execution_funding +
-        canFundingData?.obligated_funding +
-        1_000_000;
+        canFundingData?.planned_funding + canFundingData?.in_execution_funding + canFundingData?.obligated_funding;
 
     const spendingPercent = (spendingAmount / canFundingData?.total_funding) * 100;
     const spendingAvailableData = [
         {
             id: 1,
             value: spendingAmount,
-            percent: `${spendingPercent}%`,
+            percent: spendingPercent,
             color: "var(--data-viz-budget-graph-2)"
         },
         {
             id: 2,
             value: canFundingData?.total_funding,
-            percent: `${100 - spendingPercent}%`,
+            percent: 100 - spendingPercent,
             color: "var(--data-viz-budget-graph-1)"
         }
     ];
@@ -179,7 +175,6 @@ const CanCard = ({ canId, fiscalYear }) => {
                         data={spendingAvailableData}
                         isStriped={true}
                     />
-                    <DebugCode data={spendingAvailableData} />
                 </section>
             </div>
         </div>
