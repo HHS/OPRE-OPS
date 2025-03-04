@@ -210,6 +210,91 @@ A list of CANs specific to each user:
         heading: "Cost Plus Fixed Fee (CPFF)",
         content: `A contract type utilized in a cost-reimbursement type environment where the fee negotiated is at time of award for certain services to be completed successfully. This is utilized when we are unable to estimate the level of effort at time of award.`
     },
+     {
+        heading: "Cost Plus Award Fee (CPAW)",
+        content: `A contract type utilized in a cost-reimbursement type environment where the fee negotiated is at time of award for certain services to be completed successfully in a performance based environment.`
+    },
+     {
+        heading: "Service Requirement Type",
+        content: `The format for services components on an agreement such as Severable or Non-Severable which determine how the contract will be completed`
+    },
+    {
+        heading: "Severable",
+        content: `A service requirement type where the contract can be cut-off or severed and value is still provided. In OPS, the services component format for this type is base period 1, option period 2, etc.`
+    },
+    {
+        heading: "Non-Severable",
+        content: `A service requirement type where there is no value if the contract gets severed so it must be completed in its entirety. The entire contract must be completed in order for value to be provided. In OPS, the services component format for this type is SC1, SC2, OSC3, etc.`
+    },
+    {
+        heading: "Product Service Code",
+        content: `A code used to describe products, services, and research and development (R&D) purchased by the federal government. These codes indicate “what” was bought for each contract action reported in the Federal Procurement Data System (FPDS)`
+    },
+    {
+        heading: "Other Scientific and Technical Consulting Services",
+        content: `A product service code used for research contracts`
+    },
+    {
+        heading: "Convention and Trade Shows",
+        content: `A product service code used for conferences, trade shows and meetings`
+    },
+    {
+        heading: "NAICS Code",
+        content: `A classification of services or supplies being bought. For example, some classifications have designations for small business criteria. NAICS stands for North American Industry Classification System.`
+    },
+    {
+        heading: "Program Support Code",
+        content: `A classification of services that will pre-populate the NAICS code in OPS`
+    },
+    {
+        heading: "Procurement Shop",
+        content: `A department or team within the government responsible for acquiring goods and services. In OPS, the Procurement Shops used by OPRE are:
+        - Office of Acquisition Management Services (OAMS) formerly known as Program Support Center (PSC) 
+        - Government Contracting Services (GCS)
+        - National Institute of Health (NIH)
+        - Interior Business Center (IBC) 
+        `
+    },
+    {
+        heading: "Program Support Center (PSC)",
+        content: `A procurement shop currently known as Office of Acquisition Management Services (OAMS) which is used for legacy OPRE procurements. Only modifications of legacy PSC contracts should be done at this shop.`
+    },
+     {
+        heading: "Office of Acquisition Management Services (OAMS)",
+        content: `A procurement shop formerly known as Program Support Center (PSC). Only modifications of legacy PSC contracts should be done at this shop.`
+    },
+     {
+        heading: "Government Contracting Services (GCS)",
+        content: `A procurement office that resides in ACF and is the main contracting office supporting OPRE. All new actions should utilize this shop unless told otherwise.`
+    },
+     {
+        heading: "National Institute of Health (NIH)",
+        content: `A procurement shop used for medical research`
+    },
+     {
+        heading: "Interior Business Center (IBC)",
+        content: `A procurement shop used for federal shared services that operates under a fee-for-service, full cost recovery business model, offering Acquisition, Financial Management and Human Resources systems and services to federal organizations.`
+    },
+    {
+        heading: "Reason for Agreement",
+        content: `The reason a new agreement is created. The options for Reason for Agreement in OPS include:
+        - New Requirement
+        - Recompete
+        - Logical Follow On
+        `
+    },
+     {
+        heading: "New Requirement",
+        content: `A reason for agreement used when there is not an already established project and a new award is the desired outcome of the project. This is used when a project has never been done before.`
+    },
+    {
+        heading: "Recompete",
+        content: `A reason for agreement used when a project’s period of performance is ending but the services are still needed. The Government would award the work for continued sources in a competitive environment.`
+    },
+     {
+        heading: "Logical Follow On",
+        content: `A reason for agreement used when a project’s period of performance is ending but the services are still needed. The Government would award the work for continued sources in a non-competitive environment to the incumbent vendor.`
+    },
     {
         heading: "Bravo",
         content: `whatever this is`
