@@ -4,15 +4,19 @@ const Feedback = () => {
     }
     return (
         <>
-            <h2 className="margin-bottom-4">We&rsquo;d love to hear from you!</h2>
+            <h2 className="margin-bottom-4">Share Feedback</h2>
             <section className="usa-prose">
                 <p>
-                    You’re feedback is important to us. If you have feedback on something we can improve or an idea for
-                    a new feature, please let us know!
+                    Your feedback matters to us! Whether you have a suggestion for improvement, found an issue, or simply want to share your thoughts, we’re here to listen. 
                 </p>
                 <p>
-                    Click the link here to get started:{" "}
-                    <a href="ops-feedback@formsgoogle.com">ops-feedback@formsgoogle.com</a>
+Help us improve your experience!
+</p>
+                <p>
+                    Send us an email, and we’ll get back to you as soon as possible:{" "} 
+                    <br/>
+                    **Email:**
+                    <a href="mailto:opre-ops-support@flexion.us">opre-ops-support@flexion.us</a>
                 </p>
             </section>
         </>
