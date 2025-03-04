@@ -76,8 +76,8 @@ const ReverseLineGraph = ({ data = [], setActiveId = () => {} }) => {
                         var(--data-viz-budget-graph-1) 5px,
                         var(--data-viz-budget-graph-1) 6px
                     )`,
-                    borderTopLeftRadius: "4px",
-                    borderBottomLeftRadius: "4px"
+                    borderTopLeftRadius: `${ratio === 1 ? "4px" : "0"}`,
+                    borderBottomLeftRadius: `${ratio === 1 ? "4px" : "0"}`
                 }}
                 onMouseEnter={() => setActiveId(rightId)}
                 onMouseLeave={() => setActiveId(0)}

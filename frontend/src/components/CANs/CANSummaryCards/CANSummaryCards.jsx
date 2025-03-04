@@ -1,4 +1,5 @@
 import { calculatePercent } from "../../../helpers/utils";
+import DebugCode from "../../DebugCode";
 import BudgetCard from "../../UI/Cards/BudgetCard";
 import LineGraphWithLegendCard from "../../UI/Cards/LineGraphWithLegendCard";
 
@@ -47,19 +48,22 @@ const CANSummaryCards = ({
         }
     ];
     return (
-        <div className="display-flex flex-justify">
-            <LineGraphWithLegendCard
-                heading={`FY ${fiscalYear} CANs Total Budget`}
-                data={data}
-                bigNumber={totalBudget}
-            />
-            <BudgetCard
-                cardId={fiscalYear}
-                title={`FY ${fiscalYear} CANs Available Budget`}
-                totalSpending={totalSpending}
-                totalFunding={totalBudget}
-            />
-        </div>
+        <>
+            <div className="display-flex flex-justify">
+                <LineGraphWithLegendCard
+                    heading={`FY ${fiscalYear} CANs Total Budget`}
+                    data={data}
+                    bigNumber={totalBudget}
+                />
+                <BudgetCard
+                    cardId={fiscalYear}
+                    title={`FY ${fiscalYear} CANs Available Budget`}
+                    totalSpending={totalSpending}
+                    totalFunding={totalBudget}
+                />
+            </div>
+            <DebugCode data={data} />
+        </>
     );
 };
 

@@ -2,6 +2,7 @@ import React from "react";
 import LineGraph from "../../DataViz/LineGraph";
 import CurrencyCard from "../CurrencyCard";
 import LegendItem from "./LegendItem";
+import DebugCode from "../../../DebugCode";
 
 /**
  * @typedef {Object} LineGraphWithLegendCardProps
@@ -29,35 +30,38 @@ const LineGraphWithLegendCard = ({ data = [], bigNumber, heading }) => {
     const reactId = React.useId();
     const [activeId, setActiveId] = React.useState(0);
     return (
-        <CurrencyCard
-            headerText={heading}
-            amount={bigNumber}
-            dataCy="line-graph-with-legend-card"
-        >
-            <div
-                id={`line-graph-card-${reactId}`}
-                className={`${bigNumber} > 0 ? margin-top-2 : margin-top-6`}
+        <>
+            <CurrencyCard
+                headerText={heading}
+                amount={bigNumber}
+                dataCy="line-graph-with-legend-card"
             >
-                {bigNumber > 0 && (
-                    <LineGraph
-                        setActiveId={setActiveId}
-                        data={data}
+                <div
+                    id={`line-graph-card-${reactId}`}
+                    className={`${bigNumber} > 0 ? margin-top-2 : margin-top-6`}
+                >
+                    {bigNumber > 0 && (
+                        <LineGraph
+                            setActiveId={setActiveId}
+                            data={data}
+                        />
+                    )}
+                </div>
+                {data.map((item) => (
+                    <LegendItem
+                        activeId={activeId}
+                        key={item.id}
+                        id={item.id}
+                        label={item.label}
+                        value={item.value}
+                        color={item.color}
+                        percent={item.percent}
+                        tagStyleActive={item.tagActiveStyle}
                     />
-                )}
-            </div>
-            {data.map((item) => (
-                <LegendItem
-                    activeId={activeId}
-                    key={item.id}
-                    id={item.id}
-                    label={item.label}
-                    value={item.value}
-                    color={item.color}
-                    percent={item.percent}
-                    tagStyleActive={item.tagActiveStyle}
-                />
-            ))}
-        </CurrencyCard>
+                ))}
+            </CurrencyCard>
+            {/* <DebugCode data={data} /> */}
+        </>
     );
 };
 
