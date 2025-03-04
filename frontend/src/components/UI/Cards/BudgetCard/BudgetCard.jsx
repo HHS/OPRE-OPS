@@ -78,7 +78,7 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
             </div>
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
-                    Spending{" "}
+                    &#42;Spending{" "}
                     <CurrencyFormat
                         value={totalSpending ?? 0}
                         displayType={"text"}
@@ -99,6 +99,12 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
                     />
                 </div>
             </div>
+            <p
+                className="margin-top-6 margin-bottom-0 font-12px text-base-dark text-normal"
+                style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
+            >
+                &#42;Spending is the sum of BLs in Planned, Executing and Obligated Status
+            </p>
         </RoundedBox>
     );
 };

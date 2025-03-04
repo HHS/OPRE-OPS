@@ -55,7 +55,7 @@ const CANSummaryCards = ({
             />
             <BudgetCard
                 cardId={fiscalYear}
-                title={`FY ${fiscalYear} CANs Available Budget *`}
+                title={`FY ${fiscalYear} CANs Available Budget`}
                 totalSpending={totalSpending}
                 totalFunding={totalBudget}
             />
