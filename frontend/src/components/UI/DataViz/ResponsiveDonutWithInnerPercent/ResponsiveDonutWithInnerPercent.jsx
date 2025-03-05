@@ -44,7 +44,7 @@ const ResponsiveDonutWithInnerPercent = ({
             colors={{ datum: "data.color" }}
             layers={["arcs", "slices", "sliceLabels", "radialLabels", "legends", CustomLayerComponent]}
             onMouseEnter={(node) => {
-                setPercent(node.data.percent);
+                setPercent(`${node.data.percent}%`);
                 setHoverId(node.data.id);
             }}
             onMouseLeave={() => {

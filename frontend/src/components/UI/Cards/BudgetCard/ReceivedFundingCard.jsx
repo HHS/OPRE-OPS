@@ -50,15 +50,16 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
                     dollarsClasses="font-sans-xl text-bold margin-bottom-0"
                     centsStyles={{ fontSize: "10px" }}
                 />
-
-                <Tag tagStyle={"budgetAvailable"}>Received</Tag>
+                {totalFunding > 0 && <Tag tagStyle={"budgetAvailable"}>Received</Tag>}
             </div>
-            <div
-                id="currency-summary-card"
-                className="margin-top-2"
-            >
-                <ReverseLineGraph data={graphData} />
-            </div>
+            {totalFunding > 0 && (
+                <div
+                    id="currency-summary-card"
+                    className="margin-top-2"
+                >
+                    <ReverseLineGraph data={graphData} />
+                </div>
+            )}
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
                     Received{" "}
@@ -67,7 +68,7 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
-                        decimalScale={2}
+                        decimalScale={totalReceived > 0 ? 2 : 0}
                         fixedDecimalScale
                     />{" "}
                     of{" "}
@@ -77,7 +78,7 @@ const ReceivedFundingCard = ({ title, totalReceived, totalFunding }) => {
                         thousandSeparator={true}
                         prefix={"$"}
                         renderText={(totalFunding) => <span>{totalFunding}</span>}
-                        decimalScale={2}
+                        decimalScale={totalFunding > 0 ? 2 : 0}
                         fixedDecimalScale
                     />
                 </div>

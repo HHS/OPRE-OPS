@@ -244,3 +244,4 @@ terraform.rc
 
 # Ignore Local directory
 data/
+/frontend/.cursor
