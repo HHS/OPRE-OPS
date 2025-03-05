@@ -14,6 +14,9 @@ import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
 import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
+import { USER_ROLES } from "../../../components/Users/User.constants";
+import { exportData } from "../../../helpers/exportData.helpers";
+import DebugCode from "../../../components/DebugCode";
 
 /**
  * Page for the CAN List.
@@ -25,6 +28,7 @@ const CanList = () => {
     const [searchParams] = useSearchParams();
     const myCANsUrl = searchParams.get("filter") === "my-cans";
     const activeUser = useSelector((state) => state.auth.activeUser);
+    const isSystemOwner = activeUser?.roles.includes(USER_ROLES.SYSTEM_OWNER);
     const [selectedFiscalYear, setSelectedFiscalYear] = React.useState(getCurrentFiscalYear());
     const fiscalYear = Number(selectedFiscalYear);
     const [filters, setFilters] = React.useState({
@@ -127,7 +131,19 @@ const CanList = () => {
                         inExecutionFunding={fundingSummaryData?.in_execution_funding}
                     />
                 }
+                // eslint-disable-next-line
+                children={
+                    isSystemOwner && (
+                        <button
+                            className={"usa-button usa-button--outline text-primary"}
+                            onClick={() => exportData(sortedCANs, activeUser, "CANs")}
+                        >
+                            Export
+                        </button>
+                    )
+                }
             />
+            <DebugCode data={sortedCANs} />
         </App>
     );
 };
