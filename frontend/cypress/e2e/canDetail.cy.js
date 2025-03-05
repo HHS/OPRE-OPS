@@ -72,9 +72,9 @@ describe("CAN detail page", () => {
         );
         // Check that all expected messages exist in the history list, regardless of order
         const expectedMessages = [
-            "edited the nickname", // More flexible matching
-            "edited the description", // More flexible matching
-            "edited the nickname" // More flexible matching
+            "Budget Team edited the nickname from Test Can Nickname to SSRD", // due to revert back to original values
+            "Budget Team edited the description", // due to revert back to original values
+            "Budget Team edited the nickname from SSRD to Test Can Nickname"
         ];
         cy.get('[data-cy="log-item-message"]').then(($messages) => {
             expectedMessages.forEach((expectedMessage) => {
