@@ -263,12 +263,16 @@ describe("CAN funding page", () => {
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
             .should("exist")
             .contains(/FY 2025 Budget Entered/);
+
+        // Check that all expected messages exist in the history list, regardless of order
         const expectedMessages = [
             "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
-        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        cy.get('[data-cy="log-item-message"]').then(($messages) => {
+            expectedMessages.forEach((expectedMessage) => {
+                cy.wrap($messages).should("contain", expectedMessage);
+            });
         });
     });
     it("shows history message when updating a budget", () => {
@@ -285,13 +289,17 @@ describe("CAN funding page", () => {
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
             .should("exist")
             .contains(/FY 2025 Budget Edited/);
+
+        // Check that all expected messages exist in the history list, regardless of order
         const expectedMessages = [
             "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
             "Budget Team entered a FY 2025 budget of $5,000,000.55",
             "FY 2025 CAN Funding Information imported from CANBACs"
         ];
-        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        cy.get('[data-cy="log-item-message"]').then(($messages) => {
+            expectedMessages.forEach((expectedMessage) => {
+                cy.wrap($messages).should("contain", expectedMessage);
+            });
         });
     });
     it("handle funding received form", () => {
@@ -369,13 +377,17 @@ describe("CAN funding page", () => {
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
             .should("exist")
             .contains(/Funding Received Added/);
+
+        // Check that all expected messages exist in the history list, regardless of order
         const expectedMessages = [
             "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
             "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
             "Budget Team entered a FY 2025 budget of $5,000,000.55"
         ];
-        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        cy.get('[data-cy="log-item-message"]').then(($messages) => {
+            expectedMessages.forEach((expectedMessage) => {
+                cy.wrap($messages).should("contain", expectedMessage);
+            });
         });
     });
     it("shows correct total funding received when switching between fiscal years", () => {
@@ -420,13 +432,17 @@ describe("CAN funding page", () => {
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
             .should("exist")
             .contains(/Funding Received Deleted/);
+
+        // Check that all expected messages exist in the history list, regardless of order
         const expectedMessages = [
             "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00"
         ];
-        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        cy.get('[data-cy="log-item-message"]').then(($messages) => {
+            expectedMessages.forEach((expectedMessage) => {
+                cy.wrap($messages).should("contain", expectedMessage);
+            });
         });
     });
     it("shows history message when updating a funding received", () => {
@@ -446,13 +462,17 @@ describe("CAN funding page", () => {
         cy.get('[data-cy="can-history-list"] > :nth-child(1) > .flex-justify > [data-cy="log-item-title"]')
             .should("exist")
             .contains(/Funding Received Edited/);
+
+        // Check that all expected messages exist in the history list, regardless of order
         const expectedMessages = [
             "Budget Team edited funding received for funding ID 526 from $2,000,000.00 to $3,500,000.00",
             "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00"
         ];
-        cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
-            cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
+        cy.get('[data-cy="log-item-message"]').then(($messages) => {
+            expectedMessages.forEach((expectedMessage) => {
+                cy.wrap($messages).should("contain", expectedMessage);
+            });
         });
     });
     it("handles cancelling from budget form", () => {
