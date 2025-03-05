@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import cryptoRandomString from "crypto-random-string";
 import { getAccessToken, getAuthorizationCode, setActiveUser } from "./auth";
-import { apiLogin } from "../../api/apiLogin";
+import { useLoginMutation } from "../../api/opsAuthAPI";
 import ContainerModal from "../UI/Modals/ContainerModal";
 
 const MultiAuthSectionWithDebugging = () => {
@@ -12,6 +12,7 @@ const MultiAuthSectionWithDebugging = () => {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [debugInfo, setDebugInfo] = useState([]);
+    const [loginMutation] = useLoginMutation();
 
     const addDebugInfo = (info) => {
         setDebugInfo((prev) => [...prev, info]);
@@ -23,14 +24,19 @@ const MultiAuthSectionWithDebugging = () => {
             const activeProvider = localStorage.getItem("activeProvider");
             if (activeProvider === null || activeProvider === undefined) {
                 addDebugInfo("API Login Failed! No Active Provider");
+                return;
             }
 
             let response;
             try {
-                response = await apiLogin(activeProvider, authCode);
+                response = await loginMutation({
+                    provider: activeProvider,
+                    code: authCode
+                }).unwrap();
                 // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 addDebugInfo("Error logging in");
+                return;
             }
 
             const access_token = response.access_token;
@@ -51,7 +57,7 @@ const MultiAuthSectionWithDebugging = () => {
                 await setActiveUser(access_token, dispatch);
             }
         },
-        [dispatch, navigate]
+        [dispatch, navigate, loginMutation]
     );
 
     React.useEffect(() => {
