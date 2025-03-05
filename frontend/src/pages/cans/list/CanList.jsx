@@ -132,9 +132,18 @@ const CanList = () => {
                     />
                 }
                 // eslint-disable-next-line
-                children={isSystemOwner && <button onClick={() => exportData(sortedCANs, activeUser, "CANs")}>Export</button>}
+                children={
+                    isSystemOwner && (
+                        <button
+                            className={"usa-button usa-button--outline text-primary"}
+                            onClick={() => exportData(sortedCANs, activeUser, "CANs")}
+                        >
+                            Export
+                        </button>
+                    )
+                }
             />
-            <DebugCode data={sortedCANs} /> 
+            <DebugCode data={sortedCANs} />
         </App>
     );
 };
