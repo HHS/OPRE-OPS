@@ -51,7 +51,7 @@ OPS stands for OPRE’s Portfolio Management System (OPS). It is a centralized p
 
 Access is no longer limited to your specific contracts only. Everyone can view everything including budget and spending data for each Portfolio and funding details for every CAN. Changes are tracked via history so you can easily understand who changed what and when.
 
-**Improved information architecture**
+**Data Visualization**
 
 Budget and spending data can be viewed in more diverse and customized ways like across a portfolio, project, or CAN, in addition to the individual agreement level.
 
@@ -63,7 +63,7 @@ Team Leaders, CORs and other team members can create and edit agreements directl
 
 Division Directors will formally approve budget and status changes in the system rather than through email.
 
-**Pre-planning**
+**Real-time Planning**
 
 Plans can be entered into the system as Drafts instead of having to wait until plans are more formalized. This will provide a more holistic view of the data across all stages of planning.
         `
@@ -146,19 +146,19 @@ Individuals with a procurement team role are able to:
         content: `
 **The portfolio, project, and agreement relationship**
 
-Each OPRE division has one or more portfolios. This is the first level of organization. Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements—contracts, grants, or IAAs. Currently, only contracts and IAAs are available, with grants coming soon.
+Each OPRE division has one or more portfolios. This is the first level of organization. Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements which are contracts, grants, or IAAs. Currently only contracts are available with other types being available soon.
 
 **The agreement lifecycle and budget line statuses**
 
-All new budget lines start in Draft Status.
+Budget line statues are used to track the current state of an agreement. There are 5 budget line statuses. All new budget lines start in Draft Status.
 
 | BL Status | Meaning |
 |-----------|---------|
-| Draft              | In pre-planning, placeholders, and what-ifs; not yet solidified |
-| Planned            | Intended to happen; money set aside as planned (even if changes occur). The amount is subtracted from the available FY budget |
-| Executing          | In the procurement process; being formally committed |
-| Obligated          | Committed in the signed award and can be invoiced against to begin work |
-| In Review          | Pending edits or status change requests that need approval or decline |
+| Draft              | BL is in pre-planning, placeholders and what-ifs, not yet solidified |
+| Planned            | BL is intended to happen and money can be set aside as planned (even though there might be changes). The dollar amount associated to the budget line will be subtracted from the available FY budget |
+| Executing          | BL is in the procurement process, in progress to be formally committed |
+| Obligated          | BL is committed in the signed award and can be invoiced against so the work can begin |
+| In Review          | BL has pending edits or a pending status change request that needs to be approved or declined |
         `
     },
     {
@@ -173,8 +173,8 @@ All new budget lines start in Draft Status.
         content: `
 1. Click Create on the top navigation bar, then click Project
 1. Fill out all of the required fields and click on the Create Project button. All data will be validated for completeness and required fields will need to be filled out before the project can be created.
+1. When you are done filling out the fields, click on the Create Project button
     - When you are done filling out the fields, click on the Create Project button
-1. This will send a notification to members of your portfolio to give them awareness
         `
     },
     {
@@ -223,7 +223,7 @@ All new budget lines start in Draft Status.
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit icon located on right side of the page
 1. Review the Edit Services Components section with instructions
-1. Select the SC# (and whether or not it's optional), add a description, add a period of 1. performance, and click Add Services Component button
+1. Select the SC# (and whether or not it's optional), add a description, add a period of performance, and click Add Services Component button
 1. You can edit or delete the SC, by hovering over the SC card and clicking the edit or delete 1. icon on the right hand side
 1. When you are done adding services components, scroll to the bottom and click Save Changes to exit edit mode and save the agreement
         `
@@ -241,14 +241,14 @@ All new budget lines start in Draft Status.
         `
     },
     {
-        heading: "How to add a new add budget line (BL) to an agreement",
+        heading: "How to add a new budget line (BL) to an agreement",
         content: `
 1. Navigate to the agreement you want to add a budget line to
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit link located on the right side of the page
 1. Scroll down the page to the Edit Budget Lines section
-    - Fill out any needed details at this time
-1. All BL data (SC, Obligate By, Amount, etc) becomes required information once the BL is in 1. Planned or Executing status
+1. Fill out any needed details at this time
+    - All BL data (SC, Obligate By, Amount, etc) becomes required information once the BL is in Planned or Executing status
 1. Click the Add Budget Line button
         `
     },
@@ -258,10 +258,10 @@ All new budget lines start in Draft Status.
 1. Navigate to the agreement you want to edit
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit link on the right side of the page
-1. Scroll to the Edit Budget Lines section and within the services component that contains the budget line (BL) you want to edit, hover over the status of the budget line you want to edit and click on the edit buttonlink (pencil icon)
-1. Clicking on the edit buttonlink will populate all information that was previously created for the budget line in the edit area
+1. Scroll to the Edit Budget Lines section and within the services component that contains the budget line (BL) you want to edit, hover over the status of the budget line you want to edit and click on the edit button (pencil icon)
+1. Clicking on the edit button will populate all information that was previously created for the budget line in the edit area
 1. Make your changes
-1. Click on the Update Budge Line button
+1. Click on the Update Budget Line button
 1. When you are done with all changes, click the Save Changes button
         `
     },
@@ -276,7 +276,7 @@ All new budget lines start in Draft Status.
     - Errors will be listed in an alert banner and also display in red text on the page
     - If errors need to be addressed, scroll to the bottom of the page and click Edit. This will allow you to fix the errors and return to the Request BL Status Change Page
 1. Follow the steps in each section of the Request BL Status Change Page
-1. You can optionally close each section when you are finished
+    - You can optionally close each section when you are finished
 1. Review the agreement details to make sure everything looks correct
 1. Choose the type of status change you’d like to make
 1. Select the budget lines you’d like to apply the status change to
@@ -325,16 +325,16 @@ All new budget lines start in Draft Status.
 1. Click on the For Review tab
 1. A summarized view of the budget lines ready for review each appear in separate cards
     - Hover over the cards to approve or decline the request
-    - If more context is needed in how these status changes relate to other information within the 1. agreement, click on the View All link on the card
+    - If more context is needed in how these status changes relate to other information within the agreement, click on the View All link on the card
 1. Review the steps in each section of the Approval for Status Change page
     - You can optionally close each section when you are finished
 1. Review the agreement details to make sure everything looks correct
 1. Review the budget lines that the status change request is for
-    - Turn the After Approval toggle on/off to see how the agreement will change after this status 1. change if approved
+    - Turn the After Approval toggle on/off to see how the agreement will change after this status change if approved
 1. Review the CANs associated to budget lines you are changing
-1. Turn the After Approval toggle on/off to see how the CANs will change after this status change 1. is approved
+1. Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved
 1. Add any notes to the reviewer/approver, if needed
-1. When you are done reviewing changes, and agree the status changes can be approved, check the 1. disclaimer that reads ‘I understand that approving budget lines for Planned Status will 1. subtract the amounts from the FY budget’ and click on the Approve Changes button
+1. When you are done reviewing changes, and agree the status changes can be approved, check the disclaimer that reads ‘I understand that approving budget lines for Planned Status will subtract the amounts from the FY budget’ and click on the Approve Changes button
     - Click the Approve button in the modal asking if you are sure you want to approve the status change
     - This will send a notification to whoever requested the status changes
     - The status of the budget lines you approved will now change to the status that was requested
