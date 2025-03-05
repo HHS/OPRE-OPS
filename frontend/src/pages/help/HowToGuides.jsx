@@ -39,12 +39,14 @@ const HowToGuides = () => {
 // Markdown Guide https://www.markdownguide.org/basic-syntax/
 const data = [
     {
-        heading: "What is OPS?",
-        content: `OPS stands for OPRE’s Portfolio Management System (OPS). It is a centralized place for OPRE to plan and track their budget and projects across Divisions and Portfolios.`
-    },
-    {
-        heading: "What benefits does OPS provide?",
+        heading: "How to get started in OPS",
         content: `
+**What is OPS?**
+
+OPS stands for OPRE’s Portfolio Management System (OPS). It is a centralized place for OPRE to plan and track their budget and projects across Divisions and Portfolios.
+
+**What benefits does OPS provide?**
+
 **Transparency**
 
 Access is no longer limited to your specific contracts only. Everyone can view everything including budget and spending data for each Portfolio and funding details for every CAN. Changes are tracked via history so you can easily understand who changed what and when.
@@ -67,7 +69,7 @@ Plans can be entered into the system as Drafts instead of having to wait until p
         `
     },
     {
-        heading: "What are the different user roles and what can they do?",
+        heading: "How to understand OPS user roles and access",
         content: `
 **Overview of OPS user roles**
 
@@ -140,7 +142,7 @@ Individuals with a procurement team role are able to:
         `
     },
     {
-        heading: "How is OPS organized?",
+        heading: "How to understand OPS organization",
         content: `
 **The portfolio, project, and agreement relationship**
 
