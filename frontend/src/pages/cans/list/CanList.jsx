@@ -14,8 +14,9 @@ import CANFilterButton from "./CANFilterButton";
 import CANFilterTags from "./CANFilterTags";
 import CANFiscalYearSelect from "./CANFiscalYearSelect";
 import { getPortfolioOptions, getSortedFYBudgets, sortAndFilterCANs } from "./CanList.helpers";
-import DebugCode from "../../../components/DebugCode";
 import { USER_ROLES } from "../../../components/Users/User.constants";
+import { exportData } from "../../../helpers/exportData.helpers";
+import DebugCode from "../../../components/DebugCode";
 
 /**
  * Page for the CAN List.
@@ -131,8 +132,9 @@ const CanList = () => {
                     />
                 }
                 // eslint-disable-next-line
-                children={isSystemOwner && <button onClick={() => console.log("export clicked")}>Export</button>}
+                children={isSystemOwner && <button onClick={() => exportData(sortedCANs, activeUser, "CANs")}>Export</button>}
             />
+            <DebugCode data={sortedCANs} /> 
         </App>
     );
 };
