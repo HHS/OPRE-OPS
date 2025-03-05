@@ -28,7 +28,7 @@ const LineGraph = ({ data = [], setActiveId = () => {}, isStriped = false, overB
     return (
         <div className={styles.barBox}>
             <div
-                className={`${styles.leftBar} ${styles.dottedBar} ${leftPercent >= 100 ? styles.leftBarFull : ""}`}
+                className={`${styles.leftBar} ${leftPercent >= 100 ? styles.leftBarFull : ""}`}
                 style={{
                     flex: `0  1 ${leftPercent}%`,
                     backgroundColor: leftColor,
