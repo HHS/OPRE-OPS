@@ -253,7 +253,7 @@ describe("CAN funding page", () => {
         cy.get("#save-changes").should("be.enabled");
         cy.get("#save-changes").click();
         cy.get(".usa-alert__body").should("contain", `The CAN ${can504.nickname} has been successfully updated.`);
-        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "Received $0.00 of $5,000,000.55");
+        cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "Received $0 of $5,000,000.55");
         cy.get("[data-cy=can-budget-fy-card]")
             .should("exist")
             .and("contain", "CAN Budget by FY")
