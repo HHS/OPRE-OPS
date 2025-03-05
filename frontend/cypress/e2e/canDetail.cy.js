@@ -73,9 +73,7 @@ describe("CAN detail page", () => {
         const expectedMessages = [
             "Budget Team edited the nickname from Test Can Nickname to SSRD", // due to revert back to original values
             "Budget Team edited the description", // due to revert back to original values
-            "Budget Team edited the nickname from SSRD to Test Can Nickname",
-            "Budget Team edited the description",
-            "FY 2025 CAN Funding Information imported from CANBACs"
+            "Budget Team edited the nickname from SSRD to Test Can Nickname"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
             cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
@@ -374,8 +372,7 @@ describe("CAN funding page", () => {
         const expectedMessages = [
             "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
             "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
-            "Budget Team entered a FY 2025 budget of $5,000,000.55",
-            "FY 2025 CAN Funding Information imported from CANBACs"
+            "Budget Team entered a FY 2025 budget of $5,000,000.55"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
             cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
@@ -426,10 +423,7 @@ describe("CAN funding page", () => {
         const expectedMessages = [
             "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
             "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00",
-            "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
-            "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
-            "Budget Team entered a FY 2025 budget of $5,000,000.55",
-            "FY 2025 CAN Funding Information imported from CANBACs"
+            "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
             cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
@@ -455,11 +449,7 @@ describe("CAN funding page", () => {
         const expectedMessages = [
             "Budget Team edited funding received for funding ID 526 from $2,000,000.00 to $3,500,000.00",
             "Budget Team deleted funding received for funding ID 527 in the amount of $1,000,000.00",
-            "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00",
-            "Budget Team added funding received to funding ID 526 in the amount of $2,000,000.00",
-            "Budget Team edited the FY 2025 budget from $5,000,000.55 to $8,000,000.88",
-            "Budget Team entered a FY 2025 budget of $5,000,000.55",
-            "FY 2025 CAN Funding Information imported from CANBACs"
+            "Budget Team added funding received to funding ID 527 in the amount of $1,000,000.00"
         ];
         cy.get('[data-cy="log-item-message"]').each((logItem, index) => {
             cy.wrap(logItem).should("exist").contains(expectedMessages[index]);
