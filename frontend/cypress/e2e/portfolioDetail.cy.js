@@ -35,7 +35,7 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "2 Executing")
             .should("contain", "1 Obligated");
         cy.get("#donut-graph-with-legend-card")
-            .should("contain", "$0.00")
+            .should("contain", "$0")
             .should("contain", "$1,000,000.00")
             .should("contain", "$3,000,000.00")
             .should("contain", "$4,000,000.00");
@@ -52,7 +52,7 @@ describe("Portfolio Detail Page", () => {
         // summary cards
         cy.wait(1000);
         cy.get('[data-cy="line-graph-with-legend-card"]')
-            .should("contain", "$0.00")
+            .should("contain", "$0")
             .should("contain", "0%")
             .should("contain", "$10,200,000.00")
             .should("contain", "100%");

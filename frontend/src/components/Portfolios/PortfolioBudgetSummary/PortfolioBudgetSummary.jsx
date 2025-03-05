@@ -41,28 +41,28 @@ const PortfolioBudgetSummary = ({
             label: "Draft",
             value: Math.round(inDraftFunding) || 0,
             color: "var(--neutral-lighter)",
-            percent: `${calculatePercent(inDraftFunding, totalFunding)}%`
+            percent: calculatePercent(inDraftFunding, totalFunding)
         },
         {
             id: 2,
             label: "Planned",
             value: Math.round(plannedFunding) || 0,
             color: "var(--data-viz-bl-by-status-2)",
-            percent: `${calculatePercent(plannedFunding, totalFunding)}%`
+            percent: calculatePercent(plannedFunding, totalFunding)
         },
         {
             id: 3,
             label: "Executing",
             value: Math.round(inExecutionFunding) || 0,
             color: "var(--data-viz-bl-by-status-3)",
-            percent: `${calculatePercent(inExecutionFunding, totalFunding)}%`
+            percent: calculatePercent(inExecutionFunding, totalFunding)
         },
         {
             id: 4,
             label: "Obligated",
             value: Math.round(obligatedFunding) || 0,
             color: "var(--data-viz-bl-by-status-4)",
-            percent: `${calculatePercent(obligatedFunding, totalFunding)}%`
+            percent: calculatePercent(obligatedFunding, totalFunding)
         }
     ];
 

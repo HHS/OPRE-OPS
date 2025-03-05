@@ -4,7 +4,14 @@ import pytest
 from flask import current_app
 from pytest_bdd import given, scenario, then, when
 
-from models import AgreementReason, AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
+from models import (
+    AgreementReason,
+    AgreementType,
+    BudgetLineItemStatus,
+    ContractAgreement,
+    ContractBudgetLineItem,
+    ContractType,
+)
 from ops_api.ops.schemas.budget_line_items import RequestBodySchema
 
 
@@ -141,7 +148,7 @@ def agreement_unauthorized(loaded_db, original_agreement):
 
 @given("I have a budget line item in Planned status", target_fixture="bli")
 def planned_bli(loaded_db, agreement, test_user, test_can):
-    planned_bli = BudgetLineItem(
+    planned_bli = ContractBudgetLineItem(
         agreement_id=agreement.id,
         comments="blah blah",
         line_description="LI 1",

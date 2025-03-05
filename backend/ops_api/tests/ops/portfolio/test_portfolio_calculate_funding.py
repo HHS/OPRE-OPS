@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from sqlalchemy import select
 
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingBudget, Portfolio
+from models import CAN, BudgetLineItemStatus, CANFundingBudget, ContractBudgetLineItem, Portfolio
 from ops_api.ops.utils.portfolios import (
     _get_budget_line_item_total_by_status,
     _get_carry_forward_total,
@@ -68,28 +68,28 @@ def db_loaded_with_data_for_total_fiscal_year_funding(app, loaded_db):
     loaded_db.add(can_funding_budget)
     loaded_db.commit()
 
-    blin_1 = BudgetLineItem(
+    blin_1 = ContractBudgetLineItem(
         line_description="#1",
         amount=1.0,
         status=BudgetLineItemStatus.PLANNED,
         can_id=can.id,
         date_needed=date(2023, 1, 1),
     )
-    blin_2 = BudgetLineItem(
+    blin_2 = ContractBudgetLineItem(
         line_description="#2",
         amount=2.0,
         status=BudgetLineItemStatus.IN_EXECUTION,
         can_id=can.id,
         date_needed=date(2023, 1, 1),
     )
-    blin_3 = BudgetLineItem(
+    blin_3 = ContractBudgetLineItem(
         line_description="#3",
         amount=3.0,
         status=BudgetLineItemStatus.OBLIGATED,
         can_id=can.id,
         date_needed=date(2023, 1, 1),
     )
-    blin_4 = BudgetLineItem(
+    blin_4 = ContractBudgetLineItem(
         line_description="#4",
         amount=4.0,
         status=BudgetLineItemStatus.DRAFT,
