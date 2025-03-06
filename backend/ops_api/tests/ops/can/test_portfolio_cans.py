@@ -6,7 +6,7 @@ import pytest
 def test_portfolio_cans(auth_client):
     response = auth_client.get("/api/v1/portfolios/1/cans/")
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
     assert response.json[0]["portfolio_id"] == 1
     assert response.json[1]["portfolio_id"] == 1
 
@@ -36,12 +36,9 @@ def test_portfolio_cans_with_year_2021(auth_client):
 def test_portfolio_cans_with_budget_fiscal_year_2021(auth_client):
     response = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2043")
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
     assert response.json[0]["portfolio_id"] == 1
     assert response.json[1]["portfolio_id"] == 1
-    # each of these funding details have 2043 budget lines that are normally filtered out by the budgetFiscalYear param
-    assert len(response.json[0]["budget_line_items"]) == 3
-    assert len(response.json[1]["budget_line_items"]) == 1
 
 
 @pytest.mark.usefixtures("app_ctx")

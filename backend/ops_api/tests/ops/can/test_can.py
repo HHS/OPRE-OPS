@@ -125,7 +125,7 @@ def test_can_service_get_by_id(test_can):
 def test_can_get_portfolio_cans(auth_client, loaded_db):
     response = auth_client.get("/api/v1/cans/portfolio/1")
     assert response.status_code == 200
-    assert len(response.json) == 2
+    assert len(response.json) == 3
     assert response.json[0]["id"] == 501
 
 
@@ -224,7 +224,7 @@ def test_service_create_can(loaded_db):
     assert can.number == "G998235"
     assert can.description == "Test CAN Created by unit test"
     assert can.portfolio_id == 6
-    assert can.id == 519
+    assert can.id == 520
     assert can == new_can
 
     loaded_db.delete(new_can)
@@ -268,7 +268,7 @@ def test_can_patch(budget_team_auth_client, mocker, unadded_can):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_patch_404(budget_team_auth_client, mocker, loaded_db, unadded_can):
-    test_can_id = 519
+    test_can_id = 520
     update_data = {
         "description": "Test CAN Created by unit test",
     }
