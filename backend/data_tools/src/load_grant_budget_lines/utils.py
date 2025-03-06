@@ -167,7 +167,6 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
         )
 
         bli_detail = GrantBudgetLineItemDetail(
-            agreement_id=grant.id,
             grants_number=data.GRANTS_NBR,
             grantee_name=data.GRANTEE,
             educational_institution=data.EDUCATIONAL_INSTITUTE,
@@ -178,36 +177,41 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
 
         existing_bli = session.get(GrantBudgetLineItem, data.SYS_BUDGET_ID)
 
-        existing_bli_detail = session.execute(
-            select(GrantBudgetLineItemDetail).where(
-                and_(
-                    GrantBudgetLineItemDetail.agreement_id == grant.id,
-                    GrantBudgetLineItemDetail.grants_number == data.GRANTS_NBR,
-                )
-            )
-        ).scalar_one_or_none()
-
         if existing_bli:
             bli.id = existing_bli.id
             bli.created_on = existing_bli.created_on
             bli.created_by = existing_bli.created_by
+
+        if os.getenv("DRY_RUN"):
+            logger.info("Dry run enabled. Rolling back transaction.")
+            session.rollback()
+        else:
+            session.merge(bli)
+            session.commit()
+
+        existing_bli_detail = session.get(GrantBudgetLineItemDetail, existing_bli.details_id if existing_bli else None)
 
         if existing_bli_detail:
             bli_detail.id = existing_bli_detail.id
             bli_detail.created_on = existing_bli_detail.created_on
             bli_detail.created_by = existing_bli_detail.created_by
 
-        logger.info(f"GrantBudgetLineItem model: {bli.to_dict()}")
-        logger.info(f"GrantBudgetLineItemDetail model: {bli_detail.to_dict()}")
-
-        session.merge(bli)
-        session.merge(bli_detail)
-
         if os.getenv("DRY_RUN"):
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
         else:
+            if existing_bli_detail:
+                session.merge(bli_detail)
+                session.commit()
+            else:
+                session.add(bli_detail)
+                session.commit()
+            bli.details_id = bli_detail.id
+            session.merge(bli)
             session.commit()
+
+        logger.info(f"GrantBudgetLineItem model: {bli.to_dict()}")
+        logger.info(f"GrantBudgetLineItemDetail model: {bli_detail.to_dict()}")
     except Exception as e:
         logger.error(f"Error creating models for {data}")
         raise e
