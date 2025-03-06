@@ -146,7 +146,7 @@ Individuals with a procurement team role are able to:
         content: `
 **The portfolio, project, and agreement relationship**
 
-Each OPRE division has one or more portfolios. This is the first level of organization. Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements which are contracts, grants, or IAAs. Currently only contracts are available with other types being available soon.
+Each OPRE division has one or more portfolios. This is the first level of organization.  Within each portfolio, projects can be created to assist in grouping different agreements together. There are different types of agreements which are contracts, grants, inter-agency agreements (IAAs), assisted acquisitions (AAs) and direct obligations.
 
 **The agreement lifecycle and budget line statuses**
 
@@ -235,7 +235,7 @@ Budget line statues are used to track the current state of an agreement. There a
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit icon on the right side of the page
 1. Review the Edit Services Components section with instructions
-1. You can edit or delete an SC, by hovering over the SC card and clicking the edit or delete 1. icon on the right hand side
+1. You can edit or delete a SC, by hovering over the SC card and clicking the edit or delete 1. icon on the right hand side
 1. Make your changes and then click the Update Services Component button
 1. When you are done editing, scroll to the bottom and click Save Changes to exit edit mode and save the agreement
         `
