@@ -3,7 +3,7 @@ import datetime
 import pytest
 from flask import url_for
 
-from models import Agreement, BudgetLineItem, BudgetLineItemStatus
+from models import Agreement, BudgetLineItemStatus, ContractBudgetLineItem
 
 test_user_id = 503
 test_user_name = "Amelia Popham"
@@ -82,7 +82,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     # DELETE budget line
     # resp = auth_client.delete(f"/api/v1/budget-line-items/{bli_id}")
     # assert resp.status_code == 200
-    bli = loaded_db.get(BudgetLineItem, bli_id)
+    bli = loaded_db.get(ContractBudgetLineItem, bli_id)
     loaded_db.delete(bli)
     loaded_db.commit()
 
@@ -96,15 +96,15 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     assert data[0]["class_name"] == "ContractAgreement"
     assert data[0]["event_type"] == "DELETED"
     assert len(data[0]["changes"]) == 0
-    assert data[1]["class_name"] == "BudgetLineItem"
+    assert data[1]["class_name"] == "ContractBudgetLineItem"
     assert data[1]["event_type"] == "DELETED"
     assert len(data[1]["changes"]) == 0
-    assert data[2]["class_name"] == "BudgetLineItem"
+    assert data[2]["class_name"] == "ContractBudgetLineItem"
     assert data[2]["event_type"] == "UPDATED"
     assert len(data[2]["changes"]) == 3
-    assert data[3]["class_name"] == "BudgetLineItem"
+    assert data[3]["class_name"] == "ContractBudgetLineItem"
     assert data[3]["event_type"] == "NEW"
-    assert len(data[3]["changes"]) == 8
+    assert len(data[3]["changes"]) == 9  # TODO: Remove these fragile tests when AgreementHistory is refactored
     assert data[4]["class_name"] == "ContractAgreement"
     assert data[4]["event_type"] == "UPDATED"
     assert len(data[4]["changes"]) == 2
@@ -191,7 +191,7 @@ def test_agreement_history_log_items(auth_client, app, test_can, utc_today):
     assert log_item["created_on"].startswith(utc_today)
 
     #  create BLI
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="Test Experiments Workflows BLI",
         agreement_id=agreement_id,
         can_id=test_can.id,
@@ -214,7 +214,7 @@ def test_agreement_history_log_items(auth_client, app, test_can, utc_today):
     log_items = resp_json[0]["log_items"]
     assert len(log_items) == 1
     log_item = log_items[0]
-    assert log_item["event_class_name"] == "BudgetLineItem"
+    assert log_item["event_class_name"] == "ContractBudgetLineItem"
     assert log_item["created_by_user_full_name"] == "Amelia Popham"
     assert log_item["event_type"] == "NEW"
     assert log_item["scope"] == "OBJECT"
@@ -239,7 +239,7 @@ def test_agreement_history_log_items(auth_client, app, test_can, utc_today):
     assert len(log_items) == 3
     for i in range(2):
         log_item = log_items[i]
-        assert log_item["event_class_name"] == "BudgetLineItem"
+        assert log_item["event_class_name"] == "ContractBudgetLineItem"
         assert log_item["created_by_user_full_name"] == "Amelia Popham"
         assert log_item["event_type"] == "UPDATED"
         assert log_item["scope"] == "PROPERTY"
@@ -268,8 +268,8 @@ def test_agreement_history_log_items(auth_client, app, test_can, utc_today):
     assert len(log_items) == 1
     log_item = log_items[0]
     assert log_item["scope"] == "PROPERTY"
-    assert log_item["event_class_name"] == "BudgetLineItem"
-    assert log_item["target_class_name"] == "BudgetLineItem"
+    assert log_item["event_class_name"] == "ContractBudgetLineItem"
+    assert log_item["target_class_name"] == "ContractBudgetLineItem"
     assert log_item["property_key"] == "status"
     assert log_item["event_type"] == "UPDATED"
     assert log_item["created_on"] is not None
@@ -312,7 +312,7 @@ def test_agreement_history_log_items_with_change_requests(
     agreement_id = resp.json["id"]
 
     #  create BLI
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="Test Experiments Workflows BLI",
         agreement_id=agreement_id,
         can_id=test_can.id,
@@ -391,9 +391,9 @@ def test_agreement_history_log_items_with_change_requests(
             assert log_item["updated_by_change_request"] is False
             assert log_item["changes_requested_by_user_full_name"] == "Budget Team"
         # log item for the BLI update
-        elif log_item["event_class_name"] == "BudgetLineItem":
+        elif log_item["event_class_name"] == "ContractBudgetLineItem":
             assert log_item["event_type"] == "UPDATED"
-            assert log_item["target_class_name"] == "BudgetLineItem"
+            assert log_item["target_class_name"] == "ContractBudgetLineItem"
             assert log_item["updated_by_change_request"] is True
             assert log_item["changes_requested_by_user_full_name"] is None
 

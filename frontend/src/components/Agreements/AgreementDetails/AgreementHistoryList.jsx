@@ -56,7 +56,7 @@ const objectLogItemMessage = (logItem) => {
     let titleName = className;
     switch (logItem.event_type) {
         case HISTORY_EVENT_TYPE.NEW:
-            if (logItem.class_name === "BudgetLineItem") {
+            if (logItem.class_name === "ContractBudgetLineItem") {
                 return `${findObjectTitle(logItem)} created by ${createdByName}`;
             } else {
                 return `${titleName} created by ${createdByName}`;
@@ -64,7 +64,7 @@ const objectLogItemMessage = (logItem) => {
         case HISTORY_EVENT_TYPE.UPDATED:
             return `${titleName} updated by ${createdByName}`;
         case HISTORY_EVENT_TYPE.DELETED:
-            if (logItem.class_name === "BudgetLineItem") {
+            if (logItem.class_name === "ContractBudgetLineItem") {
                 return `${findObjectTitle(logItem)} deleted by ${createdByName}`;
             } else {
                 return `${titleName} deleted by ${createdByName}`;
@@ -96,7 +96,7 @@ const propertyLogItemTitle = (logItem) => {
         if (logItem.change.deleted) return `${propertyLabel} Removed`;
     }
     let title = `${propertyLabel} Edited`;
-    if (logItem.event_class_name === "BudgetLineItem") {
+    if (logItem.event_class_name === "ContractBudgetLineItem") {
         title = `Budget Line ${propertyLabel} Edited`;
     } else if (logItem.event_class_name === "BudgetLineItemChangeRequest") {
         title =
@@ -213,7 +213,7 @@ const propertyLogItemMessageBeginning = (logItem) => {
     const change = logItem.change;
     const propertyLabel = getLogItemPropertyLabel(logItem);
     let msg = `${propertyLabel} changed`;
-    if (logItem.event_class_name === "BudgetLineItem") {
+    if (logItem.event_class_name === "ContractBudgetLineItem") {
         if (change.key !== "line_description") {
             msg = `${findObjectTitle(logItem)} ${propertyLabel} changed`;
         } else {

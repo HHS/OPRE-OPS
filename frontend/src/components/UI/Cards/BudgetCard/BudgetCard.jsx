@@ -5,6 +5,7 @@ import CurrencyWithSmallCents from "../../CurrencyWithSmallCents/CurrencyWithSma
 import LineGraph from "../../DataViz/LineGraph";
 import RoundedBox from "../../RoundedBox";
 import Tag from "../../Tag";
+import { calculatePercent } from "../../../../helpers/utils";
 
 /**
  * @typedef {Object} BudgetCardProps
@@ -22,16 +23,19 @@ import Tag from "../../Tag";
 const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
     const overBudget = totalSpending > totalFunding;
     const remainingBudget = totalFunding - totalSpending;
+    const spendingPercent = calculatePercent(totalSpending, totalFunding);
 
     const graphData = [
         {
             id: 1,
             value: totalSpending,
+            percent: spendingPercent,
             color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-2)"
         },
         {
             id: 2,
             value: remainingBudget,
+            percent: 100 - spendingPercent,
             color: overBudget ? "var(--feedback-error)" : "var(--data-viz-budget-graph-1)"
         }
     ];
@@ -63,28 +67,30 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
                         Over Budget
                     </Tag>
                 ) : (
-                    <Tag tagStyle={"budgetAvailable"}>Available</Tag>
+                    totalFunding > 0 && <Tag tagStyle={"budgetAvailable"}>Available</Tag>
                 )}
             </div>
-            <div
-                id="currency-summary-card"
-                className="margin-top-2"
-            >
-                <LineGraph
-                    data={graphData}
-                    isStriped={true}
-                    overBudget={overBudget}
-                />
-            </div>
+            {totalFunding > 0 && (
+                <div
+                    id="currency-summary-card"
+                    className="margin-top-2"
+                >
+                    <LineGraph
+                        data={graphData}
+                        isStriped={true}
+                        overBudget={overBudget}
+                    />
+                </div>
+            )}
             <div className="font-12px margin-top-2 display-flex flex-justify-end">
                 <div>
-                    Spending{" "}
+                    &#42;Spending{" "}
                     <CurrencyFormat
                         value={totalSpending ?? 0}
                         displayType={"text"}
                         thousandSeparator={true}
                         prefix={"$"}
-                        decimalScale={2}
+                        decimalScale={totalSpending > 0 ? 2 : 0}
                         fixedDecimalScale
                     />{" "}
                     of{" "}
@@ -94,11 +100,17 @@ const BudgetCard = ({ cardId, title, totalSpending, totalFunding }) => {
                         thousandSeparator={true}
                         prefix={"$"}
                         renderText={(totalFunding) => <span>{totalFunding}</span>}
-                        decimalScale={2}
+                        decimalScale={totalFunding > 0 ? 2 : 0}
                         fixedDecimalScale
                     />
                 </div>
             </div>
+            <p
+                className={`${totalFunding > 0 ? "margin-top-6" : "margin-top-8"} margin-bottom-0 font-12px text-base-dark text-normal`}
+                style={{ whiteSpace: "pre-line", lineHeight: "20px" }}
+            >
+                &#42;Spending is the sum of BLs in Planned, Executing and Obligated Status
+            </p>
         </RoundedBox>
     );
 };

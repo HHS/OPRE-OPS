@@ -1,8 +1,7 @@
-import PropTypes from "prop-types";
 import React, { useEffect } from "react";
 import { NO_DATA } from "../../../constants";
 import PaginationNav from "../../UI/PaginationNav";
-import { findFundingBudgetBudgetByFiscalYear, formatObligateBy } from "./CANTable.helpers";
+import { formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
@@ -24,7 +23,7 @@ const CANTable = ({ cans, fiscalYear }) => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [fiscalYear]);
+    }, [fiscalYear, cans]);
 
     if (cans.length === 0) {
         return <p className="text-center">No CANs found</p>;
@@ -45,12 +44,11 @@ const CANTable = ({ cans, fiscalYear }) => {
                             fiscalYear={fiscalYear}
                             activePeriod={can.active_period ?? 0}
                             obligateBy={formatObligateBy(can.obligate_by)}
-                            transfer={can.funding_details?.method_of_transfer ?? NO_DATA}
-                            fyBudget={findFundingBudgetBudgetByFiscalYear(can, fiscalYear)}
                         />
                     ))}
                 </tbody>
             </table>
+
             {cans.length > CANS_PER_PAGE && (
                 <PaginationNav
                     currentPage={currentPage}
@@ -61,11 +59,6 @@ const CANTable = ({ cans, fiscalYear }) => {
             )}
         </>
     );
-};
-
-CANTable.propTypes = {
-    cans: PropTypes.array.isRequired,
-    fiscalYear: PropTypes.number
 };
 
 export default CANTable;

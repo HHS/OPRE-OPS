@@ -1,9 +1,10 @@
 import datetime
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy_continuum import parent_class, version_class
 
-from models import CAN, Agreement, BudgetLineItem, BudgetLineItemStatus, ServicesComponent
+from models import CAN, Agreement, BudgetLineItem, BudgetLineItemStatus, ContractBudgetLineItem, ServicesComponent
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -20,7 +21,7 @@ def test_budget_line_item_lookup(loaded_db, test_bli):
 
 
 def test_budget_line_item_creation(test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="Grant Expenditure GA999",
         agreement_id=1,
         can_id=test_can.id,
@@ -31,7 +32,7 @@ def test_budget_line_item_creation(test_can):
 
 
 def test_get_budget_line_items_list(auth_client, loaded_db):
-    count = loaded_db.query(BudgetLineItem).count()
+    count = len(loaded_db.execute(select(BudgetLineItem)).all())
     response = auth_client.get("/api/v1/budget-line-items/")
     assert response.status_code == 200
     assert len(response.json) == count
@@ -114,7 +115,7 @@ def test_post_budget_line_items(loaded_db, auth_client, test_can):
     assert response.json["services_component_id"] == 1
 
     # cleanup
-    bli = loaded_db.get(BudgetLineItem, response.json["id"])
+    bli = loaded_db.get(ContractBudgetLineItem, response.json["id"])
     loaded_db.delete(bli)
     loaded_db.commit()
 
@@ -168,7 +169,7 @@ def test_post_budget_line_items_missing_optional_comments(loaded_db, auth_client
     assert response.status_code == 201
 
     # cleanup
-    bli = loaded_db.get(BudgetLineItem, response.json["id"])
+    bli = loaded_db.get(ContractBudgetLineItem, response.json["id"])
     loaded_db.delete(bli)
     loaded_db.commit()
 
@@ -217,14 +218,14 @@ def test_post_budget_line_items_only_agreement_id_required(auth_client, loaded_d
     assert response.json["agreement_id"] == 1
 
     # cleanup
-    bli = loaded_db.get(BudgetLineItem, response.json["id"])
+    bli = loaded_db.get(ContractBudgetLineItem, response.json["id"])
     loaded_db.delete(bli)
     loaded_db.commit()
 
 
 @pytest.fixture()
 def test_bli_new(loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -247,7 +248,7 @@ def test_bli_new(loaded_db, test_can):
 
 @pytest.fixture()
 def test_bli_new_previous_year(loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -270,7 +271,7 @@ def test_bli_new_previous_year(loaded_db, test_can):
 
 @pytest.fixture()
 def test_bli_new_previous_fiscal_year(loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -293,7 +294,7 @@ def test_bli_new_previous_fiscal_year(loaded_db, test_can):
 
 @pytest.fixture()
 def test_bli_new_no_can(loaded_db):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -315,7 +316,7 @@ def test_bli_new_no_can(loaded_db):
 
 @pytest.fixture()
 def test_bli_new_no_need_by_date(loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -363,7 +364,7 @@ def test_put_budget_line_items(auth_client, test_bli_new):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_put_budget_line_items_minimum(auth_client, loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
         comments="blah blah",
@@ -402,7 +403,7 @@ def test_put_budget_line_items_minimum(auth_client, loaded_db, test_can):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_put_budget_line_items_bad_status(auth_client, loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
         comments="blah blah",
@@ -431,7 +432,7 @@ def test_put_budget_line_items_bad_status(auth_client, loaded_db, test_can):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_put_budget_line_items_bad_date(auth_client, loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
         comments="blah blah",
@@ -500,7 +501,7 @@ def test_put_budget_line_items_non_existent_bli(auth_client, loaded_db):
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items(auth_client, loaded_db, test_can):
     # TODO: setting the services_component_id is not working on create
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
         comments="blah blah",
@@ -550,7 +551,7 @@ def test_patch_budget_line_items(auth_client, loaded_db, test_can):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_update_two_attributes(auth_client, loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
         comments="blah blah",
@@ -640,7 +641,7 @@ def test_patch_budget_line_items_invalid_can(auth_client):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_patch_budget_line_items_update_status(auth_client, loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         id=1000,
         line_description="LI 1",
         comments="blah blah",
@@ -669,7 +670,7 @@ def test_patch_budget_line_items_update_status(auth_client, loaded_db, test_can)
 
 @pytest.mark.usefixtures("app_ctx")
 def test_patch_budget_line_items_history(loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="LI 1",
         comments="blah blah",
         agreement_id=1,
@@ -685,8 +686,8 @@ def test_patch_budget_line_items_history(loaded_db, test_can):
         loaded_db.commit()
 
         # these will throw if the history tables don't exist
-        version_class(BudgetLineItem)
-        parent_class(version_class(BudgetLineItem))
+        version_class(ContractBudgetLineItem)
+        parent_class(version_class(ContractBudgetLineItem))
 
         # initial version is 0
         assert bli.versions[0].line_description == "LI 1"
@@ -699,7 +700,7 @@ def test_patch_budget_line_items_history(loaded_db, test_can):
         assert bli.versions[1].line_description == "Updated LI 1"
 
         # SQL pulls back latest version (1 in this case)
-        updated_bli = loaded_db.get(BudgetLineItem, bli.id)
+        updated_bli = loaded_db.get(ContractBudgetLineItem, bli.id)
         assert updated_bli.line_description == "Updated LI 1"
         assert updated_bli.display_name == f"BL {bli.id}"
 
@@ -834,7 +835,7 @@ def test_valid_services_component(auth_client, app, test_bli_new):
 @pytest.mark.usefixtures("app_ctx")
 @pytest.mark.usefixtures("loaded_db")
 def test_delete_budget_line_items(auth_client, loaded_db, test_can):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         line_description="LI 1",
         agreement_id=1,
         can_id=test_can.id,
@@ -850,7 +851,7 @@ def test_delete_budget_line_items(auth_client, loaded_db, test_can):
     response = auth_client.delete(f"/api/v1/budget-line-items/{new_bli_id}")
     assert response.status_code == 200
 
-    sc: BudgetLineItem = loaded_db.get(BudgetLineItem, new_bli_id)
+    sc: ContractBudgetLineItem = loaded_db.get(ContractBudgetLineItem, new_bli_id)
     assert not sc
 
 
@@ -904,7 +905,7 @@ def test_budget_line_item_validation_create_invalid(auth_client, app, test_can, 
     bli_id = resp.json["id"]
 
     # cleanup
-    bli = session.get(BudgetLineItem, bli_id)
+    bli = session.get(ContractBudgetLineItem, bli_id)
     session.delete(bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
@@ -965,7 +966,7 @@ def test_budget_line_item_validation_patch_to_invalid(auth_client, app, test_can
     assert len(resp.json["_schema"]) == len(data)
 
     # cleanup
-    bli = session.get(BudgetLineItem, bli_id)
+    bli = session.get(ContractBudgetLineItem, bli_id)
     session.delete(bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
@@ -1025,7 +1026,7 @@ def test_budget_line_item_validation_patch_to_zero_or_negative_amount(auth_clien
     assert len(resp.json["_schema"]) == 1
 
     # cleanup
-    bli = session.get(BudgetLineItem, bli_id)
+    bli = session.get(ContractBudgetLineItem, bli_id)
     session.delete(bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)
@@ -1076,7 +1077,7 @@ def test_budget_line_item_validation_patch_to_invalid_date(auth_client, app, tes
     assert len(resp.json["_schema"]) == 1
 
     # cleanup
-    bli = session.get(BudgetLineItem, bli_id)
+    bli = session.get(ContractBudgetLineItem, bli_id)
     session.delete(bli)
     agreement = session.get(Agreement, agreement_id)
     session.delete(agreement)

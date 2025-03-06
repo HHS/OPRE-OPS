@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from flask.testing import FlaskClient
 
-from models.cans import CAN, CANMethodOfTransfer
+from models.cans import CAN, CANFundingBudget, CANMethodOfTransfer
 from ops_api.ops.utils.cans import (
     aggregate_funding_summaries,
     filter_by_attribute,
@@ -15,6 +15,56 @@ from ops_api.ops.utils.cans import (
     get_nested_attribute,
 )
 from ops_api.tests.utils import remove_keys
+
+
+@pytest.fixture
+def mock_can():
+    funding_details = MagicMock(
+        fiscal_year=2021,
+        fund_code="ABXXXX20215MBD",
+        funding_source="OPRE",
+        method_of_transfer="Reimbursable",
+        active_period=5,
+        obligate_by=2026,
+    )
+
+    funding_budgets = [
+        MagicMock(fiscal_year=2021, budget=Decimal("50000000.00")),  # This is a new_funding budget for FY 2021
+        MagicMock(fiscal_year=2023, budget=Decimal("594500.00")),  # This is a carry_forward budget for FY 2023
+        MagicMock(fiscal_year=2024, budget=Decimal("614000.00")),  # This is a carry_forward budget for FY 2024
+    ]
+
+    can = MagicMock(
+        id=500,
+        number="M14HRF1",
+        description="Healthy Marriages For Happy Kids - OPRE",
+        nick_name="HMFHK-OPRE",
+        funding_details=funding_details,
+        funding_budgets=funding_budgets,
+        active_period=5,
+        obligate_by=2026,
+    )
+
+    return can
+
+
+@pytest.fixture
+def mock_can_without_funding_details():
+    funding_budgets = [
+        CANFundingBudget(fiscal_year=2021, budget=Decimal("50000000.00")),
+        CANFundingBudget(fiscal_year=2023, budget=Decimal("594500.00")),
+        CANFundingBudget(fiscal_year=2024, budget=Decimal("614000.00")),
+    ]
+
+    can = CAN(
+        id=500,
+        number="M14HRF1",
+        description="Healthy Marriages For Happy Kids - OPRE",
+        nick_name="HMFHK-OPRE",
+        funding_budgets=funding_budgets,
+    )
+
+    return can
 
 
 class DummyObject:
@@ -129,7 +179,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                 "can": {
                     "active_period": 1,
                     "appropriation_date": 2023,
-                    "budget_line_items": [15008],
+                    "budget_line_items": [15015],
                     "created_by": None,
                     "created_by_user": None,
                     "description": "Healthy Marriages Responsible Fatherhood - OPRE",
@@ -137,7 +187,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                     "expiration_date": 2024,
                     "funding_budgets": [
                         {
-                            "budget": "1140000.0",
+                            "budget": "1140000.0",  # This is a new_funding budget
                             "can": 500,
                             "can_id": 500,
                             "created_by": None,
@@ -196,7 +246,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                 "expiration_date": "10/01/2024",
             }
         ],
-        "carry_forward_funding": Decimal("-860000.00"),
+        "carry_forward_funding": 0,
         "expected_funding": Decimal("260000.0"),
         "in_draft_funding": 0,
         "in_execution_funding": Decimal("2000000.00"),
@@ -223,7 +273,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                 "can": {
                     "active_period": 1,
                     "appropriation_date": 2023,
-                    "budget_line_items": [15008],
+                    "budget_line_items": [15015],
                     "created_by": None,
                     "created_by_user": None,
                     "description": "Healthy Marriages Responsible Fatherhood - OPRE",
@@ -231,7 +281,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                     "expiration_date": 2024,
                     "funding_budgets": [
                         {
-                            "budget": "1140000.0",
+                            "budget": "1140000.0",  # This is a new_funding budget
                             "can": 500,
                             "can_id": 500,
                             "created_by": None,
@@ -290,7 +340,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                 "expiration_date": "10/01/2024",
             }
         ],
-        "carry_forward_funding": Decimal("1140000.0"),
+        "carry_forward_funding": 0,
         "in_draft_funding": Decimal("0.0"),
         "expected_funding": Decimal("260000.0"),
         "in_execution_funding": 0,
@@ -322,13 +372,18 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
 
     available_funding = response.json["available_funding"]
     carry_forward_funding = response.json["carry_forward_funding"]
+    new_funding = response.json["new_funding"]
+    total_funding = response.json["total_funding"]
 
     assert response.status_code == 200
     assert len(response.json["cans"]) == 2
 
     assert available_funding == 3374500.23
-    assert carry_forward_funding == 3374500.23
-    assert response.json["new_funding"] == 1340000.0
+    assert carry_forward_funding == 10034500.23
+    assert new_funding == 1340000.00
+    assert total_funding == 11374500.23
+    assert carry_forward_funding != available_funding
+    assert total_funding == carry_forward_funding + new_funding
 
 
 def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
@@ -559,3 +614,93 @@ def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
     assert len(response.json["cans"]) == 19
+
+
+def test_new_funding_math(auth_client: FlaskClient) -> None:
+    expected_carry_forward_data = {
+        2027: 500000,
+        2026: 500000,
+        2025: 1034500.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
+        2024: 20140000,
+        2023: 51140000,
+        2022: 10000000,
+        2021: 0,
+    }
+
+    expected_new_funding_data = {
+        2027: 0,
+        2026: 0,
+        2025: 0,
+        2024: 0,
+        2023: 27060000,
+        2022: 17000000,
+        2021: 30200000,
+    }
+
+    for year in expected_carry_forward_data.keys():
+        response = auth_client.get(f"/api/v1/can-funding-summary?can_ids=0&fiscal_year={year}")
+        assert response.status_code == 200
+        assert response.json["carry_forward_funding"] == expected_carry_forward_data[year]
+        assert response.json["new_funding"] == expected_new_funding_data[year]
+        assert response.json["total_funding"] == expected_carry_forward_data[year] + expected_new_funding_data[year]
+
+
+def test_carry_forward_with_transfer_filter(auth_client: FlaskClient) -> None:
+    response = auth_client.get("/api/v1/can-funding-summary?can_ids=0&fiscal_year=2023&transfer=IAA")
+    assert response.status_code == 200
+    assert response.json["carry_forward_funding"] == 20000000
+    assert response.json["new_funding"] == 1140000
+    assert response.json["total_funding"] == 21140000
+    assert response.json["total_funding"] == response.json["carry_forward_funding"] + response.json["new_funding"]
+
+
+def test_carry_forward_with_portfolio_filter(auth_client: FlaskClient) -> None:
+    response = auth_client.get("/api/v1/can-funding-summary?can_ids=0&fiscal_year=2023&portfolio=HMRF")
+    assert response.status_code == 200
+    assert response.json["carry_forward_funding"] == 11140000
+    assert response.json["new_funding"] == 23420000
+    assert response.json["total_funding"] == 34560000
+    assert response.json["total_funding"] == response.json["carry_forward_funding"] + response.json["new_funding"]
+
+
+# Helper function to validate the funding results for a fiscal year
+def assert_funding_summary(result, expected_cf, expected_nf, expected_tf):
+    assert "carry_forward_funding" in result
+    assert "new_funding" in result
+    assert "total_funding" in result
+
+    cf = result["carry_forward_funding"]
+    nf = result["new_funding"]
+    tf = result["total_funding"]
+
+    assert cf == expected_cf
+    assert nf == expected_nf
+    assert tf == expected_tf
+    assert tf == cf + nf
+
+
+@pytest.mark.parametrize(
+    "fiscal_year, expected_cf, expected_nf, expected_tf",
+    [
+        (2020, 0, 0, 0),
+        (2021, 0, 50000000.0, 50000000.0),
+        (2022, 0, 0, 0),
+        (2023, 594500.0, 0, 594500.0),
+        (2024, 614000.0, 0, 614000.0),
+        (2025, 0, 0, 0),
+    ],
+)
+def test_get_can_funding_summary(mock_can, fiscal_year, expected_cf, expected_nf, expected_tf):
+    result = get_can_funding_summary(mock_can, fiscal_year)
+    assert_funding_summary(result, expected_cf, expected_nf, expected_tf)
+
+
+@pytest.mark.parametrize(
+    "fiscal_year, expected_cf, expected_nf, expected_tf",
+    [(2020, 0, 0, 0), (2021, 0, 0, 0), (2022, 0, 0, 0), (2023, 0, 0, 0), (2024, 0, 0, 0), (2025, 0, 0, 0)],
+)
+def test_get_can_funding_summary_with_no_funding_details(
+    mock_can_without_funding_details, fiscal_year, expected_cf, expected_nf, expected_tf
+):
+    result = get_can_funding_summary(mock_can_without_funding_details, fiscal_year)
+    assert_funding_summary(result, expected_cf, expected_nf, expected_tf)

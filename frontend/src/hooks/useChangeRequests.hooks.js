@@ -28,7 +28,7 @@ export const useChangeRequestsForAgreement = (agreementId) => {
  */
 export const useChangeRequestTotal = () => {
     const userId = useSelector((state) => state.auth?.activeUser?.id) ?? null;
-    const { data: changeRequests } = useGetChangeRequestsListQuery({userId});
+    const { data: changeRequests } = useGetChangeRequestsListQuery({ userId });
 
     return changeRequests?.length || 0;
 };
@@ -96,7 +96,7 @@ export function getChangeRequestsForTooltip(changeRequests, budgetLine, cans, ca
         changeRequests.forEach((changeRequest) => {
             if (changeRequest?.requested_change_data?.amount) {
                 changeRequestsMessages.push(
-                    `Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                    `Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                 );
             }
             if (changeRequest?.requested_change_data?.date_needed) {
@@ -156,7 +156,7 @@ function getChangeRequestsFromBudgetLines(budgetLines, cans) {
                     let bliId = `BL ${budgetLine.id}`;
                     if (changeRequest?.requested_change_data?.amount) {
                         changeRequestsMessages.add(
-                            `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                            `${bliId} Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                         );
                     }
                     if (changeRequest?.requested_change_data?.date_needed) {
@@ -214,7 +214,7 @@ function getFilteredChangeRequestsFromBudgetLines(budgetLines, cans, targetStatu
             if (isBudgetChange) {
                 if (changeRequest?.requested_change_data?.amount) {
                     changeRequestsMessages.add(
-                        `${bliId} Amount: ${renderField("BudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
+                        `${bliId} Amount: ${renderField("ContractBudgetLineItem", "amount", budgetLine?.amount)} to ${renderField("BudgetLineItem", "amount", changeRequest.requested_change_data.amount)}`
                     );
                 }
                 if (changeRequest?.requested_change_data?.date_needed) {

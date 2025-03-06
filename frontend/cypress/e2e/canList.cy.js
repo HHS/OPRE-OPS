@@ -53,7 +53,7 @@ describe("CAN List", () => {
         cy.get("h1").should("contain", canNumber);
     });
 
-    it("pagination on the bli table works as expected", () => {
+    it("pagination on the CAN table works as expected", () => {
         cy.get("ul").should("have.class", "usa-pagination__list");
         cy.get("li").should("have.class", "usa-pagination__item").contains("1");
         cy.get("button").should("have.class", "usa-current").contains("1");
@@ -94,7 +94,7 @@ describe("CAN List", () => {
     it("should display the summary cards", () => {
         cy.get("#fiscal-year-select").select("2023");
         cy.get("[data-cy='budget-summary-card-2023']").should("exist");
-        cy.get("[data-cy='budget-summary-card-2023']").contains("FY 2023 CANs Available Budget *");
+        cy.get("[data-cy='budget-summary-card-2023']").contains("FY 2023 CANs Available Budget");
         cy.get("[data-cy='line-graph-with-legend-card']").should("exist");
         cy.get("[data-cy='line-graph-with-legend-card']").contains("FY 2023 CANs Total Budget");
     });
@@ -322,5 +322,24 @@ describe("CAN List Filtering", () => {
         // click the button that has text Apply
         cy.get("button").contains("Apply").click();
         cy.get("tbody").find("tr").should("have.length", 10);
+    });
+
+    it("pagination should work when filtering on page 2", () => {
+        // go to the second page
+        cy.get("li").should("have.class", "usa-pagination__item").contains("2").click();
+        // table should have more than 3 rows
+        cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
+        cy.get("button").contains("Filter").click();
+        // set a number of filters
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(".can-active-period-combobox__control")
+            .click()
+            .get(".can-active-period-combobox__menu")
+            .find(".can-active-period-combobox__option")
+            .first()
+            .click();
+        cy.get("button").contains("Apply").click();
+        // 1st page should have more than 3 rows
+        cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });
 });
