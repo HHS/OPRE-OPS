@@ -1,10 +1,12 @@
 import Tooltip from "../../UI/USWDS/Tooltip";
 
 const CANTableHead = () => {
-    const availableBudgetTooltip =
-        "Available Budget is the amount of the CAN's FY budget that has not been allocated yet and it's available to plan from";
-    const fundingReceivedTooltip =
-        "Funding Received is the amount of the CAN's FY budget that has been received to OPRE and it can be executed or obligated against";
+    const fundingReceivedTooltip = `Funding Received is the amount of the CAN's
+FY budget that has been received to OPRE
+and it can be executed or obligated against`;
+    const availableBudgetTooltip = `Available Budget is the amount of the CAN's
+FY budget that has not been allocated yet
+and it's available to plan from`;
 
     return (
         <thead>
@@ -46,8 +48,9 @@ const CANTableHead = () => {
                     <Tooltip
                         label={fundingReceivedTooltip}
                         position="left"
+                        className="text-medium"
                     >
-                        <span>Funding Received</span>
+                        <span className="text-bold">Funding Received</span>
                     </Tooltip>
                 </th>
                 <th
@@ -57,8 +60,9 @@ const CANTableHead = () => {
                     <Tooltip
                         label={availableBudgetTooltip}
                         position="left"
+                        className="text-medium"
                     >
-                        <span>Available Budget</span>
+                        <span className="text-bold">Available Budget</span>
                     </Tooltip>
                 </th>
             </tr>
