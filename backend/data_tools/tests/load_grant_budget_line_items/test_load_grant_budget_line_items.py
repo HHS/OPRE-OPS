@@ -277,7 +277,7 @@ def test_main(db_for_test_with_data):
         .scalars()
         .all()
     )
-    assert len(history_objs) == 12  # 6 records created, 6 records updated
+    assert len(history_objs) == 6
 
     history_objs = (
         db_for_test_with_data.execute(
@@ -286,7 +286,7 @@ def test_main(db_for_test_with_data):
         .scalars()
         .all()
     )
-    assert len(history_objs) == 6  # 6 records created
+    assert len(history_objs) == 6
 
     bli_1_history = (
         db_for_test_with_data.execute(
@@ -297,7 +297,7 @@ def test_main(db_for_test_with_data):
         .scalars()
         .all()
     )
-    assert len(bli_1_history) == 2
+    assert len(bli_1_history) == 1
 
 
 #
@@ -446,12 +446,9 @@ def test_create_models_upsert(db_for_test_with_data):
         .scalars()
         .all()
     )
-    assert history_records[0].event_type == OpsDBHistoryType.UPDATED
+    assert history_records[0].event_type == OpsDBHistoryType.NEW
     assert history_records[0].row_key == str(bli_model.id)
     assert history_records[0].created_by == sys_user.id
-    assert history_records[1].event_type == OpsDBHistoryType.UPDATED
-    assert history_records[1].row_key == str(bli_model.id)
-    assert history_records[1].created_by == sys_user.id
 
     # upsert the same data - change the year
     create_models(data_2, sys_user, db_for_test_with_data)
@@ -484,24 +481,24 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.details.state_code == StateCode.NY
 
     # make sure the version records were created
-    assert bli_model.versions[2].id == 1
-    assert bli_model.versions[2].agreement_id == 1
-    assert bli_model.versions[2].line_description == "Grant 1"
-    assert bli_model.versions[2].comments == "Grant Comment #1"
-    assert bli_model.versions[2].grant_year_number == 2
-    assert bli_model.versions[2].bns_number == "1000000"
-    assert bli_model.versions[2].committed_date == date(2025, 1, 1)
-    assert bli_model.versions[2].fa_signed_date is None
-    assert bli_model.versions[2].obligation_date == date(2025, 1, 1)
-    assert bli_model.versions[2].start_date == date(2024, 10, 1)
-    assert bli_model.versions[2].end_date == date(2025, 9, 30)
-    assert bli_model.versions[2].object_class_code_id == 1
-    assert bli_model.versions[2].amount == Decimal("1.0")
-    assert bli_model.versions[2].status == BudgetLineItemStatus.DRAFT
-    assert bli_model.versions[2].created_by == sys_user.id
-    assert bli_model.versions[2].updated_by == sys_user.id
-    assert bli_model.versions[2].created_on is not None
-    assert bli_model.versions[2].updated_on is not None
+    assert bli_model.versions[1].id == 1
+    assert bli_model.versions[1].agreement_id == 1
+    assert bli_model.versions[1].line_description == "Grant 1"
+    assert bli_model.versions[1].comments == "Grant Comment #1"
+    assert bli_model.versions[1].grant_year_number == 2
+    assert bli_model.versions[1].bns_number == "1000000"
+    assert bli_model.versions[1].committed_date == date(2025, 1, 1)
+    assert bli_model.versions[1].fa_signed_date is None
+    assert bli_model.versions[1].obligation_date == date(2025, 1, 1)
+    assert bli_model.versions[1].start_date == date(2024, 10, 1)
+    assert bli_model.versions[1].end_date == date(2025, 9, 30)
+    assert bli_model.versions[1].object_class_code_id == 1
+    assert bli_model.versions[1].amount == Decimal("1.0")
+    assert bli_model.versions[1].status == BudgetLineItemStatus.DRAFT
+    assert bli_model.versions[1].created_by == sys_user.id
+    assert bli_model.versions[1].updated_by == sys_user.id
+    assert bli_model.versions[1].created_on is not None
+    assert bli_model.versions[1].updated_on is not None
 
     # make sure the history records are created
     history_records = (
@@ -544,7 +541,7 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.created_on is not None
     assert bli_model.updated_on is not None
 
-    assert bli_model.details_id == grant_details_id
+    assert bli_model.details_id != grant_details_id
     assert bli_model.details.grantee_name == "Univ"
     assert bli_model.details.grants_number == "00YR0001-1"
     assert bli_model.details.educational_institution is False

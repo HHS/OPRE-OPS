@@ -145,9 +145,33 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
 
         can = session.get(CAN, data.SYS_CAN_ID)
 
+        existing_bli_detail = session.execute(
+            select(GrantBudgetLineItemDetail).where(
+                and_(
+                    GrantBudgetLineItemDetail.grants_number == data.GRANTS_NBR,
+                    GrantBudgetLineItemDetail.grantee_name == data.GRANTEE,
+                    GrantBudgetLineItemDetail.educational_institution == data.EDUCATIONAL_INSTITUTE,
+                    GrantBudgetLineItemDetail.state_code == data.STATE_CODE,
+                )
+            )
+        ).scalar_one_or_none()
+
+        if not existing_bli_detail:
+            bli_detail = GrantBudgetLineItemDetail(
+                grants_number=data.GRANTS_NBR,
+                grantee_name=data.GRANTEE,
+                educational_institution=data.EDUCATIONAL_INSTITUTE,
+                state_code=data.STATE_CODE,
+                created_by=sys_user.id,
+                updated_by=sys_user.id,
+            )
+        else:
+            bli_detail = existing_bli_detail
+
         bli = GrantBudgetLineItem(
             id=data.SYS_BUDGET_ID,
             agreement_id=grant.id,
+            details=bli_detail,
             grant_year_number=data.YEAR,
             bns_number=data.BNS_NBR,
             committed_date=data.COMMITTED_DATE,
@@ -166,15 +190,6 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
             updated_by=sys_user.id,
         )
 
-        bli_detail = GrantBudgetLineItemDetail(
-            grants_number=data.GRANTS_NBR,
-            grantee_name=data.GRANTEE,
-            educational_institution=data.EDUCATIONAL_INSTITUTE,
-            state_code=data.STATE_CODE,
-            created_by=sys_user.id,
-            updated_by=sys_user.id,
-        )
-
         existing_bli = session.get(GrantBudgetLineItem, data.SYS_BUDGET_ID)
 
         if existing_bli:
@@ -186,27 +201,6 @@ def create_models(data: GrantBudgetLineItemData, sys_user: User, session: Sessio
             logger.info("Dry run enabled. Rolling back transaction.")
             session.rollback()
         else:
-            session.merge(bli)
-            session.commit()
-
-        existing_bli_detail = session.get(GrantBudgetLineItemDetail, existing_bli.details_id if existing_bli else None)
-
-        if existing_bli_detail:
-            bli_detail.id = existing_bli_detail.id
-            bli_detail.created_on = existing_bli_detail.created_on
-            bli_detail.created_by = existing_bli_detail.created_by
-
-        if os.getenv("DRY_RUN"):
-            logger.info("Dry run enabled. Rolling back transaction.")
-            session.rollback()
-        else:
-            if existing_bli_detail:
-                session.merge(bli_detail)
-                session.commit()
-            else:
-                session.add(bli_detail)
-                session.commit()
-            bli.details_id = bli_detail.id
             session.merge(bli)
             session.commit()
 
