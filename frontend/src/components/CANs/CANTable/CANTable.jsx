@@ -23,7 +23,7 @@ const CANTable = ({ cans, fiscalYear }) => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [fiscalYear]);
+    }, [fiscalYear, cans]);
 
     if (cans.length === 0) {
         return <p className="text-center">No CANs found</p>;
