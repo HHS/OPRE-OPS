@@ -23,7 +23,7 @@ const CANTable = ({ cans, fiscalYear }) => {
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
 
-    //const canDescriptions = new Map(cans.map((can) => [can.number, can.description]));
+    // const canDescriptions = new Map(cans.map((can) => [can.number, can.description]));
 
     const exportTableToCsv = () => {
         if (!tableRef.current) return;
@@ -41,18 +41,23 @@ const CANTable = ({ cans, fiscalYear }) => {
         headers = [...headers, "Descriptions"];
 
         // Get data from td elements, excluding tooltip content
-        let rows = Array.from(tableRef.current.querySelectorAll("tbody tr")).map((row, index) => {
-            const rowData = Array.from(row.querySelectorAll("td")).map((cell) => {
+        let rows = Array.from(tableRef.current.querySelectorAll("tbody tr")).map((row) => {
+            const rowData = Array.from(row.querySelectorAll("td")).map((cell, cellIndex) => {
                 // Get the direct text content, excluding tooltip content
-                const cellText = Array.from(cell.childNodes)
-                    .filter((node) => node.nodeType === Node.TEXT_NODE)
-                    .map((node) => node.textContent.trim())
-                    .join("");
-                return cellText || cell.textContent.trim();
+                if (cellIndex === 0) {
+                    // Find the Link element inside the Tooltip and get its text content
+                    const linkElement = cell.querySelector("a.text-ink.text-no-underline");
+                    if (linkElement) {
+                        return linkElement.textContent.trim();
+                    }
+                }
+
+                return cell.textContent.trim();
             });
             // Add the description as a new column for each row
 
             const key = rowData[0].split(" ")[0];
+
             return [...rowData, canDescriptions.get(key) || ""];
         });
 
@@ -99,7 +104,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                     ))}
                 </tbody>
             </table>
-            <DebugCode data={{  }} />
+            <DebugCode data={{}} />
             <button
                 className="usa-button"
                 onClick={exportTableToCsv}
