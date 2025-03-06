@@ -23,10 +23,11 @@ const CANTable = ({ cans, fiscalYear }) => {
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
 
-    const canDescriptions = cans.map((can) => can.description);
+    //const canDescriptions = new Map(cans.map((can) => [can.number, can.description]));
 
     const exportTableToCsv = () => {
         if (!tableRef.current) return;
+        const canDescriptions = new Map(cans.map((can) => [can.number, can.description]));
 
         // Get headers from th elements, excluding tooltip content
         let headers = Array.from(tableRef.current.querySelectorAll("thead th")).map((header) => {
@@ -50,7 +51,9 @@ const CANTable = ({ cans, fiscalYear }) => {
                 return cellText || cell.textContent.trim();
             });
             // Add the description as a new column for each row
-            return [...rowData, canDescriptions[index] || ""];
+
+            const key = rowData[0].split(" ")[0];
+            return [...rowData, canDescriptions.get(key) || ""];
         });
 
         // Combine headers and rows
@@ -96,7 +99,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                     ))}
                 </tbody>
             </table>
-            <DebugCode data={canDescriptions} />
+            <DebugCode data={{  }} />
             <button
                 className="usa-button"
                 onClick={exportTableToCsv}
