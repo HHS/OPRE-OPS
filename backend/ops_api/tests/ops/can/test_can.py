@@ -380,7 +380,7 @@ def test_basic_user_cannot_put_cans(basic_user_auth_client):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_can_put_404(budget_team_auth_client):
-    test_can_id = 519
+    test_can_id = 550
     update_data = {
         "number": "G123456",
         "description": "Test CAN Created by unit test",

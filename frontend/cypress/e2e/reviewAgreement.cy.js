@@ -34,8 +34,8 @@ describe("agreement change accordion", () => {
             });
         cy.get('[data-cy="budget-summary-card-504"]').within(() => {
             cy.contains("$5,000,000");
-            cy.contains("$ 43,000,000");
-            cy.contains("$48,000,000");
+            cy.contains("$ 35,000,000");
+            cy.contains("$40,000,000");
             cy.contains("G994426-5Y");
         });
         cy.get('[data-cy="currency-summary-card"]').contains("$ 2,000,000.00");
@@ -227,7 +227,7 @@ describe("agreement review CANS accordion", () => {
                 cy.wrap(checkbox).should("be.checked");
             });
         cy.get('[data-cy="budget-summary-card-504"]').should("exist");
-        cy.get('[data-cy="budget-summary-card-504"]').contains("$48,000,000");
+        cy.get('[data-cy="budget-summary-card-504"]').contains("$40,000,000");
     });
 
     it("should handle after approval toggle", () => {
