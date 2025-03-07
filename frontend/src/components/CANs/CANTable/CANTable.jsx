@@ -28,6 +28,16 @@ const CANTable = ({ cans, fiscalYear }) => {
 
     const handleExport = async () => {
         try {
+            // table row headers
+            const TABLE_HEADERS = [
+                "CAN",
+                "Portfolio",
+                "Active Period",
+                "Obligate By",
+                "FY Budget",
+                "Funding Received",
+                "Available Budget"
+            ];
             // Get funding data for each CAN individually
             const fundingPromises = cans.map((can) =>
                 trigger({
@@ -54,6 +64,7 @@ const CANTable = ({ cans, fiscalYear }) => {
             await exportTableToCsv({
                 tableRef,
                 data: cans,
+                headers: TABLE_HEADERS,
                 rowMapper: (/** @type {CAN} */ can) => [
                     can.number,
                     can.portfolio.abbreviation,

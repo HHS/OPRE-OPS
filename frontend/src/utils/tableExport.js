@@ -4,22 +4,13 @@ import Papa from "papaparse";
  * Helper function to export table data to CSV
  * @param {Object} params - Parameters for the export
  * @param {React.RefObject<HTMLTableElement>} params.tableRef - Reference to the table element
- * @param {[]any} params.data - Array of data to be exported
+ * @param {[]} params.data - Array of data to be exported
+ * @param {[] string} params.headers - Array of headers for the table
  * @param {Function} params.rowMapper - Function to map each data item to a row array
  * @param {string} params.filename - Name of the CSV file
  */
-export const exportTableToCsv = async ({ tableRef, data, rowMapper, filename }) => {
+export const exportTableToCsv = async ({ tableRef, data, headers, rowMapper, filename }) => {
     if (!tableRef.current) return;
-
-    // Get headers from th elements
-    const headers = Array.from(tableRef.current.querySelectorAll("thead th")).map((header) => {
-        const clone = header.cloneNode(true);
-        clone.querySelectorAll(".usa-tooltip__body").forEach(
-            /** @param {HTMLElement} tooltip */
-            (tooltip) => tooltip.remove()
-        );
-        return clone.textContent?.trim();
-    });
 
     // Map the data to rows
     const rows = data.map(rowMapper);
