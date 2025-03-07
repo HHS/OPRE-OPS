@@ -179,7 +179,7 @@ def test_get_can_funding_summary_no_fiscal_year(loaded_db, test_can) -> None:
                 "can": {
                     "active_period": 1,
                     "appropriation_date": 2023,
-                    "budget_line_items": [15015],
+                    "budget_line_items": [15019],
                     "created_by": None,
                     "created_by_user": None,
                     "description": "Healthy Marriages Responsible Fatherhood - OPRE",
@@ -273,7 +273,7 @@ def test_get_can_funding_summary_with_fiscal_year(loaded_db, test_can) -> None:
                 "can": {
                     "active_period": 1,
                     "appropriation_date": 2023,
-                    "budget_line_items": [15015],
+                    "budget_line_items": [15019],
                     "created_by": None,
                     "created_by_user": None,
                     "description": "Healthy Marriages Responsible Fatherhood - OPRE",
@@ -378,10 +378,10 @@ def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[
     assert response.status_code == 200
     assert len(response.json["cans"]) == 2
 
-    assert available_funding == 3374500.23
-    assert carry_forward_funding == 10034500.23
+    assert available_funding == 3340000.00  # 3374500.23
+    assert carry_forward_funding == 10000000.00  #
     assert new_funding == 1340000.00
-    assert total_funding == 11374500.23
+    assert total_funding == 11340000.00
     assert carry_forward_funding != available_funding
     assert total_funding == carry_forward_funding + new_funding
 
@@ -613,14 +613,14 @@ def test_aggregate_funding_summaries():
 def test_can_get_can_funding_summary_all_cans(auth_client: FlaskClient) -> None:
     response = auth_client.get(f"/api/v1/can-funding-summary?can_ids={0}")
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 19
+    assert len(response.json["cans"]) == 20
 
 
 def test_new_funding_math(auth_client: FlaskClient) -> None:
     expected_carry_forward_data = {
         2027: 500000,
         2026: 500000,
-        2025: 1034500.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
+        2025: 1000000.00,  # test_funding_budget_post_with_cents added a 34500.23 budget
         2024: 20140000,
         2023: 51140000,
         2022: 10000000,

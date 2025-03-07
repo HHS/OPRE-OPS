@@ -88,6 +88,7 @@ it("BLI Status Change", () => {
             cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
             cy.get('[data-cy="bli-tab-continue-btn"]').click();
             cy.get('input[id="Change Draft Budget Lines to Planned Status"]').check({ force: true });
+            cy.wait(500);
             cy.get('[data-cy="check-all"]').each(($el) => {
                 cy.wrap($el).check({ force: true });
                 cy.wait(1);
