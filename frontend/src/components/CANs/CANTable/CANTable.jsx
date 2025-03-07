@@ -120,7 +120,6 @@ const CANTable = ({ cans, fiscalYear }) => {
                     ))}
                 </tbody>
             </table>
-
             <button
                 className="usa-button"
                 onClick={handleExport}
