@@ -6,7 +6,10 @@ import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
 import { useLazyGetCanFundingSummaryQuery } from "../../../api/opsAPI";
-import { exportTableToCsv } from "../../../utils/tableExport";
+import { useSelector } from "react-redux";
+import { USER_ROLES } from "../../Users/User.constants";
+import useAlert from "../../../hooks/use-alert.hooks";
+import { exportTableToCsv } from "../../../helpers/tableExport.helpers";
 
 /**
  * CANTable component of CanList
@@ -20,15 +23,16 @@ import { exportTableToCsv } from "../../../utils/tableExport";
  */
 const CANTable = ({ cans, fiscalYear }) => {
     const [trigger] = useLazyGetCanFundingSummaryQuery();
-    const tableRef = React.useRef(null);
     const CANS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 10;
+    const loggedInUserRoles = useSelector((state) => state.auth.activeUser.roles);
+    const isSystemAdmin = loggedInUserRoles.includes(USER_ROLES.SYSTEM_OWNER);
     const [currentPage, setCurrentPage] = React.useState(1);
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
+    const { setAlert } = useAlert();
 
     const handleExport = async () => {
         try {
-            // table row headers
             const TABLE_HEADERS = [
                 "CAN",
                 "Portfolio",
@@ -60,9 +64,9 @@ const CANTable = ({ cans, fiscalYear }) => {
                 };
             });
 
+            const currentDate = new Date().toISOString().split("T")[0];
             // Export the data using the helper function
             await exportTableToCsv({
-                tableRef,
                 data: cans,
                 headers: TABLE_HEADERS,
                 rowMapper: (/** @type {CAN} */ can) => [
@@ -83,10 +87,16 @@ const CANTable = ({ cans, fiscalYear }) => {
                         currency: "USD"
                     }) ?? "TBD"
                 ],
-                filename: "cans.csv"
+                filename: `cans_${currentDate}.csv`
             });
         } catch (error) {
             console.error("Failed to export data:", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while exporting the data.",
+                redirectUrl: "/error"
+            });
         }
     };
 
@@ -102,7 +112,6 @@ const CANTable = ({ cans, fiscalYear }) => {
         <>
             <table
                 className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}
-                ref={tableRef}
             >
                 <CANTableHead />
                 <tbody>
@@ -120,12 +129,15 @@ const CANTable = ({ cans, fiscalYear }) => {
                     ))}
                 </tbody>
             </table>
-            <button
-                className="usa-button"
-                onClick={handleExport}
-            >
-                Export to CSV
-            </button>
+            {isSystemAdmin && (
+                <button
+                    className="usa-button"
+                    data-cy="cans-export"
+                    onClick={handleExport}
+                >
+                    Export to CSV
+                </button>
+            )}
 
             {cans.length > CANS_PER_PAGE && (
                 <PaginationNav

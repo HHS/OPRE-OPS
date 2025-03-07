@@ -1,9 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
-import { useGetCanFundingSummaryQuery, useGetCansQuery } from "../../../api/opsAPI";
+import { useGetCanFundingSummaryQuery, useGetCansQuery, useLazyGetCanFundingSummaryQuery } from "../../../api/opsAPI";
 import { cans } from "../../../tests/data";
 import CANTable from "./CANTable";
+import { Provider } from "react-redux";
+import { USER_ROLES } from "../../Users/User.constants";
+import configureStore from "redux-mock-store";
 
 // Mock the PaginationNav component
 vi.mock("../../UI/PaginationNav", () => ({
@@ -15,6 +18,21 @@ vi.mock("../../UI/USWDS/Tooltip", () => ({
     default: ({ children }) => <div data-testid="tooltip">{children}</div>
 }));
 vi.mock("../../../api/opsAPI");
+
+const mockStore = configureStore([]);
+const initialState = {
+    auth: {
+        activeUser: {
+            id: 500,
+            name: "Test User",
+            roles: [USER_ROLES.SYSTEM_OWNER]
+        }
+    },
+    alert: {
+        isActive: false
+    }
+};
+const store = mockStore(initialState);
 
 describe("CANTable", () => {
     useGetCansQuery.mockReturnValue({
@@ -29,10 +47,13 @@ describe("CANTable", () => {
             }
         }
     });
+    useLazyGetCanFundingSummaryQuery.mockReturnValue([() => {}, { isLoading: false }]);
     it("renders the table with correct headers", () => {
         render(
             <MemoryRouter>
-                <CANTable cans={cans} />
+                <Provider store={store}>
+                    <CANTable cans={cans} />
+                </Provider>
             </MemoryRouter>
         );
 
@@ -47,7 +68,9 @@ describe("CANTable", () => {
     it("renders the correct number of rows", () => {
         render(
             <MemoryRouter>
-                <CANTable cans={cans} />
+                <Provider store={store}>
+                    <CANTable cans={cans} />
+                </Provider>
             </MemoryRouter>
         );
 
@@ -59,7 +82,9 @@ describe("CANTable", () => {
     it('displays "No CANs found" when cans array is empty', () => {
         render(
             <MemoryRouter>
-                <CANTable cans={[]} />
+                <Provider store={store}>
+                    <CANTable cans={[]} />
+                </Provider>
             </MemoryRouter>
         );
 
@@ -69,7 +94,9 @@ describe("CANTable", () => {
     it("does not render PaginationNav when there are no CANs", () => {
         render(
             <MemoryRouter>
-                <CANTable cans={[]} />
+                <Provider store={store}>
+                    <CANTable cans={[]} />
+                </Provider>
             </MemoryRouter>
         );
 
