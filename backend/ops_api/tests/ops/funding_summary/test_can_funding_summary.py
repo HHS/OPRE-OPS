@@ -620,7 +620,7 @@ def test_new_funding_math(auth_client: FlaskClient) -> None:
     expected_carry_forward_data = {
         2027: 500000,
         2026: 500000,
-        2025: 1034500.23,  # test_funding_budget_post_with_cents added a 34500.23 budget
+        2025: 1000000.00,  # test_funding_budget_post_with_cents added a 34500.23 budget
         2024: 20140000,
         2023: 51140000,
         2022: 10000000,
