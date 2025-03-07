@@ -1,77 +1,93 @@
-import Papa from "papaparse";
 import React from "react";
 import { NO_DATA } from "../../../constants";
-import DebugCode from "../../DebugCode";
 import PaginationNav from "../../UI/PaginationNav";
 import { formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
+import { useLazyGetCanFundingSummaryQuery } from "../../../api/opsAPI";
+import { exportTableToCsv } from "../../../utils/tableExport";
+
 /**
  * CANTable component of CanList
  * @component
  * @typedef {import("../CANTypes").CAN} CAN
+ * @typedef {import("../CANTypes").FundingSummary} FundingSummary
  * @param {Object} props
  * @param {CAN[]} props.cans - Array of CANs
  * @param {number} props.fiscalYear - Fiscal year to filter by
  * @returns {JSX.Element}
  */
 const CANTable = ({ cans, fiscalYear }) => {
+    const [trigger] = useLazyGetCanFundingSummaryQuery();
     const tableRef = React.useRef(null);
     const CANS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 10;
     const [currentPage, setCurrentPage] = React.useState(1);
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
 
-    // const canDescriptions = new Map(cans.map((can) => [can.number, can.description]));
+    const handleExport = async () => {
+        try {
+            // table row headers
+            const TABLE_HEADERS = [
+                "CAN",
+                "Portfolio",
+                "Active Period",
+                "Obligate By",
+                "FY Budget",
+                "Funding Received",
+                "Available Budget"
+            ];
+            // Get funding data for each CAN individually
+            const fundingPromises = cans.map((can) =>
+                trigger({
+                    ids: [can.id],
+                    fiscalYear
+                }).unwrap()
+            );
 
-    const exportTableToCsv = () => {
-        if (!tableRef.current) return;
-        const canDescriptions = new Map(cans.map((can) => [can.number, can.description]));
+            const fundingResponses = await Promise.all(fundingPromises);
 
-        // Get headers from th elements, excluding tooltip content
-        let headers = Array.from(tableRef.current.querySelectorAll("thead th")).map((header) => {
-            // Get the direct text content, excluding tooltip content
-            const headerText = Array.from(header.childNodes)
-                .filter((node) => node.nodeType === Node.TEXT_NODE)
-                .map((node) => node.textContent.trim())
-                .join("");
-            return headerText || header.textContent.trim();
-        });
-        headers = [...headers, "Descriptions"];
-
-        // Get data from td elements, excluding tooltip content
-        let rows = Array.from(tableRef.current.querySelectorAll("tbody tr")).map((row) => {
-            const rowData = Array.from(row.querySelectorAll("td")).map((cell, cellIndex) => {
-                // Get the direct text content, excluding tooltip content
-                if (cellIndex === 0) {
-                    // Find the Link element inside the Tooltip and get its text content
-                    const linkElement = cell.querySelector("a.text-ink.text-no-underline");
-                    if (linkElement) {
-                        return linkElement.textContent.trim();
-                    }
-                }
-
-                return cell.textContent.trim();
+            // Create a map of CAN IDs to their funding data
+            /** @type {Record<number, {total_funding: number, received_funding: number, available_funding: number}>} */
+            const fundingMap = {};
+            cans.forEach((can, index) => {
+                const response = fundingResponses[index];
+                fundingMap[can.id] = {
+                    total_funding: response.total_funding,
+                    received_funding: response.received_funding,
+                    available_funding: response.available_funding
+                };
             });
-            // Add the description as a new column for each row
 
-            const key = rowData[0].split(" ")[0];
-
-            return [...rowData, canDescriptions.get(key) || ""];
-        });
-
-        // Combine headers and rows
-        const csvData = [headers, ...rows];
-
-        const csv = Papa.unparse(csvData);
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "cans.csv";
-        a.click();
-        URL.revokeObjectURL(url);
+            // Export the data using the helper function
+            await exportTableToCsv({
+                tableRef,
+                data: cans,
+                headers: TABLE_HEADERS,
+                rowMapper: (/** @type {CAN} */ can) => [
+                    can.number,
+                    can.portfolio.abbreviation,
+                    `${can.active_period ?? 0} years`,
+                    formatObligateBy(can.obligate_by),
+                    fundingMap[can.id]?.total_funding?.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD"
+                    }) ?? "TBD",
+                    fundingMap[can.id]?.received_funding?.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD"
+                    }) ?? "TBD",
+                    fundingMap[can.id]?.available_funding?.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD"
+                    }) ?? "TBD"
+                ],
+                filename: "cans.csv"
+            });
+        } catch (error) {
+            console.error("Failed to export data:", error);
+        }
     };
 
     React.useEffect(() => {
@@ -104,10 +120,9 @@ const CANTable = ({ cans, fiscalYear }) => {
                     ))}
                 </tbody>
             </table>
-            <DebugCode data={{}} />
             <button
                 className="usa-button"
-                onClick={exportTableToCsv}
+                onClick={handleExport}
             >
                 Export to CSV
             </button>
