@@ -8,7 +8,7 @@ import Papa from "papaparse";
  * @param {() => void} params.rowMapper - Function to map each data item to a row array
  * @param {string} [params.filename] - Name of the CSV file
  */
-export const exportTableToCsv = async ({ data, headers, rowMapper, filename = "export.csv" }) => {
+export const exportTableToCsv = async ({ data, headers, rowMapper, filename = "export.tsv" }) => {
     if (!data || !headers || !rowMapper) {
         throw new Error("Missing required parameters");
     }
@@ -19,8 +19,8 @@ export const exportTableToCsv = async ({ data, headers, rowMapper, filename = "e
     // Combine headers and rows
     const csvData = [headers, ...rows];
 
-    const csv = Papa.unparse(csvData);
-    const blob = new Blob([csv], { type: "text/csv" });
+    const csv = Papa.unparse(csvData, { delimiter: "\t" });
+    const blob = new Blob([csv], { type: "text/tab-separated-values" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

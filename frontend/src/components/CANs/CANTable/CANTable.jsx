@@ -87,7 +87,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                         currency: "USD"
                     }) ?? "TBD"
                 ],
-                filename: `cans_${currentDate}.csv`
+                filename: `cans_${currentDate}.tsv`
             });
         } catch (error) {
             console.error("Failed to export data:", error);
