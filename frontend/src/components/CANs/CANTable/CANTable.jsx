@@ -64,7 +64,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                 };
             });
 
-            const currentDate = new Date().toISOString().split("T")[0];
+            const currentDate = new Date().toISOString();
             // Export the data using the helper function
             await exportTableToCsv({
                 data: cans,
@@ -110,9 +110,7 @@ const CANTable = ({ cans, fiscalYear }) => {
 
     return (
         <>
-            <table
-                className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}
-            >
+            <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
                 <CANTableHead />
                 <tbody>
                     {cansPerPage.map((can) => (
@@ -135,7 +133,7 @@ const CANTable = ({ cans, fiscalYear }) => {
                     data-cy="cans-export"
                     onClick={handleExport}
                 >
-                    Export to CSV
+                    Export
                 </button>
             )}
 
