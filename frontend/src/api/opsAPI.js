@@ -387,10 +387,13 @@ export const opsApi = createApi({
             providesTags: ["Portfolios"]
         }),
         getPortfolioCansById: builder.query({
-            query: ({ portfolioId, year }) => {
+            query: ({ portfolioId, year, budgetFiscalYear }) => {
                 const queryParams = [];
                 if (year) {
                     queryParams.push(`year=${year}`);
+                }
+                if (budgetFiscalYear){
+                    queryParams.push(`budgetFiscalYear=${budgetFiscalYear}`);
                 }
                 return `/portfolios/${portfolioId}/cans/?${queryParams.join("&")}`;
             },
