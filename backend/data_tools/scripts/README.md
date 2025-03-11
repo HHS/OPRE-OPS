@@ -7,7 +7,7 @@
 
 ```
 cd backend
-python data_tools/src/load_projects/main.py --env dev --input-csv test_csv/projects_latest.tsv
+python data_tools/src/load_projects/main.py --env dev --input-csv data_tools/test_csv/projects_latest.tsv
 ```
 
 ## Running a data loading script locally with a TSV file in an Azure storage account
