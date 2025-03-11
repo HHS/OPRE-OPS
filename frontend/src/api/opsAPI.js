@@ -565,7 +565,6 @@ export const {
     useUpdateCanFundingReceivedMutation,
     useDeleteCanFundingReceivedMutation,
     useGetCanFundingSummaryQuery,
-    useLazyGetCanFundingSummaryQuery,
     useGetCanHistoryQuery,
     useGetNotificationsByUserIdQuery,
     useGetNotificationsByUserIdAndAgreementIdQuery,

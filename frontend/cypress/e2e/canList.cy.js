@@ -342,16 +342,4 @@ describe("CAN List Filtering", () => {
         // 1st page should have more than 3 rows
         cy.get("tbody").find("tr").should("have.length.greaterThan", 3);
     });
-
-    describe("Table Export", () => {
-        it("should not allow table export if not system own role", () => {
-            cy.get('[data-cy="cans-export"]').should("not.exist");
-        });
-
-        it("should allow system owner to export table", () => {
-            testLogin("system-owner");
-            cy.visit("/cans").wait(1000);
-            cy.get('[data-cy="cans-export"]').should("exist");
-        });
-    });
 });
