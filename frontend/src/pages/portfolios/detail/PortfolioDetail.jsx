@@ -88,7 +88,7 @@ const PortfolioDetail = () => {
                         fiscalYear,
                         budgetLineIds,
                         projectTypesCount,
-                        newFunding: portfolioFunding?.new_funding.amount ?? 0, // TODO: update this upon completion of #3536
+                        newFunding: portfolioFunding?.new_funding.amount ?? 0,
                         carryForward: portfolioFunding?.carry_forward_funding.amount ?? 0,
                         totalFunding: portfolioFunding?.total_funding?.amount ?? 0,
                         inDraftFunding: portfolioFunding?.draft_funding?.amount ?? 0,
