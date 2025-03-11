@@ -8,7 +8,7 @@ import * as XLSX from "xlsx";
  * @param {() => void} params.rowMapper - Function to map each data item to a row array
  * @param {string} [params.filename] - Name of the CSV file
  */
-export const exportTableToCsv = async ({ data, headers, rowMapper, filename = "export.xlsx" }) => {
+export const exportTableToXlsx = async ({ data, headers, rowMapper, filename = "export.xlsx" }) => {
     if (!data || !headers || !rowMapper) {
         throw new Error("Missing required parameters");
     }

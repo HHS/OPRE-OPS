@@ -10,7 +10,7 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { setAlert } from "../../UI/Alert/alertSlice";
 import { useLazyGetServicesComponentByIdQuery } from "../../../api/opsAPI";
 import { formatDateNeeded, totalBudgetLineFeeAmount } from "../../../helpers/utils";
-import { exportTableToCsv } from "../../../helpers/tableExport.helpers";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
 
@@ -71,7 +71,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
             const currentTimeStamp = new Date().toISOString();
             const header = ["BL ID #", "Agreement", "SC", "Obligate By", "FY", "CAN", "SubTotal", "Fees", "Status"];
 
-            await exportTableToCsv({
+            await exportTableToXlsx({
                 data: budgetLines,
                 headers: header,
                 rowMapper: (/** @type {BudgetLine} */ budgetLine) => [
