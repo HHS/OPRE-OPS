@@ -344,10 +344,11 @@ describe("CAN List Filtering", () => {
     });
 
     describe("Table Export", () => {
-        it("should not allow table export", () => {
+        it("should not allow table export if not system own role", () => {
             cy.get('[data-cy="cans-export"]').should("not.exist");
         });
-        it("should system owner allow table export", () => {
+
+        it("should allow system owner to export table", () => {
             testLogin("system-owner");
             cy.visit("/cans").wait(1000);
             cy.get('[data-cy="cans-export"]').should("exist");
