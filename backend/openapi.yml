@@ -1187,7 +1187,7 @@ paths:
                     percent: "15"
                   new_funding:
                     amount: 800000.00
-                    percent: "New-Funding"
+                    percent: "New"
         "400":
           description: Bad Request
         "401":
