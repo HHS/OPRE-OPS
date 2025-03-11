@@ -157,7 +157,7 @@ const agreementHistoryData = [
                 old: null
             }
         },
-        class_name: "BudgetLineItem",
+        class_name: "ContractBudgetLineItem",
         created_by: 516,
         created_by_user_full_name: "Steve Tekell",
         created_on: "2023-08-29T21:37:56.300512",
@@ -277,7 +277,7 @@ const agreementHistoryData = [
                 new: "DRAFT"
             }
         },
-        class_name: "BudgetLineItem",
+        class_name: "ContractBudgetLineItem",
         created_by: 516,
         created_by_user_full_name: "Steve Tekell",
         created_on: "2023-08-29T21:36:51.385646",

@@ -3,7 +3,7 @@ import datetime
 import pytest
 from pytest_bdd import given, scenario, then, when
 
-from models import AgreementType, BudgetLineItem, BudgetLineItemStatus, ContractAgreement, ContractType
+from models import AgreementType, BudgetLineItemStatus, ContractAgreement, ContractBudgetLineItem, ContractType
 from ops_api.ops.resources.agreements import AGREEMENTS_REQUEST_SCHEMAS
 
 AGREEMENT_ID = 1
@@ -38,7 +38,7 @@ def test_contract(loaded_db, test_project):
 
 @pytest.fixture()
 def contract_with_executing_bli(loaded_db, test_contract, test_can):
-    executing_bli = BudgetLineItem(
+    executing_bli = ContractBudgetLineItem(
         agreement_id=test_contract.id,
         comments="blah blah bleh blah",
         line_description="LI Executing",
@@ -60,7 +60,7 @@ def contract_with_executing_bli(loaded_db, test_contract, test_can):
 
 @pytest.fixture()
 def contract_with_planned_bli(loaded_db, test_contract, test_can):
-    planned_bli = BudgetLineItem(
+    planned_bli = ContractBudgetLineItem(
         agreement_id=test_contract.id,
         comments="blah blah bleh blah",
         line_description="LI Planned",

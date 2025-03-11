@@ -10,7 +10,7 @@ import Tag from "../../Tag";
  * @property {string} label - The label.
  * @property {number} value - The value.
  * @property {string} color - The color.
- * @property {string} percent - The percent.
+ * @property {number} percent - The percent.
  * @property {string} tagStyleActive - The tag style active.
  */
 
@@ -49,7 +49,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                     displayType={"text"}
                     thousandSeparator={true}
                     prefix={"$"}
-                    decimalScale={2}
+                    decimalScale={value === 0 ? 0 : 2}
                     renderText={(value) => (
                         <span
                             className={isGraphActive ? "fake-bold" : ""}
@@ -63,7 +63,7 @@ const LegendItem = ({ activeId, id, label, value, color, percent, tagStyleActive
                 <Tag
                     className="margin-left-1"
                     tagStyle="darkTextWhiteBackground"
-                    text={percent}
+                    text={`${percent}%`}
                     label={label}
                     active={isGraphActive}
                     tagStyleActive={tagStyleActive}

@@ -27,7 +27,7 @@ describe("CANTableRow", () => {
 
     beforeEach(() => {
         useGetCanFundingSummaryQuery.mockReturnValue({
-            data: { available_funding: 500000 },
+            data: { available_funding: 100_000, received_funding: 50_000, total_funding: 150_000 },
             isLoading: false,
             isError: false
         });
@@ -48,8 +48,9 @@ describe("CANTableRow", () => {
         expect(screen.getByText("Test Portfolio")).toBeInTheDocument();
         expect(screen.getByText("2 years")).toBeInTheDocument();
         expect(screen.getByText("2023-09-30")).toBeInTheDocument();
-        expect(screen.getByText("$1,000,000.00")).toBeInTheDocument();
-        expect(screen.getByText("$500,000.00")).toBeInTheDocument();
+        expect(screen.getByText("$150,000.00")).toBeInTheDocument();
+        expect(screen.getByText("$50,000.00")).toBeInTheDocument();
+        expect(screen.getByText("$100,000.00")).toBeInTheDocument();
     });
 
     it("renders 'Loading...' when data is loading", () => {

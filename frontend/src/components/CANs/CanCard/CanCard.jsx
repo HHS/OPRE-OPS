@@ -1,6 +1,6 @@
 import CurrencyFormat from "react-currency-format";
 import { useGetCanFundingSummaryQuery } from "../../../api/opsAPI";
-import { formatDateNeeded } from "../../../helpers/utils";
+import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import LineGraph from "../../UI/DataViz/LineGraph";
 import ReverseLineGraph from "../../UI/DataViz/LineGraph/ReverseLineGraph";
 import Tag from "../../UI/Tag";
@@ -29,15 +29,18 @@ const CanCard = ({ canId, fiscalYear }) => {
 
     const appropriationYear = obligateBy.getFullYear() - can?.active_period;
 
+    const receivedPercent = calculatePercent(canFundingData?.received_funding, canFundingData?.total_funding);
     const receivedExpectedData = [
         {
             id: 1,
             value: canFundingData?.received_funding,
+            percent: receivedPercent,
             color: "var(--data-viz-budget-graph-1)"
         },
         {
             id: 2,
             value: canFundingData?.total_funding,
+            percent: 100 - receivedPercent,
             color: "var(--data-viz-budget-graph-2)"
         }
     ];
@@ -45,15 +48,18 @@ const CanCard = ({ canId, fiscalYear }) => {
     const spendingAmount =
         canFundingData?.planned_funding + canFundingData?.in_execution_funding + canFundingData?.obligated_funding;
 
+    const spendingPercent = calculatePercent(spendingAmount, canFundingData?.total_funding);
     const spendingAvailableData = [
         {
             id: 1,
             value: spendingAmount,
+            percent: spendingPercent,
             color: "var(--data-viz-budget-graph-2)"
         },
         {
             id: 2,
             value: canFundingData?.total_funding,
+            percent: 100 - spendingPercent,
             color: "var(--data-viz-budget-graph-1)"
         }
     ];

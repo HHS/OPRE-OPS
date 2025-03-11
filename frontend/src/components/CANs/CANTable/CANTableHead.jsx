@@ -1,8 +1,12 @@
 import Tooltip from "../../UI/USWDS/Tooltip";
 
 const CANTableHead = () => {
-    const availbleTooltip =
-        "$ Available is the remaining amount of the total budget that is available to plan from (Total FY Budget minus budget lines in Planned, Executing or Obligated Status)";
+    const fundingReceivedTooltip = `Funding Received is the amount of the CAN's
+FY budget that has been received to OPRE
+and it can be executed or obligated against`;
+    const availableBudgetTooltip = `Available Budget is the amount of the CAN's
+FY budget that has not been allocated yet
+and it's available to plan from`;
 
     return (
         <thead>
@@ -35,20 +39,30 @@ const CANTableHead = () => {
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
                 >
-                    Transfer
-                </th>
-                <th
-                    scope="col"
-                    style={{ whiteSpace: "nowrap" }}
-                >
                     FY Budget
                 </th>
                 <th
                     scope="col"
                     style={{ whiteSpace: "nowrap" }}
                 >
-                    <Tooltip label={availbleTooltip}>
-                        <span>$ Available</span>
+                    <Tooltip
+                        label={fundingReceivedTooltip}
+                        position="left"
+                        className="text-medium"
+                    >
+                        <span className="text-bold">Funding Received</span>
+                    </Tooltip>
+                </th>
+                <th
+                    scope="col"
+                    style={{ whiteSpace: "nowrap" }}
+                >
+                    <Tooltip
+                        label={availableBudgetTooltip}
+                        position="left"
+                        className="text-medium"
+                    >
+                        <span className="text-bold">Available Budget</span>
                     </Tooltip>
                 </th>
             </tr>

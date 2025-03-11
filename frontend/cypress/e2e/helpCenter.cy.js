@@ -33,6 +33,7 @@ describe("Help Center", () => {
     it("renders Share Feedback", () => {
         cy.visit("/help-center/feedback");
         cy.get("h1").contains("Help Center");
-        cy.get("h2").contains("We’d love to hear from you!");
+        cy.get("h2").contains("Share Feedback");
+        cy.get("p").contains("Your feedback matters to us!");
     });
 });

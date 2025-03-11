@@ -114,6 +114,8 @@ def db_for_test(loaded_db):
     loaded_db.execute(text("DELETE FROM requisition_version"))
     loaded_db.execute(text("DELETE FROM invoice"))
     loaded_db.execute(text("DELETE FROM invoice_version"))
+    loaded_db.execute(text("DELETE FROM contract_budget_line_item"))
+    loaded_db.execute(text("DELETE FROM contract_budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM budget_line_item"))
     loaded_db.execute(text("DELETE FROM budget_line_item_version"))
     loaded_db.execute(text("DELETE FROM agreement_mod"))
@@ -181,6 +183,8 @@ def db_for_test_with_data(db_for_test):
     db_for_test.execute(text("DELETE FROM requisition_version"))
     db_for_test.execute(text("DELETE FROM invoice"))
     db_for_test.execute(text("DELETE FROM invoice_version"))
+    db_for_test.execute(text("DELETE FROM contract_budget_line_item"))
+    db_for_test.execute(text("DELETE FROM contract_budget_line_item_version"))
     db_for_test.execute(text("DELETE FROM budget_line_item"))
     db_for_test.execute(text("DELETE FROM budget_line_item_version"))
     db_for_test.execute(text("DELETE FROM agreement_mod"))
@@ -246,7 +250,7 @@ def test_create_models(db_for_test_with_data):
     create_models(data, sys_user, db_for_test_with_data)
 
     bli_model = db_for_test_with_data.execute(
-        select(BudgetLineItem).join(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
+        select(ContractBudgetLineItem).join(ContractAgreement).where(ContractAgreement.maps_sys_id == 1)
     ).scalar()
 
     assert bli_model.id == 1
@@ -324,7 +328,7 @@ def test_main(db_for_test_with_data):
 
     sys_user = get_or_create_sys_user(db_for_test_with_data)
 
-    bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
+    bli_model = db_for_test_with_data.get(ContractBudgetLineItem, 1)
 
     assert bli_model.id == 1
     assert bli_model.agreement_id == 1
@@ -382,7 +386,7 @@ def test_main(db_for_test_with_data):
     assert bli_model.fiscal_year == 2025
 
     history_objs = (
-        db_for_test_with_data.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem"))
+        db_for_test_with_data.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "ContractBudgetLineItem"))
         .scalars()
         .all()
     )
@@ -391,7 +395,7 @@ def test_main(db_for_test_with_data):
     bli_1_history = (
         db_for_test_with_data.execute(
             select(OpsDBHistory).where(
-                and_(OpsDBHistory.row_key == str(bli_model.id), OpsDBHistory.class_name == "BudgetLineItem")
+                and_(OpsDBHistory.row_key == str(bli_model.id), OpsDBHistory.class_name == "ContractBudgetLineItem")
             )
         )
         .scalars()
@@ -519,7 +523,7 @@ def test_create_models_upsert(db_for_test_with_data):
     create_models(data_1, sys_user, db_for_test_with_data)
 
     # make sure the data was loaded
-    bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
+    bli_model = db_for_test_with_data.get(ContractBudgetLineItem, 1)
 
     assert bli_model.id == 1
     assert bli_model.agreement_id == 1
@@ -598,7 +602,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[0].certified is True
     assert bli_model.versions[0].closed is False
     assert bli_model.versions[0].closed_by is None
-    assert bli_model.versions[0].closed_by_user is None
     assert bli_model.versions[0].closed_date is None
     assert bli_model.versions[0].is_under_current_resolution is False
     assert bli_model.versions[0].date_needed == date(2025, 9, 30)
@@ -613,9 +616,7 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[0].requisition.date == date(2025, 1, 12)
     assert bli_model.versions[0].requisition.group == 1
     assert bli_model.versions[0].requisition.check == "Yes"
-    assert bli_model.versions[0].object_class_code.id == 1
-    assert bli_model.versions[0].object_class_code.code == 25103
-    assert bli_model.versions[0].object_class_code.description == "Test Object Class Code"
+    assert bli_model.versions[0].object_class_code_id == 1
     assert bli_model.versions[0].mod.number == "0000"
     assert bli_model.versions[0].mod.mod_type == ModType.NEW
     assert bli_model.versions[0].mod.agreement_id == 1
@@ -630,7 +631,9 @@ def test_create_models_upsert(db_for_test_with_data):
 
     # make sure the history records are created
     history_record = db_for_test_with_data.execute(
-        select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem").order_by(OpsDBHistory.created_on.desc())
+        select(OpsDBHistory)
+        .where(OpsDBHistory.class_name == "ContractBudgetLineItem")
+        .order_by(OpsDBHistory.created_on.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.NEW
@@ -641,7 +644,7 @@ def test_create_models_upsert(db_for_test_with_data):
     create_models(data_2, sys_user, db_for_test_with_data)
 
     # make sure the data was loaded
-    bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
+    bli_model = db_for_test_with_data.get(ContractBudgetLineItem, 1)
 
     assert bli_model.id == 1
     assert bli_model.agreement_id == 1
@@ -720,7 +723,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[1].certified is True
     assert bli_model.versions[1].closed is False
     assert bli_model.versions[1].closed_by is None
-    assert bli_model.versions[1].closed_by_user is None
     assert bli_model.versions[1].closed_date is None
     assert bli_model.versions[1].is_under_current_resolution is False
     assert bli_model.versions[1].date_needed == date(2025, 9, 30)
@@ -735,9 +737,7 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[1].requisition.date == date(2025, 1, 12)
     assert bli_model.versions[1].requisition.group == 1
     assert bli_model.versions[1].requisition.check == "Yes"
-    assert bli_model.versions[1].object_class_code.id == 1
-    assert bli_model.versions[1].object_class_code.code == 25103
-    assert bli_model.versions[1].object_class_code.description == "Test Object Class Code"
+    assert bli_model.versions[1].object_class_code_id == 1
     assert bli_model.versions[1].mod.number == "0000"
     assert bli_model.versions[1].mod.mod_type == ModType.NEW
     assert bli_model.versions[1].mod.agreement_id == 1
@@ -752,7 +752,9 @@ def test_create_models_upsert(db_for_test_with_data):
 
     # make sure the history records are created
     history_record = db_for_test_with_data.execute(
-        select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem").order_by(OpsDBHistory.created_on.desc())
+        select(OpsDBHistory)
+        .where(OpsDBHistory.class_name == "ContractBudgetLineItem")
+        .order_by(OpsDBHistory.created_on.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.UPDATED
@@ -763,7 +765,7 @@ def test_create_models_upsert(db_for_test_with_data):
     create_models(data_3, sys_user, db_for_test_with_data)
 
     # make sure the data was loaded
-    bli_model = db_for_test_with_data.get(BudgetLineItem, 1)
+    bli_model = db_for_test_with_data.get(ContractBudgetLineItem, 1)
 
     assert bli_model.id == 1
     assert bli_model.agreement_id == 1
@@ -842,7 +844,6 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[2].certified is True
     assert bli_model.versions[2].closed is False
     assert bli_model.versions[2].closed_by is None
-    assert bli_model.versions[2].closed_by_user is None
     assert bli_model.versions[2].closed_date is None
     assert bli_model.versions[2].is_under_current_resolution is False
     assert bli_model.versions[2].date_needed == date(2025, 9, 30)
@@ -857,9 +858,7 @@ def test_create_models_upsert(db_for_test_with_data):
     assert bli_model.versions[2].requisition.date == date(2025, 1, 12)
     assert bli_model.versions[2].requisition.group == 1
     assert bli_model.versions[2].requisition.check == "Yes"
-    assert bli_model.versions[2].object_class_code.id == 1
-    assert bli_model.versions[2].object_class_code.code == 25103
-    assert bli_model.versions[2].object_class_code.description == "Test Object Class Code"
+    assert bli_model.versions[2].object_class_code_id == 1
     assert bli_model.versions[2].mod.number == "0000"
     assert bli_model.versions[2].mod.mod_type == ModType.NEW
     assert bli_model.versions[2].mod.agreement_id == 1
@@ -874,7 +873,9 @@ def test_create_models_upsert(db_for_test_with_data):
 
     # make sure the history records are created
     history_record = db_for_test_with_data.execute(
-        select(OpsDBHistory).where(OpsDBHistory.class_name == "BudgetLineItem").order_by(OpsDBHistory.created_on.desc())
+        select(OpsDBHistory)
+        .where(OpsDBHistory.class_name == "ContractBudgetLineItem")
+        .order_by(OpsDBHistory.created_on.desc())
     ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.UPDATED
@@ -1119,7 +1120,7 @@ def test_get_invoice_new(db_for_test):
 
 
 def test_get_invoice_existing(db_for_test):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         id=1,
         agreement_id=1,
     )
@@ -1183,7 +1184,7 @@ def test_get_requisition_new(db_for_test):
 
 
 def test_get_requisition_existing(db_for_test):
-    bli = BudgetLineItem(
+    bli = ContractBudgetLineItem(
         id=1,
         agreement_id=1,
     )
@@ -1234,7 +1235,7 @@ def test_get_mod_new(db_for_test):
 
 
 def test_get_mod_existing(db_for_test):
-    bli = BudgetLineItem(id=1, agreement_id=1)
+    bli = ContractBudgetLineItem(id=1, agreement_id=1)
 
     existing_mod = AgreementMod(
         number="0000",
