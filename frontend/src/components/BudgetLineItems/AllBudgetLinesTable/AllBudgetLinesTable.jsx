@@ -9,7 +9,7 @@ import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { setAlert } from "../../UI/Alert/alertSlice";
 import { useLazyGetServicesComponentByIdQuery } from "../../../api/opsAPI";
-import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import { formatDateNeeded, totalBudgetLineFeeAmount } from "../../../helpers/utils";
 import { exportTableToCsv } from "../../../helpers/tableExport.helpers";
 import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
