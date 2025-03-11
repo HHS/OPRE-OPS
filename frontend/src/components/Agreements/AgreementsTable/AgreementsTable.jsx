@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import AgreementTableRow from "./AgreementTableRow";
-// import { useState } from "react";
+import { useState } from "react";
 import Table from "../../UI/Table";
 import { TABLE_HEADINGS } from "./AgreementsTable.constants";
 
@@ -11,10 +11,18 @@ import { TABLE_HEADINGS } from "./AgreementsTable.constants";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({ agreements = [] }) => {
-    // const [sortCondition, setSortCondition] = useState(null);
+    const [sortCondition, setSortCondition] = useState(null);
+    const [sortDescending, setSortDescending] = useState(null);
+    const setSortConditions = (selectedSortCondition, isSortDescending) => {
+        setSortCondition(selectedSortCondition);
+        setSortDescending(isSortDescending);
+    }
+    // Log them so there is no 'unused variable' issues before they're implemented.
+    console.log(sortCondition);
+    console.log(sortDescending);
     return (
         <>
-            <Table tableHeadings={TABLE_HEADINGS}>
+            <Table tableHeadings={TABLE_HEADINGS} onClickHeader={setSortConditions}>
                 {agreements.length > 0 &&
                     agreements?.map((agreement) => (
                         <AgreementTableRow
