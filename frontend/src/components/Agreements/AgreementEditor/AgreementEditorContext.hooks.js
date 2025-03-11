@@ -17,7 +17,9 @@ export const defaultState = {
         project_id: null,
         awarding_entity_id: null,
         contract_type: null,
-        service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE
+        service_requirement_type: SERVICE_REQ_TYPES.NON_SEVERABLE,
+        research_types:[],
+        special_populations: [],
     },
     selected_project: {},
     selected_product_service_code: {},
