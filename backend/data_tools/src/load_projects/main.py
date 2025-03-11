@@ -7,11 +7,12 @@ from data_tools.src.azure_utils.utils import get_csv
 from data_tools.src.common.db import init_db_from_config, setup_triggers
 from data_tools.src.common.utils import get_config, get_or_create_sys_user
 from data_tools.src.load_projects.utils import transform
+from dotenv import load_dotenv
 from loguru import logger
-from sqlalchemy import select, text
+from sqlalchemy import text
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from models import Portfolio
+load_dotenv(os.getenv("ENV_FILE", ".env"))
 
 # Set the timezone to UTC
 os.environ["TZ"] = "UTC"

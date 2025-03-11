@@ -208,4 +208,4 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
     logger.info("Data validation passed.")
 
     create_all_models(contract_data, sys_user, session)
-    logger.info(f"Finished loading models.")
+    logger.info("Finished loading models.")

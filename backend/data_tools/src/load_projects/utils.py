@@ -1,13 +1,11 @@
 from csv import DictReader
 from dataclasses import dataclass, field
-from datetime import date
 from typing import List, Optional
 
 from loguru import logger
-from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from models import AdministrativeAndSupportProject, Project, ProjectType, ResearchProject, User
+from models import AdministrativeAndSupportProject, ProjectType, ResearchProject, User
 
 
 @dataclass
@@ -158,4 +156,4 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
     logger.info("Data validation passed.")
 
     create_all_models(project_data, sys_user, session)
-    logger.info(f"Finished loading models.")
+    logger.info("Finished loading models.")

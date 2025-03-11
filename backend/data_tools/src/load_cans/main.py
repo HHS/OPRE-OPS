@@ -6,7 +6,7 @@ import click
 from data_tools.src.azure_utils.utils import get_csv
 from data_tools.src.common.db import init_db_from_config, setup_triggers
 from data_tools.src.common.utils import get_config, get_or_create_sys_user
-from data_tools.src.load_cans.utils import create_all_can_data, create_all_models, transform, validate_all
+from data_tools.src.load_cans.utils import transform
 from loguru import logger
 from sqlalchemy import select, text
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -76,6 +76,7 @@ def main(
             sys.exit(1)
 
     logger.info("Finished the ETL process.")
+
 
 if __name__ == "__main__":
     main()

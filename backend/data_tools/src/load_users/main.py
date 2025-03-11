@@ -72,5 +72,6 @@ def main(
 
     logger.info("Finished the ETL process.")
 
+
 if __name__ == "__main__":
     main()

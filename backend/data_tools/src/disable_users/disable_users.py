@@ -11,9 +11,9 @@ from data_tools.src.disable_users.queries import (
     GET_USER_ID_BY_OIDC_QUERY,
     get_latest_user_session,
 )
-from data_tools.src.import_static_data.import_data import get_config, init_db
+from data_tools.src.import_static_data.import_data import get_config
 from sqlalchemy import text
-from sqlalchemy.orm import Mapper, Session
+from sqlalchemy.orm import Session
 
 from models import *  # noqa: F403, F401
 
@@ -31,6 +31,7 @@ format = (
 logger.add(sys.stdout, format=format, level="INFO")
 logger.add(sys.stderr, format=format, level="INFO")
 
+
 def get_ids_from_oidc_ids(se, oidc_ids: list):
     """Retrieve user IDs corresponding to a list of OIDC IDs."""
     if not all(isinstance(oidc_id, str) for oidc_id in oidc_ids):
@@ -44,6 +45,7 @@ def get_ids_from_oidc_ids(se, oidc_ids: list):
             ids.append(user_id)
 
     return ids
+
 
 def disable_user(se, user_id, system_admin_id):
     """Deactivate a single user and log the change."""
@@ -60,11 +62,7 @@ def disable_user(se, user_id, system_admin_id):
 
     all_user_sessions = se.execute(text(ALL_ACTIVE_USER_SESSIONS_QUERY), {"user_id": user_id})
     for session in all_user_sessions:
-        updated_user_session = UserSession(
-            id=session[0],
-            is_active=False,
-            updated_by=system_admin_id
-        )
+        updated_user_session = UserSession(id=session[0], is_active=False, updated_by=system_admin_id)
         se.merge(updated_user_session)
 
 

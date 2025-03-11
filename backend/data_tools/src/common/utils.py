@@ -32,6 +32,7 @@ def get_config(environment_name: Optional[str] = None) -> DataToolsConfig:
             config = DevConfig()
     return config
 
+
 def get_or_create_sys_user(session: Session) -> User:
     """
     Get or create the system user.
