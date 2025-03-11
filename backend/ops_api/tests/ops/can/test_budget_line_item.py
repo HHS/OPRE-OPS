@@ -75,7 +75,7 @@ def test_get_budget_line_items_auth_required(client):
 def test_get_budget_line_items_list_by_status(auth_client):
     response = auth_client.get("/api/v1/budget-line-items/?status=IN_EXECUTION")
     assert response.status_code == 200
-    assert len(response.json) == 8
+    assert len(response.json) == 10
     assert response.json[0]["status"] == "IN_EXECUTION"
 
 

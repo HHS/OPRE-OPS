@@ -106,7 +106,7 @@ it("the filter button works as expected", () => {
         .click()
         .get(".bli-status-combobox__menu")
         .find(".bli-status-combobox__option")
-        .eq(1)
+        .first()
         .click();
 
     // click the button that has text Apply
@@ -115,7 +115,7 @@ it("the filter button works as expected", () => {
     // check that the correct tags are displayed
     cy.get("div").contains("FY 2044").should("exist");
     cy.get("div").contains("Child Welfare Research").should("exist");
-    cy.get("div").contains("Planned").should("exist");
+    cy.get("div").contains("Draft").should("exist");
 
     // check that the table is filtered correctly
     cy.get("div[id='agreements-table-zero-results']").should("exist");

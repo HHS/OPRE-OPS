@@ -180,7 +180,7 @@ describe("agreement BLI accordion", () => {
             cy.wait(1);
         });
         cy.get('[data-cy="currency-summary-card"]').should("exist");
-        cy.get('[data-cy="currency-summary-card"]').contains("$32,000,000.00");
+        cy.get('[data-cy="currency-summary-card"]').contains("$40,000,000.00");
     });
 });
 
@@ -271,7 +271,7 @@ describe("agreement review CANS accordion", () => {
             cy.wrap($el).check({ force: true });
             cy.wait(1);
         });
-        cy.get('[type="checkbox"]').should("have.length", 17);
+        cy.get('[type="checkbox"]').should("have.length", 21);
         cy.get('[data-cy="budget-summary-card-507"]').should("exist");
         cy.get('[data-cy="budget-summary-card-508"]').should("exist");
         cy.get('[data-cy="budget-summary-card-507"]').contains("Over Budget");
