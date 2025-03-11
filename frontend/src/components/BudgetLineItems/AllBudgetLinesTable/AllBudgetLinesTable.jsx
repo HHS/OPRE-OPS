@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
 import _ from "lodash";
 import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
@@ -14,15 +13,29 @@ import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmou
 import { exportTableToCsv } from "../../../helpers/tableExport.helpers";
 import { useSelector } from "react-redux";
 import { USER_ROLES } from "../../Users/User.constants";
+import DebugCode from "../../DebugCode";
+
+/**
+ * @typedef {Object} BudgetLine
+ * @property {number} id
+ * @property {string} line_description
+ * @property {string} agreement_name
+ * @property {string} [date_needed]
+ * @property {number} [fiscal_year]
+ * @property {string} [can_number]
+ * @property {number} [amount]
+ * @property {string} status
+ * @property {number} [services_component_id]
+ */
 
 /**
  * TableRow component that represents a single row in the budget lines table.
  * @component
- * @typedef {import("../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The props for the TableRow component.
  * @param {BudgetLine[]} props.budgetLines - The budget line data for the row.
  * @returns {JSX.Element} The TableRow component.
  */
+
 const AllBudgetLinesTable = ({ budgetLines }) => {
     const [trigger] = useLazyGetServicesComponentByIdQuery();
     const navigate = useNavigate();
@@ -43,17 +56,16 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
             const serviceComponentResponses = await Promise.all(serviceComponentPromises);
 
             /** @type {Record<number, {service_component_name: string, budget_line_total_plus_fees: number}>} */
-            const serviceComponentMap = {};
+            const budgetLinesDataMap = {};
             budgetLines.forEach((budgetLine) => {
                 const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
                 const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
 
-                // Find the corresponding response by ID
                 const response = serviceComponentResponses.find(
                     (resp) => resp && resp.id === budgetLine?.services_component_id
                 );
 
-                serviceComponentMap[budgetLine.id] = {
+                budgetLinesDataMap[budgetLine.id] = {
                     service_component_name: response?.display_name || "TBD", // Use optional chaining and fallback
                     budget_line_total_plus_fees: budgetLineTotalPlusFees
                 };
@@ -67,11 +79,11 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                 rowMapper: (/** @type {BudgetLine} */ budgetLine) => [
                     budgetLine.id,
                     budgetLine.agreement_name,
-                    serviceComponentMap[budgetLine.id]?.service_component_name,
+                    budgetLinesDataMap[budgetLine.id]?.service_component_name,
                     formatDateNeeded(budgetLine?.date_needed),
                     budgetLine.fiscal_year,
                     budgetLine.can_number,
-                    serviceComponentMap[budgetLine.id]?.budget_line_total_plus_fees.toLocaleString("en-US", {
+                    budgetLinesDataMap[budgetLine.id]?.budget_line_total_plus_fees.toLocaleString("en-US", {
                         style: "currency",
                         currency: "USD"
                     }) ?? "",
@@ -143,21 +155,6 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
             )}
         </>
     );
-};
-
-AllBudgetLinesTable.propTypes = {
-    budgetLines: PropTypes.arrayOf(
-        PropTypes.shape({
-            id: PropTypes.number.isRequired,
-            line_description: PropTypes.string.isRequired,
-            agreement_name: PropTypes.string.isRequired,
-            date_needed: PropTypes.string,
-            fiscal_year: PropTypes.number,
-            can_number: PropTypes.string,
-            amount: PropTypes.number,
-            status: PropTypes.string.isRequired
-        })
-    )
 };
 
 export default AllBudgetLinesTable;
