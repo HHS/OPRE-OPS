@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import AgreementTableRow from "./AgreementTableRow";
+// import { useState } from "react";
 import Table from "../../UI/Table";
 import { TABLE_HEADINGS } from "./AgreementsTable.constants";
 
@@ -10,6 +11,7 @@ import { TABLE_HEADINGS } from "./AgreementsTable.constants";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({ agreements = [] }) => {
+    // const [sortCondition, setSortCondition] = useState(null);
     return (
         <>
             <Table tableHeadings={TABLE_HEADINGS}>
