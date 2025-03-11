@@ -1180,6 +1180,9 @@ paths:
                   available_funding:
                     amount: 150000.00
                     percent: "15"
+                  new_funding:
+                    amount: 800000.00
+                    percent: "New-Funding"
         "400":
           description: Bad Request
         "401":
@@ -3293,6 +3296,8 @@ components:
         in_execution_funding:
           $ref: "#/components/schemas/FundingLineItem"
         available_funding:
+          $ref: "#/components/schemas/FundingLineItem"
+        new_funding:
           $ref: "#/components/schemas/FundingLineItem"
     FundingLineItem:
       description: Portfolio funding object
