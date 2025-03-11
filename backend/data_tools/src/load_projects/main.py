@@ -25,8 +25,11 @@ format = (
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "<level>{message}</level>"
 )
-logger.add(sys.stdout, format=format, level="INFO")
-logger.add(sys.stderr, format=format, level="INFO")
+# Configure logger with global level set to INFO by default
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+logger.remove()  # Remove default handlers
+logger.configure(handlers=[{"sink": sys.stdout, "format": format, "level": LOG_LEVEL}])
+logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 
 
 @click.command()
