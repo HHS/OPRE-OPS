@@ -54,27 +54,26 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
 
             const serviceComponentResponses = await Promise.all(serviceComponentPromises);
 
-            /** @type {Record<number, {service_component_name: string, budget_line_total_plus_fees: number}>} */
+            /** @type {Record<number, {service_component_name: string, fees: number}>} */
             const budgetLinesDataMap = {};
             budgetLines.forEach((budgetLine) => {
-                const feeTotal = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
-                const budgetLineTotalPlusFees = totalBudgetLineAmountPlusFees(budgetLine?.amount, feeTotal);
-
+                const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
                 const response = serviceComponentResponses.find(
                     (resp) => resp && resp.id === budgetLine?.services_component_id
                 );
 
                 budgetLinesDataMap[budgetLine.id] = {
                     service_component_name: response?.display_name || "TBD", // Use optional chaining and fallback
-                    budget_line_total_plus_fees: budgetLineTotalPlusFees
+                    fees
                 };
             });
 
             const currentTimeStamp = new Date().toISOString();
+            const header = ["BL ID #", "Agreement", "SC", "Obligate By", "FY", "CAN", "SubTotal", "Fees", "Status"];
 
             await exportTableToCsv({
                 data: budgetLines,
-                headers: All_BUDGET_LINES_TABLE_HEADINGS,
+                headers: header,
                 rowMapper: (/** @type {BudgetLine} */ budgetLine) => [
                     budgetLine.id,
                     budgetLine.agreement_name,
@@ -82,7 +81,11 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     formatDateNeeded(budgetLine?.date_needed),
                     budgetLine.fiscal_year,
                     budgetLine.can_number,
-                    budgetLinesDataMap[budgetLine.id]?.budget_line_total_plus_fees.toLocaleString("en-US", {
+                    budgetLine?.amount?.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD"
+                    }) ?? "",
+                    budgetLinesDataMap[budgetLine.id]?.fees.toLocaleString("en-US", {
                         style: "currency",
                         currency: "USD"
                     }) ?? "",
