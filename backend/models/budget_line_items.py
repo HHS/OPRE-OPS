@@ -267,10 +267,7 @@ class GrantBudgetLineItemDetail(BaseModel):
     __tablename__ = "grant_budget_line_item_detail"
 
     id: Mapped[int] = BaseModel.get_pk_column()
-    agreement_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("agreement.id")
-    )
-    agreement: Mapped[Optional[Agreement]] = relationship("Agreement")
+
     grants_number: Mapped[Optional[str]] = mapped_column(String)
     grantee_name: Mapped[Optional[str]] = mapped_column(String)
     educational_institution: Mapped[Optional[bool]] = mapped_column(Boolean)
@@ -322,6 +319,12 @@ class GrantBudgetLineItem(BudgetLineItem):
     }
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
 
+    details_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("grant_budget_line_item_detail.id")
+    )
+    details: Mapped[Optional[GrantBudgetLineItemDetail]] = relationship(
+        "GrantBudgetLineItemDetail"
+    )
     grant_year_number: Mapped[Optional[int]] = mapped_column(Integer)
     bns_number: Mapped[Optional[str]] = mapped_column(String)
     committed_date: Mapped[Optional[date]] = mapped_column(Date)
