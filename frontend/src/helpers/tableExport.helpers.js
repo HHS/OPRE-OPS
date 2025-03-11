@@ -1,4 +1,4 @@
-import Papa from "papaparse";
+import * as XLSX from "xlsx";
 
 /**
  * Helper function to export table data to CSV
@@ -8,19 +8,25 @@ import Papa from "papaparse";
  * @param {() => void} params.rowMapper - Function to map each data item to a row array
  * @param {string} [params.filename] - Name of the CSV file
  */
-export const exportTableToCsv = async ({ data, headers, rowMapper, filename = "export.tsv" }) => {
+export const exportTableToCsv = async ({ data, headers, rowMapper, filename = "export.xlsx" }) => {
     if (!data || !headers || !rowMapper) {
         throw new Error("Missing required parameters");
     }
 
     // Map the data to rows
-    const rows = data.map(rowMapper);
+    const rows = data.map(rowMapper).filter(row => row !== undefined);
 
     // Combine headers and rows
-    const csvData = [headers, ...rows];
+    const excelData = [headers, ...rows];
 
-    const csv = Papa.unparse(csvData, { delimiter: "\t" });
-    const blob = new Blob([csv], { type: "text/tab-separated-values" });
+    // Create a new workbook and add the data
+    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+    // Write the workbook to a file
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

@@ -91,7 +91,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     }) ?? "",
                     budgetLine?.in_review ? "In Review" : budgetLine?.status
                 ],
-                filename: `budget_lines_${currentTimeStamp}.tsv`
+                filename: `budget_lines_${currentTimeStamp}.xlsx`
             });
         } catch (error) {
             console.error("Failed to export data:", error);
