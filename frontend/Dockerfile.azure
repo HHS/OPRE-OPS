@@ -23,7 +23,7 @@ COPY eslint.config.js .
 ARG MODE
 ARG VITE_BACKEND_DOMAIN
 COPY vite-env/env.${MODE}.local .env
-RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=${MODE} bun run build --mode ${MODE}
+RUN VITE_BACKEND_DOMAIN=${VITE_BACKEND_DOMAIN} NODE_ENV=production bun run build --mode production
 
 # ---- Release Stage ----
 FROM alpine:3.21 as release
