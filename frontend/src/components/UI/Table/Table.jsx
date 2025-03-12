@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import styles from "./table.module.css";
+import { useEffect } from "react";
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -32,6 +33,10 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
         return { whiteSpace: "nowrap" };
     };
 
+    useEffect(() => {
+        console.log("inside use effect block for Table");
+    });
+
     return (
         <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
             <thead>
@@ -45,12 +50,12 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                             style={addWidthIfStatus(heading)}
                         >
                             {heading}
-                            {heading == selectedHeader && sortDescending ?
+                            {heading == selectedHeader && !sortDescending ?
                             <FontAwesomeIcon
                             icon={faArrowUp}
                             size={heading == selectedHeader ? "3x" : "2x"}
                             className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
-                            title="Sort Descending"
+                            title="Sort Ascending"
                             data-position="top"
                             />
                             :
