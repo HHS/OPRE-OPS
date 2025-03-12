@@ -1,5 +1,7 @@
 import PropTypes from "prop-types";
 import styles from "./table.module.css";
+import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * The Table component is a layout component that displays a table
@@ -10,12 +12,13 @@ import styles from "./table.module.css";
  * @param {string[]} props.tableHeadings - The table headings to display.
  * @param {React.ReactNode} [props.firstHeadingSlot] - The checkbox slot - optional.
  * @param {(arg1: string|null, arg2: boolean|null) => void} [props.onClickHeader] - Function that runs when a header is clicked - optional.
- * @param {boolean} [props.sortDescending] - Whether or not the table is sorted descending or not. Null means no special sort direction.
+ * @param {string | null} [props.selectedHeader] - The header that has been chosen as sort condition.
+ * @param {boolean | null} [props.sortDescending] - Whether or not the table is sorted descending or not. Null means no special sort direction.
  * @returns {JSX.Element} - The rendered component.
  * @example
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/
-const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, sortDescending}) => {
+const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selectedHeader = "", sortDescending}) => {
     /**
      * Adds a width to the Status column
      * @param {string} heading - The heading to check
@@ -42,6 +45,23 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, sortD
                             style={addWidthIfStatus(heading)}
                         >
                             {heading}
+                            {heading == selectedHeader && sortDescending ?
+                            <FontAwesomeIcon
+                            icon={faArrowUp}
+                            size={heading == selectedHeader ? "3x" : "2x"}
+                            className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
+                            title="Sort Descending"
+                            data-position="top"
+                            />
+                            :
+                            <FontAwesomeIcon
+                                icon={faArrowDown}
+                                size={heading == selectedHeader ? "3x" : "2x"}
+                                className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
+                                title="Sort Descending"
+                                data-position="top"
+                            />
+                            }
                         </th>
                     ))}
                 </tr>
@@ -56,6 +76,7 @@ Table.propTypes = {
     tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired,
     firstHeadingSlot: PropTypes.node,
     onClickHeader: PropTypes.func,
+    selectedHeader: PropTypes.string,
     sortDescending: PropTypes.bool
 };
 
