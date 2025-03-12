@@ -151,7 +151,7 @@ const BudgetLineItemList = () => {
                             </div>
 
                             <div className="text-right">
-                                {isSystemAdmin && (
+                                {isSystemAdmin && budgetLinesWithCanAndAgreementName.length > 0 && (
                                     <button
                                         className="usa-button usa-button--outline text-primary margin-left-1"
                                         data-cy="budget-line-export"

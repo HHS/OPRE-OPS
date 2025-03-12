@@ -207,6 +207,27 @@ it("Should filter all budgetlines vs my budget lines", () => {
     cy.get('[data-cy="tab-not-selected"]').click();
     cy.get("@total-bli-card").contains(0);
 });
+
+it("Should allow system owner to export table", () => {
+    cy.get('[data-cy="budget-line-export"]').should("exist");
+    cy.get("button").contains("Filter").click();
+     // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".portfolios-combobox__control")
+    .click()
+    .get(".portfolios-combobox__menu")
+    .find(".portfolios-combobox__option")
+    .contains("Home Visiting")
+    .click();
+     cy.get("button").contains("Apply").click();
+     cy.get('[data-cy="budget-line-export"]').should("not.exist");
+});
+
+it("should not allow table export if not system own role", () => {
+    testLogin("division-director");
+    cy.visit("/cans").wait(1000);
+    cy.get('[data-cy="budget-line-export"]').should("not.exist");
+});
+
 /**
  * Helper function to filter by status
  * @param {string} status - The status to filter by
