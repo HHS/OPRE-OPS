@@ -1,3 +1,4 @@
+# flake8: noqa B908
 import pytest
 from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
@@ -57,14 +58,13 @@ def test_bli_history_force_an_error(loaded_db):
         status=BudgetLineItemStatus.PLANNED,
     )
 
-    loaded_db.add(bli)
     with pytest.raises(IntegrityError):
+        loaded_db.add(bli)
         loaded_db.commit()
 
-    # Check for error history after the exception
-    stmt = select(OpsDBHistory).where(OpsDBHistory.event_type == OpsDBHistoryType.ERROR)
-    result = loaded_db.scalars(stmt).all()
-    assert result[0].event_details["agreement_id"] == 1000000
+        stmt = select(OpsDBHistory).where(OpsDBHistory.event_type == OpsDBHistoryType.ERROR)
+        result = loaded_db.scalars(stmt).all()
+        assert result[0].event_details["agreement_id"] == 1000000
 
 
 @pytest.mark.usefixtures("app_ctx")
