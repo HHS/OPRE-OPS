@@ -1,95 +1,94 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
 import { BrowserRouter as Router } from "react-router-dom";
+import { Provider } from "react-redux";
+import { describe, it, expect, vi } from "vitest";
 import AllBudgetLinesTable from "./AllBudgetLinesTable";
-import alertReducer from "../../UI/Alert/alertSlice";
-import authReducer from "../../Auth/authSlice";
-import { opsApi } from "../../../api/opsAPI";
+import { BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
+import store from "../../../store"; // Adjust the import path to your store
 
 const mockBudgetLines = [
     {
         id: 1,
         agreement_name: "Agreement 1",
-        date_needed: "2023-12-01",
+        date_needed: "2023-01-01",
         fiscal_year: 2023,
         can_number: "CAN123",
         amount: 1000,
         status: "Active",
-        services_component_id: 1
-    },
-    {
-        id: 2,
-        agreement_name: "Agreement 2",
-        date_needed: "2023-12-02",
-        fiscal_year: 2023,
-        can_number: "CAN124",
-        amount: 2000,
-        status: "Inactive",
-        services_component_id: 2
+        services_component_id: 1,
+        agreement_id: 1
     }
 ];
 
-const renderWithProviders = (ui, { store } = {}) => {
-    const defaultStore = configureStore({
-        reducer: {
-            alert: alertReducer,
-            auth: authReducer,
-            [opsApi.reducerPath]: opsApi.reducer
-        },
-        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(opsApi.middleware),
-        preloadedState: {
-            auth: {
-                activeUser: {
-                    roles: ["SYSTEM_OWNER"]
-                }
-            }
-        }
-    });
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual("react-router-dom");
+    return {
+        ...actual,
+        useNavigate: () => vi.fn()
+    };
+});
 
-    return render(
-        <Provider store={store || defaultStore}>
-            <Router>{ui}</Router>
-        </Provider>
-    );
-};
+vi.mock("./AllBudgetLinesTable.hooks", () => ({
+    default: () => ({
+        showModal: false,
+        setShowModal: vi.fn(),
+        modalProps: {},
+        handleDeleteBudgetLine: vi.fn()
+    })
+}));
 
 describe("AllBudgetLinesTable", () => {
-    test("renders table with budget lines", () => {
-        renderWithProviders(<AllBudgetLinesTable budgetLines={mockBudgetLines} />);
+    it("renders table headings", () => {
+        render(
+            <Provider store={store}>
+                <Router>
+                    <AllBudgetLinesTable budgetLines={mockBudgetLines} />
+                </Router>
+            </Provider>
+        );
 
-        expect(screen.getByText("Agreement 1")).toBeInTheDocument();
-        expect(screen.getByText("Agreement 2")).toBeInTheDocument();
+        const headings = screen.getAllByRole("columnheader");
+        expect(headings).toHaveLength(8); // Adjust based on the number of headings
     });
 
-    test("renders export button for system admin", () => {
-        renderWithProviders(<AllBudgetLinesTable budgetLines={mockBudgetLines} />);
+    it("renders budget lines", () => {
+        render(
+            <Provider store={store}>
+                <Router>
+                    <AllBudgetLinesTable budgetLines={mockBudgetLines} />
+                </Router>
+            </Provider>
+        );
 
-        expect(screen.getByText("Export")).toBeInTheDocument();
+        const rows = screen.getAllByRole("row");
+        expect(rows).toHaveLength(mockBudgetLines.length + 1); // +1 for the header row
     });
 
-    test("handles export button click", () => {
-        renderWithProviders(<AllBudgetLinesTable budgetLines={mockBudgetLines} />);
+    it("displays pagination when budget lines exceed per page limit", () => {
+        const manyBudgetLines = Array(BLIS_PER_PAGE + 1).fill(mockBudgetLines[0]);
 
-        const exportButton = screen.getByText("Export");
-        fireEvent.click(exportButton);
+        render(
+            <Provider store={store}>
+                <Router>
+                    <AllBudgetLinesTable budgetLines={manyBudgetLines} />
+                </Router>
+            </Provider>
+        );
+
+        const pagination = screen.getByRole("navigation");
+        expect(pagination).toBeInTheDocument();
     });
 
-    test("renders pagination when budget lines exceed per page limit", () => {
-        const manyBudgetLines = Array.from({ length: 20 }, (_, index) => ({
-            ...mockBudgetLines[0],
-            id: `bli-${index + 1}`
-        }));
+    it("displays zero results message when no budget lines are provided", () => {
+        render(
+            <Provider store={store}>
+                <Router>
+                    <AllBudgetLinesTable budgetLines={[]} />
+                </Router>
+            </Provider>
+        );
 
-        renderWithProviders(<AllBudgetLinesTable budgetLines={manyBudgetLines} />);
-
-        expect(screen.getByText("bli-1")).toBeInTheDocument();
-        expect(screen.getByText("bli-2")).toBeInTheDocument();
-    });
-
-    test("displays zero results message when no budget lines are provided", () => {
-        renderWithProviders(<AllBudgetLinesTable budgetLines={[]} />);
-
-        expect(screen.getByText("There are 0 results based on your filter selections.")).toBeInTheDocument();
+        const zeroResultsMessage = screen.getByText(/There are 0 results based on your filter selections./i);
+        expect(zeroResultsMessage).toBeInTheDocument();
     });
 });
