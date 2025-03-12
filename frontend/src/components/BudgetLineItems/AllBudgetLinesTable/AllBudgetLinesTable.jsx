@@ -17,7 +17,6 @@ import { USER_ROLES } from "../../Users/User.constants";
 /**
  * @typedef {Object} BudgetLine
  * @property {number} id
- * @property {string} line_description
  * @property {string} agreement_name
  * @property {string} [date_needed]
  * @property {number} [fiscal_year]
