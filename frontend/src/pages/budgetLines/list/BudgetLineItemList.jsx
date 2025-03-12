@@ -9,8 +9,6 @@ import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLi
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
-import { USER_ROLES } from "../../../components/Users/User.constants";
-import { useSelector } from "react-redux";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { totalBudgetLineFeeAmount, formatDateNeeded } from "../../../helpers/utils";
 import BLIFilterButton from "./BLIFilterButton";
@@ -39,8 +37,6 @@ const BudgetLineItemList = () => {
     const { myBudgetLineItemsUrl, activeUser, filters, setFilters } = useBudgetLinesList();
 
     const [trigger] = useLazyGetServicesComponentByIdQuery();
-    const loggedInUserRoles = useSelector((state) => state.auth.activeUser?.roles);
-    const isSystemAdmin = loggedInUserRoles?.includes(USER_ROLES.SYSTEM_OWNER);
 
     if (budgetLineItemsIsLoading || cansIsLoading || agreementsAreError) {
         return (
@@ -151,7 +147,7 @@ const BudgetLineItemList = () => {
                             </div>
 
                             <div className="text-right">
-                                {isSystemAdmin && budgetLinesWithCanAndAgreementName.length > 0 && (
+                                {budgetLinesWithCanAndAgreementName.length > 0 && (
                                     <button
                                         className="usa-button usa-button--outline text-primary margin-left-1"
                                         data-cy="budget-line-export"
