@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Provider } from "react-redux";
 import { describe, it, expect, vi } from "vitest";
