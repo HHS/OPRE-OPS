@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import Boolean, ForeignKey, Sequence, String
 from sqlalchemy.dialects.postgresql import ENUM
@@ -60,7 +60,7 @@ class Vendor(BaseModel):
         sequence=Sequence("vendor_id_seq", start=100, increment=1)
     )
     name: Mapped[str]
-    duns: Mapped[str]
+    duns: Mapped[Optional[str]] = mapped_column(String(), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean(), default=True, nullable=False)
 
     contacts: Mapped[List[Contact]] = relationship(

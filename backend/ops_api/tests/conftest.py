@@ -1,5 +1,5 @@
 """Configuration for pytest tests."""
-
+# flake8: noqa: S404,S607,S602
 import subprocess
 from collections.abc import Generator
 from datetime import datetime, timezone

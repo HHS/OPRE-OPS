@@ -35,8 +35,8 @@ def handle_create_update_by_attrs(session: Session) -> None:  # noqa: F405
 
     for obj in session.new:
         if hasattr(obj, "created_by"):
-            setattr(obj, "created_by", user_id)
+            obj.created_by = user_id
 
     for obj in chain(session.new, session.dirty, session.deleted):
         if hasattr(obj, "updated_by"):
-            setattr(obj, "updated_by", user_id)
+            obj.updated_by = user_id

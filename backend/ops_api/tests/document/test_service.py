@@ -85,7 +85,9 @@ class TestDocumentService(BaseDocumentTestCase):
 
         self.assertEqual(
             result["message"],
-            f"Document {self.mock_document_id} in agreement {self.mock_status_req_data['agreement_id']} status updated to {self.mock_status_req_data['status']}",
+            f"Document {self.mock_document_id} in agreement "
+            f"{self.mock_status_req_data['agreement_id']} status updated to "
+            f"{self.mock_status_req_data['status']}",
         )
         self.mock_repository.update_document_status.assert_called_once_with(
             self.mock_document_id, self.mock_status_req_data["status"]
