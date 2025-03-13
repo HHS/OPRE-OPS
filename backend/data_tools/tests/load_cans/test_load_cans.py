@@ -122,7 +122,7 @@ def test_validate_all():
     test_data = list(csv.DictReader(open("test_csv/can_invalid.tsv"), dialect="excel-tab"))
     assert len(test_data) == 17
     can_data = [create_can_data(data) for data in test_data]
-    assert validate_all(can_data) == False
+    assert validate_all(can_data) is False
 
 
 def test_create_models_no_can_nbr():

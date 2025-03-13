@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from urllib.parse import urlparse
 
 from data_tools.environment.azure import AzureConfig
-from data_tools.src.azure_utils.utils import get_csv, get_csv_using_mi
+from data_tools.src.azure_utils.utils import get_csv, get_csv_using_mi_or_rbac
 
 
 def test_get_csv(mocker):
@@ -51,7 +51,7 @@ def test_get_csv_using_mi(mocker):
 
     parts = urlparse("https://xxxxx.xxxx.xxxx.net/container_name/blob_name")
 
-    result = get_csv_using_mi(parts, dialect="unix", client_id="xxxxx")
+    result = get_csv_using_mi_or_rbac(parts, dialect="unix", client_id="xxxxx")
 
     assert result is not None
     data = list(result)

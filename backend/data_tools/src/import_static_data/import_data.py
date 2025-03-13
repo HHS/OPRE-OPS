@@ -2,15 +2,15 @@ import logging
 import os
 
 import json5
-from data_tools.src.common.db import init_db, init_db_from_config
+from data_tools.src.common.db import init_db_from_config
 from data_tools.src.common.utils import get_config
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 
-logging.basicConfig(level=logging.INFO)
-
 from models import *  # noqa: F403, F401
+
+logging.basicConfig(level=logging.INFO)
 
 # Whitelisting here to help mitigate a SQL Injection attack from the JSON data
 ALLOWED_TABLES = [
@@ -112,11 +112,11 @@ def load_new_data(
             if seq_needs_reset:
                 with Session(conn) as session:
                     print(f"Resetting ID sequence for {name} (after IDs were set manually) ...")
-                    stmt = (
-                        f"SELECT setval(pg_get_serial_sequence('ops.{name}', 'id'), coalesce(max(id),0) + 1, false) "
-                        f"FROM ops.services_component;"
+                    stmt = text(
+                        "SELECT setval(pg_get_serial_sequence(:table_name, 'id'), coalesce(max(id),0) + 1, false) "
+                        "FROM ops.services_component;"
                     )
-                    session.execute(text(stmt))
+                    session.execute(stmt, {"table_name": f"ops.{name}"})
 
 
 def after_user_load(conn: Connection) -> None:

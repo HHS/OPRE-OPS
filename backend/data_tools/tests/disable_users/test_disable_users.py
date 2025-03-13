@@ -7,6 +7,7 @@ from models import OpsEventStatus, OpsEventType, User, UserStatus
 
 system_admin_id = 111
 
+
 @pytest.fixture
 def mock_session():
     """Fixture for creating a mock SQLAlchemy session."""
@@ -14,13 +15,9 @@ def mock_session():
     session.execute.return_value.fetchone.return_value = None
     return session
 
+
 def test_deactivate_user(mock_session):
     user_id = 1
-    db_history_changes = {
-        "id": {"new": user_id, "old": None},
-        "status": {"new": "INACTIVE", "old": None},
-        "updated_by": {"new": system_admin_id, "old": None}
-    }
 
     mock_session.execute.return_value = [(1,), (2,)]
 
@@ -44,9 +41,12 @@ def test_deactivate_user(mock_session):
     assert ops_events_call[0][0].event_status == OpsEventStatus.SUCCESS
     assert ops_events_call[0][0].created_by == system_admin_id
 
+
 @patch("data_tools.src.disable_users.disable_users.logger")
 def test_no_inactive_users(mock_logger, mock_session, mocker):
-    mocker.patch("data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id))
+    mocker.patch(
+        "data_tools.src.disable_users.disable_users.get_or_create_sys_user", return_value=User(id=system_admin_id)
+    )
     mocker.patch("data_tools.src.disable_users.disable_users.get_latest_user_session", return_value=[])
     mocker.patch("data_tools.src.disable_users.disable_users.setup_triggers")
 
@@ -55,6 +55,7 @@ def test_no_inactive_users(mock_logger, mock_session, mocker):
     mock_logger.info.assert_any_call("Checking for System User.")
     mock_logger.info.assert_any_call("Fetching inactive users.")
     mock_logger.info.assert_any_call("No inactive users found.")
+
 
 def test_valid_oidc_ids(mock_session):
     mock_session.execute.return_value.scalar.side_effect = [1, 2, None]  # Mock responses for OIDC IDs
@@ -67,6 +68,7 @@ def test_valid_oidc_ids(mock_session):
 
     empty_result = get_ids_from_oidc_ids(mock_session, [])
     assert empty_result == []
+
 
 def test_invalid_oidc_id_type(mock_session):
     oidc_ids = ["valid_oidc", 123, "another_valid_oidc"]

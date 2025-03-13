@@ -20,6 +20,7 @@ def init_db(
 
     return db_session, engine
 
+
 def setup_triggers(session: scoped_session[Session | Any], sys_user: User) -> None:
 
     @event.listens_for(session, "before_commit")
