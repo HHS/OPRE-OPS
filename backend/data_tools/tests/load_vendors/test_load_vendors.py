@@ -1,3 +1,4 @@
+# flake8: noqa F405
 import csv
 
 import pytest
@@ -7,12 +8,11 @@ from data_tools.src.load_data import main
 from data_tools.src.load_vendors.utils import VendorData, create_models, create_vendor_data, validate_data
 from sqlalchemy import and_, select, text
 
-from models import *  # noqa: F403, F401
+from models import *
 
 
 @pytest.fixture()
 def db_with_cleanup(loaded_db):
-
     yield loaded_db
 
     # Cleanup
@@ -33,6 +33,8 @@ def test_create_vendor_data():
     assert create_vendor_data(test_data[0]).DUNS == 123456789
     assert create_vendor_data(test_data[0]).ADDRESS == "789 Innovation Way, Suite 400, Techville, CA 90210"
     assert create_vendor_data(test_data[0]).HEAD_OF_CONTRACT == "John Smith"
+    assert create_vendor_data(test_data[0]).PHONE_NBR == "555-123-4567"
+    assert create_vendor_data(test_data[0]).EMAIL == "jsmith@acmesolutions.com"
     assert create_vendor_data(test_data[0]).STATUS is True
 
     # Assuming last vendor in list has different properties
@@ -42,6 +44,8 @@ def test_create_vendor_data():
     assert create_vendor_data(test_data[last_idx]).DUNS == 12345677
     assert create_vendor_data(test_data[last_idx]).ADDRESS == "789 Solution Dr, Kansas City, MO 64101"
     assert create_vendor_data(test_data[last_idx]).HEAD_OF_CONTRACT == "Natalie Baker"
+    assert create_vendor_data(test_data[last_idx]).PHONE_NBR == "555-123-4567"
+    assert create_vendor_data(test_data[last_idx]).EMAIL == "nbaker@tektrasol.com"
     assert create_vendor_data(test_data[last_idx]).STATUS is False
 
 
@@ -69,7 +73,7 @@ def test_create_models(db_with_cleanup):
         HEAD_OF_CONTRACT="John Doe",
         PHONE_NBR="555-123-4567",
         EMAIL="contact@testvendor.com",
-        STATUS=True,
+        STATUS="ACTIVE",
     )
 
     sys_user = User(
@@ -81,6 +85,12 @@ def test_create_models(db_with_cleanup):
 
     assert vendor_model.id == 1
     assert vendor_model.name == "Test Vendor Inc."
+    assert vendor_model.duns == "123456789"
+    assert vendor_model.active is True
+    assert vendor_model.created_by == sys_user.id
+    assert vendor_model.created_on is not None
+    assert vendor_model.updated_on is not None
+    assert vendor_model.updated_by == sys_user.id
 
 
 def test_main(db_with_cleanup):
@@ -98,14 +108,33 @@ def test_main(db_with_cleanup):
 
     assert result.exit_code == 0
 
+    sys_user = get_or_create_sys_user(db_with_cleanup)
+
     # make sure the data was loaded
     vendor_1 = db_with_cleanup.get(Vendor, 1)
     assert vendor_1.id == 1
+    assert vendor_1.name == "Acme Solutions Inc"
+    assert vendor_1.duns == "123456789"
+    assert vendor_1.active is True
+    assert vendor_1.created_by == sys_user.id
+    assert vendor_1.updated_by == sys_user.id
+    assert vendor_1.created_on is not None
+    assert vendor_1.updated_on is not None
+
 
     vendor_2 = db_with_cleanup.get(Vendor, 2)
     assert vendor_2.id == 2
+    assert vendor_2.name == "Widgets Inc"
+    assert vendor_2.duns == "987654321"
+    assert vendor_2.active is False
+    assert vendor_2.created_by == sys_user.id
+    assert vendor_2.updated_by == sys_user.id
+    assert vendor_2.created_on is not None
+    assert vendor_2.updated_on is not None
 
-    history_objs = db_with_cleanup.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "Vendor")).scalars().all()
+    history_objs = (
+        db_with_cleanup.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "Vendor")).scalars().all()
+    )
     assert len(history_objs) > 0
 
     vendor_1_history = (

@@ -96,6 +96,7 @@ def create_models(data: VendorData, sys_user: User, session: Session) -> None:
             duns=data.DUNS,
             active=data.STATUS,
             created_by=sys_user.id,
+            updated_by=sys_user.id,
         )
 
         existing_vendor = session.get(Vendor, data.SYS_VENDOR_ID)
