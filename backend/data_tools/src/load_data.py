@@ -6,7 +6,6 @@ import click
 from data_tools.src.azure_utils.utils import get_csv
 from data_tools.src.common.db import init_db_from_config, setup_triggers
 from data_tools.src.common.utils import get_config, get_or_create_sys_user
-from data_tools.src.load_projects.utils import transform
 from dotenv import load_dotenv
 from loguru import logger
 from sqlalchemy import text
@@ -34,15 +33,23 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 
 @click.command()
 @click.option("--env", help="The environment to use.")
+@click.option(
+    "--type",
+    type=click.Choice(["projects"], case_sensitive=False),
+    required=True,
+    help="The type of data to load.",
+)
 @click.option("--input-csv", help="The path to the CSV input file.")
 def main(
     env: str,
+    type: str,
     input_csv: str,
 ):
     """
     Main entrypoint for the script.
     """
     logger.debug(f"Environment: {env}")
+    logger.debug(f"Data type: {type}")
     logger.debug(f"Input CSV: {input_csv}")
 
     logger.info("Starting the ETL process.")
@@ -71,6 +78,11 @@ def main(
         setup_triggers(session, sys_user)
 
         try:
+            match type:
+                case "projects":
+                    from data_tools.src.load_projects.utils import transform
+                case _:
+                    raise ValueError(f"Unsupported data type: {type}")
             transform(csv_f, session, sys_user)
         except RuntimeError as re:
             logger.error(f"Error transforming data: {re}")
