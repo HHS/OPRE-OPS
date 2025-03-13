@@ -67,17 +67,15 @@ const BudgetLineItemList = () => {
 
             const serviceComponentResponses = await Promise.all(serviceComponentPromises);
 
-            /** @type {Record<number, {service_component_name: string, fees: number}>} */
+            /** @type {Record<number, {service_component_name: string}>} */
             const budgetLinesDataMap = {};
             budgetLinesWithCanAndAgreementName.forEach((budgetLine) => {
-                const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
                 const response = serviceComponentResponses.find(
                     (resp) => resp && resp.id === budgetLine?.services_component_id
                 );
 
                 budgetLinesDataMap[budgetLine.id] = {
-                    service_component_name: response?.display_name || "TBD", // Use optional chaining and fallback
-                    fees
+                    service_component_name: response?.display_name || "TBD" // Use optional chaining and fallback
                 };
             });
 
@@ -87,23 +85,26 @@ const BudgetLineItemList = () => {
             await exportTableToXlsx({
                 data: budgetLinesWithCanAndAgreementName,
                 headers: header,
-                rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => [
-                    budgetLine.id,
-                    budgetLine.agreement_name,
-                    budgetLinesDataMap[budgetLine.id]?.service_component_name,
-                    formatDateNeeded(budgetLine?.date_needed),
-                    budgetLine.fiscal_year,
-                    budgetLine.can_number,
-                    budgetLine?.amount?.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD"
-                    }) ?? "",
-                    budgetLinesDataMap[budgetLine.id]?.fees.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD"
-                    }) ?? "",
-                    budgetLine?.in_review ? "In Review" : budgetLine?.status
-                ],
+                rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
+                    const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
+                    return [
+                        budgetLine.id,
+                        budgetLine.agreement_name,
+                        budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                        formatDateNeeded(budgetLine?.date_needed),
+                        budgetLine.fiscal_year,
+                        budgetLine.can_number,
+                        budgetLine?.amount?.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? "",
+                        fees.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? "",
+                        budgetLine?.in_review ? "In Review" : budgetLine?.status
+                    ];
+                },
                 filename: `budget_lines_${currentTimeStamp}.xlsx`
             });
         } catch (error) {
