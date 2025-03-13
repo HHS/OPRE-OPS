@@ -1,9 +1,12 @@
 import { useState, useMemo } from "react";
 import { AGREEMENT_TABLE_HEADINGS } from "../components/Agreements/AgreementsTable/AgreementsTable.constants";
 import { getAgreementSubTotal, getProcurementShopSubTotal, getBudgetLineAmount, findNextBudgetLine, findNextNeedBy } from "../components/Agreements/AgreementsTable/AgreementsTable.helpers";
-
+import { All_BUDGET_LINES_TABLE_HEADINGS } from "../components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTable.constants";
+import { useGetServicesComponentDisplayName } from "./useServicesComponents.hooks";
+import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../helpers/utils";
 export const SORT_TYPES = {
-    AGREEMENTS: "Agreement"
+    AGREEMENTS: "Agreement",
+    BUDGET_LINES: "Budget Lines",
 }
 
 const getAgreementComparableValue = (agreement, condition) => {
@@ -25,9 +28,32 @@ const getAgreementComparableValue = (agreement, condition) => {
         }
     };
 
+const getBudgetLineComparableValue = (budgetLine, condition) => {
+    switch (condition) {
+        case All_BUDGET_LINES_TABLE_HEADINGS.BL_ID_NUMBER:
+            return budgetLine.id;
+        case All_BUDGET_LINES_TABLE_HEADINGS.AGREEMENT:
+            return budgetLine.agreement_name;
+        case All_BUDGET_LINES_TABLE_HEADINGS.SERVICE_COMPONENT:
+            return useGetServicesComponentDisplayName(budgetLine.services_component_id);
+        case All_BUDGET_LINES_TABLE_HEADINGS.OBLIGATE_BY:
+            return formatDateNeeded(budgetLine.date_needed);
+        case All_BUDGET_LINES_TABLE_HEADINGS.FISCAL_YEAR:
+            return budgetLine.fiscal_year;
+        case All_BUDGET_LINES_TABLE_HEADINGS.CAN:
+            return budgetLine.can_number;
+        case All_BUDGET_LINES_TABLE_HEADINGS.TOTAL:
+            return totalBudgetLineAmountPlusFees(budgetLine.amount, totalBudgetLineFeeAmount(budgetLine.amount, budgetLine.proc_shop_fee_percentage));
+        case All_BUDGET_LINES_TABLE_HEADINGS.STATUS:
+            return budgetLine.status;
+        default:
+            return budgetLine;
+    }
+};
 
 const VALUE_RETRIEVAL_FUNCTIONS = {
     "Agreement": getAgreementComparableValue,
+    "Budget Lines": getBudgetLineComparableValue
 }
 const compareRows = (a, b, descending) => {
         if (a < b) {
