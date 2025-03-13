@@ -3,7 +3,7 @@ import csv
 import pytest
 from click.testing import CliRunner
 from data_tools.src.common.utils import get_or_create_sys_user
-from data_tools.src.load_grant_budget_lines.main import main
+from data_tools.src.load_data import main
 from data_tools.src.load_grant_budget_lines.utils import (
     GrantBudgetLineItemData,
     create_budget_line_item_data,
@@ -237,6 +237,8 @@ def test_main(db_for_test_with_data):
         [
             "--env",
             "pytest_data_tools",
+            "--type",
+            "grant_budget_lines",
             "--input-csv",
             "./test_csv/grant_budget_lines.tsv",
         ],

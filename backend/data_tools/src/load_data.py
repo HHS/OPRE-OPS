@@ -35,7 +35,7 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 @click.option("--env", help="The environment to use.")
 @click.option(
     "--type",
-    type=click.Choice(["projects"], case_sensitive=False),
+    type=click.Choice(["projects", "contract_budget_lines", "contracts", "grant_budget_lines", "grants", "users"], case_sensitive=False),
     required=True,
     help="The type of data to load.",
 )
@@ -81,6 +81,16 @@ def main(
             match type:
                 case "projects":
                     from data_tools.src.load_projects.utils import transform
+                case "contract_budget_lines":
+                    from data_tools.src.load_contract_budget_lines.utils import transform
+                case "contracts":
+                    from data_tools.src.load_contracts.utils import transform
+                case "grant_budget_lines":
+                    from data_tools.src.load_grant_budget_lines.utils import transform
+                case "grants":
+                    from data_tools.src.load_grants.utils import transform
+                case "users":
+                    from data_tools.src.load_users.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
             transform(csv_f, session, sys_user)

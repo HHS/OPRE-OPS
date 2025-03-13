@@ -3,7 +3,7 @@ import csv
 import pytest
 from click.testing import CliRunner
 from data_tools.src.common.utils import get_or_create_sys_user
-from data_tools.src.load_grants.main import main
+from data_tools.src.load_data import main
 from data_tools.src.load_grants.utils import GrantData, create_grant_data, create_models, validate_data
 from sqlalchemy import and_, text
 
@@ -138,6 +138,8 @@ def test_main(db_for_grants):
         [
             "--env",
             "pytest_data_tools",
+            "--type",
+            "grants",
             "--input-csv",
             "test_csv/grants.tsv",
         ],

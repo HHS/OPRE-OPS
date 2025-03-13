@@ -3,8 +3,8 @@ import csv
 import pytest
 from click.testing import CliRunner
 from data_tools.src.common.utils import get_or_create_sys_user
-from data_tools.src.load_contracts.main import main
 from data_tools.src.load_contracts.utils import ContractData, create_contract_data, create_models, validate_data
+from data_tools.src.load_data import main
 from sqlalchemy import and_, text
 
 from models import *  # noqa: F403, F401
@@ -183,6 +183,8 @@ def test_main(db_for_contracts):
         [
             "--env",
             "pytest_data_tools",
+            "--type",
+            "contracts",
             "--input-csv",
             "test_csv/contracts.tsv",
         ],
