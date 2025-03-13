@@ -1,11 +1,11 @@
 import pytest
 from data_tools.src.common.db import init_db
-from data_tools.src.common.utils import SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_OIDC_ID, get_or_create_sys_user
-from sqlalchemy import event, select, text
+from data_tools.src.common.utils import get_or_create_sys_user
+from sqlalchemy import event, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from models import BaseModel, User
+from models import BaseModel
 from models.utils import track_db_history_after, track_db_history_before, track_db_history_catch_errors
 
 
@@ -28,6 +28,7 @@ def db_service(docker_ip, docker_services):
 
     BaseModel.metadata.create_all(engine)
     return db_session, engine
+
 
 @pytest.fixture()
 def loaded_db(db_service) -> Session:

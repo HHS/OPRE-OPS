@@ -1,9 +1,9 @@
 [flake8]
 select = B,B9,BLK,C,E,F,S,W
-ignore = E203,E501,W503
+ignore = E203,E501,W503,E704,F405
 per-file-ignores = tests/*:S101
 
 max-complexity = 10
 max-line-length = 120
 import-order-style = google
-application-import-names = src,tests
+application-import-names = ops_api,tests

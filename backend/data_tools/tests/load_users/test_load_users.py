@@ -7,7 +7,7 @@ from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.import_static_data.import_data import get_config
 from data_tools.src.load_users.main import main
 from data_tools.src.load_users.utils import UserData, create_models, create_user_data, validate_all, validate_data
-from sqlalchemy import and_, text
+from sqlalchemy import text
 
 from models import *  # noqa: F403, F401
 
@@ -26,6 +26,7 @@ def db_with_divisions(loaded_db):
         loaded_db.commit()
 
     yield loaded_db
+
 
 @pytest.fixture()
 def db_with_roles(db_with_divisions):
@@ -71,7 +72,6 @@ def test_create_user_data():
     assert create_user_data(test_data[0]).DIVISION == "CC"
 
 
-
 def test_validate_data():
     test_data = list(csv.DictReader(open("test_csv/users.tsv"), dialect="excel-tab"))
     assert len(test_data) == 29
@@ -84,6 +84,7 @@ def test_validate_all():
     assert len(test_data) == 29
     user_data = [create_user_data(data) for data in test_data]
     assert validate_all(user_data) is True
+
 
 def test_create_models_no_email():
     with pytest.raises(ValueError):
@@ -103,6 +104,7 @@ def test_create_models_no_email():
             ROLES=["user"],
             DIVISION="CC",
         )
+
 
 def test_create_models(db_with_roles):
     data = UserData(
@@ -138,6 +140,7 @@ def test_create_models(db_with_roles):
     db_with_roles.execute(text("DELETE FROM ops_db_history"))
     db_with_roles.execute(text("DELETE FROM ops_db_history_version"))
 
+
 def test_create_models_without_id(db_with_roles):
     data = UserData(
         EMAIL="user.demo@email.com",
@@ -172,7 +175,6 @@ def test_create_models_without_id(db_with_roles):
     db_with_roles.execute(text("DELETE FROM ops_db_history_version"))
 
 
-
 def test_main(db_with_roles):
     result = CliRunner().invoke(
         main,
@@ -193,7 +195,9 @@ def test_main(db_with_roles):
     history_objs = db_with_roles.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "User")).scalars().all()
     assert len(history_objs) == 29
 
-    event_objs = db_with_roles.execute(select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_USER)).scalars().all()
+    event_objs = (
+        db_with_roles.execute(select(OpsEvent).where(OpsEvent.event_type == OpsEventType.CREATE_USER)).scalars().all()
+    )
     assert len(event_objs) > 29
 
     # Cleanup
@@ -241,7 +245,9 @@ def test_create_models_upsert(db_with_roles):
     assert user_1.versions[0].created_by == sys_user.id
 
     # make sure the history records are created
-    history_record = db_with_roles.execute(select(OpsDBHistory).where(OpsDBHistory.class_name == "User").order_by(OpsDBHistory.created_on.desc())).scalar()
+    history_record = db_with_roles.execute(
+        select(OpsDBHistory).where(OpsDBHistory.class_name == "User").order_by(OpsDBHistory.created_on.desc())
+    ).scalar()
     assert history_record is not None
     assert history_record.event_type == OpsDBHistoryType.NEW
     assert history_record.row_key == "1"
