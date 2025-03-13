@@ -55,7 +55,6 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                             icon={faArrowUp}
                             size={heading == selectedHeader ? "3x" : "2x"}
                             className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
-                            title="Sort Ascending"
                             data-position="top"
                             />
                             :
@@ -63,7 +62,6 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                                 icon={faArrowDown}
                                 size={heading == selectedHeader ? "3x" : "2x"}
                                 className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
-                                title="Sort Descending"
                                 data-position="top"
                             />
                             }
