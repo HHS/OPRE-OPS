@@ -146,7 +146,7 @@ const BudgetLineItemList = () => {
                                 />
                             </div>
 
-                            <div className="text-right">
+                            <div>
                                 {budgetLinesWithCanAndAgreementName.length > 0 && (
                                     <button
                                         className="usa-button usa-button--outline text-primary margin-left-1"
