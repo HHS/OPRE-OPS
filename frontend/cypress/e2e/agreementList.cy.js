@@ -147,3 +147,17 @@ it("Change Requests tab works", () => {
         .invoke("text")
         .should("match", /no changes/i);
 });
+
+it("Should allow the user to export table", () => {
+    cy.get('[data-cy="agreement-export"]').should("exist");
+    cy.get("button").contains("Filter").click();
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get(".portfolios-combobox__control")
+        .click()
+        .get(".portfolios-combobox__menu")
+        .find(".portfolios-combobox__option")
+        .contains("Home Visiting")
+        .click();
+    cy.get("button").contains("Apply").click();
+    cy.get('[data-cy="agreement-export"]').should("not.exist");
+});

@@ -208,7 +208,7 @@ it("Should filter all budgetlines vs my budget lines", () => {
     cy.get("@total-bli-card").contains(0);
 });
 
-it.only("Should allow the user to export table", () => {
+it("Should allow the user to export table", () => {
     cy.get('[data-cy="budget-line-export"]').should("exist");
     cy.get("button").contains("Filter").click();
      // eslint-disable-next-line cypress/unsafe-to-chain-command
