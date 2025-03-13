@@ -7,7 +7,7 @@
 
 ```
 cd backend
-python data_tools/src/load_projects/main.py --env dev --input-csv data_tools/test_csv/projects_latest.tsv
+python data_tools/src/load_data.py --env dev --type projects --input-csv data_tools/test_csv/projects_latest.tsv
 ```
 
 ## Running a data loading script locally with a TSV file in an Azure storage account
@@ -38,5 +38,5 @@ FILE_STORAGE_AUTH_METHOD=rbac
 
 ```
 cd backend
-python data_tools/src/load_projects/main.py --env azure --input-csv https://opreopsdevappsa.blob.core.windows.net/data/projects_latest.tsv
+python data_tools/src/load_data.py --env azure --type projects --input-csv https://opreopsdevappsa.blob.core.windows.net/data/projects_latest.tsv
 ```

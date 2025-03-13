@@ -13,6 +13,7 @@ echo "ENV is $ENV"
 echo "INPUT_CSV is $INPUT_CSV"
 
 echo "Running script..."
-python data_tools/src/load_contract_budget_lines/main.py \
+python data_tools/src/load_data.py \
 --env "${ENV}" \
+--type contract_budget_lines \
 --input-csv "${INPUT_CSV}"
