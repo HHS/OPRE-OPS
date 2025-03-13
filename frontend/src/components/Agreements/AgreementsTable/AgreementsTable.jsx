@@ -1,16 +1,9 @@
 import PropTypes from "prop-types";
 import AgreementTableRow from "./AgreementTableRow";
-import { useState } from "react";
 import Table from "../../UI/Table";
-import { TABLE_HEADINGS, TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
-import {
-    findNextBudgetLine,
-    findNextNeedBy,
-    getAgreementSubTotal,
-    getBudgetLineAmount,
-    getProcurementShopSubTotal
-} from "./AgreementsTable.helpers.js";
-import _ from "lodash";
+import { useSetSortConditions } from "./AgreementsTable.hooks";
+import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
+import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 
 /**
  * Agreement table.
@@ -19,52 +12,9 @@ import _ from "lodash";
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({ agreements = [] }) => {
-    const [sortCondition, setSortCondition] = useState(null);
-    const [sortDescending, setSortDescending] = useState(true);
-    const copyAgreements = _.cloneDeep(agreements);
+    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
 
-    const setSortConditions = (selectedSortCondition, isSortDescending) => {
-        if (selectedSortCondition != sortCondition) {
-            setSortCondition(selectedSortCondition);
-            setSortDescending(true);
-        } else {
-            setSortDescending(isSortDescending);
-        }
-    };
-
-    const compareRows = (a, b, descending) => {
-        if (a < b) {
-            return descending ? 1 : -1;
-        } else if (b < a) {
-            return descending ? -1 : 1;
-        }
-        return 0;
-    };
-
-    const getComparableValue = (agreement, condition) => {
-        switch (condition) {
-            case TABLE_HEADINGS.AGREEMENT:
-                return agreement.name;
-            case TABLE_HEADINGS.PROJECT:
-                console.log(`Project value: ${agreement.project}`);
-                return agreement.project?.title;
-            case TABLE_HEADINGS.TYPE:
-                return agreement.agreement_type;
-            case TABLE_HEADINGS.AGREEMENT_TOTAL:
-                return getAgreementSubTotal(agreement) + getProcurementShopSubTotal(agreement);
-            case TABLE_HEADINGS.NEXT_BUDGET_LINE:
-                return getBudgetLineAmount(findNextBudgetLine(agreement));
-            case TABLE_HEADINGS.NEXT_OBLIGATE_BY:
-                return findNextNeedBy(agreement);
-            default:
-                return agreement;
-        }
-    };
-    const sortedAgreements = copyAgreements.sort((a, b) => {
-        const aVal = getComparableValue(a, sortCondition);
-        const bVal = getComparableValue(b, sortCondition);
-        return compareRows(aVal, bVal, sortDescending);
-    });
+    const sortedAgreements = useSortData(agreements, sortDescending, sortCondition, SORT_TYPES.AGREEMENTS)
     return (
         <>
             <Table
