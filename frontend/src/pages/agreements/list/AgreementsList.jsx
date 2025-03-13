@@ -201,10 +201,22 @@ const AgreementsList = () => {
                         agreementName,
                         project,
                         type,
-                        agreementSubTotal,
-                        agreementFees,
-                        nextBudgetLine?.amount ?? 0,
-                        nextBudgetLineFees,
+                        agreementSubTotal.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? 0,
+                        agreementFees.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? 0,
+                        nextBudgetLine?.amount.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? 0,
+                        nextBudgetLineFees.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? 0,
                         nextObligateBy
                     ];
                 },
