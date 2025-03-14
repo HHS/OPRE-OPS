@@ -5,9 +5,9 @@ from typing import Optional
 from flask import Response, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
-from marshmallow import EXCLUDE, Schema
 from sqlalchemy import select
 
+from marshmallow import EXCLUDE, Schema
 from models.base import BaseModel
 from ops_api.ops.auth.authorization_providers import AuthorizationGateway, BasicAuthorizationProvider
 from ops_api.ops.utils.errors import error_simulator
@@ -88,7 +88,7 @@ class OPSMethodView(MethodView):
         if search is not None and len(search) == 0:
             query_helper.return_none()
         elif search:
-            query_helper.add_search(getattr(model, "name"), search)
+            query_helper.add_search(model.name, search)
 
         for key, value in kwargs.items():
             with suppress(AttributeError):
@@ -128,8 +128,8 @@ class BaseListAPI(OPSMethodView):
 class EnumListAPI(MethodView):
     enum: Enum
 
-    def __init_subclass__(self, enum: Enum, **kwargs):
-        self.enum = enum
+    def __init_subclass__(cls, enum: Enum, **kwargs):
+        cls.enum = enum
         super().__init_subclass__(**kwargs)
 
     def __init__(self, enum: Enum, **kwargs):

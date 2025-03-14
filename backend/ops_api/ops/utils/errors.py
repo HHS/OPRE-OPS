@@ -15,7 +15,8 @@ def error_simulator(func: Callable[..., Response]) -> Callable[..., Response]:
 
     * `/some/endpoint/?simulatedError=true` - returns an error with status of 500.
     * `/some/endpoint/?simulatedError=<int>` - returns an error with the given int as the status code.
-    * `/some/endpoint/?simulatedError=false` - ignores this and endpoint works as normal. none, null, 0, or an empty string works as well.
+    * `/some/endpoint/?simulatedError=false` - ignores this and endpoint works as normal.
+      none, null, 0, or an empty string works as well.
     * set to any other value returns an error with status of 500.
     """
 

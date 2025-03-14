@@ -47,9 +47,9 @@ class CANService:
                 current_app.db_session.commit()
 
             return old_can
-        except NoResultFound:
+        except NoResultFound as err:
             current_app.logger.exception(f"Could not find a CAN with id {id}")
-            raise NotFound()
+            raise NotFound() from err
 
     def delete(self, id: int):
         """
@@ -58,9 +58,9 @@ class CANService:
             old_can: CAN = current_app.db_session.execute(select(CAN).where(CAN.id == id)).scalar_one()
             current_app.db_session.delete(old_can)
             current_app.db_session.commit()
-        except NoResultFound:
+        except NoResultFound as err:
             current_app.logger.exception(f"Could not find a CAN with id {id}")
-            raise NotFound()
+            raise NotFound() from err
 
     def get(self, id: int) -> CAN:
         """

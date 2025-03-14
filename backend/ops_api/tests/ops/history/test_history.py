@@ -1,3 +1,4 @@
+# flake8: noqa B908
 import pytest
 from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError

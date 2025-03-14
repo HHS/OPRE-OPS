@@ -60,6 +60,7 @@ class LoginGovProvider(AuthenticationProvider):
             user_jwt = requests.get(
                 self.config["user_info_url"],
                 headers=header,
+                timeout=30,  # Adding a 30-second timeout
             ).content.decode("utf-8")
             return json.loads(user_jwt)
         except Exception as e:

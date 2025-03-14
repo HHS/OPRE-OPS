@@ -45,9 +45,9 @@ class CANFundingDetailsService:
                 current_app.db_session.commit()
 
             return old_details
-        except NoResultFound:
+        except NoResultFound as err:
             current_app.logger.exception(f"Could not find a CANFundingDetails with id {id}")
-            raise NotFound()
+            raise NotFound() from err
 
     def delete(self, id: int):
         """
@@ -58,9 +58,9 @@ class CANFundingDetailsService:
             ).scalar_one()
             current_app.db_session.delete(old_details)
             current_app.db_session.commit()
-        except NoResultFound:
+        except NoResultFound as err:
             current_app.logger.exception(f"Could not find a CANFundingDetails with id {id}")
-            raise NotFound()
+            raise NotFound() from err
 
     def get(self, id: int) -> CANFundingDetails:
         """

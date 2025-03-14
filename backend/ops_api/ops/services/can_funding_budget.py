@@ -45,9 +45,9 @@ class CANFundingBudgetService:
                 current_app.db_session.commit()
 
             return old_budget
-        except NoResultFound:
+        except NoResultFound as err:
             current_app.logger.exception(f"Could not find a CANFundingBudget with id {id}")
-            raise NotFound()
+            raise NotFound() from err
 
     def delete(self, id: int):
         """
@@ -58,9 +58,9 @@ class CANFundingBudgetService:
             ).scalar_one()
             current_app.db_session.delete(old_budget)
             current_app.db_session.commit()
-        except NoResultFound:
+        except NoResultFound as err:
             current_app.logger.exception(f"Could not find a CANFundingBudget with id {id}")
-            raise NotFound()
+            raise NotFound() from err
 
     def get(self, id: int) -> CANFundingBudget:
         """

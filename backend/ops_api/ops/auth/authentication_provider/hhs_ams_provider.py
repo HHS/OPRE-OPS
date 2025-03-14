@@ -81,6 +81,7 @@ class HhsAmsProvider(AuthenticationProvider):
         user_jwt = requests.get(
             self.user_info_url,
             headers=header,
+            timeout=30,  # Adding a 30-second timeout
         ).content.decode("utf-8")
         user_data = self.decode_user(payload=user_jwt)
         return user_data

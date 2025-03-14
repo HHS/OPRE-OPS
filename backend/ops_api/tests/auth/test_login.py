@@ -1,3 +1,4 @@
+# flake8: noqa: S105, S106
 import datetime
 
 import pytest
@@ -77,9 +78,9 @@ def db_with_inactive_user_session(loaded_db, test_user):
     active_user_session_2 = UserSession(
         user_id=user.id,
         is_active=True,
-        ip_address="26.13.164.12",
-        access_token="11b022d9393fde833971b768b0912b",
-        refresh_token="7227b10ebb7bf9ac3f5996f195ed99",
+        ip_address="26.13.164.12",  # noqa
+        access_token="11b022d9393fde833971b768b0912b",  # noqa
+        refresh_token="7227b10ebb7bf9ac3f5996f195ed99",  # noqa
         last_active_at=datetime.datetime(2021, 9, 1, 0),
         created_on=datetime.datetime(2021, 9, 1, 0),
     )
@@ -87,9 +88,9 @@ def db_with_inactive_user_session(loaded_db, test_user):
     active_user_session_3 = UserSession(
         user_id=user.id,
         is_active=False,
-        ip_address="26.13.164.12",
-        access_token="df16a2a9f6662ba1f42d310c89f0a8",
-        refresh_token="6ed846b542097f55e52c0326188ff2",
+        ip_address="26.13.164.12",  # noqa
+        access_token="df16a2a9f6662ba1f42d310c89f0a8",  # noqa
+        refresh_token="6ed846b542097f55e52c0326188ff2",  # noqa
         last_active_at=datetime.datetime(2021, 8, 1, 0),
         created_on=datetime.datetime(2021, 8, 1, 0),
     )
@@ -97,9 +98,9 @@ def db_with_inactive_user_session(loaded_db, test_user):
     active_user_session_4 = UserSession(
         user_id=test_user.id,
         is_active=True,
-        ip_address="31.202.194.117",
-        access_token="4c17b37e698f579c79c8d70000451b",
-        refresh_token="50240dcd320589d0dd029414bf622c",
+        ip_address="31.202.194.117",  # noqa
+        access_token="4c17b37e698f579c79c8d70000451b",  # noqa
+        refresh_token="50240dcd320589d0dd029414bf622c",  # noqa
         last_active_at=datetime.datetime(2021, 11, 1, 0),
         created_on=datetime.datetime(2021, 11, 1, 0),
     )

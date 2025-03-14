@@ -45,9 +45,9 @@ class CANFundingReceivedService:
                 current_app.db_session.commit()
 
             return old_funding_received
-        except NoResultFound:
+        except NoResultFound as e:
             current_app.logger.exception(f"Could not find a CANFundingReceived with id {id}")
-            raise NotFound()
+            raise NotFound() from e
 
     def delete(self, id: int) -> CANFundingReceived:
         """
@@ -65,7 +65,7 @@ class CANFundingReceivedService:
 
         except NotFound as e:
             current_app.logger.exception(f"Could not find a CANFundingReceived with id {id}")
-            raise e
+            raise e from e
 
     def get(self, id: int) -> CANFundingReceived:
         """

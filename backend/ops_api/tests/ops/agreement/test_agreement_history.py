@@ -50,7 +50,7 @@ def test_agreement_history(auth_client, loaded_db, test_can):
     get_resp = auth_client.get(f"/api/v1/agreements/{agreement_id}", json=data)
     get_json = get_resp.json
     assert get_json.get("id", None) == agreement_id
-    for k, v in data.items():
+    for k, _ in data.items():
         assert get_json.get(k, None) == data[k]
 
     # POST: create budget line

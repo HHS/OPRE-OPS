@@ -859,7 +859,8 @@ def error_message_valid_agreement_reason_with_Vendor(context, setup_and_teardown
 
 
 @then(
-    "I should get an error message that the BLI's Agreement must have a Vendor if it has an Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
+    "I should get an error message that the BLI's Agreement must have a Vendor if it has an "
+    "Agreement Reason of RECOMPETE or LOGICAL_FOLLOW_ON"
 )
 def error_message_valid_agreement_reason_with_vendor_required(context, setup_and_teardown):
     assert context["response_put"].status_code == 400

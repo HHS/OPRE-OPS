@@ -61,11 +61,12 @@ def get_jwks(provider_metadata_url: str) -> str:
         requests.get(
             provider_metadata_url,
             headers={"Accept": "application/json"},
+            timeout=30,
         ).content.decode("utf-8")
     )
 
     jwks_uri = provider_uris["jwks_uri"]
-    jwks = requests.get(jwks_uri).content.decode("utf-8")
+    jwks = requests.get(jwks_uri, timeout=30).content.decode("utf-8")
     return jwks
 
 
@@ -201,7 +202,8 @@ def get_request_ip_address() -> str:
 
 def idle_logout(user: User, user_sessions: list[UserSession]) -> dict[str, str]:
     """
-    Records an OpsEvent related to the user being logged out due to an idle session and deactivates all sessions including the current one.
+    Records an OpsEvent related to the user being logged out due to an idle session and deactivates
+    all sessions including the current one.
     Returns a dict of two strings containing a statement about what action was taken
     """
     from ops_api.ops.utils.events import OpsEventHandler

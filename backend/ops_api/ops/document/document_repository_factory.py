@@ -15,4 +15,4 @@ class DocumentRepositoryFactory:
         if repository_class:
             return repository_class
         else:
-            raise UnsupportedProviderError(f"Document repository provider '{provider_name}' is not supported.")
+            raise UnsupportedProviderError(f"Document repository provider {provider_name} is not supported.")
