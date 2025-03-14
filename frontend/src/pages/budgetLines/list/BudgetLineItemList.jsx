@@ -21,6 +21,7 @@ import {
     uniqueBudgetLinesFiscalYears
 } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * @component Page for the Budget Line Item List.
@@ -140,23 +141,29 @@ const BudgetLineItemList = () => {
                     <>
                         <div className="display-flex">
                             <div>
+                                {budgetLinesWithCanAndAgreementName.length > 0 && (
+                                    <button
+                                        style={{ fontSize: "16px" }}
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end"
+                                        data-cy="budget-line-export"
+                                        onClick={handleExport}
+                                    >
+                                        <svg
+                                            className={`height-2 width-2 margin-right-05`}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use xlinkHref={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </button>
+                                )}
+                            </div>
+                            <div className="margin-left-205">
                                 <BLIFilterButton
                                     filters={filters}
                                     setFilters={setFilters}
                                     budgetLinesFiscalYears={budgetLinesFiscalYears}
                                 />
-                            </div>
-
-                            <div>
-                                {budgetLinesWithCanAndAgreementName.length > 0 && (
-                                    <button
-                                        className="usa-button usa-button--outline text-primary margin-left-1"
-                                        data-cy="budget-line-export"
-                                        onClick={handleExport}
-                                    >
-                                        Export
-                                    </button>
-                                )}
                             </div>
                         </div>
                     </>

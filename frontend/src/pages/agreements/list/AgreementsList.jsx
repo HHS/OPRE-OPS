@@ -23,6 +23,7 @@ import {
 import { setAlert } from "../../../components/UI/Alert/alertSlice";
 import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
 import { convertCodeForDisplay, totalBudgetLineFeeAmount } from "../../../helpers/utils";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * @typedef {import('../../../components/Agreements/AgreementTypes').Agreement} Agreement
@@ -253,22 +254,29 @@ const AgreementsList = () => {
                         <>
                             <div className="display-flex">
                                 <div>
+                                    {sortedAgreements.length > 0 && (
+                                        <button
+                                            style={{ fontSize: "16px" }}
+                                            className="usa-button--unstyled text-primary display-flex flex-align-end"
+                                            data-cy="agreement-export"
+                                            onClick={handleExport}
+                                        >
+                                            <svg
+                                                className={`height-2 width-2 margin-right-05`}
+                                                style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                            >
+                                                <use xlinkHref={`${icons}#save_alt`}></use>
+                                            </svg>
+                                            <span>Export</span>
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="margin-left-205">
                                     {" "}
                                     <AgreementsFilterButton
                                         filters={filters}
                                         setFilters={setFilters}
                                     />
-                                </div>
-                                <div>
-                                    {sortedAgreements.length > 0 && (
-                                        <button
-                                            className="usa-button usa-button--outline text-primary margin-left-1"
-                                            data-cy="agreement-export"
-                                            onClick={handleExport}
-                                        >
-                                            Export
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                         </>
