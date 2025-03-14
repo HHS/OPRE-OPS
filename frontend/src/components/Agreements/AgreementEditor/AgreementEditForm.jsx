@@ -463,10 +463,27 @@ export const AgreementEditForm = ({
                         }
                     }}
                     overrideStyles={{ width: "15em" }}
+                    label="COR"
                 />
+                <ProjectOfficerComboBox
+                    selectedProjectOfficer={selectedProjectOfficer}
+                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                    className="margin-left-4"
+                    legendClassname="usa-label margin-top-0 margin-bottom-1"
+                    messages={res.getErrors("project_officer")}
+                    onChange={(name, value) => {
+                        if (isReviewMode) {
+                            runValidate(name, value);
+                        }
+                    }}
+                    overrideStyles={{ width: "15em" }}
+                    label="Alternate COR"
+                />
+            </div>
+
+            <div className="margin-top-3">
                 <TeamMemberComboBox
                     messages={res.getErrors("team-members")}
-                    className="margin-left-4"
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}

@@ -140,19 +140,35 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             </dl>
                         )}
                     </div>
-                    <dl className="margin-0 font-12px">
-                        <dt className="margin-0 text-base-dark margin-top-3">Project Officer</dt>
-                        <dd className="margin-0 margin-top-1">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={
-                                    projectOfficer && Object.keys(projectOfficer).length !== 0
-                                        ? projectOfficer?.full_name
-                                        : NO_DATA
-                                }
-                            />
-                        </dd>
-                    </dl>
+                    <div className="display-flex">
+                        <dl className="grid-col-4 margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">COR</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={
+                                        projectOfficer && Object.keys(projectOfficer).length !== 0
+                                            ? projectOfficer?.full_name
+                                            : NO_DATA
+                                    }
+                                />
+                            </dd>
+                        </dl>
+                        <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">Alternate COR</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={
+                                        projectOfficer && Object.keys(projectOfficer).length !== 0
+                                            ? projectOfficer?.full_name
+                                            : NO_DATA
+                                    }
+                                />
+                            </dd>
+                        </dl>
+                    </div>
+
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
                         {agreement?.team_members?.length > 0 ? (
