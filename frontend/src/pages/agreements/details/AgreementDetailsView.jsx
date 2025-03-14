@@ -63,6 +63,18 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                                 text={convertCodeForDisplay("agreementType", agreement?.agreement_type)}
                             />
                         </dd>
+                        {agreement?.contract_type && (
+                            <>
+                                <dt className="margin-0 text-base-dark margin-top-3">Contract Type</dt>
+                                <dd className="margin-0 margin-top-1">
+                                    <Tag
+                                        tagStyle="primaryDarkTextLightBackground"
+                                        text={convertCodeForDisplay("contractType", agreement?.contract_type)}
+                                    />
+                                </dd>
+                            </>
+                        )}
+
                         <dt className="margin-0 text-base-dark margin-top-3">Product Service Code</dt>
                         <dd className="margin-0 margin-top-1">
                             <Tag
