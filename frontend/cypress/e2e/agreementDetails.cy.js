@@ -18,7 +18,9 @@ it("agreement loads with details", () => {
     cy.get('[data-cy="details-left-col"] > :nth-child(1) > .text-base-dark').contains("Description");
     cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(1)').contains("Agreement Type");
     cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(2) > .font-12px').contains("Contract");
-    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(3)').contains("Product Service Code");
+    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(3)').contains("Contract Type");
+    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(4) > .font-12px').contains("Labor Hour (LH)");
+    cy.get('[data-cy="details-right-col"] > :nth-child(1) > :nth-child(5)').contains("Product Service Code");
     cy.get('[data-cy="details-left-col"] > :nth-child(2)').contains("Notes");
     cy.get("p.font-12px").contains("There are currently no notes for this agreement.");
 });
