@@ -583,6 +583,7 @@ export const {
     useAddServicesComponentMutation,
     useUpdateServicesComponentMutation,
     useGetServicesComponentByIdQuery,
+    useLazyGetServicesComponentByIdQuery,
     useGetServicesComponentsListQuery,
     useDeleteServicesComponentMutation,
     useGetChangeRequestsListQuery,

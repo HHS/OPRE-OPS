@@ -56,7 +56,8 @@
         "vite-jsconfig-paths": "2.0.1",
         "vite-plugin-babel-macros": "1.0.6",
         "vite-plugin-eslint": "1.8.1",
-        "vite-plugin-svgr": "4.3.0"
+        "vite-plugin-svgr": "4.3.0",
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
         "rollup": "4.35.0"
