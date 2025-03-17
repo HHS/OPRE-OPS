@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { AGREEMENT_TABLE_HEADINGS } from "../components/Agreements/AgreementsTable/AgreementsTable.constants";
 import { getAgreementSubTotal, getProcurementShopSubTotal, getBudgetLineAmount, findNextBudgetLine, findNextNeedBy } from "../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import { All_BUDGET_LINES_TABLE_HEADINGS } from "../components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTable.constants";
-import { useGetServicesComponentDisplayName } from "./useServicesComponents.hooks";
+import { useGetServicesComponentDisplayNameLocal } from "./useServicesComponents.hooks";
 import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../helpers/utils";
 export const SORT_TYPES = {
     AGREEMENTS: "Agreement",
@@ -35,7 +35,7 @@ const getBudgetLineComparableValue = (budgetLine, condition) => {
         case All_BUDGET_LINES_TABLE_HEADINGS.AGREEMENT:
             return budgetLine.agreement_name;
         case All_BUDGET_LINES_TABLE_HEADINGS.SERVICE_COMPONENT:
-            return useGetServicesComponentDisplayName(budgetLine.services_component_id);
+            return useGetServicesComponentDisplayNameLocal(budgetLine.services_component_id);
         case All_BUDGET_LINES_TABLE_HEADINGS.OBLIGATE_BY:
             return formatDateNeeded(budgetLine.date_needed);
         case All_BUDGET_LINES_TABLE_HEADINGS.FISCAL_YEAR:
