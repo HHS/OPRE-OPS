@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { getCurrentLocalTimestamp } from "./utils";
 
 /**
  * Helper function to export table data to CSV
@@ -25,12 +26,14 @@ export const exportTableToXlsx = async ({ data, headers, rowMapper, filename = "
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
     // Write the workbook to a file
+    const currentTimeStamp = getCurrentLocalTimestamp();
+    const downloadFilename = `${filename}_${currentTimeStamp}.xlsx`;
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;
+    a.download = downloadFilename;
     a.click();
     URL.revokeObjectURL(url);
 };

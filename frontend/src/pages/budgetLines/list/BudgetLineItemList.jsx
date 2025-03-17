@@ -80,7 +80,6 @@ const BudgetLineItemList = () => {
                 };
             });
 
-            const currentTimeStamp = new Date().toISOString();
             const header = ["BL ID #", "Agreement", "SC", "Obligate By", "FY", "CAN", "SubTotal", "Fees", "Status"];
 
             await exportTableToXlsx({
@@ -106,7 +105,7 @@ const BudgetLineItemList = () => {
                         budgetLine?.in_review ? "In Review" : budgetLine?.status
                     ];
                 },
-                filename: `budget_lines_${currentTimeStamp}.xlsx`
+                filename: "budget_lines"
             });
         } catch (error) {
             console.error("Failed to export data:", error);

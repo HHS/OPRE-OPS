@@ -171,7 +171,6 @@ const AgreementsList = () => {
 
     const handleExport = async () => {
         try {
-            const currentTimeStamp = new Date().toISOString();
             const tableHeader = [
                 "Agreement",
                 "Project",
@@ -221,7 +220,7 @@ const AgreementsList = () => {
                         nextObligateBy
                     ];
                 },
-                filename: `agreements_${currentTimeStamp}.xlsx`
+                filename: "agreements"
             });
         } catch (error) {
             console.error("Failed to export data:", error);
