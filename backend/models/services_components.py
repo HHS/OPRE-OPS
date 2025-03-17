@@ -97,7 +97,7 @@ class CLIN(BaseModel):
     id: Mapped[int] = BaseModel.get_pk_column(
         sequence=Sequence("clin_id_seq", start=5000, increment=1)
     )
-    number: Mapped[Optional[int]] = mapped_column(Integer)
+    number: Mapped[int] = mapped_column(Integer)
     name: Mapped[Optional[str]] = mapped_column(String)
     pop_start_date: Mapped[Optional[date]] = mapped_column(Date)
     pop_end_date: Mapped[Optional[date]] = mapped_column(Date)
