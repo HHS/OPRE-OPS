@@ -26,14 +26,12 @@ const PortfolioSpending = () => {
         const promises = budgetLineIds.map((id) => {
             return trigger(id).unwrap();
         });
-
         try {
             const budgetLineItemsData = await Promise.all(promises);
-            const filteredBudgetLineItems = budgetLineItemsData.filter((item) => item.fiscal_year === fiscalYear);
-            setBudgetLineItems(filteredBudgetLineItems);
-            const newBudgetLineTypesCount = getTypesCounts(filteredBudgetLineItems ?? [], "status");
+            setBudgetLineItems(budgetLineItemsData);
+            const newBudgetLineTypesCount = getTypesCounts(budgetLineItemsData ?? [], "status");
             setBudgetLineTypesCount(newBudgetLineTypesCount);
-            const budgetLinesAgreements = filteredBudgetLineItems?.map((item) => item.agreement) ?? [];
+            const budgetLinesAgreements = budgetLineItemsData?.map((item) => item.agreement) ?? [];
             const uniqueBudgetLineAgreements =
                 budgetLinesAgreements?.reduce((acc, item) => {
                     if (!acc.some((existingItem) => existingItem.name === item.name)) {

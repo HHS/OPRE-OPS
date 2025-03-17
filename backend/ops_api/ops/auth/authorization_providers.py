@@ -8,8 +8,8 @@ from ops_api.ops.auth.authorization_gateway import AuthorizationGateway
 
 
 class BasicAuthorizationProvider:
-    def __init__(self, authorized_users: list[str] = []):
-        self.authorized_users = authorized_users
+    def __init__(self, authorized_users: list[str] = None):
+        self.authorized_users = authorized_users if authorized_users is not None else []
 
     def is_authorized(self, oidc_id: str, permission: str) -> bool:
         stmt = select(User).where(User.oidc_id == oidc_id)

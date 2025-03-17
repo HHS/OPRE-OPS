@@ -5,10 +5,10 @@ from typing import Any, List, Optional
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
-from marshmallow import EXCLUDE, Schema
 from sqlalchemy import select
 from sqlalchemy.orm import object_session
 
+from marshmallow import EXCLUDE, Schema
 from models import (
     Agreement,
     AgreementReason,
@@ -202,8 +202,8 @@ class AgreementListAPI(BaseListAPI):
 
             try:
                 agreement_type = AgreementType[request.json["agreement_type"]]
-            except KeyError:
-                raise ValueError("Invalid agreement_type")
+            except KeyError as err:
+                raise ValueError("Invalid agreement_type") from err
 
             current_app.logger.info(agreement_type.name)
 

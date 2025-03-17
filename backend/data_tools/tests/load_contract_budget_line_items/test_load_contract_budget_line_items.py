@@ -55,10 +55,10 @@ def test_create_budget_line_data():
     assert contract_data.POP_END_DATE == date(2025, 9, 30)
 
     # Status and flags
-    assert contract_data.CERTIFIED == True
-    assert contract_data.CLOSED == False
+    assert contract_data.CERTIFIED is True
+    assert contract_data.CLOSED is False
     assert contract_data.STATUS == BudgetLineItemStatus.OBLIGATED
-    assert contract_data.ON_HOLD == False
+    assert contract_data.ON_HOLD is False
 
     # Financial data
     assert contract_data.OBJECT_CLASS_CODE == 25103

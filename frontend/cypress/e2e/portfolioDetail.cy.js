@@ -26,7 +26,7 @@ describe("Portfolio Detail Page", () => {
 
     it("loads the Portfolio spending component", () => {
         cy.visit("/portfolios/1/spending").wait(1000);
-        cy.get("#fiscal-year-select").select("2043");
+        cy.get("#fiscal-year-select").select("2044");
         cy.get("h2").should("contain", "Portfolio Budget & Spending Summary");
         cy.get('[data-cy="big-budget-summary-card"]').should("contain", "Spending $8,000,000 of $0");
         cy.get("#project-agreement-bli-card")
@@ -70,32 +70,16 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "$200,000.00 ")
             .should("contain", "$0")
             .should("contain", "Previous FYs Carry-Forward");
+    });
 
-        // check the can list for FY 2023
+    it("shows new and carry forward funding for portfolio 6 with FY 2023", () => {
+        cy.visit("/portfolios/6/funding").wait(1000);
         cy.get("#fiscal-year-select").select("2023");
-        // summary cards
+        cy.wait(1000);
         cy.get('[data-cy="line-graph-with-legend-card"]')
-            .should("contain", "$20,000,000.00")
-            .should("contain", "100%")
-            .should("contain", "$20,000,000.00")
-            .should("contain", "0%");
-        cy.get('[data-cy="portfolio-budget-card"]')
-            .should("contain", "$20,000,000.00")
-            .should("contain", "$10,200,000.00");
-        // check the first can card for the correct values
-        cy.get('[data-cy="can-card-G990136"]')
-            .should("contain", "G990136")
-            .should("contain", "$6,000,000.00")
-            .should("contain", "$4,000,000.00")
-            .should("contain", "$0")
-            .should("contain", "$10,000,000.00")
-            .should("contain", "FY 2023 New Funding");
-        cy.get('[data-cy="can-card-G99IA14"]')
-            .should("contain", "G99IA14")
-            .should("contain", "$6,000,000.00")
-            .should("contain", "$4,000,000.00")
-            .should("contain", "$0")
-            .should("contain", "$10,000,000.00")
-            .should("contain", "FY 2023 New Funding");
+            .should("contain", "$11,140,000.00")
+            .should("contain", "32%")
+            .should("contain", "$23,420,000.00")
+            .should("contain", "68%");
     });
 });

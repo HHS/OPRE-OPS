@@ -39,10 +39,11 @@ def map_document_type_to_enum(document_type):
     """
     Map the document type string to the DocumentType enum.
     """
+    itar_checklist = DocumentType.ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS
     document_type_mapping = {
         DocumentType.CERTIFICATION_OF_FUNDING.name.lower(): DocumentType.CERTIFICATION_OF_FUNDING,
         DocumentType.STATEMENT_OF_REQUIREMENTS.name.lower(): DocumentType.STATEMENT_OF_REQUIREMENTS,
-        DocumentType.ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS.name.lower(): DocumentType.ITAR_CHECKLIST_FOR_ALL_IT_PROCUREMENT_ACTIONS,
+        itar_checklist.name.lower(): itar_checklist,
         DocumentType.INDEPENDENT_GOVERNMENT_COST_ESTIMATE.name.lower(): DocumentType.INDEPENDENT_GOVERNMENT_COST_ESTIMATE,
         DocumentType.SECTION_508_EXCEPTION_DOCUMENTATION.name.lower(): DocumentType.SECTION_508_EXCEPTION_DOCUMENTATION,
         DocumentType.COR_NOMINATION_AND_CERTIFICATION_DOCUMENT.name.lower(): DocumentType.COR_NOMINATION_AND_CERTIFICATION_DOCUMENT,

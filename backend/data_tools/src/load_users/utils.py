@@ -14,6 +14,7 @@ class UserData:
     """
     Dataclass to represent a User data row.
     """
+
     EMAIL: str
     SYS_USER_ID: Optional[int] = None
     DIVISION: Optional[str] = None
@@ -41,6 +42,7 @@ def create_user_data(data: dict) -> UserData:
     """
     return UserData(**data)
 
+
 def validate_data(data: UserData) -> bool:
     """
     Validate the data in a UserData instance.
@@ -49,9 +51,12 @@ def validate_data(data: UserData) -> bool:
 
     :return: True if the data is valid, False otherwise.
     """
-    return all([
-        data.EMAIL is not None,
-    ])
+    return all(
+        [
+            data.EMAIL is not None,
+        ]
+    )
+
 
 def validate_all(data: List[UserData]) -> bool:
     """
@@ -63,7 +68,10 @@ def validate_all(data: List[UserData]) -> bool:
     """
     return sum(1 for d in data if validate_data(d)) == len(data)
 
-def create_models(data: UserData, sys_user: User, session: Session, roles: List[Role], divisions: List[Division]) -> None:
+
+def create_models(
+    data: UserData, sys_user: User, session: Session, roles: List[Role], divisions: List[Division]
+) -> None:
     """
     Create and persist the User and UserRole models.
 
@@ -104,7 +112,9 @@ def create_models(data: UserData, sys_user: User, session: Session, roles: List[
         raise e
 
 
-def create_all_models(data: List[UserData], sys_user: User, session: Session, roles: List[Role], divisions: List[Division]) -> None:
+def create_all_models(
+    data: List[UserData], sys_user: User, session: Session, roles: List[Role], divisions: List[Division]
+) -> None:
     """
     Convert a list of UserData instances to a list of BaseModel instances.
 
@@ -161,4 +171,4 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
     logger.info("Data validation passed.")
 
     create_all_models(user_data, sys_user, session, roles, divisions)
-    logger.info(f"Finished loading models.")
+    logger.info("Finished loading models.")
