@@ -4,7 +4,7 @@ from typing import TypedDict
 from flask import current_app
 from sqlalchemy import and_, select
 
-from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingBudget, Portfolio
+from models import CAN, BudgetLineItem, BudgetLineItemStatus, CANFundingBudget, CANFundingDetails, Portfolio
 
 
 class FundingLineItem(TypedDict):
@@ -24,6 +24,7 @@ class TotalFunding(TypedDict):
     in_execution_funding: FundingLineItem
     available_funding: FundingLineItem
     draft_funding: FundingLineItem
+    new_funding: FundingLineItem
 
 
 def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
@@ -37,12 +38,61 @@ def _get_all_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudg
     return current_app.db_session.execute(stmt).scalars().all()
 
 
+def _get_all_carry_forward_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
+    stmt = (
+        select(CANFundingBudget)
+        .join(CAN)
+        .join(CANFundingDetails)
+        .where(CAN.portfolio_id == portfolio_id)
+        .where(CANFundingBudget.fiscal_year == fiscal_year)
+        .where(CANFundingDetails.id.isnot(None))
+        .where(fiscal_year > CANFundingDetails.fiscal_year)
+    )
+
+    results = current_app.db_session.execute(stmt).scalars().all()
+
+    filtered_budgets = [budget for budget in results if budget.can.active_period != 1]
+
+    return filtered_budgets
+
+
+def _get_all_new_funding_budgets(portfolio_id: int, fiscal_year: int) -> list[CANFundingBudget]:
+    stmt = (
+        select(CANFundingBudget)
+        .join(CAN)
+        .join(CANFundingDetails)
+        .where(CAN.portfolio_id == portfolio_id)
+        .where(CANFundingBudget.fiscal_year == fiscal_year)
+        .where(CANFundingDetails.id.isnot(None))  # funding_details is required
+    )
+
+    results = current_app.db_session.execute(stmt).scalars().all()
+
+    filtered_budgets = [
+        budget
+        for budget in results
+        if budget.can.active_period == 1  # 1 Year CANS are CANS that have an active_period of 1
+        or (
+            # CANs that are in their appropriation year
+            fiscal_year
+            == budget.can.funding_details.fiscal_year
+            == budget.fiscal_year
+        )
+    ]
+
+    return filtered_budgets
+
+
 def _get_total_fiscal_year_funding(portfolio_id: int, fiscal_year: int) -> Decimal:
     return sum([b.budget for b in _get_all_budgets(portfolio_id, fiscal_year)]) or Decimal(0)
 
 
 def _get_carry_forward_total(portfolio_id: int, fiscal_year: int) -> Decimal:
-    return sum([b.budget for b in _get_all_budgets(portfolio_id, fiscal_year) if b.is_carry_forward]) or Decimal(0)
+    return sum([b.budget for b in _get_all_carry_forward_budgets(portfolio_id, fiscal_year)]) or Decimal(0)
+
+
+def _get_new_funding_total(portfolio_id: int, fiscal_year: int) -> Decimal:
+    return sum([b.budget for b in _get_all_new_funding_budgets(portfolio_id, fiscal_year)]) or Decimal(0)
 
 
 def _get_budget_line_item_total_by_status(portfolio_id: int, fiscal_year: int, status: BudgetLineItemStatus) -> Decimal:
@@ -66,6 +116,11 @@ def get_total_funding(
     )
 
     carry_forward_funding = _get_carry_forward_total(
+        portfolio_id=portfolio.id,
+        fiscal_year=fiscal_year,
+    )
+
+    new_funding = _get_new_funding_total(
         portfolio_id=portfolio.id,
         fiscal_year=fiscal_year,
     )
@@ -128,9 +183,13 @@ def get_total_funding(
             "amount": float(available_funding),
             "percent": get_percentage(total_funding, available_funding),
         },
+        "new_funding": {
+            "amount": float(new_funding),
+            "percent": "New",
+        },
     }
 
 
-def get_percentage(total_funding: float, specific_funding: float) -> str:
+def get_percentage(total_funding: Decimal, specific_funding: Decimal) -> str:
     """Convert a float to a rounded percentage as a string."""
     return f"{round(float(specific_funding) / float(total_funding), 2) * 100}" if total_funding else "0"

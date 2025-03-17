@@ -71,4 +71,15 @@ describe("Portfolio Detail Page", () => {
             .should("contain", "$0")
             .should("contain", "Previous FYs Carry-Forward");
     });
+
+    it("shows new and carry forward funding for portfolio 6 with FY 2023", () => {
+        cy.visit("/portfolios/6/funding").wait(1000);
+        cy.get("#fiscal-year-select").select("2023");
+        cy.wait(1000);
+        cy.get('[data-cy="line-graph-with-legend-card"]')
+            .should("contain", "$11,140,000.00")
+            .should("contain", "32%")
+            .should("contain", "$23,420,000.00")
+            .should("contain", "68%");
+    });
 });
