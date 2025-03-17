@@ -96,7 +96,7 @@ class BudgetLineItemData:
         self.OBLIGATION_DATE = (
             datetime.strptime(self.OBLIGATION_DATE, "%Y-%m-%d").date() if self.OBLIGATION_DATE else None
         )
-        self.CERTIFIED = bool(self.CERTIFIED) if self.CERTIFIED else None
+        self.CERTIFIED = True if self.CERTIFIED == "Yes" else False
         self.PERF_START_DATE = (
             datetime.strptime(self.PERF_START_DATE, "%Y-%m-%d").date() if self.PERF_START_DATE else None
         )
