@@ -1,0 +1,33 @@
+SYS_VENDOR_ID	VENDOR_NAME	DUNS	ADDRESS	HEAD_OF_CONTRACT	PHONE_NBR	EMAIL	STATUS	LAST_MODIFIED_DATE	LAST_MODIFIED_BY
+1	Acme Solutions Inc	123456789	789 Innovation Way, Suite 400, Techville, CA 90210	John Smith	555-123-4567	jsmith@acmesolutions.com	ACTIVE
+2	Widgets Inc	987654321	123 Main St, Suite 100, Anytown, CA 90210	Jane Doe	555-987-6543	jane@widgets.com	INACTIVE
+3	TechPro Services	456789123	456 Tech Blvd, San Jose, CA 95134	Michael Johnson	555-234-5678	mjohnson@techpro.com	ACTIVE
+4	Global Innovations	789123456	8901 Research Dr, Austin, TX 78759	Sarah Williams	555-345-6789	swilliams@globalinnovations.com	ACTIVE
+5	DataSys Corp	234567891	567 Data Way, Seattle, WA 98101	Robert Brown	555-456-7890	rbrown@datasys.com	ACTIVE
+6	Nexus Technologies	345678912	345 Innovation Park, Boston, MA 02110	Lisa Chen	555-567-8901	lchen@nexustech.com	INACTIVE
+7	Precision Systems	456789123	901 Engineering Ave, Detroit, MI 48201	David Lee	555-678-9012	dlee@precisionsys.com	ACTIVE
+8	EcoTech Solutions	567891234	234 Green St, Portland, OR 97201	Emma Garcia	555-789-0123	egarcia@ecotech.com	ACTIVE
+9	Quantum Computing Inc	678912345	678 Quantum Lane, Boulder, CO 80301	Thomas Wilson	555-890-1234	twilson@quantumcomp.com	ACTIVE
+10	Smart Solutions LLC	789123456	456 Smart Dr, Phoenix, AZ 85001	Olivia Martinez	555-901-2345	omartinez@smartsol.com	INACTIVE
+11	Advanced Dynamics	891234567	789 Progress Way, Chicago, IL 60601	James Taylor	555-012-3456	jtaylor@addynamics.com	ACTIVE
+12	Innovative Networks	912345678	123 Network Blvd, Dallas, TX 75201	Sophia Anderson	555-123-4567	sanderson@innovnet.com	ACTIVE
+13	CyberSecure Inc	123456780	567 Security St, Atlanta, GA 30301	William Davis	555-234-5678	wdavis@cybersecure.com	ACTIVE
+14	Cloud Systems Group	234567890	890 Cloud Ave, Denver, CO 80202	Ava Robinson	555-345-6789	arobinson@cloudsys.com	INACTIVE
+15	Mega Technologies	345678901	123 Tech Park, San Francisco, CA 94105	Daniel Kim	555-456-7890	dkim@megatech.com	ACTIVE
+16	Beta Solutions	456789012	456 Beta Dr, New York, NY 10001	Emily Thompson	555-567-8901	ethompson@betasol.com	ACTIVE
+17	Apex Innovations	567890123	789 Summit Rd, Pittsburgh, PA 15222	Christopher Lewis	555-678-9012	clewis@apexinno.com	INACTIVE
+18	DataCore Systems	678901234	321 Data St, Minneapolis, MN 55401	Nicole White	555-789-0123	nwhite@datacore.com	ACTIVE
+19	FutureTech Inc	789012345	654 Future Ave, Miami, FL 33101	Joshua Harris	555-890-1234	jharris@futuretech.com	ACTIVE
+20	Universal Systems	890123456	987 Universal Blvd, Las Vegas, NV 89101	Amanda Clark	555-901-2345	aclark@universalsys.com	ACTIVE
+21	Prime Consultants	901234567	321 Prime Way, Houston, TX 77002	Matthew Rodriguez	555-012-3456	mrodriguez@primeconsult.com	INACTIVE
+22	Elite Software Corp	012345678	654 Software Dr, Raleigh, NC 27601	Samantha Phillips	555-123-4567	sphillips@elitesw.com	ACTIVE
+23	Synergy Partners	123456788	987 Synergy Blvd, Philadelphia, PA 19101	Andrew Walker	555-234-5678	awalker@synergyp.com	ACTIVE
+24	Pinnacle Systems	234567899	123 Pinnacle St, Seattle, WA 98102	Megan Evans	555-345-6789	mevans@pinnacle.com	ACTIVE
+25	Horizon Technologies	345678900	456 Horizon Rd, San Diego, CA 92101	Jason Brooks	555-456-7890	jbrooks@horizontech.com	INACTIVE
+26	Digital Solutions	456789011	789 Digital Lane, Nashville, TN 37201	Lauren Miller	555-567-8901	lmiller@digitalsol.com	ACTIVE
+27	Sentinel Security Inc	567890122	321 Sentinel Dr, Baltimore, MD 21201	Brian Turner	555-678-9012	bturner@sentinelsec.com	ACTIVE
+28	Velocity Networks	678901233	654 Velocity Ave, Sacramento, CA 95814	Victoria Scott	555-789-0123	vscott@velocitynet.com	INACTIVE
+29	Summit Enterprises	789012344	987 Enterprise Way, Columbus, OH 43215	Kevin Hughes	555-890-1234	khughes@summitent.com	ACTIVE
+30	Catalyst Innovations	890123455	123 Catalyst Rd, St. Louis, MO 63101	Rachel Cook	555-901-2345	rcook@catalystinno.com	ACTIVE
+31	Omega Systems	901234566	456 Omega Blvd, Portland, ME 04101	Patrick Murphy	555-012-3456	pmurphy@omegasys.com	ACTIVE
+32	Tektra Solutions	012345677	789 Solution Dr, Kansas City, MO 64101	Natalie Baker	555-123-4567	nbaker@tektrasol.com	INACTIVE
