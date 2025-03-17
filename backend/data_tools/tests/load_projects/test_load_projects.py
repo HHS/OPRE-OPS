@@ -28,7 +28,7 @@ def test_create_project_data():
     assert create_project_data(test_data[13]).PROJECT_TITLE == "Support Project #1"
     assert create_project_data(test_data[13]).PROJECT_TYPE == "ADMINISTRATIVE_AND_SUPPORT"
     assert create_project_data(test_data[13]).PROJECT_SHORT_TITLE == "SP1"
-    assert create_project_data(test_data[13]).PROJECT_DESCRIPTION is None
+    assert create_project_data(test_data[13]).PROJECT_DESCRIPTION == ""
 
 
 def test_validate_data():

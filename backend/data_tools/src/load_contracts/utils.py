@@ -145,7 +145,7 @@ def create_models(data: ContractData, sys_user: User, session: Session) -> None:
             contract.created_on = existing_contract.created_on
             contract.created_by = existing_contract.created_by
 
-        logger.info(f"Created ContractAgreement model for {contract.to_dict()}")
+        logger.debug(f"Created ContractAgreement model for {contract.to_dict()}")
 
         session.merge(contract)
 

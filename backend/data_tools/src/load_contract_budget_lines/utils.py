@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from models import (
     CAN,
     CLIN,
+    Agreement,
     AgreementMod,
     BudgetLineItem,
     BudgetLineItemStatus,
@@ -66,7 +67,7 @@ class BudgetLineItemData:
     STATUS: Optional[BudgetLineItemStatus] = field(default=None)
     OVERWRITE_PSC_FEE_RATE: Optional[float] = field(default=None)
     CLIN_NAME: Optional[str] = field(default=None)
-    CLIN: Optional[str] = field(default=None)
+    CLIN: Optional[int] = field(default=None)
     POP_START_DATE: Optional[date] = field(default=None)
     POP_END_DATE: Optional[date] = field(default=None)
 
@@ -116,7 +117,9 @@ class BudgetLineItemData:
         self.STATUS = BudgetLineItemStatus[self.STATUS] if self.STATUS else None
         self.OVERWRITE_PSC_FEE_RATE = float(self.OVERWRITE_PSC_FEE_RATE) if self.OVERWRITE_PSC_FEE_RATE else None
         self.CLIN_NAME = str(self.CLIN_NAME) if self.CLIN_NAME else None
-        self.CLIN = str(self.CLIN) if self.CLIN else None
+        self.CLIN = (
+            int(re.search(r"\d+", str(self.CLIN or "")).group()) if re.search(r"\d+", str(self.CLIN or "")) else None
+        )
         self.POP_START_DATE = datetime.strptime(self.POP_START_DATE, "%Y-%m-%d").date() if self.POP_START_DATE else None
         self.POP_END_DATE = datetime.strptime(self.POP_END_DATE, "%Y-%m-%d").date() if self.POP_END_DATE else None
 
@@ -230,7 +233,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             bli.created_on = existing_bli.created_on
             bli.created_by = existing_bli.created_by
 
-        logger.info(f"Created BudgetLineItem model for {bli.to_dict()}")
+        logger.debug(f"Created BudgetLineItem model for {bli.to_dict()}")
 
         session.merge(bli)
 
@@ -303,7 +306,9 @@ def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | No
     regex_obj = re.match(r"^(O|OT|OY|OS|OP)?(?:SC)?\s*(\d+)((?:\.\d+)*)(\w*)$", data.CLIN_NAME or "")
 
     # Test that the contract exists
-    contract = session.get(ContractAgreement, data.SYS_CONTRACT_ID)
+    contract = session.execute(
+        select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
+    ).scalar_one_or_none()
 
     if not regex_obj or not contract:
         return None
@@ -324,7 +329,7 @@ def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | No
         .where(ServicesComponent.number == sc_number)
         .where(ServicesComponent.optional == is_optional)
         .where(ServicesComponent.sub_component == sub_component_label)
-        .where(ServicesComponent.contract_agreement_id == data.SYS_CONTRACT_ID)
+        .where(ServicesComponent.contract_agreement_id == contract.id)
     ).scalar_one_or_none()
 
     if not sc:
@@ -332,7 +337,7 @@ def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | No
             number=sc_number,
             optional=is_optional,
             sub_component=sub_component_label,
-            contract_agreement_id=data.SYS_CONTRACT_ID,
+            contract_agreement_id=contract.id,
             description=data.CLIN_NAME,
             period_start=data.POP_START_DATE,
             period_end=data.POP_END_DATE,
@@ -345,17 +350,37 @@ def get_sc(data: BudgetLineItemData, session: Session) -> ServicesComponent | No
 
 
 def get_clin(data: BudgetLineItemData, session: Session) -> CLIN | None:
+    # only create a clin if the clin id is present
+    if not data.SYS_CLIN_ID:
+        return None
+
+    # first check if the clin exists
     clin = session.get(CLIN, data.SYS_CLIN_ID)
 
     if not clin:
-        clin = CLIN(
-            id=data.SYS_CLIN_ID,
-            number=int(data.CLIN),
-            name=data.CLIN_NAME,
-            contract_agreement_id=data.SYS_CONTRACT_ID,
-            pop_start_date=data.POP_START_DATE,
-            pop_end_date=data.POP_END_DATE,
-        )
+        # if not, check if the clin exists by number and contract agreement id
+        clin = session.execute(
+            select(CLIN)
+            .join(Agreement, CLIN.contract_agreement_id == Agreement.id)
+            .where(CLIN.number == data.CLIN)
+            .where(Agreement.maps_sys_id == data.SYS_CONTRACT_ID)
+        ).scalar_one_or_none()
+
+        if not clin:
+            # if not, create a new clin
+
+            contract = session.execute(
+                select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
+            ).scalar_one_or_none()
+
+            clin = CLIN(
+                id=data.SYS_CLIN_ID,
+                number=int(data.CLIN) if data.CLIN else None,
+                name=data.CLIN_NAME,
+                contract_agreement_id=contract.id,
+                pop_start_date=data.POP_START_DATE,
+                pop_end_date=data.POP_END_DATE,
+            )
 
     return clin
 
@@ -380,6 +405,9 @@ def get_invoice(data: BudgetLineItemData, session: Session) -> Invoice | None:
 
 
 def get_requisition(data: BudgetLineItemData, session: Session) -> Requisition | None:
+    if not data.REQUISITION_NBR and not data.ZERO_REQUISITION_NBR:
+        return None
+
     requisition = session.execute(
         select(Requisition).where(Requisition.budget_line_item_id == data.SYS_BUDGET_ID)
     ).scalar_one_or_none()
@@ -399,15 +427,21 @@ def get_requisition(data: BudgetLineItemData, session: Session) -> Requisition |
 
 
 def get_mod(data: BudgetLineItemData, session: Session) -> AgreementMod | None:
+    contract = session.execute(
+        select(ContractAgreement).where(ContractAgreement.maps_sys_id == data.SYS_CONTRACT_ID)
+    ).scalar_one_or_none()
+
+    # only create a mod if the mod number is present and the contract exists
+    if not data.MOD_NBR or not contract:
+        return None
+
     mod = session.execute(
-        select(AgreementMod)
-        .where(AgreementMod.agreement_id == data.SYS_CONTRACT_ID)
-        .where(AgreementMod.number == data.MOD_NBR)
+        select(AgreementMod).where(AgreementMod.agreement_id == contract.id).where(AgreementMod.number == data.MOD_NBR)
     ).scalar_one_or_none()
 
     if not mod:
         mod = AgreementMod(
-            agreement_id=data.SYS_CONTRACT_ID,
+            agreement_id=contract.id,
             number=data.MOD_NBR,
             mod_type=data.SYS_TYPE_OF_MODE_ID,
         )
