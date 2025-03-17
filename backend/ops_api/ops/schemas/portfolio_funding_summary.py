@@ -18,3 +18,4 @@ class ResponseSchema(Schema):
     in_execution_funding = fields.Nested(FundingLineItem)
     available_funding = fields.Nested(FundingLineItem)
     draft_funding = fields.Nested(FundingLineItem)
+    new_funding = fields.Nested(FundingLineItem)
