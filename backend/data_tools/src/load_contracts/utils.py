@@ -48,12 +48,12 @@ class ContractData:
         self.PSC_CODE = self.PSC_CODE.strip() if self.PSC_CODE else None
         self.CONTRACT_TYPE = ContractType[self.CONTRACT_TYPE.strip()] if self.CONTRACT_TYPE else None
         self.CONTRACT_START_DATE = (
-            datetime.strptime(self.CONTRACT_START_DATE, "%Y-%m-%d %H:%M:%S").date()
+            datetime.strptime(self.CONTRACT_START_DATE, "%Y-%m-%d").date()
             if self.CONTRACT_START_DATE
             else None
         )
         self.CONTRACT_END_DATE = (
-            datetime.strptime(self.CONTRACT_END_DATE, "%Y-%m-%d %H:%M:%S").date() if self.CONTRACT_END_DATE else None
+            datetime.strptime(self.CONTRACT_END_DATE, "%Y-%m-%d").date() if self.CONTRACT_END_DATE else None
         )
         self.PSC_CONTRACT_SPECIALIST = self.PSC_CONTRACT_SPECIALIST.strip() if self.PSC_CONTRACT_SPECIALIST else None
         self.OPRE_COTR = int(self.OPRE_COTR) if self.OPRE_COTR else None
