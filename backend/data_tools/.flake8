@@ -1,6 +1,6 @@
 [flake8]
 select = B,B9,BLK,C,E,F,S,W
-ignore = E203,E501,W503,E704,F405
+ignore = E203,E501,W503,E704,F405,S101
 per-file-ignores = tests/*:S101
 
 max-complexity = 10

@@ -73,7 +73,8 @@ def test_check_user_session_token_doesnt_match(mocker, loaded_db):
     mock_get_latest_user_session = mocker.patch("ops_api.ops.auth.decorators.get_latest_user_session")
     mock_user_session = mocker.MagicMock()
     mock_user_session.is_active = True
-    mock_user_session.access_token = "1234"  # UserSession access_token is different from the access token
+    # UserSession access_token is different from the access token in request
+    mock_user_session.access_token = "1234"  # noqa: S105
     mock_get_latest_user_session.return_value = mock_user_session
 
     mocker.patch("ops_api.ops.auth.decorators.get_bearer_token", return_value="Bearer 5678")  # Request access token

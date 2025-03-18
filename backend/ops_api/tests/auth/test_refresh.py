@@ -1,3 +1,4 @@
+# flake8: noqa: S105, S106
 import datetime
 from datetime import timedelta
 

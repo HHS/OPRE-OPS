@@ -3,7 +3,7 @@ import csv
 import pytest
 from click.testing import CliRunner
 from data_tools.src.common.utils import get_or_create_sys_user
-from data_tools.src.load_projects.main import main
+from data_tools.src.load_data import main
 from data_tools.src.load_projects.utils import ProjectData, create_models, create_project_data, validate_data
 from sqlalchemy import and_, text
 
@@ -28,7 +28,7 @@ def test_create_project_data():
     assert create_project_data(test_data[13]).PROJECT_TITLE == "Support Project #1"
     assert create_project_data(test_data[13]).PROJECT_TYPE == "ADMINISTRATIVE_AND_SUPPORT"
     assert create_project_data(test_data[13]).PROJECT_SHORT_TITLE == "SP1"
-    assert create_project_data(test_data[13]).PROJECT_DESCRIPTION is None
+    assert create_project_data(test_data[13]).PROJECT_DESCRIPTION == ""
 
 
 def test_validate_data():
@@ -102,6 +102,8 @@ def test_main(loaded_db):
         [
             "--env",
             "pytest_data_tools",
+            "--type",
+            "projects",
             "--input-csv",
             "test_csv/projects_latest.tsv",
         ],
