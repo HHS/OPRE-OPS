@@ -87,7 +87,18 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                             convertCodeForDisplay("agreementReason", agreement?.agreement_reason)
                         )}
                         {agreement?.vendor && renderTerm("vendor", "Vendor", agreement?.vendor)}
-                        {renderTerm("project-officer", "Project Officer", projectOfficerName)}
+                        <dl className="display-flex flex-justify">
+                            {renderTerm(
+                                "project-officer",
+                                convertCodeForDisplay("projectOfficer", agreement?.agreement_type),
+                                projectOfficerName
+                            )}
+                            {renderTerm(
+                                "project-officer",
+                                `Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`,
+                                projectOfficerName
+                            )}
+                        </dl>
                     </dl>
 
                     {agreement?.team_members.length > 0 ? (
