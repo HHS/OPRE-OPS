@@ -80,13 +80,25 @@ const BudgetLineItemList = () => {
                 };
             });
 
-            const header = ["BL ID #", "Agreement", "SC", "Obligate By", "FY", "CAN", "SubTotal", "Fees", "Status"];
+            const header = [
+                "BL ID #",
+                "Agreement",
+                "SC",
+                "Obligate By",
+                "FY",
+                "CAN",
+                "SubTotal",
+                "Fees",
+                "Procurement shop fee rate",
+                "Status"
+            ];
 
             await exportTableToXlsx({
                 data: budgetLinesWithCanAndAgreementName,
                 headers: header,
                 rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
                     const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
+                    const feeRate = (!budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0) ? "0" : `${budgetLine?.proc_shop_fee_percentage * 100}%`;
                     return [
                         budgetLine.id,
                         budgetLine.agreement_name,
@@ -102,6 +114,7 @@ const BudgetLineItemList = () => {
                             style: "currency",
                             currency: "USD"
                         }) ?? "",
+                        feeRate,
                         budgetLine?.in_review ? "In Review" : budgetLine?.status
                     ];
                 },
