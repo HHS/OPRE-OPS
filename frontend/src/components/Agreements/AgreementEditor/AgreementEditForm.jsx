@@ -33,6 +33,7 @@ import {
     useSetState,
     useUpdateAgreement
 } from "./AgreementEditorContext.hooks";
+import { convertCodeForDisplay } from "../../../helpers/utils";
 
 /**
  * Renders the "Create Agreement" step of the Create Agreement flow.
@@ -463,8 +464,9 @@ export const AgreementEditForm = ({
                         }
                     }}
                     overrideStyles={{ width: "15em" }}
-                    label="COR"
+                    label={convertCodeForDisplay("projectOfficer", agreementType)}
                 />
+                {/* TODO: add alternate project officer */}
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
@@ -477,7 +479,7 @@ export const AgreementEditForm = ({
                         }
                     }}
                     overrideStyles={{ width: "15em" }}
-                    label="Alternate COR"
+                    label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
                 />
             </div>
 

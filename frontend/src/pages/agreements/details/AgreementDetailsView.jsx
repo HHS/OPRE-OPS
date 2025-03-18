@@ -142,7 +142,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                     </div>
                     <div className="display-flex">
                         <dl className="grid-col-4 margin-0 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">COR</dt>
+                            <dt className="margin-0 text-base-dark margin-top-3">
+                                {convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}
+                            </dt>
                             <dd className="margin-0 margin-top-1">
                                 <Tag
                                     tagStyle="primaryDarkTextLightBackground"
@@ -155,8 +157,9 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             </dd>
                         </dl>
                         <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
-                            <dt className="margin-0 text-base-dark margin-top-3">Alternate COR</dt>
+                            <dt className="margin-0 text-base-dark margin-top-3">{`Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`}</dt>
                             <dd className="margin-0 margin-top-1">
+                                {/* TODO: display alternate project officer info */}
                                 <Tag
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={

@@ -1,5 +1,4 @@
 import cx from "clsx";
-import PropTypes from "prop-types";
 import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
 /**
