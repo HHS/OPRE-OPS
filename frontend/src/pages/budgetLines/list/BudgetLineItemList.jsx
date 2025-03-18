@@ -88,7 +88,7 @@ const BudgetLineItemList = () => {
                 "FY",
                 "CAN",
                 "SubTotal",
-                "Fees",
+                "Procurement shop fee",
                 "Procurement shop fee rate",
                 "Status"
             ];
