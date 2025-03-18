@@ -3,8 +3,8 @@ import csv
 import pytest
 from click.testing import CliRunner
 from data_tools.src.common.utils import get_or_create_sys_user
-from data_tools.src.load_contracts.main import main
 from data_tools.src.load_contracts.utils import ContractData, create_contract_data, create_models, validate_data
+from data_tools.src.load_data import main
 from sqlalchemy import and_, text
 
 from models import *  # noqa: F403, F401
@@ -139,8 +139,8 @@ def test_create_models(db_for_contracts):
         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
         PSC_CODE="541690",
         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-        CONTRACT_START_DATE="2000-09-30 00:00:00",
-        CONTRACT_END_DATE="2010-09-30 00:00:00",
+        CONTRACT_START_DATE="2000-09-30",
+        CONTRACT_END_DATE="2010-09-30",
         PSC_CONTRACT_SPECIALIST="John Doe",
         OPRE_COTR=1,
         OPRE_PROJECT_OFFICER=1,
@@ -183,6 +183,8 @@ def test_main(db_for_contracts):
         [
             "--env",
             "pytest_data_tools",
+            "--type",
+            "contracts",
             "--input-csv",
             "test_csv/contracts.tsv",
         ],
@@ -275,8 +277,8 @@ def test_create_models_upsert(db_for_contracts):
         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
         PSC_CODE="541690",
         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-        CONTRACT_START_DATE="2000-09-30 00:00:00",
-        CONTRACT_END_DATE="2010-09-30 00:00:00",
+        CONTRACT_START_DATE="2000-09-30",
+        CONTRACT_END_DATE="2010-09-30",
         PSC_CONTRACT_SPECIALIST="John Doe",
         OPRE_COTR=1,
         OPRE_PROJECT_OFFICER=1,
@@ -293,8 +295,8 @@ def test_create_models_upsert(db_for_contracts):
         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
         PSC_CODE="541690",
         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-        CONTRACT_START_DATE="2000-09-30 00:00:00",
-        CONTRACT_END_DATE="2010-09-30 00:00:00",
+        CONTRACT_START_DATE="2000-09-30",
+        CONTRACT_END_DATE="2010-09-30",
         PSC_CONTRACT_SPECIALIST="John Doe",
         OPRE_COTR=1,
         OPRE_PROJECT_OFFICER=1,
@@ -311,8 +313,8 @@ def test_create_models_upsert(db_for_contracts):
         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
         PSC_CODE="541690",
         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-        CONTRACT_START_DATE="2000-09-30 00:00:00",
-        CONTRACT_END_DATE="2010-09-30 00:00:00",
+        CONTRACT_START_DATE="2000-09-30",
+        CONTRACT_END_DATE="2010-09-30",
         PSC_CONTRACT_SPECIALIST="John Doe",
         OPRE_COTR=1,
         OPRE_PROJECT_OFFICER=1,
@@ -329,8 +331,8 @@ def test_create_models_upsert(db_for_contracts):
         ACQUISITION_TYPE=AcquisitionType.FULL_AND_OPEN.name,
         PSC_CODE="541690",
         CONTRACT_TYPE=ContractType.TIME_AND_MATERIALS.name,
-        CONTRACT_START_DATE="2000-09-30 00:00:00",
-        CONTRACT_END_DATE="2010-09-30 00:00:00",
+        CONTRACT_START_DATE="2000-09-30",
+        CONTRACT_END_DATE="2010-09-30",
         PSC_CONTRACT_SPECIALIST="John Doe",
         OPRE_COTR=1,
         OPRE_PROJECT_OFFICER=1,

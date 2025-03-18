@@ -150,7 +150,7 @@ def add_obj_to_db_history(objs: IdentitySet, event_type: OpsDBHistoryType, user:
         if not isinstance(obj, (OpsEvent, OpsDBHistory, AgreementOpsDbHistory)):  # not interested in tracking these
             db_audit = build_audit(obj, event_type)
             if event_type == OpsDBHistoryType.UPDATED and not db_audit.changes:
-                logger.info(
+                logger.debug(
                     f"No changes found for {obj.__class__.__name__} with row_key={db_audit.row_key}, "
                     f"an OpsDBHistory record will not be created for this UPDATED event."
                 )
