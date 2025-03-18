@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import App from "../../../App";
-import { useGetAgreementsQuery } from "../../../api/opsAPI";
+import { useGetAgreementsQuery, useLazyGetUserQuery } from "../../../api/opsAPI";
 import AgreementsTable from "../../../components/Agreements/AgreementsTable";
 import ChangeRequests from "../../../components/ChangeRequests";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
@@ -45,6 +45,8 @@ const AgreementsList = () => {
         error: errorAgreement,
         isLoading: isLoadingAgreement
     } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
+
+    const [trigger] = useLazyGetUserQuery();
 
     const activeUser = useSelector((state) => state.auth.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
@@ -171,15 +173,33 @@ const AgreementsList = () => {
 
     const handleExport = async () => {
         try {
+            const corPromises = sortedAgreements
+                .filter((agreement) => agreement?.project_officer_id)
+                .map((agreement) => trigger(agreement.project_officer_id).unwrap());
+
+            const corResponses = await Promise.all(corPromises);
+
+            /** @type {Record<number, {cor: string}>} */
+            const agreementDataMap = {};
+            sortedAgreements.forEach((agreement) => {
+                const corData = corResponses.find((cor) => cor.id === agreement.project_officer_id);
+                agreementDataMap[agreement.id] = {
+                    cor: corData.full_name ?? "TBD"
+                };
+            });
+
             const tableHeader = [
                 "Agreement",
                 "Project",
-                "Type",
+                "Agreement Type",
+                "Contract Type",
                 "Agreement SubTotal",
                 "Agreement Fees",
                 "Next Budget Line SubTotal",
                 "Next Budget Line Fees",
-                "Next Obligate By"
+                "Next Obligate By",
+                "Vender",
+                "COR"
             ];
             await exportTableToXlsx({
                 data: sortedAgreements,
@@ -187,7 +207,8 @@ const AgreementsList = () => {
                 rowMapper: (agreement) => {
                     const agreementName = getAgreementName(agreement);
                     const project = getResearchProjectName(agreement);
-                    const type = convertCodeForDisplay("agreementType", agreement?.agreement_type);
+                    const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
+                    const contractType = convertCodeForDisplay("contractType", agreement?.contract_type);
                     const agreementSubTotal = getAgreementSubTotal(agreement);
                     const agreementFees = getProcurementShopSubTotal(agreement);
                     const nextBudgetLine = findNextBudgetLine(agreement);
@@ -200,7 +221,8 @@ const AgreementsList = () => {
                     return [
                         agreementName,
                         project,
-                        type,
+                        agreementType,
+                        contractType,
                         agreementSubTotal.toLocaleString("en-US", {
                             style: "currency",
                             currency: "USD"
@@ -217,7 +239,9 @@ const AgreementsList = () => {
                             style: "currency",
                             currency: "USD"
                         }) ?? 0,
-                        nextObligateBy
+                        nextObligateBy,
+                        agreement?.vendor ?? "",
+                        agreementDataMap[agreement.id]?.cor ?? ""
                     ];
                 },
                 filename: "agreements"

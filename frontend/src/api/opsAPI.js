@@ -556,6 +556,7 @@ export const {
     useGetAgreementReasonsQuery,
     useGetUsersQuery,
     useGetUserQuery,
+    useLazyGetUserQuery,
     useGetUserByOidcQuery,
     useAddUserMutation,
     useUpdateUserMutation,
