@@ -57,15 +57,17 @@ const AgreementsList = () => {
     /** @param{Agreement[]} agreements */
     let filteredAgreements = _.cloneDeep(agreements);
 
-
     // filter by fiscal year
     filteredAgreements = filteredAgreements?.filter(
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                filters.fiscalYear == null || filters.fiscalYear?.length === 0 ||
+                filters.fiscalYear == null ||
+                filters.fiscalYear?.length === 0 ||
                 filters.fiscalYear?.some((fiscalYear) => {
-                    return agreement.budget_line_items?.some((bli) => { return bli.fiscal_year == fiscalYear.id});
+                    return agreement.budget_line_items?.some((bli) => {
+                        return bli.fiscal_year == fiscalYear.id;
+                    });
                 })
             );
         }
@@ -76,9 +78,12 @@ const AgreementsList = () => {
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                filters.portfolio == null || filters.portfolio?.length === 0 ||
+                filters.portfolio == null ||
+                filters.portfolio?.length === 0 ||
                 filters.portfolio?.some((portfolio) => {
-                    return agreement.budget_line_items?.some((bli) => { return bli.portfolio_id == portfolio.id})
+                    return agreement.budget_line_items?.some((bli) => {
+                        return bli.portfolio_id == portfolio.id;
+                    });
                 })
             );
         }
@@ -89,22 +94,33 @@ const AgreementsList = () => {
         /** @param{Agreement} agreement */
         (agreement) => {
             return (
-                filters.budgetLineStatus == null || filters.budgetLineStatus?.length === 0 ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.DRAFT}) &&
+                filters.budgetLineStatus == null ||
+                filters.budgetLineStatus?.length === 0 ||
+                (filters.budgetLineStatus?.some((item) => {
+                    return item.status == BLI_STATUS.DRAFT;
+                }) &&
                     agreement.budget_line_items?.length === 0) ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.DRAFT}) &&
+                (filters.budgetLineStatus?.some((item) => {
+                    return item.status == BLI_STATUS.DRAFT;
+                }) &&
                     agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.DRAFT;
                     })) ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.PLANNED}) &&
+                (filters.budgetLineStatus?.some((item) => {
+                    return item.status == BLI_STATUS.PLANNED;
+                }) &&
                     agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.PLANNED;
                     })) ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.EXECUTING}) &&
+                (filters.budgetLineStatus?.some((item) => {
+                    return item.status == BLI_STATUS.EXECUTING;
+                }) &&
                     agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.EXECUTING;
                     })) ||
-                (filters.budgetLineStatus?.some((item) => { return item.status == BLI_STATUS.OBLIGATED}) &&
+                (filters.budgetLineStatus?.some((item) => {
+                    return item.status == BLI_STATUS.OBLIGATED;
+                }) &&
                     agreement.budget_line_items?.some((bli) => {
                         return bli.status === BLI_STATUS.OBLIGATED;
                     }))
@@ -118,7 +134,11 @@ const AgreementsList = () => {
             /** @param{Agreement} agreement */
             (agreement) => {
                 return agreement.team_members?.some((teamMember) => {
-                    return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
+                    return (
+                        teamMember.id === activeUser.id ||
+                        agreement.project_officer_id === activeUser.id ||
+                        agreement.alternate_project_officer_id === activeUser.id
+                    );
                 });
             }
         );
