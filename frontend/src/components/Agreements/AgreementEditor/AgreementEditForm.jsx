@@ -69,6 +69,7 @@ export const AgreementEditForm = ({
     const setSelectedProcurementShop = useSetState("selected_procurement_shop");
     const setSelectedProductServiceCode = useSetState("selected_product_service_code");
     const setSelectedProjectOfficer = useSetState("selected_project_officer");
+    const setSelectedAlternateProjectOfficer = useSetState("selected_alternate_project_officer");
 
     // AGREEMENT SETTERS
     const setAgreementType = useUpdateAgreement("agreement_type");
@@ -79,6 +80,7 @@ export const AgreementEditForm = ({
     const setProductServiceCodeId = useUpdateAgreement("product_service_code_id");
     const setAgreementReason = useUpdateAgreement("agreement_reason");
     const setProjectOfficerId = useUpdateAgreement("project_officer_id");
+    const setAlternateProjectOfficerId = useUpdateAgreement("alternate_project_officer_id");
     const setAgreementVendor = useUpdateAgreement("vendor");
     const setAgreementNotes = useUpdateAgreement("notes");
     const setContractType = useUpdateAgreement("contract_type");
@@ -99,7 +101,8 @@ export const AgreementEditForm = ({
         agreement,
         selected_procurement_shop: selectedProcurementShop,
         selected_product_service_code: selectedProductServiceCode,
-        selected_project_officer: selectedProjectOfficer
+        selected_project_officer: selectedProjectOfficer,
+        selected_alternate_project_officer: selectedAlternateProjectOfficer
     } = useEditAgreement();
     const {
         notes: agreementNotes,
@@ -161,6 +164,12 @@ export const AgreementEditForm = ({
         setSelectedProjectOfficer(selectedProjectOfficer);
         const projectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
         setProjectOfficerId(projectOfficerId);
+    };
+
+    const changeSelectedAlternateProjectOfficer = (selectedProjectOfficer) => {
+        setSelectedAlternateProjectOfficer(selectedProjectOfficer);
+        const alternateProjectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
+        setAlternateProjectOfficerId(alternateProjectOfficerId);
     };
 
     const setSelectedTeamMembers = (teamMember) => {
@@ -468,8 +477,8 @@ export const AgreementEditForm = ({
                 />
                 {/* TODO: add alternate project officer */}
                 <ProjectOfficerComboBox
-                    selectedProjectOfficer={selectedProjectOfficer}
-                    setSelectedProjectOfficer={changeSelectedProjectOfficer}
+                    selectedProjectOfficer={selectedAlternateProjectOfficer}
+                    setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
                     className="margin-left-4"
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     messages={res.getErrors("project_officer")}
