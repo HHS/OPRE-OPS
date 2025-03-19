@@ -212,10 +212,14 @@ const AgreementsList = () => {
                     const agreementSubTotal = getAgreementSubTotal(agreement);
                     const agreementFees = getProcurementShopSubTotal(agreement);
                     const nextBudgetLine = findNextBudgetLine(agreement);
-                    const nextBudgetLineFees = totalBudgetLineFeeAmount(
+                    const nextBudgetLineAmount = nextBudgetLine?.amount ?? 0;
+                    let nextBudgetLineFees = totalBudgetLineFeeAmount(
                         nextBudgetLine?.amount,
                         nextBudgetLine?.proc_shop_fee_percentage
                     );
+                    if (isNaN(nextBudgetLineFees)) {
+                        nextBudgetLineFees = 0;
+                    }
                     const nextObligateBy = findNextNeedBy(agreement);
 
                     return [
@@ -231,7 +235,7 @@ const AgreementsList = () => {
                             style: "currency",
                             currency: "USD"
                         }) ?? 0,
-                        nextBudgetLine?.amount.toLocaleString("en-US", {
+                        nextBudgetLineAmount.toLocaleString("en-US", {
                             style: "currency",
                             currency: "USD"
                         }) ?? 0,
@@ -239,7 +243,7 @@ const AgreementsList = () => {
                             style: "currency",
                             currency: "USD"
                         }) ?? 0,
-                        nextObligateBy,
+                        nextObligateBy ?? "",
                         agreement?.vendor ?? "",
                         agreementDataMap[agreement.id]?.cor ?? ""
                     ];
