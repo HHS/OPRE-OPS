@@ -42,6 +42,8 @@ def db_for_iaa_agency_with_class_code(db_for_iaa_agency):
     yield db_for_iaa_agency
 
     # Cleanup
+    db_for_iaa_agency.execute(text("DELETE FROM iaa_customer_agency"))
+    db_for_iaa_agency.execute(text("DELETE FROM iaa_customer_agency_version"))
     db_for_iaa_agency.execute(text("DELETE FROM object_class_code"))
     db_for_iaa_agency.execute(text("DELETE FROM object_class_code_version"))
 
