@@ -3,6 +3,8 @@ import RoundedBox from "../../components/UI/RoundedBox";
 import goldDiagonal from "../../images/gold-diagnal.png";
 import flourish from "../../images/flourish.svg";
 import HoverCard from "../../components/UI/Cards/HoverCard";
+import transparencyIcon from "../../images/transparency.svg";
+
 const Home = () => {
     return (
         <App>
@@ -68,6 +70,7 @@ const Home = () => {
                                 title="Transparency"
                                 description="Everyone can view everything and changes are tracked in the history so you can easily understand who changed what and when"
                                 variant="dark"
+                                icon={transparencyIcon}
                             />
                         </section>
                     </>
