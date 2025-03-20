@@ -16,7 +16,7 @@ import { useSelector } from "react-redux";
  * @returns {JSX.Element}
  */
 const User = ({ user }) => {
-    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+    const isLoggedIn = useSelector((state) => state.auth?.isLoggedIn);
 
     return (
         <span>

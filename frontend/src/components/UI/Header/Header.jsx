@@ -8,7 +8,7 @@ const Header = () => {
         logo: {
             maxWidth: "55%"
         },
-        textlogo: {
+        textLogo: {
             color: "#336A90",
             display: "flex",
             alignItems: "flex-end",
@@ -22,11 +22,11 @@ const Header = () => {
                 <div
                     className="usa-logo"
                     style={styles.logo}
-                    id="-logo"
+                    id="logo"
                 >
                     <Link
                         to="/"
-                        style={styles.textlogo}
+                        style={styles.textLogo}
                         title="Portfolio Management System"
                     >
                         <img
