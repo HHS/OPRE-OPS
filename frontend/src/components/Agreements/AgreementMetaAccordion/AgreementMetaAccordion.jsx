@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import Accordion from "../../UI/Accordion";
 import Term from "../../UI/Term";
 
@@ -8,13 +7,22 @@ import Term from "../../UI/Term";
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement object to display.
  * @param {string} props.projectOfficerName - The name of the project officer.
+ * @param {string} props.alternateProjectOfficerName - The name of the alternate project officer.
  * @param {Object} [props.res] - The response object.
  * @param {Object} [props.cn] - The classnames object.
  * @param {Function} props.convertCodeForDisplay - The function to convert codes for display.
  * @param {string} props.instructions - The instruction text of the agreement.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, convertCodeForDisplay, instructions }) => {
+const AgreementMetaAccordion = ({
+    agreement,
+    projectOfficerName,
+    alternateProjectOfficerName,
+    res,
+    cn,
+    convertCodeForDisplay,
+    instructions
+}) => {
     const MORE_THAN_THREE_TEAM_MEMBERS = agreement?.team_members.length > 3;
 
     /**
@@ -94,9 +102,9 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
                                 projectOfficerName
                             )}
                             {renderTerm(
-                                "project-officer",
+                                "alternate-project-officer",
                                 `Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`,
-                                projectOfficerName
+                                alternateProjectOfficerName
                             )}
                         </dl>
                     </dl>
@@ -124,15 +132,6 @@ const AgreementMetaAccordion = ({ agreement, projectOfficerName, res, cn, conver
             </div>
         </Accordion>
     );
-};
-
-AgreementMetaAccordion.propTypes = {
-    agreement: PropTypes.object.isRequired,
-    projectOfficerName: PropTypes.string,
-    res: PropTypes.object,
-    cn: PropTypes.func,
-    convertCodeForDisplay: PropTypes.func.isRequired,
-    instructions: PropTypes.string.isRequired
 };
 
 export default AgreementMetaAccordion;

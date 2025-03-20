@@ -166,9 +166,9 @@ export const AgreementEditForm = ({
         setProjectOfficerId(projectOfficerId);
     };
 
-    const changeSelectedAlternateProjectOfficer = (selectedProjectOfficer) => {
-        setSelectedAlternateProjectOfficer(selectedProjectOfficer);
-        const alternateProjectOfficerId = selectedProjectOfficer ? selectedProjectOfficer.id : null;
+    const changeSelectedAlternateProjectOfficer = (selectedAlternateProjectOfficer) => {
+        setSelectedAlternateProjectOfficer(selectedAlternateProjectOfficer);
+        const alternateProjectOfficerId = selectedAlternateProjectOfficer ? selectedAlternateProjectOfficer.id : null;
         setAlternateProjectOfficerId(alternateProjectOfficerId);
     };
 
@@ -475,18 +475,12 @@ export const AgreementEditForm = ({
                     overrideStyles={{ width: "15em" }}
                     label={convertCodeForDisplay("projectOfficer", agreementType)}
                 />
-                {/* TODO: add alternate project officer */}
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedAlternateProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
                     className="margin-left-4"
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     messages={res.getErrors("project_officer")}
-                    onChange={(name, value) => {
-                        if (isReviewMode) {
-                            runValidate(name, value);
-                        }
-                    }}
                     overrideStyles={{ width: "15em" }}
                     label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
                 />
