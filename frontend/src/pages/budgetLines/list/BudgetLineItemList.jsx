@@ -1,8 +1,16 @@
 import App from "../../../App";
-import { useGetAgreementsQuery, useGetBudgetLineItemsQuery, useGetCansQuery } from "../../../api/opsAPI";
+import {
+    useGetAgreementsQuery,
+    useGetBudgetLineItemsQuery,
+    useGetCansQuery,
+    useLazyGetServicesComponentByIdQuery
+} from "../../../api/opsAPI";
 import AllBudgetLinesTable from "../../../components/BudgetLineItems/AllBudgetLinesTable";
 import SummaryCardsSection from "../../../components/BudgetLineItems/SummaryCardsSection";
 import TablePageLayout from "../../../components/Layouts/TablePageLayout";
+import { setAlert } from "../../../components/UI/Alert/alertSlice";
+import { exportTableToXlsx } from "../../../helpers/tableExport.helpers";
+import { totalBudgetLineFeeAmount, formatDateNeeded } from "../../../helpers/utils";
 import BLIFilterButton from "./BLIFilterButton";
 import BLIFilterTags from "./BLIFilterTags";
 import BLITags from "./BLITabs";
@@ -13,10 +21,11 @@ import {
     uniqueBudgetLinesFiscalYears
 } from "./BudgetLineItems.helpers";
 import { useBudgetLinesList } from "./BudgetLinesItems.hooks";
+import icons from "../../../uswds/img/sprite.svg";
 
 /**
  * @component Page for the Budget Line Item List.
- * @returns {JSX.Element} - The component JSX.
+ * @returns {import("react").JSX.Element} - The component JSX.
  */
 const BudgetLineItemList = () => {
     const {
@@ -27,6 +36,8 @@ const BudgetLineItemList = () => {
     const { data: cans, error: cansError, isLoading: cansIsLoading } = useGetCansQuery({});
     const { data: agreements, error: agreementsError, isLoading: agreementsAreError } = useGetAgreementsQuery({});
     const { myBudgetLineItemsUrl, activeUser, filters, setFilters } = useBudgetLinesList();
+
+    const [trigger] = useLazyGetServicesComponentByIdQuery();
 
     if (budgetLineItemsIsLoading || cansIsLoading || agreementsAreError) {
         return (
@@ -48,6 +59,78 @@ const BudgetLineItemList = () => {
     const budgetLinesWithCanAndAgreementName = addCanAndAgreementNameToBudgetLines(sortedBLIs, cans, agreements);
     const budgetLinesFiscalYears = uniqueBudgetLinesFiscalYears(budgetLineItems);
 
+    const handleExport = async () => {
+        try {
+            // Get the service component name for each budget line individually
+            const serviceComponentPromises = budgetLinesWithCanAndAgreementName
+                .filter((budgetLine) => budgetLine?.services_component_id)
+                .map((budgetLine) => trigger(budgetLine.services_component_id).unwrap());
+
+            const serviceComponentResponses = await Promise.all(serviceComponentPromises);
+
+            /** @type {Record<number, {service_component_name: string}>} */
+            const budgetLinesDataMap = {};
+            budgetLinesWithCanAndAgreementName.forEach((budgetLine) => {
+                const response = serviceComponentResponses.find(
+                    (resp) => resp && resp.id === budgetLine?.services_component_id
+                );
+
+                budgetLinesDataMap[budgetLine.id] = {
+                    service_component_name: response?.display_name || "TBD" // Use optional chaining and fallback
+                };
+            });
+
+            const header = [
+                "BL ID #",
+                "Agreement",
+                "SC",
+                "Obligate By",
+                "FY",
+                "CAN",
+                "SubTotal",
+                "Procurement shop fee",
+                "Procurement shop fee rate",
+                "Status"
+            ];
+
+            await exportTableToXlsx({
+                data: budgetLinesWithCanAndAgreementName,
+                headers: header,
+                rowMapper: (/** @type {import("../../../helpers/budgetLines.helpers").BudgetLine} */ budgetLine) => {
+                    const fees = totalBudgetLineFeeAmount(budgetLine?.amount, budgetLine?.proc_shop_fee_percentage);
+                    const feeRate = (!budgetLine?.proc_shop_fee_percentage || budgetLine?.proc_shop_fee_percentage === 0) ? "0" : `${budgetLine?.proc_shop_fee_percentage * 100}%`;
+                    return [
+                        budgetLine.id,
+                        budgetLine.agreement_name,
+                        budgetLinesDataMap[budgetLine.id]?.service_component_name,
+                        formatDateNeeded(budgetLine?.date_needed),
+                        budgetLine.fiscal_year,
+                        budgetLine.can_number,
+                        budgetLine?.amount?.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? "",
+                        fees.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD"
+                        }) ?? "",
+                        feeRate,
+                        budgetLine?.in_review ? "In Review" : budgetLine?.status
+                    ];
+                },
+                filename: "budget_lines"
+            });
+        } catch (error) {
+            console.error("Failed to export data:", error);
+            setAlert({
+                type: "error",
+                heading: "Error",
+                message: "An error occurred while exporting the data.",
+                redirectUrl: "/error"
+            });
+        }
+    };
+
     return (
         <App breadCrumbName="Budget Lines">
             <TablePageLayout
@@ -67,11 +150,35 @@ const BudgetLineItemList = () => {
                 }
                 TableSection={<AllBudgetLinesTable budgetLines={budgetLinesWithCanAndAgreementName} />}
                 FilterButton={
-                    <BLIFilterButton
-                        filters={filters}
-                        setFilters={setFilters}
-                        budgetLinesFiscalYears={budgetLinesFiscalYears}
-                    />
+                    <>
+                        <div className="display-flex">
+                            <div>
+                                {budgetLinesWithCanAndAgreementName.length > 0 && (
+                                    <button
+                                        style={{ fontSize: "16px" }}
+                                        className="usa-button--unstyled text-primary display-flex flex-align-end"
+                                        data-cy="budget-line-export"
+                                        onClick={handleExport}
+                                    >
+                                        <svg
+                                            className={`height-2 width-2 margin-right-05`}
+                                            style={{ fill: "#005EA2", height: "24px", width: "24px" }}
+                                        >
+                                            <use xlinkHref={`${icons}#save_alt`}></use>
+                                        </svg>
+                                        <span>Export</span>
+                                    </button>
+                                )}
+                            </div>
+                            <div className="margin-left-205">
+                                <BLIFilterButton
+                                    filters={filters}
+                                    setFilters={setFilters}
+                                    budgetLinesFiscalYears={budgetLinesFiscalYears}
+                                />
+                            </div>
+                        </div>
+                    </>
                 }
                 SummaryCardsSection={<SummaryCardsSection budgetLines={budgetLinesWithCanAndAgreementName} />}
             />

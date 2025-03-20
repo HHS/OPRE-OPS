@@ -296,17 +296,19 @@ def create_all_can_data(data: List[dict]) -> List[CANData]:
     return [create_can_data(d) for d in data]
 
 
-def transform(data: DictReader, portfolios: List[Portfolio], session: Session, sys_user: User) -> None:
+def transform(data: DictReader, session: Session, sys_user: User) -> None:
     """
     Transform the data from the CSV file and persist the models to the database.
 
     :param data: The data from the CSV file.
-    :param portfolios: The portfolios to use as reference data.
     :param session: The database session to use.
     :param sys_user: The system user to use.
 
     :return: None
     """
+    portfolios = list(session.execute(select(Portfolio)).scalars().all())
+    logger.info(f"Retrieved {len(portfolios)} portfolios.")
+
     if not data or not portfolios or not session or not sys_user:
         logger.error("No data to process. Exiting.")
         raise RuntimeError("No data to process.")

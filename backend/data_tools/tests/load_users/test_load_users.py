@@ -5,7 +5,7 @@ from click.testing import CliRunner
 from data_tools.environment.dev import DevConfig
 from data_tools.src.common.utils import get_or_create_sys_user
 from data_tools.src.import_static_data.import_data import get_config
-from data_tools.src.load_users.main import main
+from data_tools.src.load_data import main
 from data_tools.src.load_users.utils import UserData, create_models, create_user_data, validate_all, validate_data
 from sqlalchemy import text
 
@@ -181,6 +181,8 @@ def test_main(db_with_roles):
         [
             "--env",
             "pytest_data_tools",
+            "--type",
+            "users",
             "--input-csv",
             "test_csv/users.tsv",
         ],

@@ -463,3 +463,21 @@ export function fromUpperCaseToTitleCase(string) {
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
 }
+
+/**
+ *
+ * @returns {string} Return the current timestamp in the format of YYYY-MM-DD_HH_MM_SS
+ */
+export function getCurrentLocalTimestamp() {
+    /** @param {number} num */
+    const padZero = (num) => String(num).padStart(2, "0");
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = padZero(now.getMonth() + 1);
+    const day = padZero(now.getDate());
+    const hours = padZero(now.getHours());
+    const minutes = padZero(now.getMinutes());
+    const seconds = padZero(now.getSeconds());
+    const currentTimeStamp = `${year}-${month}-${day}-${hours}_${minutes}_${seconds}`;
+    return currentTimeStamp;
+}

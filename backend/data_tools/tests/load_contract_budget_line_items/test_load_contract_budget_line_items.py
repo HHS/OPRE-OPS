@@ -3,7 +3,6 @@ import csv
 import pytest
 from click.testing import CliRunner
 from data_tools.src.common.utils import get_or_create_sys_user
-from data_tools.src.load_contract_budget_lines.main import main
 from data_tools.src.load_contract_budget_lines.utils import (
     BudgetLineItemData,
     create_budget_line_item_data,
@@ -15,6 +14,7 @@ from data_tools.src.load_contract_budget_lines.utils import (
     get_sc,
     validate_data,
 )
+from data_tools.src.load_data import main
 from sqlalchemy import and_, text
 
 from models import *  # noqa: F403, F401
@@ -69,7 +69,7 @@ def test_create_budget_line_data():
     assert contract_data.LINE_DESCRIPTION == "Line Description #1"
     assert contract_data.COMMENTS == "Comment #1"
     assert contract_data.CLIN_NAME == "SC1"
-    assert contract_data.CLIN == "1"
+    assert contract_data.CLIN == 1
 
 
 def test_validate_data():
@@ -227,7 +227,7 @@ def test_create_models(db_for_test_with_data):
         DATE_NEEDED="2025-09-30",
         POP_START_DATE="2024-10-01",
         POP_END_DATE="2025-09-30",
-        CERTIFIED=True,
+        CERTIFIED="Yes",
         CLOSED=False,
         STATUS=BudgetLineItemStatus.OBLIGATED.name,
         ON_HOLD=False,
@@ -319,6 +319,8 @@ def test_main(db_for_test_with_data):
         [
             "--env",
             "pytest_data_tools",
+            "--type",
+            "contract_budget_lines",
             "--input-csv",
             "./test_csv/contract_budget_lines.tsv",
         ],
@@ -427,7 +429,7 @@ def test_create_models_upsert(db_for_test_with_data):
         DATE_NEEDED="2025-09-30",
         POP_START_DATE="2024-10-01",
         POP_END_DATE="2025-09-30",
-        CERTIFIED=True,
+        CERTIFIED="Yes",
         CLOSED=False,
         STATUS=BudgetLineItemStatus.OBLIGATED.name,
         ON_HOLD=False,
@@ -465,7 +467,7 @@ def test_create_models_upsert(db_for_test_with_data):
         DATE_NEEDED="2025-09-30",
         POP_START_DATE="2024-10-01",
         POP_END_DATE="2025-09-30",
-        CERTIFIED=True,
+        CERTIFIED="Yes",
         CLOSED=False,
         STATUS=BudgetLineItemStatus.OBLIGATED.name,
         ON_HOLD=False,
@@ -503,7 +505,7 @@ def test_create_models_upsert(db_for_test_with_data):
         DATE_NEEDED="2025-09-30",
         POP_START_DATE="2024-10-01",
         POP_END_DATE="2025-09-30",
-        CERTIFIED=True,
+        CERTIFIED="Yes",
         CLOSED=False,
         STATUS=BudgetLineItemStatus.OBLIGATED.name,
         ON_HOLD=False,
@@ -1258,4 +1260,49 @@ def test_get_mod_existing(db_for_test):
 
     db_for_test.delete(existing_mod)
     db_for_test.delete(bli)
+    db_for_test.commit()
+
+
+def test_get_clin_new_non_integer(db_for_test):
+    clin = get_clin(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_CLIN_ID=1,
+            CLIN="123.1",
+            CLIN_NAME="SC1",
+            POP_START_DATE="2024-10-01",
+            POP_END_DATE="2025-09-30",
+        ),
+        db_for_test,
+    )
+    assert clin is not None
+    assert clin.id == 1
+    assert clin.number == 123
+    assert clin.name == "SC1"
+    assert clin.pop_start_date == date(2024, 10, 1)
+    assert clin.pop_end_date == date(2025, 9, 30)
+
+
+def test_get_clin_same_number(db_for_test):
+    clin = CLIN(
+        number=1,
+        contract_agreement_id=1,
+    )
+
+    db_for_test.add(clin)
+    db_for_test.commit()
+
+    clin = get_clin(
+        BudgetLineItemData(
+            SYS_CONTRACT_ID=1,
+            SYS_CLIN_ID=1,
+            CLIN="1",
+        ),
+        db_for_test,
+    )
+    assert clin is not None
+    assert clin.number == 1
+
+    # cleanup
+    db_for_test.delete(clin)
     db_for_test.commit()
