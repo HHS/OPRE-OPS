@@ -10,9 +10,10 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement object to display details for.
  * @param {Object} props.projectOfficer - The project officer object for the agreement.
+ * @param {Object} props.alternateProjectOfficer - The project officer object for the agreement.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer }) => {
+const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer }) => {
     return (
         <section>
             <div
@@ -168,12 +169,11 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
                             <dt className="margin-0 text-base-dark margin-top-3">{`Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`}</dt>
                             <dd className="margin-0 margin-top-1">
-                                {/* TODO: display alternate project officer info */}
                                 <Tag
                                     tagStyle="primaryDarkTextLightBackground"
                                     text={
-                                        projectOfficer && Object.keys(projectOfficer).length !== 0
-                                            ? projectOfficer?.full_name
+                                        alternateProjectOfficer && Object.keys(alternateProjectOfficer).length !== 0
+                                            ? alternateProjectOfficer?.full_name
                                             : NO_DATA
                                     }
                                 />

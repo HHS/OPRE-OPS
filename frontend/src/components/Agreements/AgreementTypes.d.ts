@@ -19,6 +19,7 @@ export type Agreement = {
     project?: ResearchProject;
     project_id?: number;
     project_officer_id?: number;
+    altermate_project_officer_id?: number;
     team_members?: SafeUser[];
     vendor?: string;
     created_on?: Date;

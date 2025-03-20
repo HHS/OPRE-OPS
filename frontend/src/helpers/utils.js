@@ -148,6 +148,7 @@ export const codesToDisplayText = {
         procurement_shop: "Procurement Shop",
         product_service_code: "Product Service Code",
         project_officer: "Project Officer",
+        alternate_project_officer: "Alternate Project Officer",
         project: "Project",
         team_members: "Team Members",
         team_members_item: "Team Member",
