@@ -480,7 +480,6 @@ export const AgreementEditForm = ({
                     setSelectedProjectOfficer={changeSelectedAlternateProjectOfficer}
                     className="margin-left-4"
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
-                    messages={res.getErrors("project_officer")}
                     overrideStyles={{ width: "15em" }}
                     label={`Alternate ${convertCodeForDisplay("projectOfficer", agreementType)}`}
                 />
