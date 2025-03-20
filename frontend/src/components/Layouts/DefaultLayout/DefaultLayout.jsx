@@ -4,6 +4,7 @@ import Footer from "../../UI/Footer";
 import Alert from "../../UI/Alert";
 import Breadcrumb from "../../UI/Header/Breadcrumb";
 import useAlert from "../../../hooks/use-alert.hooks";
+import SlimAlert from "../../UI/Alert/SlimAlert";
 
 /**
  * DefaultLayout component
@@ -19,6 +20,10 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
     return (
         <div className="bg-base-lightest">
             <div className="usa-overlay"></div>
+            <SlimAlert
+                type="warning"
+                message="This is a non-production OPS environment"
+            />
             <Header />
             <main
                 id="main-content"
