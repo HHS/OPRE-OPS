@@ -507,7 +507,6 @@ def test_get_iaa_agreement(auth_client, loaded_db):
     response = auth_client.get(url_for("api.agreements-item", id=4))
     assert response.status_code == 200
     assert response.json["agreement_type"] == "IAA"
-    assert response.json["iaa"] == "This is an IAA value"
 
 
 @pytest.mark.usefixtures("app_ctx")

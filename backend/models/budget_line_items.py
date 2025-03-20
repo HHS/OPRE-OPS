@@ -346,10 +346,11 @@ class DirectObligationBudgetLineItem(BudgetLineItem):
 
 class IAABudgetLineItem(BudgetLineItem):
     """
-    IAAA Budget Line Item model.
+    IAA Budget Line Item model.
     """
 
-    __tablename__ = "iaaa_budget_line_item"
+    __tablename__ = "iaa_budget_line_item"
 
     __mapper_args__ = {"polymorphic_identity": AgreementType.IAA}
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
+    ip_nbr: Mapped[Optional[str]] = mapped_column(String)
