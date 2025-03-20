@@ -82,6 +82,8 @@ def db_for_iaa_test(loaded_db):
     yield loaded_db
     loaded_db.rollback()
 
+    loaded_db.execute(text("DELETE FROM iaa_customer_agency"))
+    loaded_db.execute(text("DELETE FROM iaa_customer_agency_version"))
     loaded_db.execute(text("DELETE FROM object_class_code"))
     loaded_db.execute(text("DELETE FROM object_class_code_version"))
     loaded_db.execute(text("DELETE FROM iaa_budget_line_item"))
