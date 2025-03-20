@@ -60,7 +60,12 @@ export const Menu = () => {
                 </li>
                 {isUserAdmin && (
                     <li className="usa-nav__primary-item">
-                        <NavLink to="/user-admin">User Admin</NavLink>
+                        <NavLink
+                            to="/user-admin"
+                            className={getNavLinkClass}
+                        >
+                            User Admin
+                        </NavLink>
                     </li>
                 )}
                 <li className="usa-nav__primary-item">
