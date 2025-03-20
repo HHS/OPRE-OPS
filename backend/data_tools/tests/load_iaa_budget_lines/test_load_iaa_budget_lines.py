@@ -58,15 +58,18 @@ def test_create_iaa_budget_line_models_no_iaa_id():
 
 @pytest.fixture()
 def db_for_iaa_test(loaded_db):
-    iaa = IaaAgreement(
-        id=1,
-        name="Test IAA",
-        maps_sys_id=1,
-        direction=IAADirectionType.OUTGOING
-    )
+    iaa = loaded_db.get(IaaAgreement, 1)
 
-    loaded_db.add(iaa)
-    loaded_db.commit()
+    if not iaa:
+        iaa = IaaAgreement(
+            id=1,
+            name="Test IAA",
+            maps_sys_id=1,
+            direction=IAADirectionType.OUTGOING
+        )
+
+        loaded_db.add(iaa)
+        loaded_db.commit()
 
     user = User(
         id=1,
@@ -126,13 +129,17 @@ def db_for_iaa_test_with_data(db_for_iaa_test):
         portfolio_id=1,
     )
 
-    object_class_code = ObjectClassCode(
-        id=1,
-        code="1",
-        description="Test Object Class Code",
-    )
+    object_class_code = db_for_iaa_test.get(ObjectClassCode, 1)
 
-    db_for_iaa_test.add(object_class_code)
+    if not object_class_code:
+        object_class_code = ObjectClassCode(
+            id=1,
+            code="1",
+            description="Test Object Class Code",
+        )
+
+        db_for_iaa_test.add(object_class_code)
+
     db_for_iaa_test.add(division)
     db_for_iaa_test.add(portfolio)
     db_for_iaa_test.add(can)

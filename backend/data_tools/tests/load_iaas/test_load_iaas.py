@@ -51,12 +51,12 @@ def db_for_iaas(loaded_db):
     loaded_db.add(project_1)
     loaded_db.commit()
 
-    agency_1 = IAACustomerAgency(
-        id=1,
+    agency_500 = IAACustomerAgency(
+        id=500,
         name="Test Agency",
     )
 
-    loaded_db.add(agency_1)
+    loaded_db.add(agency_500)
     loaded_db.commit()
 
     yield loaded_db
@@ -84,7 +84,7 @@ def test_create_models(db_for_iaas):
         SYS_IAA_ID=1,
         IAA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
-        SYS_IAA_CUSTOMER_AGENCY_ID=1,
+        SYS_IAA_CUSTOMER_AGENCY_ID=500,
         OPRE_POC="Jane Doe",
         AGENCY_POC="John Smith",
     )
@@ -100,7 +100,7 @@ def test_create_models(db_for_iaas):
     assert iaa_model.maps_sys_id == 1
     assert iaa_model.project_id == 1
     assert iaa_model.project.title == "Test Project"
-    assert iaa_model.iaa_customer_agency_id == 1
+    assert iaa_model.iaa_customer_agency_id == 500
     assert iaa_model.iaa_customer_agency.name == "Test Agency"
     assert iaa_model.opre_poc == "Jane Doe"
     assert iaa_model.agency_poc == "John Smith"
@@ -132,8 +132,7 @@ def test_main(db_for_iaas):
     assert iaa_model.maps_sys_id == 1
     assert iaa_model.project_id == 1
     assert iaa_model.project.title == "Test Project"
-    assert iaa_model.iaa_customer_agency_id == 1
-    assert iaa_model.iaa_customer_agency.name == "Test Agency"
+    assert iaa_model.iaa_customer_agency_id is None
     assert iaa_model.opre_poc == "Jennifer Smith"
     assert iaa_model.agency_poc == "Robert Davis"
     assert iaa_model.created_by == sys_user.id
@@ -166,7 +165,7 @@ def test_create_models_upsert(db_for_iaas):
         SYS_IAA_ID=100,
         IAA_NAME="Family Support Research",
         SYS_PROJECT_ID=1,
-        SYS_IAA_CUSTOMER_AGENCY_ID=1,
+        SYS_IAA_CUSTOMER_AGENCY_ID=500,
         OPRE_POC="Jane Doe",
         AGENCY_POC="John Smith",
     )
@@ -176,7 +175,7 @@ def test_create_models_upsert(db_for_iaas):
         SYS_IAA_ID=100,
         IAA_NAME="Family Support Research Updated",
         SYS_PROJECT_ID=1,
-        SYS_IAA_CUSTOMER_AGENCY_ID=1,
+        SYS_IAA_CUSTOMER_AGENCY_ID=500,
         OPRE_POC="Jane Doe",
         AGENCY_POC="John Smith",
     )
@@ -190,7 +189,7 @@ def test_create_models_upsert(db_for_iaas):
     assert iaa_model.maps_sys_id == 100
     assert iaa_model.project_id == 1
     assert iaa_model.project.title == "Test Project"
-    assert iaa_model.iaa_customer_agency_id == 1
+    assert iaa_model.iaa_customer_agency_id == 500
     assert iaa_model.iaa_customer_agency.name == "Test Agency"
     assert iaa_model.opre_poc == "Jane Doe"
     assert iaa_model.agency_poc == "John Smith"
@@ -203,7 +202,7 @@ def test_create_models_upsert(db_for_iaas):
     assert iaa_model.versions[0].name == "Family Support Research"
     assert iaa_model.versions[0].maps_sys_id == 100
     assert iaa_model.versions[0].project_id == 1
-    assert iaa_model.versions[0].iaa_customer_agency_id == 1
+    assert iaa_model.versions[0].iaa_customer_agency_id == 500
     assert iaa_model.versions[0].opre_poc == "Jane Doe"
     assert iaa_model.versions[0].agency_poc == "John Smith"
     assert iaa_model.versions[0].created_by == sys_user.id
@@ -230,7 +229,7 @@ def test_create_models_upsert(db_for_iaas):
     assert iaa_model.maps_sys_id == 100
     assert iaa_model.project_id == 1
     assert iaa_model.project.title == "Test Project"
-    assert iaa_model.iaa_customer_agency_id == 1
+    assert iaa_model.iaa_customer_agency_id == 500
     assert iaa_model.iaa_customer_agency.name == "Test Agency"
     assert iaa_model.opre_poc == "Jane Doe"
     assert iaa_model.agency_poc == "John Smith"
@@ -243,7 +242,7 @@ def test_create_models_upsert(db_for_iaas):
     assert iaa_model.versions[1].name == "Family Support Research Updated"
     assert iaa_model.versions[1].maps_sys_id == 100
     assert iaa_model.versions[1].project_id == 1
-    assert iaa_model.versions[1].iaa_customer_agency_id == 1
+    assert iaa_model.versions[1].iaa_customer_agency_id == 500
     assert iaa_model.versions[1].opre_poc == "Jane Doe"
     assert iaa_model.versions[1].agency_poc == "John Smith"
     assert iaa_model.versions[1].created_by == sys_user.id
