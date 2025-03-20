@@ -111,7 +111,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
             // automate approval of change request
             .then(({ agreementId, changeRequestId, bliId }) => {
                 // log out and log in as division director
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
@@ -238,7 +238,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
             })
             // automate rejection of change request
             .then(({ agreementId, changeRequestId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();

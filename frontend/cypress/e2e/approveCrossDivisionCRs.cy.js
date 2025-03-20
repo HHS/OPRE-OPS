@@ -154,7 +154,7 @@ describe("Approve Cross Division Change Requests", () => {
 
             // test interactions
             .then(({ agreementId, bliId1, bliId2 }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();

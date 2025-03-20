@@ -106,7 +106,7 @@ describe("Review Change Requests at Card Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
@@ -245,7 +245,7 @@ describe("Review Change Requests at Card Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
@@ -365,7 +365,7 @@ describe("Review Change Requests at Card Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
@@ -505,7 +505,7 @@ describe("Review Change Requests at Card Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
@@ -645,7 +645,7 @@ describe("Review Change Requests at Card Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
