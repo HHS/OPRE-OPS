@@ -1,15 +1,18 @@
 import { Link } from "react-router-dom";
 import AuthSection from "../../Auth/AuthSection";
 import { Menu } from "./Menu";
-import logo from "./OPRE_Logo.png";
+import logoIcon from "../../../images/opre-logo.svg";
 
 const Header = () => {
     const styles = {
         logo: {
-            maxWidth: "70%"
+            maxWidth: "55%"
         },
         textlogo: {
-            color: "#336A90"
+            color: "#336A90",
+            display: "flex",
+            alignItems: "flex-end",
+            gap: "25px"
         }
     };
 
@@ -27,18 +30,18 @@ const Header = () => {
                         title="Portfolio Management System"
                     >
                         <img
-                            src={logo}
+                            src={logoIcon}
                             alt="OPRE Logo"
                         />
-                        <em className="font-ui-md">&nbsp;Portfolio Management System</em>
+                        <span className="font-sans-sm text-bold">&nbsp;Portfolio Management System</span>
                     </Link>
                 </div>
-                <button
+                {/* <button
                     type="button"
                     className="usa-menu-btn"
                 >
                     Menu
-                </button>
+                </button> */}
             </div>
             <nav
                 aria-label="Primary navigation"
@@ -46,7 +49,7 @@ const Header = () => {
             >
                 <div className="usa-nav__inner bg-white">
                     <Menu />
-                    <div className="usa-nav__secondary margin-bottom-5">
+                    <div className="usa-nav__secondary">
                         <AuthSection />
                     </div>
                 </div>
