@@ -4,6 +4,10 @@ import goldDiagonal from "../../images/gold-diagnal.png";
 import flourish from "../../images/flourish.svg";
 import HoverCard from "../../components/UI/Cards/HoverCard";
 import transparencyIcon from "../../images/transparency.svg";
+import dataVisualizationIcon from "../../images/data-viz.svg";
+import autonomyIcon from "../../images/autonomy.svg";
+import approvalIcon from "../../images/approvals.svg";
+import realTimePlanningIcon from "../../images/planning.svg";
 
 const Home = () => {
     return (
@@ -71,6 +75,32 @@ const Home = () => {
                                 description="Everyone can view everything and changes are tracked in the history so you can easily understand who changed what and when"
                                 variant="dark"
                                 icon={transparencyIcon}
+                            />
+                            <HoverCard
+                                title="Data visualization"
+                                description="Budget and spending data can be viewed in more diverse and customized ways like across a portfolio, project, CAN, or agreement"
+                                variant="light"
+                                icon={dataVisualizationIcon}
+                            />
+                            <HoverCard
+                                title="Autonomy"
+                                description="It's your data, your way. Team Members can edit and update their own agreements without having to wait for someone else to do it for them"
+                                variant="dark"
+                                icon={autonomyIcon}
+                            />
+                        </section>
+                        <section className="usa-card-group display-flex flex-justify-center">
+                            <HoverCard
+                                title="Built-in approvals"
+                                description="More people are able to edit directly while still maintaining necessary oversight on the budget. You can track approvals in OPS instead of over email"
+                                variant="light"
+                                icon={approvalIcon}
+                            />
+                            <HoverCard
+                                title="Real-time planning"
+                                description="You don't need to wait until you're 100% sure. Plans can be entered into the system as drafts providing a more holistic view of planning across all stages"
+                                variant="dark"
+                                icon={realTimePlanningIcon}
                             />
                         </section>
                     </>

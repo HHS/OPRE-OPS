@@ -26,8 +26,8 @@ const HoverCard = ({ title, description, variant, icon, level = 3 }) => {
         <>
             {!isHovered ? (
                 <div
-                    className="usa-card grid-col-4 display-flex flex-column flex-align-center border-1px border-red"
-                    style={{ padding: "53px 23px" }}
+                    className="usa-card grid-col-4 display-flex flex-column flex-align-center"
+                    style={{ padding: "53px 23px", transition: "background-color 0.4s ease" }}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
@@ -41,8 +41,8 @@ const HoverCard = ({ title, description, variant, icon, level = 3 }) => {
                 </div>
             ) : (
                 <div
-                    className={`usa-card grid-col-4 display-flex flex-column flex-align-center ${variant === "dark" ? "bg-brand-primary-dark text-white" : ""}`}
-                    style={{ padding: "53px 23px" }}
+                    className={`usa-card grid-col-4 display-flex flex-column flex-align-center ${variant === "dark" ? "bg-brand-primary-dark text-white" : "bg-brand-primary-light text-brand-primary-dark"}`}
+                    style={{ padding: "53px 23px", transition: "background-color 0.4s ease" }}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
