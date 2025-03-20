@@ -20,10 +20,12 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
     return (
         <div className="bg-base-lightest">
             <div className="usa-overlay"></div>
-            <SlimAlert
-                type="warning"
-                message="This is a non-production OPS environment"
-            />
+            {!import.meta.env.PROD && (
+                <SlimAlert
+                    type="warning"
+                    message="This is a non-production OPS environment"
+                />
+            )}
             <Header />
             <main
                 id="main-content"
