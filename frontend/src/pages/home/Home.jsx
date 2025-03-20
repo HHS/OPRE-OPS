@@ -45,7 +45,7 @@ const Home = () => {
                         all in one place
                     </p>
                     <p
-                        className="margin-top-4 margin-x-auto"
+                        className="margin-0 margin-top-4 margin-x-auto"
                         style={{ width: "612px", fontSize: "1.375rem" }}
                     >
                         OPS brings everyone together for transparent and collaborative budget planning and tracking
