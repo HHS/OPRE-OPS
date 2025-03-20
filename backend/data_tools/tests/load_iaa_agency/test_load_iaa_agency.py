@@ -17,10 +17,10 @@ def db_for_iaa_agency(loaded_db):
     yield loaded_db
 
     # Cleanup
-    loaded_db.execute(text("DELETE FROM object_class_code"))
-    loaded_db.execute(text("DELETE FROM object_class_code_version"))
     loaded_db.execute(text("DELETE FROM iaa_customer_agency"))
     loaded_db.execute(text("DELETE FROM iaa_customer_agency_version"))
+    loaded_db.execute(text("DELETE FROM object_class_code"))
+    loaded_db.execute(text("DELETE FROM object_class_code_version"))
     loaded_db.execute(text("DELETE FROM ops_db_history"))
     loaded_db.execute(text("DELETE FROM ops_db_history_version"))
 
