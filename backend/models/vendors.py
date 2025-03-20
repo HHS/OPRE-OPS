@@ -108,4 +108,4 @@ class IAACustomerAgency(BaseModel):
 
     @BaseModel.display_name.getter
     def display_name(self):
-        return self.duns
+        return self.customer_duns
