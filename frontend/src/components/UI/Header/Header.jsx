@@ -36,12 +36,6 @@ const Header = () => {
                         <span className="font-sans-sm text-bold">&nbsp;Portfolio Management System</span>
                     </Link>
                 </div>
-                {/* <button
-                    type="button"
-                    className="usa-menu-btn"
-                >
-                    Menu
-                </button> */}
             </div>
             <nav
                 aria-label="Primary navigation"
