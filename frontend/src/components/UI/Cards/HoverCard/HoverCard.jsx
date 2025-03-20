@@ -30,6 +30,8 @@ const HoverCard = ({ title, description, variant, icon, level = 3 }) => {
                     style={{ padding: "53px 23px", transition: "background-color 0.4s ease" }}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
+                    role="region"
+                    aria-label={title}
                 >
                     <img
                         src={icon}
