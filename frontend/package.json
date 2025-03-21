@@ -48,7 +48,7 @@
         "react-slider": "2.0.6",
         "react-spinners": "0.15.0",
         "remark-gfm": "4.0.1",
-        "sass": "1.85.0",
+        "sass": "1.86.0",
         "sass-loader": "16.0.4",
         "styled-components": "6.1.13",
         "vest": "5.4.6",
@@ -60,7 +60,7 @@
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
-        "rollup": "4.35.0"
+        "rollup": "4.36.0"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "6.6.3",
