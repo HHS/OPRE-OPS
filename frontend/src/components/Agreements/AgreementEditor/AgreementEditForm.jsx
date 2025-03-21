@@ -461,7 +461,7 @@ export const AgreementEditForm = ({
                 </fieldset>
             </div>
 
-            <div className="display-flex margin-top-3">
+            <div className="display-flex margin-top-3" data-cy="cor-combo-boxes">
                 <ProjectOfficerComboBox
                     selectedProjectOfficer={selectedProjectOfficer}
                     setSelectedProjectOfficer={changeSelectedProjectOfficer}
