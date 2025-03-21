@@ -24,7 +24,7 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
     let budgetLinesPage = _.cloneDeep(budgetLines);
     const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
 
-    budgetLinesPage = useSortData(budgetLinesPage, sortDescending, sortCondition, SORT_TYPES.BUDGET_LINES)
+    budgetLinesPage = useSortData(budgetLinesPage, sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES)
     budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
     const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(budgetLines);
 
@@ -60,14 +60,14 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     />
                 ))}
             </Table>
-            {budgetLines.length > 0 && (
+            {budgetLinesPage.length > 0 && (
                 <PaginationNav
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
-                    items={budgetLines}
+                    items={budgetLinesPage}
                 />
             )}
-            {budgetLines.length === 0 && (
+            {budgetLinesPage.length === 0 && (
                 <div
                     id="budget-line-items-table-zero-results"
                     className="padding-top-5 display-flex flex-justify-center"

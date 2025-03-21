@@ -1,6 +1,9 @@
 import PropTypes from "prop-types";
 import Table from "../../UI/Table";
 import BLIRow from "./BLIRow";
+import _ from "lodash";
+import { useSetSortConditions } from "./BudgetLinesTable.hooks";
+import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
 import "./BudgetLinesTable.scss";
 
@@ -25,14 +28,23 @@ const BudgetLinesTable = ({
     isReviewMode = false,
     budgetLineIdsInReview = []
 }) => {
+    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+
     const sortedBudgetLines = budgetLines
         .slice()
         .sort((a, b) => Date.parse(a.created_on) - Date.parse(b.created_on))
         .reverse();
 
+    let copiedBudgetLines = _.cloneDeep(sortedBudgetLines);
+
+    copiedBudgetLines = useSortData(copiedBudgetLines, sortDescending, sortCondition, SORT_TYPES.BUDGET_LINES);
     return (
-        <Table tableHeadings={BUDGET_LINE_TABLE_HEADERS}>
-            {sortedBudgetLines.map((budgetLine) => (
+        <Table
+            tableHeadings={BUDGET_LINE_TABLE_HEADERS}
+            selectedHeader={sortCondition}
+            onClickHeader={setSortConditions}
+            sortDescending={sortDescending}>
+            {copiedBudgetLines.map((budgetLine) => (
                 <BLIRow
                     key={budgetLine.id}
                     budgetLine={budgetLine}

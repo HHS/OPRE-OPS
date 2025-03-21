@@ -9,15 +9,25 @@ import {
 } from "../components/Agreements/AgreementsTable/AgreementsTable.helpers";
 import { All_BUDGET_LINES_TABLE_HEADINGS } from "../components/BudgetLineItems/AllBudgetLinesTable/AllBudgetLinesTable.constants";
 import { BLI_DIFF_TABLE_HEADERS } from "../components/BudgetLineItems/BLIDiffTable/BLIDiffTable.constants";
+import { CAN_FUNDING_RECEIVED_HEADERS } from "../components/CANs/CANFundingReceivedTable/CANFundingReceived.constants";
 import { useGetServicesComponentDisplayNameLocal } from "./useServicesComponents.hooks";
-import { formatDateNeeded, totalBudgetLineAmountPlusFees, totalBudgetLineFeeAmount } from "../helpers/utils";
+import {
+    formatDateNeeded,
+    totalBudgetLineAmountPlusFees,
+    totalBudgetLineFeeAmount,
+    calculatePercent,
+    fiscalYearFromDate
+} from "../helpers/utils";
 import { canLabel, BLILabel } from "../helpers/budgetLines.helpers";
 
 export const SORT_TYPES = {
     AGREEMENTS: "Agreement",
-    BUDGET_LINES: "Budget Lines",
+    ALL_BUDGET_LINES: "All Budget Lines",
     BLI_DIFF: "BLI Diff",
-    BLI_REVIEW: "BLI Review"
+    BLI_REVIEW: "BLI Review",
+    BUDGET_LINES: "Budget Lines",
+    CAN_BLI: "CAN Budget Line",
+    CAN_FUNDING_RECEIVED: "CAN Funding Received"
 };
 
 const getAgreementComparableValue = (agreement, condition) => {
@@ -39,7 +49,7 @@ const getAgreementComparableValue = (agreement, condition) => {
     }
 };
 
-const getBudgetLineComparableValue = (budgetLine, condition) => {
+const getAllBudgetLineComparableValue = (budgetLine, condition) => {
     switch (condition) {
         case All_BUDGET_LINES_TABLE_HEADINGS.BL_ID_NUMBER:
             return budgetLine.id;
@@ -72,7 +82,7 @@ const getBLIDiffComparableValue = (budgetLine, condition) => {
         case BLI_DIFF_TABLE_HEADERS.OBLIGATE_BY:
             return formatDateNeeded(budgetLine.date_needed);
         case BLI_DIFF_TABLE_HEADERS.FISCAL_YEAR:
-            return budgetLine.fiscal_year;
+            return budgetLine.fiscal_year ? budgetLine.fiscal_year : fiscalYearFromDate(budgetLine.date_needed);
         case BLI_DIFF_TABLE_HEADERS.CAN_ID:
             return canLabel(budgetLine);
         case BLI_DIFF_TABLE_HEADERS.AMOUNT:
@@ -91,11 +101,29 @@ const getBLIDiffComparableValue = (budgetLine, condition) => {
     }
 };
 
+const getFundingReceivedComparableValue = (fundingReceived, condition) => {
+    switch (condition) {
+        case CAN_FUNDING_RECEIVED_HEADERS.FUNDING_ID:
+            return fundingReceived.id;
+        case CAN_FUNDING_RECEIVED_HEADERS.FISCAL_YEAR:
+            return fundingReceived.fiscal_year;
+        case CAN_FUNDING_RECEIVED_HEADERS.FUNDING_RECEIVED:
+            return fundingReceived.funding;
+        case CAN_FUNDING_RECEIVED_HEADERS.BUDGET_PERCENT:
+            return calculatePercent(fundingReceived.funding, fundingReceived.totalFunding);
+        default:
+            return fundingReceived;
+    }
+};
+
 const VALUE_RETRIEVAL_FUNCTIONS = {
     Agreement: getAgreementComparableValue,
-    "Budget Lines": getBudgetLineComparableValue,
+    "All Budget Lines": getAllBudgetLineComparableValue,
     "BLI Diff": getBLIDiffComparableValue,
-    "BLI Review": getBLIDiffComparableValue
+    "BLI Review": getBLIDiffComparableValue,
+    "Budget Lines": getBLIDiffComparableValue,
+    "CAN Budget Line": getBLIDiffComparableValue,
+    "CAN Funding Received": getFundingReceivedComparableValue
 };
 const compareRows = (a, b, descending) => {
     if (a < b) {

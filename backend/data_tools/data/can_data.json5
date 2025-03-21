@@ -629,6 +629,12 @@
       can_id: 515,
       funding: 1000000.0,
     },
+    {
+      // 27
+      fiscal_year: 2021,
+      can_id: 504,
+      funding: 200000.0,
+    },
   ],
   can_history: [
     {

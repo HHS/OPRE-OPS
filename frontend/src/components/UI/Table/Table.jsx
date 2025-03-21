@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import styles from "./table.module.css";
-import { useEffect } from "react";
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -32,10 +31,6 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
         }
         return { whiteSpace: "nowrap" };
     };
-
-    useEffect(() => {
-        console.log("inside use effect block for Table");
-    });
 
     return (
         <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
