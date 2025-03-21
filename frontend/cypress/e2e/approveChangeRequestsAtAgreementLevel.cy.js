@@ -107,7 +107,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
             // test interactions
             .then(({ agreementId, bliId }) => {
                 // log out and log in as division director
-                cy.contains("Sign-out").click();
+                cy.contains("Sign-Out").click();
                 cy.visit("/").wait(1000);
                 testLogin("division-director");
 
@@ -193,7 +193,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
     });
     it("review Status Change PLANNED to EXECUTING", () => {
         // log out and log in as budget team
-        cy.contains("Sign-out").click();
+        cy.contains("Sign-Out").click();
         cy.visit("/").wait(1000);
         testLogin("budget-team");
 
@@ -261,7 +261,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
             // test interactions
             .then(({ agreementId, bliId }) => {
                 // log out and log in as division director
-                cy.contains("Sign-out").click();
+                cy.contains("Sign-Out").click();
                 cy.visit("/").wait(1000);
                 testLogin("division-director");
 
@@ -347,7 +347,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
     });
     it("review Budget Change change", () => {
         // log out and log in as budget-team
-        cy.contains("Sign-out").click();
+        cy.contains("Sign-Out").click();
         cy.visit("/").wait(1000);
         testLogin("budget-team");
 
@@ -417,7 +417,7 @@ describe("Approve Change Requests at the Agreement Level", () => {
             // test interactions
             .then(({ agreementId, bliId }) => {
                 // log out and log in as division director
-                cy.contains("Sign-out").click();
+                cy.contains("Sign-Out").click();
                 cy.visit("/").wait(1000);
                 testLogin("division-director");
 
