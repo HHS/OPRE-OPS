@@ -4,9 +4,10 @@ import _ from "lodash";
 import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
 import PaginationNav from "../../UI/PaginationNav/PaginationNav";
-import { All_BUDGET_LINES_TABLE_HEADINGS, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
-import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
+import { All_BUDGET_LINES_TABLE_HEADINGS_LIST, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
+import useAllBudgetLinesTable, { useSetSortConditions } from "./AllBudgetLinesTable.hooks";
 import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 
 /**
  * @typedef {Object} BudgetLine
@@ -32,8 +33,12 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     let budgetLinesPage = _.cloneDeep(budgetLines);
+    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+
+    budgetLinesPage = useSortData(budgetLinesPage, sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES)
     budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
     const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(budgetLines);
+
 
     return (
         <>
@@ -46,7 +51,11 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     handleConfirm={modalProps.handleConfirm}
                 />
             )}
-            <Table tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS}>
+            <Table
+                tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS_LIST}
+                selectedHeader={sortCondition}
+                onClickHeader={setSortConditions}
+                sortDescending={sortDescending}>
                 {budgetLinesPage.map((budgetLine) => (
                     <AllBLIRow
                         key={budgetLine?.id}
@@ -62,14 +71,14 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     />
                 ))}
             </Table>
-            {budgetLines.length > 0 && (
+            {budgetLinesPage.length > 0 && (
                 <PaginationNav
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
-                    items={budgetLines}
+                    items={budgetLinesPage}
                 />
             )}
-            {budgetLines.length === 0 && (
+            {budgetLinesPage.length === 0 && (
                 <div
                     id="budget-line-items-table-zero-results"
                     className="padding-top-5 display-flex flex-justify-center"
