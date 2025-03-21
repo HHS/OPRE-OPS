@@ -1,10 +1,9 @@
-import PropTypes from "prop-types";
-import Header from "../../UI/Header";
-import Footer from "../../UI/Footer";
-import Alert from "../../UI/Alert";
-import Breadcrumb from "../../UI/Header/Breadcrumb";
 import useAlert from "../../../hooks/use-alert.hooks";
+import Alert from "../../UI/Alert";
 import SlimAlert from "../../UI/Alert/SlimAlert";
+import Footer from "../../UI/Footer";
+import Header from "../../UI/Header";
+import Breadcrumb from "../../UI/Header/Breadcrumb";
 
 /**
  * DefaultLayout component
@@ -23,7 +22,7 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
             {!import.meta.env.PROD && (
                 <SlimAlert
                     type="warning"
-                    message="This is a non-production OPS environment"
+                    message="This is a non-production OPS environment for testing purposes only"
                 />
             )}
             <Header />
@@ -40,8 +39,4 @@ const DefaultLayout = ({ children, breadCrumbName }) => {
     );
 };
 
-DefaultLayout.propTypes = {
-    children: PropTypes.node.isRequired,
-    breadCrumbName: PropTypes.string
-};
 export default DefaultLayout;

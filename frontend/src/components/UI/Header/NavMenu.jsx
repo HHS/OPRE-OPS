@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
 
-export const Menu = () => {
+const NavMenu = () => {
     const activeUser = useSelector((state) => state.auth?.activeUser);
     const isUserAdmin = activeUser?.roles.includes("USER_ADMIN");
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -29,6 +29,7 @@ export const Menu = () => {
                     <NavLink
                         to="/portfolios"
                         className={getNavLinkClass}
+                        end
                     >
                         Portfolios
                     </NavLink>
@@ -54,6 +55,7 @@ export const Menu = () => {
                     <NavLink
                         to="/cans"
                         className={getNavLinkClass}
+                        end
                     >
                         CANs
                     </NavLink>
@@ -101,3 +103,5 @@ export const Menu = () => {
         </div>
     );
 };
+
+export default NavMenu;

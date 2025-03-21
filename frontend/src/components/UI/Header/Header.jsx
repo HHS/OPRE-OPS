@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import AuthSection from "../../Auth/AuthSection";
-import { Menu } from "./Menu";
 import logoIcon from "../../../images/opre-logo.svg";
+import AuthSection from "../../Auth/AuthSection";
+import NavMenu from "./NavMenu";
 
 const Header = () => {
     const styles = {
@@ -42,7 +42,7 @@ const Header = () => {
                 className="usa-nav bg-base-lightest"
             >
                 <div className="usa-nav__inner bg-white">
-                    <Menu />
+                    <NavMenu />
                     <div className="usa-nav__secondary">
                         <AuthSection />
                     </div>
