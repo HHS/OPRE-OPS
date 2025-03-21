@@ -233,6 +233,11 @@ export default function useCanFunding(
         };
         setBudgetForm(nextForm);
         setBudgetEnteredAmount("");
+        setAlert({
+            type: "success",
+            heading: "CAN Funding Added",
+            message: `The CAN ${canNumber}'s funding has been successfully updated.`
+        });
     };
 
     /** @param {React.FormEvent<HTMLFormElement>} e */
@@ -257,10 +262,20 @@ export default function useCanFunding(
         // Check if we are editing an existing funding received
         if (fundingReceivedForm.isEditing) {
             editFundingReceived(newFundingReceived);
+            setAlert({
+                type: "success",
+                heading: "CAN Funding Received Updated",
+                message: `The CAN ${canNumber}'s funding received has been successfully edited.`
+            });
         } else {
             // Add the new funding received
             setTotalReceived((currentTotal) => currentTotal + +fundingReceivedEnteredAmount);
             setEnteredFundingReceived([...enteredFundingReceived, newFundingReceived]);
+            setAlert({
+                type: "success",
+                heading: "CAN Funding Received Added",
+                message: `The CAN ${canNumber}'s funding received has been successfully added.`
+            });
         }
 
         // Then update the form state
@@ -321,28 +336,41 @@ export default function useCanFunding(
 
     /** @param {number | string} fundingReceivedId */
     const deleteFundingReceived = (fundingReceivedId) => {
-        const matchingFundingReceived = enteredFundingReceived.find((fundingItem) => {
-            if (fundingItem.id === NO_DATA) {
-                return fundingItem.tempId === fundingReceivedId;
+        setShowModal(true);
+        setModalProps({
+            heading: `Are you sure you want to delete this funding received?`,
+            actionButtonText: "Delete",
+            secondaryButtonText: "Cancel",
+            handleConfirm: () => {
+                const matchingFundingReceived = enteredFundingReceived.find((fundingItem) => {
+                    if (fundingItem.id === NO_DATA) {
+                        return fundingItem.tempId === fundingReceivedId;
+                    }
+                    return fundingItem.id === fundingReceivedId;
+                });
+
+                const newEnteredFundingReceived = enteredFundingReceived.filter((fundingItem) => {
+                    const shouldNotDelete =
+                        fundingItem.id === NO_DATA
+                            ? fundingItem.tempId !== matchingFundingReceived?.tempId
+                            : fundingItem.id !== matchingFundingReceived?.id;
+                    return shouldNotDelete;
+                });
+
+                setEnteredFundingReceived(newEnteredFundingReceived);
+
+                if (matchingFundingReceived?.id !== NO_DATA) {
+                    const newDeletedFundingReceivedIds = [...deletedFundingReceivedIds, fundingReceivedId];
+                    setDeletedFundingReceivedIds(newDeletedFundingReceivedIds);
+                }
+                setTotalReceived((currentTotal) => currentTotal - +(matchingFundingReceived?.funding ?? 0));
+                setAlert({
+                    type: "success",
+                    heading: "Funding Received Deleted",
+                    message: `The funding received has been successfully deleted.`
+                });
             }
-            return fundingItem.id === fundingReceivedId;
         });
-
-        const newEnteredFundingReceived = enteredFundingReceived.filter((fundingItem) => {
-            const shouldNotDelete =
-                fundingItem.id === NO_DATA
-                    ? fundingItem.tempId !== matchingFundingReceived?.tempId
-                    : fundingItem.id !== matchingFundingReceived?.id;
-            return shouldNotDelete;
-        });
-
-        setEnteredFundingReceived(newEnteredFundingReceived);
-
-        if (matchingFundingReceived?.id !== NO_DATA) {
-            const newDeletedFundingReceivedIds = [...deletedFundingReceivedIds, fundingReceivedId];
-            setDeletedFundingReceivedIds(newDeletedFundingReceivedIds);
-        }
-        setTotalReceived((currentTotal) => currentTotal - +(matchingFundingReceived?.funding ?? 0));
     };
 
     const handleCancel = () => {

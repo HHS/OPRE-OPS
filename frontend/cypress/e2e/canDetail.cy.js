@@ -361,6 +361,7 @@ describe("CAN funding page", () => {
         cy.get("[data-cy=add-funding-received-btn]").click();
         cy.get("tbody").find("tr").eq(1).trigger("mouseover");
         cy.get("tbody").find("tr").eq(1).find('[data-cy="delete-row"]').click();
+        cy.get("[data-cy=confirm-action]").click();
         cy.get("tbody").children().should("have.length", 1);
         // make sure the funding received card on the right updates
         cy.get("[data-cy=budget-received-card]").should("exist").and("contain", "2,000,000.00");
