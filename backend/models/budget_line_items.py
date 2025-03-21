@@ -88,6 +88,10 @@ class BudgetLineItem(BaseModel):
     doc_received: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
     obligation_date: Mapped[Optional[date]] = mapped_column(Date)
 
+    proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(
+        Numeric(12, 5)
+    )
+
     __mapper_args__: dict[str, str | AgreementType] = {
         "polymorphic_identity": "budget_line_item",
         "polymorphic_on": "budget_line_item_type",
@@ -302,9 +306,9 @@ class ContractBudgetLineItem(BudgetLineItem):
     psc_fee_doc_number: Mapped[Optional[str]] = mapped_column(String)
     psc_fee_pymt_ref_nbr: Mapped[Optional[str]] = mapped_column(String)
     invoice: Mapped[Optional["Invoice"]] = relationship("Invoice")
-    proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(
-        Numeric(12, 5)
-    )  # may need to be a different object, i.e. flat rate or percentage
+    # proc_shop_fee_percentage: Mapped[Optional[decimal]] = mapped_column(
+    #     Numeric(12, 5)
+    # )  # may need to be a different object, i.e. flat rate or percentage
 
 
 class GrantBudgetLineItem(BudgetLineItem):
@@ -346,10 +350,11 @@ class DirectObligationBudgetLineItem(BudgetLineItem):
 
 class IAABudgetLineItem(BudgetLineItem):
     """
-    IAAA Budget Line Item model.
+    IAA Budget Line Item model.
     """
 
-    __tablename__ = "iaaa_budget_line_item"
+    __tablename__ = "iaa_budget_line_item"
 
     __mapper_args__ = {"polymorphic_identity": AgreementType.IAA}
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
+    ip_nbr: Mapped[Optional[str]] = mapped_column(String)
