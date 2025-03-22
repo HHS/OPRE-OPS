@@ -11,6 +11,7 @@ const testAgreement = {
     product_service_code_id: 1,
     awarding_entity_id: 2,
     project_officer_id: 500,
+    alternate_project_officer_id: 501,
     team_members: [
         {
             id: 502
@@ -83,6 +84,12 @@ it("edit an agreement", () => {
         cy.get("[data-cy='continue-btn']").should("not.be.disabled");
         cy.get("#description").type(" more text");
         cy.get("#agreementNotes").type(" test edit notes");
+        cy.get("[data-cy='cor-combo-boxes']").should("exist");
+        cy.get("[data-cy='cor-combo-boxes']").should("contain", "COR");
+        cy.get("[data-cy='cor-combo-boxes']").should("contain", "Alternate COR");
+        cy.get("[data-cy='cor-combo-boxes']").click();
+        cy.get('[role="option"]').eq(0).click();
+        cy.get("[data-cy='cor-combo-boxes']").should("contain", "Sheila Celentano");
 
         cy.get("[data-cy='continue-btn']").click();
 

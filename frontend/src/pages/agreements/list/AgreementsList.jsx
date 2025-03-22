@@ -148,7 +148,11 @@ const AgreementsList = () => {
             /** @param{Agreement} agreement */
             (agreement) => {
                 return agreement.team_members?.some((teamMember) => {
-                    return teamMember.id === activeUser.id || agreement.project_officer_id === activeUser.id;
+                    return (
+                        teamMember.id === activeUser.id ||
+                        agreement.project_officer_id === activeUser.id ||
+                        agreement.alternate_project_officer_id === activeUser.id
+                    );
                 });
             }
         );

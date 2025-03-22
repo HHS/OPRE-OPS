@@ -67,6 +67,8 @@ def check_user_association(agreement, user) -> bool:
         oidc_ids.add(str(agreement_creator.oidc_id))
     if agreement.project_officer:
         oidc_ids.add(str(agreement.project_officer.oidc_id))
+    if agreement.alternate_project_officer:
+        oidc_ids.add(str(agreement.alternate_project_officer.oidc_id))
 
     oidc_ids |= set(str(tm.oidc_id) for tm in agreement.team_members)
 

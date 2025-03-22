@@ -52,7 +52,8 @@ import { useSelector } from "react-redux";
  * @property {boolean} isLoadingAgreement - The loading state for the agreement
  * @property {Object} modalProps - The modal properties
  * @property {string} notes - The notes for the approval
- * @property {string} projectOfficerName - The page title
+ * @property {string} projectOfficerName 
+ * @property {string} alternateProjectOfficerName
  * @property {string} requestorNoters - The requestor noters
  * @property {Object[]} servicesComponents - The services components
  * @property {Function} setAfterApproval - The function to set the after approval state
@@ -136,6 +137,7 @@ const useApproveAgreement = () => {
     const { data: cans } = useGetCansQuery({});
 
     const projectOfficerName = useGetUserFullNameFromId(agreement?.project_officer_id);
+    const alternateProjectOfficerName = useGetUserFullNameFromId(agreement?.alternate_project_officer_id);
     const { data: servicesComponents } = useGetServicesComponentsListQuery(agreement?.id);
 
     const groupedBudgetLinesByServicesComponent = agreement?.budget_line_items
@@ -493,6 +495,7 @@ const useApproveAgreement = () => {
         modalProps,
         notes,
         projectOfficerName,
+        alternateProjectOfficerName,
         requestorNoters,
         servicesComponents,
         setAfterApproval,

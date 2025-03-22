@@ -84,6 +84,7 @@ def test_agreements_serialization(auth_client, loaded_db):
     assert response.json["awarding_entity_id"] == agreement.awarding_entity_id
     assert response.json["product_service_code_id"] == agreement.product_service_code_id
     assert response.json["project_officer_id"] == agreement.project_officer_id
+    assert response.json["alternate_project_officer_id"] == agreement.alternate_project_officer_id
     assert response.json["project_id"] == agreement.project_id
     assert response.json["support_contacts"] == agreement.support_contacts
     assert len(response.json["team_members"]) == len(agreement.team_members)

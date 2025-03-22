@@ -231,6 +231,7 @@ const relations = {
     project_id: "project",
     can_id: "can",
     project_officer_id: "project_officer",
+    alternate_project_officer_id: "alternate_project_officer",
     services_component_id: "services_component"
 };
 
