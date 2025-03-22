@@ -5,7 +5,7 @@
     "private": true,
     "type": "module",
     "dependencies": {
-        "@azure/storage-blob": "12.26.0",
+        "@azure/storage-blob": "12.27.0",
         "@eslint/compat": "1.2.4",
         "@eslint/js": "9.22.0",
         "@fortawesome/fontawesome-svg-core": "6.7.2",
