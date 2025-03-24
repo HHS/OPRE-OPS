@@ -28,7 +28,7 @@ class ProjectData:
         self.PROJECT_TITLE = str(self.PROJECT_TITLE)
         self.PROJECT_TYPE = str(self.PROJECT_TYPE)
         self.PROJECT_SHORT_TITLE = str(self.PROJECT_SHORT_TITLE) if self.PROJECT_SHORT_TITLE else None
-        self.PROJECT_DESCRIPTION = str(self.PROJECT_DESCRIPTION) if self.PROJECT_DESCRIPTION else None
+        self.PROJECT_DESCRIPTION = str(self.PROJECT_DESCRIPTION) if self.PROJECT_DESCRIPTION else ""
 
 
 def create_project_data(data: dict) -> ProjectData:

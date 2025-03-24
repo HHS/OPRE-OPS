@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
 import _ from "lodash";
 import Table from "../../UI/Table";
 import AllBLIRow from "./AllBLIRow";
@@ -11,13 +10,25 @@ import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 
 /**
+ * @typedef {Object} BudgetLine
+ * @property {number} id
+ * @property {string} agreement_name
+ * @property {string} [date_needed]
+ * @property {number} [fiscal_year]
+ * @property {string} [can_number]
+ * @property {number} [amount]
+ * @property {string} status
+ * @property {number} [services_component_id]
+ */
+
+/**
  * TableRow component that represents a single row in the budget lines table.
  * @component
- * @typedef {import("../../BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  * @param {Object} props - The props for the TableRow component.
  * @param {BudgetLine[]} props.budgetLines - The budget line data for the row.
  * @returns {JSX.Element} The TableRow component.
  */
+
 const AllBudgetLinesTable = ({ budgetLines }) => {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
@@ -77,21 +88,6 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
             )}
         </>
     );
-};
-
-AllBudgetLinesTable.propTypes = {
-    budgetLines: PropTypes.arrayOf(
-        PropTypes.shape({
-            id: PropTypes.number.isRequired,
-            line_description: PropTypes.string.isRequired,
-            agreement_name: PropTypes.string.isRequired,
-            date_needed: PropTypes.string,
-            fiscal_year: PropTypes.number,
-            can_number: PropTypes.string,
-            amount: PropTypes.number,
-            status: PropTypes.string.isRequired
-        })
-    )
 };
 
 export default AllBudgetLinesTable;

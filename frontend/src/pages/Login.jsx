@@ -1,14 +1,18 @@
+import { Link } from "react-router-dom";
 import MultiAuthSection from "../components/Auth/MultiAuthSection";
 import Footer from "../components/UI/Footer";
-import logo from "../components/UI/Header/OPRE_Logo.png";
+import logo from "../images/opre-logo.svg";
 
 function Login() {
     const styles = {
         logo: {
-            maxWidth: "70%"
+            maxWidth: "55%"
         },
         textLogo: {
-            color: "#336A90"
+            color: "#336A90",
+            display: "flex",
+            alignItems: "flex-end",
+            gap: "25px"
         }
     };
 
@@ -21,10 +25,10 @@ function Login() {
                         <div
                             className="usa-logo"
                             style={styles.logo}
-                            id="-logo"
+                            id="logo"
                         >
-                            <a
-                                href="/"
+                            <Link
+                                to="/"
                                 style={styles.textLogo}
                                 title="Portfolio Management System"
                             >
@@ -32,8 +36,8 @@ function Login() {
                                     src={logo}
                                     alt="OPRE Logo"
                                 />
-                                <em className="font-ui-md">&nbsp;Portfolio Management System</em>
-                            </a>
+                                <span className="font-sans-sm text-bold">&nbsp;Portfolio Management System</span>
+                            </Link>
                         </div>
                     </div>
                 </header>

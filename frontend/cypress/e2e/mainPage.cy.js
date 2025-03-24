@@ -11,19 +11,14 @@ afterEach(() => {
     cy.checkA11y();
 });
 
-it("loads", () => {
-    cy.get("h1").contains("This is a non-production OPS environment");
-});
-
-it("clicking on /cans nav takes you to CAN page", () => {
-    cy.contains("CANs").click();
-    cy.url().should("include", "/cans/");
-    cy.get("h1").should("have.text", "CANs");
-});
-
-it("clicking on /portfolio nav while unauthenticated, should keep you at home page.", () => {
-    cy.get("h1").contains("This is a non-production OPS environment");
-    cy.url().should("include", "/");
+it("Home page loads", () => {
+    cy.get("h1").contains("Plan, track & collaborate");
+    cy.get("h2").contains("OPS Benefits");
+    cy.get("h3").contains("Transparency");
+    cy.get("h3").contains("Data visualization");
+    cy.get("h3").contains("Autonomy");
+    cy.get("h3").contains("Built-in approvals");
+    cy.get("h3").contains("Real-time planning");
 });
 
 it.skip("Simulate a fail, to test the Cypress Action upload", () => {

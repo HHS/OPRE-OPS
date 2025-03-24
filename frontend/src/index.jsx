@@ -18,7 +18,7 @@ import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
 import ErrorPage from "./pages/ErrorPage";
 import HelpCenter from "./pages/help/HelpCenter";
-import Home from "./pages/Home";
+import Home from "./pages/home";
 import Login from "./pages/Login";
 import PortfolioDetail from "./pages/portfolios/detail/PortfolioDetail";
 import PortfolioList from "./pages/portfolios/list/PortfolioList";

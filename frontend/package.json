@@ -5,7 +5,7 @@
     "private": true,
     "type": "module",
     "dependencies": {
-        "@azure/storage-blob": "12.26.0",
+        "@azure/storage-blob": "12.27.0",
         "@eslint/compat": "1.2.4",
         "@eslint/js": "9.22.0",
         "@fortawesome/fontawesome-svg-core": "6.7.2",
@@ -43,12 +43,12 @@
         "react-markdown": "9.1.0",
         "react-modal": "3.16.3",
         "react-redux": "9.2.0",
-        "react-router-dom": "7.3.0",
+        "react-router-dom": "7.4.0",
         "react-select": "5.10.0",
         "react-slider": "2.0.6",
         "react-spinners": "0.15.0",
         "remark-gfm": "4.0.1",
-        "sass": "1.85.0",
+        "sass": "1.86.0",
         "sass-loader": "16.0.4",
         "styled-components": "6.1.13",
         "vest": "5.4.6",
@@ -56,10 +56,11 @@
         "vite-jsconfig-paths": "2.0.1",
         "vite-plugin-babel-macros": "1.0.6",
         "vite-plugin-eslint": "1.8.1",
-        "vite-plugin-svgr": "4.3.0"
+        "vite-plugin-svgr": "4.3.0",
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
-        "rollup": "4.35.0"
+        "rollup": "4.36.0"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "6.6.3",

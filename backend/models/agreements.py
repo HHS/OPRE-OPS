@@ -243,15 +243,24 @@ class GrantAgreement(Agreement):
     }
 
 
-# TODO: Skeleton, will need flushed out more when we know what all an IAA is.
-### Inter-Agency-Agreement
+class IAADirectionType(Enum):
+    INCOMING = auto()
+    OUTGOING = auto()
+
+
 class IaaAgreement(Agreement):
     """IAA Agreement Model"""
 
     __tablename__ = "iaa_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
-    iaa: Mapped[str]
+    direction: Mapped[IAADirectionType] = mapped_column(ENUM(IAADirectionType))
+    iaa_customer_agency_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("iaa_customer_agency.id")
+    )
+    iaa_customer_agency = relationship("IAACustomerAgency")
+    opre_poc: Mapped[Optional[str]] = mapped_column(String)
+    agency_poc: Mapped[Optional[str]] = mapped_column(String)
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.IAA,
@@ -311,5 +320,5 @@ class AgreementMod(BaseModel):
     agreement_id: Mapped[int] = mapped_column(ForeignKey("agreement.id"))
     agreement: Mapped[Agreement] = relationship("Agreement")
     mod_type: Mapped[Optional[ModType]] = mapped_column(ENUM(ModType))
-    number: Mapped[str] = mapped_column(String)
+    number: Mapped[Optional[str]] = mapped_column(String)
     mod_date: Mapped[Optional[date]] = mapped_column(Date)
