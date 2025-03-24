@@ -83,6 +83,8 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
             latest_session = get_latest_user_session(user_id=user.id, session=se)
             if latest_session and latest_session.last_active_at < datetime.now() - timedelta(days=60):
                 results.append(user.id)
+            elif latest_session is None and user.status == UserStatus.ACTIVE and (user.updated_on < datetime.now() - timedelta(days=60)):
+                results.append(user.id)
 
         excluded_ids = get_ids_from_oidc_ids(se, EXCLUDED_USER_OIDC_IDS)
         user_ids = [uid for uid in results if uid not in excluded_ids]
@@ -91,10 +93,10 @@ def update_disabled_users_status(conn: sqlalchemy.engine.Engine):
             logger.info("No inactive users found.")
             return
 
-        logger.info("Inactive users found:", user_ids)
+        logger.info("Inactive users found: {}".format(user_ids))
 
         for user_id in user_ids:
-            logger.info("Deactivating user", user_id)
+            logger.info("Deactivating user: {}".format(user_id))
             disable_user(se, user_id, system_admin_id)
 
         se.commit()
