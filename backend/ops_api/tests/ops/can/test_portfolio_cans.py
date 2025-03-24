@@ -49,3 +49,13 @@ def test_portfolio_cans_with_budget_bad_query_params(auth_client):
 
     response_2 = auth_client.get("/api/v1/portfolios/1/cans/?year=test")
     assert response_2.status_code == 400
+
+
+def test_portfolio_cans_fiscal_year_2027_child_care(auth_client):
+    child_care_portfolio_id = 3
+    response = auth_client.get(f"/api/v1/portfolios/{child_care_portfolio_id}/cans/?year=2027")
+    funding_budgets_2027 = [budget for budget in response.json[0]["funding_budgets"] if budget["fiscal_year"] == 2027]
+    assert len(response.json) == 1
+    assert response.json[0]["portfolio_id"] == child_care_portfolio_id
+    assert len(funding_budgets_2027) == 1
+    assert funding_budgets_2027[0]["budget"] == "500000.0"
