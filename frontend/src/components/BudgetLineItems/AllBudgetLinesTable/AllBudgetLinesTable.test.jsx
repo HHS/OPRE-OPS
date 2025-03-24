@@ -33,8 +33,9 @@ vi.mock("./AllBudgetLinesTable.hooks", () => ({
         showModal: false,
         setShowModal: vi.fn(),
         modalProps: {},
-        handleDeleteBudgetLine: vi.fn()
-    })
+        handleDeleteBudgetLine: vi.fn(),
+    }),
+    useSetSortConditions: vi.fn(() => {return {sortDescending: true, sortCondition: "", useSetSortConditions:vi.fn()}}),
 }));
 
 describe("AllBudgetLinesTable", () => {
