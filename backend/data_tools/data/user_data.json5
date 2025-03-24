@@ -583,6 +583,7 @@
       id: 287,
       first_name: "Amare",
       last_name: "Beza",
+      division: 3,
       email: "amare.beza@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 2}],
       status: "ACTIVE"
@@ -591,6 +592,7 @@
       id: 68,
       first_name: "Sheila",
       last_name: "Celentano",
+      division: 3,
       email: "sheila.celentano@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 1}, {"tablename":  "role", "id": 4}, {"tablename":  "role", "id": 5}],
       status: "ACTIVE"
