@@ -80,13 +80,13 @@ const testAgreement = {
     agreement_type: "CONTRACT",
     name: "Test Contract",
     project_officer_id: 520,
-    alternate_project_officer_id: 522,
+    alternate_project_officer_id: 522
 };
 const testAgreementToDelete = {
     agreement_type: "CONTRACT",
     name: "Test Delete Contract",
     project_officer_id: 520,
-    alternate_project_officer_id: 523,
+    alternate_project_officer_id: 523
 };
 
 beforeEach(() => {
@@ -106,10 +106,7 @@ const deleteAgreementByName = (name) => {
     // get the first delete button and click
     cy.get(".padding-right-9").find('[data-cy="delete-row"]').click().wait(1);
     // get the modal and cancel
-    cy.get("#ops-modal-heading").should(
-        "have.text",
-        `Are you sure you want to delete Agreement ${name}?`
-    );
+    cy.get("#ops-modal-heading").should("have.text", `Are you sure you want to delete Agreement ${name}?`);
     cy.get('[data-cy="confirm-action"]').click();
     // close the row
     cy.get("@agreement-row").find('[data-cy="expand-row"]').click();
@@ -162,7 +159,7 @@ it("should allow to delete an agreement if user is project officer", () => {
 it("should allow to delete an agreement if user is alternate project officer", () => {
     addAgreement(testAgreementToDelete);
 
-    cy.contains("Sign-out").click();
+    cy.get('[data-cy="sign-out"]').click();
     cy.visit("/").wait(1000);
     testLogin("budget-team");
     cy.visit("/agreements/");

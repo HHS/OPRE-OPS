@@ -190,6 +190,7 @@ const AuthSection = () => {
                         <button
                             className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
                             onClick={logoutHandler}
+                            data-cy="sign-out"
                         >
                             <span className="margin-1">Sign-out</span>
                         </button>
