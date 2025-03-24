@@ -124,7 +124,7 @@ it("edit an agreement", () => {
         );
 
         // test alternate project officer has edit persmission
-        cy.contains("Sign-out").click();
+        cy.get('[data-cy="sign-out"]').click();
         cy.visit("/").wait(1000);
         testLogin("budget-team");
         cy.visit("/agreements/");
