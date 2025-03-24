@@ -106,7 +106,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
@@ -239,7 +239,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
@@ -372,7 +372,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();
@@ -502,7 +502,7 @@ describe("Decline Change Requests at the Agreement Level", () => {
             })
             // test interactions
             .then(({ agreementId, bliId }) => {
-                cy.contains("Sign-out")
+                cy.contains("Sign-Out")
                     .click()
                     .then(() => {
                         localStorage.clear();

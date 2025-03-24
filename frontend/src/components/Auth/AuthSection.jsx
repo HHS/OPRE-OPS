@@ -162,10 +162,11 @@ const AuthSection = () => {
 
     return (
         <div>
+            {/* NOTE: Not sure this will ever render since we redirect to login page */}
             {!isLoggedIn && (
-                <div>
+                <div id="auth-section">
                     <button
-                        className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
+                        className="usa-button usa-button--unstyled margin-105"
                         onClick={() => {
                             const stateKey = localStorage.getItem("ops-state-key");
                             if (stateKey) {
@@ -173,27 +174,32 @@ const AuthSection = () => {
                             }
                         }}
                     >
-                        <span className="margin-1">Sign-in</span>
+                        <span
+                            className="margin-1"
+                            style={{ fontSize: "14px" }}
+                        >
+                            Sign-in
+                        </span>
                         <FontAwesomeIcon icon={faArrowRightToBracket} />
                     </button>
                 </div>
             )}
             {isLoggedIn && (
-                <div>
+                <div id="auth-section">
                     <div className="display-flex flex-align-center">
                         <div className="padding-right-1">
                             <User user={activeUser} />
                         </div>
+                        <span className="text-brand-primary">|</span>
+                        <button
+                            className="usa-button usa-button--unstyled margin-105"
+                            onClick={logoutHandler}
+                        >
+                            <span style={{ fontSize: "14px" }}>Sign-Out</span>
+                        </button>
                         <div className="padding-right-205">
                             <NotificationCenter user={activeUser} />
                         </div>
-                        <button
-                            className="usa-button fa-solid fa-arrow-right-to-bracket margin-1"
-                            onClick={logoutHandler}
-                            data-cy="sign-out"
-                        >
-                            <span className="margin-1">Sign-out</span>
-                        </button>
                     </div>
                 </div>
             )}
