@@ -90,6 +90,8 @@ def db_for_test(loaded_db):
     yield loaded_db
     loaded_db.rollback()
 
+    loaded_db.execute(text("DELETE FROM requisition"))
+    loaded_db.execute(text("DELETE FROM requisition_version"))
     loaded_db.execute(text("DELETE FROM object_class_code"))
     loaded_db.execute(text("DELETE FROM object_class_code_version"))
     loaded_db.execute(text("DELETE FROM direct_obligation_budget_line_item"))
@@ -153,6 +155,8 @@ def db_for_test_with_data(db_for_test):
 
     db_for_test.rollback()
 
+    db_for_test.execute(text("DELETE FROM requisition"))
+    db_for_test.execute(text("DELETE FROM requisition_version"))
     db_for_test.execute(text("DELETE FROM direct_obligation_budget_line_item"))
     db_for_test.execute(text("DELETE FROM direct_obligation_budget_line_item_version"))
     db_for_test.execute(text("DELETE FROM budget_line_item"))

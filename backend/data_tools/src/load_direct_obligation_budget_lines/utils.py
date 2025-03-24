@@ -10,15 +10,7 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import (
-    CAN,
-    Agreement,
-    BudgetLineItem,
-    BudgetLineItemStatus,
-    DirectObligationBudgetLineItem,
-    ObjectClassCode,
-    User,
-)
+from models import *
 
 
 @dataclass
@@ -124,6 +116,8 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
         # Get CAN if it exists
         can = session.get(CAN, data.SYS_CAN_ID) if data.SYS_CAN_ID else None
 
+        requisition = get_requisition(data, session)
+
         # Get object class code if it exists
         object_class_code = (
             session.execute(
@@ -140,6 +134,7 @@ def create_models(data: BudgetLineItemData, sys_user: User, session: Session) ->
             comments=data.COMMENTS,
             agreement_id=agreement.id if agreement else None,
             can_id=can.id if can else None,
+            requisition=requisition,
             amount=data.AMOUNT,
             status=data.STATUS,
             date_needed=data.DATE_NEEDED,
@@ -223,3 +218,20 @@ def transform(data: DictReader, session: Session, sys_user: User) -> None:
 
     create_all_models(budget_line_item_data, sys_user, session)
     logger.info("Finished loading models.")
+
+
+def get_requisition(data: BudgetLineItemData, session: Session) -> Requisition | None:
+    if not data.REQUISITION_NBR:
+        return None
+
+    requisition = session.execute(
+        select(Requisition).where(Requisition.budget_line_item_id == data.SYS_BUDGET_ID)
+    ).scalar_one_or_none()
+
+    if not requisition:
+        requisition = Requisition(
+            budget_line_item_id=data.SYS_BUDGET_ID,
+            number=data.REQUISITION_NBR,
+        )
+
+    return requisition
