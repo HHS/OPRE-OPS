@@ -5,6 +5,7 @@ import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CANBudgetLineTable.constants";
 import { useSetSortConditions } from "./CANBudgetLineTable.hooks";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 import PaginationNav from "../../UI/PaginationNav";
+import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 /**
  * @typedef {import("../../../components/BudgetLineItems/BudgetLineTypes").BudgetLine} BudgetLine
  */
@@ -27,6 +28,7 @@ const CANBudgetLineTable = ({ budgetLines, totalFunding, fiscalYear, tableType =
     const ITEMS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 3;
     const [currentPage, setCurrentPage] = React.useState(1);
     let visibleBudgetLines = [...budgetLines];
+    visibleBudgetLines = useSortData(visibleBudgetLines, sortDescending, sortCondition, SORT_TYPES.CAN_BLI);
     visibleBudgetLines = visibleBudgetLines.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     useEffect(() => {
