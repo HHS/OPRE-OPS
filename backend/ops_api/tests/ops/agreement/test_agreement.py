@@ -130,6 +130,7 @@ def test_agreements_with_simulated_error(auth_client, loaded_db, simulated_error
         ("delivered_status", False),
         ("awarding_entity_id", 1),
         ("project_officer_id", 1),
+        ("alternate_project_officer_id", 1),
         ("project_id", 1),
         ("foa", "This is an FOA value"),
         ("name", "Contract #1: African American Child and Family Research Center"),
@@ -537,6 +538,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
             "description": "test description",
             "product_service_code_id": 1,
             "project_officer_id": 500,
+            "alternate_project_officer_id": 501,
             "team_members": [
                 {
                     "id": 501,
@@ -560,7 +562,7 @@ def test_agreements_post_contract_with_service_requirement_type(auth_client, loa
 
 
 @pytest.mark.usefixtures("app_ctx")
-def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user, test_project):
+def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user, test_admin_user, test_project):
     response = auth_client.post(
         "/api/v1/agreements/",
         json={
@@ -571,6 +573,7 @@ def test_agreements_post_contract_with_vendor(auth_client, loaded_db, test_user,
             "product_service_code_id": 1,
             "vendor": "Vendor 1",
             "project_officer_id": test_user.id,
+            "alternate_project_officer_id": test_admin_user.id,
             "team_members": [
                 {
                     "id": 501,
@@ -613,6 +616,7 @@ def test_agreements_patch_by_id_e2e(auth_client, loaded_db, test_contract, test_
             "product_service_code_id": 1,
             "project_officer": 500,
             "project_officer_id": 500,
+            "alternate_project_officer_id": 501,
             "project_id": test_project.id,
             "support_contacts": [],
             "task_order_number": None,
