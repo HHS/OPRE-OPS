@@ -16,7 +16,14 @@ import { hasBlIsInReview } from "../../../helpers/budgetLines.helpers";
  * @param {function} props.setIsEditMode - The function to set the edit mode.
  * @returns {React.JSX.Element} - The rendered component.
  */
-const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer,alternateProjectOfficer, isEditMode, setIsEditMode }) => {
+const AgreementDetails = ({
+    agreement,
+    setHasAgreementChanged,
+    projectOfficer,
+    alternateProjectOfficer,
+    isEditMode,
+    setIsEditMode
+}) => {
     // eslint-disable-next-line no-unused-vars
     let { budget_line_items: _, ...agreement_details } = agreement;
     const isAgreementEditable = useIsAgreementEditable(agreement?.id);
@@ -39,6 +46,7 @@ const AgreementDetails = ({ agreement, setHasAgreementChanged, projectOfficer,al
                     agreement={agreement}
                     setHasAgreementChanged={setHasAgreementChanged}
                     projectOfficer={projectOfficer}
+                    alternateProjectOfficer={alternateProjectOfficer}
                     isEditMode={isEditMode}
                     setIsEditMode={setIsEditMode}
                 />
