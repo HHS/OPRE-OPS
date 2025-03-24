@@ -16,6 +16,7 @@ import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
 import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
+import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./pages/ErrorPage";
 import HelpCenter from "./pages/help/HelpCenter";
 import Home from "./pages/home";
@@ -280,9 +281,11 @@ const rootElement = document.getElementById("root");
 if (rootElement) {
     ReactDOM.createRoot(rootElement).render(
         <React.StrictMode>
-            <Provider store={store}>
-                <RouterProvider router={router} />
-            </Provider>
+            <ErrorBoundary>
+                <Provider store={store}>
+                    <RouterProvider router={router} />
+                </Provider>
+            </ErrorBoundary>
         </React.StrictMode>
     );
 } else {
