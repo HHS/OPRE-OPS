@@ -561,7 +561,7 @@
       division: 1,
       email: "john.mcdill@acf.hhs.gov",
       roles: [{"tablename":  "role", "id": 2}],
-      status: "ACTIVE"
+      status: "LOCKED"
     },
     { // 525
       first_name: "Director",
