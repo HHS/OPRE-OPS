@@ -18,8 +18,8 @@ class PortfolioCansAPI(BaseItemAPI):
     def _get_item(self, id: int, year: Optional[int] = None, bli_year: Optional[int] = None) -> set[CAN]:
         can_stmt = (
             select(CAN)
-            .join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
-            .join(CANFundingBudget, CAN.id == CANFundingBudget.can_id)
+            .outerjoin(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            .outerjoin(CANFundingBudget, CAN.id == CANFundingBudget.can_id)
             .where(CAN.portfolio_id == id)
         )
 
@@ -27,10 +27,12 @@ class PortfolioCansAPI(BaseItemAPI):
             can_stmt = can_stmt.where(CANFundingBudget.fiscal_year == year)
 
         can_set = set(current_app.db_session.execute(can_stmt).scalars().all())
+
         if bli_year:
             bli_year = int(bli_year)
             for can in can_set:
                 can.budget_line_items = [bli for bli in can.budget_line_items if bli.date_needed.year == bli_year]
+
         return can_set
 
     @is_authorized(PermissionType.GET, Permission.PORTFOLIO)
