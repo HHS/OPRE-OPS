@@ -34,12 +34,13 @@ import VersionPage from "./pages/version/VersionPage";
 
 //  USWDS
 import "./uswds/css/styles.css";
+
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <>
+        <Route errorElement={<ErrorPage />}>
             <Route
                 path="/login"
                 element={<Login />}
@@ -52,18 +53,7 @@ const router = createBrowserRouter(
                 path="/version"
                 element={<VersionPage />} // Use the VersionPage component
             />
-            <Route
-                element={
-                    // This demonstrates a Protected Route. All children within this Route
-                    // will have to be processed by the Protection rules before rendering.
-                    // By default, we redirect back to "/login" if they're not allowed. This can
-                    // overwritten with a 'redirectPath="/whatever"' prop.
-                    //
-                    // In this example, all /portfolio routes are currently protected.
-
-                    <ProtectedRoute />
-                }
-            >
+            <Route element={<ProtectedRoute />}>
                 {/* BEGIN PROTECTED ROUTES */}
 
                 <Route
@@ -272,7 +262,7 @@ const router = createBrowserRouter(
                 path="*"
                 element={<Navigate to="/error" />}
             />
-        </>
+        </Route>
     )
 );
 
