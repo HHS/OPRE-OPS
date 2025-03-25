@@ -16,6 +16,7 @@ import ReviewAgreement from "./pages/agreements/review/ReviewAgreement";
 import BudgetLineItemList from "./pages/budgetLines/list/BudgetLineItemList";
 import Can from "./pages/cans/detail/Can";
 import CanList from "./pages/cans/list/CanList";
+import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./pages/ErrorPage";
 import HelpCenter from "./pages/help/HelpCenter";
 import Home from "./pages/home";
@@ -33,12 +34,13 @@ import VersionPage from "./pages/version/VersionPage";
 
 //  USWDS
 import "./uswds/css/styles.css";
+
 // NOTE: Uncomment the following line to include the USWDS JavaScript but breaks DatePicker
 // import "./uswds/js/uswds.min.js";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <>
+        <Route errorElement={<ErrorPage />}>
             <Route
                 path="/login"
                 element={<Login />}
@@ -51,18 +53,7 @@ const router = createBrowserRouter(
                 path="/version"
                 element={<VersionPage />} // Use the VersionPage component
             />
-            <Route
-                element={
-                    // This demonstrates a Protected Route. All children within this Route
-                    // will have to be processed by the Protection rules before rendering.
-                    // By default, we redirect back to "/login" if they're not allowed. This can
-                    // overwritten with a 'redirectPath="/whatever"' prop.
-                    //
-                    // In this example, all /portfolio routes are currently protected.
-
-                    <ProtectedRoute />
-                }
-            >
+            <Route element={<ProtectedRoute />}>
                 {/* BEGIN PROTECTED ROUTES */}
 
                 <Route
@@ -271,7 +262,7 @@ const router = createBrowserRouter(
                 path="*"
                 element={<Navigate to="/error" />}
             />
-        </>
+        </Route>
     )
 );
 
@@ -280,9 +271,11 @@ const rootElement = document.getElementById("root");
 if (rootElement) {
     ReactDOM.createRoot(rootElement).render(
         <React.StrictMode>
-            <Provider store={store}>
-                <RouterProvider router={router} />
-            </Provider>
+            <ErrorBoundary>
+                <Provider store={store}>
+                    <RouterProvider router={router} />
+                </Provider>
+            </ErrorBoundary>
         </React.StrictMode>
     );
 } else {
