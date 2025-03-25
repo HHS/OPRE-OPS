@@ -491,6 +491,7 @@ export const AgreementEditForm = ({
                     legendClassname="usa-label margin-top-0 margin-bottom-1"
                     selectedTeamMembers={selectedTeamMembers}
                     selectedProjectOfficer={selectedProjectOfficer}
+                    selectedAlternateProjectOfficer={selectedAlternateProjectOfficer}
                     setSelectedTeamMembers={setSelectedTeamMembers}
                     overrideStyles={{ width: "14.375rem" }}
                 />

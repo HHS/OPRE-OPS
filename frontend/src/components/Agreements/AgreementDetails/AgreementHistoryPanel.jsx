@@ -4,7 +4,15 @@ import AgreementHistoryList from "./AgreementHistoryList";
 import InfiniteScroll from "./InfiniteScroll";
 import { getAgreementHistoryByIdAndPage } from "../../../api/getAgreementHistory";
 
-const AgreementHistoryPanel = ({ agreementId }) => {
+/**
+ * @component
+ * @param {Object} props - The component props.
+ * @param {number} props.agreementId
+ * @param {string} props.agreementType
+ * @returns {JSX.Element} - The rendered component.
+ */
+
+const AgreementHistoryPanel = ({ agreementId, agreementType }) => {
     const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [stopped, setStopped] = useState(false);
@@ -38,7 +46,10 @@ const AgreementHistoryPanel = ({ agreementId }) => {
             tabIndex={0}
         >
             <>
-                <AgreementHistoryList agreementHistory={agreementHistory} />
+                <AgreementHistoryList
+                    agreementHistory={agreementHistory}
+                    agreementType={agreementType}
+                />
                 {!stopped && (
                     <InfiniteScroll
                         fetchMoreData={fetchMoreData}

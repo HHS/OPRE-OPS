@@ -8,7 +8,7 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * Renders the details of an agreement
  * @component
  * @param {Object} props - The component props.
- * @param {Object} props.agreement - The agreement object to display details for.
+ * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {Object} props.projectOfficer - The project officer object for the agreement.
  * @param {Object} props.alternateProjectOfficer - The project officer object for the agreement.
  * @returns {JSX.Element} - The rendered component.
@@ -49,7 +49,7 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         <p className="font-12px">There are currently no notes for this agreement.</p>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                    <AgreementHistoryPanel agreementId={agreement.id} />
+                    <AgreementHistoryPanel agreementId={agreement.id} agreementType={agreement.agreement_type} />
                 </div>
                 <div
                     className="grid-col"
