@@ -59,3 +59,15 @@ def test_portfolio_cans_fiscal_year_2027_child_care(auth_client):
     assert response.json[0]["portfolio_id"] == child_care_portfolio_id
     assert len(funding_budgets_2027) == 1
     assert funding_budgets_2027[0]["budget"] == "500000.0"
+
+
+def test_blis_on_child_wellfare_research(auth_client):
+    resp_for_fy44 = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2044")
+    assert resp_for_fy44.status_code == 200
+    assert len(resp_for_fy44.json) == 0
+    assert resp_for_fy44.json[0]["portfolio_id"] == 1
+
+    resp_for_fy43 = auth_client.get("/api/v1/portfolios/1/cans/?budgetFiscalYear=2043")
+    assert resp_for_fy43.status_code == 200
+    assert len(resp_for_fy43.json) == 4
+    assert resp_for_fy43.json[0]["portfolio_id"] == 1

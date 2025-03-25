@@ -16,7 +16,12 @@ class PortfolioCansAPI(BaseItemAPI):
         super().__init__(model)
 
     def _get_item(self, id: int, year: Optional[int] = None, bli_year: Optional[int] = None) -> set[CAN]:
-        can_stmt = select(CAN).join(CANFundingDetails).join(CANFundingBudget).where(CAN.portfolio_id == id)
+        can_stmt = (
+            select(CAN)
+            .join(CANFundingDetails, CAN.funding_details_id == CANFundingDetails.id)
+            .join(CANFundingBudget, CAN.id == CANFundingBudget.can_id)
+            .where(CAN.portfolio_id == id)
+        )
 
         if year:
             can_stmt = can_stmt.where(CANFundingBudget.fiscal_year == year)

@@ -25,7 +25,6 @@ const PortfolioDetail = () => {
     const { data: portfolio, isLoading: portfolioIsLoading } = useGetPortfolioByIdQuery(portfolioId);
     const { data: portfolioCans, isLoading: portfolioCansLoading } = useGetPortfolioCansByIdQuery({
         portfolioId,
-        year: fiscalYear,
         budgetFiscalYear: fiscalYear,
         refetchOnMountOrArgChange: true
     });
