@@ -48,6 +48,7 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
             "iaas",
             "iaa_budget_lines",
             "iaa_agency",
+            "budget_lines",
         ],
         case_sensitive=False,
     ),
@@ -116,6 +117,8 @@ def main(
                     from data_tools.src.load_iaa_budget_lines.utils import transform
                 case "iaa_agency":
                     from data_tools.src.load_iaa_agency.utils import transform
+                case "budget_lines":
+                    from data_tools.src.load_budget_lines.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
             transform(csv_f, session, sys_user)
