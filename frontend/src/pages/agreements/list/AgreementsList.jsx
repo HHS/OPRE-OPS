@@ -48,7 +48,7 @@ const AgreementsList = () => {
 
     const [trigger] = useLazyGetUserQuery();
 
-    const activeUser = useSelector((state) => state.auth.activeUser);
+    const activeUser = useSelector((state) => state.auth?.activeUser);
     const myAgreementsUrl = searchParams.get("filter") === "my-agreements";
     const changeRequestUrl = searchParams.get("filter") === "change-requests";
 
@@ -147,13 +147,11 @@ const AgreementsList = () => {
         const myAgreements = filteredAgreements.filter(
             /** @param{Agreement} agreement */
             (agreement) => {
-                return agreement.team_members?.some((teamMember) => {
-                    return (
-                        teamMember.id === activeUser.id ||
-                        agreement.project_officer_id === activeUser.id ||
-                        agreement.alternate_project_officer_id === activeUser.id
-                    );
-                });
+                return (
+                    agreement.team_members?.some((teamMember) => teamMember.id === activeUser.id) ||
+                    agreement.project_officer_id === activeUser.id ||
+                    agreement.alternate_project_officer_id === activeUser.id
+                );
             }
         );
         sortedAgreements = sortAgreements(myAgreements);
