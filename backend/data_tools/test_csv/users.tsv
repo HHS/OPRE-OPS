@@ -1,30 +1,30 @@
-SYS_USER_ID	EMAIL	DIVISION	STATUS	ROLES
-1	chris.fortunato@example.com	CC	INACTIVE	user
-2	Amy.Madigan@example.com	CC	INACTIVE	user
-3	Ivelisse.Martinez-Beck@example.com	CC	INACTIVE	user
-4	Amelia.Popham@example.com	DEI	ACTIVE	user
-5	Tia.Brown@example.com	OD	INACTIVE	user
-6	Katie.Pahigiannis@example.com	OD	INACTIVE	user
-7	Nancy.Margie@example.com	OD	INACTIVE	user
-8	Nicole.Deterding@example.com	DCFD	INACTIVE	user
-9	Valeria.Butler@example.com	DCFD	INACTIVE	user
-10	BethAnn.Barnes@example.com	DCFD	INACTIVE	user
-11	Laura.Nerenberg@example.com	DCFD	INACTIVE	user
-12	Niki.Denmark@example.com	DCFD	INACTIVE	user
-13	tdonaworth+dev@flexion.us	OD	INACTIVE	user
-14	jdeangelis@flexion.us	OD	ACTIVE	admin,USER_ADMIN
-15	fpigeon@flexion.us	OD	ACTIVE	user
-16	chill@flexion.us	OD	INACTIVE	user
-17	stekell+sandbox@flexion.us	OD	INACTIVE	user
-18	jnalley+logingovsandbox@flexion.us	OD	ACTIVE	admin,USER_ADMIN
-19	acurvelodasilva@flexion.us	OD	ACTIVE	user
-20	kschulke@flexion.us	OD	ACTIVE	user
-21	admin.demo@email.com	OD	ACTIVE	admin
-22	user.demo@email.com	OD	ACTIVE	user
-23	dave.director@email.com	CC	ACTIVE	division_director
-24	budget.team@email.com	CC	ACTIVE	BUDGET_TEAM
-25	john.mcdill@acf.hhs.gov	CC	ACTIVE	user
-26	director.derrek@email.com	DDI	ACTIVE	division_director
-27	system.admin@email.com		LOCKED
-28	amare.beza@acf.hhs.gov		ACTIVE	admin
-29	sheila.celentano@acf.hhs.gov		ACTIVE	admin,USER_ADMIN
+SYS_USER_ID	EMAIL	DIVISION	STATUS	ROLES	FIRST_NAME	LAST_NAME
+1	chris.fortunato@example.com	CC	INACTIVE	user	Chris	Fortunato
+2	Amy.Madigan@example.com	CC	INACTIVE	user	Amy	Madigan
+3	Ivelisse.Martinez-Beck@example.com	CC	INACTIVE	user	Ivelisse	Martinez-Beck
+4	Amelia.Popham@example.com	DEI	ACTIVE	user	Amelia	Popham
+5	Tia.Brown@example.com	OD	INACTIVE	user	Tia	Brown
+6	Katie.Pahigiannis@example.com	OD	INACTIVE	user	Katie	Pahigiannis
+7	Nancy.Margie@example.com	OD	INACTIVE	user	Nancy	Margie
+8	Nicole.Deterding@example.com	DCFD	INACTIVE	user	Nicole	Deterding
+9	Valeria.Butler@example.com	DCFD	INACTIVE	user	Valeria	Butler
+10	BethAnn.Barnes@example.com	DCFD	INACTIVE	user	BethAnn	Barnes
+11	Laura.Nerenberg@example.com	DCFD	INACTIVE	user	Laura	Nerenberg
+12	Niki.Denmark@example.com	DCFD	INACTIVE	user	Niki	Denmark
+13	tdonaworth+dev@flexion.us	OD	INACTIVE	user	Tdonaworth	Dev
+14	jdeangelis@flexion.us	OD	ACTIVE	admin,USER_ADMIN	J	Deangelis
+15	fpigeon@flexion.us	OD	ACTIVE	user	F	Pigeon
+16	chill@flexion.us	OD	INACTIVE	user	C	Hill
+17	stekell+sandbox@flexion.us	OD	INACTIVE	user	Stekell	Sandbox
+18	jnalley+logingovsandbox@flexion.us	OD	ACTIVE	admin,USER_ADMIN	Jnalley	Logingovsandbox
+19	acurvelodasilva@flexion.us	OD	ACTIVE	user	A	Curvelodasilva
+20	kschulke@flexion.us	OD	ACTIVE	user	K	Schulke
+21	admin.demo@email.com	OD	ACTIVE	admin	Admin	Demo
+22	user.demo@email.com	OD	ACTIVE	user	User	Demo
+23	dave.director@email.com	CC	ACTIVE	division_director	Dave	Director
+24	budget.team@email.com	CC	ACTIVE	BUDGET_TEAM	Budget	Team
+25	john.mcdill@acf.hhs.gov	CC	ACTIVE	user	John	Mcdill
+26	director.derrek@email.com	DDI	ACTIVE	division_director	Director	Derrek
+27	system.admin@email.com		LOCKED		System	Admin
+28	amare.beza@acf.hhs.gov		ACTIVE	admin	Amare	Beza
+29	sheila.celentano@acf.hhs.gov		ACTIVE	admin,USER_ADMIN	Sheila	Celentano

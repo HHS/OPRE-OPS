@@ -1,5 +1,5 @@
 from csv import DictReader
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 from loguru import logger
@@ -16,10 +16,12 @@ class UserData:
     """
 
     EMAIL: str
-    SYS_USER_ID: Optional[int] = None
-    DIVISION: Optional[str] = None
-    STATUS: Optional[str] = None
-    ROLES: Optional[list[str]] = None
+    SYS_USER_ID: Optional[int] = field(default=None)
+    DIVISION: Optional[str] = field(default=None)
+    STATUS: Optional[str] = field(default=None)
+    ROLES: Optional[list[str]] = field(default=None)
+    FIRST_NAME: Optional[str] = field(default=None)
+    LAST_NAME: Optional[str] = field(default=None)
 
     def __post_init__(self):
         if not self.EMAIL:
@@ -30,6 +32,8 @@ class UserData:
         self.DIVISION = str(self.DIVISION)
         self.STATUS = str(self.STATUS)
         self.ROLES = [str(r).strip() for r in self.ROLES.split(",")] if self.ROLES else []
+        self.FIRST_NAME = str(self.FIRST_NAME) if self.FIRST_NAME else None
+        self.LAST_NAME = str(self.LAST_NAME) if self.LAST_NAME else None
 
 
 def create_user_data(data: dict) -> UserData:
@@ -85,6 +89,8 @@ def create_models(
         if not data or not sys_user or not session or not roles or not divisions:
             raise ValueError(f"Arguments are invalid. {data}, {sys_user}, {session}, {roles}, {divisions}")
 
+        existing_user = session.get(User, data.SYS_USER_ID)
+
         user = User(
             id=data.SYS_USER_ID if data.SYS_USER_ID else None,
             email=data.EMAIL,
@@ -95,6 +101,13 @@ def create_models(
         user.roles = [r for r in roles if r.name in data.ROLES]
         division = next((d for d in divisions if d.abbreviation == data.DIVISION), None)
         user.division = division.id if division else None
+
+        if (not existing_user and data.FIRST_NAME) or (
+            existing_user and not existing_user.first_name and data.FIRST_NAME
+        ):
+            user.first_name = data.FIRST_NAME
+        if (not existing_user and data.LAST_NAME) or (existing_user and not existing_user.last_name and data.LAST_NAME):
+            user.last_name = data.LAST_NAME
 
         session.merge(user)
         session.commit()
