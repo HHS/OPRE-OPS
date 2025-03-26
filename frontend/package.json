@@ -60,7 +60,7 @@
         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     },
     "overrides": {
-        "rollup": "4.36.0"
+        "rollup": "4.37.0"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "6.6.3",
