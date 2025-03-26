@@ -1,8 +1,6 @@
-import React from "react";
 import ComboBox from "../../UI/Form/ComboBox";
 
-function ResearchTypeComboBox({ legendClassName = "usa-label margin-top-0" }) {
-    const [selected, setSelected] = React.useState([]);
+function ResearchTypeComboBox({ researchTypes, setResearchTypes, messages, onChange = () => {} }) {
     const data = [
         {
             id: 1,
@@ -35,22 +33,37 @@ function ResearchTypeComboBox({ legendClassName = "usa-label margin-top-0" }) {
             status: "TRANSLATION_AND_COMMUNICATION"
         }
     ];
+
+    const handleChange = (researchTypes) => {
+        setResearchTypes(researchTypes);
+        onChange("research_types", researchTypes);
+    };
     return (
         <div className="display-flex flex-column width-full">
             <label
-                className={legendClassName}
+                className={` ${messages.length ? "usa-label--error" : ""}`}
                 htmlFor="research-type-combobox-input"
             >
                 Research Type
             </label>
+            {messages?.length > 0 && (
+                <span
+                    className="usa-error-message"
+                    id="research-types-combobox-input-error-message"
+                    role="alert"
+                >
+                    {messages[0]}
+                </span>
+            )}
             <p className="usa-hint margin-top-neg-2px margin-bottom-1">Select all that apply</p>
             <ComboBox
-                selectedData={selected}
-                setSelectedData={setSelected}
+                selectedData={researchTypes}
+                setSelectedData={handleChange}
                 namespace="research-type-combobox"
                 data={data}
                 defaultString="not implemented yet"
                 isMulti={true}
+                messages={messages}
             />
         </div>
     );
