@@ -10,7 +10,6 @@
       project_id: 1000,
       awarding_entity_id: 3,
       created_by: 503,
-      payee: "The Foundation of People Who Get Paid",
       team_members: [
         {
           tablename: "ops_user",

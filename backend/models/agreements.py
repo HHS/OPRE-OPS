@@ -292,7 +292,6 @@ class DirectAgreement(Agreement):
     __tablename__ = "direct_agreement"
 
     id: Mapped[int] = mapped_column(ForeignKey("agreement.id"), primary_key=True)
-    payee: Mapped[str] = mapped_column(String)
 
     __mapper_args__ = {
         "polymorphic_identity": AgreementType.DIRECT_OBLIGATION,

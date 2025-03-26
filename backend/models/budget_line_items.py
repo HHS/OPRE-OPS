@@ -346,6 +346,8 @@ class DirectObligationBudgetLineItem(BudgetLineItem):
         "polymorphic_identity": AgreementType.DIRECT_OBLIGATION,
     }
     id: Mapped[int] = mapped_column(ForeignKey("budget_line_item.id"), primary_key=True)
+    receiving_agency: Mapped[Optional[str]] = mapped_column(String)
+    ip_nbr: Mapped[Optional[str]] = mapped_column(String)
 
 
 class IAABudgetLineItem(BudgetLineItem):

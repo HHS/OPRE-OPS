@@ -49,7 +49,7 @@ OPS stands for OPRE’s Portfolio Management System (OPS). It is a centralized p
 
 **Transparency**
 
-Access is no longer limited to your specific contracts only. Everyone can view everything including budget and spending data for each Portfolio and funding details for every CAN. Changes are tracked via history so you can easily understand who changed what and when.
+You can view high-level budget, spending and research data for each Portfolio and funding details for every CAN. Changes are tracked via history so you can easily understand who changed what and when.
 
 **Data Visualization**
 
@@ -88,9 +88,11 @@ People with the Viewer/Editor role are generally Team Leaders, CORs, or other te
 
 Individuals with a viewer/editor role are able to:
 
-- View all portfolios, projects, agreements and CANs
-- Create and edit Projects
-- Create Agreements and edit them if listed as a team member
+- View high-level budget and spending data for all portfolios and CANs
+- View research data for all projects and agreements 
+- View more detailed budget data for your specific projects and agreements
+- Create and edit Projects [not yet developed, coming soon]
+- Create Agreements and edit them if listed as a team member 
 - Request a status change on budget lines for their agreements
 - Complete the procurement tracker tasks for their agreements [not yet developed, coming soon]
 - Start a contract modification [not yet developed, coming soon]
@@ -106,6 +108,7 @@ Individuals with a reviewer/approver role are able to:
 - Create Agreements and edit them if a team member
 - Review and approve budget changes for budget lines using CANs within their Division
 - Review and approve budget line status changes for budget lines using CANs within their Division
+- Review and approve team member changes
 - Review and approve for Pre-Award during the procurement process (not yet developed, coming - soon)
 - Review and approve contract modifications (not yet developed, coming soon)
 
@@ -174,7 +177,7 @@ Budget line statues are used to track the current state of an agreement. There a
 1. Click Create on the top navigation bar, then click Project
 1. Fill out all of the required fields and click on the Create Project button. All data will be validated for completeness and required fields will need to be filled out before the project can be created.
 1. When you are done filling out the fields, click on the Create Project button
-    - When you are done filling out the fields, click on the Create Project button
+    - This will send a notification to members of your portfolio to give them awareness
         `
     },
     {
@@ -191,7 +194,7 @@ Budget line statues are used to track the current state of an agreement. There a
     - You can click the Save Draft button to exit the create agreement process, save your data entry, and come back later, if needed
     - Anyone you add as a Team Member will be able to edit the agreement
         - Make sure you add yourself as a Team Member if you need to edit this agreement in the future
-        - Divisions Directors will be auto-added as Team Members for any agreement using CANs within their Division
+        - Division Directors will be auto-added as Team Members for any agreement using CANs within their Division
         - Team Leaders will be auto-added as Team Members for any agreement using CANs within their Portfolio
 1. Complete step 3 by adding service components and budget lines
     - For Services Components: select the SC# (and whether or not it's optional), add a description, and period of performance and click Add Services Component
@@ -213,6 +216,7 @@ Budget line statues are used to track the current state of an agreement. There a
 1. Navigate to the agreement you want to edit
 1. On the Agreement Details tab, click the Edit link on the right side of the page
 1. Make your changes
+    - Changes to Team Members will require approval if the agreement has at least 1+ budget line in Planned Status
 1. When you are done, click the Save Changes button
         `
     },
@@ -226,6 +230,7 @@ Budget line statues are used to track the current state of an agreement. There a
 1. Select the SC# (and whether or not it's optional), add a description, add a period of performance, and click Add Services Component button
 1. You can edit or delete the SC, by hovering over the SC card and clicking the edit or delete 1. icon on the right hand side
 1. When you are done adding services components, scroll to the bottom and click Save Changes to exit edit mode and save the agreement
+    - Changes to services components will require approval if the agreement has at least 1+ budget line in Planned Status
         `
     },
     {
@@ -235,9 +240,10 @@ Budget line statues are used to track the current state of an agreement. There a
 1. Click on the SCs & Budget Lines tab
 1. Click the Edit icon on the right side of the page
 1. Review the Edit Services Components section with instructions
-1. You can edit or delete a SC, by hovering over the SC card and clicking the edit or delete 1. icon on the right hand side
+1. You can edit or delete a SC, by hovering over the SC card and clicking the edit or delete icon on the right hand side
 1. Make your changes and then click the Update Services Component button
 1. When you are done editing, scroll to the bottom and click Save Changes to exit edit mode and save the agreement
+    - Changes to services components will require approval if the agreement has at least 1+ budget line in Planned Status
         `
     },
     {
@@ -250,6 +256,7 @@ Budget line statues are used to track the current state of an agreement. There a
 1. Fill out any needed details at this time
     - All BL data (SC, Obligate By, Amount, etc) becomes required information once the BL is in Planned or Executing status
 1. Click the Add Budget Line button
+    - All new budget lines start in Draft Status and will require approval to change from Draft to Planned Status
         `
     },
     {
@@ -263,6 +270,7 @@ Budget line statues are used to track the current state of an agreement. There a
 1. Make your changes
 1. Click on the Update Budget Line button
 1. When you are done with all changes, click the Save Changes button
+    - Changes to budget lines will require approval if the agreement has at least 1+ budget line in Planned Status
         `
     },
     {
@@ -332,7 +340,7 @@ Budget line statues are used to track the current state of an agreement. There a
 1. Review the budget lines that the status change request is for
     - Turn the After Approval toggle on/off to see how the agreement will change after this status change if approved
 1. Review the CANs associated to budget lines you are changing
-1. Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved
+    - Turn the After Approval toggle on/off to see how the CANs will change after this status change is approved
 1. Add any notes to the reviewer/approver, if needed
 1. When you are done reviewing changes, and agree the status changes can be approved, check the disclaimer that reads ‘I understand that approving budget lines for Planned Status will subtract the amounts from the FY budget’ and click on the Approve Changes button
     - Click the Approve button in the modal asking if you are sure you want to approve the status change
@@ -347,10 +355,10 @@ Budget line statues are used to track the current state of an agreement. There a
         heading: "How to add a budget to a CAN (Budget team only)",
         content: `
 1. Click on the CANs button in the main navigation
-1. Navigate to the CAN you want to add a budget to in the All CANs or My CANs tabs
+1. Navigate to the CAN you want to add a budget to
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
-1. Enter the CAN budget in the FY •••• CAN Budget input
+1. Enter an amount in the CAN’s FY budget input
 1. Click the + Add FY Budget button
 1. Click the Save Changes button
         `
@@ -359,11 +367,11 @@ Budget line statues are used to track the current state of an agreement. There a
         heading: "How to edit a budget to a CAN (Budget team only)",
         content: `
 1. Click on the CANs button in the main navigation
-1. Navigate to the CAN you want to add a budget to in the All CANs or My CANs tabs
+1. Navigate to the CAN you want to add a budget to
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
-1. Edit the CAN budget in the FY •••• CAN Budget input
-1. Click the + Add FY Budget button
+1. Edit the amount in the FY CAN Budget input
+1. Click the Update FY Budget button
 1. Click the Save Changes button
         `
     },
@@ -373,7 +381,7 @@ Budget line statues are used to track the current state of an agreement. There a
 Funding received means funding received to OPRE towards a CANs FY budget
 
 1. Click on the CANs button in the main navigation
-1. Navigate to the CAN you want to add funding to in the All CANs or My CANs tabs
+1. Navigate to the CAN you want to add funding to
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
 1. Enter the funding received in the Funding Received input and any optional notes
@@ -386,7 +394,7 @@ Funding received means funding received to OPRE towards a CANs FY budget
         heading: "How to edit funding received for a CAN (Budget team only)",
         content: `
 1. Click on the CANs button in the main navigation
-1. Navigate to the CAN you want to edit funding to in the All CANs or My CANs tab
+1. Navigate to the CAN you want to edit funding for
 1. Click on the CAN Funding tab
 1. Click the Edit link on the right side of the page
 1. Hover over the funding received row you would like to edit in the Funding Received YTD table at the bottom of the page
