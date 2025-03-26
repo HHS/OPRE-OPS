@@ -1,8 +1,7 @@
-import PropTypes from "prop-types";
-import styles from "./table.module.css";
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import icons from "../../../uswds/img/sprite.svg";
+import styles from "./table.module.css";
 /**
  * The Table component is a layout component that displays a table
  * with the specified headings.
@@ -23,7 +22,6 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
      * Adds a width to the Status column
      * @param {string} heading - The heading to check
      * @returns {object | undefined} - The width to add if the heading is Status
-     *
      */
     const addWidthIfStatus = (heading) => {
         if (heading === "Next Obligate By" || heading === "Status") {
@@ -41,38 +39,44 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                         <th
                             key={index}
                             scope="col"
+                            role="columnheader"
                             onClick={() => {
-                                onClickHeader(heading, sortDescending == null ? true : !sortDescending);
+                                onClickHeader?.(heading, sortDescending == null ? true : !sortDescending);
                             }}
                             style={addWidthIfStatus(heading)}
+                            data-sortable={heading}
                         >
                             {heading}
 
-                            {/* if its not selected display the nuetral  */}
-                            {selectedHeader !== heading && (
-                                <svg
-                                    className="width-2 height-2 text-primary margin-left-1 cursor-pointer usa-tooltip"
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    role="img"
-                                >
-                                    <use href={`${icons}#sort_arrow`}></use>
-                                </svg>
-                            )}
-                            {heading == selectedHeader && !sortDescending && (
-                                <FontAwesomeIcon
-                                    icon={faArrowUp}
-                                    className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
-                                    data-position="top"
-                                />
-                            )}
-                            {heading == selectedHeader && sortDescending && (
-                                <FontAwesomeIcon
-                                    icon={faArrowDown}
-                                    className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
-                                    data-position="top"
-                                />
-                            )}
+                            <button
+                                className="usa-table__header__button"
+                                title={`Click to sort by ${heading} in ascending or descending order.`}
+                            >
+                                {selectedHeader !== heading && (
+                                    <svg
+                                        className="width-205 height-205 text-primary cursor-pointer"
+                                        aria-hidden="true"
+                                        focusable="false"
+                                        viewBox="0 0 16 16"
+                                        role="img"
+                                        fill="currentColor"
+                                    >
+                                        <use href={`${icons}#sort_arrow`}></use>
+                                    </svg>
+                                )}
+                                {heading == selectedHeader && !sortDescending && (
+                                    <FontAwesomeIcon
+                                        icon={faArrowUp}
+                                        className="text-primary height-2 width-2 cursor-pointer"
+                                    />
+                                )}
+                                {heading == selectedHeader && sortDescending && (
+                                    <FontAwesomeIcon
+                                        icon={faArrowDown}
+                                        className="text-primary height-2 width-2 cursor-pointer"
+                                    />
+                                )}
+                            </button>
                         </th>
                     ))}
                 </tr>
@@ -80,15 +84,6 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
             <tbody>{children}</tbody>
         </table>
     );
-};
-
-Table.propTypes = {
-    children: PropTypes.node.isRequired,
-    tableHeadings: PropTypes.arrayOf(PropTypes.string).isRequired,
-    firstHeadingSlot: PropTypes.node,
-    onClickHeader: PropTypes.func,
-    selectedHeader: PropTypes.string,
-    sortDescending: PropTypes.bool
 };
 
 export default Table;
