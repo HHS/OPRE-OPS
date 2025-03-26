@@ -118,7 +118,17 @@ const useReviewAgreement = (agreementId) => {
     React.useEffect(() => {
         if (isSuccess && !res.isValid()) {
             setIsAlertActive(true);
-            setPageErrors(res.getErrors());
+            const errors = res.getErrors();
+            if (
+                (agreement.agreement_type === "CONTRACT" || agreement.agreement_type === "IAA") &&
+                Object.prototype.hasOwnProperty.call(errors, "project-officer")
+            ) {
+                const corError = errors["project-officer"];
+                errors["cor"] = corError;
+                delete errors["project-officer"];
+            }
+
+            setPageErrors(errors);
         }
         return () => {
             setPageErrors({});

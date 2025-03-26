@@ -124,6 +124,7 @@ export const codesToDisplayText = {
         reason: "Reason for Creating the Agreement",
         vendor: "Vendor",
         "project-officer": "Project Officer",
+        cor: "COR",
         "team-member": "Team Members",
         "budget-line-items": "Budget Line Items",
         "contract-type": "Contract Type",

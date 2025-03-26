@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
 import {
     useGetNameForCanId,
@@ -341,10 +340,6 @@ const AgreementHistoryList = ({ agreementHistory, agreementType }) => {
             {allLogItems.map(renderHistoryLogItem)}
         </ul>
     );
-};
-
-AgreementHistoryList.propTypes = {
-    agreementHistory: PropTypes.arrayOf(Object)
 };
 
 export default AgreementHistoryList;

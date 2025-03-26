@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
@@ -49,7 +48,10 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
                         <p className="font-12px">There are currently no notes for this agreement.</p>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                    <AgreementHistoryPanel agreementId={agreement.id} agreementType={agreement.agreement_type} />
+                    <AgreementHistoryPanel
+                        agreementId={agreement.id}
+                        agreementType={agreement.agreement_type}
+                    />
                 </div>
                 <div
                     className="grid-col"
@@ -210,11 +212,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOffic
             </div>
         </section>
     );
-};
-
-AgreementDetailsView.propTypes = {
-    agreement: PropTypes.object.isRequired,
-    projectOfficer: PropTypes.object
 };
 
 export default AgreementDetailsView;

@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { useState } from "react";
 import AgreementHistoryList from "./AgreementHistoryList";
 import InfiniteScroll from "./InfiniteScroll";
@@ -59,10 +58,6 @@ const AgreementHistoryPanel = ({ agreementId, agreementType }) => {
             </>
         </div>
     );
-};
-
-AgreementHistoryPanel.propTypes = {
-    agreementId: PropTypes.number.isRequired
 };
 
 export default AgreementHistoryPanel;

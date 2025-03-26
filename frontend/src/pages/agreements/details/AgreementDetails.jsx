@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import AgreementDetailHeader from "../../../components/Agreements/AgreementDetailHeader";
 import AgreementDetailsView from "./AgreementDetailsView";
 import AgreementDetailsEdit from "./AgreementDetailsEdit";
@@ -59,14 +58,6 @@ const AgreementDetails = ({
             )}
         </article>
     );
-};
-
-AgreementDetails.propTypes = {
-    agreement: PropTypes.object.isRequired,
-    setHasAgreementChanged: PropTypes.func.isRequired,
-    projectOfficer: PropTypes.object.isRequired,
-    isEditMode: PropTypes.bool.isRequired,
-    setIsEditMode: PropTypes.func.isRequired
 };
 
 export default AgreementDetails;
