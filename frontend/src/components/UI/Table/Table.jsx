@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import styles from "./table.module.css";
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
+import icons from "../../../uswds/img/sprite.svg";
 /**
  * The Table component is a layout component that displays a table
  * with the specified headings.
@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
  * @example
  * <Table tableHeadings={["Heading 1", "Heading 2", "Heading 3"]}>
  **/
-const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selectedHeader = "", sortDescending}) => {
+const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selectedHeader = "", sortDescending }) => {
     /**
      * Adds a width to the Status column
      * @param {string} heading - The heading to check
@@ -41,25 +41,38 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                         <th
                             key={index}
                             scope="col"
-                            onClick={() => { onClickHeader(heading, sortDescending == null ? true : !sortDescending)}}
+                            onClick={() => {
+                                onClickHeader(heading, sortDescending == null ? true : !sortDescending);
+                            }}
                             style={addWidthIfStatus(heading)}
                         >
                             {heading}
-                            {heading == selectedHeader && !sortDescending ?
-                            <FontAwesomeIcon
-                            icon={faArrowUp}
-                            size={heading == selectedHeader ? "3x" : "2x"}
-                            className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
-                            data-position="top"
-                            />
-                            :
-                            <FontAwesomeIcon
-                                icon={faArrowDown}
-                                size={heading == selectedHeader ? "3x" : "2x"}
-                                className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
-                                data-position="top"
-                            />
-                            }
+
+                            {/* if its not selected display the nuetral  */}
+                            {selectedHeader !== heading && (
+                                <svg
+                                    className="width-2 height-2 text-primary margin-left-1 cursor-pointer usa-tooltip"
+                                    aria-hidden="true"
+                                    focusable="false"
+                                    role="img"
+                                >
+                                    <use href={`${icons}#sort_arrow`}></use>
+                                </svg>
+                            )}
+                            {heading == selectedHeader && !sortDescending && (
+                                <FontAwesomeIcon
+                                    icon={faArrowUp}
+                                    className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
+                                    data-position="top"
+                                />
+                            )}
+                            {heading == selectedHeader && sortDescending && (
+                                <FontAwesomeIcon
+                                    icon={faArrowDown}
+                                    className="text-primary height-2 width-2 margin-left-1 cursor-pointer usa-tooltip"
+                                    data-position="top"
+                                />
+                            )}
                         </th>
                     ))}
                 </tr>
