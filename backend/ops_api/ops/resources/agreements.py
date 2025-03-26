@@ -5,6 +5,7 @@ from typing import Any, List, Optional
 from flask import Response, current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import object_session
 
@@ -178,18 +179,28 @@ class AgreementListAPI(BaseListAPI):
             IaaAaAgreement,
             DirectAgreement,
         ]
+        logger.debug("AgreementListAPI.get")
         result = []
+
+        logger.debug("Beginning agreement queries")
         for agreement_cls in agreement_classes:
             result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
+        logger.debug("Agreement queries complete")
 
         agreement_response: List[dict] = []
 
+        logger.debug("Serializing results")
         for item in result:
             for agreement in item:
                 schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement.agreement_type)
+                logger.debug(f"Start serializing agreement {agreement.id}")
                 serialized_agreement = schema.dump(agreement)
+                logger.debug(f"Complete serialized agreement {agreement.id}")
                 agreement_response.append(serialized_agreement)
+        logger.debug("Serialization complete")
 
+        logger.debug("AgreementListAPI.get complete")
+        print("Complete AgreementListAPI.get")
         return make_response_with_headers(agreement_response)
 
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
