@@ -71,11 +71,11 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                     />
                 ))}
             </Table>
-            {budgetLinesPage.length > 0 && (
+            {budgetLines.length > 0 && (
                 <PaginationNav
                     currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
-                    items={budgetLinesPage}
+                    items={budgetLines}
                 />
             )}
             {budgetLinesPage.length === 0 && (
