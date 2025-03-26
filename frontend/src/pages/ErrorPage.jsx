@@ -21,32 +21,29 @@ const ErrorPage = () => {
                             <p>
                                 If you typed the URL directly, check your spelling and capitalization. Our URLs look
                                 like this:
-                                <strong>&lt;agency.gov/example-one&gt;</strong>.
+                                <strong>&lt;https://ops.opre.acf.gov/example-one&gt;</strong>.
                             </p>
                             <p>
-                                Visit our homepage for helpful tools and resources, or contact us and we’ll point you in
-                                the right direction.
+                                Visit our Help Center for helpful tools and resources, or contact us and we&apos;ll
+                                point you in the right direction.
                             </p>
                             <div className="margin-y-5">
                                 <ul className="usa-button-group">
                                     <li className="usa-button-group__item">
                                         <Link
-                                            to="/"
+                                            to="/help-center/"
                                             className="usa-button"
                                         >
-                                            Visit homepage
+                                            Visit Help Center
                                         </Link>
                                     </li>
                                     <li className="usa-button-group__item">
-                                        <button
+                                        <a
+                                            href="mailto:opre-ops-support@flexion.us"
                                             className="usa-button usa-button--outline"
-                                            type="button"
-                                            onClick={() => {
-                                                alert("Not yet implemented");
-                                            }}
                                         >
                                             Contact Us
-                                        </button>
+                                        </a>
                                     </li>
                                 </ul>
                             </div>

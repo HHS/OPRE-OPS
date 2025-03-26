@@ -36,7 +36,20 @@ logger.add(sys.stderr, format=format, level=LOG_LEVEL)
 @click.option(
     "--type",
     type=click.Choice(
-        ["projects", "contract_budget_lines", "contracts", "grant_budget_lines", "grants", "users", "cans", "vendors"],
+        [
+            "projects",
+            "contract_budget_lines",
+            "contracts",
+            "grant_budget_lines",
+            "grants",
+            "users",
+            "cans",
+            "vendors",
+            "iaas",
+            "iaa_budget_lines",
+            "iaa_agency",
+            "budget_lines",
+        ],
         case_sensitive=False,
     ),
     required=True,
@@ -98,6 +111,14 @@ def main(
                     from data_tools.src.load_cans.utils import transform
                 case "vendors":
                     from data_tools.src.load_vendors.utils import transform
+                case "iaas":
+                    from data_tools.src.load_iaas.utils import transform
+                case "iaa_budget_lines":
+                    from data_tools.src.load_iaa_budget_lines.utils import transform
+                case "iaa_agency":
+                    from data_tools.src.load_iaa_agency.utils import transform
+                case "budget_lines":
+                    from data_tools.src.load_budget_lines.utils import transform
                 case _:
                     raise ValueError(f"Unsupported data type: {type}")
             transform(csv_f, session, sys_user)

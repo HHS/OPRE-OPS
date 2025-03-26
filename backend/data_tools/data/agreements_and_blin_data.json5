@@ -52,7 +52,7 @@
       project_id: 1001,
       awarding_entity_id: 3,
       created_by: 503,
-      iaa: "This is an IAA value",
+      direction: "OUTGOING",
     },
   ],
   iaa_aa_agreement: [
