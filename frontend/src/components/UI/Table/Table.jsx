@@ -32,14 +32,12 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
 
     return (
         <div className="usa-table-container--scrollable">
-            <table
-                className={`usa-table width-full usa-table--borderless ${styles.tableHover}`}
-                style={{ width: "920px" }}
-            >
+            <table className={`usa-table width-full usa-table--borderless ${styles.tableHover}`}>
                 <thead>
                     <tr>
                         {firstHeadingSlot && firstHeadingSlot}
                         {tableHeadings.map((heading, index) => (
+                            // @ts-ignore
                             <th
                                 key={index}
                                 scope="col"
@@ -49,6 +47,9 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                                 }}
                                 style={addWidthIfStatus(heading)}
                                 data-sortable={heading}
+                                aria-sort={
+                                    heading === selectedHeader ? (sortDescending ? "descending" : "ascending") : null
+                                }
                             >
                                 {heading}
 
