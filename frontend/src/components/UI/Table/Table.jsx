@@ -31,58 +31,63 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
     };
 
     return (
-        <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
-            <thead>
-                <tr>
-                    {firstHeadingSlot && firstHeadingSlot}
-                    {tableHeadings.map((heading, index) => (
-                        <th
-                            key={index}
-                            scope="col"
-                            role="columnheader"
-                            onClick={() => {
-                                onClickHeader?.(heading, sortDescending == null ? true : !sortDescending);
-                            }}
-                            style={addWidthIfStatus(heading)}
-                            data-sortable={heading}
-                        >
-                            {heading}
-
-                            <button
-                                className="usa-table__header__button"
-                                title={`Click to sort by ${heading} in ascending or descending order.`}
+        <div className="usa-table-container--scrollable">
+            <table
+                className={`usa-table width-full usa-table--borderless ${styles.tableHover}`}
+                style={{ width: "920px" }}
+            >
+                <thead>
+                    <tr>
+                        {firstHeadingSlot && firstHeadingSlot}
+                        {tableHeadings.map((heading, index) => (
+                            <th
+                                key={index}
+                                scope="col"
+                                role="columnheader"
+                                onClick={() => {
+                                    onClickHeader?.(heading, sortDescending == null ? true : !sortDescending);
+                                }}
+                                style={addWidthIfStatus(heading)}
+                                data-sortable={heading}
                             >
-                                {selectedHeader !== heading && (
-                                    <svg
-                                        className="width-205 height-205 text-primary cursor-pointer"
-                                        aria-hidden="true"
-                                        focusable="false"
-                                        viewBox="0 0 16 16"
-                                        role="img"
-                                        fill="currentColor"
-                                    >
-                                        <use href={`${icons}#sort_arrow`}></use>
-                                    </svg>
-                                )}
-                                {heading == selectedHeader && !sortDescending && (
-                                    <FontAwesomeIcon
-                                        icon={faArrowUp}
-                                        className="text-primary height-2 width-2 cursor-pointer"
-                                    />
-                                )}
-                                {heading == selectedHeader && sortDescending && (
-                                    <FontAwesomeIcon
-                                        icon={faArrowDown}
-                                        className="text-primary height-2 width-2 cursor-pointer"
-                                    />
-                                )}
-                            </button>
-                        </th>
-                    ))}
-                </tr>
-            </thead>
-            <tbody>{children}</tbody>
-        </table>
+                                {heading}
+
+                                <button
+                                    className="usa-table__header__button"
+                                    title={`Click to sort by ${heading} in ascending or descending order.`}
+                                >
+                                    {selectedHeader !== heading && (
+                                        <svg
+                                            className="width-205 height-205 text-primary cursor-pointer"
+                                            aria-hidden="true"
+                                            focusable="false"
+                                            viewBox="0 0 16 16"
+                                            role="img"
+                                            fill="currentColor"
+                                        >
+                                            <use href={`${icons}#sort_arrow`}></use>
+                                        </svg>
+                                    )}
+                                    {heading == selectedHeader && !sortDescending && (
+                                        <FontAwesomeIcon
+                                            icon={faArrowUp}
+                                            className="text-primary height-2 width-2 cursor-pointer"
+                                        />
+                                    )}
+                                    {heading == selectedHeader && sortDescending && (
+                                        <FontAwesomeIcon
+                                            icon={faArrowDown}
+                                            className="text-primary height-2 width-2 cursor-pointer"
+                                        />
+                                    )}
+                                </button>
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>{children}</tbody>
+            </table>
+        </div>
     );
 };
 
