@@ -1,6 +1,5 @@
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import icons from "../../../uswds/img/sprite.svg";
 import styles from "./table.module.css";
 /**
  * The Table component is a layout component that displays a table
@@ -31,44 +30,28 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
     };
 
     return (
-        <div className="usa-table-container--scrollable">
-            <table className={`usa-table width-full usa-table--borderless ${styles.tableHover}`}>
-                <thead>
-                    <tr>
-                        {firstHeadingSlot && firstHeadingSlot}
-                        {tableHeadings.map((heading, index) => (
-                            // @ts-ignore
-                            <th
-                                key={index}
-                                scope="col"
-                                role="columnheader"
-                                onClick={() => {
-                                    onClickHeader?.(heading, sortDescending == null ? true : !sortDescending);
-                                }}
-                                style={addWidthIfStatus(heading)}
-                                data-sortable={heading}
-                                aria-sort={
-                                    heading === selectedHeader ? (sortDescending ? "descending" : "ascending") : null
-                                }
-                            >
-                                {heading}
-
+        <table className={`usa-table width-full usa-table--borderless ${styles.tableHover}`}>
+            <thead>
+                <tr>
+                    {firstHeadingSlot && firstHeadingSlot}
+                    {tableHeadings.map((heading, index) => (
+                        <th
+                            key={index}
+                            scope="col"
+                            role="columnheader"
+                            onClick={() => {
+                                onClickHeader?.(heading, sortDescending == null ? true : !sortDescending);
+                            }}
+                            className="cursor-pointer"
+                            style={addWidthIfStatus(heading)}
+                            title={`Click to sort by ${heading}`}
+                        >
+                            {heading}
+                            {heading === selectedHeader && (
                                 <button
                                     className="usa-table__header__button"
-                                    title={`Click to sort by ${heading} in ascending or descending order.`}
+                                    title={`Click to sort by ${heading} in ascending or descending order`}
                                 >
-                                    {selectedHeader !== heading && (
-                                        <svg
-                                            className="width-205 height-205 text-primary cursor-pointer"
-                                            aria-hidden="true"
-                                            focusable="false"
-                                            viewBox="0 0 16 16"
-                                            role="img"
-                                            fill="currentColor"
-                                        >
-                                            <use href={`${icons}#sort_arrow`}></use>
-                                        </svg>
-                                    )}
                                     {heading == selectedHeader && !sortDescending && (
                                         <FontAwesomeIcon
                                             icon={faArrowUp}
@@ -82,13 +65,13 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                                         />
                                     )}
                                 </button>
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>{children}</tbody>
-            </table>
-        </div>
+                            )}
+                        </th>
+                    ))}
+                </tr>
+            </thead>
+            <tbody>{children}</tbody>
+        </table>
     );
 };
 
