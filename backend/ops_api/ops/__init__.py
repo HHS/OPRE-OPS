@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 import time
@@ -28,13 +27,6 @@ os.environ["TZ"] = "UTC"
 time.tzset()
 
 
-# create a custom handler
-class InterceptHandler(logging.Handler):
-    def emit(self, record):
-        logger_opt = logger.opt(depth=6, exception=record.exc_info)
-        logger_opt.log(record.levelno, record.getMessage())
-
-
 def create_app() -> Flask:  # noqa: C901
     from ops_api.ops.utils.core import is_unit_test
 
@@ -51,7 +43,6 @@ def create_app() -> Flask:  # noqa: C901
     )
     logger.add(sys.stdout, format=format, level=log_level)
     logger.add(sys.stderr, format=format, level=log_level)
-    app.logger.addHandler(InterceptHandler())
 
     app.config.from_object("ops_api.ops.environment.default_settings")
     if os.getenv("OPS_CONFIG"):
