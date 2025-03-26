@@ -160,7 +160,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                             to={`/agreements/review/${agreement?.id}`}
                             data-cy="bli-tab-continue-btn"
                         >
-                            Plan or Execute Budget Lines
+                            Request BL Status Change
                         </Link>
                     ) : (
                         <Tooltip label="Only team members on this agreement can send to approval">
@@ -168,7 +168,7 @@ const AgreementBudgetLines = ({ agreement, isEditMode, setIsEditMode }) => {
                                 className="usa-button margin-top-4 margin-right-0 usa-button--disabled"
                                 aria-disabled="true"
                             >
-                                Plan or Execute Budget Lines
+                                Request BL Status Change
                             </span>
                         </Tooltip>
                     )}
