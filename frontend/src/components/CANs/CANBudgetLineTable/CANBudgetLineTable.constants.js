@@ -1,3 +1,30 @@
-export const CAN_HEADERS = ["BL ID #", "Agreement", "Obligate By", "FY", "Total", "% of CAN", "Status"];
+export const CAN_BLI_HEADERS = {
+    BLI_ID_NUMBER: "BLI ID #",
+    AGREEMENT: "Agreement",
+    OBLIGATE_BY: "Obligate By",
+    FISCAL_YEAR: "FY",
+    TOTAL: "Total",
+    PERCENT_OF_CAN: "% of CAN",
+    PERCENT_OF_BUDGET: "% of Budget",
+    STATUS: "Status"
+};
 
-export const PORTFOLIO_HEADERS = ["BL ID #", "Agreement", "Obligate By", "FY", "Total", "% of Budget", "Status"];
+export const CAN_HEADERS = [
+    CAN_BLI_HEADERS.BLI_ID_NUMBER,
+    CAN_BLI_HEADERS.AGREEMENT,
+    CAN_BLI_HEADERS.OBLIGATE_BY,
+    CAN_BLI_HEADERS.FISCAL_YEAR,
+    CAN_BLI_HEADERS.TOTAL,
+    CAN_BLI_HEADERS.PERCENT_OF_CAN,
+    CAN_BLI_HEADERS.STATUS
+];
+
+export const PORTFOLIO_HEADERS = [
+    CAN_BLI_HEADERS.BLI_ID_NUMBER,
+    CAN_BLI_HEADERS.AGREEMENT,
+    CAN_BLI_HEADERS.OBLIGATE_BY,
+    CAN_BLI_HEADERS.FISCAL_YEAR,
+    CAN_BLI_HEADERS.TOTAL,
+    CAN_BLI_HEADERS.PERCENT_OF_BUDGET,
+    CAN_BLI_HEADERS.STATUS
+];

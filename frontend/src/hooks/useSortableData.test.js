@@ -1,6 +1,10 @@
 import { render, act } from "@testing-library/react";
 import useSortableData, { useSortData, SORT_TYPES } from "./use-sortable-data.hooks";
 import { AGREEMENT_TABLE_HEADINGS } from "../components/Agreements/AgreementsTable/AgreementsTable.constants";
+import { BLI_DIFF_TABLE_HEADERS } from "../components/BudgetLineItems/BLIDiffTable/BLIDiffTable.constants";
+// import { BLI_REVIEW_HEADERS } from "../components/BudgetLineItems/BLIReviewTable/BLIReviewTable.constants";
+// import { CAN_BLI_HEADERS } from "../components/CANs/CANBudgetLineTable/CANBudgetLineTable.constants";
+// import { BUDGET_LINE_TABLE_HEADERS } from "../components/BudgetLineItems/BudgetLinesTable/BudgetLinesTable.constants";
 import { BLI_STATUS } from "../helpers/budgetLines.helpers";
 const TestComponent = ({ items, config, onHookResult }) => {
     const hookResult = useSortableData(items, config);
@@ -92,11 +96,7 @@ describe("useSortableData", () => {
     });
 });
 
-describe("useSortData", () => {
-    // name, project title, agreement type, total
-    // mock getAgreementSubTotal, getProcurementShopSubTotal
-    // findNextBudgetLine
-    // findNextNeedBy
+describe("useSortData agreement sort", () => {
     const agreements = [
         {
             id: 1,
@@ -762,4 +762,169 @@ describe("useSortData", () => {
             }
         ]);
     });
+});
+
+describe("useSortData BLIDiff Sort", () => {
+    const bli_list = [
+        {
+            id: 15000,
+            agreement_name: "A Agreement",
+            services_component: 1,
+            date_needed: "2046-03-15T10:00:00Z",
+            fiscal_year: 2046,
+            can_number: "G99ABCD",
+            amount: 200,
+            proc_shop_fee_percentage: 0.005,
+            status: "PLANNED",
+            created_on: "2023-03-15T10:00:00Z"
+        },
+        {
+            id: 15001,
+            agreement_name: "C Agreement",
+            services_component: 2,
+            date_needed: "2044-04-15T10:00:00Z",
+            fiscal_year: 2044,
+            can_number: "G99HIJK",
+            amount: 300,
+            proc_shop_fee_percentage: 0.005,
+            status: "OBLIGATED",
+            created_on: "2023-03-15T10:00:00Z"
+        },
+        {
+            id: 15002,
+            agreement_name: "B Agreement",
+            services_component: 1,
+            date_needed: "2045-03-15T10:00:00Z",
+            fiscal_year: 2045,
+            can_number: "G99DEFG",
+            amount: 400,
+            proc_shop_fee_percentage: 0.005,
+            status: "IN_EXECUTION",
+            created_on: "2023-03-15T10:00:00Z"
+        }
+    ];
+    // Need to test BLI Diff, BLI Review, BudgetLines, CANBudgetLine
+
+    test("sort by bl id #", () => {
+        let sortedData = useSortData(bli_list, true, BLI_DIFF_TABLE_HEADERS.BL_ID_NUMBER, SORT_TYPES.BLI_DIFF);
+
+        expect(sortedData).toEqual([
+            {
+                id: 15002,
+                agreement_name: "B Agreement",
+                services_component: 1,
+                date_needed: "2045-03-15T10:00:00Z",
+                fiscal_year: 2045,
+                can_number: "G99DEFG",
+                amount: 400,
+                proc_shop_fee_percentage: 0.005,
+                status: "IN_EXECUTION",
+                created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15001,
+                agreement_name: "C Agreement",
+                services_component: 2,
+                date_needed: "2044-04-15T10:00:00Z",
+                fiscal_year: 2044,
+                can_number: "G99HIJK",
+                amount: 300,
+                proc_shop_fee_percentage: 0.005,
+                status: "OBLIGATED",
+                created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15000,
+                agreement_name: "A Agreement",
+                services_component: 1,
+                date_needed: "2046-03-15T10:00:00Z",
+                fiscal_year: 2046,
+                can_number: "G99ABCD",
+                amount: 200,
+                proc_shop_fee_percentage: 0.005,
+                status: "PLANNED",
+                created_on: "2023-03-15T10:00:00Z"
+            }
+        ]);
+    });
+
+    test("sort by obligate by date");
+
+    test("sort by fiscal year");
+
+    test("sort by can id");
+
+    test("sort by amount");
+
+    test("sort by fee");
+
+    test("sort by total");
+
+    test("sort by status");
+});
+
+describe("useSortData test AllBudgetLines sort", () => {
+    // const bli_list = [
+    //     {
+    //         id: 15000,
+    //         agreement_name: "A Agreement",
+    //         services_component: 1,
+    //         date_needed: "2046-03-15T10:00:00Z",
+    //         fiscal_year: 2046,
+    //         can_number: "G99ABCD",
+    //         amount: 200,
+    //         proc_shop_fee_percentage: 0.005,
+    //         status: "PLANNED",
+    //         created_on: "2023-03-15T10:00:00Z"
+    //     },
+    //     {
+    //         id: 15001,
+    //         agreement_name: "C Agreement",
+    //         services_component: 2,
+    //         date_needed: "2044-04-15T10:00:00Z",
+    //         fiscal_year: 2044,
+    //         can_number: "G99HIJK",
+    //         amount: 300,
+    //         proc_shop_fee_percentage: 0.005,
+    //         status: "OBLIGATED",
+    //         created_on: "2023-03-15T10:00:00Z"
+    //     },
+    //     {
+    //         id: 15002,
+    //         agreement_name: "B Agreement",
+    //         services_component: 1,
+    //         date_needed: "2045-03-15T10:00:00Z",
+    //         fiscal_year: 2045,
+    //         can_number: "G99DEFG",
+    //         amount: 400,
+    //         proc_shop_fee_percentage: 0.005,
+    //         status: "IN_EXECUTION",
+    //         created_on: "2023-03-15T10:00:00Z"
+    //     }
+    // ];
+    test("sort by bli id #");
+
+    test("sort by agreement name");
+
+    test("sort by service component");
+
+    test("sort by obligate by date");
+
+    test("sort by fiscal year");
+
+    test("sort by can number");
+
+    test("sort by total");
+
+    test("sort by status");
+});
+
+describe("useSortData test funding received sort", () => {
+    test("sort by funding id");
+
+    test("sort by fiscal year");
+
+    test("sort by funding received");
+
+    test("sort by budget percent");
 });
