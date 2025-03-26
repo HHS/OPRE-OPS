@@ -179,7 +179,6 @@ class AgreementListAPI(BaseListAPI):
             IaaAaAgreement,
             DirectAgreement,
         ]
-        logger.debug("AgreementListAPI.get")
         result = []
 
         logger.debug("Beginning agreement queries")
@@ -190,17 +189,24 @@ class AgreementListAPI(BaseListAPI):
         agreement_response: List[dict] = []
 
         logger.debug("Serializing results")
+        # Group agreements by type to use batch serialization
+        agreements_by_type = {}
         for item in result:
             for agreement in item:
-                schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement.agreement_type)
-                logger.debug(f"Start serializing agreement {agreement.id}")
-                serialized_agreement = schema.dump(agreement)
-                logger.debug(f"Complete serialized agreement {agreement.id}")
-                agreement_response.append(serialized_agreement)
+                agreement_type = agreement.agreement_type
+                if agreement_type not in agreements_by_type:
+                    agreements_by_type[agreement_type] = []
+                agreements_by_type[agreement_type].append(agreement)
+
+        # Serialize all agreements of the same type at once
+        for agreement_type, agreements in agreements_by_type.items():
+            schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement_type)
+            # Use many=True for batch serialization
+            serialized_agreements = schema.dump(agreements, many=True)
+            agreement_response.extend(serialized_agreements)
+
         logger.debug("Serialization complete")
 
-        logger.debug("AgreementListAPI.get complete")
-        print("Complete AgreementListAPI.get")
         return make_response_with_headers(agreement_response)
 
     @is_authorized(PermissionType.POST, Permission.AGREEMENT)
