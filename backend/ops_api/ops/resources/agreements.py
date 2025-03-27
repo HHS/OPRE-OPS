@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import object_session
 
 from marshmallow import EXCLUDE, Schema
+from ops_api.ops.schemas.agreements import AgreementRequestSchema
 from models import (
     Agreement,
     AgreementReason,
@@ -180,13 +181,19 @@ class AgreementListAPI(BaseListAPI):
             DirectAgreement,
         ]
         result = []
+        request_schema = AgreementRequestSchema()
+        data = request_schema.load(request.args.to_dict(flat=False))
 
-        logger.debug("Beginning agreement queries")
-        for agreement_cls in agreement_classes:
-            result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
-        logger.debug("Agreement queries complete")
+        # logger.debug("Beginning agreement queries")
+        # for agreement_cls in agreement_classes:
+        #     result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
+        # logger.debug("Agreement queries complete")
 
-        agreement_response: List[dict] = []
+        # Use validated parameters to filter agreements
+        fiscal_years = data.get("fiscal_year",[]) 
+        budget_line_status = data.get("budget_line_status", [])
+        portfolio = data.get("portfolio", [])
+        logger.debug(f"Query parameters: {fiscal_years}, {budget_line_status}, {portfolio}" )
 
         logger.debug("Serializing results")
         # Group agreements by type to use batch serialization

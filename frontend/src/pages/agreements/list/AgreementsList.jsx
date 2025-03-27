@@ -44,7 +44,7 @@ const AgreementsList = () => {
         data: agreements,
         error: errorAgreement,
         isLoading: isLoadingAgreement
-    } = useGetAgreementsQuery({ refetchOnMountOrArgChange: true });
+    } = useGetAgreementsQuery({filters, refetchOnMountOrArgChange: true });
 
     const [trigger] = useLazyGetUserQuery();
 

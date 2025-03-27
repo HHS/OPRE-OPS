@@ -50,6 +50,12 @@ class IaaAaAgreementData(AgreementData):
     pass
 
 
+class AgreementRequestSchema(Schema):
+    fiscal_year = fields.List(fields.Integer(), required=False)
+    budget_line_status = fields.List(fields.String(), required=False)
+    portfolio = fields.List(fields.Integer(), required=False)
+
+
 class AgreementResponse(AgreementData):
     id = fields.Integer(required=True)
     project = fields.Nested(ProjectSchema())
