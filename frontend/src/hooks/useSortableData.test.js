@@ -809,17 +809,6 @@ describe("useSortData BLIDiff Sort", () => {
 
         expect(sortedData).toEqual([
             {
-                id: 15002,
-                agreement_name: "B Agreement",
-                services_component: 1,
-                date_needed: "2045-03-15T10:00:00Z",
-                fiscal_year: 2045,
-                canDisplayName: "G99DEFG",
-                amount: 400,
-                proc_shop_fee_percentage: 0.005,
-                status: "IN_EXECUTION"
-            },
-            {
                 id: 15001,
                 agreement_name: "C Agreement",
                 services_component: 2,
@@ -842,6 +831,17 @@ describe("useSortData BLIDiff Sort", () => {
                 proc_shop_fee_percentage: 0.005,
                 status: "PLANNED",
                 created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15002,
+                agreement_name: "B Agreement",
+                services_component: 1,
+                date_needed: "2045-03-15T10:00:00Z",
+                fiscal_year: 2045,
+                canDisplayName: "G99DEFG",
+                amount: 400,
+                proc_shop_fee_percentage: 0.005,
+                status: "IN_EXECUTION"
             }
         ]);
 
@@ -849,6 +849,17 @@ describe("useSortData BLIDiff Sort", () => {
 
         expect(sortedData).toEqual([
             {
+                id: 15002,
+                agreement_name: "B Agreement",
+                services_component: 1,
+                date_needed: "2045-03-15T10:00:00Z",
+                fiscal_year: 2045,
+                canDisplayName: "G99DEFG",
+                amount: 400,
+                proc_shop_fee_percentage: 0.005,
+                status: "IN_EXECUTION"
+            },
+            {
                 id: 15000,
                 agreement_name: "A Agreement",
                 services_component: 1,
@@ -871,17 +882,6 @@ describe("useSortData BLIDiff Sort", () => {
                 proc_shop_fee_percentage: 0.005,
                 status: "OBLIGATED",
                 created_on: "2023-03-15T10:00:00Z"
-            },
-            {
-                id: 15002,
-                agreement_name: "B Agreement",
-                services_component: 1,
-                date_needed: "2045-03-15T10:00:00Z",
-                fiscal_year: 2045,
-                canDisplayName: "G99DEFG",
-                amount: 400,
-                proc_shop_fee_percentage: 0.005,
-                status: "IN_EXECUTION"
             }
         ]);
     });
