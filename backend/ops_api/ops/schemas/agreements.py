@@ -1,5 +1,4 @@
 from marshmallow import Schema, fields
-
 from models import AgreementReason, AgreementType, ContractType, ServiceRequirementType
 from ops_api.ops.schemas.budget_line_items import BudgetLineItemResponseSchema
 from ops_api.ops.schemas.procurement_shops import ProcurementShopSchema
@@ -64,7 +63,30 @@ class AgreementResponse(AgreementData):
     updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
 
 
+class AgreementListResponse(AgreementData):
+    id = fields.Integer(required=True)
+    project = fields.Nested(ProjectSchema())
+    product_service_code = fields.Nested(ProductServiceCodeSchema)
+    budget_line_items = fields.List(fields.Nested(BudgetLineItemResponseSchema, only=["id"]), allow_none=True)
+    procurement_shop = fields.Nested(ProcurementShopSchema)
+    display_name = fields.String(required=True)
+    created_by = fields.Integer(allow_none=True)
+    updated_by = fields.Integer(allow_none=True)
+    created_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+    updated_on = fields.DateTime(format="%Y-%m-%dT%H:%M:%S.%fZ", allow_none=True)
+
+
 class ContractAgreementResponse(AgreementResponse):
+    contract_number = fields.String(allow_none=True)
+    vendor_id = fields.Integer(allow_none=True)
+    vendor = fields.Pluck("Vendor", "name")
+    delivered_status = fields.Bool(default=False)
+    contract_type = fields.Enum(ContractType, allow_none=True)
+    service_requirement_type = fields.Enum(ServiceRequirementType, allow_none=True)
+    support_contacts = fields.List(fields.Nested(TeamMembers), default=[], allow_none=True)
+
+
+class ContractListAgreementResponse(AgreementListResponse):
     contract_number = fields.String(allow_none=True)
     vendor_id = fields.Integer(allow_none=True)
     vendor = fields.Pluck("Vendor", "name")

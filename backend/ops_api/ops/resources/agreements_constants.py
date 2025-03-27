@@ -1,7 +1,7 @@
 from models import AgreementType, ContractAgreement, DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement
 from ops_api.ops.schemas.agreements import (
     ContractAgreementData,
-    ContractAgreementResponse,
+    ContractListAgreementResponse,
     DirectAgreementData,
     DirectAgreementResponse,
     GrantAgreementData,
@@ -33,7 +33,7 @@ AGREEMENT_TYPE_TO_DATACLASS_MAPPING = {
 }
 
 AGREEMENT_TYPE_TO_RESPONSE_MAPPING = {
-    AgreementType.CONTRACT: ContractAgreementResponse,
+    AgreementType.CONTRACT: ContractListAgreementResponse,
     AgreementType.GRANT: GrantAgreementResponse,
     AgreementType.IAA: IaaAgreementResponse,
     AgreementType.DIRECT_OBLIGATION: DirectAgreementResponse,
