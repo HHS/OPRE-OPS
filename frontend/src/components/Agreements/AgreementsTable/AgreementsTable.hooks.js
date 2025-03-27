@@ -27,22 +27,6 @@ export const useHandleEditAgreement = () => {
     return handleEditAgreement;
 };
 
-export const useSetSortConditions = () => {
-    const [sortCondition, setSortCondition] = React.useState(null);
-    const [sortDescending, setSortDescending] = React.useState(true);
-
-    const setSortConditions = (selectedSortCondition, isSortDescending) => {
-        if (selectedSortCondition != sortCondition) {
-            setSortCondition(selectedSortCondition);
-            setSortDescending(true);
-        } else {
-            setSortDescending(isSortDescending);
-        }
-    };
-
-    return {sortDescending, sortCondition, setSortConditions}
-}
-
 export const useHandleDeleteAgreement = () => {
     const [showModal, setShowModal] = React.useState(false);
     const [modalProps, setModalProps] = React.useState({});

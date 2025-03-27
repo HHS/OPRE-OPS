@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import Table from "../../UI/Table";
 import _ from "lodash";
 import BLIDiffRow from "./BLIDiffRow";
-import { useSetSortConditions } from "./BLIDiffTable.hooks";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIDiffTable.constants";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import "./BLIDiffTable.scss";
@@ -17,7 +17,7 @@ import "./BLIDiffTable.scss";
  * @returns {JSX.Element} The rendered table component.
  */
 const BLIDiffTable = ({ budgetLines = [], changeType, statusChangeTo = "" }) => {
-    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
     const sortedBudgetLines = budgetLines
         .slice()
@@ -32,7 +32,8 @@ const BLIDiffTable = ({ budgetLines = [], changeType, statusChangeTo = "" }) => 
             tableHeadings={BUDGET_LINE_TABLE_HEADERS_LIST}
             selectedHeader={sortCondition}
             onClickHeader={setSortConditions}
-            sortDescending={sortDescending}>
+            sortDescending={sortDescending}
+        >
             {copiedBudgetLines.map((budgetLine) => (
                 <BLIDiffRow
                     key={budgetLine.id}

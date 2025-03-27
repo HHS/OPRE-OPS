@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
 import "../../BudgetLineItems/BudgetLinesTable/BudgetLinesTable.scss";
 import Table from "../../UI/Table";
-import _ from "lodash"
+import _ from "lodash";
 import BLIReviewRow from "./BLIReviewRow";
 import { BUDGET_LINE_TABLE_HEADERS_LIST } from "./BLIReviewTable.constants";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
-import { useSetSortConditions } from "./BLIReviewTable.hooks";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 /**
  * A table component that displays budget lines.
  * @component
@@ -36,7 +36,7 @@ const AgreementBLIReviewTable = ({
     setMainToggleSelected = () => {},
     servicesComponentId
 }) => {
-    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
     const sortedBudgetLines = budgetLines
         .slice()
@@ -45,7 +45,7 @@ const AgreementBLIReviewTable = ({
 
     let copiedBudgetLines = _.cloneDeep(sortedBudgetLines);
 
-    copiedBudgetLines = useSortData(copiedBudgetLines, sortDescending, sortCondition, SORT_TYPES.BLI_REVIEW)
+    copiedBudgetLines = useSortData(copiedBudgetLines, sortDescending, sortCondition, SORT_TYPES.BLI_REVIEW);
 
     const areSomeBudgetLinesActionable = budgetLines.some((budgetLine) => budgetLine.actionable);
     const firstHeadingSlot = (

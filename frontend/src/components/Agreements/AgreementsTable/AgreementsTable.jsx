@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
-import AgreementTableRow from "./AgreementTableRow";
-import Table from "../../UI/Table";
-import { useSetSortConditions } from "./AgreementsTable.hooks";
-import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
+import Table from "../../UI/Table";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
+import { TABLE_HEADINGS_LIST } from "./AgreementsTable.constants";
+import AgreementTableRow from "./AgreementTableRow";
 
 /**
  * Agreement table.
@@ -12,9 +12,9 @@ import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks"
  * @returns {React.JSX.Element} - The rendered component.
  */
 export const AgreementsTable = ({ agreements = [] }) => {
-    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
-    const sortedAgreements = useSortData(agreements, sortDescending, sortCondition, SORT_TYPES.AGREEMENTS)
+    const sortedAgreements = useSortData(agreements, sortDescending, sortCondition, SORT_TYPES.AGREEMENTS);
     return (
         <>
             <Table

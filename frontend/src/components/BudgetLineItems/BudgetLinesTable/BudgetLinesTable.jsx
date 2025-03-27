@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import Table from "../../UI/Table";
 import BLIRow from "./BLIRow";
 import _ from "lodash";
-import { useSetSortConditions } from "./BudgetLinesTable.hooks";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 import { BUDGET_LINE_TABLE_HEADERS } from "./BudgetLinesTable.constants";
 import "./BudgetLinesTable.scss";
@@ -28,7 +28,7 @@ const BudgetLinesTable = ({
     isReviewMode = false,
     budgetLineIdsInReview = []
 }) => {
-    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
     const sortedBudgetLines = budgetLines
         .slice()
@@ -43,7 +43,8 @@ const BudgetLinesTable = ({
             tableHeadings={BUDGET_LINE_TABLE_HEADERS}
             selectedHeader={sortCondition}
             onClickHeader={setSortConditions}
-            sortDescending={sortDescending}>
+            sortDescending={sortDescending}
+        >
             {copiedBudgetLines.map((budgetLine) => (
                 <BLIRow
                     key={budgetLine.id}

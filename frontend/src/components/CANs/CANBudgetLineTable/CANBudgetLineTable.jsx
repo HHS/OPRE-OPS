@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { calculatePercent, formatDateNeeded } from "../../../helpers/utils";
 import Table from "../../UI/Table";
 import { CAN_HEADERS, PORTFOLIO_HEADERS } from "./CANBudgetLineTable.constants";
-import { useSetSortConditions } from "./CANBudgetLineTable.hooks";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 import CANBudgetLineTableRow from "./CANBudgetLineTableRow";
 import PaginationNav from "../../UI/PaginationNav";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";

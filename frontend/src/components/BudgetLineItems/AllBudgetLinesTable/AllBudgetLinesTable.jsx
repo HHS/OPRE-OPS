@@ -1,14 +1,14 @@
+import _ from "lodash";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import _ from "lodash";
-import Table from "../../UI/Table";
-import AllBLIRow from "./AllBLIRow";
-import PaginationNav from "../../UI/PaginationNav/PaginationNav";
-import { All_BUDGET_LINES_TABLE_HEADINGS_LIST, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
-import useAllBudgetLinesTable, { useSetSortConditions } from "./AllBudgetLinesTable.hooks";
-import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
 import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
-
+import ConfirmationModal from "../../UI/Modals/ConfirmationModal";
+import PaginationNav from "../../UI/PaginationNav/PaginationNav";
+import Table from "../../UI/Table";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
+import AllBLIRow from "./AllBLIRow";
+import { All_BUDGET_LINES_TABLE_HEADINGS_LIST, BLIS_PER_PAGE } from "./AllBudgetLinesTable.constants";
+import useAllBudgetLinesTable from "./AllBudgetLinesTable.hooks";
 /**
  * @typedef {Object} BudgetLine
  * @property {number} id
@@ -33,12 +33,11 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     let budgetLinesPage = _.cloneDeep(budgetLines);
-    const {sortDescending, sortCondition, setSortConditions} = useSetSortConditions();
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
 
-    budgetLinesPage = useSortData(budgetLinesPage, sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES)
+    budgetLinesPage = useSortData(budgetLinesPage, sortDescending, sortCondition, SORT_TYPES.ALL_BUDGET_LINES);
     budgetLinesPage = budgetLinesPage.slice((currentPage - 1) * BLIS_PER_PAGE, currentPage * BLIS_PER_PAGE);
     const { showModal, setShowModal, modalProps, handleDeleteBudgetLine } = useAllBudgetLinesTable(budgetLines);
-
 
     return (
         <>
@@ -55,7 +54,8 @@ const AllBudgetLinesTable = ({ budgetLines }) => {
                 tableHeadings={All_BUDGET_LINES_TABLE_HEADINGS_LIST}
                 selectedHeader={sortCondition}
                 onClickHeader={setSortConditions}
-                sortDescending={sortDescending}>
+                sortDescending={sortDescending}
+            >
                 {budgetLinesPage.map((budgetLine) => (
                     <AllBLIRow
                         key={budgetLine?.id}
