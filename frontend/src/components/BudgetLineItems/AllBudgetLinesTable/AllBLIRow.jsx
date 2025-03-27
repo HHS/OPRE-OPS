@@ -78,7 +78,7 @@ const AllBLIRow = ({
             >
                 <TextClip
                     text={budgetLine.agreement_name}
-                    maxLines={1}
+                    maxLines={2}
                 />
             </td>
             <td
