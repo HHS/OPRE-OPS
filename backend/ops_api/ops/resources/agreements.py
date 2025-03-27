@@ -1,6 +1,6 @@
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from flask import Response, current_app, request
 from flask.views import MethodView
@@ -10,12 +10,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import object_session
 
 from marshmallow import EXCLUDE, Schema
-from ops_api.ops.schemas.agreements import AgreementRequestSchema
 from models import (
+    CAN,
     Agreement,
     AgreementReason,
     AgreementType,
     BaseModel,
+    BudgetLineItem,
     BudgetLineItemStatus,
     ContractAgreement,
     ContractType,
@@ -37,6 +38,7 @@ from ops_api.ops.resources.agreements_constants import (
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
 )
+from ops_api.ops.schemas.agreements import AgreementRequestSchema
 from ops_api.ops.utils.events import OpsEventHandler
 from ops_api.ops.utils.response import make_response_with_headers
 
@@ -184,16 +186,25 @@ class AgreementListAPI(BaseListAPI):
         request_schema = AgreementRequestSchema()
         data = request_schema.load(request.args.to_dict(flat=False))
 
-        # logger.debug("Beginning agreement queries")
-        # for agreement_cls in agreement_classes:
-        #     result.extend(current_app.db_session.execute(self._get_query(agreement_cls, **request.args)).all())
-        # logger.debug("Agreement queries complete")
-
         # Use validated parameters to filter agreements
-        fiscal_years = data.get("fiscal_year",[]) 
-        budget_line_status = data.get("budget_line_status", [])
-        portfolio = data.get("portfolio", [])
-        logger.debug(f"Query parameters: {fiscal_years}, {budget_line_status}, {portfolio}" )
+        fiscal_years = data.get("fiscal_year", [])
+        budget_line_statuses = data.get("budget_line_status", [])
+        portfolios = data.get("portfolio", [])
+        # logger.debug(f"Query parameters: {fiscal_years}, {budget_line_statuses}, {portfolios}" )
+
+        logger.debug("Beginning agreement queries")
+        for agreement_cls in agreement_classes:
+            query = select(agreement_cls).join(BudgetLineItem).join(CAN).distinct()
+            if fiscal_years:
+                query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
+            if budget_line_statuses:
+                query = query.where(BudgetLineItem.status.in_(budget_line_statuses))
+            if portfolios:
+                query = query.where(CAN.portfolio_id.in_(portfolios))
+
+            logger.debug(query)
+            result.extend(current_app.db_session.execute(query).all())
+        logger.debug("Agreement queries complete")
 
         logger.debug("Serializing results")
         # Group agreements by type to use batch serialization
@@ -205,6 +216,7 @@ class AgreementListAPI(BaseListAPI):
                     agreements_by_type[agreement_type] = []
                 agreements_by_type[agreement_type].append(agreement)
 
+        agreement_response = []
         # Serialize all agreements of the same type at once
         for agreement_type, agreements in agreements_by_type.items():
             schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement_type)

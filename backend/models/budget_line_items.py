@@ -7,6 +7,7 @@ from typing import Optional
 
 from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, select
 from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
 from typing_extensions import Any, override
 
@@ -110,20 +111,25 @@ class BudgetLineItem(BaseModel):
             .where(self.__class__.id == self.id)
         )
 
-    @property
+    @hybrid_property
     def fiscal_year(self):
         date_needed = self.date_needed or None
         month = date_needed.month if date_needed else -1
         year = date_needed.year if date_needed else -1
-        return object_session(self).scalar(
-            select(
-                case(
-                    (month >= 10, year + 1),
-                    (month >= 0 and month < 10, year),
-                    else_=None,
-                )
-            )
-        )
+
+        fiscal_year = year
+        if month >= 10:
+            fiscal_year = fiscal_year + 1
+        return fiscal_year
+        # return object_session(self).scalar(
+        #     select(
+        #         case(
+        #             (month >= 10, year + 1),
+        #             (month >= 0 and month < 10, year),
+        #             else_=None,
+        #         )
+        #     )
+        # )
 
     @property
     def team_members(self):
