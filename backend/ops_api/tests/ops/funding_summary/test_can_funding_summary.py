@@ -126,7 +126,7 @@ def test_can_get_can_funding_summary_all_cans_fiscal_year_match(auth_client: Fla
     assert len(response.json["cans"]) == 15
 
 
-def test_can_get_can_funding_summmary_filter_budget_fiscal_year_no_cans(auth_client: FlaskClient) -> None:
+def test_can_get_can_funding_summary_filter_budget_fiscal_year_no_cans(auth_client: FlaskClient) -> None:
     query_params = f"can_ids={0}&fiscal_year=2023&fy_budget=3635000&fy_budget=7815000"
 
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
@@ -135,7 +135,7 @@ def test_can_get_can_funding_summmary_filter_budget_fiscal_year_no_cans(auth_cli
     assert len(response.json["cans"]) == 0
 
 
-def test_can_get_can_funding_summmary_filter_budget_fiscal_year_cans(auth_client: FlaskClient) -> None:
+def test_can_get_can_funding_summary_filter_budget_fiscal_year_cans(auth_client: FlaskClient) -> None:
     query_params = f"can_ids={0}&fiscal_year=2023&fy_budget=200000&fy_budget=592000"
 
     response = auth_client.get(f"/api/v1/can-funding-summary?{query_params}")
@@ -366,26 +366,26 @@ def test_can_get_can_funding_summary(auth_client: FlaskClient, test_can: CAN) ->
 
 
 def test_cans_get_can_funding_summary(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:
-    # The math will work differently on this test if you run it alone vs running the full test suite
-    # If it fails, try running the full test suite
-    url = f"/api/v1/can-funding-summary?can_ids={test_cans[0].id}&can_ids={test_cans[1].id}"
+    expected_funding = {
+        "available_funding": 4200000.0,
+        "carry_forward_funding": 3000000.0,
+        "new_funding": 1500000.0,
+        "total_funding": 4500000.0,
+    }
 
-    response = auth_client.get(url)
+    response = auth_client.get("/api/v1/can-funding-summary?can_ids=515&can_ids=516")
 
-    available_funding = response.json["available_funding"]
-    carry_forward_funding = response.json["carry_forward_funding"]
-    new_funding = response.json["new_funding"]
-    total_funding = response.json["total_funding"]
+    response_data = response.json
 
     assert response.status_code == 200
-    assert len(response.json["cans"]) == 2
+    assert len(response_data["cans"]) == 2
 
-    assert available_funding == 3374500.23
-    assert carry_forward_funding == 10034500.23
-    assert new_funding == 1340000.0
-    assert total_funding == 11374500.23
-    assert carry_forward_funding != available_funding
-    assert total_funding == carry_forward_funding + new_funding
+    # Validate each funding type
+    for key, expected_value in expected_funding.items():
+        assert response_data[key] == expected_value
+
+    assert response_data["carry_forward_funding"] != response_data["available_funding"]
+    assert response_data["total_funding"] == response_data["carry_forward_funding"] + response_data["new_funding"]
 
 
 def test_can_get_can_funding_summary_filter(auth_client: FlaskClient, test_cans: list[Type[CAN]]) -> None:

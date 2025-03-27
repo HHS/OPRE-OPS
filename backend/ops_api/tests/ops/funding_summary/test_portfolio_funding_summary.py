@@ -336,3 +336,8 @@ def test_get_percentage():
     for total_funding, specific_funding, expected in test_cases:
         result = get_percentage(total_funding, specific_funding)
         assert result == expected, f"Failed for {total_funding}, {specific_funding}: expected {expected}, got {result}"
+
+
+def test_cans_for_child_care_fiscal_year_2027(auth_client):
+    response = auth_client.get("/api/v1/portfolio-funding-summary/3?fiscal_year=2027")
+    assert response.json["carry_forward_funding"]["amount"] == response.json["total_funding"]["amount"] == 500000.0
