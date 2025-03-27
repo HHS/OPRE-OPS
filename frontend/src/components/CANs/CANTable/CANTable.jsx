@@ -5,6 +5,7 @@ import { formatObligateBy } from "./CANTable.helpers";
 import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
+import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 
 /**
  * CANTable component of CanList
@@ -20,7 +21,7 @@ const CANTable = ({ cans, fiscalYear }) => {
     const [currentPage, setCurrentPage] = React.useState(1);
     let cansPerPage = [...cans];
     cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
-
+    const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
     useEffect(() => {
         setCurrentPage(1);
     }, [fiscalYear, cans]);
@@ -32,7 +33,7 @@ const CANTable = ({ cans, fiscalYear }) => {
     return (
         <>
             <table className={`usa-table usa-table--borderless width-full ${styles.tableHover}`}>
-                <CANTableHead />
+                <CANTableHead onClickHeader={setSortConditions} selectedHeader={sortCondition} sortDescending={sortDescending}/>
                 <tbody>
                     {cansPerPage.map((can) => (
                         <CANTableRow

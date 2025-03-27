@@ -52,13 +52,13 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                                     className="usa-table__header__button"
                                     title={`Click to sort by ${heading} in ascending or descending order`}
                                 >
-                                    {heading == selectedHeader && !sortDescending && (
+                                    {!sortDescending && (
                                         <FontAwesomeIcon
                                             icon={faArrowUp}
                                             className="text-primary height-2 width-2 cursor-pointer"
                                         />
                                     )}
-                                    {heading == selectedHeader && sortDescending && (
+                                    {sortDescending && (
                                         <FontAwesomeIcon
                                             icon={faArrowDown}
                                             className="text-primary height-2 width-2 cursor-pointer"
