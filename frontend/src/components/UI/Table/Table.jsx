@@ -42,30 +42,30 @@ const Table = ({ children, tableHeadings, firstHeadingSlot, onClickHeader, selec
                             onClick={() => {
                                 onClickHeader?.(heading, sortDescending == null ? true : !sortDescending);
                             }}
-                            className="cursor-pointer"
                             style={addWidthIfStatus(heading)}
-                            title={`Click to sort by ${heading}`}
                         >
-                            {heading}
-                            {heading === selectedHeader && (
-                                <button
-                                    className="usa-table__header__button"
-                                    title={`Click to sort by ${heading} in ascending or descending order`}
-                                >
-                                    {!sortDescending && (
-                                        <FontAwesomeIcon
-                                            icon={faArrowUp}
-                                            className="text-primary height-2 width-2 cursor-pointer"
-                                        />
-                                    )}
-                                    {sortDescending && (
-                                        <FontAwesomeIcon
-                                            icon={faArrowDown}
-                                            className="text-primary height-2 width-2 cursor-pointer"
-                                        />
-                                    )}
-                                </button>
-                            )}
+                            <button
+                                className="usa-table__header__button cursor-pointer"
+                                title={`Click to sort by ${heading}`}
+                            >
+                                {heading}
+                                {heading === selectedHeader && (
+                                    <>
+                                        {!sortDescending && (
+                                            <FontAwesomeIcon
+                                                icon={faArrowUp}
+                                                className="margin-left-05 height-2 width-2 cursor-pointer"
+                                            />
+                                        )}
+                                        {sortDescending && (
+                                            <FontAwesomeIcon
+                                                icon={faArrowDown}
+                                                className="margin-left-05 height-2 width-2 cursor-pointer"
+                                            />
+                                        )}
+                                    </>
+                                )}
+                            </button>
                         </th>
                     ))}
                 </tr>
