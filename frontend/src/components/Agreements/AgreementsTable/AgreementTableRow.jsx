@@ -6,10 +6,7 @@ import CurrencyFormat from "react-currency-format";
 import { Link, useSearchParams } from "react-router-dom";
 import { BLI_STATUS } from "../../../helpers/budgetLines.helpers";
 import { getDecimalScale } from "../../../helpers/currencyFormat.helpers";
-import {
-    convertCodeForDisplay,
-    statusToClassName
-} from "../../../helpers/utils";
+import { convertCodeForDisplay, statusToClassName } from "../../../helpers/utils";
 import { useIsAgreementEditable, useIsUserAllowedToEditAgreement } from "../../../hooks/agreement.hooks";
 import useGetUserFullNameFromId from "../../../hooks/user.hooks";
 import ChangeIcons from "../../BudgetLineItems/ChangeIcons";
@@ -130,7 +127,7 @@ export const AgreementTableRow = ({ agreement }) => {
                     <TextClip
                         text={agreementName}
                         tooltipThreshold={10}
-                        maxLines={1}
+                        maxLines={2}
                     />
                 </Link>
             </td>
@@ -141,7 +138,7 @@ export const AgreementTableRow = ({ agreement }) => {
                 <TextClip
                     text={researchProjectName}
                     tooltipThreshold={30}
-                    maxLines={1}
+                    maxLines={2}
                 />
             </td>
             <td
