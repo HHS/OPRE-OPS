@@ -19,6 +19,8 @@ import {
     fiscalYearFromDate
 } from "../helpers/utils";
 import { canLabel, BLILabel } from "../helpers/budgetLines.helpers";
+import { CAN_TABLE_HEADERS } from "../components/CANs/CANTable/CANTable.constants";
+import { formatObligateBy } from "../components/CANs/CANTable/CANTable.helpers";
 
 export const SORT_TYPES = {
     AGREEMENTS: "Agreement",
@@ -27,7 +29,8 @@ export const SORT_TYPES = {
     BLI_REVIEW: "BLI Review",
     BUDGET_LINES: "Budget Lines",
     CAN_BLI: "CAN Budget Line",
-    CAN_FUNDING_RECEIVED: "CAN Funding Received"
+    CAN_FUNDING_RECEIVED: "CAN Funding Received",
+    CAN_TABLE: "CAN Table"
 };
 
 const getAgreementComparableValue = (agreement, condition) => {
@@ -77,10 +80,12 @@ const getAllBudgetLineComparableValue = (budgetLine, condition) => {
 
 const getBLIDiffComparableValue = (budgetLine, condition) => {
     switch (condition) {
-        case BLI_DIFF_TABLE_HEADERS.BL_ID_NUMBER:
-            return BLILabel(budgetLine);
+        case BLI_DIFF_TABLE_HEADERS.BL_ID_NUMBER: {
+            let bliLabel = BLILabel(budgetLine);
+            return bliLabel == "TBD" ? 0 : bliLabel;
+        }
         case BLI_DIFF_TABLE_HEADERS.OBLIGATE_BY:
-            return formatDateNeeded(budgetLine.date_needed);
+            return new Date(budgetLine.date_needed);
         case BLI_DIFF_TABLE_HEADERS.FISCAL_YEAR:
             return budgetLine.fiscal_year ? budgetLine.fiscal_year : fiscalYearFromDate(budgetLine.date_needed);
         case BLI_DIFF_TABLE_HEADERS.CAN_ID:
@@ -116,6 +121,27 @@ const getFundingReceivedComparableValue = (fundingReceived, condition) => {
     }
 };
 
+const getCANTableComparableValue = (can, condition) => {
+    switch (condition) {
+        case CAN_TABLE_HEADERS.CAN_NAME:
+            return can.name ?? "TBD";
+        case CAN_TABLE_HEADERS.PORTFOLIO:
+            return can.portfolio.abbreviation;
+        case CAN_TABLE_HEADERS.ACTIVE_PERIOD:
+            return can.active_period ?? 0;
+        case CAN_TABLE_HEADERS.OBLIGATE_BY:
+            return formatObligateBy(can.obligate_by);
+        case CAN_TABLE_HEADERS.FY_BUDGET:
+            return "";
+        case CAN_TABLE_HEADERS.FUNDING_RECEIVED:
+            return "";
+        case CAN_TABLE_HEADERS.AVAILABLE_BUDGET:
+            return "";
+        default:
+            return can;
+    }
+};
+
 const VALUE_RETRIEVAL_FUNCTIONS = {
     Agreement: getAgreementComparableValue,
     "All Budget Lines": getAllBudgetLineComparableValue,
@@ -123,12 +149,15 @@ const VALUE_RETRIEVAL_FUNCTIONS = {
     "BLI Review": getBLIDiffComparableValue,
     "Budget Lines": getBLIDiffComparableValue,
     "CAN Budget Line": getBLIDiffComparableValue,
-    "CAN Funding Received": getFundingReceivedComparableValue
+    "CAN Funding Received": getFundingReceivedComparableValue,
+    "CAN Table": getCANTableComparableValue
 };
 const compareRows = (a, b, descending) => {
     if (a < b) {
+        console.log("a < b");
         return descending ? 1 : -1;
     } else if (b < a) {
+        console.log("a > b");
         return descending ? -1 : 1;
     }
     return 0;
@@ -140,6 +169,7 @@ export const useSortData = (items, descending, sortCondition, sortType) => {
     return sortableItems.sort((a, b) => {
         const aVal = getComparableValue(a, sortCondition);
         const bVal = getComparableValue(b, sortCondition);
+        console.log(`aVal: ${aVal} bVal: ${bVal}`);
         return compareRows(aVal, bVal, descending);
     });
 };

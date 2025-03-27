@@ -6,6 +6,7 @@ import CANTableHead from "./CANTableHead";
 import CANTableRow from "./CANTableRow";
 import styles from "./style.module.css";
 import { useSetSortConditions } from "../../UI/Table/Table.hooks";
+import { SORT_TYPES, useSortData } from "../../../hooks/use-sortable-data.hooks";
 
 /**
  * CANTable component of CanList
@@ -19,9 +20,10 @@ import { useSetSortConditions } from "../../UI/Table/Table.hooks";
 const CANTable = ({ cans, fiscalYear }) => {
     const CANS_PER_PAGE = import.meta.env.MODE === "production" ? 25 : 10;
     const [currentPage, setCurrentPage] = React.useState(1);
-    let cansPerPage = [...cans];
-    cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
     const { sortDescending, sortCondition, setSortConditions } = useSetSortConditions();
+    let cansPerPage = [...cans];
+    cansPerPage = useSortData(cansPerPage, sortDescending, sortCondition, SORT_TYPES.CAN_TABLE);
+    cansPerPage = cansPerPage.slice((currentPage - 1) * CANS_PER_PAGE, currentPage * CANS_PER_PAGE);
     useEffect(() => {
         setCurrentPage(1);
     }, [fiscalYear, cans]);

@@ -772,7 +772,7 @@ describe("useSortData BLIDiff Sort", () => {
             services_component: 1,
             date_needed: "2046-03-15T10:00:00Z",
             fiscal_year: 2046,
-            can_number: "G99ABCD",
+            can: { display_name: "G99ABCD" },
             amount: 200,
             proc_shop_fee_percentage: 0.005,
             status: "PLANNED",
@@ -784,7 +784,7 @@ describe("useSortData BLIDiff Sort", () => {
             services_component: 2,
             date_needed: "2044-04-15T10:00:00Z",
             fiscal_year: 2044,
-            can_number: "G99HIJK",
+            can: { display_name: "G99HIJK" },
             amount: 300,
             proc_shop_fee_percentage: 0.005,
             status: "OBLIGATED",
@@ -796,11 +796,10 @@ describe("useSortData BLIDiff Sort", () => {
             services_component: 1,
             date_needed: "2045-03-15T10:00:00Z",
             fiscal_year: 2045,
-            can_number: "G99DEFG",
+            canDisplayName: "G99DEFG",
             amount: 400,
             proc_shop_fee_percentage: 0.005,
-            status: "IN_EXECUTION",
-            created_on: "2023-03-15T10:00:00Z"
+            status: "IN_EXECUTION"
         }
     ];
     // Need to test BLI Diff, BLI Review, BudgetLines, CANBudgetLine
@@ -815,11 +814,10 @@ describe("useSortData BLIDiff Sort", () => {
                 services_component: 1,
                 date_needed: "2045-03-15T10:00:00Z",
                 fiscal_year: 2045,
-                can_number: "G99DEFG",
+                canDisplayName: "G99DEFG",
                 amount: 400,
                 proc_shop_fee_percentage: 0.005,
-                status: "IN_EXECUTION",
-                created_on: "2023-03-15T10:00:00Z"
+                status: "IN_EXECUTION"
             },
             {
                 id: 15001,
@@ -827,7 +825,7 @@ describe("useSortData BLIDiff Sort", () => {
                 services_component: 2,
                 date_needed: "2044-04-15T10:00:00Z",
                 fiscal_year: 2044,
-                can_number: "G99HIJK",
+                can: { display_name: "G99HIJK" },
                 amount: 300,
                 proc_shop_fee_percentage: 0.005,
                 status: "OBLIGATED",
@@ -839,7 +837,129 @@ describe("useSortData BLIDiff Sort", () => {
                 services_component: 1,
                 date_needed: "2046-03-15T10:00:00Z",
                 fiscal_year: 2046,
-                can_number: "G99ABCD",
+                can: { display_name: "G99ABCD" },
+                amount: 200,
+                proc_shop_fee_percentage: 0.005,
+                status: "PLANNED",
+                created_on: "2023-03-15T10:00:00Z"
+            }
+        ]);
+
+        sortedData = useSortData(bli_list, false, BLI_DIFF_TABLE_HEADERS.BL_ID_NUMBER, SORT_TYPES.BLI_REVIEW);
+
+        expect(sortedData).toEqual([
+            {
+                id: 15000,
+                agreement_name: "A Agreement",
+                services_component: 1,
+                date_needed: "2046-03-15T10:00:00Z",
+                fiscal_year: 2046,
+                can: { display_name: "G99ABCD" },
+                amount: 200,
+                proc_shop_fee_percentage: 0.005,
+                status: "PLANNED",
+                created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15001,
+                agreement_name: "C Agreement",
+                services_component: 2,
+                date_needed: "2044-04-15T10:00:00Z",
+                fiscal_year: 2044,
+                can: { display_name: "G99HIJK" },
+                amount: 300,
+                proc_shop_fee_percentage: 0.005,
+                status: "OBLIGATED",
+                created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15002,
+                agreement_name: "B Agreement",
+                services_component: 1,
+                date_needed: "2045-03-15T10:00:00Z",
+                fiscal_year: 2045,
+                canDisplayName: "G99DEFG",
+                amount: 400,
+                proc_shop_fee_percentage: 0.005,
+                status: "IN_EXECUTION"
+            }
+        ]);
+    });
+
+    test("sort by obligate by date", () => {
+        let sortedData = useSortData(bli_list, true, BLI_DIFF_TABLE_HEADERS.OBLIGATE_BY, SORT_TYPES.BUDGET_LINES);
+
+        expect(sortedData).toEqual([
+            {
+                id: 15000,
+                agreement_name: "A Agreement",
+                services_component: 1,
+                date_needed: "2046-03-15T10:00:00Z",
+                fiscal_year: 2046,
+                can: { display_name: "G99ABCD" },
+                amount: 200,
+                proc_shop_fee_percentage: 0.005,
+                status: "PLANNED",
+                created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15002,
+                agreement_name: "B Agreement",
+                services_component: 1,
+                date_needed: "2045-03-15T10:00:00Z",
+                fiscal_year: 2045,
+                canDisplayName: "G99DEFG",
+                amount: 400,
+                proc_shop_fee_percentage: 0.005,
+                status: "IN_EXECUTION"
+            },
+            {
+                id: 15001,
+                agreement_name: "C Agreement",
+                services_component: 2,
+                date_needed: "2044-04-15T10:00:00Z",
+                fiscal_year: 2044,
+                can: { display_name: "G99HIJK" },
+                amount: 300,
+                proc_shop_fee_percentage: 0.005,
+                status: "OBLIGATED",
+                created_on: "2023-03-15T10:00:00Z"
+            }
+        ]);
+
+        sortedData = useSortData(bli_list, false, BLI_DIFF_TABLE_HEADERS.OBLIGATE_BY, SORT_TYPES.CAN_BLI);
+
+        expect(sortedData).toEqual([
+            {
+                id: 15001,
+                agreement_name: "C Agreement",
+                services_component: 2,
+                date_needed: "2044-04-15T10:00:00Z",
+                fiscal_year: 2044,
+                can: { display_name: "G99HIJK" },
+                amount: 300,
+                proc_shop_fee_percentage: 0.005,
+                status: "OBLIGATED",
+                created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15002,
+                agreement_name: "B Agreement",
+                services_component: 1,
+                date_needed: "2045-03-15T10:00:00Z",
+                fiscal_year: 2045,
+                canDisplayName: "G99DEFG",
+                amount: 400,
+                proc_shop_fee_percentage: 0.005,
+                status: "IN_EXECUTION"
+            },
+            {
+                id: 15000,
+                agreement_name: "A Agreement",
+                services_component: 1,
+                date_needed: "2046-03-15T10:00:00Z",
+                fiscal_year: 2046,
+                can: { display_name: "G99ABCD" },
                 amount: 200,
                 proc_shop_fee_percentage: 0.005,
                 status: "PLANNED",
@@ -848,11 +968,89 @@ describe("useSortData BLIDiff Sort", () => {
         ]);
     });
 
-    test("sort by obligate by date");
+    test("sort by fiscal year", () => {
+        let sortedData = useSortData(bli_list, true, BLI_DIFF_TABLE_HEADERS.FISCAL_YEAR, SORT_TYPES.CAN_BLI);
 
-    test("sort by fiscal year");
+        expect(sortedData).toEqual([
+            {
+                id: 15000,
+                agreement_name: "A Agreement",
+                services_component: 1,
+                date_needed: "2046-03-15T10:00:00Z",
+                fiscal_year: 2046,
+                can: { display_name: "G99ABCD" },
+                amount: 200,
+                proc_shop_fee_percentage: 0.005,
+                status: "PLANNED",
+                created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15002,
+                agreement_name: "B Agreement",
+                services_component: 1,
+                date_needed: "2045-03-15T10:00:00Z",
+                fiscal_year: 2045,
+                canDisplayName: "G99DEFG",
+                amount: 400,
+                proc_shop_fee_percentage: 0.005,
+                status: "IN_EXECUTION"
+            },
+            {
+                id: 15001,
+                agreement_name: "C Agreement",
+                services_component: 2,
+                date_needed: "2044-04-15T10:00:00Z",
+                fiscal_year: 2044,
+                can: { display_name: "G99HIJK" },
+                amount: 300,
+                proc_shop_fee_percentage: 0.005,
+                status: "OBLIGATED",
+                created_on: "2023-03-15T10:00:00Z"
+            }
+        ]);
+    });
 
-    test("sort by can id");
+    test("sort by can id", () => {
+        let sortedData = useSortData(bli_list, false, BLI_DIFF_TABLE_HEADERS.CAN_ID, SORT_TYPES.BLI_DIFF);
+
+        expect(sortedData).toEqual([
+            {
+                id: 15000,
+                agreement_name: "A Agreement",
+                services_component: 1,
+                date_needed: "2046-03-15T10:00:00Z",
+                fiscal_year: 2046,
+                can: { display_name: "G99ABCD" },
+                amount: 200,
+                proc_shop_fee_percentage: 0.005,
+                status: "PLANNED",
+                created_on: "2023-03-15T10:00:00Z"
+            },
+            {
+                id: 15002,
+                agreement_name: "B Agreement",
+                services_component: 1,
+                date_needed: "2045-03-15T10:00:00Z",
+                fiscal_year: 2045,
+                canDisplayName: "G99DEFG",
+                amount: 400,
+                proc_shop_fee_percentage: 0.005,
+                status: "IN_EXECUTION"
+            },
+            {
+                id: 15001,
+                agreement_name: "C Agreement",
+                services_component: 2,
+                date_needed: "2044-04-15T10:00:00Z",
+                fiscal_year: 2044,
+                can: { display_name: "G99HIJK" },
+                amount: 300,
+                proc_shop_fee_percentage: 0.005,
+                status: "OBLIGATED",
+                created_on: "2023-03-15T10:00:00Z"
+            }
+        ]);
+    });
 
     test("sort by amount");
 
