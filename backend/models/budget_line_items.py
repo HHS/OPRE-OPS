@@ -5,7 +5,7 @@ from datetime import date
 from enum import Enum, auto
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, select
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, Sequence, String, Text, case, extract, select
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, object_session, relationship
@@ -111,25 +111,44 @@ class BudgetLineItem(BaseModel):
             .where(self.__class__.id == self.id)
         )
 
+    # @hybrid_property
+    # def fiscal_year(self):
+    #     if not self.date_needed:
+    #         return None
+
+    #     fiscal_year = self.date_needed.year
+    #     if self.date_needed.month >= 10:
+    #         fiscal_year = fiscal_year + 1
+    #     return fiscal_year
+    #     # return object_session(self).scalar(
+    #     #     select(
+    #     #         case(
+    #     #             (month >= 10, year + 1),
+    #     #             (month >= 0 and month < 10, year),
+    #     #             else_=None,
+    #     #         )
+    #     #     )
+    #     # )
     @hybrid_property
     def fiscal_year(self):
-        date_needed = self.date_needed or None
-        month = date_needed.month if date_needed else -1
-        year = date_needed.year if date_needed else -1
+        if not self.date_needed:
+            return None
 
-        fiscal_year = year
-        if month >= 10:
+        fiscal_year = self.date_needed.year
+        if self.date_needed.month >= 10:
             fiscal_year = fiscal_year + 1
         return fiscal_year
-        # return object_session(self).scalar(
-        #     select(
-        #         case(
-        #             (month >= 10, year + 1),
-        #             (month >= 0 and month < 10, year),
-        #             else_=None,
-        #         )
-        #     )
-        # )
+
+    @fiscal_year.expression
+    def fiscal_year(cls):
+        # This provides the SQL expression equivalent
+        return case(
+            (cls.date_needed.is_(None), None),
+            else_=case(
+                (extract('month', cls.date_needed) >= 10, extract('year', cls.date_needed) + 1),
+                else_=extract('year', cls.date_needed)
+            )
+        )
 
     @property
     def team_members(self):

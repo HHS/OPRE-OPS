@@ -190,11 +190,17 @@ class AgreementListAPI(BaseListAPI):
         fiscal_years = data.get("fiscal_year", [])
         budget_line_statuses = data.get("budget_line_status", [])
         portfolios = data.get("portfolio", [])
-        # logger.debug(f"Query parameters: {fiscal_years}, {budget_line_statuses}, {portfolios}" )
+        logger.debug(f"Query parameters: {fiscal_years}, {budget_line_statuses}, {portfolios}")
 
         logger.debug("Beginning agreement queries")
         for agreement_cls in agreement_classes:
-            query = select(agreement_cls).join(BudgetLineItem).join(CAN).distinct()
+            query = (
+                select(agreement_cls)
+                .distinct()
+                .join(BudgetLineItem, isouter=True)
+                .join(CAN, isouter=True)
+                .order_by(agreement_cls.id)
+            )
             if fiscal_years:
                 query = query.where(BudgetLineItem.fiscal_year.in_(fiscal_years))
             if budget_line_statuses:
@@ -202,19 +208,18 @@ class AgreementListAPI(BaseListAPI):
             if portfolios:
                 query = query.where(CAN.portfolio_id.in_(portfolios))
 
-            logger.debug(query)
-            result.extend(current_app.db_session.execute(query).all())
+            logger.debug(f"query: {query}")
+            result.extend(current_app.db_session.scalars(query).all())
         logger.debug("Agreement queries complete")
 
         logger.debug("Serializing results")
         # Group agreements by type to use batch serialization
         agreements_by_type = {}
-        for item in result:
-            for agreement in item:
-                agreement_type = agreement.agreement_type
-                if agreement_type not in agreements_by_type:
-                    agreements_by_type[agreement_type] = []
-                agreements_by_type[agreement_type].append(agreement)
+        for agreement in result:
+            agreement_type = agreement.agreement_type
+            if agreement_type not in agreements_by_type:
+                agreements_by_type[agreement_type] = []
+            agreements_by_type[agreement_type].append(agreement)
 
         agreement_response = []
         # Serialize all agreements of the same type at once

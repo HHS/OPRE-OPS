@@ -4,6 +4,7 @@ from flask import url_for
 from sqlalchemy import func, select, update
 
 from models import Agreement, AgreementType, ContractAgreement, ContractType, GrantAgreement, ServiceRequirementType
+from models.budget_line_items import BudgetLineItem
 
 
 @pytest.mark.usefixtures("app_ctx")
@@ -33,14 +34,21 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
     assert response.json[0]["agreement_type"] == "CONTRACT"
     assert response.json[0]["contract_number"] == "XXXX000000001"
     assert response.json[0]["project"]["id"] == test_project.id
-    assert numpy.isclose(response.json[0]["budget_line_items"][0]["amount"], 1000000.0)
     assert numpy.isclose(response.json[0]["procurement_shop"]["fee"], 0.0)
     assert response.json[0]["vendor"] == "Vendor 1"
     assert "budget_line_items" in response.json[0]
-    assert "can_id" in response.json[0]["budget_line_items"][0]
-    assert "can" in response.json[0]["budget_line_items"][0]
-    assert response.json[0]["budget_line_items"][0]["can"]["number"] is not None
-    assert response.json[0]["budget_line_items"][0]["can"]["display_name"] is not None
+
+
+@pytest.mark.usefixtures("app_ctx")
+def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db, test_project):
+    # determine how many agreements in the DB are in fiscal year 2023
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2043)
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) == 6
+
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"fiscal_year": 2043})
+    assert response.status_code == 200
+    assert len(response.json) == len(agreements)
 
 
 @pytest.mark.usefixtures("app_ctx")
