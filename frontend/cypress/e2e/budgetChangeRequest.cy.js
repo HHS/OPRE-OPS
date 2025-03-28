@@ -12,6 +12,7 @@ const testAgreement = {
     product_service_code_id: 1,
     awarding_entity_id: 1,
     project_officer_id: 500,
+    alternate_project_officer_id: 523,
     team_members: [
         {
             id: 520
@@ -116,6 +117,7 @@ describe("Budget Change Requests", () => {
                 cy.get('[data-cy="agreement-history-container"]').should("exist");
                 cy.get('[data-cy="agreement-history-container"]').scrollIntoView();
                 cy.get('[data-cy="agreement-history-list"]').should("exist");
+
                 checkHistoryItem(
                     /Budget Change to CAN In Review/,
                     `System Owner requested a budget change on BL ${bliId} from G994426 to G99MVT3 and it's currently In Review for approval.`
@@ -158,6 +160,79 @@ describe("Budget Change Requests", () => {
                     });
             });
     });
+
+    it("should allow alternate project officer to edit budget lines", () => {
+        expect(localStorage.getItem("access_token")).to.exist;
+
+        // create test agreement
+        const bearer_token = `Bearer ${window.localStorage.getItem("access_token")}`;
+        cy.request({
+            method: "POST",
+            url: "http://localhost:8080/api/v1/agreements/",
+            body: testAgreement,
+            headers: {
+                Authorization: bearer_token,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+            }
+        })
+            .then((response) => {
+                expect(response.status).to.eq(201);
+                expect(response.body.id).to.exist;
+                const agreementId = response.body.id;
+                return agreementId;
+            })
+            // create BLI
+            .then((agreementId) => {
+                const bliData = { ...testBli, agreement_id: agreementId };
+                cy.request({
+                    method: "POST",
+                    url: "http://localhost:8080/api/v1/budget-line-items/",
+                    body: bliData,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(201);
+                    expect(response.body.id).to.exist;
+                    const bliId = response.body.id;
+                    return { agreementId, bliId };
+                });
+            })
+            .then(({ agreementId, bliId }) => {
+                // test alternate project officer has edit persmission
+                cy.get('[data-cy="sign-out"]').click();
+                cy.visit("/").wait(1000);
+                testLogin("budget-team");
+                cy.visit(`http://localhost:3000/agreements/${agreementId}/budget-lines`);
+                cy.get("#edit").should("exist");
+
+                cy.request({
+                    method: "DELETE",
+                    url: `http://localhost:8080/api/v1/budget-line-items/${bliId}`,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(200);
+                });
+
+                cy.request({
+                    method: "DELETE",
+                    url: `http://localhost:8080/api/v1/agreements/${agreementId}`,
+                    headers: {
+                        Authorization: bearer_token,
+                        Accept: "application/json"
+                    }
+                }).then((response) => {
+                    expect(response.status).to.eq(200);
+                });
+            })
+           
+    });
+
     it("should handle adding a DRAFT BLI and a Budget change request", () => {
         expect(localStorage.getItem("access_token")).to.exist;
 

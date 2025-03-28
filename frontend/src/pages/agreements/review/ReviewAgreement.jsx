@@ -63,6 +63,7 @@ export const ReviewAgreement = () => {
         isLoadingAgreement,
         isAgreementEditable,
         projectOfficerName,
+        alternateProjectOfficerName,
         afterApproval,
         setAfterApproval,
         agreement,
@@ -134,6 +135,7 @@ export const ReviewAgreement = () => {
                 agreement={agreement}
                 instructions="Please review the agreement details below and edit any information if necessary."
                 projectOfficerName={projectOfficerName}
+                alternateProjectOfficerName={alternateProjectOfficerName}
                 res={res}
                 cn={cn}
                 convertCodeForDisplay={convertCodeForDisplay}

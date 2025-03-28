@@ -194,6 +194,7 @@ const AuthSection = () => {
                         <button
                             className="usa-button usa-button--unstyled margin-105"
                             onClick={logoutHandler}
+                            data-cy="sign-out"
                         >
                             <span style={{ fontSize: "14px" }}>Sign-Out</span>
                         </button>

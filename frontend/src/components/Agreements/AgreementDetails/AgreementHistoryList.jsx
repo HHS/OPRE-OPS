@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { convertCodeForDisplay, renderField } from "../../../helpers/utils";
 import {
     useGetNameForCanId,
@@ -29,12 +28,12 @@ const findObjectTitle = (logItem) => {
 
 const omitChangeDetailsFor = ["description", "notes", "comments"];
 
-const logItemTitle = (logItem) => {
+const logItemTitle = (logItem, agreementType) => {
     if (logItem.scope === "OBJECT") {
         return objectLogItemTitle(logItem);
     } else {
         // PROPERTY or PROPERTY_COLLECTION_ITEM
-        return propertyLogItemTitle(logItem);
+        return propertyLogItemTitle(logItem, agreementType);
     }
 };
 
@@ -75,10 +74,19 @@ const objectLogItemMessage = (logItem) => {
     }
 };
 
-const getLogItemPropertyLabel = (logItem) => {
+const getLogItemPropertyLabel = (logItem, agreementType) => {
     if (logItem.scope === "PROPERTY_COLLECTION_ITEM")
         return getPropertyLabel(logItem.target_class_name, logItem.property_key + "_item");
-    const key = logItem.property_key in relations ? relations[logItem.property_key] : logItem.property_key;
+    let key = logItem.property_key in relations ? relations[logItem.property_key] : logItem.property_key;
+
+    if (agreementType === "CONTRACT" || agreementType === "IAA") {
+        if (key === "project_officer") {
+            key = "cor_id";
+        }
+        if (key === "alternate_project_officer") {
+            key = "alternate_cor_id";
+        }
+    }
     return getPropertyLabel(logItem.target_class_name, key);
 };
 
@@ -88,8 +96,8 @@ const getPropertyLabel = (className, fieldName) => {
     return convertCodeForDisplay("agreementPropertyLabels", fieldName);
 };
 
-const propertyLogItemTitle = (logItem) => {
-    const propertyLabel = getLogItemPropertyLabel(logItem);
+const propertyLogItemTitle = (logItem, agreementType) => {
+    const propertyLabel = getLogItemPropertyLabel(logItem, agreementType);
     // NOTE: currently no collections are a part of change requests
     if (logItem.scope === "PROPERTY_COLLECTION_ITEM") {
         if (logItem.change.added) return `${propertyLabel} Added`;
@@ -116,7 +124,7 @@ const propertyLogItemTitle = (logItem) => {
     return title;
 };
 
-const LogItemMessage = ({ logItem }) => {
+const LogItemMessage = ({ logItem, agreementType }) => {
     if (logItem.scope === "OBJECT") {
         return <>{objectLogItemMessage(logItem)}.</>;
     }
@@ -137,20 +145,21 @@ const LogItemMessage = ({ logItem }) => {
         if (change.added) {
             return (
                 <>
-                    {getLogItemPropertyLabel(logItem)} {change.added.display_name} added by {createdBy}.
+                    {getLogItemPropertyLabel(logItem, agreementType)} {change.added.display_name} added by {createdBy}.
                 </>
             );
         }
         if (change.deleted) {
             return (
                 <>
-                    {getLogItemPropertyLabel(logItem)} {change.deleted.display_name} removed by {createdBy}.
+                    {getLogItemPropertyLabel(logItem, agreementType)} {change.deleted.display_name} removed by{" "}
+                    {createdBy}.
                 </>
             );
         }
     }
 
-    const messageBeginning = propertyLogItemMessageBeginning(logItem);
+    const messageBeginning = propertyLogItemMessageBeginning(logItem, agreementType);
     const shouldRenderDetails = !omitChangeDetailsFor.includes(logItem.property_key);
     const from = (
         <RenderProperty
@@ -209,9 +218,9 @@ const LogItemMessage = ({ logItem }) => {
     );
 };
 
-const propertyLogItemMessageBeginning = (logItem) => {
+const propertyLogItemMessageBeginning = (logItem, agreementType) => {
     const change = logItem.change;
-    const propertyLabel = getLogItemPropertyLabel(logItem);
+    const propertyLabel = getLogItemPropertyLabel(logItem, agreementType);
     let msg = `${propertyLabel} changed`;
     if (logItem.event_class_name === "ContractBudgetLineItem") {
         if (change.key !== "line_description") {
@@ -231,6 +240,7 @@ const relations = {
     project_id: "project",
     can_id: "can",
     project_officer_id: "project_officer",
+    alternate_project_officer_id: "alternate_project_officer",
     services_component_id: "services_component"
 };
 
@@ -266,6 +276,7 @@ const ServicesComponentName = ({ id }) => {
 
 const components = {
     project_officer_id: UserName,
+    alternate_project_officer_id: UserName,
     awarding_entity_id: ProcurementShopName,
     product_service_code_id: ProductServiceCodeName,
     project_id: ResearchProjectName,
@@ -288,7 +299,16 @@ const RenderProperty = ({ className, propertyKey, value }) => {
     return <>(unable to render value for {propertyKey})</>;
 };
 
-const AgreementHistoryList = ({ agreementHistory }) => {
+/**
+ * Renders the history list of an agreement
+ * @component
+ * @param {Object} props - The component props.
+ * @param {Object} props.agreementHistory
+ * @param {string} props.agreementType
+ * @returns {JSX.Element} - The rendered component.
+ */
+
+const AgreementHistoryList = ({ agreementHistory, agreementType }) => {
     if (!agreementHistory || agreementHistory.length === 0) {
         return <span className="font-12px">{noDataMessage}</span>;
     }
@@ -300,12 +320,13 @@ const AgreementHistoryList = ({ agreementHistory }) => {
         return (
             <LogItem
                 key={index}
-                title={logItemTitle(logItem)}
+                title={logItemTitle(logItem, agreementType)}
                 createdOn={logItem.created_on}
             >
                 <LogItemMessage
                     logItem={logItem}
                     baseKey={index}
+                    agreementType={agreementType}
                 />
             </LogItem>
         );
@@ -319,10 +340,6 @@ const AgreementHistoryList = ({ agreementHistory }) => {
             {allLogItems.map(renderHistoryLogItem)}
         </ul>
     );
-};
-
-AgreementHistoryList.propTypes = {
-    agreementHistory: PropTypes.arrayOf(Object)
 };
 
 export default AgreementHistoryList;

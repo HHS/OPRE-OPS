@@ -1,16 +1,20 @@
 import cx from "clsx";
 import _ from "lodash";
-import PropTypes from "prop-types";
 import { useState } from "react";
 import { useGetUsersQuery } from "../../api/opsAPI";
 import ComboBox from "../UI/Form/ComboBox";
+
+/**
+ * @typedef {import("../Users/UserTypes").SafeUser} SafeUser
+ */
 
 /**
  * A component that renders a select input for choosing team members.
  * @component
  * @param {Object} props - The component props.
  * @param {string} [props.className] - The class name to apply to the component.
- * @param {Object} props.selectedProjectOfficer - The currently selected project officer.
+ * @param {SafeUser} props.selectedProjectOfficer - The currently selected project officer.
+ * @param {SafeUser} props.selectedAlternateProjectOfficer - The currently selected alternate project officer.
  * @param {Object[]} props.selectedTeamMembers - The currently selected team members.
  * @param {Function} props.setSelectedTeamMembers - A function to set the selected team members.
  * @param {string} [props.legendClassname] - The class name to apply to the label/legend.
@@ -22,6 +26,7 @@ import ComboBox from "../UI/Form/ComboBox";
 export const TeamMemberComboBox = ({
     className,
     selectedProjectOfficer,
+    selectedAlternateProjectOfficer,
     selectedTeamMembers,
     setSelectedTeamMembers,
     legendClassname = "usa-label margin-top-0",
@@ -29,7 +34,8 @@ export const TeamMemberComboBox = ({
     overrideStyles = {},
     messages = []
 }) => {
-    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
+    /** @type {{data?: SafeUser[] | undefined, error?: Object,  isLoading: boolean}} */
+    const { data: users, error: errorUsers, isLoading: isLoadingUsers } = useGetUsersQuery({});
     const [selectedTeamMember, setSelectedTeamMember] = useState({});
 
     if (isLoadingUsers) {
@@ -39,12 +45,19 @@ export const TeamMemberComboBox = ({
         return <div>Oops, an error occurred</div>;
     }
 
-    const remainingUsers = users.filter(
+    const remainingUsers = users?.filter(
+        /**
+         * @param {SafeUser} user
+         */
         (user) =>
             user.id !== selectedProjectOfficer?.id && // Check if the user is not a selected project officer
+            user.id !== selectedAlternateProjectOfficer?.id && // Check if the user is not a selected alternate project officer
             !selectedTeamMembers.some((teamMember) => teamMember.id === user.id) // Check if the user is not already a team member
     );
 
+    /**
+     * @param {SafeUser} user
+     */
     const handleChange = (user) => {
         setSelectedTeamMember(user);
         if (!_.isEmpty(user)) {
@@ -85,17 +98,6 @@ export const TeamMemberComboBox = ({
             </div>
         </div>
     );
-};
-
-TeamMemberComboBox.propTypes = {
-    className: PropTypes.string,
-    selectedProjectOfficer: PropTypes.object,
-    selectedTeamMembers: PropTypes.array,
-    setSelectedTeamMembers: PropTypes.func,
-    legendClassname: PropTypes.string,
-    defaultString: PropTypes.string,
-    overrideStyles: PropTypes.object,
-    messages: PropTypes.array
 };
 
 export default TeamMemberComboBox;

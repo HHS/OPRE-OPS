@@ -195,6 +195,7 @@ export const agreement = {
     },
     project_id: 1,
     project_officer_id: 500,
+    alternate_project_officer_id: 501,
     service_requirement_type: "NON_SEVERABLE",
     support_contacts: [],
     team_members: [

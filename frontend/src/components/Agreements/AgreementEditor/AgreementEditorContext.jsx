@@ -10,10 +10,11 @@ let modifiedInitialState = { ...initialState };
  * @param {Object} props - The component props.
  * @param {Object} props.agreement - The agreement to edit, if any.
  * @param {Object} props.projectOfficer - The project officer to set, if any.
+ * @param {Object} props.alternateProjectOfficer - The alternate project officer to set, if any.
  * @param {React.ReactNode} props.children - The child components.
  * @returns {JSX.Element} The AgreementEditorContext provider.
  */
-export function EditAgreementProvider({ agreement, projectOfficer, children }) {
+export function EditAgreementProvider({ agreement, projectOfficer, alternateProjectOfficer, children }) {
     if (agreement) {
         modifiedInitialState.agreement = { ...agreement };
         modifiedInitialState.selected_project = agreement.project;
@@ -21,6 +22,9 @@ export function EditAgreementProvider({ agreement, projectOfficer, children }) {
         modifiedInitialState.selected_procurement_shop = agreement.procurement_shop;
         if (projectOfficer) {
             modifiedInitialState.selected_project_officer = projectOfficer;
+        }
+        if (alternateProjectOfficer) {
+            modifiedInitialState.selected_alternate_project_officer = alternateProjectOfficer;
         }
         delete modifiedInitialState.agreement.project;
         delete modifiedInitialState.agreement.product_service_code;

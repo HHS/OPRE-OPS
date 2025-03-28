@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import AgreementHistoryPanel from "../../../components/Agreements/AgreementDetails/AgreementHistoryPanel";
 import Tag from "../../../components/UI/Tag/Tag";
 import { NO_DATA } from "../../../constants";
@@ -8,11 +7,12 @@ import { convertCodeForDisplay } from "../../../helpers/utils";
  * Renders the details of an agreement
  * @component
  * @param {Object} props - The component props.
- * @param {Object} props.agreement - The agreement object to display details for.
+ * @param {import("../../../components/Agreements/AgreementTypes").Agreement} props.agreement - The agreement object to display details for.
  * @param {Object} props.projectOfficer - The project officer object for the agreement.
+ * @param {Object} props.alternateProjectOfficer - The project officer object for the agreement.
  * @returns {JSX.Element} - The rendered component.
  */
-const AgreementDetailsView = ({ agreement, projectOfficer }) => {
+const AgreementDetailsView = ({ agreement, projectOfficer, alternateProjectOfficer }) => {
     return (
         <section>
             <div
@@ -48,7 +48,10 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                         <p className="font-12px">There are currently no notes for this agreement.</p>
                     )}
                     <h3 className="text-base-dark margin-top-3 text-normal font-12px">History</h3>
-                    <AgreementHistoryPanel agreementId={agreement.id} />
+                    <AgreementHistoryPanel
+                        agreementId={agreement.id}
+                        agreementType={agreement.agreement_type}
+                    />
                 </div>
                 <div
                     className="grid-col"
@@ -149,19 +152,37 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
                             </dl>
                         )}
                     </div>
-                    <dl className="margin-0 font-12px">
-                        <dt className="margin-0 text-base-dark margin-top-3">Project Officer</dt>
-                        <dd className="margin-0 margin-top-1">
-                            <Tag
-                                tagStyle="primaryDarkTextLightBackground"
-                                text={
-                                    projectOfficer && Object.keys(projectOfficer).length !== 0
-                                        ? projectOfficer?.full_name
-                                        : NO_DATA
-                                }
-                            />
-                        </dd>
-                    </dl>
+                    <div className="display-flex">
+                        <dl className="grid-col-4 margin-0 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">
+                                {convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}
+                            </dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={
+                                        projectOfficer && Object.keys(projectOfficer).length !== 0
+                                            ? projectOfficer?.full_name
+                                            : NO_DATA
+                                    }
+                                />
+                            </dd>
+                        </dl>
+                        <dl className="grid-col-4 margin-0 margin-left-2 font-12px">
+                            <dt className="margin-0 text-base-dark margin-top-3">{`Alternate ${convertCodeForDisplay("projectOfficer", agreement?.agreement_type)}`}</dt>
+                            <dd className="margin-0 margin-top-1">
+                                <Tag
+                                    tagStyle="primaryDarkTextLightBackground"
+                                    text={
+                                        alternateProjectOfficer && Object.keys(alternateProjectOfficer).length !== 0
+                                            ? alternateProjectOfficer?.full_name
+                                            : NO_DATA
+                                    }
+                                />
+                            </dd>
+                        </dl>
+                    </div>
+
                     <dl className="margin-0 font-12px">
                         <dt className="margin-0 text-base-dark margin-top-3">Team Members</dt>
                         {agreement?.team_members?.length > 0 ? (
@@ -191,11 +212,6 @@ const AgreementDetailsView = ({ agreement, projectOfficer }) => {
             </div>
         </section>
     );
-};
-
-AgreementDetailsView.propTypes = {
-    agreement: PropTypes.object.isRequired,
-    projectOfficer: PropTypes.object
 };
 
 export default AgreementDetailsView;

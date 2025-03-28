@@ -103,6 +103,10 @@ class Agreement(BaseModel):
     project_officer: Mapped[Optional[User]] = relationship(
         User, foreign_keys=[project_officer_id]
     )
+    alternate_project_officer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ops_user.id"))
+    alternate_project_officer: Mapped[Optional[User]] = relationship(
+        User, foreign_keys=[alternate_project_officer_id]
+    )
 
     team_members: Mapped[List["User"]] = relationship(
         "User",

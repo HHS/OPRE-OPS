@@ -48,6 +48,7 @@
       product_service_code_id: 1,
       agreement_reason: "RECOMPETE",
       project_officer_id: 500,
+      alternate_project_officer_id: 522,
       agreement_type: "CONTRACT",
       project_id: 1000,
       awarding_entity_id: 1,
