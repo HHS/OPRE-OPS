@@ -52,24 +52,20 @@ import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
  */
 export const AgreementTableRow = ({ agreement }) => {
     let agreementTotal = 0;
+    let nextBudgetLine = null;
+    let nextNeedBy = null;
+    let budgetLineCountsByStatus = {};
+    let nextBudgetLineAmount = 0;
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const { data: agreementData, isLoading, isSuccess } = useGetAgreementByIdQuery(agreement.id);
     const agreementName = getAgreementName(agreement);
     const researchProjectName = getResearchProjectName(agreement);
     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
 
-    const nextBudgetLine = findNextBudgetLine(agreement);
-    const nextBudgetLineAmount = nextBudgetLine?.amount
-        ? totalBudgetLineAmountPlusFees(
-              nextBudgetLine.amount,
-              totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
-          )
-        : 0;
-    const nextNeedBy = findNextNeedBy(agreement);
     const agreementCreatedByName = useGetUserFullNameFromId(agreement?.created_by);
     const agreementDescription = getAgreementDescription(agreement);
     const agreementCreatedOn = getAgreementCreatedDate(agreement);
-    const budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreement);
+
     // styles for the table row
     const borderExpandedStyles = removeBorderBottomIfExpanded(isExpanded);
     const bgExpandedStyles = changeBgColorIfExpanded(isExpanded);
@@ -124,6 +120,25 @@ export const AgreementTableRow = ({ agreement }) => {
             handleSubmitItemForApproval={handleSubmitAgreementForApproval}
         />
     );
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    if (isSuccess) {
+        const agreementSubTotal = getAgreementSubTotal(agreementData);
+        const procurementShopSubTotal = getProcurementShopSubTotal(agreementData);
+        agreementTotal = agreementSubTotal + procurementShopSubTotal;
+        console.log({ agreementSubTotal, procurementShopSubTotal });
+        nextBudgetLine = findNextBudgetLine(agreementData);
+        nextNeedBy = findNextNeedBy(agreementData);
+        budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreementData);
+        nextBudgetLineAmount = nextBudgetLine?.amount
+            ? totalBudgetLineAmountPlusFees(
+                  nextBudgetLine.amount,
+                  totalBudgetLineFeeAmount(nextBudgetLine.amount, nextBudgetLine.proc_shop_fee_percentage)
+              )
+            : 0;
+    }
 
     const TableRowData = (
         <>
@@ -285,17 +300,6 @@ export const AgreementTableRow = ({ agreement }) => {
             </div>
         </td>
     );
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
-
-    // let agreementTotal = 0;
-    if (isSuccess) {
-        const agreementSubTotal = getAgreementSubTotal(agreementData);
-        const procurementShopSubTotal = getProcurementShopSubTotal(agreementData);
-        agreementTotal = agreementSubTotal + procurementShopSubTotal;
-    }
 
     return (
         <>
