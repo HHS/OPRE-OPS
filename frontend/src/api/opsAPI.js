@@ -555,6 +555,7 @@ export const {
     useDeleteBudgetLineItemMutation,
     useGetAgreementsByResearchProjectFilterQuery,
     useGetUserByIdQuery,
+    useLazyGetUserByIdQuery,
     useGetUserByOIDCIdQuery,
     useGetProjectsQuery,
     useGetProjectsByPortfolioQuery,
