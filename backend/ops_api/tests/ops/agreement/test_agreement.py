@@ -41,14 +41,36 @@ def test_agreements_get_all(auth_client, loaded_db, test_project):
 
 @pytest.mark.usefixtures("app_ctx")
 def test_agreements_get_all_by_fiscal_year(auth_client, loaded_db, test_project):
-    # determine how many agreements in the DB are in fiscal year 2023
+    # determine how many agreements in the DB are in fiscal year 2043
     stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2043)
     agreements = loaded_db.scalars(stmt).all()
-    assert len(agreements) == 6
+    assert len(agreements) > 0
 
     response = auth_client.get(url_for("api.agreements-group"), query_string={"fiscal_year": 2043})
     assert response.status_code == 200
     assert len(response.json) == len(agreements)
+
+    # determine how many agreements in the DB are in fiscal year 2000
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2000)
+    agreements = loaded_db.scalars(stmt).all()
+    assert len(agreements) == 0
+    response = auth_client.get(url_for("api.agreements-group"), query_string={"fiscal_year": 2000})
+    assert response.status_code == 200
+    assert len(response.json) == 0
+
+    # determine how many agreements in the DB are in fiscal year 2043 or 2044
+    agreements = []
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2043)
+    agreements.extend(loaded_db.scalars(stmt).all())
+    stmt = select(Agreement).distinct().join(BudgetLineItem).where(BudgetLineItem.fiscal_year == 2044)
+    agreements.extend(loaded_db.scalars(stmt).all())
+    # remove duplicate agreement objects from agreements list
+    set_of_agreements = set(agreements)
+    assert len(set_of_agreements) > 0
+
+    response = auth_client.get(url_for("api.agreements-group") + "?fiscal_year=2043&fiscal_year=2044")
+    assert response.status_code == 200
+    assert len(response.json) == len(set_of_agreements)
 
 
 @pytest.mark.usefixtures("app_ctx")
