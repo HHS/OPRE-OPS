@@ -51,17 +51,13 @@ import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
  * @returns {JSX.Element} - The rendered component.
  */
 export const AgreementTableRow = ({ agreement }) => {
+    let agreementTotal = 0;
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
     const { data: agreementData, isLoading, isSuccess } = useGetAgreementByIdQuery(agreement.id);
     const agreementName = getAgreementName(agreement);
     const researchProjectName = getResearchProjectName(agreement);
     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-    let agreementTotal = 0;
-    if (isSuccess) {
-        const agreementSubTotal = getAgreementSubTotal(agreementData);
-        const procurementShopSubTotal = getProcurementShopSubTotal(agreementData);
-        agreementTotal = agreementSubTotal + procurementShopSubTotal;
-    }
+
     const nextBudgetLine = findNextBudgetLine(agreement);
     const nextBudgetLineAmount = nextBudgetLine?.amount
         ? totalBudgetLineAmountPlusFees(
@@ -292,6 +288,13 @@ export const AgreementTableRow = ({ agreement }) => {
 
     if (isLoading) {
         return <div>Loading...</div>;
+    }
+
+    // let agreementTotal = 0;
+    if (isSuccess) {
+        const agreementSubTotal = getAgreementSubTotal(agreementData);
+        const procurementShopSubTotal = getProcurementShopSubTotal(agreementData);
+        agreementTotal = agreementSubTotal + procurementShopSubTotal;
     }
 
     return (

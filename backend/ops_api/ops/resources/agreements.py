@@ -33,7 +33,8 @@ from ops_api.ops.auth.auth_types import Permission, PermissionType
 from ops_api.ops.auth.decorators import is_authorized
 from ops_api.ops.base_views import BaseItemAPI, BaseListAPI, OPSMethodView
 from ops_api.ops.resources.agreements_constants import (
-    AGREEMENT_RESPONSE_SCHEMAS,
+    AGREEMENT_ITEM_RESPONSE_SCHEMAS,
+    AGREEMENT_LIST_RESPONSE_SCHEMAS,
     AGREEMENT_TYPE_TO_CLASS_MAPPING,
     AGREEMENTS_REQUEST_SCHEMAS,
     ENDPOINT_STRING,
@@ -75,7 +76,7 @@ class AgreementItemAPI(BaseItemAPI):
         item = self._get_item(id)
 
         if item:
-            schema = AGREEMENT_RESPONSE_SCHEMAS.get(item.agreement_type)
+            schema = AGREEMENT_ITEM_RESPONSE_SCHEMAS.get(item.agreement_type)
             serialized_agreement = schema.dump(item)
             response = make_response_with_headers(serialized_agreement)
         else:
@@ -224,7 +225,7 @@ class AgreementListAPI(BaseListAPI):
         agreement_response = []
         # Serialize all agreements of the same type at once
         for agreement_type, agreements in agreements_by_type.items():
-            schema = AGREEMENT_RESPONSE_SCHEMAS.get(agreement_type)
+            schema = AGREEMENT_LIST_RESPONSE_SCHEMAS.get(agreement_type)
             # Use many=True for batch serialization
             serialized_agreements = schema.dump(agreements, many=True)
             agreement_response.extend(serialized_agreements)

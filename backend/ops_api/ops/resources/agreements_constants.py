@@ -1,6 +1,7 @@
 from models import AgreementType, ContractAgreement, DirectAgreement, GrantAgreement, IaaAaAgreement, IaaAgreement
 from ops_api.ops.schemas.agreements import (
     ContractAgreementData,
+    ContractAgreementResponse,
     ContractListAgreementResponse,
     DirectAgreementData,
     DirectAgreementResponse,
@@ -32,8 +33,16 @@ AGREEMENT_TYPE_TO_DATACLASS_MAPPING = {
     AgreementType.IAA_AA: IaaAaAgreementData,
 }
 
-AGREEMENT_TYPE_TO_RESPONSE_MAPPING = {
+AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING = {
     AgreementType.CONTRACT: ContractListAgreementResponse,
+    AgreementType.GRANT: GrantAgreementResponse,
+    AgreementType.IAA: IaaAgreementResponse,
+    AgreementType.DIRECT_OBLIGATION: DirectAgreementResponse,
+    AgreementType.IAA_AA: IaaAaAgreementResponse,
+}
+
+AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING = {
+    AgreementType.CONTRACT: ContractAgreementResponse,
     AgreementType.GRANT: GrantAgreementResponse,
     AgreementType.IAA: IaaAgreementResponse,
     AgreementType.DIRECT_OBLIGATION: DirectAgreementResponse,
@@ -48,12 +57,22 @@ AGREEMENTS_REQUEST_SCHEMAS = {
     AgreementType.IAA_AA: AGREEMENT_TYPE_TO_DATACLASS_MAPPING.get(AgreementType.IAA_AA)(),
 }
 
-AGREEMENT_RESPONSE_SCHEMAS = {
-    AgreementType.CONTRACT: AGREEMENT_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.CONTRACT)(),
-    AgreementType.GRANT: AGREEMENT_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.GRANT)(),
-    AgreementType.IAA: AGREEMENT_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA)(),
-    AgreementType.DIRECT_OBLIGATION: AGREEMENT_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.DIRECT_OBLIGATION)(),
-    AgreementType.IAA_AA: AGREEMENT_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA_AA)(),
+AGREEMENT_LIST_RESPONSE_SCHEMAS = {
+    AgreementType.CONTRACT: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.CONTRACT)(),
+    AgreementType.GRANT: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.GRANT)(),
+    AgreementType.IAA: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA)(),
+    AgreementType.DIRECT_OBLIGATION: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.DIRECT_OBLIGATION)(),
+    AgreementType.IAA_AA: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA_AA)(),
     # IAA_AA as the Miscellaneous type type under its mapper args in cans.py so mapping misc to IAA_AA
-    AgreementType.MISCELLANEOUS: AGREEMENT_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA_AA)(),
+    AgreementType.MISCELLANEOUS: AGREEMENT_LIST_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA_AA)(),
+}
+
+AGREEMENT_ITEM_RESPONSE_SCHEMAS = {
+    AgreementType.CONTRACT: AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.CONTRACT)(),
+    AgreementType.GRANT: AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.GRANT)(),
+    AgreementType.IAA: AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA)(),
+    AgreementType.DIRECT_OBLIGATION: AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.DIRECT_OBLIGATION)(),
+    AgreementType.IAA_AA: AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA_AA)(),
+    # IAA_AA as the Miscellaneous type type under its mapper args in cans.py so mapping misc to IAA_AA
+    AgreementType.MISCELLANEOUS: AGREEMENT_ITEM_TYPE_TO_RESPONSE_MAPPING.get(AgreementType.IAA_AA)(),
 }
