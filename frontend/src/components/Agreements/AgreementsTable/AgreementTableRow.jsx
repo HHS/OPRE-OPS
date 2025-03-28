@@ -132,7 +132,6 @@ export const AgreementTableRow = ({ agreement }) => {
         const agreementSubTotal = getAgreementSubTotal(agreementData);
         const procurementShopSubTotal = getProcurementShopSubTotal(agreementData);
         agreementTotal = agreementSubTotal + procurementShopSubTotal;
-        console.log({ agreementSubTotal, procurementShopSubTotal });
         nextBudgetLine = findNextBudgetLine(agreementData);
         nextNeedBy = findNextNeedBy(agreementData);
         budgetLineCountsByStatus = getBudgetLineCountsByStatus(agreementData);
