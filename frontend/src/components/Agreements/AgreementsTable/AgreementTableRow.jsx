@@ -40,6 +40,8 @@ import {
     isThereAnyBudgetLines
 } from "./AgreementsTable.helpers";
 import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementReview } from "./AgreementsTable.hooks";
+import { useGetAgreementByIdQuery } from "../../../api/opsAPI";
+// import DebugCode from "../../DebugCode";
 
 /**
  * Renders a row in the agreements table.
@@ -50,12 +52,16 @@ import { useHandleDeleteAgreement, useHandleEditAgreement, useNavigateAgreementR
  */
 export const AgreementTableRow = ({ agreement }) => {
     const { isExpanded, isRowActive, setIsExpanded, setIsRowActive } = useTableRow();
+    const { data: agreementData, isLoading, isSuccess } = useGetAgreementByIdQuery(agreement.id);
     const agreementName = getAgreementName(agreement);
     const researchProjectName = getResearchProjectName(agreement);
     const agreementType = convertCodeForDisplay("agreementType", agreement?.agreement_type);
-    const agreementSubTotal = getAgreementSubTotal(agreement);
-    const procurementShopSubTotal = getProcurementShopSubTotal(agreement);
-    const agreementTotal = agreementSubTotal + procurementShopSubTotal;
+    let agreementTotal = 0;
+    if (isSuccess) {
+        const agreementSubTotal = getAgreementSubTotal(agreementData);
+        const procurementShopSubTotal = getProcurementShopSubTotal(agreementData);
+        agreementTotal = agreementSubTotal + procurementShopSubTotal;
+    }
     const nextBudgetLine = findNextBudgetLine(agreement);
     const nextBudgetLineAmount = nextBudgetLine?.amount
         ? totalBudgetLineAmountPlusFees(
@@ -190,6 +196,7 @@ export const AgreementTableRow = ({ agreement }) => {
             >
                 {isRowActive && !isExpanded ? <div>{changeIcons}</div> : <div>{nextNeedBy}</div>}
             </td>
+            {/* <DebugCode data={agreementData} /> */}
         </>
     );
 
@@ -282,6 +289,10 @@ export const AgreementTableRow = ({ agreement }) => {
             </div>
         </td>
     );
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <>
