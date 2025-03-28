@@ -142,7 +142,7 @@ it("clicking the add agreement button takes you to the create agreement page", (
 
 it("Change Requests tab works", () => {
     cy.visit("/agreements?filter=change-requests");
-    cy.get(":nth-child(1) > .margin-0").should("have.text", "For Review");
+    cy.get("h2").should("have.text", "For Review");
     cy.get(".text-center")
         .invoke("text")
         .should("match", /no changes/i);
